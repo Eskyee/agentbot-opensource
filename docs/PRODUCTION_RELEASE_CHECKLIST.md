@@ -2,6 +2,10 @@
 
 Use this checklist before every production release.
 
+Cloudflare MCP + DNS automation guide:
+
+- [Cloudflare MCP Setup](CLOUDFLARE_MCP_SETUP.md)
+
 Automated pre-check command:
 
 ```bash

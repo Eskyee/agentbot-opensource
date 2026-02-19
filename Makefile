@@ -79,6 +79,12 @@ prod-go-live-check: ## Run production DNS/health/route/Stripe checks
 prod-go-live-report: ## Run production checks and save timestamped report
 	@./infra/scripts/prod-go-live-report.sh
 
+cloudflare-autoconfig: ## Upsert Cloudflare DNS records (requires CF_API_TOKEN, CF_ZONE_ID, SERVER_IP)
+	@./infra/scripts/cloudflare-autoconfig.sh
+
+cloudflare-verify: ## Verify Cloudflare DNS records and live endpoint reachability
+	@./infra/scripts/cloudflare-verify.sh
+
 health: ## Check health of all services
 	@echo "🔍 Checking service health..."
 	@curl -s http://localhost:3001/health | jq . || echo "API not responding"
