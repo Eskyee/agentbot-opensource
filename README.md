@@ -19,6 +19,9 @@ StartClaw is a complete platform for deploying, managing, and scaling AI agents 
 
 For customer onboarding steps, see [User Guide](docs/USER_GUIDE.md).
 For production launch/testing, see [Production Release Checklist](docs/PRODUCTION_RELEASE_CHECKLIST.md).
+For production operations and recovery history, see [Production Handoff (2026-02-19)](docs/PRODUCTION_HANDOFF_2026-02-19.md).
+For platform-by-platform maintenance details, see [Platform Operations Guide](docs/PLATFORM_OPERATIONS_GUIDE.md).
+For emergency copy/paste commands, see [OPS Quick Ref](OPS_QUICK_REF.md).
 
 ### Local Development
 
@@ -147,6 +150,27 @@ docker compose down -v
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed deployment guides.
 Use [Production Release Checklist](docs/PRODUCTION_RELEASE_CHECKLIST.md) before each release.
+
+## Operations & Maintenance
+
+Primary operations runbook:
+- [Production Handoff (2026-02-19)](docs/PRODUCTION_HANDOFF_2026-02-19.md)
+- [Platform Operations Guide](docs/PLATFORM_OPERATIONS_GUIDE.md)
+- [OPS Quick Ref](OPS_QUICK_REF.md)
+
+Includes:
+- Daily/weekly/monthly server maintenance SOP
+- Incident response checklist
+- Backend + Vercel recovery commands
+- Current production architecture and env mapping
+
+### Easy-to-forget production notes
+
+- Run project/firewall/tag `gcloud` commands from Cloud Shell user context, not inside the VM shell.
+- `localhost` in Cloud Shell is not the VM; VM-only checks require `gcloud compute ssh ...` first.
+- Keep `BACKEND_API_SECRET` (Vercel) and `API_SECRET` (VM service) identical.
+- Keep firewall rule `startclaw-api-3000` and VM tag `startclaw-api` in place for backend reachability.
+- After changing Vercel env vars, redeploy production (`npx vercel --prod --yes`).
 
 ## Self-Hosting
 
