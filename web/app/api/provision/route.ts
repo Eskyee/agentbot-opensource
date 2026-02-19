@@ -18,31 +18,58 @@ export async function POST(request: NextRequest) {
 
     const ownerIds = telegramUserId ? [telegramUserId] : undefined
     
-    const response = await fetch(`${BACKEND_API_URL}/api/deployments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${INTERNAL_API_KEY}`
-      },
-      body: JSON.stringify({
-        agentId: userId,
-        version: 'latest',
-        config: {
-          telegramToken,
-          ownerIds,
-          aiProvider: aiProvider || 'openrouter',
-          apiKey,
-          plan: plan || 'free'
-        }
-      })
-    })
-    
-    let data: any = null
+    let response: Response
     try {
-      data = await response.json()
+      response = await fetch(`${BACKEND_API_URL}/api/deployments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INTERNAL_API_KEY}`
+        },
+        body: JSON.stringify({
+          agentId: userId,
+          version: 'latest',
+          config: {
+            telegramToken,
+            ownerIds,
+            aiProvider: aiProvider || 'openrouter',
+            apiKey,
+            plan: plan || 'free'
+          }
+        })
+      })
     } catch {
       return NextResponse.json(
-        { success: false, error: 'Provisioning service returned invalid JSON' },
+        {
+          success: false,
+          error: `Provisioning backend is unreachable (${BACKEND_API_URL}). Check BACKEND_API_URL and backend TLS/DNS.`
+        },
+        { status: 502 }
+      )
+    }
+    
+    const contentType = response.headers.get('content-type') || ''
+    const rawBody = await response.text()
+    let data: any = null
+
+    if (rawBody && contentType.toLowerCase().includes('application/json')) {
+      try {
+        data = JSON.parse(rawBody)
+      } catch {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Provisioning service returned malformed JSON (status ${response.status})`
+          },
+          { status: 502 }
+        )
+      }
+    } else if (!response.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Provisioning backend error (${response.status}) from ${BACKEND_API_URL}. Expected JSON but received ${contentType || 'non-JSON response'}.`
+        },
         { status: 502 }
       )
     }
@@ -56,10 +83,13 @@ export async function POST(request: NextRequest) {
         url: data.url
       })
     } else {
-      return NextResponse.json({ 
-        success: false, 
-        error: data?.error || 'Provisioning failed' 
-      }, { status: 502 })
+      return NextResponse.json(
+        {
+          success: false,
+          error: data?.error || `Provisioning failed (status ${response.status})`
+        },
+        { status: 502 }
+      )
     }
   } catch (error) {
     console.error('Provision error:', error)
