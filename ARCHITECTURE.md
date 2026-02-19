@@ -1,13 +1,13 @@
-# StartClaw Architecture
+# Agentbot Architecture
 
 ## Overview
 
-StartClaw is a managed hosting platform for deploying and managing AI agents. The platform consists of multiple services working together to provide a seamless deployment experience.
+Agentbot is a managed hosting platform for deploying and managing AI agents. The platform consists of multiple services working together to provide a seamless deployment experience.
 
 ```
 ┌─────────────────────────────────────────────────────┐
 │         Frontend (Next.js)                          │
-│         startclaw.com                               │
+│         agentbot.com                               │
 └──────────────────┬──────────────────────────────────┘
                    │
         ┌──────────┼──────────┐
@@ -24,7 +24,7 @@ StartClaw is a managed hosting platform for deploying and managing AI agents. Th
            │  Database    │
            └──────────────┘
 
-    Deployed Agents: *.agents.startclaw.com
+    Deployed Agents: *.agents.agentbot.com
 ```
 
 ## Components
@@ -97,8 +97,8 @@ StartClaw is a managed hosting platform for deploying and managing AI agents. Th
 
 1. **Clone repository**
 ```bash
-git clone https://github.com/Eskyee/startclaw.git
-cd startclaw
+git clone https://github.com/Eskyee/agentbot.git
+cd agentbot
 ```
 
 2. **Copy environment file**
@@ -116,7 +116,7 @@ docker compose up -d
 - API: http://localhost:3001
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
-- Nginx: http://startclaw.localhost
+- Nginx: http://agentbot.localhost
 
 5. **View logs**
 ```bash
@@ -165,9 +165,9 @@ Use managed services:
 - Redis: AWS ElastiCache, Redis Cloud, or similar
 
 ### DNS Configuration
-1. Main domain: `startclaw.com` → Vercel
-2. API domain: `api.startclaw.com` → Your server
-3. Wildcard: `*.agents.startclaw.com` → Your server
+1. Main domain: `agentbot.com` → Vercel
+2. API domain: `api.agentbot.com` → Your server
+3. Wildcard: `*.agents.agentbot.com` → Your server
 
 ## Environment Variables
 

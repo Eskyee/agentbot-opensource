@@ -7,18 +7,18 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: startclaw-postgres
+    container_name: agentbot-postgres
     environment:
-      POSTGRES_USER: startclaw
+      POSTGRES_USER: agentbot
       POSTGRES_PASSWORD: devpassword
-      POSTGRES_DB: startclaw_db
+      POSTGRES_DB: agentbot_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U startclaw"]
+      test: ["CMD-SHELL", "pg_isready -U agentbot"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
   # Redis Cache & Queue
   redis:
     image: redis:7-alpine
-    container_name: startclaw-redis
+    container_name: agentbot-redis
     ports:
       - "6379:6379"
     volumes:
@@ -42,14 +42,14 @@ services:
     build:
       context: ./agentbot-backend
       dockerfile: Dockerfile
-    container_name: startclaw-api
+    container_name: agentbot-api
     environment:
       NODE_ENV: development
       PORT: 3001
-      DATABASE_URL: postgres://startclaw:devpassword@postgres:5432/startclaw_db
+      DATABASE_URL: postgres://agentbot:devpassword@postgres:5432/agentbot_db
       REDIS_URL: redis://redis:6379
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-secret-key-12345}
-      ALLOWED_ORIGINS: http://localhost:3000,https://startclaw.com
+      ALLOWED_ORIGINS: http://localhost:3000,https://agentbot.com
       AGENTS_DOMAIN: agents.localhost
     ports:
       - "3001:3001"
@@ -63,7 +63,7 @@ services:
       # Docker socket mount is intentionally kept out of base compose.
       # For local development where API must create agent containers,
       # use docker-compose.override.yml to mount /var/run/docker.sock.
-      - ./runtime-data:/opt/startclaw/data
+      - ./runtime-data:/opt/agentbot/data
     command: npm run dev
     develop:
       watch:
@@ -75,11 +75,11 @@ services:
     build:
       context: ./agentbot-worker
       dockerfile: Dockerfile
-    container_name: startclaw-worker
+    container_name: agentbot-worker
     environment:
       NODE_ENV: development
       REDIS_URL: redis://redis:6379
-      DATABASE_URL: postgres://startclaw:devpassword@postgres:5432/startclaw_db
+      DATABASE_URL: postgres://agentbot:devpassword@postgres:5432/agentbot_db
       AGENTS_DOMAIN: agents.localhost
     depends_on:
       redis:
@@ -100,7 +100,7 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-    container_name: startclaw-frontend
+    container_name: agentbot-frontend
     environment:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
@@ -128,7 +128,7 @@ services:
   # Nginx reverse proxy for local wildcard subdomain testing
   nginx:
     image: nginx:alpine
-    container_name: startclaw-nginx
+    container_name: agentbot-nginx
     ports:
       - "80:80"
       - "443:443"
@@ -146,4 +146,4 @@ volumes:
 
 networks:
   default:
-    name: startclaw-network
+    name: agentbot-network

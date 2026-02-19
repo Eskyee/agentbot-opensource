@@ -1,5 +1,5 @@
 #!/bin/bash
-# StartClaw Provisioning Script
+# Agentbot Provisioning Script
 # Creates a new OpenClaw instance for a user
 
 set -e
@@ -25,8 +25,8 @@ PORT="${5:-}"
 CONTAINER_NAME="openclaw-${USER_ID}"
 VOLUME_NAME="openclaw-${USER_ID}"
 CADDY_FILE="/etc/caddy/Caddyfile"
-PORT_MAP="/opt/startclaw/port-map.txt"
-DOMAIN="startclaw.com"
+PORT_MAP="/opt/agentbot/port-map.txt"
+DOMAIN="agentbot.com"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"

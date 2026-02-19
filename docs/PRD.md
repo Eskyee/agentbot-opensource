@@ -1,4 +1,4 @@
-# StartClaw — Product Requirements Document
+# Agentbot — Product Requirements Document
 
 ## One-Liner
 Deploy your personal AI assistant in 60 seconds. No servers, no terminal, no BS.
@@ -18,7 +18,7 @@ OpenClaw is powerful but setup takes 1-4 hours:
 **90% of interested users give up.**
 
 ## Solution
-StartClaw handles everything:
+Agentbot handles everything:
 1. User signs up
 2. Picks AI provider (or uses free tier)
 3. Creates Telegram bot (guided)
@@ -31,7 +31,7 @@ StartClaw handles everything:
 1. **Non-technical people** who saw OpenClaw on Twitter
 2. **Developers** who don't want to manage infra
 3. **Small teams** wanting shared AI assistant
-4. **India market** (₹199/mo vs $24/mo competitors)
+4. **Affordable entry pricing** (£19/mo Starter vs higher-priced competitors)
 
 ---
 
@@ -74,11 +74,11 @@ StartClaw handles everything:
 
 ## Pricing
 
-| Plan | INR | USD | Resources |
-|------|-----|-----|-----------|
-| Trial | Free (3 days) | Free | Shared, Groq |
-| Starter | ₹199/mo | $9/mo | Shared, BYOK |
-| Pro | ₹499/mo | $19/mo | Dedicated container |
+| Plan | GBP | Resources |
+|------|-----|-----------|
+| Trial | Free (3 days) | Shared, Groq |
+| Starter | £19/mo | Shared, BYOK |
+| Pro | £49/mo | Dedicated container |
 
 ---
 
@@ -100,12 +100,12 @@ StartClaw handles everything:
 
 - **Week 1:** 50 signups, 10 trials
 - **Week 2:** 5 paid conversions
-- **Month 1:** 50 paying users, ₹10K MRR
-- **Month 3:** 200 paying users, ₹40K MRR
+- **Month 1:** 50 paying users, £1K MRR
+- **Month 3:** 200 paying users, £8K MRR
 
 ## Competitive Advantage
 
-1. **India pricing** — 10x cheaper than xCloud ($24/mo)
+1. **Simple pricing** — clear tiers with trial → Starter (£19) → Pro (£49)
 2. **Free trial** — No card required, others don't offer
 3. **Speed** — 60 seconds vs 5 minutes (SimpleClaw)
 4. **Reliability** — Daily backups, auto-restore

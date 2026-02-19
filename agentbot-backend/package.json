@@ -1,7 +1,7 @@
 {
-  "name": "startclaw-backend",
+  "name": "agentbot-backend",
   "version": "1.0.0",
-  "description": "StartClaw Backend API for Agent Management",
+  "description": "Agentbot Backend API for Agent Management",
   "main": "src/index.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn src/index.ts",

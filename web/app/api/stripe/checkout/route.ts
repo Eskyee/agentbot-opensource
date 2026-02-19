@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
       cancel_url: `${origin}/onboard?plan=${plan}&payment_cancelled=1`,
       metadata: {
         plan,
-        source: 'startclaw-web',
+        source: 'agentbot-web',
       },
     })
 

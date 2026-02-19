@@ -1,8 +1,8 @@
-# StartClaw - Complete Build Summary
+# Agentbot - Complete Build Summary
 
 ## Project Overview
 
-StartClaw has been transformed from a simple OpenClaw hosting platform into a complete agent deployment and management platform, matching the architecture of agentbot while maintaining its core identity.
+Agentbot has been transformed from a simple OpenClaw hosting platform into a complete agent deployment and management platform, matching the architecture of agentbot while maintaining its core identity.
 
 ## What Was Built
 
@@ -110,7 +110,7 @@ A TypeScript worker service for processing deployments asynchronously:
 - Network configuration
 
 **Nginx Configuration:**
-- Main frontend routing (startclaw.localhost)
+- Main frontend routing (agentbot.localhost)
 - API routing (api.localhost)
 - Wildcard subdomain routing (*.agents.localhost)
 - Proxy headers
@@ -202,7 +202,7 @@ A TypeScript worker service for processing deployments asynchronously:
 
 ## Architecture Comparison
 
-### Before (Original StartClaw)
+### Before (Original Agentbot)
 ```
 ┌─────────────┐
 │   Next.js   │
@@ -219,11 +219,11 @@ A TypeScript worker service for processing deployments asynchronously:
    └───────┘
 ```
 
-### After (Enhanced StartClaw - Matching AgentBot)
+### After (Enhanced Agentbot - Matching AgentBot)
 ```
 ┌─────────────────────────────────────────┐
 │       Frontend (Next.js on Vercel)      │
-│          startclaw.com                  │
+│          agentbot.com                  │
 └──────────────────┬──────────────────────┘
                    │
         ┌──────────┼──────────┐
@@ -240,7 +240,7 @@ A TypeScript worker service for processing deployments asynchronously:
            │  Database    │
            └──────────────┘
 
-    Deployed Agents: *.agents.startclaw.com
+    Deployed Agents: *.agents.agentbot.com
 ```
 
 ## Key Features Implemented
@@ -315,7 +315,7 @@ A TypeScript worker service for processing deployments asynchronously:
 ## Project Structure
 
 ```
-startclaw/
+agentbot/
 ├── web/                    # Next.js frontend
 │   ├── app/
 │   │   ├── agents/        # NEW: Agent management page
@@ -448,7 +448,7 @@ Future enhancements could include:
 
 ## Summary
 
-StartClaw now has:
+Agentbot now has:
 - ✅ Complete multi-service architecture
 - ✅ Agent management API
 - ✅ Beautiful frontend UI

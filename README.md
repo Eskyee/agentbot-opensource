@@ -1,8 +1,8 @@
-# StartClaw 🦞
+# Agentbot 🦞
 
 **Deploy and manage AI agents in 60 seconds. No servers, no terminal, no BS.**
 
-StartClaw is a complete platform for deploying, managing, and scaling AI agents — built on [OpenClaw](https://openclaw.ai), the open-source personal AI assistant. We handle all the infrastructure so you can focus on building great AI experiences.
+Agentbot is a complete platform for deploying, managing, and scaling AI agents — built on [OpenClaw](https://openclaw.ai), the open-source personal AI assistant. We handle all the infrastructure so you can focus on building great AI experiences.
 
 ## Features
 
@@ -10,9 +10,9 @@ StartClaw is a complete platform for deploying, managing, and scaling AI agents 
 - 🔒 **Secure by default** — Isolated containers, encrypted backups
 - 📊 **Agent management** — Dashboard to monitor and manage all your agents
 - 🌐 **Custom subdomains** — Each agent gets its own subdomain
-- 💰 **Flexible pricing** — Starting at ₹199/mo
+- 💰 **Flexible pricing** — Starting at £19/mo
 - 🔄 **Daily backups** — Never lose your AI's memory
-- 🆓 **Free trial** — 7 days, no card required
+- 🆓 **Free trial** — 3 days, no card required
 - 🧩 **Skills via ClawHub** — Discover and pull skills from [clawhub.ai](https://clawhub.ai)
 
 ## Quick Start
@@ -22,13 +22,14 @@ For production launch/testing, see [Production Release Checklist](docs/PRODUCTIO
 For production operations and recovery history, see [Production Handoff (2026-02-19)](docs/PRODUCTION_HANDOFF_2026-02-19.md).
 For platform-by-platform maintenance details, see [Platform Operations Guide](docs/PLATFORM_OPERATIONS_GUIDE.md).
 For emergency copy/paste commands, see [OPS Quick Ref](OPS_QUICK_REF.md).
+For zero-downtime agentbot-only migration steps, see [Agentbot-Only Migration Checklist](docs/AGENTBOT_ONLY_MIGRATION_CHECKLIST.md).
 
 ### Local Development
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/Eskyee/startclaw.git
-cd startclaw
+git clone https://github.com/Eskyee/agentbot.git
+cd agentbot
 
 # 2. Copy environment
 cp .env.local .env
@@ -41,14 +42,14 @@ docker compose up -d
 # - API: http://localhost:3001
 # - PostgreSQL: localhost:5432
 # - Redis: localhost:6379
-# - Nginx: http://startclaw.localhost
+# - Nginx: http://agentbot.localhost
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture documentation.
 
 ## Architecture
 
-StartClaw consists of multiple services:
+Agentbot consists of multiple services:
 
 - **Frontend**: Next.js React dashboard
 - **Backend API**: Express.js agent management API
@@ -65,7 +66,7 @@ Frontend → API → Worker → Docker Containers
 
 ## How It Works
 
-1. **Sign up** at [startclaw.com](https://startclaw.com)
+1. **Sign up** at [agentbot.com](https://agentbot.com)
 2. **Create your agent** with our easy setup wizard
 3. **Deploy** — We handle container orchestration
 4. **Manage** — Monitor and scale from your dashboard
@@ -75,10 +76,9 @@ Frontend → API → Worker → Docker Containers
 
 | Plan | Price | Features |
 |------|-------|----------|
-| Trial | Free (7 days) | 1 agent, shared resources |
+| Trial | Free (3 days) | 1 agent, shared resources |
 | Starter | £19/mo | 3 agents, BYOK support |
 | Pro | £49/mo | 10 agents, dedicated resources |
-| Power | £99/mo | Unlimited agents, priority support |
 
 ## Tech Stack
 
@@ -102,7 +102,7 @@ Frontend → API → Worker → Docker Containers
 ### Project Structure
 
 ```
-startclaw/
+agentbot/
 ├── web/                    # Next.js frontend
 ├── agentbot-backend/       # Express API
 ├── agentbot-worker/        # Deployment worker
@@ -169,7 +169,7 @@ Includes:
 - Run project/firewall/tag `gcloud` commands from Cloud Shell user context, not inside the VM shell.
 - `localhost` in Cloud Shell is not the VM; VM-only checks require `gcloud compute ssh ...` first.
 - Keep `BACKEND_API_SECRET` (Vercel) and `API_SECRET` (VM service) identical.
-- Keep firewall rule `startclaw-api-3000` and VM tag `startclaw-api` in place for backend reachability.
+- Keep firewall rule `agentbot-api-3000` and VM tag `agentbot-api` in place for backend reachability.
 - After changing Vercel env vars, redeploy production (`npx vercel --prod --yes`).
 
 ## Self-Hosting

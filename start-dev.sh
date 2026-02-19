@@ -1,7 +1,7 @@
 #!/bin/bash
-# StartClaw Development Environment Setup
+# Agentbot Development Environment Setup
 
-echo "🦞 Starting StartClaw development environment..."
+echo "🦞 Starting Agentbot development environment..."
 echo ""
 
 # Check if Docker is running
@@ -42,7 +42,7 @@ else
 fi
 
 echo ""
-echo "🎉 StartClaw is starting up!"
+echo "🎉 Agentbot is starting up!"
 echo ""
 echo "📍 Services:"
 echo "   Frontend:   http://localhost:3000"
@@ -50,8 +50,8 @@ echo "   API:        http://localhost:3001"
 echo "   Health:     http://localhost:3001/health"
 echo ""
 echo "Note: Nginx routing requires /etc/hosts configuration:"
-echo "   Add: 127.0.0.1 startclaw.localhost"
-echo "   Then visit: http://startclaw.localhost"
+echo "   Add: 127.0.0.1 agentbot.localhost"
+echo "   Then visit: http://agentbot.localhost"
 echo ""
 echo "📝 View logs: docker compose logs -f"
 echo "🛑 Stop:      docker compose down"

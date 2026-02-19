@@ -150,8 +150,8 @@ Quick commands:
 
 ```bash
 docker ps
-docker logs --tail=200 startclaw-api
-docker logs --tail=200 startclaw-worker
+docker logs --tail=200 agentbot-api
+docker logs --tail=200 agentbot-worker
 ```
 
 ---

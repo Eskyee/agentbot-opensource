@@ -1,4 +1,4 @@
-# StartClaw Architecture
+# Agentbot Architecture
 
 ## Overview
 
@@ -11,7 +11,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                      CADDY (Reverse Proxy)                      │
 │  - Auto SSL/TLS                                                 │
-│  - Routes *.startclaw.com → containers                          │
+│  - Routes *.agentbot.com → containers                          │
 │  - Load balancing (future)                                      │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -47,17 +47,17 @@
 **Purpose:** Routes incoming traffic to the correct container.
 
 **How it works:**
-- `user1.startclaw.com` → `localhost:18001`
-- `user2.startclaw.com` → `localhost:18002`
+- `user1.agentbot.com` → `localhost:18001`
+- `user2.agentbot.com` → `localhost:18002`
 - Auto-generates SSL certificates via Let's Encrypt
 
 **Config Example:**
 ```
-user1.startclaw.com {
+user1.agentbot.com {
     reverse_proxy localhost:18001
 }
 
-user2.startclaw.com {
+user2.agentbot.com {
     reverse_proxy localhost:18002
 }
 ```
@@ -125,7 +125,7 @@ user2.startclaw.com {
 ### User Onboarding
 
 ```
-1. User signs up on startclaw.com
+1. User signs up on agentbot.com
 2. Frontend calls API: POST /provision
 3. API creates Docker volume
 4. API writes config to volume

@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 const API_SECRET = process.env.API_SECRET || 'change-me-in-production';
 const GROQ_API_KEY = process.env.GROQ_API_KEY || '';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
-const DATA_DIR = '/opt/startclaw/data';
+const DATA_DIR = '/opt/agentbot/data';
 const CADDY_FILE = '/etc/caddy/Caddyfile';
 const BASE_PORT = 18001;
 

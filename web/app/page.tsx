@@ -1,8 +1,11 @@
-'use client'
-
 import Link from 'next/link'
+import { getPublicPricing } from './lib/stripe-pricing'
 
-export default function Home() {
+export const revalidate = 300
+
+export default async function Home() {
+  const pricing = await getPublicPricing()
+
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -187,8 +190,8 @@ export default function Home() {
               </div>
               <h3 className="text-xl font-semibold">Starter</h3>
               <div className="mt-4">
-                <span className="text-4xl font-bold">£19</span>
-                <span className="text-gray-400"> / month</span>
+                <span className="text-4xl font-bold">{pricing.starter.formatted}</span>
+                <span className="text-gray-400"> / month ({pricing.starter.currency.toUpperCase()})</span>
               </div>
               <ul className="mt-8 space-y-3 text-gray-400">
                 <li className="flex items-center gap-2">
@@ -213,8 +216,8 @@ export default function Home() {
             <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
               <h3 className="text-xl font-semibold">Pro</h3>
               <div className="mt-4">
-                <span className="text-4xl font-bold">£49</span>
-                <span className="text-gray-400"> / month</span>
+                <span className="text-4xl font-bold">{pricing.pro.formatted}</span>
+                <span className="text-gray-400"> / month ({pricing.pro.currency.toUpperCase()})</span>
               </div>
               <ul className="mt-8 space-y-3 text-gray-400">
                 <li className="flex items-center gap-2">

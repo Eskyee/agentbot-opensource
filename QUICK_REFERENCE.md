@@ -1,4 +1,4 @@
-# StartClaw Quick Reference
+# Agentbot Quick Reference
 
 ## Quick Commands
 
@@ -39,7 +39,7 @@ make redis-cli      # Open Redis CLI
 | Frontend | http://localhost:3000 | User dashboard |
 | API | http://localhost:3001 | Backend API |
 | Health Check | http://localhost:3001/health | API health |
-| Nginx | http://startclaw.localhost | Reverse proxy |
+| Nginx | http://agentbot.localhost | Reverse proxy |
 | PostgreSQL | localhost:5432 | Database |
 | Redis | localhost:6379 | Cache/Queue |
 
@@ -75,7 +75,7 @@ curl -H "Authorization: Bearer dev-secret-key-12345" \
 
 ### Development (.env.local)
 - `INTERNAL_API_KEY=dev-secret-key-12345`
-- `DATABASE_URL=postgres://startclaw:devpassword@localhost:5432/startclaw_db`
+- `DATABASE_URL=postgres://agentbot:devpassword@localhost:5432/agentbot_db`
 - `REDIS_URL=redis://localhost:6379`
 
 ### Production (.env.production)
@@ -84,7 +84,7 @@ Update with real credentials and domains.
 ## Project Structure
 
 ```
-startclaw/
+agentbot/
 ├── web/                    # Next.js frontend
 │   ├── app/                # Pages and components
 │   ├── public/             # Static assets
@@ -204,14 +204,14 @@ docker compose restart api     # Restart
 
 ### Backend (Docker)
 1. Build: `docker compose build api worker`
-2. Tag: `docker tag startclaw-api:latest registry/startclaw-api:v1.0`
-3. Push: `docker push registry/startclaw-api:v1.0`
+2. Tag: `docker tag agentbot-api:latest registry/agentbot-api:v1.0`
+3. Push: `docker push registry/agentbot-api:v1.0`
 4. Deploy on server
 
 ### DNS
-- `startclaw.com` → Vercel
-- `api.startclaw.com` → Your server
-- `*.agents.startclaw.com` → Your server
+- `agentbot.com` → Vercel
+- `api.agentbot.com` → Your server
+- `*.agents.agentbot.com` → Your server
 
 ## Resources
 

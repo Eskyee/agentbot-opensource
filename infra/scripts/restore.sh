@@ -1,5 +1,5 @@
 #!/bin/bash
-# StartClaw Restore Script
+# Agentbot Restore Script
 # Restores a user's OpenClaw instance from backup
 
 set -e
@@ -15,8 +15,8 @@ usage() {
 
 USER_ID="$1"
 DATE="${2:-latest}"
-GCS_BUCKET="gs://startclaw-backups"
-TEMP_DIR="/tmp/startclaw-restore"
+GCS_BUCKET="gs://agentbot-backups"
+TEMP_DIR="/tmp/agentbot-restore"
 CONTAINER_NAME="openclaw-${USER_ID}"
 VOLUME_NAME="openclaw-${USER_ID}"
 
@@ -73,7 +73,7 @@ docker run --rm \
 
 # Get next available port (simple approach - check config or use default)
 # In production, this would query the database
-PORT=$(grep -oP "(?<=$USER_ID:)\d+" /opt/startclaw/port-map.txt 2>/dev/null || echo "18789")
+PORT=$(grep -oP "(?<=$USER_ID:)\d+" /opt/agentbot/port-map.txt 2>/dev/null || echo "18789")
 
 # Start new container
 log "Starting container on port $PORT..."
@@ -90,4 +90,4 @@ docker run -d \
 rm -rf "$TEMP_DIR"
 
 log "SUCCESS: $USER_ID restored and running on port $PORT"
-log "Update Caddy config if needed: ${USER_ID}.startclaw.com → localhost:$PORT"
+log "Update Caddy config if needed: ${USER_ID}.agentbot.com → localhost:$PORT"

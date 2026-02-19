@@ -1,11 +1,11 @@
 #!/bin/bash
-# StartClaw VM Setup Script
+# Agentbot VM Setup Script
 # Run this on a fresh Ubuntu 22.04 VM
-# Usage: curl -fsSL https://raw.githubusercontent.com/mohanagsk/startclaw/main/infra/setup.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/mohanagsk/agentbot/main/infra/setup.sh | bash
 
 set -e
 
-echo "🦞 StartClaw Setup Starting..."
+echo "🦞 Agentbot Setup Starting..."
 echo ""
 
 # Colors
@@ -69,23 +69,23 @@ else
     log_success "Node.js already installed"
 fi
 
-# Step 5: Create StartClaw directories
+# Step 5: Create Agentbot directories
 log_info "Creating directories..."
-mkdir -p /opt/startclaw/{scripts,data,logs,api}
+mkdir -p /opt/agentbot/{scripts,data,logs,api}
 mkdir -p /backups
-chown -R $ACTUAL_USER:$ACTUAL_USER /opt/startclaw
+chown -R $ACTUAL_USER:$ACTUAL_USER /opt/agentbot
 chown -R $ACTUAL_USER:$ACTUAL_USER /backups
 log_success "Directories created"
 
 # Step 6: Download scripts
-log_info "Downloading StartClaw scripts..."
-REPO_RAW="https://raw.githubusercontent.com/mohanagsk/startclaw/main"
-curl -fsSL "$REPO_RAW/infra/scripts/provision.sh" -o /opt/startclaw/scripts/provision.sh
-curl -fsSL "$REPO_RAW/infra/scripts/backup.sh" -o /opt/startclaw/scripts/backup.sh
-curl -fsSL "$REPO_RAW/infra/scripts/restore.sh" -o /opt/startclaw/scripts/restore.sh
-curl -fsSL "$REPO_RAW/api/server.js" -o /opt/startclaw/api/server.js
-curl -fsSL "$REPO_RAW/api/package.json" -o /opt/startclaw/api/package.json
-chmod +x /opt/startclaw/scripts/*.sh
+log_info "Downloading Agentbot scripts..."
+REPO_RAW="https://raw.githubusercontent.com/mohanagsk/agentbot/main"
+curl -fsSL "$REPO_RAW/infra/scripts/provision.sh" -o /opt/agentbot/scripts/provision.sh
+curl -fsSL "$REPO_RAW/infra/scripts/backup.sh" -o /opt/agentbot/scripts/backup.sh
+curl -fsSL "$REPO_RAW/infra/scripts/restore.sh" -o /opt/agentbot/scripts/restore.sh
+curl -fsSL "$REPO_RAW/api/server.js" -o /opt/agentbot/api/server.js
+curl -fsSL "$REPO_RAW/api/package.json" -o /opt/agentbot/api/package.json
+chmod +x /opt/agentbot/scripts/*.sh
 log_success "Scripts downloaded"
 
 # Step 7: Pull OpenClaw Docker image
@@ -97,7 +97,7 @@ log_success "OpenClaw image ready"
 log_info "Configuring Caddy..."
 EXTERNAL_IP=$(curl -s ifconfig.me)
 cat > /etc/caddy/Caddyfile << EOF
-# StartClaw Caddy Configuration
+# Agentbot Caddy Configuration
 
 # Health check endpoint
 :80 {
@@ -112,21 +112,21 @@ log_success "Caddy configured"
 
 # Step 9: Install API dependencies
 log_info "Installing API dependencies..."
-cd /opt/startclaw/api
+cd /opt/agentbot/api
 sudo -u $ACTUAL_USER npm install --production 2>/dev/null || npm install --production
 log_success "API dependencies installed"
 
 # Step 10: Create systemd service for API
 log_info "Creating API service..."
-cat > /etc/systemd/system/startclaw-api.service << EOF
+cat > /etc/systemd/system/agentbot-api.service << EOF
 [Unit]
-Description=StartClaw Provisioning API
+Description=Agentbot Provisioning API
 After=network.target docker.service
 
 [Service]
 Type=simple
 User=$ACTUAL_USER
-WorkingDirectory=/opt/startclaw/api
+WorkingDirectory=/opt/agentbot/api
 ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=5
@@ -137,12 +137,12 @@ Environment=PORT=3000
 WantedBy=multi-user.target
 EOF
 systemctl daemon-reload
-systemctl enable startclaw-api
+systemctl enable agentbot-api
 log_success "API service created"
 
 # Step 11: Setup daily backup cron
 log_info "Setting up daily backups..."
-echo "0 3 * * * /opt/startclaw/scripts/backup.sh >> /opt/startclaw/logs/backup.log 2>&1" | crontab -
+echo "0 3 * * * /opt/agentbot/scripts/backup.sh >> /opt/agentbot/logs/backup.log 2>&1" | crontab -
 log_success "Daily backup scheduled at 3 AM"
 
 # Step 12: Open firewall ports
@@ -160,17 +160,17 @@ EXTERNAL_IP=$(curl -s ifconfig.me)
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo -e "${GREEN}🦞 StartClaw Setup Complete!${NC}"
+echo -e "${GREEN}🦞 Agentbot Setup Complete!${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "External IP: $EXTERNAL_IP"
 echo ""
 echo "Next steps:"
-echo "1. Create .env file: nano /opt/startclaw/api/.env"
+echo "1. Create .env file: nano /opt/agentbot/api/.env"
 echo "   Add: GROQ_API_KEY=gsk_your_key_here"
 echo "   Add: API_SECRET=$(openssl rand -hex 32)"
 echo ""
-echo "2. Start the API: sudo systemctl start startclaw-api"
+echo "2. Start the API: sudo systemctl start agentbot-api"
 echo ""
 echo "3. Test: curl http://localhost:3000/health"
 echo ""

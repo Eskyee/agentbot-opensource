@@ -33,7 +33,7 @@ deploymentQueue.process(async (job) => {
     // Step 4: Configure DNS
     console.log(`Configuring DNS for ${agentId}...`);
     job.progress(80);
-    const agentsDomain = process.env.AGENTS_DOMAIN || 'agents.startclaw.com';
+    const agentsDomain = process.env.AGENTS_DOMAIN || 'agents.agentbot.com';
     const subdomain = `${agentId}.${agentsDomain}`;
     // TODO: Update DNS records or Caddy configuration
     
@@ -66,4 +66,4 @@ deploymentQueue.on('failed', (job, err) => {
   console.error(`❌ Job ${job.id} failed:`, err.message);
 });
 
-console.log('🦞 StartClaw deployment worker started. Listening for jobs...');
+console.log('🦞 Agentbot deployment worker started. Listening for jobs...');

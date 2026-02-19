@@ -85,7 +85,7 @@ function OnboardContent() {
       
       if (data.success) {
         // Save to localStorage for dashboard
-        localStorage.setItem('startclaw_instance', JSON.stringify({
+        localStorage.setItem('agentbot_instance', JSON.stringify({
           userId: data.userId,
           botUsername: botInfo?.username,
           subdomain: data.subdomain,
@@ -110,7 +110,7 @@ function OnboardContent() {
         <div className="text-5xl mb-4">🦞</div>
         <h1 className="text-3xl font-bold">Deploy Your AI Assistant</h1>
         <p className="text-gray-400 mt-2">
-          {plan === 'free' ? '7-day free trial' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
+          {plan === 'free' ? '3-day free trial' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
         </p>
       </div>
       
@@ -454,7 +454,7 @@ function OnboardContent() {
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-400">Plan</dt>
-                    <dd>{plan === 'free' ? '7-day Free Trial' : plan}</dd>
+                    <dd>{plan === 'free' ? '3-day Free Trial' : plan}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-400">OpenClaw Version</dt>

@@ -1,4 +1,4 @@
-# AI Providers for StartClaw
+# AI Providers for Agentbot
 
 ## Recommended Free Providers
 
@@ -88,9 +88,9 @@
 
 ---
 
-## StartClaw Default Provider
+## Agentbot Default Provider
 
-For free tier users, StartClaw uses **Groq** by default:
+For free tier users, Agentbot uses **Groq** by default:
 - Model: `llama-3.3-70b-versatile`
 - Rate limit: 30 requests/minute (shared across free users)
 - Quality: Very good for most tasks
@@ -104,7 +104,7 @@ Users can upgrade to BYOK (Bring Your Own Key) for:
 
 ## Fallback Chain
 
-StartClaw implements automatic fallback:
+Agentbot implements automatic fallback:
 
 ```
 1. User's own key (if provided)

@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-echo "🛑 Stopping StartClaw"
+echo "🛑 Stopping Agentbot"
 
 if [ -d .run ]; then
   for pidfile in .run/*.pid; do
@@ -34,4 +34,4 @@ if docker info >/dev/null 2>&1; then
   docker compose down >/dev/null 2>&1 || true
 fi
 
-echo "✅ StartClaw stopped"
+echo "✅ Agentbot stopped"

@@ -6,7 +6,7 @@ Last updated: 2026-02-19
 - Frontend: `https://agentbot.raveculture.xyz`
 - Backend: `http://34.71.189.81:3000`
 - GCP project: `raveculture-youtube-api`
-- VM: `startclaw-api-vm` (`us-central1-a`)
+- VM: `agentbot-api-vm` (`us-central1-a`)
 
 ## 1) Fast health checks (local machine)
 ```bash
@@ -19,7 +19,7 @@ curl -i -sS -X POST https://agentbot.raveculture.xyz/api/provision \
 
 ## 2) Vercel env + deploy
 ```bash
-cd /Users/raveculture/Documents/GitHub/startclaw
+cd /Users/raveculture/Documents/GitHub/agentbot
 npx vercel whoami
 npx vercel env ls production
 
@@ -37,20 +37,20 @@ npx vercel --prod --yes
 gcloud auth list
 gcloud config set project raveculture-youtube-api
 
-gcloud compute firewall-rules list --filter="name=startclaw-api-3000"
-gcloud compute instances add-tags startclaw-api-vm --zone=us-central1-a --tags=startclaw-api
+gcloud compute firewall-rules list --filter="name=agentbot-api-3000"
+gcloud compute instances add-tags agentbot-api-vm --zone=us-central1-a --tags=agentbot-api
 
-gcloud compute instances describe startclaw-api-vm \
+gcloud compute instances describe agentbot-api-vm \
   --zone=us-central1-a \
   --format='get(networkInterfaces[0].accessConfigs[0].natIP,tags.items)'
 ```
 
 ## 4) VM service checks (inside VM)
 ```bash
-gcloud compute ssh startclaw-api-vm --zone=us-central1-a
+gcloud compute ssh agentbot-api-vm --zone=us-central1-a
 
-sudo systemctl status startclaw-api --no-pager -l
-sudo journalctl -u startclaw-api -n 200 --no-pager
+sudo systemctl status agentbot-api --no-pager -l
+sudo journalctl -u agentbot-api -n 200 --no-pager
 
 curl -s http://localhost:3000/health
 curl -i -sS -H 'x-api-key: YOUR_SECRET' http://localhost:3000/instances
@@ -58,17 +58,17 @@ curl -i -sS -H 'x-api-key: YOUR_SECRET' http://localhost:3000/instances
 
 ## 5) Restart backend service (inside VM)
 ```bash
-sudo systemctl restart startclaw-api
-sudo systemctl status startclaw-api --no-pager -l
+sudo systemctl restart agentbot-api
+sudo systemctl status agentbot-api --no-pager -l
 ```
 
 ## 6) Update backend code safely (inside VM)
 ```bash
-cd /opt/startclaw
+cd /opt/agentbot
 git pull
-cd /opt/startclaw/api
+cd /opt/agentbot/api
 npm install --omit=dev
-sudo systemctl restart startclaw-api
+sudo systemctl restart agentbot-api
 curl -s http://localhost:3000/health
 ```
 

@@ -1,4 +1,4 @@
-# StartClaw Production Handoff (2026-02-19)
+# Agentbot Production Handoff (2026-02-19)
 
 ## Why this exists
 This is a memory sheet for the production recovery and setup work completed together.
@@ -26,14 +26,14 @@ Use this as the single source of truth for:
 - Cloud provider: Google Cloud (GCP)
 - Project: `raveculture-youtube-api`
 - VM:
-  - Name: `startclaw-api-vm`
+  - Name: `agentbot-api-vm`
   - Zone: `us-central1-a`
   - Machine: `e2-small`
   - External IP: `34.71.189.81`
 - Firewall rule:
-  - Name: `startclaw-api-3000`
+  - Name: `agentbot-api-3000`
   - Allows ingress `tcp:3000`
-  - Target tag: `startclaw-api`
+  - Target tag: `agentbot-api`
 
 ---
 
@@ -43,7 +43,7 @@ Use this as the single source of truth for:
   - `web/app/api/provision/route.ts`
 - Backend API service on VM:
   - `api/server.js`
-  - Systemd unit: `/etc/systemd/system/startclaw-api.service`
+  - Systemd unit: `/etc/systemd/system/agentbot-api.service`
 
 ---
 
@@ -84,7 +84,7 @@ Set in Vercel production:
   - Must match VM `API_SECRET`
 
 On VM systemd service:
-- `API_SECRET=bcfcc5a807197d32598a87570011faf360b3697c6e2e4d48`
+- `API_SECRET=YOUR_SECRET_HERE`
 - `PORT=3000`
 
 ---
@@ -96,17 +96,17 @@ Installed on VM:
 - Caddy
 
 Backend code path:
-- `/opt/startclaw/api`
+- `/opt/agentbot/api`
 
 Systemd service:
-- Name: `startclaw-api`
-- ExecStart: `/usr/bin/node /opt/startclaw/api/server.js`
+- Name: `agentbot-api`
+- ExecStart: `/usr/bin/node /opt/agentbot/api/server.js`
 
 Useful VM commands:
 
 ```bash
-sudo systemctl status startclaw-api --no-pager -l
-sudo journalctl -u startclaw-api -n 200 --no-pager
+sudo systemctl status agentbot-api --no-pager -l
+sudo journalctl -u agentbot-api -n 200 --no-pager
 curl -s http://localhost:3000/health
 curl -s -H 'x-api-key: YOUR_SECRET' http://localhost:3000/instances
 ```
@@ -120,7 +120,7 @@ curl -s -H 'x-api-key: YOUR_SECRET' http://localhost:3000/instances
 
 2. GCP IAM/scope confusion
 - Running `gcloud` inside VM can fail with service account scope errors.
-- Project/firewall/tag changes should be run from Cloud Shell user account (`eskyjunglelab@gmail.com`).
+- Project/firewall/tag changes should be run from Cloud Shell user account (`<your-gcp-account-email>`).
 
 3. Billing blocker
 - Compute API cannot be enabled without an OPEN billing account.
@@ -154,15 +154,15 @@ curl -i -H 'x-api-key: YOUR_SECRET' http://34.71.189.81:3000/instances
 3. If unreachable, verify firewall/tag from Cloud Shell:
 ```bash
 gcloud config set project raveculture-youtube-api
-gcloud compute firewall-rules list --filter="name=startclaw-api-3000"
-gcloud compute instances add-tags startclaw-api-vm --zone=us-central1-a --tags=startclaw-api
+gcloud compute firewall-rules list --filter="name=agentbot-api-3000"
+gcloud compute instances add-tags agentbot-api-vm --zone=us-central1-a --tags=agentbot-api
 ```
 
 4. If reachable but provision fails, debug on VM:
 ```bash
-gcloud compute ssh startclaw-api-vm --zone=us-central1-a
-sudo systemctl status startclaw-api --no-pager -l
-sudo journalctl -u startclaw-api -n 200 --no-pager
+gcloud compute ssh agentbot-api-vm --zone=us-central1-a
+sudo systemctl status agentbot-api --no-pager -l
+sudo journalctl -u agentbot-api -n 200 --no-pager
 curl -i -X POST http://localhost:3000/provision \
   -H 'x-api-key: YOUR_SECRET' \
   -H 'content-type: application/json' \
@@ -175,7 +175,7 @@ curl -i -X POST http://localhost:3000/provision \
 
 6. Redeploy web after env changes:
 ```bash
-cd /Users/raveculture/Documents/GitHub/startclaw
+cd /Users/raveculture/Documents/GitHub/agentbot
 npx vercel --prod --yes
 ```
 
@@ -228,9 +228,9 @@ What good looks like:
 SSH into VM and run:
 
 ```bash
-gcloud compute ssh startclaw-api-vm --zone=us-central1-a
-sudo systemctl status startclaw-api --no-pager -l
-sudo journalctl -u startclaw-api -n 200 --no-pager
+gcloud compute ssh agentbot-api-vm --zone=us-central1-a
+sudo systemctl status agentbot-api --no-pager -l
+sudo journalctl -u agentbot-api -n 200 --no-pager
 sudo docker ps -a --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'
 df -h
 free -h
@@ -255,27 +255,27 @@ sudo docker container prune -f
 ```bash
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo systemctl restart startclaw-api
+sudo systemctl restart agentbot-api
 ```
 
 3. Verify firewall and tags still correct:
 
 ```bash
-gcloud compute firewall-rules list --filter="name=startclaw-api-3000"
-gcloud compute instances describe startclaw-api-vm --zone=us-central1-a --format='get(tags.items)'
+gcloud compute firewall-rules list --filter="name=agentbot-api-3000"
+gcloud compute instances describe agentbot-api-vm --zone=us-central1-a --format='get(tags.items)'
 ```
 
 ### Safe deploy flow (backend)
 When updating backend code:
 
 ```bash
-gcloud compute ssh startclaw-api-vm --zone=us-central1-a
-cd /opt/startclaw
+gcloud compute ssh agentbot-api-vm --zone=us-central1-a
+cd /opt/agentbot
 git pull
-cd /opt/startclaw/api
+cd /opt/agentbot/api
 npm install --omit=dev
-sudo systemctl restart startclaw-api
-sudo systemctl status startclaw-api --no-pager -l
+sudo systemctl restart agentbot-api
+sudo systemctl status agentbot-api --no-pager -l
 curl -s http://localhost:3000/health
 ```
 
@@ -283,7 +283,7 @@ curl -s http://localhost:3000/health
 From repo root:
 
 ```bash
-cd /Users/raveculture/Documents/GitHub/startclaw
+cd /Users/raveculture/Documents/GitHub/agentbot
 npx vercel --prod --yes
 ```
 
@@ -299,7 +299,7 @@ curl -i -X POST https://agentbot.raveculture.xyz/api/provision \
 1. Check if backend is reachable externally (`/health`).
 2. Check if frontend route returns `200` or `502`.
 3. If backend unreachable: inspect firewall rule + VM tags from Cloud Shell.
-4. If backend reachable but failing: inspect `startclaw-api` systemd status + journal on VM.
+4. If backend reachable but failing: inspect `agentbot-api` systemd status + journal on VM.
 5. If secrets mismatch suspected: sync VM `API_SECRET` and Vercel `BACKEND_API_SECRET`.
 
 ---

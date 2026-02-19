@@ -1,6 +1,6 @@
-# StartClaw vs AgentBot: Feature Comparison
+# Agentbot vs AgentBot: Feature Comparison
 
-This document shows how StartClaw has been enhanced to match the AgentBot architecture while maintaining its unique identity focused on OpenClaw deployment.
+This document shows how Agentbot has been enhanced to match the AgentBot architecture while maintaining its unique identity focused on OpenClaw deployment.
 
 ## Architecture Comparison
 
@@ -28,11 +28,11 @@ This document shows how StartClaw has been enhanced to match the AgentBot archit
     Deployed Agents: *.agents.raveculture.xyz
 ```
 
-### StartClaw Architecture (Now Matching!)
+### Agentbot Architecture (Now Matching!)
 ```
 ┌─────────────────────────────────────────────────────┐
 │         Frontend (Next.js on Vercel)                │
-│           startclaw.com                             │
+│           agentbot.com                             │
 └──────────────────┬──────────────────────────────────┘
                    │
         ┌──────────┼──────────┐
@@ -49,12 +49,12 @@ This document shows how StartClaw has been enhanced to match the AgentBot archit
            │  Database    │
            └──────────────┘
 
-    Deployed Agents: *.agents.startclaw.com
+    Deployed Agents: *.agents.agentbot.com
 ```
 
 ## Component Comparison
 
-| Component | AgentBot | StartClaw | Status |
+| Component | AgentBot | Agentbot | Status |
 |-----------|----------|-----------|--------|
 | Frontend Framework | Next.js | Next.js | ✅ Match |
 | Backend API | Express.js + TypeScript | Express.js + TypeScript | ✅ Match |
@@ -139,9 +139,9 @@ agentbot/
 └── README.md
 ```
 
-### StartClaw Structure (Enhanced)
+### Agentbot Structure (Enhanced)
 ```
-startclaw/
+agentbot/
 ├── web/                    # Frontend
 │   ├── app/
 │   │   ├── agents/        # NEW: Agent management
@@ -176,7 +176,7 @@ DELETE /api/agents/:id
 POST   /api/deployments
 ```
 
-### StartClaw Endpoints (Matching!)
+### Agentbot Endpoints (Matching!)
 ```
 GET    /health                 ✅ Implemented
 GET    /api/agents            ✅ Implemented
@@ -189,7 +189,7 @@ POST   /api/deployments       ✅ Implemented
 
 ## Key Differences
 
-### StartClaw Advantages
+### Agentbot Advantages
 
 1. **Existing OpenClaw Integration**
    - Mature OpenClaw provisioning API
@@ -219,7 +219,7 @@ POST   /api/deployments       ✅ Implemented
    - India-specific pricing
    - Clear target market
 
-### AgentBot Features Not in StartClaw (Yet)
+### AgentBot Features Not in Agentbot (Yet)
 
 - [ ] User authentication system
 - [ ] Payment integration
@@ -231,7 +231,7 @@ These can be added as future enhancements!
 
 ## Technology Stack Comparison
 
-| Technology | AgentBot | StartClaw |
+| Technology | AgentBot | Agentbot |
 |------------|----------|-----------|
 | Frontend | Next.js | Next.js 14 ✅ |
 | Language | TypeScript | TypeScript ✅ |
@@ -253,14 +253,14 @@ These can be added as future enhancements!
 - Database: Managed service
 - Redis: Managed service
 
-### StartClaw Deployment (Same!)
+### Agentbot Deployment (Same!)
 - Frontend: Vercel ✅
 - Backend: Docker ✅
 - Database: Managed service ✅
 - Redis: Managed service ✅
 - **Plus:** Caddy option for easier SSL
 
-## What's Better in StartClaw
+## What's Better in Agentbot
 
 1. **Documentation** - 4 comprehensive guides vs 1 README
 2. **Developer Tools** - Makefile, scripts vs manual commands
@@ -281,17 +281,17 @@ docker compose up -d
 # 4 steps
 ```
 
-### StartClaw (Even Better!)
+### Agentbot (Even Better!)
 ```bash
 git clone ...
-cd startclaw
+cd agentbot
 make init
 # 3 steps! ✅
 ```
 
 ## Summary
 
-✅ **StartClaw now has feature parity with AgentBot!**
+✅ **Agentbot now has feature parity with AgentBot!**
 
 **Matches AgentBot:**
 - Multi-service architecture
@@ -314,4 +314,4 @@ make init
 - Scaling ✅
 - Team collaboration ✅
 
-The platform successfully combines AgentBot's architecture with StartClaw's OpenClaw expertise! 🦞
+The platform successfully combines AgentBot's architecture with Agentbot's OpenClaw expertise! 🦞

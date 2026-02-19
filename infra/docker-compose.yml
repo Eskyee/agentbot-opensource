@@ -1,4 +1,4 @@
-# StartClaw Docker Compose
+# Agentbot Docker Compose
 # For local development and testing
 
 version: '3.8'
@@ -30,13 +30,13 @@ services:
   # PostgreSQL for user data (production)
   postgres:
     image: postgres:15-alpine
-    container_name: startclaw-postgres
+    container_name: agentbot-postgres
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: startclaw
-      POSTGRES_USER: startclaw
+      POSTGRES_DB: agentbot
+      POSTGRES_USER: agentbot
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
     ports:
       - "5432:5432"
@@ -44,7 +44,7 @@ services:
   # Redis for session/cache (optional)
   redis:
     image: redis:7-alpine
-    container_name: startclaw-redis
+    container_name: agentbot-redis
     restart: unless-stopped
     volumes:
       - redis-data:/data
@@ -58,4 +58,4 @@ volumes:
 
 networks:
   default:
-    name: startclaw-network
+    name: agentbot-network

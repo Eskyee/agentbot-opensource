@@ -12,9 +12,9 @@ const docsSections = [
     items: ['Status + restart controls', 'Usage and basic stats', 'Recovery steps for common failures']
   },
   {
-    title: 'Scale',
-    description: 'Use platform capabilities to grow usage and automate external workflows.',
-    items: ['Monitor: Real-time analytics and performance tracking', '💰 Monetize: Revenue share model for creators', '🔗 Integrate: Connect with REST API and webhooks']
+    title: 'Grow',
+    description: 'Use platform capabilities to increase usage and automate external workflows.',
+    items: ['Monitor: Real-time analytics and performance tracking', 'Automate: Connect external systems with API + webhooks', 'Integrate: Build custom workflows around your agent']
   }
 ];
 
@@ -24,7 +24,7 @@ export default function ViewDocsPage() {
       <div className="mx-auto max-w-5xl">
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">View Docs</h1>
         <p className="text-lg text-gray-400 mb-10">
-          Everything you need to deploy, operate, and scale OpenClawDeploy.
+          Everything you need to deploy, operate, and grow OpenClawDeploy.
         </p>
 
         <div className="grid gap-6 md:grid-cols-3">

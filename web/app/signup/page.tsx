@@ -1,6 +1,11 @@
 import Link from 'next/link';
+import { getPublicPricing } from '../lib/stripe-pricing';
 
-export default function SignupPage() {
+export const revalidate = 300;
+
+export default async function SignupPage() {
+  const pricing = await getPublicPricing();
+
   return (
     <main className="min-h-screen px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-5xl">
@@ -20,14 +25,32 @@ export default function SignupPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-            <h2 className="text-xl font-semibold mb-2">Starter</h2>
-            <p className="text-4xl font-bold mb-1">£9</p>
-            <p className="text-gray-400 text-sm mb-4">/month + usage</p>
+            <h2 className="text-xl font-semibold mb-2">Free Trial</h2>
+            <p className="text-4xl font-bold mb-1">£0</p>
+            <p className="text-gray-400 text-sm mb-4">/3 days</p>
             <ul className="space-y-2 text-sm text-gray-300 mb-6">
-              <li>• 1 OpenClaw instance</li>
-              <li>• Telegram support</li>
-              <li>• 2 skills included</li>
-              <li>• Community support</li>
+              <li>• Full OpenClaw access</li>
+              <li>• Free AI (Groq)</li>
+              <li>• Telegram integration</li>
+              <li>• No upfront payment</li>
+            </ul>
+            <Link
+              href="/onboard?plan=free"
+              className="block w-full text-center rounded-full bg-gray-800 px-4 py-3 font-semibold hover:bg-gray-700 transition-colors"
+            >
+              Start 3-day trial
+            </Link>
+          </div>
+
+          <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+            <h2 className="text-xl font-semibold mb-2">Starter</h2>
+            <p className="text-4xl font-bold mb-1">{pricing.starter.formatted}</p>
+            <p className="text-gray-400 text-sm mb-4">/month ({pricing.starter.currency.toUpperCase()})</p>
+            <ul className="space-y-2 text-sm text-gray-300 mb-6">
+              <li>• Everything in Free</li>
+              <li>• Bring your own AI key</li>
+              <li>• Daily backups</li>
+              <li>• Priority support</li>
             </ul>
             <Link
               href="/onboard?plan=starter"
@@ -45,12 +68,12 @@ export default function SignupPage() {
               MOST POPULAR
             </span>
             <h2 className="text-xl font-semibold mb-2">Pro</h2>
-            <p className="text-4xl font-bold mb-1">£29</p>
-            <p className="text-gray-400 text-sm mb-4">/month + usage</p>
+            <p className="text-4xl font-bold mb-1">{pricing.pro.formatted}</p>
+            <p className="text-gray-400 text-sm mb-4">/month ({pricing.pro.currency.toUpperCase()})</p>
             <ul className="space-y-2 text-sm text-gray-300 mb-6">
-              <li>• 3 OpenClaw instances</li>
-              <li>• Telegram + Discord</li>
-              <li>• 8 skills included</li>
+              <li>• Everything in Starter</li>
+              <li>• 2x resources</li>
+              <li>• Custom domain</li>
               <li>• Priority support</li>
             </ul>
             <Link
@@ -60,27 +83,6 @@ export default function SignupPage() {
               Deploy with 3-day trial
             </Link>
             <Link href="/api/stripe/checkout?plan=pro" className="mt-3 block text-center text-sm text-gray-400 hover:text-white transition-colors">
-              Pay now instead
-            </Link>
-          </div>
-
-          <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-            <h2 className="text-xl font-semibold mb-2">Scale</h2>
-            <p className="text-4xl font-bold mb-1">£79</p>
-            <p className="text-gray-400 text-sm mb-4">/month + usage</p>
-            <ul className="space-y-2 text-sm text-gray-300 mb-6">
-              <li>• 10 OpenClaw instances</li>
-              <li>• Multi-channel support</li>
-              <li>• Unlimited skills</li>
-              <li>• API + team access</li>
-            </ul>
-            <Link
-              href="/onboard?plan=scale"
-              className="block w-full text-center rounded-full bg-gray-800 px-4 py-3 font-semibold hover:bg-gray-700 transition-colors"
-            >
-              Deploy with 3-day trial
-            </Link>
-            <Link href="/api/stripe/checkout?plan=scale" className="mt-3 block text-center text-sm text-gray-400 hover:text-white transition-colors">
               Pay now instead
             </Link>
           </div>

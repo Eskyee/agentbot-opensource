@@ -17,9 +17,9 @@ For incident copy-paste commands, use `OPS_QUICK_REF.md` in repo root.
 
 - Frontend domain: `https://agentbot.raveculture.xyz`
 - Frontend platform: Vercel project `agentbot`
-- Backend VM: `startclaw-api-vm` (`34.71.189.81`, zone `us-central1-a`)
+- Backend VM: `agentbot-api-vm` (`34.71.189.81`, zone `us-central1-a`)
 - Backend API: `http://34.71.189.81:3000`
-- Firewall rule: `startclaw-api-3000` (tcp/3000, tag `startclaw-api`)
+- Firewall rule: `agentbot-api-3000` (tcp/3000, tag `agentbot-api`)
 - Main recovery handoff: `docs/PRODUCTION_HANDOFF_2026-02-19.md`
 
 ---
@@ -45,7 +45,7 @@ npx vercel env rm BACKEND_API_SECRET production --yes
 printf 'NEW_SECRET\n' | npx vercel env add BACKEND_API_SECRET production
 
 # Deploy production
-cd /Users/raveculture/Documents/GitHub/startclaw
+cd /Users/raveculture/Documents/GitHub/agentbot
 npx vercel --prod --yes
 ```
 
@@ -67,16 +67,16 @@ npx vercel --prod --yes
 gcloud config set project raveculture-youtube-api
 
 # Check VM
-gcloud compute instances list --filter="name=startclaw-api-vm"
+gcloud compute instances list --filter="name=agentbot-api-vm"
 
 # SSH into VM
-gcloud compute ssh startclaw-api-vm --zone=us-central1-a
+gcloud compute ssh agentbot-api-vm --zone=us-central1-a
 
 # Check firewall
-gcloud compute firewall-rules list --filter="name=startclaw-api-3000"
+gcloud compute firewall-rules list --filter="name=agentbot-api-3000"
 
 # Ensure VM has required tag
-gcloud compute instances add-tags startclaw-api-vm --zone=us-central1-a --tags=startclaw-api
+gcloud compute instances add-tags agentbot-api-vm --zone=us-central1-a --tags=agentbot-api
 ```
 
 ### Billing
@@ -88,31 +88,31 @@ gcloud compute instances add-tags startclaw-api-vm --zone=us-central1-a --tags=s
 ## 4) VM service operations (inside VM)
 
 ### Backend service
-- service name: `startclaw-api`
-- systemd unit: `/etc/systemd/system/startclaw-api.service`
-- app path: `/opt/startclaw/api`
+- service name: `agentbot-api`
+- systemd unit: `/etc/systemd/system/agentbot-api.service`
+- app path: `/opt/agentbot/api`
 
 ### Core commands
 ```bash
 # Service health
-sudo systemctl status startclaw-api --no-pager -l
-sudo journalctl -u startclaw-api -n 200 --no-pager
+sudo systemctl status agentbot-api --no-pager -l
+sudo journalctl -u agentbot-api -n 200 --no-pager
 
 # App health
 curl -s http://localhost:3000/health
 curl -s -H 'x-api-key: YOUR_SECRET' http://localhost:3000/instances
 
 # Restart backend
-sudo systemctl restart startclaw-api
+sudo systemctl restart agentbot-api
 ```
 
 ### Update backend code safely
 ```bash
-cd /opt/startclaw
+cd /opt/agentbot
 git pull
-cd /opt/startclaw/api
+cd /opt/agentbot/api
 npm install --omit=dev
-sudo systemctl restart startclaw-api
+sudo systemctl restart agentbot-api
 ```
 
 ---
@@ -178,7 +178,7 @@ Track these explicitly:
 
 Recommended policy:
 - Never deploy `latest` alone for critical rollback paths.
-- Push immutable tags (example: `startclaw-api:2026-02-19.1`).
+- Push immutable tags (example: `agentbot-api:2026-02-19.1`).
 
 ---
 

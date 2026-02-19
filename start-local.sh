@@ -38,7 +38,7 @@ start_service() {
     fi
 
     echo "⚠️ Port :$port is already in use by a non-workspace process (PID $existing_pid)."
-    echo "   Stop that process or free the port before starting StartClaw."
+    echo "   Stop that process or free the port before starting Agentbot."
     exit 1
   fi
 
@@ -54,7 +54,7 @@ start_service() {
   fi
 }
 
-echo "🦞 Starting StartClaw locally"
+echo "🦞 Starting Agentbot locally"
 
 if docker info >/dev/null 2>&1; then
   set +e
@@ -95,6 +95,6 @@ ensure_deps "web"
 start_service "api" 3001 "npm --prefix agentbot-backend run dev"
 start_service "frontend" 3000 "npm --prefix web run dev"
 
-echo "🎉 StartClaw is running"
+echo "🎉 Agentbot is running"
 echo "Frontend: http://localhost:3000"
 echo "API:      http://localhost:3001"

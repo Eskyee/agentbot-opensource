@@ -1,13 +1,13 @@
 #!/bin/bash
-# StartClaw Daily Backup Script
+# Agentbot Daily Backup Script
 # Backs up all user OpenClaw data to Google Cloud Storage
 
 set -e
 
 BACKUP_DIR="/backups"
-GCS_BUCKET="gs://startclaw-backups"
+GCS_BUCKET="gs://agentbot-backups"
 DATE=$(date +%Y-%m-%d)
-LOG_FILE="/var/log/startclaw-backup.log"
+LOG_FILE="/var/log/agentbot-backup.log"
 
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"

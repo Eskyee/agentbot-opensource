@@ -93,7 +93,7 @@ export default function AgentsPage() {
         <div className="mx-auto max-w-7xl flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/" className="text-2xl">🦞</Link>
-            <h1 className="text-xl font-semibold">StartClaw</h1>
+            <h1 className="text-xl font-semibold">Agentbot</h1>
           </div>
           <nav className="flex gap-6">
             <Link href="/dashboard" className="text-gray-400 hover:text-white">Dashboard</Link>

@@ -15,6 +15,9 @@ agentbot-worker/dist/
 .env
 .env.local
 .env.*.local
+.env.prodcheck
+web/.env.prodcheck
+**/.env.prodcheck
 
 # Logs
 npm-debug.log*

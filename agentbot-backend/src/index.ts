@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 const API_KEY = process.env.INTERNAL_API_KEY;
-const DATA_DIR = process.env.DATA_DIR || '/opt/startclaw/data';
+const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:latest';
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
@@ -27,7 +27,7 @@ if (!API_KEY && process.env.NODE_ENV === 'production') {
 
 // Middleware
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://startclaw.com'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://agentbot.com'],
   credentials: true,
 }));
 app.use(express.json());
@@ -663,7 +663,7 @@ app.post('/api/agents/:id/update', authenticate, async (req: Request, res: Respo
 });
 
 app.listen(PORT, () => {
-  console.log(`🦞 StartClaw API server running on port ${PORT}`);
+  console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
 });
 

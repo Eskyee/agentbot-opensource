@@ -1,21 +1,21 @@
 .PHONY: help start stop restart logs build clean test
 
 help: ## Show this help message
-	@echo "StartClaw Development Commands"
+	@echo "Agentbot Development Commands"
 	@echo "==============================="
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 start: ## Start all services
-	@echo "🦞 Starting StartClaw..."
+	@echo "🦞 Starting Agentbot..."
 	@docker compose up -d
 	@echo "✅ Services started. Visit http://localhost:3000"
 
 stop: ## Stop all services
-	@echo "🛑 Stopping StartClaw..."
+	@echo "🛑 Stopping Agentbot..."
 	@docker compose down
 
 restart: ## Restart all services
-	@echo "🔄 Restarting StartClaw..."
+	@echo "🔄 Restarting Agentbot..."
 	@docker compose restart
 
 logs: ## View logs from all services
@@ -61,7 +61,7 @@ shell-frontend: ## Open shell in frontend container
 	@docker compose exec frontend sh
 
 db-shell: ## Open PostgreSQL shell
-	@docker compose exec postgres psql -U startclaw -d startclaw_db
+	@docker compose exec postgres psql -U agentbot -d agentbot_db
 
 redis-cli: ## Open Redis CLI
 	@docker compose exec redis redis-cli
@@ -91,7 +91,7 @@ health: ## Check health of all services
 	@curl -s http://localhost:3000 > /dev/null && echo "✅ Frontend is healthy" || echo "⚠️  Frontend not responding"
 
 init: ## Initialize environment (first time setup)
-	@echo "🎬 Initializing StartClaw..."
+	@echo "🎬 Initializing Agentbot..."
 	@cp -n .env.local .env 2>/dev/null || echo ".env already exists"
 	@docker compose up -d
-	@echo "✅ StartClaw initialized. Visit http://localhost:3000"
+	@echo "✅ Agentbot initialized. Visit http://localhost:3000"

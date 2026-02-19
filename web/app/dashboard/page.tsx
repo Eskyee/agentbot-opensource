@@ -26,7 +26,7 @@ function DashboardContent() {
   useEffect(() => {
     // Get userId from URL or localStorage
     const urlUserId = searchParams.get('id')
-    const storedData = localStorage.getItem('startclaw_instance')
+    const storedData = localStorage.getItem('agentbot_instance')
     
     let userId = urlUserId
     let botUsername = ''

@@ -1,10 +1,10 @@
-# StartClaw Deployment Guide
+# Agentbot Deployment Guide
 
-This guide covers deploying StartClaw in production.
+This guide covers deploying Agentbot in production.
 
 ## Architecture Overview
 
-StartClaw consists of:
+Agentbot consists of:
 - **Frontend**: Next.js app (deployed on Vercel)
 - **Backend API**: Express.js service (Docker)
 - **Worker**: Bull queue processor (Docker)
@@ -14,7 +14,7 @@ StartClaw consists of:
 
 ## Prerequisites
 
-- Domain name (e.g., startclaw.com)
+- Domain name (e.g., agentbot.com)
 - Server with Docker installed (2GB+ RAM)
 - GitHub account
 - Vercel account
@@ -33,7 +33,7 @@ StartClaw consists of:
 ```
 3. **Note connection string**:
 ```
-postgres://user:password@host:5432/startclaw_db
+postgres://user:password@host:5432/agentbot_db
 ```
 
 ### Redis
@@ -55,8 +55,8 @@ ssh user@your-server.com
 
 2. **Clone repository**
 ```bash
-git clone https://github.com/Eskyee/startclaw.git
-cd startclaw
+git clone https://github.com/Eskyee/agentbot.git
+cd agentbot
 ```
 
 3. **Create production environment file**
@@ -67,11 +67,11 @@ nano .env
 
 4. **Update environment variables**
 ```env
-NEXT_PUBLIC_API_URL=https://api.startclaw.com
-DATABASE_URL=postgres://user:pass@your-db-host:5432/startclaw_db
+NEXT_PUBLIC_API_URL=https://api.agentbot.com
+DATABASE_URL=postgres://user:pass@your-db-host:5432/agentbot_db
 REDIS_URL=redis://your-redis-host:6379
 INTERNAL_API_KEY=your-secure-random-key-here
-ALLOWED_ORIGINS=https://startclaw.com,https://www.startclaw.com
+ALLOWED_ORIGINS=https://agentbot.com,https://www.agentbot.com
 ```
 
 5. **Start services**
@@ -91,24 +91,24 @@ curl http://localhost:3001/health
 
 **Backend API:**
 ```bash
-docker build -t startclaw-api ./agentbot-backend
+docker build -t agentbot-api ./agentbot-backend
 docker run -d \
-  --name startclaw-api \
+  --name agentbot-api \
   -p 3001:3001 \
   --env-file .env \
   --restart unless-stopped \
-  startclaw-api
+  agentbot-api
 ```
 
 **Worker:**
 ```bash
-docker build -t startclaw-worker ./agentbot-worker
+docker build -t agentbot-worker ./agentbot-worker
 docker run -d \
-  --name startclaw-worker \
+  --name agentbot-worker \
   --env-file .env \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --restart unless-stopped \
-  startclaw-worker
+  agentbot-worker
 ```
 
 ## Step 3: Reverse Proxy Setup
@@ -131,12 +131,12 @@ sudo nano /etc/caddy/Caddyfile
 
 ```
 # API domain
-api.startclaw.com {
+api.agentbot.com {
     reverse_proxy localhost:3001
 }
 
 # Wildcard for agents
-*.agents.startclaw.com {
+*.agents.agentbot.com {
     reverse_proxy localhost:18789
 }
 ```
@@ -156,14 +156,14 @@ sudo apt install -y nginx certbot python3-certbot-nginx
 
 2. **Configure Nginx**
 ```bash
-sudo nano /etc/nginx/sites-available/startclaw
+sudo nano /etc/nginx/sites-available/agentbot
 ```
 
 ```nginx
 # API
 server {
     listen 80;
-    server_name api.startclaw.com;
+    server_name api.agentbot.com;
 
     location / {
         proxy_pass http://localhost:3001;
@@ -177,7 +177,7 @@ server {
 # Wildcard for agents
 server {
     listen 80;
-    server_name *.agents.startclaw.com;
+    server_name *.agents.agentbot.com;
 
     location / {
         proxy_pass http://localhost:18789;
@@ -189,10 +189,10 @@ server {
 
 3. **Enable site and get SSL**
 ```bash
-sudo ln -s /etc/nginx/sites-available/startclaw /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/agentbot /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
-sudo certbot --nginx -d api.startclaw.com
+sudo certbot --nginx -d api.agentbot.com
 ```
 
 ## Step 4: DNS Configuration
@@ -201,14 +201,14 @@ Configure DNS records for your domain:
 
 ### A Records
 ```
-api.startclaw.com         A     YOUR_SERVER_IP
-*.agents.startclaw.com    A     YOUR_SERVER_IP
+api.agentbot.com         A     YOUR_SERVER_IP
+*.agents.agentbot.com    A     YOUR_SERVER_IP
 ```
 
 ### CNAME Record (for Vercel)
 ```
-startclaw.com            CNAME  cname.vercel-dns.com
-www.startclaw.com        CNAME  cname.vercel-dns.com
+agentbot.com            CNAME  cname.vercel-dns.com
+www.agentbot.com        CNAME  cname.vercel-dns.com
 ```
 
 **Wait 5-10 minutes** for DNS propagation.
@@ -228,17 +228,17 @@ git push origin main
 
 3. **Configure Environment Variables**
 ```
-NEXT_PUBLIC_API_URL=https://api.startclaw.com
-NEXT_PUBLIC_AGENTS_DOMAIN=agents.startclaw.com
+NEXT_PUBLIC_API_URL=https://api.agentbot.com
+NEXT_PUBLIC_AGENTS_DOMAIN=agents.agentbot.com
 INTERNAL_API_KEY=your-secure-random-key-here
 ```
 
 4. **Deploy**
    - Vercel will auto-deploy
-   - Add custom domain: startclaw.com
+   - Add custom domain: agentbot.com
 
 5. **Verify Deployment**
-   - Visit https://startclaw.com
+   - Visit https://agentbot.com
    - Should see homepage
    - API calls should work
 
@@ -248,19 +248,19 @@ Test all services:
 
 ```bash
 # Frontend
-curl https://startclaw.com
+curl https://agentbot.com
 
 # API health
-curl https://api.startclaw.com/health
+curl https://api.agentbot.com/health
 
 # API agents endpoint
 curl -H "Authorization: Bearer YOUR_API_KEY" \
-     https://api.startclaw.com/api/agents
+     https://api.agentbot.com/api/agents
 
 # Check Docker services
 docker ps
-docker logs startclaw-api
-docker logs startclaw-worker
+docker logs agentbot-api
+docker logs agentbot-worker
 ```
 
 ## Step 7: Monitoring
@@ -268,17 +268,17 @@ docker logs startclaw-worker
 ### Health Checks
 
 Set up monitoring for:
-- https://api.startclaw.com/health
-- https://startclaw.com/api/health
+- https://api.agentbot.com/health
+- https://agentbot.com/api/health
 
 ### Logs
 
 ```bash
 # API logs
-docker logs -f startclaw-api
+docker logs -f agentbot-api
 
 # Worker logs
-docker logs -f startclaw-worker
+docker logs -f agentbot-worker
 
 # Nginx/Caddy logs
 sudo journalctl -u caddy -f
@@ -314,10 +314,10 @@ docker compose up -d api worker
 
 ```bash
 # Backup PostgreSQL
-docker compose exec postgres pg_dump -U startclaw startclaw_db | gzip > backup-$(date +%Y%m%d).sql.gz
+docker compose exec postgres pg_dump -U agentbot agentbot_db | gzip > backup-$(date +%Y%m%d).sql.gz
 
 # Restore
-gunzip < backup.sql.gz | docker compose exec -T postgres psql -U startclaw startclaw_db
+gunzip < backup.sql.gz | docker compose exec -T postgres psql -U agentbot agentbot_db
 ```
 
 ### Logs Rotation
@@ -367,15 +367,15 @@ docker compose up -d --scale worker=3
 
 ### API not responding
 ```bash
-docker logs startclaw-api
-docker restart startclaw-api
+docker logs agentbot-api
+docker restart agentbot-api
 curl http://localhost:3001/health
 ```
 
 ### Worker not processing jobs
 ```bash
-docker logs startclaw-worker
-docker restart startclaw-worker
+docker logs agentbot-worker
+docker restart agentbot-worker
 # Check Redis connection
 redis-cli -h your-redis-host ping
 ```
@@ -383,7 +383,7 @@ redis-cli -h your-redis-host ping
 ### Database connection errors
 ```bash
 # Test connection
-psql "postgres://user:pass@host:5432/startclaw_db"
+psql "postgres://user:pass@host:5432/agentbot_db"
 # Check firewall rules
 # Verify DATABASE_URL in .env
 ```
@@ -422,4 +422,4 @@ sudo systemctl reload caddy
 
 - Documentation: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Quick Reference: [QUICK_REFERENCE.md](QUICK_REFERENCE.md)
-- Issues: https://github.com/Eskyee/startclaw/issues
+- Issues: https://github.com/Eskyee/agentbot/issues

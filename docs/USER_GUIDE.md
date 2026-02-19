@@ -1,6 +1,6 @@
-# StartClaw User Guide
+# Agentbot User Guide
 
-This guide is for customers using the StartClaw website.
+This guide is for customers using the Agentbot website.
 
 Before production launch, run the [Production Release Checklist](PRODUCTION_RELEASE_CHECKLIST.md).
 

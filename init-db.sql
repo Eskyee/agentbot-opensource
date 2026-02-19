@@ -1,4 +1,4 @@
--- StartClaw Database Schema
+-- Agentbot Database Schema
 -- Initial setup for agents, deployments, and users
 
 CREATE TABLE IF NOT EXISTS users (
@@ -54,5 +54,5 @@ CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
 -- Note: The password hash below is intentionally incomplete for development.
 -- In a real application, create users through the API with proper password hashing.
 -- INSERT INTO users (email, password_hash) VALUES
---   ('demo@startclaw.com', 'use-api-to-create-users') 
+--   ('demo@agentbot.com', 'use-api-to-create-users') 
 -- ON CONFLICT (email) DO NOTHING;
