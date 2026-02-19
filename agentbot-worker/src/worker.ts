@@ -33,7 +33,8 @@ deploymentQueue.process(async (job) => {
     // Step 4: Configure DNS
     console.log(`Configuring DNS for ${agentId}...`);
     job.progress(80);
-    const subdomain = `${agentId}.agents.startclaw.com`;
+    const agentsDomain = process.env.AGENTS_DOMAIN || 'agents.startclaw.com';
+    const subdomain = `${agentId}.${agentsDomain}`;
     // TODO: Update DNS records or Caddy configuration
     
     // Step 5: Health check

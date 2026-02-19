@@ -1,5 +1,10 @@
 version: '3.8'
 
+# DEVELOPMENT ENVIRONMENT ONLY
+# These credentials are for local development.
+# NEVER use these values in production!
+# Update credentials in production deployment.
+
 services:
   # PostgreSQL Database
   postgres:
@@ -47,6 +52,7 @@ services:
       REDIS_URL: redis://redis:6379
       INTERNAL_API_KEY: dev-secret-key-12345
       ALLOWED_ORIGINS: http://localhost:3000,https://startclaw.com
+      AGENTS_DOMAIN: agents.localhost
     ports:
       - "3001:3001"
     depends_on:
@@ -72,6 +78,7 @@ services:
       NODE_ENV: development
       REDIS_URL: redis://redis:6379
       DATABASE_URL: postgres://startclaw:devpassword@postgres:5432/startclaw_db
+      AGENTS_DOMAIN: agents.localhost
     depends_on:
       redis:
         condition: service_healthy

@@ -6,7 +6,12 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-key-change-in-production';
+const API_KEY = process.env.INTERNAL_API_KEY;
+
+if (!API_KEY && process.env.NODE_ENV === 'production') {
+  console.error('FATAL: INTERNAL_API_KEY environment variable is required in production');
+  process.exit(1);
+}
 
 // Middleware
 app.use(cors({
@@ -72,7 +77,8 @@ app.delete('/api/agents/:id', authenticate, (req: Request, res: Response) => {
 app.post('/api/deployments', authenticate, (req: Request, res: Response) => {
   const { agentId, version } = req.body;
   // TODO: Create deployment, generate subdomain, deploy container
-  const subdomain = `${agentId}.agents.startclaw.com`;
+  const agentsDomain = process.env.AGENTS_DOMAIN || 'agents.startclaw.com';
+  const subdomain = `${agentId}.${agentsDomain}`;
   res.status(201).json({
     id: 'deploy-id',
     agentId,

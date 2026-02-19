@@ -25,11 +25,8 @@ export default function AgentsPage() {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch('/api/agents', {
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY || 'dev-secret-key-12345'}`
-        }
-      })
+      // Use server-side API route which handles authentication
+      const response = await fetch('/api/agents')
       if (response.ok) {
         const data = await response.json()
         setAgents(data)
@@ -49,8 +46,7 @@ export default function AgentsPage() {
       const response = await fetch('/api/agents', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY || 'dev-secret-key-12345'}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           name: newAgentName,
@@ -154,7 +150,12 @@ export default function AgentsPage() {
                       <span className="capitalize">{agent.status}</span>
                     </div>
                   </div>
-                  <button className="text-gray-400 hover:text-white">⋮</button>
+                  <button 
+                    className="text-gray-400 hover:text-white"
+                    aria-label="Agent options menu"
+                  >
+                    ⋮
+                  </button>
                 </div>
 
                 {agent.url && (

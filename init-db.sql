@@ -49,6 +49,8 @@ CREATE INDEX idx_deployments_status ON deployments(status);
 CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
 
 -- Insert sample data for development
+-- WARNING: Remove this in production! Demo credentials should never be used.
+-- This is for local development only.
 INSERT INTO users (email, password_hash) VALUES
-  ('demo@startclaw.com', '$2a$10$dummyhash') -- Demo user
+  ('demo@startclaw.com', '$2a$10$dummyhash') -- Demo user (DEVELOPMENT ONLY)
 ON CONFLICT (email) DO NOTHING;
