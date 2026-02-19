@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001'
+const BACKEND_API_FALLBACK_URL = (process.env.BACKEND_API_FALLBACK_URL || '').trim()
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
+const BACKEND_API_SECRET = process.env.BACKEND_API_SECRET || process.env.API_SECRET || INTERNAL_API_KEY
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,32 +20,109 @@ export async function POST(request: NextRequest) {
 
     const ownerIds = telegramUserId ? [telegramUserId] : undefined
     
-    let response: Response
-    try {
-      response = await fetch(`${BACKEND_API_URL}/api/deployments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${INTERNAL_API_KEY}`
-        },
-        body: JSON.stringify({
-          agentId: userId,
-          version: 'latest',
-          config: {
-            telegramToken,
-            ownerIds,
-            aiProvider: aiProvider || 'openrouter',
-            apiKey,
-            plan: plan || 'free'
-          }
-        })
-      })
-    } catch (err) {
-      console.error('Provisioning backend unreachable', {
-        backendApiUrl: BACKEND_API_URL,
-        error: err,
-      })
+    const modernPayload = {
+      agentId: userId,
+      version: 'latest',
+      config: {
+        telegramToken,
+        ownerIds,
+        aiProvider: aiProvider || 'openrouter',
+        apiKey,
+        plan: plan || 'free'
+      }
+    }
 
+    const legacyPayload = {
+      userId,
+      telegramToken,
+      ownerIds,
+      aiProvider: aiProvider || 'openrouter',
+      apiKey,
+      plan: plan || 'free'
+    }
+
+    const backendBaseUrls = [BACKEND_API_URL, BACKEND_API_FALLBACK_URL]
+      .map((url) => url.trim())
+      .filter(Boolean)
+      .filter((url, index, all) => all.indexOf(url) === index)
+
+    let response: Response | null = null
+    let usingLegacyEndpoint = false
+    let selectedBackendBaseUrl = BACKEND_API_URL
+
+    for (const baseUrl of backendBaseUrls) {
+      selectedBackendBaseUrl = baseUrl
+      response = null
+      let modernResponse: Response | null = null
+      let legacyResponse: Response | null = null
+
+      try {
+        modernResponse = await fetch(`${baseUrl}/api/deployments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${INTERNAL_API_KEY}`
+          },
+          body: JSON.stringify(modernPayload)
+        })
+      } catch (err) {
+        console.error('Modern provisioning endpoint unreachable for backend base URL', {
+          backendApiUrl: baseUrl,
+          error: err,
+        })
+      }
+
+      if (modernResponse && modernResponse.ok) {
+        response = modernResponse
+        usingLegacyEndpoint = false
+        break
+      }
+
+      const shouldTryLegacy = !modernResponse || modernResponse.status === 404 || modernResponse.status === 405
+      if (!shouldTryLegacy && modernResponse) {
+        response = modernResponse
+        usingLegacyEndpoint = false
+        break
+      }
+
+      usingLegacyEndpoint = true
+      try {
+        legacyResponse = await fetch(`${baseUrl}/provision`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': BACKEND_API_SECRET,
+          },
+          body: JSON.stringify(legacyPayload),
+        })
+      } catch (err) {
+        console.error('Legacy provisioning endpoint unreachable for backend base URL', {
+          backendApiUrl: baseUrl,
+          error: err,
+        })
+
+        response = null
+        continue
+      }
+
+      if (legacyResponse && legacyResponse.ok) {
+        response = legacyResponse
+        break
+      }
+
+      const shouldTryNextBaseUrl = !legacyResponse || legacyResponse.status === 404 || legacyResponse.status === 405
+      if (shouldTryNextBaseUrl) {
+        response = legacyResponse
+        continue
+      }
+
+      if (legacyResponse) {
+        response = legacyResponse
+        break
+      }
+    }
+
+    if (!response) {
       return NextResponse.json(
         {
           success: false,
@@ -71,9 +150,10 @@ export async function POST(request: NextRequest) {
       }
     } else if (!response.ok) {
       console.error('Provisioning backend returned non-JSON error response', {
-        backendApiUrl: BACKEND_API_URL,
+        backendApiUrl: selectedBackendBaseUrl,
         status: response.status,
         contentType,
+        usingLegacyEndpoint,
       })
 
       return NextResponse.json(
