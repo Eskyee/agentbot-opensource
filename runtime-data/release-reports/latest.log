@@ -1,0 +1,28 @@
+=== OpenClawDeploy Production Go-Live Report ===
+Generated: 2026-02-19T06:54:45Z
+Frontend: https://agentbot.raveculture.xyz
+API: https://api.agentbot.raveculture.xyz
+
+[33mℹ️  Production go-live checks[0m
+[33mℹ️  Frontend: https://agentbot.raveculture.xyz[0m
+[33mℹ️  API:      https://api.agentbot.raveculture.xyz[0m
+[33mℹ️  Agents:   *.agents.agentbot.raveculture.xyz[0m
+[32m✅ DNS resolves for agentbot.raveculture.xyz -> 216.150.16.65[0m
+[32m✅ DNS resolves for api.agentbot.raveculture.xyz -> 216.150.16.129[0m
+[32m✅ DNS resolves for sample.agents.agentbot.raveculture.xyz -> 216.150.1.65[0m
+[32m✅ Frontend home is healthy (200)[0m
+[31m❌ Frontend API health is healthy (expected 200, got 500) -> https://agentbot.raveculture.xyz/api/health[0m
+curl: (35) LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection to api.agentbot.raveculture.xyz:443 
+[31m❌ Backend API health is healthy (expected 200, got 000000) -> https://api.agentbot.raveculture.xyz/health[0m
+[31m❌ Route /signup reachable (expected 200, got 404) -> https://agentbot.raveculture.xyz/signup[0m
+[31m❌ Route /onboard reachable (expected 200, got 404) -> https://agentbot.raveculture.xyz/onboard[0m
+[31m❌ Route /marketplace reachable (expected 200, got 404) -> https://agentbot.raveculture.xyz/marketplace[0m
+[31m❌ Route /docs reachable (expected 200, got 404) -> https://agentbot.raveculture.xyz/docs[0m
+[31m❌ Route /terms reachable (expected 200, got 404) -> https://agentbot.raveculture.xyz/terms[0m
+[31m❌ Route /privacy reachable (expected 200, got 404) -> https://agentbot.raveculture.xyz/privacy[0m
+[31m❌ Route /blog reachable (expected 200, got 404) -> https://agentbot.raveculture.xyz/blog[0m
+[31m❌ Stripe checkout did not return expected redirect[0m
+
+[33mℹ️  Summary: 4 passed, 10 failed[0m
+
+RESULT: FAIL

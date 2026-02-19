@@ -11,6 +11,7 @@ interface InstanceData {
   subdomain: string
   url: string
   plan: string
+  openclawVersion?: string
   botUsername?: string
 }
 
@@ -75,7 +76,7 @@ function DashboardContent() {
     } catch {}
   }
 
-  const performAction = async (action: 'restart' | 'stop' | 'start') => {
+  const performAction = async (action: 'restart' | 'stop' | 'start' | 'update') => {
     if (!instance) return
     setActionLoading(action)
     
@@ -181,6 +182,10 @@ function DashboardContent() {
               <dd className="capitalize">{instance.plan || 'Free Trial'}</dd>
             </div>
             <div>
+              <dt className="text-sm text-gray-400">OpenClaw Version</dt>
+              <dd className="font-mono">{instance.openclawVersion || '2026.2.17'}</dd>
+            </div>
+            <div>
               <dt className="text-sm text-gray-400">Started</dt>
               <dd>{new Date(instance.startedAt).toLocaleString()}</dd>
             </div>
@@ -202,6 +207,21 @@ function DashboardContent() {
                 <span>→</span>
               </a>
             )}
+            <button
+              onClick={() => performAction('update')}
+              disabled={!!actionLoading}
+              className="flex items-center justify-between w-full bg-purple-600 hover:bg-purple-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+            >
+              <span>Update OpenClaw</span>
+              {actionLoading === 'update' ? (
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <span>⬆️</span>
+              )}
+            </button>
             <button
               onClick={() => performAction('restart')}
               disabled={!!actionLoading}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const GCP_API_URL = process.env.GCP_API_URL || 'http://localhost:3000'
-const GCP_API_SECRET = process.env.GCP_API_SECRET || ''
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001'
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
 
 export async function POST(
   request: NextRequest,
@@ -10,16 +10,20 @@ export async function POST(
   const { userId } = await params
   
   try {
-    const response = await fetch(`${GCP_API_URL}/instances/${userId}/restart`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}/restart`, {
       method: 'POST',
       headers: {
-        'X-API-Key': GCP_API_SECRET
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${INTERNAL_API_KEY}`
       }
     })
-    
-    const data = await response.json()
-    return NextResponse.json(data)
+
+    if (!response.ok) {
+      return NextResponse.json({ success: false, status: 'error' }, { status: 502 })
+    }
+
+    return NextResponse.json({ success: true, status: 'running' })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to restart instance' }, { status: 500 })
+    return NextResponse.json({ success: false, status: 'error' }, { status: 500 })
   }
 }

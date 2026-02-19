@@ -25,11 +25,21 @@ start_service() {
 
   if lsof -iTCP:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
     existing_pid=$(lsof -tiTCP:"$port" -sTCP:LISTEN | head -n 1 || true)
-    if [ -n "${existing_pid:-}" ]; then
-      echo "$existing_pid" > "$pidfile"
+    if [ -z "${existing_pid:-}" ]; then
+      echo "⚠️ Port :$port is in use, but no listener PID could be determined."
+      exit 1
     fi
-    echo "✅ $name already listening on :$port"
-    return
+
+    existing_cwd=$(lsof -a -p "$existing_pid" -d cwd -Fn 2>/dev/null | sed -n 's/^n//p' | head -n 1 || true)
+    if [[ -n "${existing_cwd:-}" && ( "$existing_cwd" == "$PWD" || "$existing_cwd" == "$PWD"/* ) ]]; then
+      echo "$existing_pid" > "$pidfile"
+      echo "✅ $name already listening on :$port"
+      return
+    fi
+
+    echo "⚠️ Port :$port is already in use by a non-workspace process (PID $existing_pid)."
+    echo "   Stop that process or free the port before starting StartClaw."
+    exit 1
   fi
 
   nohup bash -lc "$command" > "$logfile" 2>&1 &

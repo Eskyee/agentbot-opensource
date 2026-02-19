@@ -1,5 +1,3 @@
-version: '3.8'
-
 # DEVELOPMENT ENVIRONMENT ONLY
 # These credentials are for local development.
 # NEVER use these values in production!
@@ -62,6 +60,10 @@ services:
         condition: service_healthy
     volumes:
       - ./agentbot-backend/src:/app/src
+      # Docker socket mount is intentionally kept out of base compose.
+      # For local development where API must create agent containers,
+      # use docker-compose.override.yml to mount /var/run/docker.sock.
+      - ./runtime-data:/opt/startclaw/data
     command: npm run dev
     develop:
       watch:
@@ -103,8 +105,12 @@ services:
       NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
       NEXT_PUBLIC_AGENTS_DOMAIN: agents.localhost
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       BACKEND_API_URL: http://api:3001
       INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-secret-key-12345}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PRICE_ID_STARTER: ${STRIPE_PRICE_ID_STARTER:-}
+      STRIPE_PRICE_ID_PRO: ${STRIPE_PRICE_ID_PRO:-}
     ports:
       - "3000:3000"
     depends_on:

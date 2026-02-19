@@ -13,8 +13,12 @@ StartClaw is a complete platform for deploying, managing, and scaling AI agents 
 - 💰 **Flexible pricing** — Starting at ₹199/mo
 - 🔄 **Daily backups** — Never lose your AI's memory
 - 🆓 **Free trial** — 7 days, no card required
+- 🧩 **Skills via ClawHub** — Discover and pull skills from [clawhub.ai](https://clawhub.ai)
 
 ## Quick Start
+
+For customer onboarding steps, see [User Guide](docs/USER_GUIDE.md).
+For production launch/testing, see [Production Release Checklist](docs/PRODUCTION_RELEASE_CHECKLIST.md).
 
 ### Local Development
 
@@ -69,9 +73,9 @@ Frontend → API → Worker → Docker Containers
 | Plan | Price | Features |
 |------|-------|----------|
 | Trial | Free (7 days) | 1 agent, shared resources |
-| Starter | ₹199/mo | 3 agents, BYOK support |
-| Pro | ₹499/mo | 10 agents, dedicated resources |
-| Power | ₹999/mo | Unlimited agents, priority support |
+| Starter | £19/mo | 3 agents, BYOK support |
+| Pro | £49/mo | 10 agents, dedicated resources |
+| Power | £99/mo | Unlimited agents, priority support |
 
 ## Tech Stack
 
@@ -142,6 +146,7 @@ docker compose down -v
 - Deploy with docker-compose
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed deployment guides.
+Use [Production Release Checklist](docs/PRODUCTION_RELEASE_CHECKLIST.md) before each release.
 
 ## Self-Hosting
 

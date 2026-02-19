@@ -1,0 +1,8 @@
+{
+  "agentId": "pipelinecheck02",
+  "createdAt": "2026-02-19T05:23:24.646Z",
+  "plan": "free",
+  "aiProvider": "openrouter",
+  "port": 19000,
+  "subdomain": "pipelinecheck02.agents.localhost"
+}

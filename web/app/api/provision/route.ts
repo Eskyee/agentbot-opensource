@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
-// Environment variables (set in Vercel)
-const GCP_API_URL = process.env.GCP_API_URL || 'http://localhost:3000'
-const GCP_API_SECRET = process.env.GCP_API_SECRET || ''
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001'
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,47 +13,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Telegram token required' }, { status: 400 })
     }
     
-    if (!telegramUserId) {
-      return NextResponse.json({ error: 'Telegram user ID required' }, { status: 400 })
-    }
-    
     // Generate unique user ID
     const userId = crypto.randomBytes(8).toString('hex')
+
+    const ownerIds = telegramUserId ? [telegramUserId] : undefined
     
-    // Call GCP provisioning API
-    const response = await fetch(`${GCP_API_URL}/provision`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/deployments`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': GCP_API_SECRET
+        Authorization: `Bearer ${INTERNAL_API_KEY}`
       },
       body: JSON.stringify({
-        userId,
-        telegramToken,
-        ownerIds: [telegramUserId],
-        aiProvider: aiProvider || 'gemini',
-        apiKey,
-        plan: plan || 'free'
+        agentId: userId,
+        version: 'latest',
+        config: {
+          telegramToken,
+          ownerIds,
+          aiProvider: aiProvider || 'openrouter',
+          apiKey,
+          plan: plan || 'free'
+        }
       })
     })
     
-    const data = await response.json()
+    let data: any = null
+    try {
+      data = await response.json()
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Provisioning service returned invalid JSON' },
+        { status: 502 }
+      )
+    }
     
-    if (response.ok && data.success) {
-      // TODO: Save user to database
-      // TODO: Send welcome email
-      
+    if (response.ok && data?.url) {
+      const subdomain = data.subdomain || `${userId}.agents.localhost`
       return NextResponse.json({
         success: true,
-        userId: data.userId,
-        subdomain: data.subdomain,
+        userId,
+        subdomain,
         url: data.url
       })
     } else {
       return NextResponse.json({ 
         success: false, 
-        error: data.error || 'Provisioning failed' 
-      }, { status: 500 })
+        error: data?.error || 'Provisioning failed' 
+      }, { status: 502 })
     }
   } catch (error) {
     console.error('Provision error:', error)

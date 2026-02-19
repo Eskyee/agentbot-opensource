@@ -8,9 +8,9 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await params
-  
+
   try {
-    const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}/start`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}/update`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

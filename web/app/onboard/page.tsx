@@ -1,9 +1,11 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 type Step = 'telegram' | 'token' | 'userid' | 'ai' | 'deploy' | 'done'
+
+const FLOW_STEPS: Step[] = ['telegram', 'token', 'ai', 'deploy', 'done']
 
 function OnboardContent() {
   const searchParams = useSearchParams()
@@ -19,6 +21,22 @@ function OnboardContent() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ userId: string; subdomain: string; url: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
+  const [openclawVersion, setOpenclawVersion] = useState('2026.2.17')
+
+  useEffect(() => {
+    const loadVersion = async () => {
+      try {
+        const res = await fetch('/api/openclaw-version')
+        const data = await res.json()
+        if (data?.openclawVersion) {
+          setOpenclawVersion(data.openclawVersion)
+        }
+      } catch {
+        // keep default
+      }
+    }
+    loadVersion()
+  }, [])
 
   const validateToken = async () => {
     setIsValidating(true)
@@ -35,7 +53,7 @@ function OnboardContent() {
       
       if (data.valid) {
         setBotInfo(data.bot)
-        setStep('userid')
+        setStep('ai')
       } else {
         setError(data.error || 'Invalid token')
       }
@@ -98,15 +116,15 @@ function OnboardContent() {
       
       {/* Progress */}
       <div className="flex items-center justify-center gap-2 mb-12">
-        {['telegram', 'token', 'userid', 'ai', 'deploy', 'done'].map((s, i) => (
+        {FLOW_STEPS.map((s, i) => (
           <div key={s} className="flex items-center">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
               step === s ? 'bg-lobster-500' : 
-              ['telegram', 'token', 'userid', 'ai', 'deploy', 'done'].indexOf(step) > i ? 'bg-green-500' : 'bg-gray-800'
+              FLOW_STEPS.indexOf(step) > i ? 'bg-green-500' : 'bg-gray-800'
             }`}>
-              {['telegram', 'token', 'userid', 'ai', 'deploy', 'done'].indexOf(step) > i ? '✓' : i + 1}
+              {FLOW_STEPS.indexOf(step) > i ? '✓' : i + 1}
             </div>
-            {i < 5 && <div className="w-8 h-0.5 bg-gray-800" />}
+            {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-gray-800" />}
           </div>
         ))}
       </div>
@@ -294,7 +312,7 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'openrouter', name: 'OpenRouter (Free)', desc: 'Access free models — Gemini, Llama, and more', recommended: true },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'Fast and reliable default model via OpenRouter', recommended: true },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
                   { id: 'anthropic', name: 'Anthropic', desc: 'Claude — Best quality (requires API key)' },
                   { id: 'openai', name: 'OpenAI', desc: 'GPT-4 — Popular choice (requires API key)' },
@@ -343,7 +361,7 @@ function OnboardContent() {
                     </li>
                   </ol>
                   <p className="text-xs text-gray-500 mt-4">
-                    Free tier includes: Gemini 2.0 Flash, Llama 3.2, and more — no charges ever
+                    We default to a stable OpenRouter model for reliable deployment.
                   </p>
                 </div>
               )}
@@ -395,7 +413,7 @@ function OnboardContent() {
               
               <div className="flex gap-4">
                 <button
-                  onClick={() => setStep('userid')}
+                  onClick={() => setStep('token')}
                   className="px-6 py-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors"
                 >
                   ← Back
@@ -435,6 +453,10 @@ function OnboardContent() {
                   <div className="flex justify-between">
                     <dt className="text-gray-400">Plan</dt>
                     <dd>{plan === 'free' ? '7-day Free Trial' : plan}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-400">OpenClaw Version</dt>
+                    <dd className="font-mono">{openclawVersion}</dd>
                   </div>
                 </dl>
               </div>

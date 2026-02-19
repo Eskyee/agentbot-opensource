@@ -66,6 +66,19 @@ db-shell: ## Open PostgreSQL shell
 redis-cli: ## Open Redis CLI
 	@docker compose exec redis redis-cli
 
+update-openclaw: ## Safely update one OpenClaw instance (usage: make update-openclaw ID=<instance_id>)
+	@if [ -z "$(ID)" ]; then echo "Usage: make update-openclaw ID=<instance_id>"; exit 1; fi
+	@./infra/scripts/update-openclaw.sh $(ID)
+
+update-openclaw-all: ## Safely update all running OpenClaw instances
+	@./infra/scripts/update-openclaw.sh --all
+
+prod-go-live-check: ## Run production DNS/health/route/Stripe checks
+	@./infra/scripts/prod-go-live-check.sh
+
+prod-go-live-report: ## Run production checks and save timestamped report
+	@./infra/scripts/prod-go-live-report.sh
+
 health: ## Check health of all services
 	@echo "🔍 Checking service health..."
 	@curl -s http://localhost:3001/health | jq . || echo "API not responding"

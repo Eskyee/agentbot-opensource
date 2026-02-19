@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const GCP_API_URL = process.env.GCP_API_URL || 'http://localhost:3000'
-const GCP_API_SECRET = process.env.GCP_API_SECRET || ''
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001'
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY
+
+if (!INTERNAL_API_KEY) {
+  throw new Error('INTERNAL_API_KEY is required for /api/instance/[userId] route')
+}
 
 export async function GET(
   request: NextRequest,
@@ -10,15 +14,49 @@ export async function GET(
   const { userId } = await params
   
   try {
-    const response = await fetch(`${GCP_API_URL}/instances/${userId}`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}`, {
       headers: {
-        'X-API-Key': GCP_API_SECRET
+        Authorization: `Bearer ${INTERNAL_API_KEY}`
       }
     })
-    
-    const data = await response.json()
-    return NextResponse.json(data)
+
+    let data: any = null
+    try {
+      data = await response.json()
+    } catch {
+      data = null
+    }
+
+    if (!response.ok || !data) {
+      return NextResponse.json({
+        userId,
+        status: 'unknown',
+        startedAt: new Date().toISOString(),
+        subdomain: `${userId}.agents.localhost`,
+        url: `https://${userId}.agents.localhost`,
+        plan: 'free',
+        openclawVersion: '2026.2.17'
+      }, { status: response.status || 502 })
+    }
+
+    return NextResponse.json({
+      userId,
+      status: data.status === 'active' ? 'running' : (data.status || 'unknown'),
+      startedAt: data.startedAt || new Date().toISOString(),
+      subdomain: data.subdomain || `${userId}.agents.localhost`,
+      url: data.url || `https://${userId}.agents.localhost`,
+      plan: data.plan || 'free',
+      openclawVersion: data.openclawVersion || '2026.2.17'
+    })
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch instance' }, { status: 500 })
+    return NextResponse.json({
+      userId,
+      status: 'unknown',
+      startedAt: new Date().toISOString(),
+      subdomain: `${userId}.agents.localhost`,
+      url: `https://${userId}.agents.localhost`,
+      plan: 'free',
+      openclawVersion: '2026.2.17'
+    }, { status: 500 })
   }
 }
