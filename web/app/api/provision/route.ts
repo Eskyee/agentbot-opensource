@@ -38,11 +38,16 @@ export async function POST(request: NextRequest) {
           }
         })
       })
-    } catch {
+    } catch (err) {
+      console.error('Provisioning backend unreachable', {
+        backendApiUrl: BACKEND_API_URL,
+        error: err,
+      })
+
       return NextResponse.json(
         {
           success: false,
-          error: `Provisioning backend is unreachable (${BACKEND_API_URL}). Check BACKEND_API_URL and backend TLS/DNS.`
+          error: 'Provisioning service is temporarily unavailable. Please try again later.'
         },
         { status: 502 }
       )
@@ -65,10 +70,16 @@ export async function POST(request: NextRequest) {
         )
       }
     } else if (!response.ok) {
+      console.error('Provisioning backend returned non-JSON error response', {
+        backendApiUrl: BACKEND_API_URL,
+        status: response.status,
+        contentType,
+      })
+
       return NextResponse.json(
         {
           success: false,
-          error: `Provisioning backend error (${response.status}) from ${BACKEND_API_URL}. Expected JSON but received ${contentType || 'non-JSON response'}.`
+          error: `Provisioning service error (status ${response.status}). Please try again later.`
         },
         { status: 502 }
       )
