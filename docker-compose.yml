@@ -50,7 +50,7 @@ services:
       PORT: 3001
       DATABASE_URL: postgres://startclaw:devpassword@postgres:5432/startclaw_db
       REDIS_URL: redis://redis:6379
-      INTERNAL_API_KEY: dev-secret-key-12345
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-secret-key-12345}
       ALLOWED_ORIGINS: http://localhost:3000,https://startclaw.com
       AGENTS_DOMAIN: agents.localhost
     ports:
@@ -103,7 +103,7 @@ services:
       NEXT_PUBLIC_API_URL: http://localhost:3001
       NEXT_PUBLIC_AGENTS_DOMAIN: agents.localhost
       BACKEND_API_URL: http://api:3001
-      INTERNAL_API_KEY: dev-secret-key-12345
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-secret-key-12345}
     ports:
       - "3000:3000"
     depends_on:
