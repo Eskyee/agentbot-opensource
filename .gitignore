@@ -37,3 +37,4 @@ certs/
 
 # Data
 data/
+.vercel
