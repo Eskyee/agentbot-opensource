@@ -1,0 +1,54 @@
+-- StartClaw Database Schema
+-- Initial setup for agents, deployments, and users
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS agents (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  config JSONB,
+  status VARCHAR(50) DEFAULT 'inactive',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS deployments (
+  id SERIAL PRIMARY KEY,
+  agent_id INTEGER REFERENCES agents(id) ON DELETE CASCADE,
+  version VARCHAR(50),
+  subdomain VARCHAR(255) UNIQUE,
+  container_id VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  deployed_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS api_keys (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  key_hash VARCHAR(255) NOT NULL,
+  name VARCHAR(255),
+  last_used_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for better query performance
+CREATE INDEX idx_agents_user_id ON agents(user_id);
+CREATE INDEX idx_agents_status ON agents(status);
+CREATE INDEX idx_deployments_agent_id ON deployments(agent_id);
+CREATE INDEX idx_deployments_status ON deployments(status);
+CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
+
+-- Insert sample data for development
+INSERT INTO users (email, password_hash) VALUES
+  ('demo@startclaw.com', '$2a$10$dummyhash') -- Demo user
+ON CONFLICT (email) DO NOTHING;

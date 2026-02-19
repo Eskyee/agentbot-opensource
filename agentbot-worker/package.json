@@ -1,0 +1,26 @@
+{
+  "name": "startclaw-worker",
+  "version": "1.0.0",
+  "description": "StartClaw Deployment Worker",
+  "main": "src/worker.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/worker.ts",
+    "build": "tsc",
+    "start": "node dist/worker.js"
+  },
+  "dependencies": {
+    "bull": "^4.11.5",
+    "redis": "^4.6.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.0",
+    "@types/node": "^20.8.0",
+    "@types/bull": "^4.10.0",
+    "ts-node-dev": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
