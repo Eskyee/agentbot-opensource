@@ -1,5 +1,5 @@
 === OpenClawDeploy Production Go-Live Report ===
-Generated: 2026-02-19T07:44:16Z
+Generated: 2026-02-19T07:24:52Z
 Frontend: https://agentbot.raveculture.xyz
 API: https://api.agentbot.raveculture.xyz
 
@@ -8,7 +8,7 @@ API: https://api.agentbot.raveculture.xyz
 [33mℹ️  API:      https://api.agentbot.raveculture.xyz[0m
 [33mℹ️  Agents:   *.agents.agentbot.raveculture.xyz[0m
 [32m✅ DNS resolves for agentbot.raveculture.xyz -> 216.150.1.1[0m
-[32m✅ DNS resolves for api.agentbot.raveculture.xyz -> 216.150.1.1[0m
+[32m✅ DNS resolves for api.agentbot.raveculture.xyz -> 216.150.16.129[0m
 [32m✅ DNS resolves for sample.agents.agentbot.raveculture.xyz -> 216.150.1.65[0m
 [32m✅ Frontend home is healthy (200)[0m
 [32m✅ Frontend API health is healthy (200)[0m
