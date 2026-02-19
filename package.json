@@ -1,0 +1,13 @@
+{
+  "name": "startclaw",
+  "private": true,
+  "scripts": {
+    "dev": "./start-local.sh",
+    "stop": "./stop-local.sh",
+    "restart": "npm run stop && npm run dev",
+    "dev:frontend": "npm --prefix web run dev",
+    "dev:api": "npm --prefix agentbot-backend run dev",
+    "dev:worker": "npm --prefix agentbot-worker run dev",
+    "install:all": "npm --prefix web install && npm --prefix agentbot-backend install && npm --prefix agentbot-worker install"
+  }
+}

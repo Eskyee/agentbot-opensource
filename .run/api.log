@@ -1,0 +1,7 @@
+
+> startclaw-backend@1.0.0 dev
+> ts-node-dev --respawn src/index.ts
+
+[INFO] 04:34:55 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+🦞 StartClaw API server running on port 3001
+Health check: http://localhost:3001/health

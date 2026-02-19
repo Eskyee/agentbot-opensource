@@ -100,6 +100,7 @@ services:
       dockerfile: Dockerfile
     container_name: startclaw-frontend
     environment:
+      NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
       NEXT_PUBLIC_AGENTS_DOMAIN: agents.localhost
       BACKEND_API_URL: http://api:3001
@@ -108,11 +109,11 @@ services:
       - "3000:3000"
     depends_on:
       - api
+    user: root
     volumes:
       - ./web:/app
-      - /app/.next
       - /app/node_modules
-    command: npm run dev
+    command: sh -c "mkdir -p node_modules && find node_modules -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true; npm install --include=dev && npm run dev"
     develop:
       watch:
         - path: ./web
