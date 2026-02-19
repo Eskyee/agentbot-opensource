@@ -6,43 +6,42 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden px-6 py-24 sm:py-32 lg:px-8">
+      <section className="relative overflow-hidden px-4 py-20 sm:px-6 sm:py-24 lg:px-8 lg:py-32">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(45%_40%_at_50%_60%,rgba(249,115,22,0.12),transparent)]" />
         
         <div className="mx-auto max-w-4xl text-center">
           {/* Lobster emoji */}
           <div className="mb-8 text-7xl animate-float">🦞</div>
           
-          <h1 className="text-5xl font-bold tracking-tight sm:text-7xl">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
             Deploy your first
             <br />
             <span className="gradient-text">AI agent today</span>
           </h1>
           
-          <p className="mt-6 text-xl leading-8 text-gray-400">
-            Deploy an AI agent in under 2 minutes
-            <br />
-            Chat via Telegram, Discord, or WhatsApp
+          <p className="mt-6 text-base leading-7 text-gray-400 sm:text-xl sm:leading-8">
+            <span className="block">Deploy an AI agent in under 2 minutes</span>
+            <span className="block">Chat via Telegram, Discord, or WhatsApp</span>
           </p>
 
           <p className="mt-2 text-sm text-lobster-300">
             Credits included -- no API keys needed
           </p>
           
-          <div className="mt-10 flex items-center justify-center gap-x-6">
+          <div className="mt-10 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:gap-x-6">
             <Link
               href="/signup"
-              className="rounded-full bg-lobster-500 px-8 py-4 text-lg font-semibold text-white shadow-lg hover:bg-lobster-400 transition-all glow"
+              className="rounded-full bg-lobster-500 px-8 py-4 text-center text-lg font-semibold text-white shadow-lg hover:bg-lobster-400 transition-all glow"
             >
               Deploy your agent
             </Link>
             <Link
               href="/docs"
-              className="rounded-full border border-gray-700 px-8 py-4 text-lg font-semibold text-gray-200 hover:border-lobster-500 hover:text-lobster-300 transition-all"
+              className="rounded-full border border-gray-700 px-8 py-4 text-center text-lg font-semibold text-gray-200 hover:border-lobster-500 hover:text-lobster-300 transition-all"
             >
               View Docs
             </Link>
-            <Link href="#how-it-works" className="text-lg font-semibold leading-6 text-gray-300 hover:text-white">
+            <Link href="#how-it-works" className="text-center text-lg font-semibold leading-6 text-gray-300 hover:text-white sm:text-left">
               Watch the demo <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -50,7 +49,7 @@ export default function Home() {
           <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-400">
             <span className="rounded-full border border-gray-700 px-3 py-1">You control your keys</span>
             <span className="rounded-full border border-gray-700 px-3 py-1">80+ signed-up users</span>
-            <span className="rounded-full border border-gray-700 px-3 py-1">Posted by @marclou</span>
+            <span className="rounded-full border border-gray-700 px-3 py-1">Posted by raveculture baseFM</span>
           </div>
         </div>
       </section>
@@ -70,9 +69,9 @@ export default function Home() {
               <h3 className="text-xl font-semibold mb-2">Preconfigured agents save hours</h3>
               <p className="text-gray-400 mb-4">Choose from curated templates — research, support, lead gen — with the right skills pre-installed.</p>
               <div className="space-y-2 text-sm">
-                <div className="rounded-lg border border-gray-700 px-3 py-2"><strong>A</strong> Atlas — Research Agent</div>
-                <div className="rounded-lg border border-gray-700 px-3 py-2"><strong>N</strong> Nova — Support Agent</div>
-                <div className="rounded-lg border border-gray-700 px-3 py-2"><strong>S</strong> Sage — Lead Gen Agent</div>
+                <div className="rounded-lg border border-gray-700 px-3 py-2"><strong>G</strong> globe — Research Agent</div>
+                <div className="rounded-lg border border-gray-700 px-3 py-2"><strong>M</strong> muso — Support Agent</div>
+                <div className="rounded-lg border border-gray-700 px-3 py-2"><strong>S</strong> studio — Lead Gen Agent</div>
               </div>
               <Link href="/marketplace" className="mt-4 inline-block text-lobster-400 hover:underline">Choose a template →</Link>
             </div>

@@ -4,7 +4,7 @@
 
 :root {
   --foreground: #ffffff;
-  --background: #0a0a0a;
+  --background: #0A0B0D;
 }
 
 body {
@@ -24,7 +24,7 @@ body {
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #f97316 0%, #ef4444 50%, #ec4899 100%);
+  background: linear-gradient(135deg, #0052FF 0%, #4f85ff 50%, #84adff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -32,5 +32,5 @@ body {
 
 /* Glow effect */
 .glow {
-  box-shadow: 0 0 40px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0 40px rgba(0, 82, 255, 0.35);
 }

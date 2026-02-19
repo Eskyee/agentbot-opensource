@@ -2,19 +2,19 @@ import Link from 'next/link';
 
 const templates = [
   {
-    name: 'Atlas',
+    name: 'globe',
     role: 'Research Agent',
     description: 'Finds sources, summarizes insights, and delivers concise briefings in chat.',
     skills: ['Web Scraping', 'File Handling', 'Search']
   },
   {
-    name: 'Nova',
+    name: 'muso',
     role: 'Support Agent',
     description: 'Answers customer questions, drafts responses, and escalates edge cases.',
     skills: ['Email Management', 'Knowledge Base', 'Ticket Routing']
   },
   {
-    name: 'Sage',
+    name: 'studio',
     role: 'Lead Gen Agent',
     description: 'Collects prospects, enriches records, and drafts personalized outreach.',
     skills: ['Prospect Discovery', 'CRM Export', 'Email Drafting']

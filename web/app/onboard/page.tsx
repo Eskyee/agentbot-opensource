@@ -115,22 +115,24 @@ function OnboardContent() {
       </div>
       
       {/* Progress */}
-      <div className="flex items-center justify-center gap-2 mb-12">
-        {FLOW_STEPS.map((s, i) => (
-          <div key={s} className="flex items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-              step === s ? 'bg-lobster-500' : 
-              FLOW_STEPS.indexOf(step) > i ? 'bg-green-500' : 'bg-gray-800'
-            }`}>
-              {FLOW_STEPS.indexOf(step) > i ? '✓' : i + 1}
+      <div className="mb-12 overflow-x-auto pb-2">
+        <div className="flex min-w-max items-center justify-center gap-2 px-2">
+          {FLOW_STEPS.map((s, i) => (
+            <div key={s} className="flex items-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                step === s ? 'bg-lobster-500' : 
+                FLOW_STEPS.indexOf(step) > i ? 'bg-green-500' : 'bg-gray-800'
+              }`}>
+                {FLOW_STEPS.indexOf(step) > i ? '✓' : i + 1}
+              </div>
+              {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-gray-800" />}
             </div>
-            {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-gray-800" />}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Step Content */}
-      <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
+      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5 sm:p-8">
         
         {/* Step 1: Create Telegram Bot */}
         {step === 'telegram' && (
@@ -211,17 +213,17 @@ function OnboardContent() {
                 </div>
               )}
               
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('telegram')}
-                  className="px-6 py-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors"
+                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={validateToken}
                   disabled={!telegramToken || isValidating}
-                  className="flex-1 bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   {isValidating ? 'Validating...' : 'Validate Token →'}
                 </button>
@@ -282,17 +284,17 @@ function OnboardContent() {
                 </p>
               </div>
               
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('token')}
-                  className="px-6 py-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors"
+                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={() => setStep('ai')}
                   disabled={!telegramUserId}
-                  className="flex-1 bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   Continue →
                 </button>
@@ -411,17 +413,17 @@ function OnboardContent() {
                 </div>
               )}
               
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('token')}
-                  className="px-6 py-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors"
+                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={() => setStep('deploy')}
                   disabled={!apiKey}
-                  className="flex-1 bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   Continue →
                 </button>
@@ -467,17 +469,17 @@ function OnboardContent() {
                 </div>
               )}
               
-              <div className="flex gap-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('ai')}
-                  className="px-6 py-3 rounded-lg border border-gray-700 hover:bg-gray-800 transition-colors"
+                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={deploy}
                   disabled={isDeploying}
-                  className="flex-1 bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50"
+                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 sm:flex-1"
                 >
                   {isDeploying ? (
                     <span className="flex items-center justify-center gap-2">
