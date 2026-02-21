@@ -13,8 +13,9 @@ export type PublicPricing = {
 
 const FALLBACK_CURRENCY = 'gbp'
 const FALLBACK_PRICES = {
-  starter: 19,
+  starter: 29,
   pro: 49,
+  dfy: 1200,
 }
 
 const formatMoney = (amount: number, currency: string): string => {
@@ -25,7 +26,7 @@ const formatMoney = (amount: number, currency: string): string => {
   }).format(amount)
 }
 
-const fallbackPricing = (): PublicPricing => ({
+const fallbackPricing = (): PublicPricing & { dfy?: PlanPrice } => ({
   starter: {
     amount: FALLBACK_PRICES.starter,
     currency: FALLBACK_CURRENCY,
@@ -35,6 +36,11 @@ const fallbackPricing = (): PublicPricing => ({
     amount: FALLBACK_PRICES.pro,
     currency: FALLBACK_CURRENCY,
     formatted: formatMoney(FALLBACK_PRICES.pro, FALLBACK_CURRENCY),
+  },
+  dfy: {
+    amount: FALLBACK_PRICES.dfy,
+    currency: FALLBACK_CURRENCY,
+    formatted: formatMoney(FALLBACK_PRICES.dfy, FALLBACK_CURRENCY),
   },
 })
 
@@ -53,30 +59,33 @@ const toPlanPrice = (price: Stripe.Price): PlanPrice | null => {
   }
 }
 
-export async function getPublicPricing(): Promise<PublicPricing> {
+export async function getPublicPricing(): Promise<PublicPricing & { dfy?: PlanPrice }> {
   const stripeSecretKey = process.env.STRIPE_SECRET_KEY || ''
   const starterPriceId = process.env.STRIPE_PRICE_ID_STARTER || ''
   const proPriceId = process.env.STRIPE_PRICE_ID_PRO || ''
+  const dfyPriceId = process.env.STRIPE_PRICE_ID_DFY || ''
 
-  if (!stripeSecretKey || !starterPriceId || !proPriceId) {
+  if (!stripeSecretKey || !starterPriceId || !proPriceId || !dfyPriceId) {
     return fallbackPricing()
   }
 
   try {
     const stripe = new Stripe(stripeSecretKey)
-    const [starterRaw, proRaw] = await Promise.all([
+    const [starterRaw, proRaw, dfyRaw] = await Promise.all([
       stripe.prices.retrieve(starterPriceId),
       stripe.prices.retrieve(proPriceId),
+      stripe.prices.retrieve(dfyPriceId),
     ])
 
     const starter = toPlanPrice(starterRaw)
     const pro = toPlanPrice(proRaw)
+    const dfy = toPlanPrice(dfyRaw)
 
-    if (!starter || !pro) {
+    if (!starter || !pro || !dfy) {
       return fallbackPricing()
     }
 
-    return { starter, pro }
+    return { starter, pro, dfy }
   } catch {
     return fallbackPricing()
   }

@@ -190,8 +190,8 @@ export default async function Home() {
               </div>
               <h3 className="text-xl font-semibold">Starter</h3>
               <div className="mt-4">
-                <span className="text-4xl font-bold">{pricing.starter.formatted}</span>
-                <span className="text-gray-400"> / month ({pricing.starter.currency.toUpperCase()})</span>
+                <span className="text-4xl font-bold">£29</span>
+                <span className="text-gray-400"> / month (GBP)</span>
               </div>
               <ul className="mt-8 space-y-3 text-gray-400">
                 <li className="flex items-center gap-2">
@@ -211,13 +211,13 @@ export default async function Home() {
                 Get Started
               </Link>
             </div>
-            
+
             {/* Pro */}
             <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">
               <h3 className="text-xl font-semibold">Pro</h3>
               <div className="mt-4">
-                <span className="text-4xl font-bold">{pricing.pro.formatted}</span>
-                <span className="text-gray-400"> / month ({pricing.pro.currency.toUpperCase()})</span>
+                <span className="text-4xl font-bold">£49</span>
+                <span className="text-gray-400"> / month (GBP)</span>
               </div>
               <ul className="mt-8 space-y-3 text-gray-400">
                 <li className="flex items-center gap-2">
@@ -235,6 +235,38 @@ export default async function Home() {
               </ul>
               <Link href="/api/stripe/checkout?plan=pro" className="mt-8 block w-full rounded-lg bg-gray-800 py-3 text-center font-semibold hover:bg-gray-700 transition-colors">
                 Go Pro
+              </Link>
+            </div>
+
+            {/* Done-For-You */}
+            <div className="bg-gray-900 rounded-2xl p-8 border border-lobster-500">
+              <h3 className="text-xl font-semibold">Done-For-You</h3>
+              <div className="mt-4">
+                <span className="text-4xl font-bold">£1,200</span>
+                <span className="text-gray-400"> one-time (GBP)</span>
+              </div>
+              <ul className="mt-8 space-y-3 text-gray-400">
+                <li className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Full white-glove configuration
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> 3 months of Pro plan included
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> £240 in AI credits included
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Custom integrations & workflows
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Dedicated onboarding support
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-500">✓</span> Priority bug fixes & tuning
+                </li>
+              </ul>
+              <Link href="/api/stripe/checkout?plan=dfy" className="mt-8 block w-full rounded-lg bg-lobster-500 py-3 text-center font-semibold hover:bg-lobster-400 transition-colors">
+                Get Started
               </Link>
             </div>
           </div>
