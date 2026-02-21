@@ -3,18 +3,16 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
-export default function SignupPage() {
+export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // In production, you would call a registration API here
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // For demo, just try to sign in (in real app, call /api/register first)
     const res = await signIn("credentials", {
       email,
       password,
@@ -22,7 +20,7 @@ export default function SignupPage() {
     });
     setLoading(false);
     if (res?.error) {
-      setError("Signup failed or user already exists");
+      setError("Invalid email or password");
     } else if (res?.ok) {
       window.location.href = "/dashboard";
     }
@@ -31,8 +29,8 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-950">
       <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign up for Agentbot</h1>
-        <form className="space-y-5" onSubmit={handleSignup}>
+        <h1 className="text-2xl font-bold mb-6 text-center">Log in to Agentbot</h1>
+        <form className="space-y-5" onSubmit={handleCredentialsLogin}>
           <div>
             <label htmlFor="email" className="block text-gray-300 mb-1">Email</label>
             <input
@@ -62,7 +60,7 @@ export default function SignupPage() {
             className="w-full rounded-lg bg-lobster-500 py-2 font-semibold text-white hover:bg-lobster-400 transition-colors"
             disabled={loading}
           >
-            {loading ? "Signing up..." : "Sign up"}
+            {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
         {error && <div className="text-red-500 text-center mt-2">{error}</div>}
@@ -90,8 +88,8 @@ export default function SignupPage() {
           </button>
         </div>
         <p className="mt-8 text-center text-gray-400">
-          Already have an account?{' '}
-          <Link href="/login" className="text-lobster-400 hover:underline">Log in</Link>
+          Don&apos;t have an account?{' '}
+          <Link href="/signup" className="text-lobster-400 hover:underline">Sign up</Link>
         </p>
       </div>
     </main>
