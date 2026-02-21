@@ -18,7 +18,7 @@ interface InstanceData {
 function DashboardContent() {
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
-  const [stats, setStats] = useState<{ cpu: string; memory: string } | null>(null)
+  const [stats, setStats] = useState<{ cpu: string; memory: string; uptime?: string; messages?: number; errors?: number; health?: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState('')
@@ -71,7 +71,14 @@ function DashboardContent() {
       const res = await fetch(`/api/instance/${userId}/stats`)
       const data = await res.json()
       if (!data.error) {
-        setStats(data)
+        setStats({
+          cpu: data.cpu,
+          memory: data.memory,
+          uptime: data.uptime,
+          messages: data.messages,
+          errors: data.errors,
+          health: data.health,
+        })
       }
     } catch {}
   }
@@ -127,6 +134,61 @@ function DashboardContent() {
   if (!instance) return null
 
   const isRunning = instance.status === 'running'
+
+  // Advanced stats panel
+  return (
+    <main className="min-h-screen py-12 px-6">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="text-3xl font-bold mb-6">Manage Your OpenClaw Instance</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+            <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
+            <div className="space-y-2 text-gray-300">
+              <div><strong>Status:</strong> {instance.status}</div>
+              <div><strong>Bot Username:</strong> {instance.botUsername || 'N/A'}</div>
+              <div><strong>Plan:</strong> {instance.plan || 'N/A'}</div>
+              <div><strong>OpenClaw Version:</strong> {instance.openclawVersion || 'N/A'}</div>
+            </div>
+          </div>
+          <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+            <h2 className="text-lg font-semibold mb-4">Stats & Health</h2>
+            <div className="space-y-2 text-gray-300">
+              <div><strong>CPU:</strong> {stats?.cpu || 'N/A'}</div>
+              <div><strong>Memory:</strong> {stats?.memory || 'N/A'}</div>
+              <div><strong>Uptime:</strong> {stats?.uptime || 'N/A'}</div>
+              <div><strong>Messages:</strong> {stats?.messages ?? 'N/A'}</div>
+              <div><strong>Errors:</strong> {stats?.errors ?? 'N/A'}</div>
+              <div><strong>Health:</strong> {stats?.health || 'N/A'}</div>
+            </div>
+            {/* Simple visual bar for CPU/memory */}
+            <div className="mt-4">
+              <div className="mb-2 text-sm text-gray-400">CPU Usage</div>
+              <div className="w-full h-4 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gray-700 rounded-full" style={{ width: stats?.cpu ? stats.cpu : '0%' }} />
+              </div>
+              <div className="mt-2 text-sm text-gray-400">Memory Usage</div>
+              <div className="w-full h-4 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gray-700 rounded-full" style={{ width: stats?.memory ? stats.memory : '0%' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Actions */}
+        <div className="flex gap-4 mb-8">
+          <button className="rounded-lg bg-gray-900 px-4 py-2 text-white hover:bg-gray-700 transition-colors" disabled={actionLoading === 'restart'} onClick={() => performAction('restart')}>Restart</button>
+          <button className="rounded-lg bg-gray-900 px-4 py-2 text-white hover:bg-gray-700 transition-colors" disabled={actionLoading === 'stop'} onClick={() => performAction('stop')}>Stop</button>
+          <button className="rounded-lg bg-gray-900 px-4 py-2 text-white hover:bg-gray-700 transition-colors" disabled={actionLoading === 'start'} onClick={() => performAction('start')}>Start</button>
+          <button className="rounded-lg bg-gray-900 px-4 py-2 text-white hover:bg-gray-700 transition-colors" disabled={actionLoading === 'update'} onClick={() => performAction('update')}>Update</button>
+        </div>
+        {/* Logs and notifications placeholder */}
+        <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+          <h2 className="text-lg font-semibold mb-4">Recent Activity & Logs</h2>
+          <div className="text-gray-400">Coming soon: Display agent logs, errors, and notifications here.</div>
+        </div>
+      </div>
+    </main>
+  )
+  // ...existing code...
 
   return (
     <div className="mx-auto max-w-4xl">
