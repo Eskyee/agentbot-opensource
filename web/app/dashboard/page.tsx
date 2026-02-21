@@ -249,7 +249,7 @@ function DashboardContent() {
             </div>
             <div>
               <dt className="text-sm text-gray-400">Started</dt>
-              <dd>{instance?.startedAt ? new Date(instance?.startedAt).toLocaleString() : 'N/A'}</dd>
+              <dd>{instance?.startedAt ? new Date(instance.startedAt!).toLocaleString() : 'N/A'}</dd>
             </div>
           </dl>
         </div>
