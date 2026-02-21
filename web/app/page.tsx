@@ -20,9 +20,8 @@ export default async function Home() {
           <div className="mb-8 text-7xl animate-float">🦞</div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-            Agentbot presents
-            <br />
-            <span className="text-white">OpenClaw Deploy</span>
+            <span className="block">OpenClaw Deploy - Deploy OpenClaw in 60 Seconds</span>
+            <span className="block text-lg text-lobster-400 mt-2">Built by Agentbot</span>
           </h1>
           
           <p className="mt-6 text-base leading-7 text-gray-400 sm:text-xl sm:leading-8">
