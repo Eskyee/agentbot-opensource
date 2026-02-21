@@ -37,20 +37,20 @@ export default function MarketplacePage() {
         <div className="grid gap-6 md:grid-cols-3">
           {templates.map((template) => (
             <article key={template.name} className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <p className="text-xs uppercase tracking-wider text-lobster-400 mb-2">Template</p>
-              <h2 className="text-2xl font-bold">{template.name}</h2>
+              <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Template</p>
+              <h2 className="text-2xl font-bold text-white">{template.name}</h2>
               <p className="text-gray-300 mb-2">{template.role}</p>
               <p className="text-gray-400 text-sm mb-4">{template.description}</p>
               <div className="space-y-2 mb-6">
                 {template.skills.map((skill) => (
-                  <div key={skill} className="text-sm rounded-lg border border-gray-700 px-3 py-2">
+                  <div key={skill} className="text-sm rounded-lg border border-gray-700 px-3 py-2 text-gray-200 bg-gray-800">
                     {skill}
                   </div>
                 ))}
               </div>
               <Link
                 href="/signup"
-                className="block w-full text-center rounded-full bg-lobster-500 px-4 py-3 font-semibold text-white hover:bg-lobster-400 transition-colors"
+                className="block w-full text-center rounded-lg bg-gray-900 px-4 py-3 font-semibold text-white hover:bg-gray-700 transition-colors"
               >
                 Use {template.name}
               </Link>

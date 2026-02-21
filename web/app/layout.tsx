@@ -3,17 +3,17 @@ import type { Metadata } from 'next'
 import Navbar from "./components/Navbar";
 
 export const metadata: Metadata = {
-  title: 'OpenClaw Deploy - Deploy OpenClaw in 60 Seconds',
-  description: 'Deploy your own OpenClaw agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
+  title: 'Agentbot | OpenClaw Deploy - Deploy OpenClaw in 60 Seconds',
+  description: 'Agentbot presents OpenClaw Deploy: Deploy your own OpenClaw agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
   openGraph: {
-    title: 'OpenClaw Deploy',
-    description: 'Deploy your own OpenClaw agent in under a minute.',
+    title: 'Agentbot | OpenClaw Deploy',
+    description: 'Agentbot presents OpenClaw Deploy: Deploy your own OpenClaw agent in under a minute.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'OpenClaw Deploy',
-    description: 'Deploy your own OpenClaw agent in under a minute.',
+    title: 'Agentbot | OpenClaw Deploy',
+    description: 'Agentbot presents OpenClaw Deploy: Deploy your own OpenClaw agent in under a minute.',
   },
 }
 

@@ -8,7 +8,7 @@ export default function Navbar() {
   return (
     <nav className="w-full flex items-center justify-between px-6 py-4 bg-black border-b border-gray-900">
       <div className="flex items-center gap-4">
-        <Link href="/" className="text-xl font-bold text-white">🦞 Agentbot</Link>
+        <Link href="/" className="text-xl font-bold text-white">Agentbot</Link>
         <Link href="/docs" className="text-gray-300 hover:text-white">Docs</Link>
         <Link href="/marketplace" className="text-gray-300 hover:text-white">Marketplace</Link>
       </div>

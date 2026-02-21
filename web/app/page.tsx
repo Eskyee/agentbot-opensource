@@ -17,26 +17,26 @@ export default async function Home() {
           <div className="mb-8 text-7xl animate-float">🦞</div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-            Deploy your first
+            Agentbot presents
             <br />
-            <span className="gradient-text">AI agent today</span>
+            <span className="text-white">OpenClaw Deploy</span>
           </h1>
           
           <p className="mt-6 text-base leading-7 text-gray-400 sm:text-xl sm:leading-8">
-            <span className="block">Deploy an AI agent in under 2 minutes</span>
+            <span className="block">Deploy your OpenClaw agent in under 2 minutes</span>
             <span className="block">Chat via Telegram, Discord, or WhatsApp</span>
           </p>
 
-          <p className="mt-2 text-sm text-lobster-300">
+          <p className="mt-2 text-sm text-gray-400">
             Credits included -- no API keys needed
           </p>
           
           <div className="mt-10 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center sm:gap-x-6">
             <Link
               href="/signup"
-              className="rounded-full bg-lobster-500 px-8 py-4 text-center text-lg font-semibold text-white shadow-lg hover:bg-lobster-400 transition-all glow"
+              className="rounded-full bg-gray-900 px-8 py-4 text-center text-lg font-semibold text-white shadow-lg hover:bg-gray-700 transition-all"
             >
-              Deploy your agent
+              Deploy your OpenClaw agent
             </Link>
             <Link
               href="/docs"

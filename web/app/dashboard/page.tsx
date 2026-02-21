@@ -297,7 +297,7 @@ function DashboardContent() {
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-blue-500 rounded-full" 
+                    className="h-full bg-gray-700 rounded-full" 
                     style={{ width: '40%' }}
                   />
                 </div>
@@ -308,15 +308,15 @@ function DashboardContent() {
 
         {/* Help */}
         <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-          <h2 className="text-lg font-semibold mb-4">Need Help?</h2>
+          <h2 className="text-lg font-semibold text-white mb-4">Need Help?</h2>
           <div className="space-y-3 text-sm">
-            <a href="https://docs.openclaw.ai" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <a href="https://docs.openclaw.ai" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors">
               <span>📚</span> Documentation
             </a>
-            <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors">
               <span>💬</span> Discord Community
             </a>
-            <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+            <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-400 hover:text-gray-200 transition-colors">
               <span>🐙</span> GitHub
             </a>
           </div>
