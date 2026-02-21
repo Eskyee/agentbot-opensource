@@ -133,7 +133,7 @@ function DashboardContent() {
 
   if (!instance) return null
 
-  const isRunning = instance.status === 'running'
+  const isRunning = instance?.status === 'running'
 
   // Advanced stats panel
   return (
@@ -144,10 +144,10 @@ function DashboardContent() {
           <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
             <h2 className="text-lg font-semibold mb-4">Agent Details</h2>
             <div className="space-y-2 text-gray-300">
-              <div><strong>Status:</strong> {instance.status}</div>
-              <div><strong>Bot Username:</strong> {instance.botUsername || 'N/A'}</div>
-              <div><strong>Plan:</strong> {instance.plan || 'N/A'}</div>
-              <div><strong>OpenClaw Version:</strong> {instance.openclawVersion || 'N/A'}</div>
+              <div><strong>Status:</strong> {instance?.status}</div>
+              <div><strong>Bot Username:</strong> {instance?.botUsername || 'N/A'}</div>
+              <div><strong>Plan:</strong> {instance?.plan || 'N/A'}</div>
+              <div><strong>OpenClaw Version:</strong> {instance?.openclawVersion || 'N/A'}</div>
             </div>
           </div>
           <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
@@ -212,44 +212,44 @@ function DashboardContent() {
         <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
           <h2 className="text-lg font-semibold mb-4">Instance Info</h2>
           <dl className="space-y-4">
-            {instance.botUsername && (
+            {instance?.botUsername && (
               <div>
                 <dt className="text-sm text-gray-400">Telegram Bot</dt>
                 <dd className="font-mono">
                   <a 
-                    href={`https://t.me/${instance.botUsername}`}
+                    href={`https://t.me/${instance?.botUsername}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-400 hover:underline"
                   >
-                    @{instance.botUsername}
+                    @{instance?.botUsername}
                   </a>
                 </dd>
               </div>
             )}
             <div>
               <dt className="text-sm text-gray-400">Instance ID</dt>
-              <dd className="font-mono text-sm">{instance.userId}</dd>
+              <dd className="font-mono text-sm">{instance?.userId}</dd>
             </div>
             <div>
               <dt className="text-sm text-gray-400">URL</dt>
               <dd className="font-mono text-sm break-all">
-                <a href={instance.url} target="_blank" rel="noopener noreferrer" className="text-lobster-400 hover:underline">
-                  {instance.subdomain}
+                <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-lobster-400 hover:underline">
+                  {instance?.subdomain}
                 </a>
               </dd>
             </div>
             <div>
               <dt className="text-sm text-gray-400">Plan</dt>
-              <dd className="capitalize">{instance.plan || 'Free Trial'}</dd>
+              <dd className="capitalize">{instance?.plan || 'Free Trial'}</dd>
             </div>
             <div>
               <dt className="text-sm text-gray-400">OpenClaw Version</dt>
-              <dd className="font-mono">{instance.openclawVersion || '2026.2.17'}</dd>
+              <dd className="font-mono">{instance?.openclawVersion || '2026.2.17'}</dd>
             </div>
             <div>
               <dt className="text-sm text-gray-400">Started</dt>
-              <dd>{new Date(instance.startedAt).toLocaleString()}</dd>
+              <dd>{instance?.startedAt ? new Date(instance.startedAt).toLocaleString() : 'N/A'}</dd>
             </div>
           </dl>
         </div>
@@ -258,9 +258,9 @@ function DashboardContent() {
         <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
           <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
           <div className="space-y-3">
-            {instance.botUsername && (
+            {instance?.botUsername && (
               <a
-                href={`https://t.me/${instance.botUsername}`}
+                href={`https://t.me/${instance?.botUsername}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-between w-full bg-blue-500 hover:bg-blue-400 px-4 py-3 rounded-lg transition-colors"
