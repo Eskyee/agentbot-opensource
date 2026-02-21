@@ -1,5 +1,6 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import Navbar from "./components/Navbar";
 
 export const metadata: Metadata = {
   title: 'OpenClaw Deploy - Deploy OpenClaw in 60 Seconds',
@@ -23,7 +24,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-base-dark text-white antialiased">{children}</body>
+      <body className="bg-base-dark text-white antialiased">
+        <Navbar />
+        {children}
+      </body>
     </html>
   )
 }

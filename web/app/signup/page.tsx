@@ -6,24 +6,36 @@ import { signIn } from "next-auth/react";
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // In production, you would call a registration API here
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // For demo, just try to sign in (in real app, call /api/register first)
-    const res = await signIn("credentials", {
+    // Register user via API
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error || "Signup failed");
+      setLoading(false);
+      return;
+    }
+    // Auto-login after registration
+    const loginRes = await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
     setLoading(false);
-    if (res?.error) {
-      setError("Signup failed or user already exists");
-    } else if (res?.ok) {
+    if (loginRes?.error) {
+      setError("Signup succeeded, but login failed");
+    } else if (loginRes?.ok) {
       window.location.href = "/dashboard";
     }
   };
@@ -33,6 +45,17 @@ export default function SignupPage() {
       <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
         <h1 className="text-2xl font-bold mb-6 text-center">Sign up for Agentbot</h1>
         <form className="space-y-5" onSubmit={handleSignup}>
+          <div>
+            <label htmlFor="name" className="block text-gray-300 mb-1">Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-lobster-500"
+            />
+          </div>
           <div>
             <label htmlFor="email" className="block text-gray-300 mb-1">Email</label>
             <input

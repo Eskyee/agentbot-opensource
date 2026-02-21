@@ -2,13 +2,14 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
-// In production, replace this with a real user DB lookup
-const users = [
-  { id: "1", name: "Demo User", email: "demo@example.com", password: "password123" }
-];
+const prisma = new PrismaClient();
 
 const handler = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -26,10 +27,10 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials) return null;
-        const user = users.find(
-          (u) => u.email === credentials.email && u.password === credentials.password
-        );
-        if (user) {
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        });
+        if (user && user.password && await bcrypt.compare(credentials.password, user.password)) {
           return { id: user.id, name: user.name, email: user.email };
         }
         return null;
