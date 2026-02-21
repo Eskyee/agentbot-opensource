@@ -202,7 +202,7 @@ function DashboardContent() {
           isRunning ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
         }`}>
           <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-green-400' : 'bg-red-400'}`} />
-          {instance.status}
+{instance?.status}
         </div>
       </div>
 
