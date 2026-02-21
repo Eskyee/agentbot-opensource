@@ -133,7 +133,8 @@ function DashboardContent() {
 
   if (!instance) return null
 
-  const isRunning = instance?.status === 'running'
+  const isRunning = instance.status === 'running'
+  const startedAt = instance.startedAt
 
   // Advanced stats panel
   return (
@@ -249,7 +250,7 @@ function DashboardContent() {
             </div>
             <div>
               <dt className="text-sm text-gray-400">Started</dt>
-              <dd>{instance?.startedAt ? new Date(instance.startedAt as string).toLocaleString() : 'N/A'}</dd>
+              <dd>{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
             </div>
           </dl>
         </div>
@@ -343,19 +344,19 @@ function DashboardContent() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">CPU</span>
-                  <span>{stats.cpu}</span>
+                  <span>{stats?.cpu}</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-lobster-500 rounded-full" 
-                    style={{ width: stats.cpu }}
+                    style={{ width: stats?.cpu }}
                   />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-400">Memory</span>
-                  <span>{stats.memory}</span>
+                  <span>{stats?.memory}</span>
                 </div>
                 <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
                   <div 
