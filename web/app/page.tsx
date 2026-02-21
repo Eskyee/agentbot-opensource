@@ -1,20 +1,13 @@
 import Link from 'next/link'
 import { getPublicPricing } from './lib/stripe-pricing'
-import { neon } from '@neondatabase/serverless';
+// import { neon } from '@neondatabase/serverless';
 
 export const revalidate = 300
 
 export default async function Home() {
   const pricing = await getPublicPricing()
 
-  async function create(formData: FormData) {
-    'use server';
-    // Connect to the Neon database
-    const sql = neon(`${process.env.DATABASE_URL}`);
-    const comment = formData.get('comment');
-    // Insert the comment from the form into the Postgres database
-    await sql('INSERT INTO comments (comment) VALUES ($1)', [comment]);
-  }
+  // Removed form handling logic
 
   return (
     <main className="min-h-screen">
