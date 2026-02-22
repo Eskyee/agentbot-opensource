@@ -46,7 +46,7 @@ export default async function Home() {
               href="#how-it-works" 
               className="w-full sm:w-auto rounded-full border border-gray-700 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-gray-300 hover:text-white hover:border-lobster-500 transition-all text-center"
             >
-              Watch Demo
+                Watch Demo
             </Link>
           </div>
           
