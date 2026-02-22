@@ -14,9 +14,6 @@ export default function Footer() {
           </div>
           
           <div className="text-sm text-gray-500">
-            <Link href="https://uk.linkedin.com/in/steipete" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
-              steipete
-            </Link> •{' '}
             <Link href="https://x.com/Esky33junglist" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
               @Esky33junglist
             </Link> •{' '}
