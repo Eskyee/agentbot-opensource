@@ -269,7 +269,14 @@ export default async function Home() {
             <a href="/terms" className="hover:text-white">Terms</a>
             <a href="/privacy" className="hover:text-white">Privacy</a>
           </div>
-          <p className="text-gray-500">Deploy OpenClaw © 2026 Agentbot • Built with ❤️ in London by raveculture</p>
+          <p className="text-gray-500">
+            <a href="https://openclaw.ai" target="_blank" rel="noopener noreferrer" className="hover:text-white">Deploy OpenClaw</a> •{' '}
+            <a href="https://moltx.io" target="_blank" rel="noopener noreferrer" className="hover:text-white">Moltx</a> •{' '}
+            <a href="https://www.moltbook.com" target="_blank" rel="noopener noreferrer" className="hover:text-white">Moltbook</a>{' '}
+            <a href="https://uk.linkedin.com/in/steipete" target="_blank" rel="noopener noreferrer" className="hover:text-white">steipete</a> •{' '}
+            <a href="https://x.com/Esky33junglist" target="_blank" rel="noopener noreferrer" className="hover:text-white">@Esky33junglist</a> •{' '}
+            <a href="https://raveculture.xyz" target="_blank" rel="noopener noreferrer" className="hover:text-white">raveculture.xyz</a> © 2026 Agentbot • Built with ❤️ in London by raveculture
+          </p>
         </div>
       </footer>
     </main>

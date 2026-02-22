@@ -14,7 +14,24 @@ export default function Footer() {
           </div>
           
           <div className="text-sm text-gray-500">
-            Deploy OpenClaw © 2026 Agentbot • Built with ❤️ in London by raveculture
+            <Link href="https://openclaw.ai" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              Deploy OpenClaw
+            </Link> •{' '}
+            <Link href="https://moltx.io" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              Moltx
+            </Link> •{' '}
+            <Link href="https://www.moltbook.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              Moltbook
+            </Link>{' '}
+            <Link href="https://uk.linkedin.com/in/steipete" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              steipete
+            </Link> •{' '}
+            <Link href="https://x.com/Esky33junglist" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              @Esky33junglist
+            </Link> •{' '}
+            <Link href="https://raveculture.xyz" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              raveculture.xyz
+            </Link> © 2026 Agentbot • Built with ❤️ in London by raveculture
           </div>
         </div>
       </div>
