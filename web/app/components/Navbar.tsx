@@ -6,15 +6,6 @@ import { useState, useEffect } from "react";
 export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     if (menuOpen) {
@@ -28,9 +19,7 @@ export default function Navbar() {
   }, [menuOpen]);
 
   return (
-    <nav className={`w-full flex items-center justify-between px-4 py-3 fixed top-0 z-50 transition-all duration-300 ${
-      scrolled ? "bg-black/90 backdrop-blur-md border-b border-gray-900/50" : "bg-transparent"
-    }`}>
+    <nav className={`w-full flex items-center justify-between px-4 py-3 fixed top-0 z-50 bg-black/90 backdrop-blur-md border-b border-gray-900/50`}>
       <div className="flex items-center gap-3">
         <Link href="/" className="text-lg font-bold text-white flex items-center gap-2">
           <span className="text-2xl">🦞</span>
