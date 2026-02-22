@@ -5,25 +5,54 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
-  title: 'Agentbot | OpenClaw Deploy - Deploy OpenClaw in 60 Seconds',
-  description: 'Agentbot presents OpenClaw Deploy: Deploy your own OpenClaw agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
+  metadataBase: new URL('https://agentbot.raveculture.xyz'),
+  title: {
+    default: 'Agentbot | Deploy AI Agents in 60 Seconds',
+    template: '%s | Agentbot',
+  },
+  description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation. Start for free.',
+  keywords: ['AI agent', 'OpenClaw', 'deploy AI', 'Telegram bot', 'AI automation', 'chatbot', 'no-code AI'],
+  authors: [{ name: 'Agentbot', url: 'https://agentbot.raveculture.xyz' }],
+  creator: 'Agentbot',
+  publisher: 'Agentbot',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://agentbot.raveculture.xyz',
+    siteName: 'Agentbot',
+    title: 'Agentbot | Deploy AI Agents in 60 Seconds',
+    description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
+    images: [
+      {
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'Agentbot - AI Agent Deployment Platform',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Agentbot | Deploy AI Agents in 60 Seconds',
+    description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
+    creator: '@agentbot',
+    images: ['/og-image.svg'],
+  },
   icons: {
     icon: '/favicon.svg',
     apple: '/favicon.svg',
   },
-  openGraph: {
-    title: 'Agentbot | OpenClaw Deploy',
-    description: 'Agentbot presents OpenClaw Deploy: Deploy your own OpenClaw agent in under a minute.',
-    type: 'website',
-    url: 'https://agentbot.raveculture.xyz',
-    siteName: 'Agentbot',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Agentbot | OpenClaw Deploy',
-    description: 'Agentbot presents OpenClaw Deploy: Deploy your own OpenClaw agent in under a minute.',
-  },
-  metadataBase: new URL('https://agentbot.raveculture.xyz'),
 }
 
 export default function RootLayout({

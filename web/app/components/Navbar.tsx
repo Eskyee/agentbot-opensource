@@ -47,7 +47,6 @@ export default function Navbar() {
       <div className="hidden md:flex items-center gap-1">
         <Link href="/docs" className="px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-gray-800/50 transition-colors">Docs</Link>
         <Link href="/marketplace" className="px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-gray-800/50 transition-colors">Marketplace</Link>
-        </div>
         
         {status === "loading" ? null : session ? (
           <div className="flex items-center gap-2 ml-2">

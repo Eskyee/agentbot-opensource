@@ -290,6 +290,7 @@ export default function SettingsPage() {
             </Link>
           </div>
         )}
+        </div>
       </main>
     </div>
   )

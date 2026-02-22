@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00ff00"/>
+      <stop offset="100%" style="stop-color:#00cc00"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="600" y="280" font-family="monospace" font-size="80" font-weight="bold" fill="#00ff00" text-anchor="middle">AGENTBOT</text>
+  <text x="600" y="360" font-family="sans-serif" font-size="32" fill="#ffffff" text-anchor="middle">Deploy AI Agents in 60 Seconds</text>
+  <text x="600" y="420" font-family="sans-serif" font-size="24" fill="#888888" text-anchor="middle">Secure cloud hosting • Preconfigured templates • Chat-first automation</text>
+  <rect x="450" y="480" width="300" height="60" rx="30" fill="url(#accent)"/>
+  <text x="600" y="520" font-family="sans-serif" font-size="24" fill="#000000" text-anchor="middle" font-weight="bold">Get Started Free</text>
+</svg>

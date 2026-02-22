@@ -60,17 +60,21 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 }
 
 export default function BillingPage() {
-  const [credits, setCredits] = useState(100)
-  const [usage] = useState(34.89)
-  const [allowance] = useState(15)
-  const [currentPlan] = useState('starter')
+  const [credits, setCredits] = useState(0)
+  const [usage] = useState(0)
+  const [allowance] = useState(0)
+  const [currentPlan] = useState('trial')
 
   const creditPacks = [
-    { amount: 1000, price: 10, popular: false },
-    { amount: 2500, price: 25, popular: true },
-    { amount: 5000, price: 50, popular: false },
-    { amount: 10000, price: 100, popular: false },
+    { amount: 1000, price: 10, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_1000 || 'price_1T3VB7DiHU0UF7aWSpENrtMc', popular: false },
+    { amount: 2500, price: 25, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_2500 || 'price_1T3VB8DiHU0UF7aWCZtHkoRw', popular: true },
+    { amount: 5000, price: 50, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_5000 || 'price_1T3VB8DiHU0UF7aWQbq3pGWV', popular: false },
+    { amount: 10000, price: 100, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_10000 || 'price_1T3VB9DiHU0UF7aWjYthyR5L', popular: false },
   ]
+
+  const buyCredits = async (priceId: string) => {
+    window.location.href = `/api/stripe/credits?price=${priceId}`
+  }
 
   const plans = [
     {
@@ -151,13 +155,15 @@ export default function BillingPage() {
                     POPULAR
                   </span>
                 )}
-                <div className="text-3xl font-bold">${pack.price}</div>
+                <div className="text-3xl font-bold">${(pack.amount / 100).toFixed(0)}</div>
                 <div className="text-gray-400">{pack.amount.toLocaleString()} credits</div>
-                <button className={`mt-4 w-full rounded-lg py-2 font-semibold ${
-                  pack.popular 
-                    ? 'bg-lobster-500 hover:bg-lobster-400' 
-                    : 'bg-gray-800 hover:bg-gray-700'
-                }`}>
+                <button 
+                  onClick={() => buyCredits(pack.priceId)}
+                  className={`mt-4 w-full rounded-lg py-2 font-semibold ${
+                    pack.popular 
+                      ? 'bg-lobster-500 hover:bg-lobster-400' 
+                      : 'bg-gray-800 hover:bg-gray-700'
+                  }`}>
                   Select
                 </button>
               </div>
@@ -237,6 +243,7 @@ export default function BillingPage() {
           <button className="rounded-lg border border-gray-700 px-6 py-2 hover:bg-gray-800">
             Contact Sales
           </button>
+        </div>
         </div>
       </main>
     </div>
