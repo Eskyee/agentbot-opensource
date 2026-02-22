@@ -32,19 +32,19 @@ export default async function Home() {
           <div className="mt-8 px-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
             <Link
               href="/signup"
-              className="w-full sm:w-auto rounded-full bg-green-500 hover:bg-green-400 px-6 py-3 sm:py-4 text-base sm:text-lg font-bold text-black shadow-lg hover:shadow-green-500/25 transition-all text-center"
+              className="w-full sm:w-auto rounded-full bg-white text-black hover:bg-gray-200 px-6 py-3 sm:py-4 text-base sm:text-lg font-bold shadow-lg transition-all text-center"
             >
               Deploy Agent
             </Link>
             <Link
               href="/docs"
-              className="w-full sm:w-auto rounded-full bg-gray-800 hover:bg-green-500 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:text-black transition-all text-center"
+              className="w-full sm:w-auto rounded-full border border-gray-600 hover:border-gray-400 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:bg-gray-800 transition-all text-center"
             >
               Docs
             </Link>
             <Link 
               href="#how-it-works" 
-              className="w-full sm:w-auto rounded-full bg-gray-800 hover:bg-green-500 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:text-black transition-all text-center"
+              className="w-full sm:w-auto rounded-full border border-gray-600 hover:border-gray-400 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:bg-gray-800 transition-all text-center"
             >
               Watch Demo
             </Link>
