@@ -251,34 +251,13 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ Onboarding call</li>
                 <li className="flex items-center gap-2">✓ 30-day hands-on support</li>
               </ul>
-<a href="/api/stripe/checkout?plan=white_glove" className="mt-4 block w-full rounded-lg bg-lobster-500 hover:bg-lobster-400 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+              <a href="/api/stripe/checkout?plan=white_glove" className="mt-4 block w-full rounded-lg bg-lobster-500 hover:bg-lobster-400 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                 Contact Sales
               </a>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-8 px-4 border-t border-gray-800">
-        <div className="mx-auto max-w-5xl flex flex-col items-center gap-4 text-sm text-gray-400">
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            <a href="#pricing" className="hover:text-white">Pricing</a>
-            <a href="/docs" className="hover:text-white">Docs</a>
-            <a href="/marketplace" className="hover:text-white">Marketplace</a>
-            <a href="/terms" className="hover:text-white">Terms</a>
-            <a href="/privacy" className="hover:text-white">Privacy</a>
-          </div>
-          <p className="text-gray-500">
-            <a href="https://openclaw.ai" target="_blank" rel="noopener noreferrer" className="hover:text-white">Deploy OpenClaw</a> •{' '}
-            <a href="https://moltx.io" target="_blank" rel="noopener noreferrer" className="hover:text-white">Moltx</a> •{' '}
-            <a href="https://www.moltbook.com" target="_blank" rel="noopener noreferrer" className="hover:text-white">Moltbook</a>{' '}
-            <a href="https://uk.linkedin.com/in/steipete" target="_blank" rel="noopener noreferrer" className="hover:text-white">steipete</a> •{' '}
-            <a href="https://x.com/Esky33junglist" target="_blank" rel="noopener noreferrer" className="hover:text-white">@Esky33junglist</a> •{' '}
-            <a href="https://raveculture.xyz" target="_blank" rel="noopener noreferrer" className="hover:text-white">raveculture.xyz</a> © 2026 Agentbot • Built with ❤️ in London by raveculture
-          </p>
-        </div>
-      </footer>
     </main>
   )
 }
