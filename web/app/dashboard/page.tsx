@@ -216,7 +216,14 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize">{instance?.plan || 'Free Trial'}</dd>
+                  <dd className="text-gray-300 capitalize flex items-center gap-2">
+                    {instance?.plan || 'Free Trial'}
+                    {(instance?.plan === 'trial' || !instance?.plan) && (
+                      <Link href="/#pricing" className="ml-2 text-xs bg-lobster-500 hover:bg-lobster-400 text-white px-2 py-1 rounded-full">
+                        Upgrade
+                      </Link>
+                    )}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Version</dt>
