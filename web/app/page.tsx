@@ -237,7 +237,7 @@ export default async function Home() {
 
             {/* White Glove */}
             <div className="bg-gray-900 rounded-xl p-5 border-2 border-lobster-500 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-yellow-400 px-3 py-1 rounded-full text-xs font-bold text-black">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 hover:bg-green-400 px-3 py-1 rounded-full text-xs font-bold text-black">
                 Premium
               </div>
               <h3 className="text-lg font-semibold mt-2">White Glove</h3>
