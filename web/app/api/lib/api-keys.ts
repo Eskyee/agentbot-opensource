@@ -1,10 +1,10 @@
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('INTERNAL_API_KEY is required in production') })() : 'dev-secret-key-12345')
-
 export function getInternalApiKey(): string {
-  if (process.env.NODE_ENV === 'production' && !process.env.INTERNAL_API_KEY) {
-    throw new Error('INTERNAL_API_KEY environment variable is not set')
+  const key = process.env.INTERNAL_API_KEY
+  if (!key) {
+    console.warn('INTERNAL_API_KEY not set, using fallback (not secure for production)')
+    return 'dev-secret-key-12345'
   }
-  return INTERNAL_API_KEY
+  return key
 }
 
 export function getBackendApiUrl(): string {

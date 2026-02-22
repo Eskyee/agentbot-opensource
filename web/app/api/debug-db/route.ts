@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server'
 
-const DEBUG_SECRET = process.env.DEBUG_SECRET
-
-export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  
-  if (!DEBUG_SECRET || authHeader !== `Bearer ${DEBUG_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET() {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not available in production' }, { status: 404 })
   }
   
   const hasDbUrl = !!process.env.DATABASE_URL
