@@ -236,11 +236,8 @@ export default async function Home() {
             </div>
 
             {/* White Glove */}
-            <div className="bg-gradient-to-br from-lobster-500/20 to-purple-600/20 rounded-xl p-5 border-2 border-lobster-500">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-lobster-500 to-purple-500 px-3 py-1 rounded-full text-xs font-semibold">
-                Premium
-              </div>
-              <h3 className="text-lg font-semibold mt-2">White Glove</h3>
+            <div className="bg-gray-900 rounded-xl p-5 border-2 border-lobster-500">
+              <h3 className="text-lg font-semibold">White Glove</h3>
               <div className="mt-2">
                 <span className="text-3xl font-bold">£199</span>
                 <span className="text-gray-400 text-sm"> /mo</span>
@@ -251,7 +248,7 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ Onboarding call</li>
                 <li className="flex items-center gap-2">✓ 30-day hands-on support</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=white_glove" className="mt-4 block w-full rounded-lg bg-gradient-to-r from-lobster-500 to-purple-500 hover:from-lobster-400 hover:to-purple-400 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+              <Link href="/api/stripe/checkout?plan=white_glove" className="mt-4 block w-full rounded-lg bg-lobster-500 hover:bg-lobster-400 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                 Get Started
               </Link>
             </div>
