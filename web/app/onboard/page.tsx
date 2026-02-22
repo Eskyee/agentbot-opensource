@@ -389,14 +389,14 @@ function OnboardContent() {
                 </div>
               )}
               
-              {/* API Key input for providers that need it */}
+              {/* API Key - optional for OpenRouter, required for others */}
               {(aiProvider === 'openrouter' || aiProvider === 'gemini' || aiProvider === 'anthropic' || aiProvider === 'openai' || aiProvider === 'groq') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {aiProvider === 'openrouter' ? 'OpenRouter' : 
-                     aiProvider === 'gemini' ? 'Gemini' :
-                     aiProvider === 'anthropic' ? 'Anthropic' : 
-                     aiProvider === 'groq' ? 'Groq' : 'OpenAI'} API Key
+                    {aiProvider === 'openrouter' ? 'OpenRouter API Key (optional - free tier included)' : 
+                     aiProvider === 'gemini' ? 'Gemini API Key' :
+                     aiProvider === 'anthropic' ? 'Anthropic API Key' : 
+                     aiProvider === 'groq' ? 'Groq API Key' : 'OpenAI API Key'}
                   </label>
                   <input
                     type="password"
@@ -422,10 +422,10 @@ function OnboardContent() {
                 </button>
                 <button
                   onClick={() => setStep('deploy')}
-                  disabled={!apiKey}
+                  disabled={aiProvider !== 'openrouter' && !apiKey}
                   className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
-                  Continue →
+                  {aiProvider === 'openrouter' ? 'Deploy Now (Free)' : 'Continue →'}
                 </button>
               </div>
             </div>

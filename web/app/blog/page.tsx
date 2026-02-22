@@ -52,12 +52,14 @@ const blogPosts = [
 ];
 
 const upcomingFeatures = [
-  { status: 'Coming Soon', title: 'Agent Builder UI', desc: 'Visual drag-and-drop agent creation' },
-  { status: 'Coming Soon', title: 'WhatsApp Channel', desc: 'Deploy agents to WhatsApp' },
-  { status: 'In Progress', title: 'Custom Domains', desc: 'Use your own domain for agents' },
-  { status: 'In Progress', title: 'Web Dashboard Metrics', desc: 'Real-time analytics & usage graphs' },
-  { status: 'In Progress', title: 'API Access', desc: 'REST API for programmatic control' },
-  { status: 'Research', title: 'Voice Agents', desc: 'Voice-powered AI agents' },
+  { status: 'In Progress', title: 'Custom Domains', desc: 'Deploy to your own .com' },
+  { status: 'In Progress', title: 'Metrics Dashboard', desc: 'Real-time usage graphs' },
+  { status: 'In Progress', title: 'REST API', desc: 'Programmatic control' },
+  { status: 'Coming Soon', title: 'WhatsApp', desc: 'Deploy agents to WA' },
+  { status: 'Coming Soon', title: 'Agent Builder', desc: 'Visual drag-drop UI' },
+  { status: 'Coming Soon', title: 'Voice Mode', desc: 'Talk to your agent' },
+  { status: 'Research', title: 'Neural Link', desc: 'Direct brain接口' },
+  { status: 'Research', title: 'Time Travel', desc: 'Replay agent decisions' },
 ];
 
 export default function BlogPage() {
