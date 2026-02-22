@@ -7,7 +7,8 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "echo \"No tests configured\" && exit 0",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "stripe": "^20.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.40.0",
     "@types/node": "20.19.33",
     "@types/react": "18.3.28",
     "@types/react-dom": "^18",
