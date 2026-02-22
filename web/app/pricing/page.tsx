@@ -160,7 +160,7 @@ function PricingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 export default function PricingPage() {
   return (
     <div className="flex h-screen bg-black text-white">
-      <PricingSidebar userName="User" credits={0.01} />
+      <PricingSidebar userName="Esky" credits={0.01} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-5xl mx-auto">

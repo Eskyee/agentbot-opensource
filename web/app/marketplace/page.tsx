@@ -82,7 +82,7 @@ const channels = ['Telegram', 'Discord', 'WhatsApp'];
 export default function MarketplacePage() {
   return (
     <div className="flex h-screen bg-black text-white">
-      <MarketplaceSidebar userName="User" credits={0.01} />
+      <MarketplaceSidebar userName="Esky" credits={0.01} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-6xl mx-auto">

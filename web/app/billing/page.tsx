@@ -106,7 +106,7 @@ export default function BillingPage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <BillingSidebar userName="User" credits={0.01} />
+      <BillingSidebar userName="Esky" credits={0.01} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">

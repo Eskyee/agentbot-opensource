@@ -125,7 +125,7 @@ function DashboardContent() {
     return (
       <div className="flex h-screen bg-black">
         {/* Sidebar */}
-        <DashboardSidebar userName="User" />
+        <DashboardSidebar userName="Esky" />
         
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md">
@@ -152,7 +152,7 @@ function DashboardContent() {
   return (
     <div className="flex h-screen bg-black">
       {/* Sidebar */}
-      <DashboardSidebar userName="User" credits={0.01} />
+      <DashboardSidebar userName="Esky" credits={0.01} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
