@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="w-full border-t border-gray-800 bg-black/50 py-8 mt-auto">
       <div className="mx-auto max-w-7xl px-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col items-center justify-center gap-4 text-center">
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
             <Link href="/#pricing" className="hover:text-white transition-colors">Pricing</Link>
             <Link href="/docs" className="hover:text-white transition-colors">Docs</Link>
