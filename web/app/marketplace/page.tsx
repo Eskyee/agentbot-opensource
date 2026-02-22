@@ -1,5 +1,61 @@
 import Link from 'next/link';
 
+const navItems = [
+  { icon: '🤖', label: 'Agents', href: '/agents', active: false },
+  { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: true },
+  { icon: '💳', label: 'Billing', href: '/billing', active: false },
+  { icon: '⚙️', label: 'Account', href: '/settings', active: false },
+]
+
+function MarketplaceSidebar({ userName, credits = 0 }: { userName: string; credits?: number }) {
+  return (
+    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
+      <div className="p-6 border-b border-gray-800">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="text-2xl">🦞</span>
+          <span className="text-xl font-bold">Agentbot</span>
+        </Link>
+      </div>
+
+      <nav className="flex-1 p-4">
+        <div className="space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                item.active 
+                  ? 'bg-lobster-500/20 text-lobster-400' 
+                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+              }`}
+            >
+              <span>{item.icon}</span>
+              <span className="font-medium">{item.label}</span>
+            </Link>
+          ))}
+        </div>
+
+        <div className="mt-8 p-4 bg-gray-800 rounded-xl">
+          <div className="text-sm text-gray-400 mb-1">Credits</div>
+          <div className="text-xl font-bold">${credits.toFixed(2)}</div>
+        </div>
+      </nav>
+
+      <div className="p-4 border-t border-gray-800">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-lobster-500 rounded-full flex items-center justify-center font-bold">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="font-medium">{userName}</div>
+            <div className="text-sm text-gray-400">Free Trial</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+}
+
 const templates = [
   {
     name: 'globe',
@@ -25,7 +81,11 @@ const channels = ['Telegram', 'Discord', 'WhatsApp'];
 
 export default function MarketplacePage() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <div className="flex h-screen bg-black text-white">
+      <MarketplaceSidebar userName="User" credits={0.01} />
+
+      <main className="flex-1 overflow-y-auto">
+        <div className="p-8 max-w-6xl mx-auto">
       <div className="mx-auto max-w-6xl">
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">Agent Marketplace</h1>
@@ -80,7 +140,8 @@ export default function MarketplacePage() {
             </Link>
           </div>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+    </div>
   );
 }
