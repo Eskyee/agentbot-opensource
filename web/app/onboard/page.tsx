@@ -120,7 +120,7 @@ function OnboardContent() {
           {FLOW_STEPS.map((s, i) => (
             <div key={s} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                step === s ? 'bg-lobster-500' : 
+                step === s ? 'bg-white' : 
                 FLOW_STEPS.indexOf(step) > i ? 'bg-green-500' : 'bg-gray-800'
               }`}>
                 {FLOW_STEPS.indexOf(step) > i ? '✓' : i + 1}
@@ -144,23 +144,23 @@ function OnboardContent() {
                 <h3 className="font-semibold mb-4">Follow these steps:</h3>
                 <ol className="space-y-4 text-gray-300">
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">1</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">1</span>
                     <span>Open Telegram and search for <code className="bg-gray-700 px-2 py-0.5 rounded">@BotFather</code></span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">2</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">2</span>
                     <span>Send the command <code className="bg-gray-700 px-2 py-0.5 rounded">/newbot</code></span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">3</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">3</span>
                     <span>Choose a name for your bot (e.g., "My AI Assistant")</span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">4</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">4</span>
                     <span>Choose a username ending in <code className="bg-gray-700 px-2 py-0.5 rounded">_bot</code></span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">5</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">5</span>
                     <span>Copy the <strong>API token</strong> BotFather gives you</span>
                   </li>
                 </ol>
@@ -177,7 +177,7 @@ function OnboardContent() {
               
               <button
                 onClick={() => setStep('token')}
-                className="block w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors"
+                className="block w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
               >
                 I have my token →
               </button>
@@ -200,7 +200,7 @@ function OnboardContent() {
                   value={telegramToken}
                   onChange={(e) => setTelegramToken(e.target.value)}
                   placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-lobster-500"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
                 />
                 <p className="text-sm text-gray-500 mt-2">
                   Paste the token you received from @BotFather
@@ -223,7 +223,7 @@ function OnboardContent() {
                 <button
                   onClick={validateToken}
                   disabled={!telegramToken || isValidating}
-                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   {isValidating ? 'Validating...' : 'Validate Token →'}
                 </button>
@@ -245,15 +245,15 @@ function OnboardContent() {
                 <h3 className="font-semibold mb-4">How to get your Telegram ID:</h3>
                 <ol className="space-y-4 text-gray-300">
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">1</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">1</span>
                     <span>Open Telegram and message <code className="bg-gray-700 px-2 py-0.5 rounded">@userinfobot</code></span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">2</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">2</span>
                     <span>It will reply with your user ID (a number like <code className="bg-gray-700 px-2 py-0.5 rounded">123456789</code>)</span>
                   </li>
                   <li className="flex gap-3">
-                    <span className="bg-lobster-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">3</span>
+                    <span className="bg-white text-white w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">3</span>
                     <span>Copy and paste that number below</span>
                   </li>
                 </ol>
@@ -277,7 +277,7 @@ function OnboardContent() {
                   value={telegramUserId}
                   onChange={(e) => setTelegramUserId(e.target.value.replace(/\D/g, ''))}
                   placeholder="123456789"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-lobster-500"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
                 />
                 <p className="text-sm text-gray-500 mt-2">
                   This ensures only YOU can chat with your bot
@@ -294,7 +294,7 @@ function OnboardContent() {
                 <button
                   onClick={() => setStep('ai')}
                   disabled={!telegramUserId}
-                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   Continue →
                 </button>
@@ -325,7 +325,7 @@ function OnboardContent() {
                     onClick={() => setAiProvider(provider.id)}
                     className={`w-full text-left p-4 rounded-xl border ${
                       aiProvider === provider.id 
-                        ? 'border-lobster-500 bg-lobster-500/10' 
+                        ? 'border-white bg-white/10' 
                         : 'border-gray-700 hover:border-gray-600'
                     } transition-colors`}
                   >
@@ -350,15 +350,15 @@ function OnboardContent() {
                   <h3 className="font-semibold mb-4">Get your free OpenRouter API key:</h3>
                   <ol className="space-y-3 text-gray-300 text-sm">
                     <li className="flex gap-3">
-                      <span className="bg-lobster-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
-                      <span>Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-lobster-400 underline">openrouter.ai/keys</a></span>
+                      <span className="bg-white text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
+                      <span>Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-white underline">openrouter.ai/keys</a></span>
                     </li>
                     <li className="flex gap-3">
-                      <span className="bg-lobster-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
+                      <span className="bg-white text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
                       <span>Sign up with Google (free, no credit card)</span>
                     </li>
                     <li className="flex gap-3">
-                      <span className="bg-lobster-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
+                      <span className="bg-white text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
                       <span>Click "Create Key" and copy it</span>
                     </li>
                   </ol>
@@ -374,15 +374,15 @@ function OnboardContent() {
                   <h3 className="font-semibold mb-4">Get your Gemini API key:</h3>
                   <ol className="space-y-3 text-gray-300 text-sm">
                     <li className="flex gap-3">
-                      <span className="bg-lobster-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
-                      <span>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-lobster-400 underline">aistudio.google.com/apikey</a></span>
+                      <span className="bg-white text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
+                      <span>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-white underline">aistudio.google.com/apikey</a></span>
                     </li>
                     <li className="flex gap-3">
-                      <span className="bg-lobster-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
+                      <span className="bg-white text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
                       <span>Sign in with Google and click "Create API key"</span>
                     </li>
                     <li className="flex gap-3">
-                      <span className="bg-lobster-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
+                      <span className="bg-white text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
                       <span>Copy the key and paste below</span>
                     </li>
                   </ol>
@@ -408,7 +408,7 @@ function OnboardContent() {
                       aiProvider === 'anthropic' ? 'sk-ant-...' : 
                       aiProvider === 'groq' ? 'gsk_...' : 'sk-...'
                     }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-lobster-500"
+                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
                   />
                 </div>
               )}
@@ -423,7 +423,7 @@ function OnboardContent() {
                 <button
                   onClick={() => setStep('deploy')}
                   disabled={!apiKey}
-                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   Continue →
                 </button>
@@ -479,7 +479,7 @@ function OnboardContent() {
                 <button
                   onClick={deploy}
                   disabled={isDeploying}
-                  className="w-full bg-lobster-500 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors disabled:opacity-50 sm:flex-1"
+                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 sm:flex-1"
                 >
                   {isDeploying ? (
                     <span className="flex items-center justify-center gap-2">

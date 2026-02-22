@@ -53,7 +53,7 @@ export default function SignupPage() {
               name="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-lobster-500"
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
             />
           </div>
           <div>
@@ -65,7 +65,7 @@ export default function SignupPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-lobster-500"
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
             />
           </div>
           <div>
@@ -77,12 +77,12 @@ export default function SignupPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-lobster-500"
+              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
             />
           </div>
           <button
             type="submit"
-            className="w-full rounded-lg bg-lobster-500 py-2 font-semibold text-white hover:bg-lobster-400 transition-colors"
+            className="w-full rounded-lg bg-white py-2 font-semibold text-gray-900 hover:bg-gray-200 transition-colors"
             disabled={loading}
           >
             {loading ? "Signing up..." : "Sign up"}
@@ -114,7 +114,7 @@ export default function SignupPage() {
         </div>
         <p className="mt-8 text-center text-gray-400">
           Already have an account?{' '}
-          <Link href="/login" className="text-lobster-400 hover:underline">Log in</Link>
+          <Link href="/login" className="text-white hover:underline">Log in</Link>
         </p>
       </div>
     </main>

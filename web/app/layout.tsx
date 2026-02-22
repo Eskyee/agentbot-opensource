@@ -51,8 +51,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.svg',
-    apple: '/favicon.svg',
+    apple: '/apple-touch-icon.png',
   },
+}
+
+export const viewport = {
+  themeColor: '#0052FF',
 }
 
 export default function RootLayout({
@@ -62,6 +66,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+      </head>
       <body className="bg-base-dark text-white antialiased pt-[60px] flex flex-col min-h-screen">
         <Providers>
           <Navbar />

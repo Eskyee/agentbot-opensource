@@ -55,7 +55,7 @@ function LoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-lobster-500"
+            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
           />
         </div>
         <div>
@@ -67,7 +67,7 @@ function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-lobster-500"
+            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
           />
         </div>
         <button
@@ -104,7 +104,7 @@ function LoginForm() {
       </div>
       <p className="mt-8 text-center text-gray-400">
         Don&apos;t have an account?{' '}
-        <Link href="/signup" className="text-lobster-400 hover:underline">Sign up</Link>
+        <Link href="/signup" className="text-white hover:underline">Sign up</Link>
       </p>
     </div>
   );

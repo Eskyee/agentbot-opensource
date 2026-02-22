@@ -28,7 +28,7 @@ function MarketplaceSidebar({ userName, credits = 0 }: { userName: string; credi
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 item.active 
-                  ? 'bg-lobster-500/20 text-lobster-400' 
+                  ? 'bg-white/20 text-white' 
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
             >
@@ -46,7 +46,7 @@ function MarketplaceSidebar({ userName, credits = 0 }: { userName: string; credi
 
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-lobster-500 rounded-full flex items-center justify-center font-bold">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -140,7 +140,7 @@ export default function MarketplacePage() {
               <p className="text-gray-400 text-sm mb-4">
                 Publish your own agents to the marketplace and share reusable setups with your team.
               </p>
-              <Link href="/signup" className="text-lobster-400 hover:underline">
+              <Link href="/signup" className="text-white hover:underline">
                 Deploy your first agent →
               </Link>
             </div>

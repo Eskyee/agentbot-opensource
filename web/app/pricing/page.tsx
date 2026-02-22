@@ -127,7 +127,7 @@ function PricingSidebar({ userName, credits = 0 }: { userName: string; credits?:
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 item.active 
-                  ? 'bg-lobster-500/20 text-lobster-400' 
+                  ? 'bg-white/20 text-white' 
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
             >
@@ -145,7 +145,7 @@ function PricingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-lobster-500 rounded-full flex items-center justify-center font-bold">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -179,12 +179,12 @@ export default function PricingPage() {
                 key={plan.id}
                 className={`relative rounded-2xl p-6 border ${
                   plan.popular
-                    ? 'border-lobster-500 bg-lobster-500/10'
+                    ? 'border-white bg-white/10'
                     : 'border-gray-800 bg-gray-900'
                 }`}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-lobster-500 px-3 py-1 rounded-full text-xs font-semibold">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-full text-xs font-semibold">
                     Popular
                   </div>
                 )}
@@ -210,8 +210,8 @@ export default function PricingPage() {
                   href={plan.href}
                   className={`mt-6 block w-full py-3 rounded-lg text-center font-semibold transition-all ${
                     plan.popular
-                      ? 'bg-gradient-to-r from-lobster-500 to-orange-400 hover:from-lobster-400 hover:to-orange-300 text-white'
-                      : 'bg-gray-700 hover:bg-lobster-500 text-white'
+                      ? 'bg-gradient-to-r from-white to-gray-200 hover:from-gray-100 hover:to-gray-300 text-black'
+                      : 'bg-gray-700 hover:bg-white text-white'
                   }`}
                 >
                   {plan.cta}
@@ -223,7 +223,7 @@ export default function PricingPage() {
           <div className="mt-12 text-center">
             <p className="text-gray-400">
               Need a custom plan?{' '}
-              <Link href="/#contact" className="text-lobster-400 hover:underline">
+              <Link href="/#contact" className="text-white hover:underline">
                 Contact us
               </Link>
             </p>

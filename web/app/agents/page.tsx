@@ -22,7 +22,7 @@ function AgentsSidebar({ userName, credits = 0 }: { userName: string; credits?: 
       <nav className="flex-1 p-4">
         <div className="space-y-1">
           {navItems.map((item) => (
-            <Link key={item.label} href={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${item.active ? 'bg-lobster-500/20 text-lobster-400' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
+            <Link key={item.label} href={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${item.active ? 'bg-white/20 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
               <span>{item.icon}</span>
               <span className="font-medium">{item.label}</span>
             </Link>
@@ -35,7 +35,7 @@ function AgentsSidebar({ userName, credits = 0 }: { userName: string; credits?: 
       </nav>
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-lobster-500 rounded-full flex items-center justify-center font-bold">{userName.charAt(0).toUpperCase()}</div>
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">{userName.charAt(0).toUpperCase()}</div>
           <div>
             <div className="font-medium">{userName}</div>
             <div className="text-sm text-gray-400">Free Trial</div>
@@ -62,7 +62,7 @@ export default function AgentsPage() {
             <div className="text-6xl mb-4">🤖</div>
             <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
             <p className="text-gray-400 mb-6">Agent builder is under development</p>
-            <Link href="/dashboard" className="inline-block bg-lobster-500 hover:bg-lobster-400 px-6 py-3 rounded-lg font-semibold">
+            <Link href="/dashboard" className="inline-block bg-white hover:bg-gray-200 px-6 py-3 rounded-lg font-semibold">
               Go to Dashboard
             </Link>
           </div>

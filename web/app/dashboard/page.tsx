@@ -137,7 +137,7 @@ function DashboardContent() {
             <p className="text-gray-400 mb-8">{error}</p>
             <Link
               href="/onboard"
-              className="inline-block bg-lobster-500 px-8 py-3 rounded-lg font-semibold hover:bg-lobster-400 transition-colors"
+              className="inline-block bg-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
             >
               Deploy New Agent →
             </Link>
@@ -169,7 +169,7 @@ function DashboardContent() {
             <div className="flex items-center gap-3">
               <a
                 href="/agents"
-                className="bg-lobster-500 hover:bg-lobster-400 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
+                className="bg-white hover:bg-gray-200 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
               >
                 <span>+</span> New Agent
               </a>
@@ -212,7 +212,7 @@ function DashboardContent() {
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">URL</dt>
                   <dd className="font-mono text-sm text-gray-300 break-all">
-                    <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-lobster-400 hover:underline">
+                    <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
                       {instance?.subdomain}
                     </a>
                   </dd>
@@ -222,7 +222,7 @@ function DashboardContent() {
                   <dd className="text-gray-300 capitalize flex items-center gap-2">
                     {instance?.plan || 'Free Trial'}
                     {(instance?.plan === 'trial' || !instance?.plan) && (
-                      <Link href="/#pricing" className="ml-2 text-xs bg-lobster-500 hover:bg-lobster-400 text-white px-2 py-1 rounded-full">
+                      <Link href="/#pricing" className="ml-2 text-xs bg-white hover:bg-gray-200 text-white px-2 py-1 rounded-full">
                         Upgrade
                       </Link>
                     )}
@@ -280,7 +280,7 @@ function DashboardContent() {
                     <span>{stats?.cpu || '0%'}</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-lobster-500 rounded-full" style={{ width: stats?.cpu || '0%' }} />
+                    <div className="h-full bg-white rounded-full" style={{ width: stats?.cpu || '0%' }} />
                   </div>
                 </div>
                 <div>
@@ -368,7 +368,7 @@ function DashboardContent() {
                   <span>Calendar</span>
                   <span className="text-green-400">✓</span>
                 </div>
-                <a href="/marketplace" className="block text-center text-sm text-lobster-400 hover:underline mt-3">
+                <a href="/marketplace" className="block text-center text-sm text-white hover:underline mt-3">
                   + Add more skills →
                 </a>
               </div>
@@ -435,7 +435,7 @@ function DashboardContent() {
           </div>
 
           {/* Referral */}
-          <div className="mt-6 bg-gradient-to-r from-lobster-600/20 to-purple-600/20 rounded-2xl p-6 border border-lobster-500/30">
+          <div className="mt-6 bg-gradient-to-r from-white/20 to-gray-200/20 rounded-2xl p-6 border border-white/30">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold mb-1">🎁 Invite Friends, Get Free Months</h2>
@@ -449,7 +449,7 @@ function DashboardContent() {
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(`https://agentbot.raveculture.xyz/ref/${instance?.userId}`)}
-                    className="bg-lobster-500 hover:bg-lobster-400 px-4 py-2 rounded-lg text-sm font-semibold"
+                    className="bg-white hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold"
                   >
                     Copy
                   </button>
@@ -484,7 +484,7 @@ function DashboardSidebar({ userName, credits = 0 }: { userName: string; credits
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 item.active 
-                  ? 'bg-lobster-500/20 text-lobster-400' 
+                  ? 'bg-white/20 text-white' 
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
             >
@@ -504,7 +504,7 @@ function DashboardSidebar({ userName, credits = 0 }: { userName: string; credits
       {/* User */}
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-lobster-500 rounded-full flex items-center justify-center font-bold">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div>

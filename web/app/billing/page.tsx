@@ -29,7 +29,7 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 item.active 
-                  ? 'bg-lobster-500/20 text-lobster-400' 
+                  ? 'bg-white/20 text-white' 
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
             >
@@ -47,7 +47,7 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-lobster-500 rounded-full flex items-center justify-center font-bold">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -85,28 +85,53 @@ export default function BillingPage() {
       id: 'starter',
       name: 'Starter',
       specs: '2 vCPU · 2GB · 30GB',
-      credits: '$15',
-      price: 49,
-      features: ['All models', 'All integrations', '$15 monthly credits', 'Web browsing'],
+      credits: '£15',
+      price: 9,
+      priceId: 'starter',
+      features: ['All AI models', 'Telegram channel', 'Basic analytics'],
     },
     {
-      id: 'professional',
-      name: 'Professional',
+      id: 'pro',
+      name: 'Pro',
       specs: '2 vCPU · 4GB · 50GB',
-      credits: '$25',
-      price: 99,
+      credits: '£25',
+      price: 29,
       popular: true,
-      features: ['All models', 'All integrations', '$25 monthly credits', 'Priority support'],
+      priceId: 'pro',
+      features: ['3x resources', 'Custom domain', 'WhatsApp coming', 'Advanced analytics'],
     },
     {
-      id: 'enterprise',
-      name: 'Enterprise',
+      id: 'pro_plus',
+      name: 'Pro Plus',
+      specs: '4 vCPU · 6GB · 75GB',
+      credits: '£40',
+      price: 49,
+      priceId: 'pro_plus',
+      features: ['Everything in Pro', 'Priority support', 'API access'],
+    },
+    {
+      id: 'scale',
+      name: 'Scale',
       specs: '4 vCPU · 8GB · 100GB',
-      credits: '$50',
-      price: 200,
-      features: ['All models', 'All integrations', '$50 monthly credits', 'Dedicated support'],
+      credits: '£60',
+      price: 79,
+      priceId: 'scale',
+      features: ['5x resources', 'Dedicated support', 'White-label options'],
+    },
+    {
+      id: 'white_glove',
+      name: 'White Glove',
+      specs: '8 vCPU · 16GB · 200GB',
+      credits: '£100',
+      price: 199,
+      priceId: 'white_glove',
+      features: ['10x resources', '24/7 phone support', 'Custom integrations'],
     },
   ]
+
+  const buyPlan = (priceId: string) => {
+    window.location.href = `/api/stripe/checkout?plan=${priceId}`
+  }
 
   return (
     <div className="flex h-screen bg-black text-white">
@@ -135,7 +160,7 @@ export default function BillingPage() {
                 ⚠️ Low balance
               </div>
             )}
-            <button className="rounded-lg bg-lobster-500 px-6 py-2 font-semibold hover:bg-lobster-400">
+            <button className="rounded-lg bg-white px-6 py-2 font-semibold hover:bg-gray-200">
               Buy Credits
             </button>
           </div>
@@ -150,12 +175,12 @@ export default function BillingPage() {
                 key={pack.amount}
                 className={`relative rounded-xl border p-6 ${
                   pack.popular 
-                    ? 'border-lobster-500 bg-lobster-500/10' 
+                    ? 'border-white bg-white/10' 
                     : 'border-gray-800 bg-gray-900/50'
                 }`}
               >
                 {pack.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-lobster-500 text-white text-xs px-3 py-1 rounded-full">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-white text-xs px-3 py-1 rounded-full">
                     POPULAR
                   </span>
                 )}
@@ -165,7 +190,7 @@ export default function BillingPage() {
                   onClick={() => buyCredits(pack.priceId)}
                   className={`mt-4 w-full rounded-lg py-2 font-semibold ${
                     pack.popular 
-                      ? 'bg-lobster-500 hover:bg-lobster-400' 
+                      ? 'bg-white hover:bg-gray-200' 
                       : 'bg-gray-800 hover:bg-gray-700'
                   }`}>
                   Select
@@ -189,12 +214,12 @@ export default function BillingPage() {
                 key={plan.id}
                 className={`relative rounded-xl border p-6 ${
                   plan.popular 
-                    ? 'border-lobster-500 bg-lobster-500/5' 
+                    ? 'border-white bg-white/5' 
                     : 'border-gray-800 bg-gray-900/50'
                 }`}
               >
                 {plan.popular && (
-                  <span className="absolute -top-3 left-4 bg-lobster-500 text-white text-xs px-3 py-1 rounded-full">
+                  <span className="absolute -top-3 left-4 bg-white text-black text-xs px-3 py-1 rounded-full">
                     POPULAR
                   </span>
                 )}
@@ -217,11 +242,13 @@ export default function BillingPage() {
                       <option>2</option>
                       <option>3</option>
                     </select>
-                    <button className={`rounded-lg px-4 py-2 font-semibold ${
-                      currentPlan === plan.id 
-                        ? 'bg-gray-800 text-gray-400' 
-                        : 'bg-lobster-500 hover:bg-lobster-400'
-                    }`}>
+                    <button 
+                      onClick={() => buyPlan(plan.priceId)}
+                      className={`rounded-lg px-4 py-2 font-semibold ${
+                        currentPlan === plan.id 
+                          ? 'bg-gray-800 text-gray-400' 
+                          : 'bg-white hover:bg-gray-200 text-black'
+                      }`}>
                       {currentPlan === plan.id ? 'Current' : 'Buy'}
                     </button>
                   </div>

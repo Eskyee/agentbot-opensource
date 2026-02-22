@@ -29,7 +29,7 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 item.active 
-                  ? 'bg-lobster-500/20 text-lobster-400' 
+                  ? 'bg-white/20 text-white' 
                   : 'text-gray-400 hover:bg-gray-800 hover:text-white'
               }`}
             >
@@ -47,7 +47,7 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
 
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-lobster-500 rounded-full flex items-center justify-center font-bold">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -89,7 +89,6 @@ export default function SettingsPage() {
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">
           <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
-        <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
@@ -99,7 +98,7 @@ export default function SettingsPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
                 activeTab === tab.id 
-                  ? 'bg-lobster-500 text-white' 
+                  ? 'bg-white text-black' 
                   : 'bg-gray-900 text-gray-400 hover:text-white'
               }`}
             >
@@ -121,7 +120,7 @@ export default function SettingsPage() {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full max-w-md rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-lobster-500 focus:outline-none"
+                  className="w-full max-w-md rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-white focus:outline-none"
                 />
               </div>
 
@@ -140,7 +139,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-500">Member since Feb 2026</p>
               </div>
 
-              <button className="rounded-lg bg-lobster-500 px-6 py-2 font-semibold hover:bg-lobster-400">
+              <button className="rounded-lg bg-white px-6 py-2 font-semibold hover:bg-gray-200">
                 Save Changes
               </button>
             </div>
@@ -152,7 +151,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">API Keys</h2>
-              <button className="rounded-lg bg-lobster-500 px-4 py-2 font-semibold hover:bg-lobster-400">
+              <button className="rounded-lg bg-white px-4 py-2 font-semibold hover:bg-gray-200">
                 + Create Key
               </button>
             </div>
@@ -189,7 +188,7 @@ export default function SettingsPage() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Referrals</h2>
             
-            <div className="rounded-2xl border border-lobster-500/30 bg-gradient-to-r from-lobster-600/10 to-purple-600/10 p-6">
+            <div className="rounded-2xl border border-white/30 bg-gradient-to-r from-white/10 to-gray-200/10 p-6">
               <div className="text-sm text-gray-400 mb-2">Your referral link</div>
               <div className="flex gap-3">
                 <input
@@ -200,7 +199,7 @@ export default function SettingsPage() {
                 />
                 <button 
                   onClick={() => navigator.clipboard.writeText(referralLink)}
-                  className="rounded-lg bg-lobster-500 px-4 py-2 font-semibold hover:bg-lobster-400"
+                  className="rounded-lg bg-white px-4 py-2 font-semibold hover:bg-gray-200"
                 >
                   Copy
                 </button>
@@ -236,7 +235,7 @@ export default function SettingsPage() {
             <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
               <h3 className="font-semibold mb-4">Two-Factor Authentication</h3>
               <p className="text-gray-400 text-sm mb-4">Add an extra layer of security to your account</p>
-              <button className="rounded-lg bg-lobster-500 px-4 py-2 font-semibold hover:bg-lobster-400">
+              <button className="rounded-lg bg-white px-4 py-2 font-semibold hover:bg-gray-200">
                 Enable 2FA
               </button>
             </div>
@@ -270,7 +269,7 @@ export default function SettingsPage() {
                   </div>
                   <button 
                     className={`w-12 h-6 rounded-full transition-colors ${
-                      item.enabled ? 'bg-lobster-500' : 'bg-gray-700'
+                      item.enabled ? 'bg-white' : 'bg-gray-700'
                     }`}
                   >
                     <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
@@ -288,7 +287,7 @@ export default function SettingsPage() {
         {activeTab === 'agents' && (
           <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6 text-center">
             <p className="text-gray-400">Manage your agents from the Dashboard</p>
-            <Link href="/dashboard" className="text-lobster-400 hover:underline mt-2 inline-block">
+            <Link href="/dashboard" className="text-white hover:underline mt-2 inline-block">
               Go to Dashboard →
             </Link>
           </div>

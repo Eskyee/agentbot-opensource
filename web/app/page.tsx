@@ -8,6 +8,15 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
+      {/* Launch Banner */}
+      <div className="bg-gradient-to-r from-white/10 to-gray-500/10 border-b border-white/20">
+        <div className="mx-auto max-w-4xl text-center py-3 px-4">
+          <span className="text-sm">
+            🚀 <strong>Launching Soon</strong> — Sign up now for early access and launch pricing!
+          </span>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <section className="px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
@@ -80,7 +89,7 @@ export default async function Home() {
             {/* Free */}
             <div className="border border-gray-800 rounded-lg p-6">
               <h3 className="text-lg font-medium">Free</h3>
-              <p className="mt-2 text-3xl font-bold">$0</p>
+              <p className="mt-2 text-3xl font-bold">£0</p>
               <p className="text-sm text-gray-400 mt-1">3-day trial</p>
               <ul className="mt-6 space-y-3 text-sm text-gray-400">
                 <li>Full platform access</li>
@@ -95,7 +104,7 @@ export default async function Home() {
             {/* Starter */}
             <div className="border border-gray-800 rounded-lg p-6 bg-gray-900/50">
               <h3 className="text-lg font-medium">Starter</h3>
-              <p className="mt-2 text-3xl font-bold">$9<span className="text-lg font-normal text-gray-400">/mo</span></p>
+              <p className="mt-2 text-3xl font-bold">£9<span className="text-lg font-normal text-gray-400">/mo</span></p>
               <p className="text-sm text-gray-400 mt-1">per user</p>
               <ul className="mt-6 space-y-3 text-sm text-gray-400">
                 <li>Everything in Free</li>
@@ -110,7 +119,7 @@ export default async function Home() {
             {/* Pro */}
             <div className="border border-gray-800 rounded-lg p-6">
               <h3 className="text-lg font-medium">Pro</h3>
-              <p className="mt-2 text-3xl font-bold">$29<span className="text-lg font-normal text-gray-400">/mo</span></p>
+              <p className="mt-2 text-3xl font-bold">£29<span className="text-lg font-normal text-gray-400">/mo</span></p>
               <p className="text-sm text-gray-400 mt-1">per user</p>
               <ul className="mt-6 space-y-3 text-sm text-gray-400">
                 <li>3x resources</li>
@@ -136,6 +145,19 @@ export default async function Home() {
           >
             Get Started
           </Link>
+        </div>
+      </section>
+
+      <section id="contact" className="py-20 border-t border-gray-800">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-2xl font-semibold">Contact Sales</h2>
+          <p className="mt-4 text-gray-400">Need custom infrastructure or volume discounts?</p>
+          <a
+            href="mailto:info@agentbot.com"
+            className="mt-8 inline-block rounded-md border border-gray-700 px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+          >
+            Email Us
+          </a>
         </div>
       </section>
     </main>
