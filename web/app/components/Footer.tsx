@@ -14,7 +14,7 @@ export default function Footer() {
           </div>
           
           <div className="text-sm text-gray-500">
-            © 2026 Agentbot • Built with ❤️ in London by raveculture
+            Deploy OpenClaw © 2026 Agentbot • Built with ❤️ in London by raveculture
           </div>
         </div>
       </div>

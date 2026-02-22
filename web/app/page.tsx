@@ -259,19 +259,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 px-4 border-t border-gray-800">
-        <div className="mx-auto max-w-5xl flex flex-col items-center gap-4 text-sm text-gray-400">
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            <a href="#pricing" className="hover:text-white">Pricing</a>
-            <a href="/docs" className="hover:text-white">Docs</a>
-            <a href="/marketplace" className="hover:text-white">Marketplace</a>
-            <a href="/terms" className="hover:text-white">Terms</a>
-            <a href="/privacy" className="hover:text-white">Privacy</a>
-          </div>
-          <p className="text-gray-500">© 2026 Agentbot</p>
-        </div>
-      </footer>
     </main>
   )
 }
