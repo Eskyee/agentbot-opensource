@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   const priceIds: Record<string, string> = {
-    trial: process.env.STRIPE_PRICE_ID_TRIAL || '',
+    trial: process.env.STRIPE_PRICE_ID_TRIAL || process.env.STRIPE_PRICE_ID_STARTER || '',
     starter: process.env.STRIPE_PRICE_ID_STARTER || '',
     pro: process.env.STRIPE_PRICE_ID_PRO || '',
     pro_plus: process.env.STRIPE_PRICE_ID_PRO_PLUS || '',
