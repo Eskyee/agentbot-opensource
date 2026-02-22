@@ -4,12 +4,14 @@
 
 :root {
   --foreground: #ffffff;
-  --background: #0A0B0D;
+  --background: #000000;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom animations */
@@ -22,27 +24,14 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #0052FF 0%, #4f85ff 50%, #84adff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Glow effect */
-.glow {
-  box-shadow: 0 0 40px rgba(0, 82, 255, 0.35);
-}
-
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
 }
 
-/* Focus styles for accessibility */
+/* Focus styles */
 a:focus-visible, button:focus-visible {
-  outline: 2px solid #0052FF;
+  outline: 2px solid #fff;
   outline-offset: 2px;
 }
 
@@ -61,4 +50,9 @@ a:focus-visible, button:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Vercel-style links */
+a {
+  text-decoration: none;
 }
