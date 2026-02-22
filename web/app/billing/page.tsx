@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 
 const navItems = [
   { icon: '🤖', label: 'Agents', href: '/agents', active: false },
@@ -60,10 +61,13 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 }
 
 export default function BillingPage() {
+  const { data: session } = useSession()
   const [credits, setCredits] = useState(0)
   const [usage] = useState(0)
   const [allowance] = useState(0)
   const [currentPlan] = useState('trial')
+
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
 
   const creditPacks = [
     { amount: 1000, price: 10, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_1000 || 'price_1T3VtwDiHU0UF7aW8iQ0jGVe', popular: false },
@@ -106,7 +110,7 @@ export default function BillingPage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <BillingSidebar userName="Esky" credits={0.01} />
+      <BillingSidebar userName={userName} credits={0.01} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">

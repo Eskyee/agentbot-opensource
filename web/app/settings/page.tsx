@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 
 const navItems = [
   { icon: '🤖', label: 'Agents', href: '/agents', active: false },
@@ -60,6 +61,8 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
 }
 
 export default function SettingsPage() {
+  const { data: session } = useSession()
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
   const [activeTab, setActiveTab] = useState('profile')
   const [displayName, setDisplayName] = useState('Atlas')
   const [email] = useState('demo@agentbot.com')
@@ -81,7 +84,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <SettingsSidebar userName="Esky" credits={0.01} />
+      <SettingsSidebar userName={userName} credits={0.01} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">

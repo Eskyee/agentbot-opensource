@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+import { useSession } from 'next-auth/react'
 
 interface InstanceData {
   userId: string
@@ -24,6 +25,8 @@ const navItems = [
 ]
 
 function DashboardContent() {
+  const { data: session } = useSession()
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
   const [stats, setStats] = useState<{ cpu: string; memory: string; uptime?: string; messages?: number; errors?: number; health?: string } | null>(null)
@@ -125,7 +128,7 @@ function DashboardContent() {
     return (
       <div className="flex h-screen bg-black">
         {/* Sidebar */}
-        <DashboardSidebar userName="Esky" />
+        <DashboardSidebar userName={userName} />
         
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-md">
@@ -152,7 +155,7 @@ function DashboardContent() {
   return (
     <div className="flex h-screen bg-black">
       {/* Sidebar */}
-      <DashboardSidebar userName="Esky" credits={0.01} />
+      <DashboardSidebar userName={userName} credits={0.01} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">

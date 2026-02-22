@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 const navItems = [
   { icon: '🤖', label: 'Agents', href: '/agents', active: false },
@@ -80,9 +83,12 @@ const templates = [
 const channels = ['Telegram', 'Discord', 'WhatsApp'];
 
 export default function MarketplacePage() {
+  const { data: session } = useSession()
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+
   return (
     <div className="flex h-screen bg-black text-white">
-      <MarketplaceSidebar userName="Esky" credits={0.01} />
+      <MarketplaceSidebar userName={userName} credits={0.01} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-6xl mx-auto">

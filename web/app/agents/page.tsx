@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 
 const navItems = [
   { icon: '🤖', label: 'Agents', href: '/agents', active: true },
@@ -46,9 +47,12 @@ function AgentsSidebar({ userName, credits = 0 }: { userName: string; credits?: 
 }
 
 export default function AgentsPage() {
+  const { data: session } = useSession()
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+
   return (
     <div className="flex h-screen bg-black text-white">
-      <AgentsSidebar userName="Esky" credits={0} />
+      <AgentsSidebar userName={userName} credits={0} />
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">Agent Builder</h1>
