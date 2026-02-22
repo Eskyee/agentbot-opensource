@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -47,6 +48,9 @@ export default function Navbar() {
       <div className="hidden md:flex items-center gap-1">
         <Link href="/docs" className="px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-gray-800/50 transition-colors">Docs</Link>
         <Link href="/marketplace" className="px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-gray-800/50 transition-colors">Marketplace</Link>
+        <div className="ml-2">
+          <ThemeToggle />
+        </div>
         
         {status === "loading" ? null : session ? (
           <div className="flex items-center gap-2 ml-2">
@@ -80,7 +84,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       <div 
-        className={`md:hidden fixed inset-0 top-[60px] bg-black z-40 transition-transform duration-300 ease-in-out ${
+        className={`md:hidden fixed inset-0 top-[60px] bg-gray-950 z-40 transition-transform duration-300 ease-in-out ${
           menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{ display: menuOpen ? "block" : "none" }}
@@ -100,6 +104,9 @@ export default function Navbar() {
           >
             Marketplace
           </Link>
+          <div className="px-4 py-4">
+            <ThemeToggle />
+          </div>
           <div className="border-t border-gray-800 my-2" />
           {session ? (
             <>
@@ -145,7 +152,7 @@ export default function Navbar() {
       {/* Overlay */}
       {menuOpen && (
         <div 
-          className="md:hidden fixed inset-0 top-[60px] bg-black/50 z-30"
+          className="md:hidden fixed inset-0 top-[60px] bg-black/80 z-30"
           onClick={() => setMenuOpen(false)}
         />
       )}
