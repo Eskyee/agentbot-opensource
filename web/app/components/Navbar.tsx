@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
-import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -48,8 +47,6 @@ export default function Navbar() {
       <div className="hidden md:flex items-center gap-1">
         <Link href="/docs" className="px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-gray-800/50 transition-colors">Docs</Link>
         <Link href="/marketplace" className="px-3 py-2 text-sm text-gray-300 hover:text-white rounded-lg hover:bg-gray-800/50 transition-colors">Marketplace</Link>
-        <div className="ml-2">
-          <ThemeToggle />
         </div>
         
         {status === "loading" ? null : session ? (
@@ -104,9 +101,6 @@ export default function Navbar() {
           >
             Marketplace
           </Link>
-          <div className="px-4 py-4">
-            <ThemeToggle />
-          </div>
           <div className="border-t border-gray-800 my-2" />
           {session ? (
             <>
