@@ -32,19 +32,19 @@ export default async function Home() {
           <div className="mt-8 px-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
             <Link
               href="/signup"
-              className="w-full sm:w-auto rounded-full bg-gray-900 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white shadow-lg hover:bg-gray-700 transition-all text-center"
+              className="w-full sm:w-auto rounded-full bg-green-500 hover:bg-green-400 px-6 py-3 sm:py-4 text-base sm:text-lg font-bold text-black shadow-lg hover:shadow-green-500/25 transition-all text-center"
             >
               Deploy Agent
             </Link>
             <Link
               href="/docs"
-              className="w-full sm:w-auto rounded-full bg-gray-800 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:bg-gray-700 transition-all text-center"
+              className="w-full sm:w-auto rounded-full bg-gray-800 hover:bg-green-500 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:text-black transition-all text-center"
             >
               Docs
             </Link>
             <Link 
               href="#how-it-works" 
-              className="w-full sm:w-auto rounded-full bg-gray-800 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:bg-gray-700 transition-all text-center"
+              className="w-full sm:w-auto rounded-full bg-gray-800 hover:bg-green-500 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:text-black transition-all text-center"
             >
               Watch Demo
             </Link>
@@ -259,6 +259,19 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Footer */}
+      <footer className="py-8 px-4 border-t border-gray-800">
+        <div className="mx-auto max-w-5xl flex flex-col items-center gap-4 text-sm text-gray-400">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+            <a href="#pricing" className="hover:text-white">Pricing</a>
+            <a href="/docs" className="hover:text-white">Docs</a>
+            <a href="/marketplace" className="hover:text-white">Marketplace</a>
+            <a href="/terms" className="hover:text-white">Terms</a>
+            <a href="/privacy" className="hover:text-white">Privacy</a>
+          </div>
+          <p className="text-gray-500">Deploy OpenClaw © 2026 Agentbot • Built with ❤️ in London by raveculture</p>
+        </div>
+      </footer>
     </main>
   )
 }
