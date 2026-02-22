@@ -314,11 +314,11 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'Fast and reliable default model via OpenRouter', recommended: true },
+                  { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier', recommended: true },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'Fast and reliable default model via OpenRouter' },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
                   { id: 'anthropic', name: 'Anthropic', desc: 'Claude — Best quality (requires API key)' },
-                  { id: 'openai', name: 'OpenAI', desc: 'GPT-4 — Popular choice (requires API key)' },
-                  { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast (requires API key)' }
+                  { id: 'openai', name: 'OpenAI', desc: 'GPT-4 — Popular choice (requires API key)' }
                 ].map((provider) => (
                   <button
                     key={provider.id}
@@ -389,14 +389,14 @@ function OnboardContent() {
                 </div>
               )}
               
-              {/* API Key - optional for OpenRouter, required for others */}
+              {/* API Key - optional for Groq, required for others */}
               {(aiProvider === 'openrouter' || aiProvider === 'gemini' || aiProvider === 'anthropic' || aiProvider === 'openai' || aiProvider === 'groq') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-2">
-                    {aiProvider === 'openrouter' ? 'OpenRouter API Key (optional - free tier included)' : 
+                    {aiProvider === 'groq' ? 'Groq API Key (optional - free tier available)' : 
+                     aiProvider === 'openrouter' ? 'OpenRouter API Key' : 
                      aiProvider === 'gemini' ? 'Gemini API Key' :
-                     aiProvider === 'anthropic' ? 'Anthropic API Key' : 
-                     aiProvider === 'groq' ? 'Groq API Key' : 'OpenAI API Key'}
+                     aiProvider === 'anthropic' ? 'Anthropic API Key' : 'OpenAI API Key'}
                   </label>
                   <input
                     type="password"
