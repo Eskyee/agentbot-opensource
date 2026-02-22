@@ -40,17 +40,16 @@ const handler = NextAuth({
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
   pages: {
     signIn: "/login",
     signOut: "/logout",
-    error: "/login", // Error code passed in query string as ?error=
+    error: "/login",
     verifyRequest: "/verify-request",
-    newUser: "/onboard", // Redirect new users after sign up
+    newUser: "/onboard",
   },
   callbacks: {
     async session({ session, token }) {
-      // Attach user id to session
       if (token && session.user) {
         session.user.id = token.sub;
       }

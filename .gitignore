@@ -16,7 +16,11 @@ agentbot-worker/dist/
 .env.local
 .env.*.local
 .env.prodcheck
+.env.production
+.env.vercel
 web/.env.prodcheck
+web/.env.production
+web/.env.vercel
 **/.env.prodcheck
 
 # Logs

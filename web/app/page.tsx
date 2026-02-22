@@ -146,7 +146,7 @@ export default async function Home() {
             3-day free trial.
           </p>
           
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Free */}
             <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
               <h3 className="text-lg font-semibold">Free</h3>
@@ -171,7 +171,7 @@ export default async function Home() {
               </div>
               <h3 className="text-lg font-semibold">Starter</h3>
               <div className="mt-2">
-                <span className="text-3xl font-bold">£29</span>
+                <span className="text-3xl font-bold">£9</span>
                 <span className="text-gray-400 text-sm"> /mo</span>
               </div>
               <ul className="mt-4 space-y-2 text-xs sm:text-sm text-gray-400">
@@ -188,7 +188,7 @@ export default async function Home() {
             <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
               <h3 className="text-lg font-semibold">Pro</h3>
               <div className="mt-2">
-                <span className="text-3xl font-bold">£49</span>
+                <span className="text-3xl font-bold">£29</span>
                 <span className="text-gray-400 text-sm"> /mo</span>
               </div>
               <ul className="mt-4 space-y-2 text-xs sm:text-sm text-gray-400">
@@ -197,23 +197,61 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ WhatsApp</li>
               </ul>
               <Link href="/api/stripe/checkout?plan=pro" className="mt-4 block w-full rounded-lg bg-gray-800 py-2 text-center text-sm font-semibold hover:bg-gray-700">
-                Go Pro
+                Get Started
               </Link>
             </div>
 
-            {/* Done-For-You */}
-            <div className="bg-gray-900 rounded-xl p-5 border border-lobster-500">
-              <h3 className="text-lg font-semibold">Done-For-You</h3>
+            {/* Pro Plus */}
+            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+              <h3 className="text-lg font-semibold">Pro Plus</h3>
               <div className="mt-2">
-                <span className="text-3xl font-bold">£1,200</span>
-                <span className="text-gray-400 text-sm"> one-time</span>
+                <span className="text-3xl font-bold">£49</span>
+                <span className="text-gray-400 text-sm"> /mo</span>
               </div>
               <ul className="mt-4 space-y-2 text-xs sm:text-sm text-gray-400">
-                <li className="flex items-center gap-2">✓ Full setup</li>
-                <li className="flex items-center gap-2">✓ 3 months Pro</li>
-                <li className="flex items-center gap-2">✓ Custom build</li>
+                <li className="flex items-center gap-2">✓ Everything in Pro</li>
+                <li className="flex items-center gap-2">✓ 3x resources</li>
+                <li className="flex items-center gap-2">✓ Priority support</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=dfy" className="mt-4 block w-full rounded-lg bg-lobster-500 py-2 text-center text-sm font-semibold hover:bg-lobster-400">
+              <Link href="/api/stripe/checkout?plan=pro_plus" className="mt-4 block w-full rounded-lg bg-gray-800 py-2 text-center text-sm font-semibold hover:bg-gray-700">
+                Get Started
+              </Link>
+            </div>
+
+            {/* Scale */}
+            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+              <h3 className="text-lg font-semibold">Scale</h3>
+              <div className="mt-2">
+                <span className="text-3xl font-bold">£79</span>
+                <span className="text-gray-400 text-sm"> /mo + usage</span>
+              </div>
+              <ul className="mt-4 space-y-2 text-xs sm:text-sm text-gray-400">
+                <li className="flex items-center gap-2">✓ Everything in Pro</li>
+                <li className="flex items-center gap-2">✓ 5x resources</li>
+                <li className="flex items-center gap-2">✓ Dedicated support</li>
+              </ul>
+              <Link href="/api/stripe/checkout?plan=scale" className="mt-4 block w-full rounded-lg bg-gray-800 py-2 text-center text-sm font-semibold hover:bg-gray-700">
+                Get Started
+              </Link>
+            </div>
+
+            {/* White Glove */}
+            <div className="bg-gradient-to-br from-lobster-500/20 to-purple-600/20 rounded-xl p-5 border-2 border-lobster-500">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-lobster-500 to-purple-500 px-3 py-1 rounded-full text-xs font-semibold">
+                Premium
+              </div>
+              <h3 className="text-lg font-semibold mt-2">White Glove</h3>
+              <div className="mt-2">
+                <span className="text-3xl font-bold">£199</span>
+                <span className="text-gray-400 text-sm"> /mo</span>
+              </div>
+              <ul className="mt-4 space-y-2 text-xs sm:text-sm text-gray-400">
+                <li className="flex items-center gap-2">✓ Everything in Scale</li>
+                <li className="flex items-center gap-2">✓ Our team builds your agent</li>
+                <li className="flex items-center gap-2">✓ Onboarding call</li>
+                <li className="flex items-center gap-2">✓ 30-day hands-on support</li>
+              </ul>
+              <Link href="/api/stripe/checkout?plan=white_glove" className="mt-4 block w-full rounded-lg bg-gradient-to-r from-lobster-500 to-purple-500 py-2 text-center text-sm font-semibold hover:opacity-90">
                 Get Started
               </Link>
             </div>
