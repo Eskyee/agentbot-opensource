@@ -42,7 +42,7 @@ const plans = [
     period: '/mo',
     description: 'For power users',
     features: [
-      '2x resources',
+      '3x resources',
       'Custom domain',
       'WhatsApp channel',
       'Advanced analytics',

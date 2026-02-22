@@ -192,7 +192,7 @@ export default async function Home() {
                 <span className="text-gray-400 text-sm"> /mo</span>
               </div>
               <ul className="mt-4 space-y-2 text-xs sm:text-sm text-gray-400">
-                <li className="flex items-center gap-2">✓ 2x resources</li>
+                <li className="flex items-center gap-2">✓ 3x resources</li>
                 <li className="flex items-center gap-2">✓ Custom domain</li>
                 <li className="flex items-center gap-2">✓ WhatsApp</li>
               </ul>
