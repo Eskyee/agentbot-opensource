@@ -20,7 +20,7 @@ export default async function Home() {
             <span className="block">Deploy OpenClaw in 60 Seconds</span>
           </h1>
           
-          <p className="mt-4 text-base text-green-400 sm:text-lg leading-relaxed px-4 font-mono">
+          <p className="mt-4 text-base text-gray-400 sm:text-lg leading-relaxed px-4">
             Deploy your AI agent in under 2 minutes.<br className="hidden sm:inline" />
             Chat via Telegram, Discord, or WhatsApp.
           </p>
@@ -38,13 +38,13 @@ export default async function Home() {
             </Link>
             <Link
               href="/docs"
-              className="w-full sm:w-auto rounded-full border border-gray-600 hover:border-gray-400 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:bg-gray-800 transition-all text-center"
+              className="w-full sm:w-auto rounded-full bg-black border border-gray-800 hover:bg-gray-900 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white transition-all text-center"
             >
               Docs
             </Link>
             <Link 
               href="#how-it-works" 
-              className="w-full sm:w-auto rounded-full border border-gray-600 hover:border-gray-400 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white hover:bg-gray-800 transition-all text-center"
+              className="w-full sm:w-auto rounded-full bg-black border border-gray-800 hover:bg-gray-900 px-6 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white transition-all text-center"
             >
               Watch Demo
             </Link>
