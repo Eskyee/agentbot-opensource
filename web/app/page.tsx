@@ -20,7 +20,7 @@ export default async function Home() {
             <span className="block">Deploy OpenClaw in 60 Seconds</span>
           </h1>
           
-          <p className="mt-4 text-base text-gray-400 sm:text-lg leading-relaxed px-4">
+          <p className="mt-4 text-base text-green-400 sm:text-lg leading-relaxed px-4 font-mono">
             Deploy your AI agent in under 2 minutes.<br className="hidden sm:inline" />
             Chat via Telegram, Discord, or WhatsApp.
           </p>
