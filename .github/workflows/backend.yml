@@ -1,0 +1,40 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'agentbot-backend/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'agentbot-backend/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: agentbot-backend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd agentbot-backend
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd agentbot-backend
+          npm test
+
+      - name: Build
+        run: |
+          cd agentbot-backend
+          npm run build
