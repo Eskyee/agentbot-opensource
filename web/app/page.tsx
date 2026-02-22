@@ -159,9 +159,9 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ Free AI</li>
                 <li className="flex items-center gap-2">✓ Telegram</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=trial" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-gray-600 py-3 text-center text-sm font-semibold transition-all">
+              <a href="/api/stripe/checkout?plan=trial" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-gray-600 py-3 text-center text-sm font-semibold transition-all">
                 Try Free
-              </Link>
+              </a>
             </div>
             
             {/* Starter */}
@@ -179,9 +179,9 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ Your AI key</li>
                 <li className="flex items-center gap-2">✓ Priority support</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=starter" className="mt-4 block w-full rounded-lg bg-gradient-to-r from-lobster-500 to-orange-400 hover:from-lobster-400 hover:to-orange-300 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+              <a href="/api/stripe/checkout?plan=starter" className="mt-4 block w-full rounded-lg bg-gradient-to-r from-lobster-500 to-orange-400 hover:from-lobster-400 hover:to-orange-300 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
                 Get Started
-              </Link>
+              </a>
             </div>
 
             {/* Pro */}
@@ -196,9 +196,9 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ Custom domain</li>
                 <li className="flex items-center gap-2">✓ WhatsApp</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=pro" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-lobster-500 py-3 text-center text-sm font-semibold text-white transition-all">
+              <a href="/api/stripe/checkout?plan=pro" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-lobster-500 py-3 text-center text-sm font-semibold text-white transition-all">
                 Get Started
-              </Link>
+              </a>
             </div>
 
             {/* Pro Plus */}
@@ -213,9 +213,9 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ 3x resources</li>
                 <li className="flex items-center gap-2">✓ Priority support</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=pro_plus" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-lobster-500 py-3 text-center text-sm font-semibold text-white transition-all">
+              <a href="/api/stripe/checkout?plan=pro_plus" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-lobster-500 py-3 text-center text-sm font-semibold text-white transition-all">
                 Get Started
-              </Link>
+              </a>
             </div>
 
             {/* Scale */}
@@ -230,9 +230,9 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ 5x resources</li>
                 <li className="flex items-center gap-2">✓ Dedicated support</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=scale" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-lobster-500 py-3 text-center text-sm font-semibold text-white transition-all">
+              <a href="/api/stripe/checkout?plan=scale" className="mt-4 block w-full rounded-lg bg-gray-700 hover:bg-lobster-500 py-3 text-center text-sm font-semibold text-white transition-all">
                 Get Started
-              </Link>
+              </a>
             </div>
 
             {/* White Glove */}
@@ -251,9 +251,9 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ Onboarding call</li>
                 <li className="flex items-center gap-2">✓ 30-day hands-on support</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=white_glove" className="mt-4 block w-full rounded-lg bg-lobster-500 hover:bg-lobster-400 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                Get Started
-              </Link>
+<a href="/api/stripe/checkout?plan=white_glove" className="mt-4 block w-full rounded-lg bg-lobster-500 hover:bg-lobster-400 py-3 text-center text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                Contact Sales
+              </a>
             </div>
           </div>
         </div>

@@ -206,7 +206,7 @@ export default function PricingPage() {
                   ))}
                 </ul>
 
-                <Link
+                <a
                   href={plan.href}
                   className={`mt-6 block w-full py-3 rounded-lg text-center font-semibold transition-all ${
                     plan.popular
@@ -215,7 +215,7 @@ export default function PricingPage() {
                   }`}
                 >
                   {plan.cta}
-                </Link>
+                </a>
               </div>
             ))}
           </div>
