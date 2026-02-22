@@ -170,7 +170,7 @@ export default function PricingPage() {
         <div className="p-8 max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Simple Pricing</h1>
-            <p className="text-gray-400">3-day free trial. No credit card required.</p>
+            <p className="text-gray-400">3-day free trial. No spam, ever.</p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

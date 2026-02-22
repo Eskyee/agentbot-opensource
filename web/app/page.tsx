@@ -32,7 +32,7 @@ export default async function Home() {
           </p>
           
           <p className="mt-2 text-sm text-gray-500">
-            No credit card required
+            No spam, ever
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
