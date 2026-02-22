@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendEmail, sendPaymentReceiptEmail } from '../../lib/email';
+import { sendEmail, sendPaymentReceiptEmail } from '../../../lib/email';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
