@@ -159,7 +159,7 @@ export default async function Home() {
                 <li className="flex items-center gap-2">✓ Free AI</li>
                 <li className="flex items-center gap-2">✓ Telegram</li>
               </ul>
-              <Link href="/onboard" className="mt-4 block w-full rounded-lg bg-gray-800 py-2 text-center text-sm font-semibold hover:bg-gray-700">
+              <Link href="/api/stripe/checkout?plan=trial" className="mt-4 block w-full rounded-lg bg-gray-800 py-2 text-center text-sm font-semibold hover:bg-gray-700">
                 Try Free
               </Link>
             </div>
