@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import CoinbaseWalletButton from '../components/CoinbaseWallet'
 
 const navItems = [
   { icon: '🤖', label: 'Agents', href: '/agents', active: false },
@@ -160,9 +161,51 @@ export default function BillingPage() {
                 ⚠️ Low balance
               </div>
             )}
-            <button className="rounded-lg bg-white px-6 py-2 font-semibold hover:bg-gray-200">
-              Buy Credits
-            </button>
+            <div className="flex gap-3">
+              <button className="rounded-lg bg-white px-6 py-2 font-semibold hover:bg-gray-200">
+                Buy Credits
+              </button>
+              <CoinbaseWalletButton />
+            </div>
+          </div>
+        </div>
+
+        {/* USDC on Base */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Pay with USDC</h2>
+          <div className="rounded-2xl border border-gray-800 bg-gradient-to-r from-blue-900/30 to-purple-900/30 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                  <span className="text-2xl">💵</span>
+                </div>
+                <div>
+                  <div className="font-semibold">USDC on Base</div>
+                  <div className="text-sm text-gray-400">Instant, low-fee payments</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold">0% fees</div>
+                <div className="text-sm text-gray-500">via Coinbase</div>
+              </div>
+            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Pay with USDC on Base for instant settlement and near-zero fees. 
+              Connect your wallet to get started.
+            </p>
+            <div className="flex gap-3">
+              <button className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-2 font-semibold hover:from-blue-600 hover:to-purple-700">
+                Connect Wallet
+              </button>
+              <a 
+                href="https://commerce.coinbase.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="rounded-lg border border-gray-700 px-6 py-2 font-semibold hover:bg-gray-800"
+              >
+                Learn More
+              </a>
+            </div>
           </div>
         </div>
 

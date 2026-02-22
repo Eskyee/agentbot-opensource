@@ -53,10 +53,13 @@ export const metadata: Metadata = {
     icon: '/favicon.svg',
     apple: '/apple-touch-icon.png',
   },
+  other: {
+    'base:app_id': '6951feb4c63ad876c90817aa',
+  },
 }
 
 export const viewport = {
-  themeColor: '#0052FF',
+  themeColor: '#FFFFFF',
 }
 
 export default function RootLayout({

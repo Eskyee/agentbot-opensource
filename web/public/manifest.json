@@ -4,8 +4,8 @@
   "description": "Deploy AI Agents in 60 Seconds",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0052FF",
-  "theme_color": "#0052FF",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "icons": [
     {
       "src": "/icon.svg",

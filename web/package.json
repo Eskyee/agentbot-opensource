@@ -12,16 +12,21 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@coinbase/agentkit": "^0.6.0",
+    "@coinbase/agentkit-model-context-protocol": "^0.2.0",
     "@neondatabase/serverless": "^1.0.2",
     "@next-auth/prisma-adapter": "^1.0.7",
     "@prisma/client": "^5.13.0",
     "bcryptjs": "^3.0.3",
     "next": "^16.1.6",
     "next-auth": "^4.24.5",
+    "ox": "^0.13.0",
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.9.2",
-    "stripe": "^20.3.1"
+    "stripe": "^20.3.1",
+    "viem": "^2.46.2",
+    "wagmi": "^3.5.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

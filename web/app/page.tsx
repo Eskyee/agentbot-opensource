@@ -85,6 +85,36 @@ export default async function Home() {
           <h2 className="text-2xl font-semibold text-center mb-4">Simple, transparent pricing</h2>
           <p className="text-center text-gray-400 mb-12">Start free, upgrade when you need more.</p>
           
+          {/* Token Info */}
+          <div className="mb-12 p-6 rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 border border-gray-700 max-w-2xl mx-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-2xl">🦞</div>
+                <div>
+                  <div className="font-bold text-lg">AGENTBOT</div>
+                  <div className="text-sm text-gray-400">/WETH on Base</div>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold">$0.0000002</div>
+                <div className="text-xs text-gray-400">Market Cap: $20K</div>
+              </div>
+              <a 
+                href="https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg bg-white text-black px-4 py-2 text-sm font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Buy AGENTBOT →
+              </a>
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-700 flex items-center justify-center gap-2 text-sm text-gray-400">
+              <span>🔗</span>
+              Builder Code: <span className="font-mono text-white">bc_upjlm3yl</span>
+              <span className="text-xs text-gray-500">on Base</span>
+            </div>
+          </div>
+          
           <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
             {/* Free */}
             <div className="border border-gray-800 rounded-lg p-6">

@@ -95,6 +95,62 @@ const templates = [
     role: 'Content Agent',
     description: 'Generates blog posts, social content, and marketing copy.',
     skills: ['SEO Write', 'Social Draft', 'Image Prompt']
+  },
+  {
+    name: 'cafe',
+    role: 'Startup Cafe Agent',
+    description: 'Like having a Starbucks barista for your startup. Customer service, product knowledge, and warm recommendations.',
+    skills: ['Customer Service', 'Product Knowledge', 'Recommend', 'Order Handle', 'Loyalty Build'],
+    popular: false
+  },
+  {
+    name: 'basefmbot',
+    role: 'Onchain Radio Agent',
+    description: 'Deep basefm.space knowledge. Grows underground communities organically. Bridges humans and AI agents onchain. The future of radio.',
+    skills: ['BaseFM Know', 'Community Grow', 'Onchain Radio', 'Raveculture', 'Human+Agent Net'],
+    popular: true
+  },
+  {
+    name: 'studio-one',
+    role: 'Dancehall Dub Agent',
+    description: 'London roots and dub culture specialist. Champion selector with deep knowledge of Jamdown, UK dancehall, and sound system culture.',
+    skills: ['Champion Selector', 'Crate Dig Dub', 'Sound System', 'Dancehall Mix', 'Roots Culture'],
+    popular: false
+  },
+  {
+    name: 'studio',
+    role: 'Senior Studio Engineer',
+    description: 'Professional audio engineer. Mixes, masters, and produces studio-quality tracks.',
+    skills: ['Audio Mix', 'Mastering', 'Sound Design', 'Beat Make', 'Studio Setup'],
+    popular: false
+  },
+  {
+    name: 'clawdbotdj',
+    role: 'Underground DJ Agent',
+    description: 'Deep crate digger with underground music knowledge. Finds rare tracks and creates seamless mixes.',
+    skills: ['Crate Dig', 'Mix Sync', 'Track ID', 'Underground Find', 'B2B Flow'],
+    popular: false
+  },
+  {
+    name: 'chain',
+    role: 'Crypto Agent',
+    description: 'AI agent with crypto wallet. Send USDC, check balances, swap tokens on Base.',
+    skills: ['Wallet Create', 'USDC Transfer', 'Token Swap', 'Balance Check', 'Onramp'],
+    popular: true
+  },
+  {
+    name: 'vault',
+    role: 'DeFi Agent',
+    description: 'Automated DeFi operations. Yield farming, staking, and portfolio management.',
+    skills: ['Yield Farm', 'Stake Tokens', 'Portfolio Track', 'Price Alert'],
+    popular: false
+  },
+  {
+    name: 'pay',
+    role: 'Commerce Agent',
+    description: 'Accept crypto payments, manage subscriptions, and handle refunds.',
+    skills: ['Payment Link', 'Invoice Gen', 'Sub Manage', 'Refund Process'],
+    popular: false
   }
 ];
 
@@ -119,7 +175,12 @@ export default function MarketplacePage() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {templates.map((template) => (
-              <article key={template.name} className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+              <article key={template.name} className={`rounded-2xl p-6 border ${template.popular ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-white/30' : 'bg-gray-900 border-gray-800'} relative`}>
+                {template.popular && (
+                  <span className="absolute -top-3 left-4 bg-white text-black text-xs font-bold px-3 py-1 rounded-full">
+                    AGENTKIT
+                  </span>
+                )}
                 <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Template</p>
                 <h2 className="text-2xl font-bold text-white">{template.name}</h2>
                 <p className="text-gray-300 mb-2">{template.role}</p>
@@ -141,6 +202,28 @@ export default function MarketplacePage() {
             ))}
           </div>
 
+          {/* Create Custom Agent */}
+          <div className="mt-12">
+            <div className="rounded-2xl border-2 border-dashed border-gray-700 bg-gray-900/30 p-8 text-center">
+              <div className="text-4xl mb-4">✨</div>
+              <h3 className="text-2xl font-bold mb-2">Create Custom Agent</h3>
+              <p className="text-gray-400 mb-6 max-w-md mx-auto">
+                Build your own OpenClaw agent with custom skills. Add your knowledge, 
+                define capabilities, and publish to the marketplace.
+              </p>
+              <Link
+                href={session ? "/dashboard?create=agent" : "/signup"}
+                className="inline-flex items-center gap-2 rounded-lg bg-white text-black px-6 py-3 font-semibold hover:bg-gray-200 transition-colors"
+              >
+                <span>+</span>
+                {session ? 'Create Agent' : 'Sign Up to Create'}
+              </Link>
+              <p className="text-xs text-gray-500 mt-4">
+                OpenClaw compatible • Custom skills • Marketplace publish
+              </p>
+            </div>
+          </div>
+
           <div className="mt-10 grid gap-6 md:grid-cols-2">
             <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
               <h3 className="text-xl font-semibold mb-3">Available channels</h3>
@@ -153,13 +236,16 @@ export default function MarketplacePage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-              <h3 className="text-xl font-semibold mb-3">Coming soon</h3>
+            <div className="rounded-2xl border border-gray-800 bg-gradient-to-br from-blue-900/30 to-purple-900/30 p-6">
+              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+                <span>🔗</span> Coinbase AgentKit
+              </h3>
               <p className="text-gray-400 text-sm mb-4">
-                Publish your own agents to the marketplace and share reusable setups with your team.
+                Deploy agents with crypto wallets. Powered by Coinbase CDP - send USDC, 
+                check balances, swap tokens, and more. Zero-fee onchain payments.
               </p>
-              <Link href="/signup" className="text-white hover:underline">
-                Deploy your first agent →
+              <Link href="/signup" className="text-white hover:underline font-semibold">
+                Deploy crypto agent →
               </Link>
             </div>
           </div>
