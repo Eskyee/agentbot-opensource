@@ -2,6 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: 'Agentbot | OpenClaw Deploy - Deploy OpenClaw in 60 Seconds',
@@ -32,10 +33,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-base-dark text-white antialiased pt-[60px]">
+      <body className="bg-base-dark text-white antialiased pt-[60px] flex flex-col min-h-screen">
         <Providers>
           <Navbar />
-          {children}
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
         </Providers>
       </body>
     </html>
