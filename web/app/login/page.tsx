@@ -1,18 +1,34 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
+  const { data: session } = useSession()
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      setLoginError(error === 'OAuthCallback' ? 'Authentication failed. Please try again.' : error)
+    }
+  }, [error])
+
+  useEffect(() => {
+    if (session) {
+      window.location.href = '/dashboard'
+    }
+  }, [session])
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setLoginError("");
     const res = await signIn("credentials", {
       email,
       password,
@@ -20,7 +36,7 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (res?.error) {
-      setError("Invalid email or password");
+      setLoginError("Invalid email or password");
     } else if (res?.ok) {
       window.location.href = "/dashboard";
     }
@@ -63,7 +79,7 @@ export default function LoginPage() {
             {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
-        {error && <div className="text-red-500 text-center mt-2">{error}</div>}
+        {loginError && <div className="text-red-500 text-center mt-2">{loginError}</div>}
         <div className="my-6 flex items-center justify-center gap-2 text-gray-400">
           <span className="h-px w-10 bg-gray-700" />
           <span>or</span>
