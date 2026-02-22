@@ -66,10 +66,10 @@ export default function BillingPage() {
   const [currentPlan] = useState('trial')
 
   const creditPacks = [
-    { amount: 1000, price: 10, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_1000 || 'price_1T3VB7DiHU0UF7aWSpENrtMc', popular: false },
-    { amount: 2500, price: 25, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_2500 || 'price_1T3VB8DiHU0UF7aWCZtHkoRw', popular: true },
-    { amount: 5000, price: 50, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_5000 || 'price_1T3VB8DiHU0UF7aWQbq3pGWV', popular: false },
-    { amount: 10000, price: 100, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_10000 || 'price_1T3VB9DiHU0UF7aWjYthyR5L', popular: false },
+    { amount: 1000, price: 10, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_1000 || 'price_1T3VtwDiHU0UF7aW8iQ0jGVe', popular: false },
+    { amount: 2500, price: 25, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_2500 || 'price_1T3Vu0DiHU0UF7aWdEXDrCFm', popular: true },
+    { amount: 5000, price: 50, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_5000 || 'price_1T3Vu6DiHU0UF7aWVU6AMGPQ', popular: false },
+    { amount: 10000, price: 100, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_10000 || 'price_1T3VuDDiHU0UF7aWrXjtublU', popular: false },
   ]
 
   const buyCredits = async (priceId: string) => {
