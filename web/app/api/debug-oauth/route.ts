@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+const DEBUG_SECRET = process.env.DEBUG_SECRET
+
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  
+  if (!DEBUG_SECRET || authHeader !== `Bearer ${DEBUG_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  
   const hasGoogleClientId = !!process.env.GOOGLE_CLIENT_ID
   const hasGoogleClientSecret = !!process.env.GOOGLE_CLIENT_SECRET
   const hasGitHubClientId = !!process.env.GITHUB_CLIENT_ID

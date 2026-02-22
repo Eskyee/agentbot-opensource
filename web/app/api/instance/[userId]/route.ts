@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getInternalApiKey, getBackendApiUrl } from '../../lib/api-keys'
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001'
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
+const BACKEND_API_URL = getBackendApiUrl()
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
+  const INTERNAL_API_KEY = getInternalApiKey()
   const { userId } = await params
   
   try {
