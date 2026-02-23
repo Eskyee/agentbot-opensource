@@ -6,7 +6,7 @@
   "git": {
     "deploymentEnabled": {
       "production": true,
-      "main": false
+      "main": true
     }
   },
   "github": {
