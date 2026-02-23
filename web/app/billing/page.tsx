@@ -242,7 +242,7 @@ export default function BillingPage() {
                 }`}
               >
                 {pack.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-white text-xs px-3 py-1 rounded-full">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-3 py-1 rounded-full font-semibold">
                     POPULAR
                   </span>
                 )}
@@ -252,8 +252,8 @@ export default function BillingPage() {
                   onClick={() => buyCredits(pack.priceId)}
                   className={`mt-4 w-full rounded-lg py-2 font-semibold ${
                     pack.popular 
-                      ? 'bg-white hover:bg-gray-200' 
-                      : 'bg-gray-800 hover:bg-gray-700'
+                      ? 'bg-white text-black hover:bg-gray-200' 
+                      : 'bg-gray-800 text-white hover:bg-gray-700'
                   }`}>
                   Select
                 </button>
