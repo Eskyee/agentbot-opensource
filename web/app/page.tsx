@@ -9,6 +9,10 @@ export default function Home() {
         <div className="mx-auto max-w-4xl text-center">
           <div className="mb-8 text-6xl sm:text-8xl">🦞</div>
           
+          <div className="mb-4 text-sm font-semibold text-gray-400 tracking-wide uppercase">
+            Agentbot OpenClaw
+          </div>
+          
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
             AI Agents That Actually Work
           </h1>
