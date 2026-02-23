@@ -10,16 +10,16 @@ export default function Home() {
           <div className="mb-8 text-6xl sm:text-8xl">🦞</div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Deploy OpenClaw in 60 Seconds
+            AI Agents That Actually Work
           </h1>
           
           <p className="mt-6 text-lg text-gray-400 max-w-2xl mx-auto">
-            Your own AI agent running on secure cloud infrastructure. 
+            Launch your AI employee in under a minute. Secure cloud infrastructure included. 
             Chat via Telegram, Discord, or WhatsApp.
           </p>
           
           <p className="mt-2 text-sm text-gray-500">
-            No spam, ever
+            Start building. Stop managing servers.
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
