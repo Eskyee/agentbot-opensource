@@ -14,9 +14,7 @@ export default function Footer() {
           </div>
           
           <div className="text-sm text-gray-500">
-            © 2026 Agentbot
-            <span className="mx-2">Moltx</span>
-            <span className="mx-2">Moltbook</span>
+            © 2026 Agentbot baseFM RaveCulture
           </div>
         </div>
       </div>
