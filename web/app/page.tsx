@@ -144,7 +144,7 @@ export default function Home() {
           <h2 className="text-2xl font-semibold">Contact Sales</h2>
           <p className="mt-4 text-gray-400">Need custom infrastructure or volume discounts?</p>
           <a
-            href="mailto:info@agentbot.com"
+            href="mailto:rbasefm@icloud.com"
             className="mt-8 inline-block rounded-md border border-gray-700 px-6 py-3 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
           >
             Email Us
