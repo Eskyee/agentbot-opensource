@@ -74,7 +74,18 @@ function DashboardContent() {
     }
     
     fetchInstance(userId, botUsername)
+    fetchCredits()
   }, [searchParams])
+
+  const fetchCredits = async () => {
+    try {
+      const res = await fetch('/api/credits')
+      const data = await res.json()
+      setCredits(data.credits || 0)
+    } catch (e) {
+      console.error('Failed to fetch credits:', e)
+    }
+  }
 
   const fetchInstance = async (userId: string, botUsername: string) => {
     try {
