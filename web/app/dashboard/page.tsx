@@ -1,3 +1,22 @@
+
+// Helper to convert percent string to Tailwind width class
+function getBarWidthClass(percent?: string) {
+  if (!percent) return 'w-0';
+  const num = parseInt(percent.replace('%', ''));
+    if (num >= 100) { return 'w-full'; }
+    if (num >= 90) { return 'w-11/12'; }
+    if (num >= 80) { return 'w-10/12'; }
+    if (num >= 70) { return 'w-9/12'; }
+    if (num >= 60) { return 'w-8/12'; }
+    if (num >= 50) { return 'w-7/12'; }
+    if (num >= 40) { return 'w-6/12'; }
+    if (num >= 30) { return 'w-5/12'; }
+    if (num >= 20) { return 'w-4/12'; }
+    if (num >= 10) { return 'w-3/12'; }
+    if (num > 0) { return 'w-2/12'; }
+  return 'w-0';
+}
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -280,7 +299,10 @@ function DashboardContent() {
                     <span>{stats?.cpu || '0%'}</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full" style={{ width: stats?.cpu || '0%' }} />
+                    {/* Progress bar: set width via Tailwind or style prop, but avoid custom CSS variables for compatibility */}
+                    <div
+                      className={`h-full bg-white rounded-full ${getBarWidthClass(stats?.cpu)}`}
+                    />
                   </div>
                 </div>
                 <div>
@@ -289,7 +311,9 @@ function DashboardContent() {
                     <span>{stats?.memory || '0%'}</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500 rounded-full" style={{ width: stats?.memory || '0%' }} />
+                    <div
+                      className={`h-full bg-purple-500 rounded-full ${getBarWidthClass(stats?.memory)}`}
+                    />
                   </div>
                 </div>
               </div>
@@ -404,7 +428,7 @@ function DashboardContent() {
                 <a href="/docs" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
                   <span>📚</span> Documentation
                 </a>
-                <a href="https://discord.com/invite/clawd" target="_blank" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
+                <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
                   <span>💬</span> Discord
                 </a>
                 <a href="mailto:info@agentbot.com" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
@@ -446,6 +470,8 @@ function DashboardContent() {
                     readOnly
                     value={`https://agentbot.raveculture.xyz/ref/${instance?.userId}`}
                     className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-300 w-64"
+                    placeholder="Referral link"
+                    title="Referral link"
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(`https://agentbot.raveculture.xyz/ref/${instance?.userId}`)}

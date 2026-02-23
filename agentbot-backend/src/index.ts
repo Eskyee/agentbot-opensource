@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import inviteRouter from './invite';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { exec } from 'child_process';
@@ -31,6 +32,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use('/api/invite', inviteRouter);
 
 type AgentMetadata = {
   agentId: string;
