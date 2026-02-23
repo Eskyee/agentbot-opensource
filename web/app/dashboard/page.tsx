@@ -1,4 +1,6 @@
 
+'use client'
+
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
   if (!percent) return 'w-0';
@@ -16,8 +18,6 @@ function getBarWidthClass(percent?: string) {
     if (num > 0) { return 'w-2/12'; }
   return 'w-0';
 }
-
-'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'

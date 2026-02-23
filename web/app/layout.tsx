@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
     images: [
       {
-        url: '/og-image.svg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Agentbot - AI Agent Deployment Platform',
