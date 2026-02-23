@@ -7,35 +7,14 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
-  const [inviteStatus, setInviteStatus] = useState<'idle' | 'valid' | 'invalid' | 'loading'>('idle');
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const validateInvite = async () => {
-    setInviteStatus('loading');
-    const res = await fetch("/api/invite/validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code: inviteCode }),
-    });
-    const data = await res.json();
-    setInviteStatus(data.valid ? 'valid' : 'invalid');
-    return data.valid;
-  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // Skip invite validation for now
-    // const valid = await validateInvite();
-    // if (!valid) {
-    //   setError("Invalid or used invite code.");
-    //   setLoading(false);
-    //   return;
-    // }
-    // Register user via API
+    
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -47,7 +26,7 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
-    // Auto-login after registration
+    
     const loginRes = await signIn("credentials", {
       email,
       password,
@@ -66,20 +45,6 @@ export default function SignupPage() {
       <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
         <h1 className="text-2xl font-bold mb-6 text-center">Sign up for Agentbot</h1>
         <form className="space-y-5" onSubmit={handleSignup}>
-          <div>
-            <label htmlFor="inviteCode" className="block text-gray-300 mb-1">Invite Code</label>
-            <input
-              type="text"
-              id="inviteCode"
-              name="inviteCode"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your invite code"
-            />
-            {inviteStatus === 'valid' && <div className="text-green-400 mt-2">Invite code is valid!</div>}
-            {inviteStatus === 'invalid' && <div className="text-red-400 mt-2">Invalid or used invite code.</div>}
-          </div>
           <div>
             <label htmlFor="name" className="block text-gray-300 mb-1">Name</label>
             <input
