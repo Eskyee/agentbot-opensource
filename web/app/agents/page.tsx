@@ -62,7 +62,7 @@ export default function AgentsPage() {
             <div className="text-6xl mb-4">🤖</div>
             <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
             <p className="text-gray-400 mb-6">Agent builder is under development</p>
-            <Link href="/dashboard" className="inline-block bg-white hover:bg-gray-200 px-6 py-3 rounded-lg font-semibold">
+            <Link href="/dashboard" className="inline-block bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg font-semibold">
               Go to Dashboard
             </Link>
           </div>

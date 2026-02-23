@@ -162,7 +162,7 @@ export default function BillingPage() {
               </div>
             )}
             <div className="flex gap-3">
-              <button className="rounded-lg bg-white px-6 py-2 font-semibold hover:bg-gray-200">
+              <button className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
                 Buy Credits
               </button>
               <CoinbaseWalletButton />
