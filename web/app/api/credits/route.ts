@@ -14,7 +14,7 @@ export async function GET() {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: {
-        credits: true,
+        id: true,
       }
     })
 
@@ -22,7 +22,8 @@ export async function GET() {
       return NextResponse.json({ credits: 0 })
     }
 
-    return NextResponse.json({ credits: user.credits || 0 })
+    // TODO: Add credits field to User model or create separate Credits table
+    return NextResponse.json({ credits: 0 })
   } catch (error) {
     console.error('Credits fetch error:', error)
     return NextResponse.json({ credits: 0 })
