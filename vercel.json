@@ -1,4 +1,7 @@
 {
+  "buildCommand": "cd web && npm run build",
+  "installCommand": "cd web && npm install",
+  "framework": "nextjs",
   "git": {
     "deploymentEnabled": {
       "main": true
