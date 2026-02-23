@@ -24,7 +24,6 @@ function getBarWidthClass(percent?: string) {
     if (num > 0) { return 'w-2/12'; }
   return 'w-0';
 }
-import { useSession } from 'next-auth/react'
 
 interface InstanceData {
   userId: string
