@@ -1,10 +1,6 @@
 import Link from 'next/link'
-import { getPublicPricing } from './lib/stripe-pricing'
 
-export const revalidate = 300
-
-export default async function Home() {
-  const pricing = await getPublicPricing()
+export default function Home() {
 
   return (
     <main className="min-h-screen">
