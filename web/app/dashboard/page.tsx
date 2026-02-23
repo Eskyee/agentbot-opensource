@@ -431,7 +431,7 @@ function DashboardContent() {
                 <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
                   <span>💬</span> Discord
                 </a>
-                <a href="mailto:info@agentbot.com" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
+                <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
                   <span>📧</span> Contact
                 </a>
               </div>
