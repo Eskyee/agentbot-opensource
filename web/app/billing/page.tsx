@@ -181,9 +181,9 @@ export default function BillingPage() {
               </div>
             )}
             <div className="flex gap-3">
-              <button className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
+              <Link href="#buy-credits" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
                 Buy Credits
-              </button>
+              </Link>
               <CoinbaseWalletButton />
             </div>
           </div>
@@ -229,7 +229,7 @@ export default function BillingPage() {
         </div>
 
         {/* Buy Credits */}
-        <div className="mb-8">
+        <div id="buy-credits" className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Buy Credits</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {creditPacks.map((pack) => (
