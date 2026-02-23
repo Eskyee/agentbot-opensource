@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 
@@ -64,14 +64,53 @@ export default function SettingsPage() {
   const { data: session } = useSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
   const [activeTab, setActiveTab] = useState('profile')
-  const [displayName, setDisplayName] = useState('Atlas')
-  const [email] = useState('demo@agentbot.com')
+  const [displayName, setDisplayName] = useState('')
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [apiKeys] = useState([
     { id: '1', name: 'Production Key', key: 'sk_live_...x4a2', created: '2026-02-15' },
     { id: '2', name: 'Development Key', key: 'sk_test_...b3c1', created: '2026-02-10' },
   ])
   const [referralLink] = useState('https://agentbot.raveculture.xyz/ref/user123')
   const [referrals] = useState(5)
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('/api/settings')
+        if (res.ok) {
+          const data = await res.json()
+          setDisplayName(data.name || '')
+          setEmail(data.email || '')
+        }
+      } catch (error) {
+        console.error('Failed to fetch settings:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchSettings()
+  }, [])
+
+  const saveProfile = async () => {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: displayName }),
+      })
+      if (res.ok) {
+        alert('Profile updated successfully')
+      }
+    } catch (error) {
+      console.error('Failed to save settings:', error)
+      alert('Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: '👤' },
@@ -139,8 +178,12 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-500">Member since Feb 2026</p>
               </div>
 
-              <button className="rounded-lg bg-white px-6 py-2 font-semibold hover:bg-gray-200">
-                Save Changes
+              <button 
+                onClick={saveProfile}
+                disabled={saving}
+                className="rounded-lg bg-white px-6 py-2 font-semibold text-black hover:bg-gray-200 disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>

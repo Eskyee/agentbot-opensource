@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import CoinbaseWalletButton from '../components/CoinbaseWallet'
@@ -64,11 +64,30 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 export default function BillingPage() {
   const { data: session } = useSession()
   const [credits, setCredits] = useState(0)
-  const [usage] = useState(0)
-  const [allowance] = useState(0)
-  const [currentPlan] = useState('trial')
+  const [usage, setUsage] = useState(0)
+  const [allowance, setAllowance] = useState(0)
+  const [currentPlan, setCurrentPlan] = useState('trial')
+  const [loading, setLoading] = useState(true)
 
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+
+  useEffect(() => {
+    const fetchBillingData = async () => {
+      if (!session?.user?.id) return
+      try {
+        const res = await fetch(`/api/instance/${session.user.id}`)
+        if (res.ok) {
+          const data = await res.json()
+          setCurrentPlan(data.plan || 'trial')
+        }
+      } catch (error) {
+        console.error('Failed to fetch billing data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchBillingData()
+  }, [session])
 
   const creditPacks = [
     { amount: 1000, price: 10, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_1000 || 'price_1T3VtwDiHU0UF7aW8iQ0jGVe', popular: false },
