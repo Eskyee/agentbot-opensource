@@ -52,6 +52,7 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState('')
+  const [credits, setCredits] = useState(0)
 
   useEffect(() => {
     const urlUserId = searchParams.get('id')
@@ -174,7 +175,7 @@ function DashboardContent() {
   return (
     <div className="flex h-screen bg-black">
       {/* Sidebar */}
-      <DashboardSidebar userName={userName} credits={0.01} />
+      <DashboardSidebar userName={userName} credits={credits} />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
