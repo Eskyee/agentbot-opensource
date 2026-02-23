@@ -1,6 +1,12 @@
 
 'use client'
 
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
+import { useSession } from 'next-auth/react'
+
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
   if (!percent) return 'w-0';
@@ -18,11 +24,6 @@ function getBarWidthClass(percent?: string) {
     if (num > 0) { return 'w-2/12'; }
   return 'w-0';
 }
-
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
 import { useSession } from 'next-auth/react'
 
 interface InstanceData {
