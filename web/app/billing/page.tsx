@@ -280,7 +280,7 @@ export default function BillingPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <select className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2">
+                    <select className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2" title="Select quantity">
                       <option>1</option>
                       <option>2</option>
                       <option>3</option>

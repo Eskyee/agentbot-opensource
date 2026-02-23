@@ -8,14 +8,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
-      {/* Launch Banner */}
-      <div className="bg-gradient-to-r from-white/10 to-gray-500/10 border-b border-white/20">
-        <div className="mx-auto max-w-4xl text-center py-3 px-4">
-          <span className="text-sm">
-            🚀 <strong>Launching Soon</strong> — Sign up now for early access and launch pricing!
-          </span>
-        </div>
-      </div>
+      // ...existing code...
 
       {/* Hero Section */}
       <section className="px-4 py-24 sm:px-6 lg:px-8">
@@ -23,7 +16,7 @@ export default async function Home() {
           <div className="mb-8 text-6xl sm:text-8xl">🦞</div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Deploy AI Agents in 60 Seconds
+            Deploy OpenClaw in 60 Seconds
           </h1>
           
           <p className="mt-6 text-lg text-gray-400 max-w-2xl mx-auto">
