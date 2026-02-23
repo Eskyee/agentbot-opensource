@@ -28,13 +28,13 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    // Validate invite code first
-    const valid = await validateInvite();
-    if (!valid) {
-      setError("Invalid or used invite code.");
-      setLoading(false);
-      return;
-    }
+    // Skip invite validation for now
+    // const valid = await validateInvite();
+    // if (!valid) {
+    //   setError("Invalid or used invite code.");
+    //   setLoading(false);
+    //   return;
+    // }
     // Register user via API
     const res = await fetch("/api/register", {
       method: "POST",
