@@ -314,11 +314,6 @@ export default function Home() {
                 </svg>
               </a>
             </div>
-            
-            <div className="flex items-center gap-4 text-sm text-gray-6">
-              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
-            </div>
           </div>
         </div>
       </footer>
