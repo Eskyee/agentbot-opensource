@@ -87,58 +87,58 @@ export default function Navbar() {
           
           {/* Menu panel */}
           <div className="md:hidden fixed top-[57px] right-0 bottom-0 w-[320px] bg-gray-900 z-50 p-8 overflow-y-auto shadow-2xl">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-2">
               <Link 
                 href="/why" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
+                className="text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
                 onClick={() => setMenuOpen(false)}
               >
                 Why Agentbot?
               </Link>
               <Link 
                 href="/pricing" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
+                className="text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
                 onClick={() => setMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link 
                 href="/blog" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
+                className="text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
                 onClick={() => setMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link 
                 href="/docs" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
+                className="text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
                 onClick={() => setMenuOpen(false)}
               >
                 Docs
               </Link>
               <Link 
                 href="/marketplace" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
+                className="text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
                 onClick={() => setMenuOpen(false)}
               >
                 Marketplace
               </Link>
               
-              <div className="border-t border-gray-700 my-3" />
+              <div className="border-t border-gray-700 my-4" />
               
               {session ? (
                 <>
                   <div className="px-4 py-2 text-xs text-gray-400 truncate">{session.user?.email}</div>
                   <Link 
                     href="/dashboard" 
-                    className="text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
+                    className="text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
                     onClick={() => setMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <button 
                     onClick={() => { setMenuOpen(false); signOut(); }} 
-                    className="text-left text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium"
+                    className="text-left text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium"
                   >
                     Log Out
                   </button>
@@ -147,14 +147,14 @@ export default function Navbar() {
                 <>
                   <Link 
                     href="/login" 
-                    className="text-base py-3 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
+                    className="text-lg py-5 px-4 text-white hover:bg-gray-800 rounded-md transition-colors font-medium" 
                     onClick={() => setMenuOpen(false)}
                   >
                     Log In
                   </Link>
                   <Link 
                     href="/signup" 
-                    className="text-base py-3 px-4 bg-white text-black font-semibold rounded-md hover:bg-gray-100 transition-colors text-center mt-2" 
+                    className="text-lg py-5 px-4 bg-white text-black font-semibold rounded-md hover:bg-gray-100 transition-colors text-center mt-2" 
                     onClick={() => setMenuOpen(false)}
                   >
                     Sign Up
