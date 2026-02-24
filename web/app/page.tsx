@@ -93,15 +93,41 @@ export default function Home() {
             </div>
             
             <div className="text-center">
-              <div className="text-3xl mb-4" role="img" aria-label="Clock">⏰</div>
-              <h3 className="text-lg font-medium mb-2">Proactive Tasks</h3>
-              <p className="text-sm text-gray-7">Schedule tasks and get things done automatically.</p>
+              <div className="text-3xl mb-4" role="img" aria-label="Badge">✓</div>
+              <h3 className="text-lg font-medium mb-2">Verified Human Badge</h3>
+              <p className="text-sm text-gray-7">Onchain attestation proves a real person runs this agent. Trust matters in crypto.</p>
             </div>
             
             <div className="text-center">
               <div className="text-3xl mb-4" role="img" aria-label="Cloud">☁️</div>
               <h3 className="text-lg font-medium mb-2">Always Online</h3>
               <p className="text-sm text-gray-7">Cloud-hosted, 24/7 availability. No server management.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="px-4 py-24 sm:px-6 lg:px-8 border-t border-gray-2">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-semibold mb-4">Built for Trust</h2>
+            <p className="text-gray-6 max-w-2xl mx-auto">
+              In crypto and underground scenes, reputation is everything. Agentbot agents show who's really behind them.
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 gap-8">
+            <div className="border border-gray-4 rounded-xl p-6 bg-gray-1">
+              <div className="text-2xl mb-3">🔐</div>
+              <h3 className="text-lg font-medium mb-2">Onchain Verification</h3>
+              <p className="text-sm text-gray-7">Link your agent to Coinbase Verify, ENS, or other attestations. Prove you're real.</p>
+            </div>
+            
+            <div className="border border-gray-4 rounded-xl p-6 bg-gray-1">
+              <div className="text-2xl mb-3">👤</div>
+              <h3 className="text-lg font-medium mb-2">Human Reputation</h3>
+              <p className="text-sm text-gray-7">Your agent shows "Verified by [you]" in every chat. Reputation tied to the human, not the bot.</p>
             </div>
           </div>
         </div>
