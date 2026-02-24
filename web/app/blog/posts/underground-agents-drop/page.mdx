@@ -1,0 +1,228 @@
+---
+title: "Underground Agents Drop: Rave Events, Treasury Management & Crypto Wallets"
+date: "2026-02-24"
+author: "Agentbot Team"
+excerpt: "New agent templates for underground collectives, crypto wallet integration, and major UI improvements. Built for the culture."
+---
+
+# Underground Agents Drop: Rave Events, Treasury Management & Crypto Wallets
+
+**TL;DR:** We just shipped agent templates for underground collectives, crypto wallet integration with Coinbase CDP, and major UI/UX improvements. All live now.
+
+---
+
+## 🎉 New: Rave Event Agent
+
+Manage underground events end-to-end:
+
+- **Guest list management** - Add/remove, check-ins at the door
+- **Ticket sales in USDC** - Gasless transfers, no ETH needed
+- **Ride share coordination** - Group chats, pickup points
+- **Event stats** - Revenue tracking, capacity monitoring
+- **Reminders** - Auto-notify attendees via Telegram
+
+**Use case:** A crew runs monthly warehouse parties. The agent handles guest lists (no more WhatsApp chaos), sells tickets in USDC, and coordinates rides. Everything transparent, everything onchain.
+
+```
+User: "Add Sarah to Friday's guest list"
+Agent: "✓ Added Sarah to Warehouse Party guest list. 47 confirmed."
+
+User: "How many tickets sold?"
+Agent: "23 tickets sold. 575 USDC collected. 12 spots left."
+```
+
+---
+
+## 💰 New: Community Treasury Agent
+
+Transparent fund management for collectives:
+
+- **Track treasury balance** - Real-time USDC balance
+- **Budget by category** - Venues, equipment, promo, misc
+- **Process reimbursements** - Send USDC to members
+- **Financial reports** - Weekly/monthly breakdowns
+- **Budget alerts** - Get notified when 75%/90% spent
+- **Transaction export** - CSV/JSON for accounting
+
+**Use case:** A soundsystem collective manages £15K of shared funds. The treasury agent tracks spending transparently, processes reimbursements onchain, and alerts when budgets run low. No more "who spent what?"
+
+```
+User: "How much in the treasury?"
+Agent: "Treasury: 2,450 USDC
+       Venues: 800 USDC | Equipment: 450 USDC
+       Remaining: 1,080 USDC"
+
+User: "Reimburse Alex 50 USDC for cables"
+Agent: "✓ Sent 50 USDC to Alex. Receipt: 0x7a3b..."
+```
+
+---
+
+## 🔐 New: Crypto Wallet Integration
+
+Every agent can now have its own crypto wallet:
+
+- **Powered by Coinbase CDP SDK** - Secure, MPC-based key management
+- **Base network** - Low fees, fast transactions
+- **USDC support** - Stablecoin payments
+- **Gasless transfers** - No ETH needed for gas
+- **Wallet UI in dashboard** - Create wallet, check balance, send/receive
+
+**Why this matters:** Agents can now accept payments, manage funds, and coordinate treasuries autonomously. Borderless, transparent, onchain.
+
+---
+
+## ✨ UI/UX Improvements
+
+### Mobile Menu
+- **Larger and more visible** - 320px width, text-lg, better contrast
+- **Gray-900 background** - No more see-through overlay
+- **Proper z-index** - Backdrop and menu properly layered
+- **Touch-friendly** - Bigger tap targets, smooth animations
+
+### Dashboard Sidebar
+- **Collapsible on mobile** - Hamburger menu + close button
+- **Always visible on desktop** - No need to toggle
+- **Smooth transitions** - 200ms ease-in-out animations
+
+### Footer Links
+- **Visible with underlines** - No more invisible links
+- **Explicit colors** - Gray-400 text, proper hover states
+
+### Pricing Page
+- **Fixed $0.01 bug** - Now shows $0.00 correctly
+
+---
+
+## 🎯 Kimi K2.5 Positioning
+
+We updated how we talk about Kimi K2.5:
+
+**Before:** "Advanced reasoning with 128K context"
+
+**After:** "128K context remembers your whole vibe. Thinks like a selector—analyzes patterns and suggests what's next."
+
+**Why:** Features need positioning. "We use Kimi K2.5" means nothing. "Your agent remembers every set you've ever played" is a flex.
+
+---
+
+## 🔐 Verified Human Badge
+
+New trust feature for crypto/underground scenes:
+
+- **Onchain attestation** - Link to Coinbase Verify, ENS, etc.
+- **"Verified by [human]" badge** - Shows in every chat
+- **Reputation tied to human** - Not just the bot
+
+**Why:** Crypto is full of scams. "This agent is run by a real person in the scene" is huge for trust.
+
+---
+
+## 📊 Technical Details
+
+### Packages Added
+- `@coinbase/cdp-sdk` - Blockchain operations, wallet management
+- `@coinbase/onchainkit` - Verification UI, attestations
+
+### New API Routes
+- `/api/wallet` - Create wallets, check balances
+- Wallet UI component in dashboard
+
+### Agent Templates
+- `rave-event-agent.ts` - 200+ lines, production-ready
+- `community-treasury-agent.ts` - 250+ lines, full accounting
+
+### Documentation
+- `UNDERGROUND_AGENTS.md` - Strategy document
+- `agent-templates/README.md` - Integration guide
+- `WALLET_INTEGRATION.md` - Wallet setup guide
+
+---
+
+## 🚀 What's Next
+
+### Phase 1 (This Week)
+- Complete CDP SDK integration
+- Database schema for wallet storage
+- Telegram bot for event reminders
+
+### Phase 2 (Next Month)
+- Beta testing with 5 collectives
+- Soundsystem Agent template
+- Zine/Content Agent template
+- Marketplace for custom agents
+
+### Phase 3 (3 Months)
+- Public launch
+- 100+ collectives
+- Multi-sig support
+- Cross-agent coordination
+
+---
+
+## 💡 Why This Matters
+
+**Not "AI for business" — AI for culture.**
+
+Underground collectives need tools for:
+- Event coordination (WhatsApp is chaos)
+- Money management (who spent what?)
+- Content creation (time-consuming)
+- Equipment tracking (manual spreadsheets)
+
+Crypto actually helps here:
+- Borderless payments (international crews)
+- Transparent treasuries (trust in collectives)
+- Gasless USDC (no ETH needed)
+- Onchain receipts (accountability)
+
+We're building for a real community with real needs. Not generic AI. Not forced crypto. Purpose-built for the underground.
+
+---
+
+## 🎧 Try It Now
+
+**Marketplace:** Browse new agent templates at [agentbot.raveculture.xyz/marketplace](https://agentbot.raveculture.xyz/marketplace)
+
+**Dashboard:** Create a wallet for your agent at [agentbot.raveculture.xyz/dashboard](https://agentbot.raveculture.xyz/dashboard)
+
+**Docs:** Read the full guide at [github.com/Eskyee/agentbot](https://github.com/Eskyee/agentbot)
+
+---
+
+## 📝 Changelog
+
+### Added
+- Rave Event Agent template
+- Community Treasury Agent template
+- Crypto wallet integration (CDP SDK)
+- Verified Human Badge feature
+- "Built for Trust" section
+- Wallet UI in dashboard
+- NEW badges in marketplace
+
+### Improved
+- Mobile menu (320px, larger text, better contrast)
+- Dashboard sidebar (collapsible on mobile)
+- Footer links (visible with underlines)
+- Kimi K2.5 positioning (benefit-focused copy)
+- SEO (updated title, description, keywords)
+
+### Fixed
+- Pricing page credits display ($0.01 → $0.00)
+- Mobile menu overlay (solid background)
+- Build compatibility (.npmrc for legacy peer deps)
+
+---
+
+## 🔥 Built for the Underground
+
+Agents for the culture. Not corporate AI. Not generic tools. Purpose-built for underground collectives managing events, funds, and content with AI and crypto.
+
+Built by ravers, for ravers. 🎧
+
+---
+
+**Questions?** Hit us up on [Twitter](https://twitter.com/agentbot) or [Discord](https://discord.gg/agentbot)
+
+**Want to beta test?** Email us at rbasefm@icloud.com

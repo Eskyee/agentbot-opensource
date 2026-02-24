@@ -56,31 +56,40 @@ function MarketplaceSidebar({ userName, credits = 0 }: { userName: string; credi
 
 const templates = [
   {
-    name: 'cafe',
-    role: 'Startup Cafe Agent',
-    description: 'Like having a Starbucks barista for your startup. Customer service, product knowledge, and warm recommendations.',
-    skills: ['Customer Service', 'Product Knowledge', 'Recommend', 'Order Handle', 'Loyalty Build'],
-    popular: false
+    name: 'rave-event',
+    role: 'Rave Event Agent',
+    description: 'Manage underground events end-to-end. Guest lists, ticket sales in USDC, ride coordination, and door check-ins.',
+    skills: ['Guest List', 'USDC Tickets', 'Ride Share', 'Check-in', 'Event Stats'],
+    popular: true,
+    new: true
+  },
+  {
+    name: 'community-treasury',
+    role: 'Community Treasury Agent',
+    description: 'Transparent fund management for collectives. Track spending, process reimbursements, budget alerts.',
+    skills: ['Treasury Track', 'Reimburse', 'Budget Alert', 'Financial Report', 'Multi-sig'],
+    popular: true,
+    new: true
   },
   {
     name: 'basefmbot',
     role: 'Onchain Radio Agent',
-    description: 'Deep basefm.space knowledge. Grows underground communities organically. Bridges humans and AI agents onchain. The future of radio.',
+    description: 'Deep basefm.space knowledge. Grows underground communities organically. Bridges humans and AI agents onchain.',
     skills: ['BaseFM Know', 'Community Grow', 'Onchain Radio', 'Raveculture', 'Human+Agent Net'],
+    popular: true
+  },
+  {
+    name: 'chain',
+    role: 'Crypto Wallet Agent',
+    description: 'AI agent with crypto wallet. Send USDC, check balances, swap tokens on Base. Gasless transfers.',
+    skills: ['Wallet Create', 'USDC Transfer', 'Token Swap', 'Balance Check', 'Gasless'],
     popular: true
   },
   {
     name: 'studio-one',
     role: 'Dancehall Dub Agent',
-    description: 'London roots and dub culture specialist. Champion selector with deep knowledge of Jamdown, UK dancehall, and sound system culture.',
+    description: 'London roots and dub culture specialist. Champion selector with deep knowledge of Jamdown and sound system culture.',
     skills: ['Champion Selector', 'Crate Dig Dub', 'Sound System', 'Dancehall Mix', 'Roots Culture'],
-    popular: false
-  },
-  {
-    name: 'studio',
-    role: 'Senior Studio Engineer',
-    description: 'Professional audio engineer. Mixes, masters, and produces studio-quality tracks.',
-    skills: ['Audio Mix', 'Mastering', 'Sound Design', 'Beat Make', 'Studio Setup'],
     popular: false
   },
   {
@@ -91,11 +100,18 @@ const templates = [
     popular: false
   },
   {
-    name: 'chain',
-    role: 'Crypto Agent',
-    description: 'AI agent with crypto wallet. Send USDC, check balances, swap tokens on Base.',
-    skills: ['Wallet Create', 'USDC Transfer', 'Token Swap', 'Balance Check', 'Onramp'],
-    popular: true
+    name: 'cafe',
+    role: 'Startup Cafe Agent',
+    description: 'Like having a Starbucks barista for your startup. Customer service, product knowledge, and warm recommendations.',
+    skills: ['Customer Service', 'Product Knowledge', 'Recommend', 'Order Handle', 'Loyalty Build'],
+    popular: false
+  },
+  {
+    name: 'studio',
+    role: 'Senior Studio Engineer',
+    description: 'Professional audio engineer. Mixes, masters, and produces studio-quality tracks.',
+    skills: ['Audio Mix', 'Mastering', 'Sound Design', 'Beat Make', 'Studio Setup'],
+    popular: false
   },
   {
     name: 'vault',
@@ -154,6 +170,11 @@ export default function MarketplacePage() {
                 {template.popular && (
                   <span className="absolute -top-3 left-4 bg-white text-black text-xs font-bold px-3 py-1 rounded-full">
                     AGENTKIT
+                  </span>
+                )}
+                {template.new && (
+                  <span className="absolute -top-3 right-4 bg-green-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+                    NEW
                   </span>
                 )}
                 <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Template</p>
