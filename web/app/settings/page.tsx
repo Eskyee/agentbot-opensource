@@ -187,7 +187,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">API Keys</h2>
-              <button className="rounded-lg bg-white px-4 py-2 font-semibold hover:bg-gray-200">
+              <button className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200">
                 + Create Key
               </button>
             </div>
@@ -235,7 +235,7 @@ export default function SettingsPage() {
                 />
                 <button 
                   onClick={() => navigator.clipboard.writeText(referralLink)}
-                  className="rounded-lg bg-white px-4 py-2 font-semibold hover:bg-gray-200"
+                  className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200"
                 >
                   Copy
                 </button>
@@ -271,7 +271,7 @@ export default function SettingsPage() {
             <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
               <h3 className="font-semibold mb-4">Two-Factor Authentication</h3>
               <p className="text-gray-400 text-sm mb-4">Add an extra layer of security to your account</p>
-              <button className="rounded-lg bg-white px-4 py-2 font-semibold hover:bg-gray-200">
+              <button className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200">
                 Enable 2FA
               </button>
             </div>

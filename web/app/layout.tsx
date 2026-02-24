@@ -1,5 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -59,19 +61,21 @@ export const metadata: Metadata = {
 }
 
 export const viewport = {
-  themeColor: '#FFFFFF',
+  themeColor: '#000000',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
-      <body className="bg-base-dark text-white antialiased pt-[60px] flex flex-col min-h-screen">
+      <body className="bg-black text-white antialiased pt-[60px] flex flex-col min-h-screen font-sans">
         <Providers>
           <Navbar />
           <div className="flex-1">

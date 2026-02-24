@@ -211,7 +211,7 @@ function DashboardContent() {
             <p className="text-gray-400 mb-8">{error}</p>
             <Link
               href="/onboard"
-              className="inline-block bg-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
             >
               Deploy New Agent →
             </Link>
@@ -243,7 +243,7 @@ function DashboardContent() {
             <div className="flex items-center gap-3">
               <a
                 href="/agents"
-                className="bg-white hover:bg-gray-200 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
+                className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
               >
                 <span>+</span> New Agent
               </a>
@@ -471,7 +471,7 @@ function DashboardContent() {
                     />
                     <button
                       onClick={handleCopyToken}
-                      className="bg-white hover:bg-gray-200 px-3 py-2 rounded text-sm font-semibold"
+                      className="bg-white text-black hover:bg-gray-200 px-3 py-2 rounded text-sm font-semibold"
                     >
                       📋
                     </button>
@@ -728,7 +728,7 @@ function DashboardContent() {
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(`https://agentbot.raveculture.xyz/ref/${instance?.userId}`)}
-                    className="bg-white hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold"
+                    className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold"
                   >
                     Copy
                   </button>

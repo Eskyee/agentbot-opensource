@@ -177,7 +177,7 @@ function OnboardContent() {
               
               <button
                 onClick={() => setStep('token')}
-                className="block w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="block w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
               >
                 I have my token →
               </button>
@@ -223,7 +223,7 @@ function OnboardContent() {
                 <button
                   onClick={validateToken}
                   disabled={!telegramToken || isValidating}
-                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   {isValidating ? 'Validating...' : 'Validate Token →'}
                 </button>
@@ -294,7 +294,7 @@ function OnboardContent() {
                 <button
                   onClick={() => setStep('ai')}
                   disabled={!telegramUserId}
-                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   Continue →
                 </button>
@@ -423,7 +423,7 @@ function OnboardContent() {
                 <button
                   onClick={() => setStep('deploy')}
                   disabled={aiProvider !== 'openrouter' && !apiKey}
-                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   {aiProvider === 'openrouter' ? 'Deploy Now (Free)' : 'Continue →'}
                 </button>
@@ -479,7 +479,7 @@ function OnboardContent() {
                 <button
                   onClick={deploy}
                   disabled={isDeploying}
-                  className="w-full bg-white py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 sm:flex-1"
                 >
                   {isDeploying ? (
                     <span className="flex items-center justify-center gap-2">
