@@ -54,42 +54,6 @@ function MarketplaceSidebar({ userName, credits = 0 }: { userName: string; credi
 
 const templates = [
   {
-    name: 'cipher',
-    role: 'Research Agent',
-    description: 'Finds sources, summarizes insights, and delivers concise briefings in chat.',
-    skills: ['Deep Search', 'Data Mining', 'Source Verify']
-  },
-  {
-    name: 'phantom',
-    role: 'Support Agent',
-    description: 'Answers customer questions, drafts responses, and escalates edge cases.',
-    skills: ['Pattern Match', 'Knowledge Graph', 'Auto Respond']
-  },
-  {
-    name: 'zero',
-    role: 'Lead Gen Agent',
-    description: 'Collects prospects, enriches records, and drafts personalized outreach.',
-    skills: ['OSINT', 'Social Scan', 'Outreach Draft']
-  },
-  {
-    name: 'ghost',
-    role: 'Security Agent',
-    description: 'Monitors threats, analyzes vulnerabilities, and alerts on anomalies.',
-    skills: ['Threat Detect', 'Log Analyze', 'Alert Stack']
-  },
-  {
-    name: 'nexus',
-    role: 'Data Agent',
-    description: 'Extracts, transforms, and visualizes data from any source.',
-    skills: ['ETL Pipeline', 'SQL Query', 'Dashboard Build']
-  },
-  {
-    name: 'echo',
-    role: 'Content Agent',
-    description: 'Generates blog posts, social content, and marketing copy.',
-    skills: ['SEO Write', 'Social Draft', 'Image Prompt']
-  },
-  {
     name: 'cafe',
     role: 'Startup Cafe Agent',
     description: 'Like having a Starbucks barista for your startup. Customer service, product knowledge, and warm recommendations.',
