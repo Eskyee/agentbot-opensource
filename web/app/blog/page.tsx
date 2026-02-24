@@ -2,48 +2,56 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'platform-v2',
     date: 'February 2026',
     title: 'Platform V2: Faster Deployments & New AI Models',
     excerpt: 'Major performance improvements with 3x faster container startup times. Added support for GPT-4o, Claude 3.5 Sonnet, and Gemini 1.5 Pro.',
     tags: ['Release', 'Performance']
   },
   {
+    slug: 'credit-pricing',
     date: 'February 2026',
     title: 'Introducing Credit-Based Pricing',
     excerpt: 'New flexible credit system lets you pay only for what you use. Buy credits upfront and use across any AI model with transparent pricing.',
     tags: ['Feature', 'Pricing']
   },
   {
+    slug: 'first-agent',
     date: 'February 2026',
     title: 'How to Deploy Your First AI Agent in 60 Seconds',
     excerpt: 'Step-by-step guide to launching your OpenClaw agent with Telegram integration. No server setup required.',
     tags: ['Tutorial', 'Getting Started']
   },
   {
+    slug: 'weekly-improvements',
     date: 'February 2026',
     title: 'Weekly Improvements: What is Shipping',
     excerpt: 'Dark mode UI refresh, Stripe checkout flow, OAuth with Google & GitHub, and Resend email integration for welcome emails.',
     tags: ['Update', 'Weekly']
   },
   {
+    slug: 'resource-management',
     date: 'January 2026',
     title: 'Managing AI Agent Resources: Memory, CPU, and Scaling',
     excerpt: 'Understanding resource allocation and when to upgrade your plan for production workloads.',
     tags: ['Technical', 'Scaling']
   },
   {
+    slug: 'best-practices',
     date: 'January 2026',
     title: 'Best Practices for Production AI Agents',
     excerpt: 'Security tips, monitoring strategies, and automation patterns for running agents at scale.',
     tags: ['Best Practices', 'Security']
   },
   {
+    slug: 'webhooks',
     date: 'January 2026',
     title: 'API Webhooks and External Integrations',
     excerpt: 'Connect your AI agent to external systems using webhooks, APIs, and custom workflows.',
     tags: ['Tutorial', 'Integrations']
   },
   {
+    slug: 'welcome',
     date: 'January 2026',
     title: 'Welcome to Agentbot',
     excerpt: 'We built this platform to remove server setup friction and help builders launch AI agents in under a minute.',
@@ -102,9 +110,9 @@ export default function BlogPage() {
               <p className="text-gray-300 mb-4">
                 {post.excerpt}
               </p>
-              <span className="text-gray-500 text-sm">
-                Coming soon
-              </span>
+              <Link href={`/blog/posts/${post.slug}`} className="text-white hover:underline">
+                Read more →
+              </Link>
             </article>
           ))}
         </div>
