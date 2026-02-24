@@ -259,7 +259,7 @@ export default function Home() {
             
             <div className="flex items-center gap-6">
               <a 
-                href="https://twitter.com/agentbot" 
+                href="https://x.com/Esky33junglist" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-6 hover:text-white transition-colors"
@@ -271,7 +271,7 @@ export default function Home() {
               </a>
               
               <a 
-                href="https://github.com/Eskyee/agentbot" 
+                href="https://github.com/Eskyee" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-6 hover:text-white transition-colors"
@@ -283,7 +283,7 @@ export default function Home() {
               </a>
               
               <a 
-                href="https://t.me/agentbot" 
+                href="https://t.me/esky" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-6 hover:text-white transition-colors"
@@ -295,7 +295,7 @@ export default function Home() {
               </a>
               
               <a 
-                href="https://discord.gg/agentbot" 
+                href="https://discord.com/users/eskyee" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-6 hover:text-white transition-colors"
