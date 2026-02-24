@@ -86,7 +86,7 @@ export default function Navbar() {
           />
           
           {/* Menu content */}
-          <div className="md:hidden fixed inset-0 top-[57px] bg-black z-50 p-6 overflow-y-auto">
+          <div className="md:hidden fixed top-[57px] right-0 bottom-0 w-80 bg-black z-50 p-6 overflow-y-auto border-l border-gray-800">
             <div className="flex flex-col gap-2">
               <Link 
                 href="/why" 
