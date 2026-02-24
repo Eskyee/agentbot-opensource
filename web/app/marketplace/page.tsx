@@ -153,44 +153,47 @@ export default function MarketplacePage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <MarketplaceSidebar userName={userName} credits={credits} />
+      {/* Hide sidebar on mobile */}
+      <div className="hidden md:block">
+        <MarketplaceSidebar userName={userName} credits={credits} />
+      </div>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">Agent Marketplace</h1>
-            <p className="mt-4 text-lg text-gray-400">
+        <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">Agent Marketplace</h1>
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-400 px-4">
               Choose a template, install skills, and deploy your OpenClaw agent in under a minute.
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {templates.map((template) => (
-              <article key={template.name} className={`rounded-2xl p-6 border ${template.popular ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-white/30' : 'bg-gray-900 border-gray-800'} relative`}>
+              <article key={template.name} className={`rounded-xl sm:rounded-2xl p-4 sm:p-6 border ${template.popular ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-white/30' : 'bg-gray-900 border-gray-800'} relative`}>
                 {template.popular && (
-                  <span className="absolute -top-3 left-4 bg-white text-black text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="absolute -top-2 sm:-top-3 left-3 sm:left-4 bg-white text-black text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
                     AGENTKIT
                   </span>
                 )}
                 {template.new && (
-                  <span className="absolute -top-3 right-4 bg-green-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="absolute -top-2 sm:-top-3 right-3 sm:right-4 bg-green-500 text-black text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
                     NEW
                   </span>
                 )}
                 <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Template</p>
-                <h2 className="text-2xl font-bold text-white">{template.name}</h2>
-                <p className="text-gray-300 mb-2">{template.role}</p>
-                <p className="text-gray-400 text-sm mb-4">{template.description}</p>
-                <div className="space-y-2 mb-6">
+                <h2 className="text-xl sm:text-2xl font-bold text-white">{template.name}</h2>
+                <p className="text-sm sm:text-base text-gray-300 mb-2">{template.role}</p>
+                <p className="text-gray-400 text-xs sm:text-sm mb-4">{template.description}</p>
+                <div className="space-y-2 mb-4 sm:mb-6">
                   {template.skills.map((skill) => (
-                    <div key={skill} className="text-sm rounded-lg border border-gray-700 px-3 py-2 text-gray-200 bg-gray-800">
+                    <div key={skill} className="text-xs sm:text-sm rounded-lg border border-gray-700 px-2 sm:px-3 py-1.5 sm:py-2 text-gray-200 bg-gray-800">
                       {skill}
                     </div>
                   ))}
                 </div>
                 <Link
                   href="/signup"
-                  className="block w-full text-center rounded-lg bg-gray-900 px-4 py-3 font-semibold text-white hover:bg-gray-700 transition-colors"
+                  className="block w-full text-center rounded-lg bg-gray-900 px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white hover:bg-gray-700 transition-colors"
                 >
                   Use {template.name}
                 </Link>
@@ -199,48 +202,48 @@ export default function MarketplacePage() {
           </div>
 
           {/* Create Custom Agent */}
-          <div className="mt-12">
-            <div className="rounded-2xl border-2 border-dashed border-gray-700 bg-gray-900/30 p-8 text-center">
-              <div className="text-4xl mb-4">✨</div>
-              <h3 className="text-2xl font-bold mb-2">Create Custom Agent</h3>
-              <p className="text-gray-400 mb-6 max-w-md mx-auto">
+          <div className="mt-8 sm:mt-12">
+            <div className="rounded-xl sm:rounded-2xl border-2 border-dashed border-gray-700 bg-gray-900/30 p-6 sm:p-8 text-center">
+              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">✨</div>
+              <h3 className="text-xl sm:text-2xl font-bold mb-2">Create Custom Agent</h3>
+              <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6 max-w-md mx-auto px-4">
                 Build your own OpenClaw agent with custom skills. Add your knowledge, 
                 define capabilities, and publish to the marketplace.
               </p>
               <Link
                 href={session ? "/dashboard?create=agent" : "/signup"}
-                className="inline-flex items-center gap-2 rounded-lg bg-white text-black px-6 py-3 font-semibold hover:bg-gray-200 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-white text-black px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold hover:bg-gray-200 transition-colors"
               >
                 <span>+</span>
                 {session ? 'Create Agent' : 'Sign Up to Create'}
               </Link>
-              <p className="text-xs text-gray-500 mt-4">
+              <p className="text-xs text-gray-500 mt-3 sm:mt-4">
                 OpenClaw compatible • Custom skills • Marketplace publish
               </p>
             </div>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-              <h3 className="text-xl font-semibold mb-3">Available channels</h3>
+          <div className="mt-6 sm:mt-10 grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
+            <div className="rounded-xl sm:rounded-2xl border border-gray-800 bg-gray-900/50 p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold mb-3">Available channels</h3>
               <div className="flex flex-wrap gap-2">
                 {channels.map((channel) => (
-                  <span key={channel} className="rounded-full border border-gray-700 px-3 py-1 text-sm text-gray-300">
+                  <span key={channel} className="rounded-full border border-gray-700 px-3 py-1 text-xs sm:text-sm text-gray-300">
                     {channel}
                   </span>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-gray-800 bg-gradient-to-br from-blue-900/30 to-purple-900/30 p-6">
-              <h3 className="text-xl font-semibold mb-3 flex items-center gap-2">
+            <div className="rounded-xl sm:rounded-2xl border border-gray-800 bg-gradient-to-br from-blue-900/30 to-purple-900/30 p-4 sm:p-6">
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 flex items-center gap-2">
                 <span>🔗</span> Coinbase AgentKit
               </h3>
-              <p className="text-gray-400 text-sm mb-4">
+              <p className="text-gray-400 text-xs sm:text-sm mb-4">
                 Deploy agents with crypto wallets. Powered by Coinbase CDP - send USDC, 
                 check balances, swap tokens, and more. Zero-fee onchain payments.
               </p>
-              <Link href="/signup" className="text-white hover:underline font-semibold">
+              <Link href="/signup" className="text-sm sm:text-base text-white hover:underline font-semibold">
                 Deploy crypto agent →
               </Link>
             </div>
