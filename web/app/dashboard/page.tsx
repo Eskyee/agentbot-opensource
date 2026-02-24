@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import WalletCard from '@/app/components/WalletCard'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -698,6 +699,9 @@ function DashboardContent() {
                 </div>
               </div>
             </div>
+
+            {/* Agent Wallet */}
+            <WalletCard />
 
             {/* Help */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
