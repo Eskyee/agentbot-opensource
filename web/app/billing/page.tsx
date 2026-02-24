@@ -187,7 +187,7 @@ export default function BillingPage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <BillingSidebar userName={userName} credits={0.01} />
+      <BillingSidebar userName={userName} credits={credits} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">

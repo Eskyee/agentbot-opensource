@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 
@@ -117,10 +118,26 @@ const channels = ['Telegram', 'Discord', 'WhatsApp'];
 export default function MarketplacePage() {
   const { data: session } = useSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+  const [credits, setCredits] = useState(0)
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      try {
+        const res = await fetch('/api/settings')
+        if (res.ok) {
+          const data = await res.json()
+          setCredits(data.credits || 0)
+        }
+      } catch (error) {
+        console.error('Failed to fetch credits:', error)
+      }
+    }
+    fetchCredits()
+  }, [])
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <MarketplaceSidebar userName={userName} credits={0.01} />
+      <MarketplaceSidebar userName={userName} credits={credits} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-6xl mx-auto">

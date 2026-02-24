@@ -62,6 +62,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [credits, setCredits] = useState(0)
   const [notifications, setNotifications] = useState({
     email: true,
     usageAlerts: true,
@@ -86,6 +87,7 @@ export default function SettingsPage() {
           const data = await res.json()
           setDisplayName(data.name || '')
           setEmail(data.email || '')
+          setCredits(data.credits || 0)
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error)
@@ -188,7 +190,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <SettingsSidebar userName={userName} credits={0.01} />
+      <SettingsSidebar userName={userName} credits={credits} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">
