@@ -88,6 +88,7 @@ export default function SettingsPage() {
           setDisplayName(data.name || '')
           setEmail(data.email || '')
           setCredits(data.credits || 0)
+          setTwoFactorEnabled(data.twoFactorEnabled || false)
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error)
@@ -134,18 +135,28 @@ export default function SettingsPage() {
   }
 
   const enable2FA = async () => {
-    setTwoFactorEnabled(true)
-    try {
-      await fetch('/api/settings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ twoFactorEnabled: true })
-      })
-      alert('2FA enabled successfully')
-    } catch (error) {
-      console.error('Failed to enable 2FA:', error)
-      setTwoFactorEnabled(false)
-    }
+    // In a real implementation, this would:
+    // 1. Generate QR code with secret
+    // 2. Show QR code to user
+    // 3. Ask user to scan with authenticator app
+    // 4. Verify code from authenticator
+    // For now, we'll show a coming soon message
+    alert('2FA setup is coming soon! This will require scanning a QR code with an authenticator app like Google Authenticator or Authy.')
+    return
+    
+    // Commented out for now:
+    // setTwoFactorEnabled(true)
+    // try {
+    //   await fetch('/api/settings', {
+    //     method: 'PATCH',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({ twoFactorEnabled: true })
+    //   })
+    //   alert('2FA enabled successfully')
+    // } catch (error) {
+    //   console.error('Failed to enable 2FA:', error)
+    //   setTwoFactorEnabled(false)
+    // }
   }
 
   const deleteAccount = async () => {
