@@ -9,11 +9,11 @@ import Footer from "./components/Footer";
 export const metadata: Metadata = {
   metadataBase: new URL('https://agentbot.raveculture.xyz'),
   title: {
-    default: 'Agentbot | Deploy AI Agents in 60 Seconds',
+    default: 'Agentbot | Deploy OpenClaw in Seconds',
     template: '%s | Agentbot',
   },
-  description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation. Start for free.',
-  keywords: ['AI agent', 'OpenClaw', 'deploy AI', 'Telegram bot', 'AI automation', 'chatbot', 'no-code AI'],
+  description: 'Deploy OpenClaw AI agents instantly. Kimi K2.5 thinking, crypto wallets, multi-channel messaging. Built for the underground.',
+  keywords: ['AI agent', 'OpenClaw', 'deploy AI', 'Telegram bot', 'crypto agent', 'Kimi K2.5', 'Base', 'USDC'],
   authors: [{ name: 'Agentbot', url: 'https://agentbot.raveculture.xyz' }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
