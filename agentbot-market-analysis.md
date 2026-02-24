@@ -238,13 +238,14 @@ Underground music collectives face coordination chaos, opaque finances, and manu
 ---
 
 ### 8. Merch Agent 👕
-**Priority:** LOW - Nice to have
+**Priority:** MEDIUM - Recurring revenue
 
 **Problem:**
 - Merch logistics are manual
 - Pre-orders are spreadsheets
 - Inventory tracking is chaos
 - Print-on-demand is fragmented
+- Shipping coordination is painful
 
 **Current Solutions:**
 - Manual everything
@@ -252,19 +253,126 @@ Underground music collectives face coordination chaos, opaque finances, and manu
 - Hope you ordered enough
 
 **Our Solution:**
-- Pre-order campaigns
-- Auto-trigger production
+- Pre-order campaigns in USDC
+- Auto-trigger production at 50+ units
 - Inventory tracking
-- Shipping coordination
+- Shipping integration
+- Design templates (vinyl, cassettes, tees)
 
 **Market Validation:**
 - Collectives sell merch
 - Vinyl is hot
 - Cassettes are back
+- Merch = recurring revenue
 
 **Revenue Potential:**
 - 5% merch fee
 - £5K in merch/month = £250 revenue
+
+**Why it matters:** Merch = recurring revenue for collectives. Agent handles end-to-end.
+
+---
+
+## Market Insights & Strategic Context
+
+### **Bandcamp did $1.67B to artists in lifetime**
+- Proof people will buy directly if the cut is fair
+- Agentbot's crypto native + onchain verification = even better trust
+- Underground wants direct relationships, not middlemen
+
+### **Underground music is moving onchain**
+- BaseFM, Sound, Zora (music NFTs)
+- Warpcast for music culture
+- Generative art + music collabs
+- Crypto-native audience already exists
+
+### **Community treasuries are real**
+- YGG, Friends With Benefit, Seed Club all use treasuries
+- Crypto collectives are scaling
+- Management is manual and painful
+- Agentbot solves this natively
+
+### **Stripe is now "agentic commerce"**
+- They see agents as the future of commerce
+- But they're still Web2, KYC-heavy, high fees
+- Agentbot could own "agent commerce for crypto underground"
+
+### **Critical Gaps in Market**
+
+#### **1. Royalty Splits / Creator Payments (HIGHEST PRIORITY)**
+- No current tool handles automatic splits beautifully
+- Eventbrite: Takes cut, no automatic splits
+- Bandcamp: Manual setup, no automation
+- Stripe: Requires developer integration
+- **Agentbot opportunity:** Native smart contract splits, transparent, instant
+
+#### **2. Talent Booking / Creator Marketplace**
+- DJs/producers booked via DMs (no paper trail)
+- ResidentAdvisor (centralized, takes cut)
+- No trustless, onchain booking system exists
+- **Agentbot opportunity:** Browse talent, auto-negotiate, smart contract escrow
+
+#### **3. Cross-Agent Network / Social Amplification**
+- Agents can't talk to each other (no network effects)
+- Manual cross-posting is time-consuming
+- No coordination between collectives
+- **Agentbot opportunity:** Agent-to-agent messaging, coordinated drops, viral growth
+
+#### **4. Community Analytics & Insights**
+- Organizers have no data on what resonates
+- Guessing on event timing and talent
+- No engagement metrics or attendance trends
+- **Agentbot opportunity:** Track patterns, predict optimal timing, recommend talent
+
+#### **5. Venue / Space Network**
+- Finding trustworthy, affordable underground spaces is hard
+- No decentralized solution exists
+- Cost-splitting between collectives is manual
+- **Agentbot opportunity:** Verified venue marketplace, trustless booking, cost-sharing
+
+#### **6. Community Governance / DAO**
+- Collectives are democratic but voting is informal
+- No onchain governance for this use case
+- Decisions happen in chaotic group chats
+- **Agentbot opportunity:** Proposal system, transparent voting, execution of approved actions
+
+---
+
+## Strategic Recommendation
+
+### **Build Tiers:**
+
+**Sprint 1 (Highest ROI):**
+1. `royalty-split` agent (solve biggest pain point)
+2. Improve `rave-event` with post-event analytics
+3. `merch-agent` (low complexity, high demand)
+
+**Sprint 2 (Ecosystem):**
+1. `talent-booking` marketplace
+2. `community-insights` analytics
+3. Agent-to-agent messaging (network effects)
+
+**Sprint 3 (Advanced):**
+1. `collective-dao` governance
+2. `venue-network` marketplace
+3. Reputation system (onchain)
+
+---
+
+## Positioning: The OS for Underground Culture + Crypto
+
+**You're not competing with Eventbrite, Bandcamp, or Stripe.**
+
+You're building **the operating system for underground culture + crypto**.
+
+- **Eventbrite** is for mainstream events → You're for underground collectives that don't want gatekeepers
+- **Bandcamp** is for artists selling → You're for organizers managing
+- **Stripe** is for Web2 platforms → You're for onchain communities
+
+### **The Moat:**
+Culture + Crypto + Autonomy + Agents
+
+That's not a feature. **That's a movement.**
 
 ---
 
