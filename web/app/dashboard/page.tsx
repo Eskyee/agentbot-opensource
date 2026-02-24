@@ -296,7 +296,7 @@ function DashboardContent() {
                   <dd className="text-gray-300 capitalize flex items-center gap-2">
                     {instance?.plan || 'Free Trial'}
                     {(instance?.plan === 'trial' || !instance?.plan) && (
-                      <Link href="/#pricing" className="ml-2 text-xs bg-white hover:bg-gray-200 text-white px-2 py-1 rounded-full">
+                      <Link href="/#pricing" className="ml-2 text-xs bg-white hover:bg-gray-200 text-black px-2 py-1 rounded-full">
                         Upgrade
                       </Link>
                     )}

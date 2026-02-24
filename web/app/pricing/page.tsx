@@ -211,7 +211,7 @@ export default function PricingPage() {
                   className={`mt-6 block w-full py-3 rounded-lg text-center font-semibold transition-all ${
                     plan.popular
                       ? 'bg-gradient-to-r from-white to-gray-200 hover:from-gray-100 hover:to-gray-300 text-black'
-                      : 'bg-gray-700 hover:bg-white text-white'
+                      : 'bg-gray-700 hover:bg-white text-white hover:text-black'
                   }`}
                 >
                   {plan.cta}
