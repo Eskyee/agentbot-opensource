@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   const agentId = searchParams.get('agentId')
 
   // TODO: Fetch from AgentFile table
-  const files = []
+  const files: any[] = []
 
   return NextResponse.json({ files })
 }
