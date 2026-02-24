@@ -16,7 +16,6 @@ function AgentsSidebar({ userName, credits = 0 }: { userName: string; credits?: 
       <div className="p-6 border-b border-gray-800">
         <Link href="/" className="flex items-center gap-2">
           <span className="text-2xl">🦞</span>
-          <span className="text-xl font-bold">Agentbot</span>
         </Link>
       </div>
       <nav className="flex-1 p-4">
