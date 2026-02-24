@@ -102,9 +102,9 @@ export default function BlogPage() {
               <p className="text-gray-300 mb-4">
                 {post.excerpt}
               </p>
-              <Link href="/signup" className="text-white hover:underline">
-                Read more →
-              </Link>
+              <span className="text-gray-500 text-sm">
+                Coming soon
+              </span>
             </article>
           ))}
         </div>
