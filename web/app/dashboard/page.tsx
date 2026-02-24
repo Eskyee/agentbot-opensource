@@ -69,6 +69,7 @@ function DashboardContent() {
   const [activeTaskTab, setActiveTaskTab] = useState('all')
   const [tasks, setTasks] = useState<{id: string; title: string; status: string; type: string}[]>([])
   const [signingOut, setSigningOut] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     const urlUserId = searchParams.get('id')
@@ -206,9 +207,13 @@ function DashboardContent() {
     return (
       <div className="flex h-screen bg-black">
         {/* Sidebar */}
-        <DashboardSidebar userName={userName} />
+        <DashboardSidebar 
+          userName={userName} 
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
+        />
         
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
             <div className="text-6xl mb-4">🚀</div>
             <h1 className="text-2xl font-bold mb-4">Deploy your first agent</h1>
@@ -233,16 +238,34 @@ function DashboardContent() {
   return (
     <div className="flex h-screen bg-black">
       {/* Sidebar */}
-      <DashboardSidebar userName={userName} credits={credits} />
+      <DashboardSidebar 
+        userName={userName} 
+        credits={credits} 
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
-          {/* Header */}
+        <div className="p-4 lg:p-8">
+          {/* Header with menu button */}
           <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold">Dashboard</h1>
-              <p className="text-gray-400">Manage your OpenClaw agent</p>
+            <div className="flex items-center gap-4">
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+                aria-label="Open menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              <div>
+                <h1 className="text-2xl lg:text-3xl font-bold">Dashboard</h1>
+                <p className="text-gray-400 text-sm lg:text-base">Manage your OpenClaw agent</p>
+              </div>
             </div>
             <div className="flex items-center gap-3">
               <a
@@ -747,55 +770,84 @@ function DashboardContent() {
   )
 }
 
-function DashboardSidebar({ userName, credits = 0 }: { userName: string; credits?: number }) {
+function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userName: string; credits?: number; isOpen: boolean; onToggle: () => void }) {
   return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-      {/* Nav */}
-      <nav className="flex-1 p-4 overflow-y-auto">
-        <div className="space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                item.active 
-                  ? 'bg-white/20 text-white' 
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-              }`}
-            >
-              <span>{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Credits */}
-        <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-          <div className="text-sm text-gray-400 mb-1">Credits</div>
-          <div className="text-xl font-bold">${credits.toFixed(2)}</div>
-          <div className="text-xs text-blue-400 mt-2">+ Add credits</div>
-        </Link>
-      </nav>
-
-      {/* User */}
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">
-            {userName.charAt(0).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-medium truncate">{userName}</div>
-            <div className="text-sm text-gray-400">Free Trial</div>
-          </div>
-        </div>
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={onToggle}
+          aria-hidden="true"
+        />
+      )}
+      
+      {/* Sidebar */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 bg-gray-900 border-r border-gray-800 flex flex-col
+        transform transition-transform duration-200 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Close button (mobile only) */}
         <button
-          onClick={() => signOut({ callbackUrl: '/' })}
-          className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition-colors"
+          onClick={onToggle}
+          className="lg:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+          aria-label="Close sidebar"
         >
-          <span>🚪</span> Sign Out
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
-      </div>
-    </aside>
+
+        {/* Nav */}
+        <nav className="flex-1 p-4 overflow-y-auto pt-16 lg:pt-4">
+          <div className="space-y-1">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={onToggle}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  item.active 
+                    ? 'bg-white/20 text-white' 
+                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                }`}
+              >
+                <span>{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Credits */}
+          <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
+            <div className="text-sm text-gray-400 mb-1">Credits</div>
+            <div className="text-xl font-bold">${credits.toFixed(2)}</div>
+            <div className="text-xs text-blue-400 mt-2">+ Add credits</div>
+          </Link>
+        </nav>
+
+        {/* User */}
+        <div className="p-4 border-t border-gray-800">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium truncate">{userName}</div>
+              <div className="text-sm text-gray-400">Free Trial</div>
+            </div>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            <span>🚪</span> Sign Out
+          </button>
+        </div>
+      </aside>
+    </>
   )
 }
 

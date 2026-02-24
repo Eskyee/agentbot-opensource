@@ -77,29 +77,93 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-0 top-[57px] bg-black z-40 p-4 overscroll-contain">
-          <div className="flex flex-col gap-4">
-            <Link href="/why" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Why Agentbot?</Link>
-            <Link href="/pricing" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Pricing</Link>
-            <Link href="/blog" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Blog</Link>
-            <Link href="/docs" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Docs</Link>
-            <Link href="/marketplace" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Marketplace</Link>
-            <div className="border-t border-gray-3 pt-4">
+        <>
+          {/* Solid backdrop */}
+          <div 
+            className="md:hidden fixed inset-0 top-[57px] bg-black z-40"
+            onClick={() => setMenuOpen(false)}
+            aria-hidden="true"
+          />
+          
+          {/* Menu content */}
+          <div className="md:hidden fixed inset-0 top-[57px] bg-black z-50 p-6 overflow-y-auto">
+            <div className="flex flex-col gap-2">
+              <Link 
+                href="/why" 
+                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Why Agentbot?
+              </Link>
+              <Link 
+                href="/pricing" 
+                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link 
+                href="/blog" 
+                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Blog
+              </Link>
+              <Link 
+                href="/docs" 
+                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Docs
+              </Link>
+              <Link 
+                href="/marketplace" 
+                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                onClick={() => setMenuOpen(false)}
+              >
+                Marketplace
+              </Link>
+              
+              <div className="border-t border-gray-800 my-4" />
+              
               {session ? (
                 <>
-                  <div className="text-sm text-gray-6 pb-2">{session.user?.email}</div>
-                  <Link href="/dashboard" className="block text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-                  <button onClick={() => { setMenuOpen(false); signOut(); }} className="text-left text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded">Log Out</button>
+                  <div className="px-4 py-2 text-sm text-gray-400">{session.user?.email}</div>
+                  <Link 
+                    href="/dashboard" 
+                    className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <button 
+                    onClick={() => { setMenuOpen(false); signOut(); }} 
+                    className="text-left text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors"
+                  >
+                    Log Out
+                  </button>
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="block text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Log In</Link>
-                  <Link href="/signup" className="block text-lg py-3 text-white font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded" onClick={() => setMenuOpen(false)}>Sign Up</Link>
+                  <Link 
+                    href="/login" 
+                    className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Log In
+                  </Link>
+                  <Link 
+                    href="/signup" 
+                    className="text-base py-3 px-4 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors text-center" 
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign Up
+                  </Link>
                 </>
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
     </nav>
   );
