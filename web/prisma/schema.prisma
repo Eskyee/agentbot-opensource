@@ -18,6 +18,7 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?  // For credentials provider
+  role          String   @default("user") // user or admin
   accounts      Account[]
   sessions      Session[]
 }
