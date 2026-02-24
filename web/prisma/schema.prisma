@@ -55,3 +55,42 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+model ScheduledTask {
+  id          String   @id @default(cuid())
+  userId      String
+  agentId     String
+  name        String
+  description String?
+  cronSchedule String  // e.g., "0 9 * * *" for 9am daily
+  prompt      String   // What the agent should do
+  enabled     Boolean  @default(true)
+  lastRun     DateTime?
+  nextRun     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AgentMemory {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  key       String   // e.g., "user_preferences", "conversation_context"
+  value     String   // JSON string
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, agentId, key])
+}
+
+model AgentFile {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  filename  String
+  path      String
+  size      Int
+  mimeType  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

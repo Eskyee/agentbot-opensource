@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
+    // Fetch OpenRouter models
     const res = await fetch('https://openrouter.ai/api/v1/models')
     const data = await res.json()
     
-    const models = data.data
+    let models = data.data
       .filter((m: any) => !m.id.includes(':free'))
       .map((m: any) => ({
         id: m.id,
@@ -16,7 +17,25 @@ export async function GET() {
           completion: parseFloat(m.pricing.completion)
         }
       }))
-      .sort((a: any, b: any) => a.pricing.prompt - b.pricing.prompt)
+
+    // Add Kimi K2.5 Thinking model
+    models.push({
+      id: 'moonshot/kimi-k2.5-thinking',
+      name: 'Kimi K2.5 Thinking',
+      contextLength: 128000,
+      pricing: {
+        prompt: 0.000003,
+        completion: 0.000012
+      },
+      featured: true,
+      description: 'Advanced reasoning model with thinking capabilities'
+    })
+
+    models = models.sort((a: any, b: any) => {
+      if (a.featured) return -1
+      if (b.featured) return 1
+      return a.pricing.prompt - b.pricing.prompt
+    })
 
     return NextResponse.json({ models })
   } catch (error) {
