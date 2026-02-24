@@ -61,6 +61,12 @@ export default function SettingsPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [notifications, setNotifications] = useState({
+    email: true,
+    usageAlerts: true,
+    productUpdates: false,
+    marketing: false
+  })
   const [apiKeys] = useState([
     { id: '1', name: 'Production Key', key: 'sk_live_...x4a2', created: '2026-02-15' },
     { id: '2', name: 'Development Key', key: 'sk_test_...b3c1', created: '2026-02-10' },
@@ -102,6 +108,22 @@ export default function SettingsPage() {
       alert('Failed to update profile')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const toggleNotification = async (key: string) => {
+    const newValue = !notifications[key as keyof typeof notifications]
+    setNotifications({ ...notifications, [key]: newValue })
+    
+    try {
+      await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notifications: { ...notifications, [key]: newValue } })
+      })
+    } catch (error) {
+      console.error('Failed to save notification settings:', error)
+      setNotifications({ ...notifications, [key]: !newValue })
     }
   }
 
@@ -293,23 +315,24 @@ export default function SettingsPage() {
             
             <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6 space-y-4">
               {[
-                { label: 'Email notifications', desc: 'Receive email updates about your agents', enabled: true },
-                { label: 'Usage alerts', desc: 'Get notified when credits are low', enabled: true },
-                { label: 'Product updates', desc: 'News about new features', enabled: false },
-                { label: 'Marketing emails', desc: 'Tips and promotions', enabled: false },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between">
+                { key: 'email', label: 'Email notifications', desc: 'Receive email updates about your agents', enabled: notifications.email },
+                { key: 'usageAlerts', label: 'Usage alerts', desc: 'Get notified when credits are low', enabled: notifications.usageAlerts },
+                { key: 'productUpdates', label: 'Product updates', desc: 'News about new features', enabled: notifications.productUpdates },
+                { key: 'marketing', label: 'Marketing emails', desc: 'Tips and promotions', enabled: notifications.marketing },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between">
                   <div>
                     <div className="font-medium">{item.label}</div>
                     <div className="text-sm text-gray-400">{item.desc}</div>
                   </div>
                   <button 
-                    className={`w-12 h-6 rounded-full transition-colors ${
+                    onClick={() => toggleNotification(item.key)}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
                       item.enabled ? 'bg-white' : 'bg-gray-700'
                     }`}
                   >
-                    <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                      item.enabled ? 'translate-x-6' : 'translate-x-0.5'
+                    <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-transform ${
+                      item.enabled ? 'translate-x-6 bg-black' : 'translate-x-0.5 bg-white'
                     }`} 
                     />
                   </button>
