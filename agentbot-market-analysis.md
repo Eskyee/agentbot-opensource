@@ -274,10 +274,48 @@ Underground music collectives face coordination chaos, opaque finances, and manu
 **None.** No one is building agents for underground collectives.
 
 ### Adjacent Competitors
-1. **Resident Advisor** - Event listings (no agents, no crypto)
-2. **Bandcamp** - Music sales (no agents, high fees)
-3. **Eventbrite** - Ticketing (no crypto, high fees)
-4. **SoundCloud** - Discovery (gatekeeper, low payouts)
+
+#### **Eventbrite**
+- **What they own:** Event discovery, ticketing, marketing, payments
+- **Strength:** Massive event catalog, merchant features, ads platform
+- **Weakness:** Generic (not music/culture-specific), takes 2-3% cut, no crypto
+- **For underground:** Expensive, seen as "corporate," controls discovery algo
+- **Gap Agentbot fills:** Decentralized, genre-specific, no middleman
+
+#### **Bandcamp**
+- **What they own:** Artist/label storefronts, music + merch sales, discovery
+- **Strength:** Artist-friendly (82/18 split), editorial (Bandcamp Daily), community
+- **Weakness:** No live event ticketing, no automation, no community treasury features
+- **For underground:** Perfect for selling music/merch, but organizers lack event tools
+- **Gap Agentbot fills:** Event management + USDC + automation for collectives
+
+#### **Stripe**
+- **What they own:** Payments infrastructure for platforms
+- **Strength:** Global, reliable, handles splits/payouts, tax compliance
+- **Weakness:** Requires KYC, integration needed, web2-only, high fees (2.9% + $0.30)
+- **For underground:** Works but requires technical integration, less grassroots
+- **Gap Agentbot fills:** Crypto native (USDC), no KYC friction, onchain verification
+
+#### **Resident Advisor**
+- **What they own:** Event listings, editorial, ticketing
+- **Weakness:** No agents, no crypto, centralized
+
+#### **SoundCloud**
+- **What they own:** Music discovery, streaming
+- **Weakness:** Gatekeeper, low payouts, no event tools
+
+### Feature Comparison
+
+| Feature | Eventbrite | Bandcamp | Stripe | Agentbot |
+|---------|-----------|----------|--------|----------|
+| **Event Ticketing** | ✅ (Web2) | ❌ | ❌ | ✅ USDC gasless |
+| **Merch Sales** | ❌ | ✅ | ❌ | ⚠️ (Can build) |
+| **Community Treasury** | ❌ | ❌ | ❌ | ✅ (Native) |
+| **Crypto-native** | ❌ | ❌ | ⚠️ | ✅ (Base) |
+| **Verified Human** | ❌ | ❌ | ❌ | ✅ (Onchain) |
+| **Agent-to-Agent Network** | ❌ | ❌ | ❌ | ⚠️ (Can build) |
+| **Automatic Royalty Splits** | ❌ | ❌ | ⚠️ | ⚠️ (Can build) |
+| **AI Organizer** | ❌ | ❌ | ❌ | ✅ (OpenClaw) |
 
 ### Our Advantages
 - **Crypto-native** - USDC, transparent, trustless
@@ -285,6 +323,7 @@ Underground music collectives face coordination chaos, opaque finances, and manu
 - **Community-owned** - Built by the scene
 - **Network effects** - Agents talk to each other
 - **No middlemen** - Direct value to users
+- **Underground-specific** - Built for the culture, not corporate
 
 ---
 
