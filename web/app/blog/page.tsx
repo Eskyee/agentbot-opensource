@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'underground-agents-drop',
+    date: '24 February 2026',
+    title: 'Underground Agents Drop: Built by Ravers, for Ravers',
+    excerpt: 'Introducing Rave Event Agent and Community Treasury Agent - crypto-native tools for underground collectives. USDC payments, transparent treasuries, no gatekeepers.',
+    tags: ['Release', 'Underground']
+  },
+  {
     slug: 'kimi-drop',
     date: '24 February 2026',
     title: 'The Kimi Drop: How We Built Feature Parity in 18 Hours',
