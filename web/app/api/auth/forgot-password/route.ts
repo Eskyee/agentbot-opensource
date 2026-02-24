@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { randomBytes } from 'crypto'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,7 +34,33 @@ export async function POST(request: NextRequest) {
 
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'}/reset-password?token=${resetToken}`
 
-    console.log(`Password reset requested for ${email}: ${resetUrl}`)
+    if (process.env.RESEND_API_KEY) {
+      await resend.emails.send({
+        from: 'Agentbot <noreply@agentbot.raveculture.xyz>',
+        to: email,
+        subject: 'Reset your Agentbot password',
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <body style="font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #333;">Reset your password</h1>
+              <p>You requested a password reset for your Agentbot account.</p>
+              <p>Click the button below to reset your password:</p>
+              <a href="${resetUrl}" style="display: inline-block; background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">
+                Reset Password
+              </a>
+              <p>Or copy and paste this link:</p>
+              <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+              <p style="color: #888; font-size: 12px; margin-top: 20px;">
+                If you didn't request this, please ignore this email.
+              </p>
+            </body>
+          </html>
+        `,
+      })
+    } else {
+      console.log(`Password reset for ${email}: ${resetUrl}`)
+    }
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent' })
   } catch (error) {
