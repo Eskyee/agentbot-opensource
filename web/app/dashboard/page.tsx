@@ -34,6 +34,7 @@ interface InstanceData {
   plan: string
   openclawVersion?: string
   botUsername?: string
+  gatewayToken?: string
 }
 
 const navItems = [
@@ -122,7 +123,7 @@ function DashboardContent() {
     } catch {}
   }
 
-  const performAction = async (action: 'restart' | 'stop' | 'start' | 'update') => {
+  const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
     if (!instance) return
     setActionLoading(action)
     
@@ -133,6 +134,11 @@ function DashboardContent() {
       const data = await res.json()
       
       if (data.success) {
+        if (action === 'reset-memory') {
+          alert('Memory reset successfully!')
+        } else if (action === 'repair') {
+          alert('Agent repaired successfully!')
+        }
         setTimeout(() => fetchInstance(instance.userId, instance.botUsername || ''), 1000)
       } else {
         alert(data.error || 'Action failed')
@@ -141,6 +147,32 @@ function DashboardContent() {
       alert('Action failed')
     } finally {
       setActionLoading('')
+    }
+  }
+
+  const fetchToken = async () => {
+    if (!instance) return ''
+    try {
+      const res = await fetch(`/api/instance/${instance.userId}/token`)
+      const data = await res.json()
+      if (data.token) {
+        setInstance(prev => prev ? { ...prev, gatewayToken: data.token } : null)
+        return data.token
+      }
+    } catch (e) {
+      console.error('Failed to fetch token:', e)
+    }
+    return ''
+  }
+
+  const handleCopyToken = async () => {
+    let token = instance?.gatewayToken
+    if (!token) {
+      token = await fetchToken()
+    }
+    if (token) {
+      navigator.clipboard.writeText(token)
+      alert('Token copied to clipboard!')
     }
   }
 
@@ -337,6 +369,17 @@ function DashboardContent() {
                 <span>⚡</span> Quick Actions
               </h2>
               <div className="space-y-3">
+                {/* Open OpenClaw UI */}
+                <a
+                  href={instance?.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between w-full bg-green-600 hover:bg-green-500 px-4 py-3 rounded-lg transition-colors"
+                >
+                  <span className="font-semibold">🎮 Open OpenClaw UI</span>
+                  <span>→</span>
+                </a>
+                {/* Open Telegram */}
                 {instance?.botUsername && (
                   <a
                     href={`https://t.me/${instance?.botUsername}`}
@@ -344,7 +387,7 @@ function DashboardContent() {
                     rel="noopener noreferrer"
                     className="flex items-center justify-between w-full bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded-lg transition-colors"
                   >
-                    <span className="font-semibold">Open Telegram</span>
+                    <span className="font-semibold">📱 Open Telegram</span>
                     <span>→</span>
                   </a>
                 )}
@@ -383,6 +426,66 @@ function DashboardContent() {
                     {actionLoading === 'start' ? <span className="animate-spin">⏳</span> : <span>▶️</span>}
                   </button>
                 )}
+              </div>
+            </div>
+
+            {/* Control Panel */}
+            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <span>🎛️</span> Control Panel
+              </h2>
+              <div className="space-y-3">
+                <button
+                  onClick={() => performAction('repair')}
+                  disabled={!!actionLoading}
+                  className="flex items-center justify-between w-full bg-orange-600 hover:bg-orange-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <div className="text-left">
+                    <div className="font-semibold">🔧 Repair Agent</div>
+                    <div className="text-xs opacity-70">Full reconfigure — fixes broken proxy, tokens, config</div>
+                  </div>
+                  {actionLoading === 'repair' ? <span className="animate-spin">⏳</span> : <span>→</span>}
+                </button>
+                
+                {/* Gateway Token */}
+                <div className="bg-gray-800 rounded-lg p-3">
+                  <div className="text-xs text-gray-400 mb-2">Gateway Token</div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="password"
+                      readOnly
+                      value={instance?.gatewayToken ? '••••••••••••' : ''}
+                      placeholder="Click to load token"
+                      className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm font-mono"
+                    />
+                    <button
+                      onClick={handleCopyToken}
+                      className="bg-white hover:bg-gray-200 px-3 py-2 rounded text-sm font-semibold"
+                    >
+                      📋
+                    </button>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-2">
+                    Paste this token in the Control UI settings to connect.
+                  </div>
+                </div>
+                
+                {/* Reset Memory */}
+                <button
+                  onClick={() => {
+                    if (confirm('⚠️ Wipe memory, identity & conversation history? This cannot be undone.')) {
+                      performAction('reset-memory')
+                    }
+                  }}
+                  disabled={!!actionLoading}
+                  className="flex items-center justify-between w-full bg-red-700 hover:bg-red-600 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <div className="text-left">
+                    <div className="font-semibold">⚠️ Reset Agent Memory</div>
+                    <div className="text-xs opacity-70">Wipe memory, identity & conversation history</div>
+                  </div>
+                  {actionLoading === 'reset-memory' ? <span className="animate-spin">⏳</span> : <span>→</span>}
+                </button>
               </div>
             </div>
 

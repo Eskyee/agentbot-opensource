@@ -41,6 +41,7 @@ type AgentMetadata = {
   aiProvider: string;
   port: number;
   subdomain: string;
+  gatewayToken?: string;
 };
 
 type ContainerMount = {
@@ -660,6 +661,78 @@ app.post('/api/agents/:id/update', authenticate, async (req: Request, res: Respo
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Update failed';
+    res.status(500).json({ error: message });
+  }
+});
+
+// Get agent gateway token
+app.get('/api/agents/:id/token', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const metadata = await readAgentMetadata(id);
+    if (!metadata) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+    if (!metadata.gatewayToken) {
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      metadata.gatewayToken = token;
+      await writeAgentMetadata(metadata);
+    }
+    res.json({ token: metadata.gatewayToken });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to get token';
+    res.status(500).json({ error: message });
+  }
+});
+
+// Repair agent - full reconfigure
+app.post('/api/agents/:id/repair', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const containerName = getContainerName(id);
+  try {
+    const inspect = await getContainerInspect(containerName);
+    const oldImage = inspect.Config.Image;
+    
+    await healLegacyModelInContainer(containerName);
+    await runCommand(`docker stop ${containerName}`);
+    await runCommand(`docker rm ${containerName}`);
+    
+    try {
+      await recreateContainerWithImage(containerName, inspect, oldImage);
+    } catch (e) {
+      await recreateContainerWithImage(containerName, inspect, oldImage);
+      throw e;
+    }
+    
+    res.json({ success: true, message: 'Agent repaired successfully' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Repair failed';
+    res.status(500).json({ error: message });
+  }
+});
+
+// Reset agent memory
+app.post('/api/agents/:id/reset-memory', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const containerName = getContainerName(id);
+  try {
+    const mount = (await getContainerInspect(containerName)).Mounts.find((m) => m.Destination === '/home/node/.openclaw');
+    if (!mount) {
+      res.status(500).json({ error: 'Could not find data mount' });
+      return;
+    }
+    
+    if (mount.Type === 'volume' && mount.Name) {
+      await runCommand(`docker exec ${containerName} sh -lc "rm -rf /home/node/.openclaw/agents/*/memory /home/node/.openclaw/agents/*/identity 2>/dev/null || true"`);
+    } else if (mount.Type === 'bind' && mount.Source) {
+      await runCommand(`rm -rf ${mount.Source}/agents/*/memory ${mount.Source}/agents/*/identity 2>/dev/null || true`);
+    }
+    
+    await runCommand(`docker restart ${containerName}`);
+    res.json({ success: true, message: 'Memory reset successfully' });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Reset failed';
     res.status(500).json({ error: message });
   }
 });
