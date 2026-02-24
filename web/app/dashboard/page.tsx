@@ -40,8 +40,10 @@ interface InstanceData {
 const navItems = [
   { icon: '📊', label: 'Dashboard', href: '/dashboard', active: true },
   { icon: '📋', label: 'Tasks', href: '/dashboard/tasks', active: false },
-  { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat', active: false },
+  { icon: '🎨', label: 'Personality', href: '/dashboard/personality', active: false },
+  { icon: '🔧', label: 'Skills', href: '/dashboard/skills', active: false },
   { icon: '📁', label: 'Files', href: '/dashboard/files', active: false },
+  { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat', active: false },
   { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
   { icon: '💳', label: 'Billing', href: '/billing', active: false },
   { icon: '🔑', label: 'API Keys', href: '/dashboard/keys', active: false },

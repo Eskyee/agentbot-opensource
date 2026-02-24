@@ -94,3 +94,27 @@ model AgentFile {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  code        String   @db.Text
+  author      String
+  downloads   Int      @default(0)
+  rating      Float    @default(0)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model InstalledSkill {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  skillId   String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  @@unique([userId, agentId, skillId])
+}
