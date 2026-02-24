@@ -90,7 +90,18 @@ export default function BillingPage() {
   ]
 
   const buyCredits = async (priceId: string) => {
-    window.location.href = `/api/stripe/credits?price=${priceId}`
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, type: 'credits' })
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch (error) {
+      console.error('Failed to initiate checkout:', error)
+      alert('Failed to start checkout')
+    }
   }
 
   const plans = [
@@ -142,8 +153,27 @@ export default function BillingPage() {
     },
   ]
 
-  const buyPlan = (priceId: string) => {
-    window.location.href = `/api/stripe/checkout?plan=${priceId}`
+  const buyPlan = async (priceId: string) => {
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId, type: 'subscription' })
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch (error) {
+      console.error('Failed to initiate checkout:', error)
+      alert('Failed to start checkout')
+    }
+  }
+
+  const connectWallet = () => {
+    alert('Coinbase Wallet integration coming soon!')
+  }
+
+  const contactSales = () => {
+    window.location.href = 'mailto:sales@agentbot.com?subject=Custom Infrastructure Inquiry'
   }
 
   return (
@@ -206,7 +236,10 @@ export default function BillingPage() {
               Connect your wallet to get started.
             </p>
             <div className="flex gap-3">
-              <button className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-2 font-semibold hover:from-blue-600 hover:to-purple-700">
+              <button 
+                onClick={connectWallet}
+                className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-2 font-semibold hover:from-blue-600 hover:to-purple-700"
+              >
                 Connect Wallet
               </button>
               <a 
@@ -326,7 +359,10 @@ export default function BillingPage() {
           <p className="text-gray-400 text-sm mb-4">
             Volume discounts, dedicated support, and custom integrations.
           </p>
-          <button className="rounded-lg border border-gray-700 px-6 py-2 hover:bg-gray-800">
+          <button 
+            onClick={contactSales}
+            className="rounded-lg border border-gray-700 px-6 py-2 hover:bg-gray-800"
+          >
             Contact Sales
           </button>
         </div>
