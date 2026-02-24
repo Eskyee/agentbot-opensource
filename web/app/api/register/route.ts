@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { sendWelcomeEmail } from "../../lib/email";
+import { sendWelcomeEmail } from "@/lib/email/welcome";
 
 const prisma = new PrismaClient();
 
