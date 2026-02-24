@@ -3,15 +3,18 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { naturalToCron, cronToNatural } from '@/lib/cron-parser'
 
 export default function TasksPage() {
   const { data: session } = useSession()
   const [tasks, setTasks] = useState([])
   const [showCreate, setShowCreate] = useState(false)
+  const [useNatural, setUseNatural] = useState(true)
   const [newTask, setNewTask] = useState({
     name: '',
     description: '',
     cronSchedule: '0 9 * * *',
+    naturalSchedule: 'every day at 9am',
     prompt: ''
   })
 
@@ -23,6 +26,23 @@ export default function TasksPage() {
     const res = await fetch('/api/scheduled-tasks')
     const data = await res.json()
     setTasks(data.tasks || [])
+  }
+
+  const handleScheduleChange = (value: string) => {
+    if (useNatural) {
+      const cron = naturalToCron(value)
+      setNewTask({
+        ...newTask,
+        naturalSchedule: value,
+        cronSchedule: cron || '0 9 * * *'
+      })
+    } else {
+      setNewTask({
+        ...newTask,
+        cronSchedule: value,
+        naturalSchedule: cronToNatural(value)
+      })
+    }
   }
 
   const createTask = async () => {
@@ -69,17 +89,34 @@ export default function TasksPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Schedule (Cron)</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm text-gray-400">Schedule</label>
+                  <button
+                    onClick={() => setUseNatural(!useNatural)}
+                    className="text-xs text-blue-400 hover:underline"
+                  >
+                    {useNatural ? 'Use cron syntax' : 'Use natural language'}
+                  </button>
+                </div>
                 <input
                   type="text"
-                  value={newTask.cronSchedule}
-                  onChange={(e) => setNewTask({...newTask, cronSchedule: e.target.value})}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 font-mono"
-                  placeholder="0 9 * * *"
+                  value={useNatural ? newTask.naturalSchedule : newTask.cronSchedule}
+                  onChange={(e) => handleScheduleChange(e.target.value)}
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
+                  placeholder={useNatural ? 'every day at 9am' : '0 9 * * *'}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Examples: "0 9 * * *" (9am daily), "0 */6 * * *" (every 6 hours)
+                  {useNatural ? (
+                    <>Examples: "every day at 9am", "every monday at 2pm", "every 6 hours"</>
+                  ) : (
+                    <>Cron format: minute hour day month weekday</>
+                  )}
                 </p>
+                {useNatural && (
+                  <p className="text-xs text-green-400 mt-1">
+                    → Converts to: {newTask.cronSchedule}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-2">What should the agent do?</label>
@@ -126,7 +163,7 @@ export default function TasksPage() {
                   <div>
                     <h3 className="text-lg font-bold">{task.name}</h3>
                     <p className="text-sm text-gray-400 mt-1">{task.description}</p>
-                    <p className="text-xs text-gray-500 mt-2 font-mono">{task.cronSchedule}</p>
+                    <p className="text-xs text-gray-500 mt-2">{cronToNatural(task.cronSchedule)}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs ${task.enabled ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
                     {task.enabled ? 'Active' : 'Paused'}

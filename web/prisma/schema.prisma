@@ -118,3 +118,33 @@ model InstalledSkill {
   createdAt DateTime @default(now())
   @@unique([userId, agentId, skillId])
 }
+
+model AgentSwarm {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  agents      String   @db.Text // JSON array of agent configs
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WorkflowNode {
+  id         String   @id @default(cuid())
+  workflowId String
+  type       String   // trigger, action, condition
+  config     String   @db.Text // JSON
+  position   String   // JSON {x, y}
+  createdAt  DateTime @default(now())
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

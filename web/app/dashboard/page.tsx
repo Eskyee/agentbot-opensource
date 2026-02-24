@@ -42,6 +42,8 @@ const navItems = [
   { icon: '📋', label: 'Tasks', href: '/dashboard/tasks', active: false },
   { icon: '🎨', label: 'Personality', href: '/dashboard/personality', active: false },
   { icon: '🔧', label: 'Skills', href: '/dashboard/skills', active: false },
+  { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms', active: false },
+  { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows', active: false },
   { icon: '📁', label: 'Files', href: '/dashboard/files', active: false },
   { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat', active: false },
   { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
