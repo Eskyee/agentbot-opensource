@@ -14,12 +14,6 @@ const navItems = [
 function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?: number }) {
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
-      <div className="p-6 border-b border-gray-800">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-2xl">🦞</span>
-        </Link>
-      </div>
-
       <nav className="flex-1 p-4">
         <div className="space-y-1">
           {navItems.map((item) => (
