@@ -244,10 +244,17 @@ export default function Home() {
       <footer className="border-t border-gray-2 py-12">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🦞</span>
-              <span className="font-bold">Agentbot</span>
-              <span className="text-gray-6 text-sm">© 2026</span>
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🦞</span>
+                <span className="font-bold">Agentbot</span>
+                <span className="text-gray-6 text-sm">© 2026</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-6">
+                <span>Builder Code:</span>
+                <span className="font-mono text-gray-7">bc_upjlm3yl</span>
+                <span className="text-gray-6">on Base</span>
+              </div>
             </div>
             
             <div className="flex items-center gap-6">
