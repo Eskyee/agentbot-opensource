@@ -53,6 +53,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
+  debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login",
     signOut: "/logout",
