@@ -10,6 +10,7 @@ const FLOW_STEPS: Step[] = ['telegram', 'token', 'ai', 'deploy', 'done']
 function OnboardContent() {
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') || 'free'
+  const mode = searchParams.get('mode') || 'create' // link, create, deploy
   
   const [step, setStep] = useState<Step>('telegram')
   const [telegramToken, setTelegramToken] = useState('')
@@ -105,11 +106,58 @@ function OnboardContent() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      {/* Mode Selector */}
+      {step === 'telegram' && (
+        <div className="mb-8">
+          <div className="grid grid-cols-3 gap-3 bg-gray-900 p-2 rounded-xl border border-gray-800">
+            <button
+              onClick={() => window.location.href = '/onboard?mode=link'}
+              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                mode === 'link' 
+                  ? 'bg-white text-black' 
+                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+              }`}
+            >
+              Link Existing
+            </button>
+            <button
+              onClick={() => window.location.href = '/onboard?mode=create'}
+              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                mode === 'create' 
+                  ? 'bg-white text-black' 
+                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+              }`}
+            >
+              Create New
+            </button>
+            <button
+              onClick={() => window.location.href = '/onboard?mode=deploy'}
+              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                mode === 'deploy' 
+                  ? 'bg-white text-black' 
+                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+              }`}
+            >
+              One-Click Deploy
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center mb-12">
         <div className="text-5xl mb-4">🦞</div>
-        <h1 className="text-3xl font-bold">Deploy Your AI Assistant</h1>
+        <h1 className="text-3xl font-bold">
+          {mode === 'link' && 'Link Existing OpenClaw'}
+          {mode === 'create' && 'Create Agentbot'}
+          {mode === 'deploy' && 'Deploy OpenClaw with One Click'}
+        </h1>
         <p className="text-gray-400 mt-2">
+          {mode === 'link' && 'Connect your existing OpenClaw instance'}
+          {mode === 'create' && 'Build your custom AI agent from scratch'}
+          {mode === 'deploy' && 'Launch a pre-configured OpenClaw agent instantly'}
+        </p>
+        <p className="text-gray-500 text-sm mt-1">
           {plan === 'free' ? '3-day free trial' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
         </p>
       </div>

@@ -28,16 +28,31 @@ export default function Home() {
           
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
             <Link
-              href="/signup"
+              href="/onboard"
               className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
             >
-              Deploy Agent
+              Get Started →
             </Link>
             <Link
               href="/docs"
               className="inline-flex items-center justify-center rounded-lg bg-gray-1 border border-gray-4 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-2 hover:border-gray-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors"
             >
               Read the Docs
+            </Link>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-4 text-sm">
+            <Link href="/onboard?mode=link" className="text-gray-6 hover:text-white transition-colors">
+              Link existing OpenClaw →
+            </Link>
+            <span className="text-gray-8">·</span>
+            <Link href="/onboard?mode=create" className="text-gray-6 hover:text-white transition-colors">
+              Create Agentbot →
+            </Link>
+            <span className="text-gray-8">·</span>
+            <Link href="/onboard?mode=deploy" className="text-gray-6 hover:text-white transition-colors">
+              Deploy OpenClaw with one click →
             </Link>
           </div>
         </div>
