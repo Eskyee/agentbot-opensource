@@ -69,7 +69,7 @@ export default function Home() {
             <div className="text-center">
               <div className="text-3xl mb-4" role="img" aria-label="Brain">🧠</div>
               <h3 className="text-lg font-medium mb-2">Kimi K2.5 Thinking</h3>
-              <p className="text-sm text-gray-7">Advanced reasoning with 128K context. Configured and ready to use.</p>
+              <p className="text-sm text-gray-7">128K context remembers your whole vibe. Thinks like a selector—analyzes patterns and suggests what's next.</p>
             </div>
             
             <div className="text-center">
@@ -89,7 +89,7 @@ export default function Home() {
             <div className="text-center">
               <div className="text-3xl mb-4" role="img" aria-label="Memory">💾</div>
               <h3 className="text-lg font-medium mb-2">Persistent Memory</h3>
-              <p className="text-sm text-gray-7">Remembers conversations and preferences across sessions.</p>
+              <p className="text-sm text-gray-7">Your agent remembers every conversation, every preference—months of context at its fingertips.</p>
             </div>
             
             <div className="text-center">
