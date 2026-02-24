@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'major-update-2026',
+    date: '24 February 2026',
+    title: 'Major Update: Agentbot Now Matches Kimi Claw',
+    excerpt: 'Scheduled tasks, skill marketplace, agent swarms, and more. The biggest update in Agentbot history.',
+    tags: ['Release', 'Major Update']
+  },
+  {
     slug: 'daily-2026-02-24',
     date: '24 February 2026',
     title: 'Automated Blog System Now Live',
