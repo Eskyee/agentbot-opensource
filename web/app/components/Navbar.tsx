@@ -29,6 +29,8 @@ export default function Navbar() {
 
       {/* Desktop nav */}
       <div className="hidden md:flex items-center gap-6">
+        <Link href="/pricing" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Pricing</Link>
+        <Link href="/blog" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Blog</Link>
         <Link href="/docs" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Docs</Link>
         <Link href="/marketplace" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Marketplace</Link>
         
@@ -76,6 +78,8 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden fixed inset-0 top-[57px] bg-black z-40 p-4 overscroll-contain">
           <div className="flex flex-col gap-4">
+            <Link href="/pricing" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Pricing</Link>
+            <Link href="/blog" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Blog</Link>
             <Link href="/docs" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Docs</Link>
             <Link href="/marketplace" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Marketplace</Link>
             <div className="border-t border-gray-3 pt-4">

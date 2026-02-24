@@ -31,10 +31,11 @@ function MarketplaceSidebar({ userName, credits = 0 }: { userName: string; credi
           ))}
         </div>
 
-        <div className="mt-8 p-4 bg-gray-800 rounded-xl">
+        <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
           <div className="text-sm text-gray-400 mb-1">Credits</div>
           <div className="text-xl font-bold">${credits.toFixed(2)}</div>
-        </div>
+          <div className="text-xs text-blue-400 mt-2">+ Add credits</div>
+        </Link>
       </nav>
 
       <div className="p-4 border-t border-gray-800">
