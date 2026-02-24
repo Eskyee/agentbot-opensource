@@ -277,7 +277,7 @@ export default function Home() {
               </a>
               
               <a 
-                href="https://t.me/esky" 
+                href="https://t.me/esky33" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-6 hover:text-white transition-colors"
