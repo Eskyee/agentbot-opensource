@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'daily-2026-02-24',
+    date: '24 February 2026',
+    title: 'Automated Blog System Now Live',
+    excerpt: 'We've just launched our automated blog system that publishes fresh content daily at 9am UK time.',
+    tags: ['Platform', 'Automation']
+  },
+  {
     slug: 'platform-v2',
     date: 'February 2026',
     title: 'Platform V2: Faster Deployments & New AI Models',
