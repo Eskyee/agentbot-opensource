@@ -141,6 +141,23 @@ export default function WhyAgentbotPage() {
                 Unlike web-only solutions, Agentbot deploys to Telegram, Discord, and WhatsApp. Chat with your agent wherever you work. One agent, accessible everywhere, with the same memory and capabilities across all channels.
               </p>
             </div>
+
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-xl font-bold mb-3">💰 Coinbase Agentic Wallet</h3>
+              <p className="text-gray-300 mb-3">
+                Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Send payments, interact with smart contracts, and manage crypto assets—all through natural language commands.
+              </p>
+              <p className="text-gray-300">
+                Your agent can handle DeFi operations, NFT minting, token swaps, and more, making it a true autonomous financial assistant.
+              </p>
+            </div>
+
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="text-xl font-bold mb-3">🛒 Deploy from Marketplace</h3>
+              <p className="text-gray-300">
+                Don't want to build from scratch? Browse our <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link> of pre-configured agents. Choose a template (Cafe Agent, Radio Agent, Studio Engineer, etc.), customize it to your needs, and deploy in one click. Each template comes with personality, skills, and use-case-specific configurations ready to go.
+              </p>
+            </div>
           </div>
 
           <div className="mt-8 text-center">
@@ -157,10 +174,15 @@ export default function WhyAgentbotPage() {
             <div>
               <h3 className="text-2xl font-bold mb-4">Step 1: Create or link your OpenClaw</h3>
               <p className="text-gray-300 mb-4">
-                If you don't have OpenClaw yet, visit the <Link href="/onboard" className="text-blue-400 hover:underline">onboard page</Link> and click <strong>Create</strong>. Agentbot deploys it to the cloud in about one minute and automatically configures the K2.5 Thinking model. One-click deployment is available on all plans.
+                You have three ways to get started with Agentbot:
               </p>
+              <ul className="list-disc list-inside text-gray-300 mb-4 space-y-2">
+                <li><strong>Create from scratch:</strong> Deploy a fresh OpenClaw instance with custom configuration</li>
+                <li><strong>Link existing:</strong> Connect your local OpenClaw to Agentbot's cloud infrastructure</li>
+                <li><strong>Deploy from marketplace:</strong> Choose a pre-configured agent template and deploy instantly</li>
+              </ul>
               <p className="text-gray-300 mb-4">
-                If you already run OpenClaw locally, click <strong>Link existing OpenClaw</strong> and follow the installation steps on your device.
+                Visit the <Link href="/onboard" className="text-blue-400 hover:underline">onboard page</Link> or browse the <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link> to get started. Deployment takes about one minute and automatically configures the K2.5 Thinking model.
               </p>
               <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
                 <div className="flex gap-4">
@@ -170,8 +192,8 @@ export default function WhyAgentbotPage() {
                   <Link href="/onboard?mode=link" className="flex-1 border border-gray-700 py-3 rounded-lg text-center font-semibold hover:bg-gray-800">
                     Link Existing
                   </Link>
-                  <Link href="/onboard?mode=deploy" className="flex-1 border border-gray-700 py-3 rounded-lg text-center font-semibold hover:bg-gray-800">
-                    One-Click Deploy
+                  <Link href="/marketplace" className="flex-1 border border-gray-700 py-3 rounded-lg text-center font-semibold hover:bg-gray-800">
+                    Browse Marketplace
                   </Link>
                 </div>
               </div>
@@ -330,6 +352,20 @@ export default function WhyAgentbotPage() {
               <h3 className="font-bold mb-2">Can Agentbot send files back to me?</h3>
               <p className="text-gray-300">
                 Yes! Agentbot can send files directly through Telegram, Discord, and WhatsApp. You can also access generated files through the cloud storage dashboard. Files are saved automatically and accessible from any device.
+              </p>
+            </div>
+
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="font-bold mb-2">Can Agentbot handle crypto transactions?</h3>
+              <p className="text-gray-300">
+                Yes! Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Your agent can send payments, interact with smart contracts, swap tokens, mint NFTs, and manage crypto assets through natural language commands. This makes it a true autonomous financial assistant for DeFi operations.
+              </p>
+            </div>
+
+            <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+              <h3 className="font-bold mb-2">Can I deploy a pre-configured agent?</h3>
+              <p className="text-gray-300">
+                Absolutely! Visit our <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link> to browse pre-configured agent templates. Each template comes with personality, skills, and use-case-specific configurations. Choose one (Cafe Agent, Radio Agent, Studio Engineer, etc.), customize it to your needs, and deploy in one click. No need to build from scratch.
               </p>
             </div>
 
