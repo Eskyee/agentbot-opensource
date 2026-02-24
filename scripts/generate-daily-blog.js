@@ -3,10 +3,56 @@ const path = require('path');
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+async function fetchOpenClawNews() {
+  try {
+    // Fetch latest from OpenClaw GitHub
+    const response = await fetch('https://api.github.com/repos/OpenClaw/openclaw/commits?per_page=5');
+    const commits = await response.json();
+    
+    // Fetch releases
+    const releasesResponse = await fetch('https://api.github.com/repos/OpenClaw/openclaw/releases?per_page=3');
+    const releases = await releasesResponse.json();
+    
+    return {
+      commits: commits.map(c => ({
+        message: c.commit.message,
+        date: c.commit.author.date,
+        url: c.html_url
+      })),
+      releases: releases.map(r => ({
+        name: r.name,
+        body: r.body,
+        date: r.published_at,
+        url: r.html_url
+      }))
+    };
+  } catch (error) {
+    console.log('Could not fetch OpenClaw updates, using general content');
+    return null;
+  }
+}
+
 async function generateBlogPost() {
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   const slug = `daily-${today.toISOString().split('T')[0]}`;
+  
+  // Fetch OpenClaw news
+  const openclawNews = await fetchOpenClawNews();
+  
+  let contextPrompt = `Write a blog post for ${dateStr} about one of these topics:
+- Platform improvements or new features
+- AI agent deployment tips
+- Tutorial or how-to guide
+- Best practices for production agents`;
+
+  if (openclawNews) {
+    contextPrompt += `\n\nInclude updates from OpenClaw framework:
+Recent commits: ${openclawNews.commits.map(c => c.message).join(', ')}
+Recent releases: ${openclawNews.releases.map(r => r.name).join(', ')}
+
+Mention what's new in OpenClaw and how it benefits Agentbot users.`;
+  }
   
   // Generate blog content using OpenAI
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -19,17 +65,10 @@ async function generateBlogPost() {
       model: 'gpt-4o-mini',
       messages: [{
         role: 'system',
-        content: 'You are a technical writer for Agentbot, an AI agent deployment platform. Write engaging blog posts about platform updates, AI agent best practices, and industry news.'
+        content: 'You are a technical writer for Agentbot, an AI agent deployment platform built on OpenClaw. Write engaging, informative blog posts about platform updates, OpenClaw framework improvements, and AI agent best practices. Keep posts concise (300-500 words).'
       }, {
         role: 'user',
-        content: `Write a blog post for ${dateStr} about one of these topics:
-- Platform improvements or new features
-- AI agent deployment tips
-- OpenClaw framework updates
-- Industry news about AI agents
-- Tutorial or how-to guide
-
-Format as JSON with: title, excerpt (1 sentence), tags (array of 2), content (markdown with ## headings, paragraphs, and bullet lists)`
+        content: contextPrompt + '\n\nFormat as JSON with: title, excerpt (1 sentence), tags (array of 2), content (markdown with ## headings, paragraphs, and bullet lists)'
       }],
       temperature: 0.8
     })
