@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'kimi-drop',
+    date: '24 February 2026',
+    title: 'The Kimi Drop: How We Built Feature Parity in 18 Hours',
+    excerpt: 'We analyzed Kimi Claw and shipped everything they have, plus agent swarms and visual workflows. Here\'s how we did it.',
+    tags: ['Release', 'Engineering']
+  },
+  {
     slug: 'major-update-2026',
     date: '24 February 2026',
     title: 'Major Update: Agentbot Now Matches Kimi Claw',
