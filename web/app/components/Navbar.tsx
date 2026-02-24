@@ -90,35 +90,35 @@ export default function Navbar() {
             <div className="flex flex-col gap-2">
               <Link 
                 href="/why" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                className="text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
                 onClick={() => setMenuOpen(false)}
               >
                 Why Agentbot?
               </Link>
               <Link 
                 href="/pricing" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                className="text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
                 onClick={() => setMenuOpen(false)}
               >
                 Pricing
               </Link>
               <Link 
                 href="/blog" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                className="text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
                 onClick={() => setMenuOpen(false)}
               >
                 Blog
               </Link>
               <Link 
                 href="/docs" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                className="text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
                 onClick={() => setMenuOpen(false)}
               >
                 Docs
               </Link>
               <Link 
                 href="/marketplace" 
-                className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                className="text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
                 onClick={() => setMenuOpen(false)}
               >
                 Marketplace
@@ -131,14 +131,14 @@ export default function Navbar() {
                   <div className="px-4 py-2 text-sm text-gray-400">{session.user?.email}</div>
                   <Link 
                     href="/dashboard" 
-                    className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                    className="text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
                     onClick={() => setMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
                   <button 
                     onClick={() => { setMenuOpen(false); signOut(); }} 
-                    className="text-left text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors"
+                    className="text-left text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors"
                   >
                     Log Out
                   </button>
@@ -147,14 +147,14 @@ export default function Navbar() {
                 <>
                   <Link 
                     href="/login" 
-                    className="text-base py-3 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
+                    className="text-lg py-4 px-4 text-white hover:bg-gray-900 rounded-lg transition-colors" 
                     onClick={() => setMenuOpen(false)}
                   >
                     Log In
                   </Link>
                   <Link 
                     href="/signup" 
-                    className="text-base py-3 px-4 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors text-center" 
+                    className="text-lg py-4 px-4 bg-white text-black font-medium rounded-lg hover:bg-gray-200 transition-colors text-center" 
                     onClick={() => setMenuOpen(false)}
                   >
                     Sign Up
