@@ -76,7 +76,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-0 top-[57px] bg-black z-40 p-4 overscroll-contain">
+        <div className="md:hidden fixed inset-0 top-[57px] bg-black z-40 p-4 overscroll-contain overflow-y-auto">
           <div className="flex flex-col gap-4">
             <Link href="/pricing" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Pricing</Link>
             <Link href="/blog" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Blog</Link>
