@@ -214,21 +214,27 @@ export default function Home() {
                 Buy AGENTBOT →
               </a>
             </div>
-            <div className="mt-4 pt-4 border-t border-gray-4 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-7">
-              <div className="flex items-center gap-2">
-                <span role="img" aria-label="Link">🔗</span>
-                Builder Code: <span className="font-mono text-white">bc_upjlm3yl</span>
-                <span className="text-xs text-gray-6">on Base</span>
+            <div className="mt-4 pt-4 border-t border-gray-4 space-y-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-7">
+                <div className="flex items-center gap-2">
+                  <span role="img" aria-label="Link">🔗</span>
+                  Builder Code: <span className="font-mono text-white">bc_upjlm3yl</span>
+                  <span className="text-xs text-gray-6">on Base</span>
+                </div>
+                <span className="hidden sm:inline text-gray-6">·</span>
+                <a 
+                  href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  View on BaseScan →
+                </a>
               </div>
-              <span className="hidden sm:inline text-gray-6">·</span>
-              <a 
-                href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:underline flex items-center gap-1"
-              >
-                View on BaseScan →
-              </a>
+              <div className="flex items-center justify-center gap-2 text-xs text-gray-6">
+                <span>Contract:</span>
+                <code className="font-mono text-gray-7 bg-gray-2 px-2 py-1 rounded">0x986b41C76aB8B7350079613340ee692773B34bA3</code>
+              </div>
             </div>
           </div>
         </div>
