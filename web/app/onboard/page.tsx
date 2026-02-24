@@ -120,12 +120,12 @@ function OnboardContent() {
           {FLOW_STEPS.map((s, i) => (
             <div key={s} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                step === s ? 'bg-white' : 
-                FLOW_STEPS.indexOf(step) > i ? 'bg-green-500' : 'bg-gray-800'
+                step === s ? 'bg-white text-black' : 
+                FLOW_STEPS.indexOf(step) > i ? 'bg-green-500 text-white' : 'bg-gray-3 text-gray-7'
               }`}>
                 {FLOW_STEPS.indexOf(step) > i ? '✓' : i + 1}
               </div>
-              {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-gray-800" />}
+              {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-gray-3" />}
             </div>
           ))}
         </div>
