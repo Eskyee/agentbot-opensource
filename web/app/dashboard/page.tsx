@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -38,10 +38,14 @@ interface InstanceData {
 }
 
 const navItems = [
-  { icon: '🤖', label: 'Agents', href: '/agents', active: false },
+  { icon: '📊', label: 'Dashboard', href: '/dashboard', active: true },
+  { icon: '📋', label: 'Tasks', href: '/dashboard/tasks', active: false },
+  { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat', active: false },
+  { icon: '📁', label: 'Files', href: '/dashboard/files', active: false },
   { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
   { icon: '💳', label: 'Billing', href: '/billing', active: false },
-  { icon: '⚙️', label: 'Account', href: '/settings', active: false },
+  { icon: '🔑', label: 'API Keys', href: '/dashboard/keys', active: false },
+  { icon: '⚙️', label: 'Settings', href: '/settings', active: false },
 ]
 
 function DashboardContent() {
@@ -54,6 +58,13 @@ function DashboardContent() {
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState('')
   const [credits, setCredits] = useState(0)
+  const [heartbeatCredits, setHeartbeatCredits] = useState(200)
+  const [heartbeatFreq, setHeartbeatFreq] = useState('3h')
+  const [lastSeen, setLastSeen] = useState<string | null>(null)
+  const [taskInput, setTaskInput] = useState('')
+  const [activeTaskTab, setActiveTaskTab] = useState('all')
+  const [tasks, setTasks] = useState<{id: string; title: string; status: string; type: string}[]>([])
+  const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
     const urlUserId = searchParams.get('id')
@@ -489,6 +500,133 @@ function DashboardContent() {
               </div>
             </div>
 
+            {/* Tasks */}
+            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <span>📋</span> Tasks
+              </h2>
+              {/* Task Tabs */}
+              <div className="flex gap-2 mb-4 overflow-x-auto">
+                {['all', 'recurring', 'chat', 'scheduled', 'completed'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTaskTab(tab)}
+                    className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap ${
+                      activeTaskTab === tab ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </div>
+              {/* Task Input */}
+              <div className="mb-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={taskInput}
+                    onChange={(e) => setTaskInput(e.target.value)}
+                    placeholder="Tell your agent what to do..."
+                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-white"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && taskInput.trim()) {
+                        setTasks([...tasks, { id: Date.now().toString(), title: taskInput, status: 'pending', type: 'chat' }])
+                        setTaskInput('')
+                      }
+                    }}
+                  />
+                  <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200">
+                    Send
+                  </button>
+                </div>
+                {/* Quick Actions */}
+                <div className="flex gap-2 mt-3 flex-wrap">
+                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">🔍 Research</button>
+                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📧 Draft email</button>
+                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📈 Market update</button>
+                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">✍️ Write a post</button>
+                </div>
+              </div>
+              {/* Task List */}
+              <div className="space-y-2">
+                {tasks.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    <div className="text-4xl mb-2">📋</div>
+                    No tasks yet
+                  </div>
+                ) : (
+                  tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab).map((task) => (
+                    <div key={task.id} className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
+                      <span className="text-sm">{task.title}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        task.status === 'completed' ? 'bg-green-900 text-green-400' : 'bg-yellow-900 text-yellow-400'
+                      }`}>
+                        {task.status}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Heartbeat */}
+            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <span>💓</span> Heartbeat
+              </h2>
+              <p className="text-sm text-gray-400 mb-4">Your agent's pulse. See when it last checked in and control how often it does.</p>
+              
+              {/* Status */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="w-2 h-2 rounded-full bg-green-400"></span>
+                <span className="text-sm">On schedule</span>
+              </div>
+              
+              {/* Frequency */}
+              <div className="mb-4">
+                <div className="text-xs text-gray-500 mb-2">Frequency</div>
+                <div className="flex gap-2 flex-wrap">
+                  {['1h', '3h', '6h', '12h', 'Off'].map((freq) => (
+                    <button
+                      key={freq}
+                      onClick={() => setHeartbeatFreq(freq)}
+                      className={`px-3 py-1.5 rounded-lg text-xs ${
+                        heartbeatFreq === freq ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {freq}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                  <div className="text-xs text-gray-500">Last seen</div>
+                  <div className="text-sm">{lastSeen || 'Just now'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500">Next in</div>
+                  <div className="text-sm">
+                    {heartbeatFreq === 'Off' ? '—' : heartbeatFreq}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Credits */}
+              <div className="bg-gray-800 rounded-lg p-3">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-400">Daily heartbeat pool</span>
+                  <span>{heartbeatCredits} of 200 remaining</span>
+                </div>
+                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${(200 - heartbeatCredits) / 2}%` }} />
+                </div>
+                <div className="text-xs text-gray-500 mt-2">Separate from your daily credits - heartbeats never eat into your quota.</div>
+              </div>
+            </div>
+
             {/* Skills */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -617,7 +755,7 @@ function DashboardSidebar({ userName, credits = 0 }: { userName: string; credits
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-1">
           {navItems.map((item) => (
             <Link
@@ -644,15 +782,21 @@ function DashboardSidebar({ userName, credits = 0 }: { userName: string; credits
 
       {/* User */}
       <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">
             {userName.charAt(0).toUpperCase()}
           </div>
-          <div>
-            <div className="font-medium">{userName}</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium truncate">{userName}</div>
             <div className="text-sm text-gray-400">Free Trial</div>
           </div>
         </div>
+        <button
+          onClick={() => signOut({ callbackUrl: '/' })}
+          className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition-colors"
+        >
+          <span>🚪</span> Sign Out
+        </button>
       </div>
     </aside>
   )
