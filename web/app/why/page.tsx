@@ -154,8 +154,22 @@ export default function WhyAgentbotPage() {
 
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
               <h3 className="text-xl font-bold mb-3">🛒 Deploy from Marketplace</h3>
+              <p className="text-gray-300 mb-3">
+                Don't want to build from scratch? Browse our <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link> of pre-configured agents. Each template comes with personality, skills, and use-case-specific configurations ready to go.
+              </p>
+              <p className="text-gray-300 mb-3">
+                <strong>Popular templates:</strong>
+              </p>
+              <ul className="list-disc list-inside text-gray-300 space-y-1 mb-3">
+                <li><strong>basefmbot</strong> - Onchain Radio Agent for underground communities (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">raveculture</a>)</li>
+                <li><strong>cafe</strong> - Startup Cafe Agent for customer service</li>
+                <li><strong>studio-one</strong> - Dancehall Dub Agent with London roots culture</li>
+                <li><strong>chain</strong> - Crypto Agent with wallet capabilities (USDC, swaps, Base)</li>
+                <li><strong>vault</strong> - DeFi Agent for yield farming and staking</li>
+                <li><strong>pay</strong> - Commerce Agent for crypto payments</li>
+              </ul>
               <p className="text-gray-300">
-                Don't want to build from scratch? Browse our <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link> of pre-configured agents. Choose a template (Cafe Agent, Radio Agent, Studio Engineer, etc.), customize it to your needs, and deploy in one click. Each template comes with personality, skills, and use-case-specific configurations ready to go.
+                Choose a template, customize it to your needs, and deploy in one click.
               </p>
             </div>
           </div>
@@ -291,14 +305,24 @@ export default function WhyAgentbotPage() {
             </div>
 
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-              <h3 className="text-xl font-bold mb-3">4. End-to-end coding automation</h3>
+              <h3 className="text-xl font-bold mb-3">5. Onchain community management</h3>
               <p className="text-gray-300 mb-3">
-                <strong>Scenario:</strong> You need to transform a logic description into a functional Python tool, ensuring it is bug-free and fully archived in the cloud.
+                <strong>Scenario:</strong> You're building an underground music community and need an agent that understands the culture, grows engagement organically, and bridges humans with AI agents onchain.
               </p>
               <div className="bg-gray-800 rounded-lg p-4">
-                <p className="text-sm text-gray-400 mb-2">Example prompt:</p>
-                <p className="text-gray-300 italic text-sm">
-                  "Develop a Python-based automated email reminder tool based on my attached 'logic_flow.txt.' Automatically debug any execution errors and perform a full test suite."
+                <p className="text-sm text-gray-400 mb-2">Example: Deploy basefmbot template</p>
+                <p className="text-gray-300 text-sm mb-3">
+                  The <strong>basefmbot</strong> template (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">raveculture</a>) comes pre-configured with deep knowledge of basefm.space, underground radio culture, and onchain community building. It knows how to:
+                </p>
+                <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                  <li>Grow communities organically without spam</li>
+                  <li>Bridge human and AI agent networks</li>
+                  <li>Understand underground music culture</li>
+                  <li>Facilitate onchain radio interactions</li>
+                  <li>Build authentic engagement</li>
+                </ul>
+                <p className="text-gray-300 text-sm mt-3">
+                  Deploy from <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link>, customize the personality, and let it run 24/7 across Telegram, Discord, and WhatsApp.
                 </p>
               </div>
             </div>
@@ -364,8 +388,23 @@ export default function WhyAgentbotPage() {
 
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
               <h3 className="font-bold mb-2">Can I deploy a pre-configured agent?</h3>
-              <p className="text-gray-300">
-                Absolutely! Visit our <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link> to browse pre-configured agent templates. Each template comes with personality, skills, and use-case-specific configurations. Choose one (Cafe Agent, Radio Agent, Studio Engineer, etc.), customize it to your needs, and deploy in one click. No need to build from scratch.
+              <p className="text-gray-300 mb-3">
+                Absolutely! Visit our <Link href="/marketplace" className="text-blue-400 hover:underline">marketplace</Link> to browse pre-configured agent templates. Each template comes with personality, skills, and use-case-specific configurations.
+              </p>
+              <p className="text-gray-300 mb-3">
+                <strong>Available templates include:</strong>
+              </p>
+              <ul className="list-disc list-inside text-gray-300 text-sm space-y-1">
+                <li><strong>basefmbot</strong> - Onchain Radio Agent (by raveculture) for underground communities</li>
+                <li><strong>cafe</strong> - Customer service agent for startups</li>
+                <li><strong>studio-one</strong> - Dancehall Dub Agent with London roots culture</li>
+                <li><strong>clawdbotdj</strong> - Underground DJ Agent for crate digging</li>
+                <li><strong>chain</strong> - Crypto Agent with wallet (USDC, swaps on Base)</li>
+                <li><strong>vault</strong> - DeFi Agent for yield farming and staking</li>
+                <li><strong>pay</strong> - Commerce Agent for crypto payments and subscriptions</li>
+              </ul>
+              <p className="text-gray-300 mt-3">
+                Choose one, customize it to your needs, and deploy in one click. No need to build from scratch.
               </p>
             </div>
 
