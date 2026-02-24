@@ -222,7 +222,7 @@ export default function Home() {
               </div>
               <span className="hidden sm:inline text-gray-6">·</span>
               <a 
-                href="https://basescan.org/token/0xYOUR_CONTRACT_ADDRESS"
+                href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-400 hover:underline flex items-center gap-1"
