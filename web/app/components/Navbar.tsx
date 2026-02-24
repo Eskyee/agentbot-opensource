@@ -6,6 +6,9 @@ import { useState, useEffect } from "react";
 export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Check if user is admin
+  const isAdmin = session?.user?.email === 'rbasefm@icloud.com';
 
   useEffect(() => {
     if (menuOpen) {
@@ -39,6 +42,11 @@ export default function Navbar() {
             <Link href="/dashboard" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">
               Dashboard
             </Link>
+            {isAdmin && (
+              <Link href="/admin" className="text-sm text-purple-400 hover:text-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400 rounded transition-colors">
+                Admin
+              </Link>
+            )}
             <button 
               className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors" 
               onClick={() => signOut()}
@@ -87,6 +95,9 @@ export default function Navbar() {
                 <>
                   <div className="text-sm text-gray-6 pb-2">{session.user?.email}</div>
                   <Link href="/dashboard" className="block text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                  {isAdmin && (
+                    <Link href="/admin" className="block text-lg py-3 text-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400 rounded" onClick={() => setMenuOpen(false)}>Admin</Link>
+                  )}
                   <button onClick={() => { setMenuOpen(false); signOut(); }} className="text-left text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded">Log Out</button>
                 </>
               ) : (
