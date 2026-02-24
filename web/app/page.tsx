@@ -215,13 +215,7 @@ export default function Home() {
               </a>
             </div>
             <div className="mt-4 pt-4 border-t border-gray-4 space-y-3">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-7">
-                <div className="flex items-center gap-2">
-                  <span role="img" aria-label="Link">🔗</span>
-                  Builder Code: <span className="font-mono text-white">bc_upjlm3yl</span>
-                  <span className="text-xs text-gray-6">on Base</span>
-                </div>
-                <span className="hidden sm:inline text-gray-6">·</span>
+              <div className="flex items-center justify-center gap-3 text-sm">
                 <a 
                   href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3"
                   target="_blank"
