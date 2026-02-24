@@ -33,15 +33,16 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
           ))}
         </div>
 
-        <div className="mt-8 p-4 bg-gray-800 rounded-xl">
+        <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
           <div className="text-sm text-gray-400 mb-1">Credits</div>
           <div className="text-xl font-bold">${credits.toFixed(2)}</div>
-        </div>
+          <div className="text-xs text-blue-400 mt-2">+ Add credits</div>
+        </Link>
       </nav>
 
       <div className="p-4 border-t border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
+          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">
             {userName.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -72,6 +73,14 @@ export default function BillingPage() {
         if (res.ok) {
           const data = await res.json()
           setCurrentPlan(data.plan || 'trial')
+          // Fetch credits from user settings
+          const creditsRes = await fetch('/api/settings')
+          if (creditsRes.ok) {
+            const creditsData = await creditsRes.json()
+            setCredits(creditsData.credits || 0)
+            setUsage(creditsData.usage30d || 0)
+            setAllowance(creditsData.monthlyAllowance || 0)
+          }
         }
       } catch (error) {
         console.error('Failed to fetch billing data:', error)
@@ -184,6 +193,10 @@ export default function BillingPage() {
         <div className="p-8 max-w-4xl">
         <h1 className="text-3xl font-bold mb-8">Billing</h1>
 
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">Loading...</div>
+        ) : (
+          <>
         {/* Credit Balance */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Credit Balance</h2>
@@ -191,7 +204,7 @@ export default function BillingPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="text-4xl font-bold">${credits.toFixed(2)}</div>
-                <div className="text-gray-400">{credits} credits</div>
+                <div className="text-gray-400">{credits.toFixed(0)} credits</div>
               </div>
               <div className="text-right">
                 <div className="text-sm text-gray-400">${usage.toFixed(2)} used in last 30 days</div>
@@ -204,9 +217,9 @@ export default function BillingPage() {
               </div>
             )}
             <div className="flex gap-3">
-              <Link href="#buy-credits" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
+              <a href="#buy-credits" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
                 Buy Credits
-              </Link>
+              </a>
               <CoinbaseWalletButton />
             </div>
           </div>
@@ -366,6 +379,8 @@ export default function BillingPage() {
             Contact Sales
           </button>
         </div>
+          </>
+        )}
         </div>
       </main>
     </div>
