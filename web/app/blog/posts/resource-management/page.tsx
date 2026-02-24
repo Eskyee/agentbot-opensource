@@ -34,7 +34,7 @@ export default function ResourceManagementPost() {
           <ul className="list-disc list-inside text-gray-300 mb-4 space-y-2">
             <li>CPU usage consistently above 80%</li>
             <li>Memory warnings in logs</li>
-            <li>Slow response times (>3 seconds)</li>
+            <li>Slow response times (&gt;3 seconds)</li>
             <li>More than 500 messages per day</li>
           </ul>
 
