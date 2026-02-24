@@ -2,6 +2,7 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Install docker-cli for docker commands (needed for agent provisioning)
 RUN apk add --no-cache docker-cli
 
 # Copy package files
