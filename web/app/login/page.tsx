@@ -85,6 +85,11 @@ function LoginForm() {
         >
           {loading ? "Logging in..." : "Log in"}
         </button>
+        <div className="text-center">
+          <Link href="/forgot-password" className="text-sm text-gray-400 hover:text-white">
+            Forgot password?
+          </Link>
+        </div>
       </form>
       {loginError && <div className="text-red-500 text-center mt-2">{loginError}</div>}
       <div className="my-6 flex items-center justify-center gap-2 text-gray-400">
