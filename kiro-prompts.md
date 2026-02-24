@@ -247,6 +247,205 @@ CTA: Try it free, join the beta.
 
 ---
 
+## Strategic Prompts
+
+### Prompt 6: Community Insights Agent — "What Hit Different?"
+Design the `community-insights` agent that analyzes collective performance and gives actionable recommendations.
+
+**Inputs:**
+- Event agent data (attendance, revenue, timing)
+- Community-treasury agent (spending patterns)
+- Telegram chat history (vibe, sentiment)
+
+**Outputs:**
+- "Your Friday events do 2x better than Saturdays"
+- "Techno nights have 30% higher repeat attendance"
+- "Spending £200 on promo = 50% more tickets sold"
+- "Your community engagement peaks on Wednesdays"
+
+**Features:**
+- Attendance pattern analysis
+- Revenue optimization recommendations
+- Talent performance tracking (which DJs bring crowds?)
+- Optimal event timing predictions
+- Loyalty tracking (who's a regular?)
+- Sentiment analysis from chat
+
+**Requirements:**
+1. Data model (what metrics to track?)
+2. AI reasoning approach (pattern detection, recommendations)
+3. Privacy considerations (anonymize user data)
+4. Visualization (charts, graphs, insights dashboard)
+
+**Output:** Design doc with metrics, data model, and AI reasoning approach
+
+---
+
+### Prompt 7: Market Positioning — "Agentbot vs. Competitors"
+Write a competitive analysis comparing Agentbot to:
+
+- Eventbrite
+- Bandcamp
+- Stripe
+- ResidentAdvisor
+- Friend.tech (for networking)
+- Zora (for creator economy)
+
+For each competitor:
+
+1. What is their moat?
+2. Who do they serve?
+3. What are they missing?
+4. How does Agentbot differentiate?
+
+Then write a positioning statement:
+"Agentbot is ___ for ___ that ___ because ___."
+
+Example: "Agentbot is the event + creator OS for underground communities that want autonomy, transparency, and crypto-native tools because Eventbrite is corporate and Bandcamp doesn't handle events."
+
+Make it punchy, make it defensible.
+
+---
+
+### Prompt 8: 90-Day Roadmap
+Create a 90-day product roadmap for Agentbot with this constraint:
+
+- 60 days to ship royalty-split agent MVP
+- 30 days to ship talent-booking agent MVP
+- Concurrent: Launch 2-3 real case studies (book real events, real talent, real collectives)
+
+Include:
+
+- Week-by-week breakdown
+- Dependencies (does talent-booking depend on something from royalty-split?)
+- Go-to-market (which communities to beta with?)
+- Success metrics (adoption, GMV, verified humans, onchain transactions)
+
+Focus on real users — not just launches. Get 10 real bookings in the first 90 days.
+
+---
+
+## Community & Network Prompts
+
+### Prompt 9: Agent-to-Agent Communication Protocol
+Design how Agentbot agents can talk to each other and coordinate.
+
+Example scenarios:
+
+1. Event agent books a DJ agent → DJ agent confirms → event agent adds to lineup → basefmbot discovers it → basefmbot cross-promotes
+2. Royalty-split agent manages payout → creates transaction visible on basefmbot feed
+3. Talent-booking agent matches organizer with performer → event agent is notified
+
+Requirements:
+
+1. Message format (how do agents pass data?)
+2. Trust & verification (how do we know agent is legit?)
+3. Webhook/message bus (what infrastructure?)
+4. Economics (do agents take cuts when coordinating with other agents?)
+
+**Output:** Protocol spec + example message exchanges
+
+---
+
+## Research Prompts
+
+### Prompt 10: Underground Music Economy Research
+Research the underground music economy. Find and summarize:
+
+1. **Market size estimates**
+   - How many underground collectives globally?
+   - What's their average spend on events/year?
+   - Merch revenue potential?
+
+2. **Pain points** (interview summaries or market research)
+   - Booking talent
+   - Managing money across collectives
+   - Selling merch
+   - Finding venues
+   - Community trust
+
+3. **Crypto adoption in underground scenes**
+   - Are underground communities using crypto already?
+   - What barriers exist to wider adoption?
+   - Which scenes are most crypto-native? (Techno? Drum & Bass? Rave?)
+
+4. **Comparable businesses**
+   - Who's serving this market well?
+   - Who's tried and failed?
+   - What's the TAM if you do this right?
+
+**Output:** Formatted brief with sources, data, and insights
+
+---
+
+## Meta Prompts
+
+### Prompt 11: "Audit Agentbot"
+Critique Agentbot's current offering. What's working? What's broken? What am I missing strategically?
+
+**Current state:**
+- Homepage: "Deploy OpenClaw in seconds"
+- Marketplace: 10+ agents (rave-event, basefmbot, studio-one, studio, clawdbotdj, chain, vault, pay, community-treasury, cafe)
+- Verified human badge
+- Kimi K2.5 for thinking
+- Base blockchain integration
+- Culture-first positioning
+
+**Audit:**
+1. Is the positioning clear? Would an underground organizer understand why they should use Agentbot over Eventbrite?
+2. Are the agents actually solving real problems, or are they just features?
+3. What's the go-to-market? (Which communities should we target first?)
+4. What's the moat? (Why can't Eventbrite clone this in 6 months?)
+5. What's missing that would 10x adoption?
+
+**Output:** Honest critique + specific recommendations
+
+---
+
+### Prompt 12: "Agentbot Manifesto"
+Write the Agentbot manifesto.
+
+**Persona:** The underground. The collective. The people who want autonomy from platforms.
+
+**Key themes:**
+- Anti-platform (Eventbrite, Bandcamp, Spotify are gatekeepers)
+- Pro-crypto (transparency, ownership, no KYC)
+- Pro-culture (we're not for everyone, we're for the underground)
+- Pro-community (treasuries, shared governance, transparency)
+- Pro-agent (AI doing work, not just chatting)
+
+Make it punchy. Make it ideological. Make people want to join.
+
+**Output:** 1-2 page manifesto suitable for homepage, socials, pitch deck
+
+---
+
+## How to Use These Prompts with Kiro
+
+1. **Pick the prompt** that maps to your current sprint
+2. **Send to Kiro** via CLI, chat, or workflow
+3. **Get back:** Detailed designs, code outlines, market analysis
+4. **Iterate:** "Kiro, refine the UX for the royalty-split agent based on feedback from X..."
+5. **Execute:** Use Kiro's output as the spec for engineering
+
+**Example workflow:**
+
+```
+You: "@kiro Run Prompt 3: Design the Talent Booking Marketplace"
+
+Kiro returns: 2000-word design doc with flows, UX mocks, competitive analysis
+
+You: "@kiro Those flows look good. Now build an API spec for the booking agent based on this design"
+
+Kiro: Returns OpenAPI spec + TypeScript types
+
+You: Contractor builds from spec
+```
+
+That's the workflow. Let Kiro do the research and design, you execute.
+
+---
+
 ## Technical Prompts
 
 ### Smart Contract Design
