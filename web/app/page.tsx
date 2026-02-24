@@ -14,16 +14,15 @@ export default function Home() {
           </div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            AI Agents That Actually Work
+            Deploy OpenClaw in Seconds
           </h1>
           
           <p className="mt-6 text-lg text-gray-7 max-w-2xl mx-auto">
-            Launch your AI employee in under a minute. Secure cloud infrastructure included. 
-            Chat via Telegram, Discord, or WhatsApp.
+            OpenClaw is an AI assistant with personality and memory. Agentbot deploys it to the cloud for you in one click—no complex setup, online 24/7.
           </p>
           
-          <p className="mt-2 text-sm text-gray-6">
-            Start building. Stop managing servers.
+          <p className="mt-4 text-base text-gray-6 max-w-2xl mx-auto">
+            Chat freely through Agentbot. Configured with Kimi K2.5 Thinking and ready-to-use skills; runs across multiple messaging apps and gets tasks done proactively.
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
@@ -61,25 +60,48 @@ export default function Home() {
       {/* Features */}
       <section className="px-4 py-24 sm:px-6 lg:px-8 border-t border-gray-2">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-semibold text-center mb-16">Everything You Need</h2>
+          <h2 className="text-2xl font-semibold text-center mb-4">Why Agentbot?</h2>
+          <p className="text-center text-gray-6 mb-16 max-w-2xl mx-auto">
+            Deploy OpenClaw with personality, memory, and skills—ready to work across all your messaging apps
+          </p>
           
           <div className="grid sm:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-3xl mb-4" role="img" aria-label="Rocket">🚀</div>
-              <h3 className="text-lg font-medium mb-2">One-Click Deploy</h3>
-              <p className="text-sm text-gray-7">Launch your agent in under a minute. No configuration needed.</p>
+              <div className="text-3xl mb-4" role="img" aria-label="Brain">🧠</div>
+              <h3 className="text-lg font-medium mb-2">Kimi K2.5 Thinking</h3>
+              <p className="text-sm text-gray-7">Advanced reasoning with 128K context. Configured and ready to use.</p>
             </div>
             
             <div className="text-center">
-              <div className="text-3xl mb-4" role="img" aria-label="Lock">🔒</div>
-              <h3 className="text-lg font-medium mb-2">Secure by Default</h3>
-              <p className="text-sm text-gray-7">Your data stays yours. Bring your own API keys.</p>
+              <div className="text-3xl mb-4" role="img" aria-label="Tools">🔧</div>
+              <h3 className="text-lg font-medium mb-2">Ready-to-Use Skills</h3>
+              <p className="text-sm text-gray-7">Pre-built capabilities for data, web, and automation tasks.</p>
             </div>
             
             <div className="text-center">
               <div className="text-3xl mb-4" role="img" aria-label="Chat">💬</div>
               <h3 className="text-lg font-medium mb-2">Multi-Channel</h3>
-              <p className="text-sm text-gray-7">Connect to Telegram, Discord, WhatsApp & more.</p>
+              <p className="text-sm text-gray-7">Telegram, Discord, WhatsApp. One agent, everywhere.</p>
+            </div>
+          </div>
+
+          <div className="mt-16 grid sm:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="text-3xl mb-4" role="img" aria-label="Memory">💾</div>
+              <h3 className="text-lg font-medium mb-2">Persistent Memory</h3>
+              <p className="text-sm text-gray-7">Remembers conversations and preferences across sessions.</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-3xl mb-4" role="img" aria-label="Clock">⏰</div>
+              <h3 className="text-lg font-medium mb-2">Proactive Tasks</h3>
+              <p className="text-sm text-gray-7">Schedule tasks and get things done automatically.</p>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-3xl mb-4" role="img" aria-label="Cloud">☁️</div>
+              <h3 className="text-lg font-medium mb-2">Always Online</h3>
+              <p className="text-sm text-gray-7">Cloud-hosted, 24/7 availability. No server management.</p>
             </div>
           </div>
         </div>
