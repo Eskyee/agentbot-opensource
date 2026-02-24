@@ -67,7 +67,10 @@ export default function SettingsPage() {
     productUpdates: false,
     marketing: false
   })
-  const [apiKeys] = useState([
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [apiKeys, setApiKeys] = useState([
     { id: '1', name: 'Production Key', key: 'sk_live_...x4a2', created: '2026-02-15' },
     { id: '2', name: 'Development Key', key: 'sk_test_...b3c1', created: '2026-02-10' },
   ])
@@ -125,6 +128,52 @@ export default function SettingsPage() {
       console.error('Failed to save notification settings:', error)
       setNotifications({ ...notifications, [key]: !newValue })
     }
+  }
+
+  const enable2FA = async () => {
+    setTwoFactorEnabled(true)
+    try {
+      await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ twoFactorEnabled: true })
+      })
+      alert('2FA enabled successfully')
+    } catch (error) {
+      console.error('Failed to enable 2FA:', error)
+      setTwoFactorEnabled(false)
+    }
+  }
+
+  const deleteAccount = async () => {
+    if (!confirm('Are you sure? This action cannot be undone.')) return
+    try {
+      await fetch('/api/settings', { method: 'DELETE' })
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Failed to delete account:', error)
+      alert('Failed to delete account')
+    }
+  }
+
+  const createApiKey = async () => {
+    const name = prompt('Enter a name for this API key:')
+    if (!name) return
+    
+    const newKey = {
+      id: Date.now().toString(),
+      name,
+      key: `sk_live_${Math.random().toString(36).substring(2, 15)}`,
+      created: new Date().toISOString().split('T')[0]
+    }
+    
+    setApiKeys([...apiKeys, newKey])
+    alert(`API Key created: ${newKey.key}`)
+  }
+
+  const deleteApiKey = (id: string) => {
+    if (!confirm('Delete this API key?')) return
+    setApiKeys(apiKeys.filter(k => k.id !== id))
   }
 
   const tabs = [
@@ -209,7 +258,10 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">API Keys</h2>
-              <button className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200">
+              <button 
+                onClick={createApiKey}
+                className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200"
+              >
                 + Create Key
               </button>
             </div>
@@ -231,7 +283,12 @@ export default function SettingsPage() {
                       <td className="p-4 font-mono text-sm text-gray-400">{key.key}</td>
                       <td className="p-4 text-gray-400">{key.created}</td>
                       <td className="p-4 text-right">
-                        <button className="text-red-400 hover:text-red-300 text-sm">Delete</button>
+                        <button 
+                          onClick={() => deleteApiKey(key.id)}
+                          className="text-red-400 hover:text-red-300 text-sm"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -285,7 +342,10 @@ export default function SettingsPage() {
             
             <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
               <h3 className="font-semibold mb-4">Password</h3>
-              <button className="rounded-lg border border-gray-700 px-4 py-2 hover:bg-gray-800">
+              <button 
+                onClick={() => setShowPasswordModal(true)}
+                className="rounded-lg border border-gray-700 px-4 py-2 hover:bg-gray-800"
+              >
                 Change Password
               </button>
             </div>
@@ -293,15 +353,28 @@ export default function SettingsPage() {
             <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6">
               <h3 className="font-semibold mb-4">Two-Factor Authentication</h3>
               <p className="text-gray-400 text-sm mb-4">Add an extra layer of security to your account</p>
-              <button className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200">
-                Enable 2FA
-              </button>
+              {twoFactorEnabled ? (
+                <div className="flex items-center gap-2 text-green-400">
+                  <span>✓</span>
+                  <span>2FA is enabled</span>
+                </div>
+              ) : (
+                <button 
+                  onClick={enable2FA}
+                  className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200"
+                >
+                  Enable 2FA
+                </button>
+              )}
             </div>
 
             <div className="rounded-xl border border-red-900/50 bg-red-900/10 p-6">
               <h3 className="font-semibold mb-4 text-red-400">Danger Zone</h3>
               <p className="text-gray-400 text-sm mb-4">Permanently delete your account and all data</p>
-              <button className="rounded-lg border border-red-600 text-red-400 px-4 py-2 hover:bg-red-900/30">
+              <button 
+                onClick={deleteAccount}
+                className="rounded-lg border border-red-600 text-red-400 px-4 py-2 hover:bg-red-900/30"
+              >
                 Delete Account
               </button>
             </div>
