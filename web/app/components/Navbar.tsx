@@ -86,7 +86,7 @@ export default function Navbar() {
           />
           
           {/* Menu panel */}
-          <div className="md:hidden fixed top-[57px] right-0 bottom-0 w-[280px] bg-gray-900 z-50 p-8 overflow-y-auto shadow-2xl">
+          <div className="md:hidden fixed top-[57px] right-0 bottom-0 w-[320px] bg-gray-900 z-50 p-8 overflow-y-auto shadow-2xl">
             <div className="flex flex-col gap-1">
               <Link 
                 href="/why" 
