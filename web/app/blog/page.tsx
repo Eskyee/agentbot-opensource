@@ -96,8 +96,11 @@ export default function BlogPage() {
         </div>
 
         <h1 className="text-4xl font-bold tracking-tight mb-4">Blog</h1>
-        <p className="text-gray-400 mb-10">
+        <p className="text-gray-400 mb-2">
           Product updates, deployment tips, and guides for running OpenClaw agents in production.
+        </p>
+        <p className="text-sm text-gray-500 mb-10">
+          Fresh content published daily at 9am UK London time
         </p>
 
         <div className="space-y-4">
