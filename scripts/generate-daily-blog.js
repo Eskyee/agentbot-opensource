@@ -89,7 +89,17 @@ Mention what's new in OpenClaw and how it benefits Agentbot users.`;
     process.exit(1);
   }
   
-  const post = JSON.parse(data.choices[0].message.content);
+  // Parse the response, handling markdown code blocks
+  let content = data.choices[0].message.content;
+  
+  // Remove markdown code blocks if present
+  if (content.includes('```json')) {
+    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  } else if (content.includes('```')) {
+    content = content.replace(/```\s*/g, '');
+  }
+  
+  const post = JSON.parse(content.trim());
   
   // Create blog post file
   const postContent = `import Link from 'next/link';
