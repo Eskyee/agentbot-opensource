@@ -5,7 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 
 function LoginForm() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
   const [email, setEmail] = useState("");
@@ -15,21 +15,34 @@ function LoginForm() {
 
   useEffect(() => {
     if (error) {
-      setLoginError(error === 'OAuthCallback' ? 'Authentication failed. Please try again.' : error)
+      // Handle specific OAuth errors
+      if (error === 'OAuthCallback') {
+        setLoginError('Authentication failed. Please try again.')
+      } else if (error === 'OAuthAccountNotLinked') {
+        setLoginError('This email is already associated with another account. Please sign in with the original method.')
+      } else if (error === 'AccessDenied') {
+        setLoginError('Access denied. Please try again.')
+      } else {
+        setLoginError(decodeURIComponent(error))
+      }
     }
   }, [error])
 
   useEffect(() => {
-    if (session) {
+    // Only redirect if we have a confirmed session
+    if (session && status === 'authenticated') {
       window.location.href = '/dashboard'
     }
-  }, [session])
+  }, [session, status])
 
   const handleGitHubLogin = () => {
+    setLoading(true)
+    // Use redirect: false to handle errors better, then manually redirect on success
     signIn("github", { callbackUrl: "/dashboard" })
   }
 
   const handleGoogleLogin = () => {
+    setLoading(true)
     signIn("google", { callbackUrl: "/dashboard" })
   }
 
