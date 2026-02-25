@@ -57,7 +57,7 @@ function LoginForm() {
     });
     setLoading(false);
     if (res?.error) {
-      setLoginError("Invalid email or password");
+      setLoginError("Invalid email or password. If you signed up with GitHub or Google, please use the button below.");
     } else if (res?.ok) {
       window.location.href = "/dashboard";
     }
