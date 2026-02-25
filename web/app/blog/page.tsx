@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'daily-2026-02-25',
+    date: '25 February 2026',
+    title: 'Scaling Your AI Agents: From Prototype to Production',
+    excerpt: 'Moving from a prototype AI agent to a production-ready system requires careful planning. Here\'s what you need to know about scaling your OpenClaw agents.',
+    tags: ['Tutorial', 'Scaling']
+  },
+  {
     slug: 'underground-agents-drop',
     date: '24 February 2026',
     title: 'Underground Agents Drop: Built by Ravers, for Ravers',

@@ -3,6 +3,12 @@ const path = require('path');
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+if (!OPENAI_API_KEY) {
+  console.error('❌ OPENAI_API_KEY environment variable is not set');
+  console.error('Please add OPENAI_API_KEY to your GitHub repository secrets');
+  process.exit(1);
+}
+
 async function fetchOpenClawNews() {
   try {
     // Fetch latest from OpenClaw GitHub

@@ -5,6 +5,9 @@ on:
     - cron: '0 9 * * *'  # 9am UTC (9am UK time in winter, 8am UK in summer)
   workflow_dispatch:  # Allow manual trigger
 
+permissions:
+  contents: write
+
 jobs:
   generate-blog-post:
     runs-on: ubuntu-latest
@@ -13,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
