@@ -112,6 +112,7 @@ function LoginForm() {
       </div>
       <div className="flex flex-col gap-3">
         <button
+          type="button"
           className="w-full rounded-lg bg-white hover:bg-gray-100 py-3 font-bold text-gray-900 flex items-center justify-center gap-2"
           onClick={handleGoogleLogin}
           disabled={loading}
@@ -120,6 +121,7 @@ function LoginForm() {
           Continue with Google
         </button>
         <button
+          type="button"
           className="w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black flex items-center justify-center gap-2"
           onClick={handleGitHubLogin}
           disabled={loading}

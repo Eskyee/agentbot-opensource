@@ -46,6 +46,11 @@ providers.push(
   })
 );
 
+// Fail fast if NEXTAUTH_SECRET is missing in production
+if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET) {
+  throw new Error('NEXTAUTH_SECRET must be set in production');
+}
+
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers,
@@ -53,7 +58,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
+  secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login",
@@ -64,7 +69,7 @@ export const authOptions: AuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.session-token` : `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
@@ -73,7 +78,7 @@ export const authOptions: AuthOptions = {
       },
     },
     callbackUrl: {
-      name: `next-auth.callback-url`,
+      name: process.env.NODE_ENV === 'production' ? `__Secure-next-auth.callback-url` : `next-auth.callback-url`,
       options: {
         sameSite: 'lax',
         path: '/',
@@ -81,7 +86,7 @@ export const authOptions: AuthOptions = {
       },
     },
     csrfToken: {
-      name: `next-auth.csrf-token`,
+      name: process.env.NODE_ENV === 'production' ? `__Host-next-auth.csrf-token` : `next-auth.csrf-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',

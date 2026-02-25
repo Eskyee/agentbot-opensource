@@ -39,7 +39,7 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
     if (!input.trim() || loading) return
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)),
       role: 'user',
       content: input.trim(),
       timestamp: new Date(),
@@ -68,9 +68,9 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
       }
 
       const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
+        id: (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)),
         role: 'assistant',
-        content: data.response,
+        content: (data?.response ?? '(no response)').toString(),
         timestamp: new Date(),
       }
 
