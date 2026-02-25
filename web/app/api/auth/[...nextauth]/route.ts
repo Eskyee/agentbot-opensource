@@ -62,11 +62,71 @@ export const authOptions: AuthOptions = {
     newUser: "/onboard",
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // For OAuth providers (GitHub, Google), allow sign in
+      if (account?.provider === "github" || account?.provider === "google") {
+        // Check if user exists in database
+        if (user.email) {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email },
+            include: { accounts: true },
+          });
+          
+          // If user exists but doesn't have this OAuth account linked, link it
+          if (existingUser) {
+            const existingAccount = existingUser.accounts.find(
+              (acc) => acc.provider === account.provider
+            );
+            
+            if (!existingAccount && account.providerAccountId) {
+              // Create the account link
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  access_token: account.access_token,
+                  refresh_token: account.refresh_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state,
+                },
+              });
+            }
+          }
+        }
+        return true;
+      }
+      // For credentials provider, allow sign in (authorization already done in provider)
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      // Initial sign in - persist user id to token
+      if (user) {
+        token.sub = user.id;
+        token.email = user.email;
+      }
+      // On subsequent calls, token already has the data
+      return token;
+    },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.sub;
+        session.user.id = token.sub || "";
+        session.user.email = token.email;
       }
       return session;
+    },
+  },
+  events: {
+    async signIn({ user, account }) {
+      // Log successful sign ins for debugging
+      console.log(`[Auth] User ${user.email} signed in via ${account?.provider || 'credentials'}`);
+    },
+    async signOut({ token }) {
+      console.log(`[Auth] User ${token?.email} signed out`);
     },
   },
 };
