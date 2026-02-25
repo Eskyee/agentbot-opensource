@@ -8,7 +8,7 @@ Agentbot automatically publishes fresh blog content daily at **9am UK London tim
 ### 1. Daily Schedule
 - GitHub Actions workflow runs at 9am UK time
 - Fetches latest updates from OpenClaw GitHub (commits & releases)
-- Generates blog post using GPT-4o-mini
+- Generates blog post using OpenRouter (GPT-4o-mini)
 - Auto-commits and pushes to main branch
 - Vercel auto-deploys the new post
 
@@ -29,12 +29,12 @@ Each day covers one of:
 ## Setup
 
 ### Required GitHub Secret
-Add your OpenAI API key to GitHub repository secrets:
+Add your OpenRouter API key to GitHub repository secrets:
 
 1. Go to: https://github.com/Eskyee/agentbot/settings/secrets/actions
 2. Click "New repository secret"
-3. Name: `OPENAI_API_KEY`
-4. Value: Your OpenAI API key (starts with `sk-`)
+3. Name: `OPENROUTER_API_KEY`
+4. Value: Your OpenRouter API key (starts with `sk-or-v1-`)
 5. Click "Add secret"
 
 ### Files
@@ -67,7 +67,7 @@ Each post includes:
 ## Troubleshooting
 
 ### Workflow Not Running
-- Verify `OPENAI_API_KEY` secret is set
+- Verify `OPENROUTER_API_KEY` secret is set
 - Check GitHub Actions is enabled for the repository
 - Review workflow logs for errors
 

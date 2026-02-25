@@ -1,11 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-if (!OPENAI_API_KEY) {
-  console.error('❌ OPENAI_API_KEY environment variable is not set');
-  console.error('Please add OPENAI_API_KEY to your GitHub repository secrets');
+if (!OPENROUTER_API_KEY) {
+  console.error('❌ OPENROUTER_API_KEY environment variable is not set');
+  console.error('Please add OPENROUTER_API_KEY to your GitHub repository secrets');
   process.exit(1);
 }
 
@@ -60,15 +60,17 @@ Recent releases: ${openclawNews.releases.map(r => r.name).join(', ')}
 Mention what's new in OpenClaw and how it benefits Agentbot users.`;
   }
   
-  // Generate blog content using OpenAI
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Generate blog content using OpenRouter
+  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'HTTP-Referer': 'https://agentbot.raveculture.xyz',
+      'X-Title': 'Agentbot Blog Generator'
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'openai/gpt-4o-mini',
       messages: [{
         role: 'system',
         content: 'You are a technical writer for Agentbot, an AI agent deployment platform built on OpenClaw. Write engaging, informative blog posts about platform updates, OpenClaw framework improvements, and AI agent best practices. Keep posts concise (300-500 words).'
@@ -81,6 +83,12 @@ Mention what's new in OpenClaw and how it benefits Agentbot users.`;
   });
 
   const data = await response.json();
+  
+  if (!data.choices || !data.choices[0]) {
+    console.error('❌ Failed to generate blog post:', JSON.stringify(data, null, 2));
+    process.exit(1);
+  }
+  
   const post = JSON.parse(data.choices[0].message.content);
   
   // Create blog post file
