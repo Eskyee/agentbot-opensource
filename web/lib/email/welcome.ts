@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function sendWelcomeEmail(email: string, name?: string) {
   try {
     const data = await resend.emails.send({
-      from: 'Agentbot <hello@send.agentbot.raveculture.xyz>',
+      from: 'Agentbot <noreply@agentbot.raveculture.xyz>',
       to: [email],
       subject: 'Welcome to Agentbot 🦞',
       html: getWelcomeEmailHTML(name || email.split('@')[0]),

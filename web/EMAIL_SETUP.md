@@ -17,18 +17,32 @@
    - Value: `re_your_api_key_here`
    - Environment: Production, Preview, Development
 
-## 3. Verify Domain (Optional but Recommended)
+## 3. Verify Domain (REQUIRED)
 
-To send from `onboarding@agentbot.raveculture.xyz`:
+To send from `noreply@agentbot.raveculture.xyz`:
 
 1. In Resend dashboard, go to Domains
 2. Add domain: `agentbot.raveculture.xyz`
-3. Add the DNS records they provide to your domain
+3. Add the DNS records they provide to Cloudflare:
+   - MX record
+   - SPF record (TXT)
+   - DKIM record (TXT)
+   - DMARC record (TXT) - optional but recommended
 4. Wait for verification (~5 minutes)
 
-Without domain verification, emails will send from `onboarding@resend.dev`
+**Important**: Without domain verification, emails will fail to send. The domain must be verified in Resend.
 
-## 4. Test It
+## 4. DNS Records for Cloudflare
+
+Add these records in Cloudflare DNS:
+
+| Type  | Name                    | Value                              |
+|-------|-------------------------|------------------------------------|
+| MX    | agentbot.raveculture.xyz | mx.sendgrid.net (from Resend)     |
+|TXT    | agentbot.raveculture.xyz | v=spf1 include:resend ~all        |
+|TXT    | resend._domainkey       | (DKIM key from Resend dashboard)  |
+
+## 5. Test It
 
 1. Sign up a new user
 2. Check their email inbox
@@ -63,7 +77,12 @@ Edit `web/lib/email/welcome.ts` to customize:
 - Check RESEND_API_KEY is set in Vercel
 - Check Resend dashboard for errors
 - Check spam folder
-- Verify domain if using custom domain
+- Verify domain is verified in Resend dashboard
+
+**"Domain not found" error?**
+- Add the domain in Resend dashboard
+- Add required DNS records in Cloudflare
+- Wait for DNS propagation (up to 48 hours)
 
 **Email going to spam?**
 - Verify your domain in Resend
