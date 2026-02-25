@@ -1,0 +1,214 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "Lobster Agentbot" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "Lobster" [ref=e5]: 🦞
+      - generic [ref=e6]: Agentbot
+    - generic [ref=e7]:
+      - link "Pricing" [ref=e8] [cursor=pointer]:
+        - /url: /pricing
+      - link "Blog" [ref=e9] [cursor=pointer]:
+        - /url: /blog
+      - link "Docs" [ref=e10] [cursor=pointer]:
+        - /url: /docs
+      - link "Marketplace" [ref=e11] [cursor=pointer]:
+        - /url: /marketplace
+  - main [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]: LAUNCH
+          - generic [ref=e18]: Coming Soon
+        - heading "Agentbot Public Launch" [level=2] [ref=e19]
+        - paragraph [ref=e20]: We're launching soon! Sign up now to get early access and lock in launch pricing.
+        - link "Get Early Access →" [ref=e21] [cursor=pointer]:
+          - /url: /signup
+      - heading "Blog" [level=1] [ref=e22]
+      - paragraph [ref=e23]: Product updates, deployment tips, and guides for running OpenClaw agents in production.
+      - paragraph [ref=e24]: Fresh content published daily at 9am UK London time
+      - generic [ref=e25]:
+        - article [ref=e26]:
+          - generic [ref=e27]:
+            - paragraph [ref=e28]: 25 February 2026
+            - generic [ref=e29]:
+              - generic [ref=e30]: OpenClaw
+              - generic [ref=e31]: AI Deployment
+          - 'heading "Embracing New Heights: OpenClaw Framework Updates and Features" [level=2] [ref=e32]'
+          - paragraph [ref=e33]: Discover the latest enhancements in the OpenClaw framework that are set to elevate your AI agent deployment experience on Agentbot.
+          - link "Read more →" [ref=e34] [cursor=pointer]:
+            - /url: /blog/posts/daily-2026-02-25
+        - article [ref=e35]:
+          - generic [ref=e36]:
+            - paragraph [ref=e37]: 24 February 2026
+            - generic [ref=e38]:
+              - generic [ref=e39]: Release
+              - generic [ref=e40]: Underground
+          - 'heading "Underground Agents Drop: Built by Ravers, for Ravers" [level=2] [ref=e41]'
+          - paragraph [ref=e42]: Introducing Rave Event Agent and Community Treasury Agent - crypto-native tools for underground collectives. USDC payments, transparent treasuries, no gatekeepers.
+          - link "Read more →" [ref=e43] [cursor=pointer]:
+            - /url: /blog/posts/underground-agents-drop
+        - article [ref=e44]:
+          - generic [ref=e45]:
+            - paragraph [ref=e46]: 24 February 2026
+            - generic [ref=e47]:
+              - generic [ref=e48]: Release
+              - generic [ref=e49]: Engineering
+          - 'heading "The Kimi Drop: How We Built Feature Parity in 18 Hours" [level=2] [ref=e50]'
+          - paragraph [ref=e51]: We analyzed Kimi Claw and shipped everything they have, plus agent swarms and visual workflows. Here's how we did it.
+          - link "Read more →" [ref=e52] [cursor=pointer]:
+            - /url: /blog/posts/kimi-drop
+        - article [ref=e53]:
+          - generic [ref=e54]:
+            - paragraph [ref=e55]: 24 February 2026
+            - generic [ref=e56]:
+              - generic [ref=e57]: Release
+              - generic [ref=e58]: Major Update
+          - 'heading "Major Update: Agentbot Now Matches Kimi Claw" [level=2] [ref=e59]'
+          - paragraph [ref=e60]: Scheduled tasks, skill marketplace, agent swarms, and more. The biggest update in Agentbot history.
+          - link "Read more →" [ref=e61] [cursor=pointer]:
+            - /url: /blog/posts/major-update-2026
+        - article [ref=e62]:
+          - generic [ref=e63]:
+            - paragraph [ref=e64]: 24 February 2026
+            - generic [ref=e65]:
+              - generic [ref=e66]: Platform
+              - generic [ref=e67]: Automation
+          - heading "Automated Blog System Now Live" [level=2] [ref=e68]
+          - paragraph [ref=e69]: We have just launched our automated blog system that publishes fresh content daily at 9am UK time.
+          - link "Read more →" [ref=e70] [cursor=pointer]:
+            - /url: /blog/posts/daily-2026-02-24
+        - article [ref=e71]:
+          - generic [ref=e72]:
+            - paragraph [ref=e73]: February 2026
+            - generic [ref=e74]:
+              - generic [ref=e75]: Release
+              - generic [ref=e76]: Performance
+          - 'heading "Platform V2: Faster Deployments & New AI Models" [level=2] [ref=e77]'
+          - paragraph [ref=e78]: Major performance improvements with 3x faster container startup times. Added support for GPT-4o, Claude 3.5 Sonnet, and Gemini 1.5 Pro.
+          - link "Read more →" [ref=e79] [cursor=pointer]:
+            - /url: /blog/posts/platform-v2
+        - article [ref=e80]:
+          - generic [ref=e81]:
+            - paragraph [ref=e82]: February 2026
+            - generic [ref=e83]:
+              - generic [ref=e84]: Feature
+              - generic [ref=e85]: Pricing
+          - heading "Introducing Credit-Based Pricing" [level=2] [ref=e86]
+          - paragraph [ref=e87]: New flexible credit system lets you pay only for what you use. Buy credits upfront and use across any AI model with transparent pricing.
+          - link "Read more →" [ref=e88] [cursor=pointer]:
+            - /url: /blog/posts/credit-pricing
+        - article [ref=e89]:
+          - generic [ref=e90]:
+            - paragraph [ref=e91]: February 2026
+            - generic [ref=e92]:
+              - generic [ref=e93]: Tutorial
+              - generic [ref=e94]: Getting Started
+          - heading "How to Deploy Your First AI Agent in 60 Seconds" [level=2] [ref=e95]
+          - paragraph [ref=e96]: Step-by-step guide to launching your OpenClaw agent with Telegram integration. No server setup required.
+          - link "Read more →" [ref=e97] [cursor=pointer]:
+            - /url: /blog/posts/first-agent
+        - article [ref=e98]:
+          - generic [ref=e99]:
+            - paragraph [ref=e100]: February 2026
+            - generic [ref=e101]:
+              - generic [ref=e102]: Update
+              - generic [ref=e103]: Weekly
+          - 'heading "Weekly Improvements: What is Shipping" [level=2] [ref=e104]'
+          - paragraph [ref=e105]: Dark mode UI refresh, Stripe checkout flow, OAuth with Google & GitHub, and Resend email integration for welcome emails.
+          - link "Read more →" [ref=e106] [cursor=pointer]:
+            - /url: /blog/posts/weekly-improvements
+        - article [ref=e107]:
+          - generic [ref=e108]:
+            - paragraph [ref=e109]: January 2026
+            - generic [ref=e110]:
+              - generic [ref=e111]: Technical
+              - generic [ref=e112]: Scaling
+          - 'heading "Managing AI Agent Resources: Memory, CPU, and Scaling" [level=2] [ref=e113]'
+          - paragraph [ref=e114]: Understanding resource allocation and when to upgrade your plan for production workloads.
+          - link "Read more →" [ref=e115] [cursor=pointer]:
+            - /url: /blog/posts/resource-management
+        - article [ref=e116]:
+          - generic [ref=e117]:
+            - paragraph [ref=e118]: January 2026
+            - generic [ref=e119]:
+              - generic [ref=e120]: Best Practices
+              - generic [ref=e121]: Security
+          - heading "Best Practices for Production AI Agents" [level=2] [ref=e122]
+          - paragraph [ref=e123]: Security tips, monitoring strategies, and automation patterns for running agents at scale.
+          - link "Read more →" [ref=e124] [cursor=pointer]:
+            - /url: /blog/posts/best-practices
+        - article [ref=e125]:
+          - generic [ref=e126]:
+            - paragraph [ref=e127]: January 2026
+            - generic [ref=e128]:
+              - generic [ref=e129]: Tutorial
+              - generic [ref=e130]: Integrations
+          - heading "API Webhooks and External Integrations" [level=2] [ref=e131]
+          - paragraph [ref=e132]: Connect your AI agent to external systems using webhooks, APIs, and custom workflows.
+          - link "Read more →" [ref=e133] [cursor=pointer]:
+            - /url: /blog/posts/webhooks
+        - article [ref=e134]:
+          - generic [ref=e135]:
+            - paragraph [ref=e136]: January 2026
+            - generic [ref=e138]: Announcement
+          - heading "Welcome to Agentbot" [level=2] [ref=e139]
+          - paragraph [ref=e140]: We built this platform to remove server setup friction and help builders launch AI agents in under a minute.
+          - link "Read more →" [ref=e141] [cursor=pointer]:
+            - /url: /blog/posts/welcome
+      - generic [ref=e142]:
+        - heading "Coming Soon & In Progress" [level=2] [ref=e143]
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - generic [ref=e147]: In Progress
+            - heading "Custom Domains" [level=3] [ref=e148]
+            - paragraph [ref=e149]: Deploy to your own .com
+          - generic [ref=e150]:
+            - generic [ref=e152]: In Progress
+            - heading "Metrics Dashboard" [level=3] [ref=e153]
+            - paragraph [ref=e154]: Real-time usage graphs
+          - generic [ref=e155]:
+            - generic [ref=e157]: In Progress
+            - heading "REST API" [level=3] [ref=e158]
+            - paragraph [ref=e159]: Programmatic control
+          - generic [ref=e160]:
+            - generic [ref=e162]: Coming Soon
+            - heading "WhatsApp" [level=3] [ref=e163]
+            - paragraph [ref=e164]: Deploy agents to WA
+          - generic [ref=e165]:
+            - generic [ref=e167]: Coming Soon
+            - heading "Agent Builder" [level=3] [ref=e168]
+            - paragraph [ref=e169]: Visual drag-drop UI
+          - generic [ref=e170]:
+            - generic [ref=e172]: Coming Soon
+            - heading "Voice Mode" [level=3] [ref=e173]
+            - paragraph [ref=e174]: Talk to your agent
+          - generic [ref=e175]:
+            - generic [ref=e177]: Research
+            - heading "Neural Link" [level=3] [ref=e178]
+            - paragraph [ref=e179]: Direct brain接口
+          - generic [ref=e180]:
+            - generic [ref=e182]: Research
+            - heading "Time Travel" [level=3] [ref=e183]
+            - paragraph [ref=e184]: Replay agent decisions
+  - contentinfo [ref=e185]:
+    - generic [ref=e187]:
+      - generic [ref=e188]:
+        - link "Pricing" [ref=e189] [cursor=pointer]:
+          - /url: /pricing
+        - link "Docs" [ref=e190] [cursor=pointer]:
+          - /url: /docs
+        - link "Marketplace" [ref=e191] [cursor=pointer]:
+          - /url: /marketplace
+        - link "Terms" [ref=e192] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e193] [cursor=pointer]:
+          - /url: /privacy
+      - generic [ref=e194]:
+        - generic [ref=e197]: Checking...
+        - generic [ref=e198]: •
+        - generic [ref=e199]: © 2026 Agentbot baseFM RaveCulture
+  - alert [ref=e200]
+```

@@ -1,0 +1,197 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "Lobster Agentbot" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "Lobster" [ref=e5]: 🦞
+      - generic [ref=e6]: Agentbot
+    - generic [ref=e7]:
+      - link "Pricing" [ref=e8] [cursor=pointer]:
+        - /url: /pricing
+      - link "Blog" [ref=e9] [cursor=pointer]:
+        - /url: /blog
+      - link "Docs" [ref=e10] [cursor=pointer]:
+        - /url: /docs
+      - link "Marketplace" [ref=e11] [cursor=pointer]:
+        - /url: /marketplace
+      - generic [ref=e12]:
+        - link "Log In" [ref=e13] [cursor=pointer]:
+          - /url: /login
+        - link "Sign Up" [ref=e14] [cursor=pointer]:
+          - /url: /signup
+  - main [ref=e16]:
+    - generic [ref=e18]:
+      - img "Lobster emoji" [ref=e19]: 🦞
+      - generic [ref=e20]: AGENTBOT OPENCLAW
+      - heading "Deploy OpenClaw in Seconds" [level=1] [ref=e21]
+      - paragraph [ref=e22]: OpenClaw is an AI assistant with personality and memory. Agentbot deploys it to the cloud for you in one click—no complex setup, online 24/7.
+      - paragraph [ref=e23]: Chat freely through Agentbot. Configured with Kimi K2.5 Thinking and ready-to-use skills; runs across multiple messaging apps and gets tasks done proactively.
+      - generic [ref=e24]:
+        - link "Get Started →" [ref=e25] [cursor=pointer]:
+          - /url: /onboard
+        - link "Read the Docs" [ref=e26] [cursor=pointer]:
+          - /url: /docs
+      - generic [ref=e27]:
+        - link "Link existing OpenClaw →" [ref=e28] [cursor=pointer]:
+          - /url: /onboard?mode=link
+        - generic [ref=e29]: ·
+        - link "Create Agentbot →" [ref=e30] [cursor=pointer]:
+          - /url: /onboard?mode=create
+        - generic [ref=e31]: ·
+        - link "Deploy OpenClaw with one click →" [ref=e32] [cursor=pointer]:
+          - /url: /onboard?mode=deploy
+    - generic [ref=e34]:
+      - heading "Why Agentbot?" [level=2] [ref=e35]
+      - paragraph [ref=e36]: Deploy OpenClaw with personality, memory, and skills—ready to work across all your messaging apps
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - img "Brain" [ref=e39]: 🧠
+          - heading "Kimi K2.5 Thinking" [level=3] [ref=e40]
+          - paragraph [ref=e41]: 128K context remembers your whole vibe. Thinks like a selector—analyzes patterns and suggests what's next.
+        - generic [ref=e42]:
+          - img "Tools" [ref=e43]: 🔧
+          - heading "Ready-to-Use Skills" [level=3] [ref=e44]
+          - paragraph [ref=e45]: Pre-built capabilities for data, web, and automation tasks.
+        - generic [ref=e46]:
+          - img "Chat" [ref=e47]: 💬
+          - heading "Multi-Channel" [level=3] [ref=e48]
+          - paragraph [ref=e49]: Telegram, Discord, WhatsApp. One agent, everywhere.
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - img "Memory" [ref=e52]: 💾
+          - heading "Persistent Memory" [level=3] [ref=e53]
+          - paragraph [ref=e54]: Your agent remembers every conversation, every preference—months of context at its fingertips.
+        - generic [ref=e55]:
+          - img "Badge" [ref=e56]: ✓
+          - heading "Verified Human Badge" [level=3] [ref=e57]
+          - paragraph [ref=e58]: Onchain attestation proves a real person runs this agent. Trust matters in crypto.
+        - generic [ref=e59]:
+          - img "Cloud" [ref=e60]: ☁️
+          - heading "Always Online" [level=3] [ref=e61]
+          - paragraph [ref=e62]: Cloud-hosted, 24/7 availability. No server management.
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - heading "Built for Trust" [level=2] [ref=e66]
+        - paragraph [ref=e67]: In crypto and underground scenes, reputation is everything. Agentbot agents show who's really behind them.
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - generic [ref=e70]: 🔐
+          - heading "Onchain Verification" [level=3] [ref=e71]
+          - paragraph [ref=e72]: Link your agent to Coinbase Verify, ENS, or other attestations. Prove you're real.
+        - generic [ref=e73]:
+          - generic [ref=e74]: 👤
+          - heading "Human Reputation" [level=3] [ref=e75]
+          - paragraph [ref=e76]: Your agent shows "Verified by [you]" in every chat. Reputation tied to the human, not the bot.
+    - generic [ref=e78]:
+      - heading "Simple, Transparent Pricing" [level=2] [ref=e79]
+      - paragraph [ref=e80]: Start free, upgrade when you need more.
+      - generic [ref=e81]:
+        - generic [ref=e82]:
+          - heading "Free" [level=3] [ref=e83]
+          - paragraph [ref=e84]: £0
+          - paragraph [ref=e85]: 3-day trial
+          - list [ref=e86]:
+            - listitem [ref=e87]: Full platform access
+            - listitem [ref=e88]: Telegram integration
+            - listitem [ref=e89]: Community support
+          - link "Try Free" [ref=e90] [cursor=pointer]:
+            - /url: /api/stripe/checkout?plan=trial
+        - generic [ref=e91]:
+          - heading "Starter" [level=3] [ref=e92]
+          - paragraph [ref=e93]: £9/mo
+          - paragraph [ref=e94]: per user
+          - list [ref=e95]:
+            - listitem [ref=e96]: Everything in Free
+            - listitem [ref=e97]: Bring your own API key
+            - listitem [ref=e98]: Priority support
+          - link "Get Started" [ref=e99] [cursor=pointer]:
+            - /url: /api/stripe/checkout?plan=starter
+        - generic [ref=e100]:
+          - heading "Pro" [level=3] [ref=e101]
+          - paragraph [ref=e102]: £29/mo
+          - paragraph [ref=e103]: per user
+          - list [ref=e104]:
+            - listitem [ref=e105]: 3× resources
+            - listitem [ref=e106]: Custom domain
+            - listitem [ref=e107]: WhatsApp support
+          - link "Get Started" [ref=e108] [cursor=pointer]:
+            - /url: /api/stripe/checkout?plan=pro
+    - generic [ref=e110]:
+      - heading "Ready to Deploy?" [level=2] [ref=e111]
+      - paragraph [ref=e112]: Start building your AI agent in minutes.
+      - link "Get Started" [ref=e113] [cursor=pointer]:
+        - /url: /signup
+    - generic [ref=e115]:
+      - heading "Contact Sales" [level=2] [ref=e116]
+      - paragraph [ref=e117]: Need custom infrastructure or volume discounts?
+      - link "Email Us" [ref=e118] [cursor=pointer]:
+        - /url: mailto:rbasefm@icloud.com
+    - generic [ref=e121]:
+      - generic [ref=e122]:
+        - generic [ref=e123]:
+          - img "Lobster" [ref=e124]: 🦞
+          - generic [ref=e125]:
+            - generic [ref=e126]: AGENTBOT
+            - generic [ref=e127]: /WETH on Base
+        - generic [ref=e128]:
+          - generic [ref=e129]: $0.0000002
+          - generic [ref=e130]: "Market Cap: $20K"
+        - link "Buy AGENTBOT →" [ref=e131] [cursor=pointer]:
+          - /url: https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc
+      - generic [ref=e132]:
+        - link "View on BaseScan →" [ref=e134] [cursor=pointer]:
+          - /url: https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3
+        - generic [ref=e135]:
+          - generic [ref=e136]: "Contract:"
+          - code [ref=e137]: "0x986b41C76aB8B7350079613340ee692773B34bA3"
+        - link "Powered by GeckoTerminal" [ref=e139] [cursor=pointer]:
+          - /url: https://www.geckoterminal.com/
+          - generic [ref=e140]: Powered by
+          - generic [ref=e141]: GeckoTerminal
+          - img [ref=e142]
+    - generic [ref=e146]:
+      - generic [ref=e147]:
+        - generic [ref=e148]:
+          - generic [ref=e149]: 🦞
+          - generic [ref=e150]: Agentbot
+          - generic [ref=e151]: © 2026
+        - generic [ref=e152]:
+          - generic [ref=e153]: "Builder Code:"
+          - generic [ref=e154]: bc_upjlm3yl
+          - generic [ref=e155]: on Base
+      - generic [ref=e156]:
+        - link "Twitter" [ref=e157] [cursor=pointer]:
+          - /url: https://x.com/Esky33junglist
+          - img [ref=e158]
+        - link "GitHub" [ref=e160] [cursor=pointer]:
+          - /url: https://github.com/Eskyee
+          - img [ref=e161]
+        - link "Telegram" [ref=e163] [cursor=pointer]:
+          - /url: https://t.me/esky33
+          - img [ref=e164]
+        - link "Discord" [ref=e166] [cursor=pointer]:
+          - /url: https://discord.com/users/eskyee
+          - img [ref=e167]
+  - contentinfo [ref=e169]:
+    - generic [ref=e171]:
+      - generic [ref=e172]:
+        - link "Pricing" [ref=e173] [cursor=pointer]:
+          - /url: /pricing
+        - link "Docs" [ref=e174] [cursor=pointer]:
+          - /url: /docs
+        - link "Marketplace" [ref=e175] [cursor=pointer]:
+          - /url: /marketplace
+        - link "Terms" [ref=e176] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e177] [cursor=pointer]:
+          - /url: /privacy
+      - generic [ref=e178]:
+        - generic [ref=e181]: Operational
+        - generic [ref=e182]: •
+        - generic [ref=e183]: © 2026 Agentbot baseFM RaveCulture
+        - generic [ref=e184]: •
+        - generic [ref=e185]: v2026.2.21
+  - alert [ref=e186]
+```
