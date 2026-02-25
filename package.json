@@ -9,5 +9,27 @@
     "dev:api": "npm --prefix agentbot-backend run dev",
     "dev:worker": "npm --prefix agentbot-worker run dev",
     "install:all": "npm --prefix web install && npm --prefix agentbot-backend install && npm --prefix agentbot-worker install"
+  },
+  "version": "1.0.0",
+  "description": "**Deploy and manage AI agents in 60 seconds. No servers, no terminal, no BS.**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eskyee/agentbot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Eskyee/agentbot/issues"
+  },
+  "homepage": "https://github.com/Eskyee/agentbot#readme",
+  "devDependencies": {
+    "playwright": "^1.58.2",
+    "puppeteer": "^24.37.5"
   }
 }

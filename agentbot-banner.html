@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGENTBOT Banner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 1280px;
+            height: 430px;
+            overflow: hidden;
+            font-family: 'Rajdhani', sans-serif;
+            background: #0a0a0f;
+        }
+
+        .banner {
+            width: 1280px;
+            height: 430px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(0, 255, 200, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 150, 255, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 100, 200, 0.08) 0%, transparent 60%),
+                linear-gradient(180deg, #0a0a0f 0%, #0d1117 50%, #0a0a0f 100%);
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 200, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 200, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .glow-orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(0, 255, 200, 0.3);
+            top: -150px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .glow-orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(0, 150, 255, 0.25);
+            bottom: -100px;
+            right: -50px;
+            animation-delay: 2s;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.05); }
+        }
+
+        .content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 60px 80px;
+        }
+
+        .left-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #00ffc8 0%, #0099ff 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            color: #0a0a0f;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 200, 0.4),
+                0 0 80px rgba(0, 150, 255, 0.2);
+            animation: logoGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { box-shadow: 0 0 40px rgba(0, 255, 200, 0.4), 0 0 80px rgba(0, 150, 255, 0.2); }
+            50% { box-shadow: 0 0 60px rgba(0, 255, 200, 0.6), 0 0 100px rgba(0, 150, 255, 0.3); }
+        }
+
+        .token-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(90deg, #00ffc8 0%, #ffffff 50%, #0099ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px rgba(0, 255, 200, 0.5);
+        }
+
+        .tagline {
+            font-size: 20px;
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            width: 120px;
+            height: 3px;
+            background: linear-gradient(90deg, #00ffc8, transparent);
+            border-radius: 2px;
+        }
+
+        .description {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.5);
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 24px;
+        }
+
+        .network-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 200, 0.3);
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .network-dot {
+            width: 10px;
+            height: 10px;
+            background: #00ffc8;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ffc8;
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .network-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #00ffc8;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .cta-button {
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #00ffc8 0%, #0099ff 100%);
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #0a0a0f;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 30px rgba(0, 255, 200, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 40px rgba(0, 255, 200, 0.5);
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 40px;
+        }
+
+        .stat {
+            text-align: right;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .decorative-line {
+            position: absolute;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 200, 0.5), transparent);
+        }
+
+        .line-1 {
+            width: 200px;
+            top: 100px;
+            right: 100px;
+            transform: rotate(-30deg);
+        }
+
+        .line-2 {
+            width: 150px;
+            bottom: 120px;
+            left: 150px;
+            transform: rotate(15deg);
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            border: 1px solid rgba(0, 255, 200, 0.2);
+            border-radius: 4px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape-1 {
+            width: 60px;
+            height: 60px;
+            top: 60px;
+            right: 200px;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 40px;
+            height: 40px;
+            bottom: 80px;
+            left: 100px;
+            animation-delay: 1s;
+        }
+
+        .shape-3 {
+            width: 20px;
+            height: 20px;
+            top: 200px;
+            left: 300px;
+            animation-delay: 2s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(10deg); opacity: 0.6; }
+        }
+    </style>
+</head>
+<body>
+    <div class="banner">
+        <div class="background"></div>
+        <div class="grid-lines"></div>
+        
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+        
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        
+        <div class="decorative-line line-1"></div>
+        <div class="decorative-line line-2"></div>
+        
+        <div class="content">
+            <div class="left-section">
+                <div class="logo-container">
+                    <div class="logo">A</div>
+                    <div class="token-name">AGENTBOT</div>
+                </div>
+                <div class="tagline">AI-Powered Trading on Base</div>
+                <div class="divider"></div>
+                <div class="description">
+                    Automate your crypto trading strategies with intelligent AI agents. 
+                    Trade smarter, faster, and more efficiently on Base Network.
+                </div>
+            </div>
+            
+            <div class="right-section">
+                <div class="network-badge">
+                    <div class="network-dot"></div>
+                    <div class="network-text">Base Network</div>
+                </div>
+                
+                <div class="stats-row">
+                    <div class="stat">
+                        <div class="stat-value">AI</div>
+                        <div class="stat-label">Powered</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">24/7</div>
+                        <div class="stat-label">Automation</div>
+                    </div>
+                </div>
+                
+                <a href="https://agentbot.raveculture.xyz" class="cta-button">LAUNCH APP</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
