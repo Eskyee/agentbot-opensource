@@ -5,7 +5,7 @@ export default function Post() {
     <main className="min-h-screen px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-gray-400 hover:text-white mb-8 inline-block">
-          <- Back to Blog
+          {'<'} Back to Blog
         </Link>
         
         <article className="prose prose-invert max-w-none">
