@@ -84,26 +84,26 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-0 top-[57px] bg-black z-40 p-4 overscroll-contain overflow-y-auto">
+        <div className="md:hidden fixed inset-0 top-[57px] bg-black z-[60] p-4 overscroll-contain overflow-y-auto">
           <div className="flex flex-col gap-4">
-            <Link href="/pricing" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Pricing</Link>
-            <Link href="/blog" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Blog</Link>
-            <Link href="/docs" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Docs</Link>
-            <Link href="/marketplace" className="text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Marketplace</Link>
+            <Link href="/pricing" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Pricing</Link>
+            <Link href="/blog" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Blog</Link>
+            <Link href="/docs" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Docs</Link>
+            <Link href="/marketplace" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Marketplace</Link>
             <div className="border-t border-gray-3 pt-4">
               {session ? (
                 <>
                   <div className="text-sm text-gray-6 pb-2">{session.user?.email}</div>
-                  <Link href="/dashboard" className="block text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                  <Link href="/dashboard" className="block text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Dashboard</Link>
                   {isAdmin && (
-                    <Link href="/admin" className="block text-lg py-3 text-purple-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400 rounded" onClick={() => setMenuOpen(false)}>Admin</Link>
+                    <Link href="/admin" className="block text-lg py-3 text-purple-400 hover:text-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400 rounded" onClick={() => setMenuOpen(false)}>Admin</Link>
                   )}
-                  <button onClick={() => { setMenuOpen(false); signOut(); }} className="text-left text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded">Log Out</button>
+                  <button onClick={() => { setMenuOpen(false); signOut(); }} className="text-left text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded">Log Out</button>
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="block text-lg py-3 text-gray-7 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Log In</Link>
-                  <Link href="/signup" className="block text-lg py-3 text-white font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded" onClick={() => setMenuOpen(false)}>Sign Up</Link>
+                  <Link href="/login" className="block text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Log In</Link>
+                  <Link href="/signup" className="block text-lg py-3 text-white font-medium hover:text-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded" onClick={() => setMenuOpen(false)}>Sign Up</Link>
                 </>
               )}
             </div>
