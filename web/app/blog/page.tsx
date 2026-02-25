@@ -4,6 +4,13 @@ const blogPosts = [
   {
     slug: 'daily-2026-02-25',
     date: '25 February 2026',
+    title: 'Embracing New Heights: OpenClaw Framework Updates and Features',
+    excerpt: 'Discover the latest enhancements in the OpenClaw framework that are set to elevate your AI agent deployment experience on Agentbot.',
+    tags: ["OpenClaw","AI Deployment"]
+  },
+  {
+    slug: 'daily-2026-02-25',
+    date: '25 February 2026',
     title: 'Scaling Your AI Agents: From Prototype to Production',
     excerpt: 'Moving from a prototype AI agent to a production-ready system requires careful planning. Here\'s what you need to know about scaling your OpenClaw agents.',
     tags: ['Tutorial', 'Scaling']
