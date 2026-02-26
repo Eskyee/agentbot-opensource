@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'daily-2026-02-26',
+    date: '26 February 2026',
+    title: 'Enhancing Agentbot with OpenClaw Updates: February 2026',
+    excerpt: 'Explore the latest improvements in the OpenClaw framework that empower Agentbot users to create more efficient AI agents.',
+    tags: ["OpenClaw","Platform Updates"]
+  },
+  {
     slug: 'daily-2026-02-25',
     date: '25 February 2026',
     title: 'Embracing New Heights: OpenClaw Framework Updates and Features',
