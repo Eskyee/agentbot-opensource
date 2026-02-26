@@ -22,13 +22,14 @@ jobs:
           API_URL: ${{ secrets.API_URL }}
           API_KEY: ${{ secrets.API_KEY }}
         run: |
-          echo "API_URL=$API_URL" >> $GITHUB_ENV
-          echo "API_KEY=$API_KEY" >> $GITHUB_ENV
+          # Strip protocol if present
+          CLEAN_URL=$(echo "$API_URL" | sed 's|https://||' | sed 's|http://||' | sed 's|/$||')
+          echo "API_URL=$CLEAN_URL" >> $GITHUB_ENV
 
       - name: Test health endpoint
         id: health
         run: |
-          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.API_URL }}/api/health || echo "000")
+          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" https://${{ env.API_URL }}/api/health || echo "000")
           echo "health_status=$HEALTH" >> $GITHUB_OUTPUT
           if [ "$HEALTH" != "200" ]; then
             echo "❌ Health check failed (status: $HEALTH)"
