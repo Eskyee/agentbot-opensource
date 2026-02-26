@@ -90,7 +90,7 @@ export default function WhyAgentbotPage() {
           </div>
 
           <div className="mt-6 text-center">
-            <Link href="/onboard" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
+            <Link href="/signup" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
               Try Agentbot →
             </Link>
           </div>
@@ -178,7 +178,7 @@ export default function WhyAgentbotPage() {
           </div>
 
           <div className="mt-8 text-center">
-            <Link href="/onboard" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
+            <Link href="/signup" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
               Get Started →
             </Link>
           </div>
@@ -344,7 +344,7 @@ export default function WhyAgentbotPage() {
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-gray-800 rounded-xl p-8 text-center">
             <h3 className="text-2xl font-bold mb-4">Ready to deploy your AI agent?</h3>
             <p className="text-gray-300 mb-6">Start from {PRICE_START} with full access.</p>
-            <Link href="/onboard" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
+            <Link href="/signup" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
               Get Started →
             </Link>
           </div>

@@ -158,7 +158,7 @@ function OnboardContent() {
           {mode === 'deploy' && 'Launch a pre-configured OpenClaw agent instantly'}
         </p>
         <p className="text-gray-500 text-sm mt-1">
-          {plan === 'free' ? '3-day free trial' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
+          {plan === 'free' ? 'Starter plan' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
         </p>
       </div>
       
