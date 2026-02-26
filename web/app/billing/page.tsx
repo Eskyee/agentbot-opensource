@@ -34,9 +34,9 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
         </div>
 
         <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-          <div className="text-sm text-gray-400 mb-1">Credits</div>
-          <div className="text-xl font-bold">${credits.toFixed(2)}</div>
-          <div className="text-xs text-blue-400 mt-2">+ Add credits</div>
+          <div className="text-sm text-gray-400 mb-1">Your Plan</div>
+          <div className="text-xl font-bold">Starter</div>
+          <div className="text-xs text-blue-400 mt-2">Manage</div>
         </Link>
       </nav>
 
@@ -57,10 +57,7 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 
 export default function BillingPage() {
   const { data: session } = useSession()
-  const [credits, setCredits] = useState(0)
-  const [usage, setUsage] = useState(0)
-  const [allowance, setAllowance] = useState(0)
-  const [currentPlan, setCurrentPlan] = useState('trial')
+  const [currentPlan, setCurrentPlan] = useState('starter')
   const [loading, setLoading] = useState(true)
 
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
@@ -72,15 +69,7 @@ export default function BillingPage() {
         const res = await fetch(`/api/instance/${session.user.id}`)
         if (res.ok) {
           const data = await res.json()
-          setCurrentPlan(data.plan || 'trial')
-          // Fetch credits from user settings
-          const creditsRes = await fetch('/api/settings')
-          if (creditsRes.ok) {
-            const creditsData = await creditsRes.json()
-            setCredits(creditsData.credits || 0)
-            setUsage(creditsData.usage30d || 0)
-            setAllowance(creditsData.monthlyAllowance || 0)
-          }
+          setCurrentPlan(data.plan || 'starter')
         }
       } catch (error) {
         console.error('Failed to fetch billing data:', error)
@@ -90,28 +79,6 @@ export default function BillingPage() {
     }
     fetchBillingData()
   }, [session])
-
-  const creditPacks = [
-    { amount: 1000, price: 10, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_1000 || 'price_1T3VtwDiHU0UF7aW8iQ0jGVe', popular: false },
-    { amount: 2500, price: 25, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_2500 || 'price_1T3Vu0DiHU0UF7aWdEXDrCFm', popular: true },
-    { amount: 5000, price: 50, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_5000 || 'price_1T3Vu6DiHU0UF7aWVU6AMGPQ', popular: false },
-    { amount: 10000, price: 100, priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_CREDITS_10000 || 'price_1T3VuDDiHU0UF7aWrXjtublU', popular: false },
-  ]
-
-  const buyCredits = async (priceId: string) => {
-    try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, type: 'credits' })
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
-    } catch (error) {
-      console.error('Failed to initiate checkout:', error)
-      alert('Failed to start checkout')
-    }
-  }
 
   const plans = [
     {
@@ -197,31 +164,26 @@ export default function BillingPage() {
           <div className="text-center py-12 text-gray-400">Loading...</div>
         ) : (
           <>
-        {/* Credit Balance */}
+        {/* API Keys */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Credit Balance</h2>
+          <h2 className="text-xl font-semibold mb-4">AI API Keys</h2>
           <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                <span className="text-2xl">🔑</span>
+              </div>
               <div>
-                <div className="text-4xl font-bold">${credits.toFixed(2)}</div>
-                <div className="text-gray-400">{credits.toFixed(0)} credits</div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm text-gray-400">${usage.toFixed(2)} used in last 30 days</div>
-                <div className="text-sm text-gray-500">${allowance} monthly allowance</div>
+                <div className="font-semibold">Bring Your Own API Key</div>
+                <div className="text-sm text-gray-400">Pay directly to AI providers - no markup</div>
               </div>
             </div>
-            {credits < 10 && (
-              <div className="mb-4 p-3 rounded-lg bg-yellow-500/20 text-yellow-400 text-sm">
-                ⚠️ Low balance
-              </div>
-            )}
-            <div className="flex gap-3">
-              <a href="#buy-credits" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
-                Buy Credits
-              </a>
-              <CoinbaseWalletButton />
-            </div>
+            <p className="text-gray-400 text-sm mb-4">
+              Users provide their own API keys from OpenRouter, Groq, Anthropic, or OpenAI. 
+              You get the best rates directly from the source. No credit system needed.
+            </p>
+            <a href="/settings" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200 inline-block">
+              Configure API Keys
+            </a>
           </div>
         </div>
 
@@ -295,11 +257,9 @@ export default function BillingPage() {
                       : 'bg-gray-800 text-white hover:bg-gray-700'
                   }`}>
                   Select
-                </button>
-              </div>
-            ))}
+              </button>
+            </div>
           </div>
-          <p className="mt-4 text-sm text-gray-500 text-center">1 credit = $0.01 · Used for AI model requests</p>
         </div>
 
         {/* Machines / Subscriptions */}
