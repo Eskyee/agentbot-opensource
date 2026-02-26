@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(session.url, 303)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error('Stripe checkout error:', errorMessage)
-    return NextResponse.redirect(new URL(`/onboard?plan=${plan}&payment_error=checkout_failed`, origin), 303)
+    console.error('Stripe checkout error:', errorMessage, { plan })
+    return NextResponse.redirect(new URL(`/onboard?plan=${plan}&payment_error=${encodeURIComponent(errorMessage)}`, origin), 303)
   }
 }
