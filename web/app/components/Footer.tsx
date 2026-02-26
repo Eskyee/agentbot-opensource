@@ -39,7 +39,7 @@ export default function Footer() {
             </div>
             <span>•</span>
             <span>© 2026 Agentbot baseFM RaveCulture</span>
-            {version && <><span>•</span><span>v{version}</span></>}
+            {version && <><span>•</span><span>OpenClaw v{version}</span></>}
           </div>
         </div>
       </div>
