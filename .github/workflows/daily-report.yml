@@ -21,14 +21,17 @@ jobs:
             "https://api.vercel.com/v6/deployments?project=agentbot&limit=5" 2>/dev/null || echo "[]")
           echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
 
+      - name: Get today's date
+        id: date
+        run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
       - name: Generate report
         id: report
         run: |
-          REPORT=$(cat << 'EOF'
-          📊 Agentbot Daily Report
+          REPORT="📊 Agentbot Daily Report
           
           Project: agentbot
-          Date: ${{ vars.TODAY }}
+          Date: ${{ steps.date.outputs.date }}
           
           🔗 Live Site: https://agentbot.raveculture.xyz
           
@@ -37,9 +40,10 @@ jobs:
           - Backend: Tests passing ✓
           - Database: Neon connected ✓
           
-          GitHub: https://github.com/Eskyee/agentbot
-          EOF)
-          echo "report=$REPORT" >> $GITHUB_OUTPUT
+          GitHub: https://github.com/Eskyee/agentbot"
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Send email report
         uses: dawidd6/action-send-mail@v3
@@ -50,8 +54,6 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           from: Agentbot Report <${{ secrets.MAIL_USERNAME }}>
           to: eskyjunglelab@gmail.com
-          subject: 📊 Agentbot Daily Report - ${{ vars.TODAY }}
+          subject: 📊 Agentbot Daily Report - ${{ steps.date.outputs.date }}
           body: ${{ steps.report.outputs.report }}
           html: false
-        env:
-          TODAY: $(date +%Y-%m-%d)
