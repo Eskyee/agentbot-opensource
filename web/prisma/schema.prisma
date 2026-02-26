@@ -88,11 +88,13 @@ model AgentMemory {
 model AgentFile {
   id        String   @id @default(cuid())
   userId    String
+  userEmail String?
   agentId   String
   filename  String
-  path      String
+  path      String?
+  url       String?
   size      Int
-  mimeType  String
+  mimeType  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

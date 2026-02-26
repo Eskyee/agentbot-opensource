@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     const stripe = new Stripe(stripeKey)
 
-    const session = await stripe.checkout.sessions.create({
+    const stripeSession = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [
         {
@@ -31,11 +31,10 @@ export async function POST(request: NextRequest) {
               name: 'Pro Plan',
               description: 'Upgrade to Pro - 50GB storage, WhatsApp, Custom domain',
             },
-            unit_amount: 3900, // £39.00/month
+            unit_amount: 3900,
           },
           quantity: 1,
         },
-      ],
       ],
       success_url: `${origin}/dashboard/files?upgrade=success`,
       cancel_url: `${origin}/dashboard/files?upgrade=cancelled`,
@@ -46,11 +45,11 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    if (!session.url) {
+    if (!stripeSession.url) {
       return NextResponse.json({ error: 'Failed to create checkout' }, { status: 500 })
     }
 
-    return NextResponse.json({ url: session.url })
+    return NextResponse.json({ url: stripeSession.url })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('Storage upgrade checkout error:', errorMessage)

@@ -6,10 +6,10 @@ const keyStore = new Map()
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const keyId = params.id
+    const { id: keyId } = await params
 
     if (!keyId) {
       return NextResponse.json(

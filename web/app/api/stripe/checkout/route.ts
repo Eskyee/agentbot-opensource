@@ -36,7 +36,6 @@ export async function GET(request: NextRequest) {
         recurring: { interval: 'month' },
         product_data: {
           name: planInfo.name,
-          description: planInfo.description,
         },
       })
       priceId = price.id

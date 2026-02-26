@@ -5,10 +5,10 @@ const API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const agentId = params.id
+    const { id: agentId } = await params
 
     const response = await fetch(`${API_URL}/api/agents/${agentId}`, {
       headers: {

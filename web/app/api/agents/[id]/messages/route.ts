@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const agentId = params.id
+    const { id: agentId } = await params
     const url = new URL(request.url)
     const limit = parseInt(url.searchParams.get('limit') || '50')
     const offset = parseInt(url.searchParams.get('offset') || '0')
