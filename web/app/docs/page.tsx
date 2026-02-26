@@ -3,19 +3,27 @@ import Link from 'next/link';
 const docsSections = [
   {
     title: 'Getting Started',
-    description: 'Launch your first OpenClaw agent in under a minute and run your first message test.',
-    items: ['60-second setup flow', 'Telegram bot connection', 'First-reply validation']
+    description: 'Deploy your AI agent in under a minute. We handle the infrastructure.',
+    items: ['60-second signup', 'Choose your plan', 'Connect Telegram bot', 'Add your AI API key']
   },
   {
-    title: 'Operate',
-    description: 'Manage live instances and keep agents healthy from the dashboard.',
-    items: ['Status + restart controls', 'Usage and basic stats', 'Recovery steps for common failures']
+    title: 'Plans & Resources',
+    description: 'Different plans for different needs. All include cloud hosting.',
+    items: ['Starter: 2GB RAM, 1 CPU', 'Pro: 4GB RAM, 2 CPU', 'Scale: 8GB RAM, 4 CPU', 'Enterprise: 16GB+ RAM']
   },
   {
-    title: 'Grow',
-    description: 'Use platform capabilities to increase usage and automate external workflows.',
-    items: ['Monitor: Real-time analytics and performance tracking', 'Automate: Connect external systems with API + webhooks', 'Integrate: Build custom workflows around your agent']
+    title: 'AI Models',
+    description: 'Bring your own API key. Pay AI providers directly - no markup.',
+    items: ['Use OpenRouter, Groq, Anthropic, OpenAI', 'We default to Kimi K2.5', 'Free models to try', 'You pay only for what you use']
   }
+];
+
+const planResources = [
+  { plan: 'Starter', ram: '2GB', cpu: '1 vCPU', price: '£19/mo' },
+  { plan: 'Pro', ram: '4GB', cpu: '2 vCPU', price: '£39/mo' },
+  { plan: 'Scale', ram: '8GB', cpu: '4 vCPU', price: '£79/mo' },
+  { plan: 'Enterprise', ram: '16GB', cpu: '4 vCPU', price: '£149/mo' },
+  { plan: 'White Glove', ram: '32GB', cpu: '8 vCPU', price: '£199/mo' },
 ];
 
 const supportedModels = [
