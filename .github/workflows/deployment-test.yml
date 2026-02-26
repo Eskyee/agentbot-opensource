@@ -39,7 +39,7 @@ jobs:
       - name: Test OpenClaw version endpoint
         id: version
         run: |
-          HTTP_CODE=$(curl -s -o /tmp/version_response.json -w "%{http_code}" -H "Authorization: Bearer ${{ env.API_KEY }}" ${{ env.API_URL }}/api/openclaw/version)
+          HTTP_CODE=$(curl -s -o /tmp/version_response.json -w "%{http_code}" https://${{ env.API_URL }}/api/openclaw-version)
           echo "version_http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
           
           if [ "$HTTP_CODE" != "200" ]; then
@@ -67,16 +67,25 @@ jobs:
         if: github.event.inputs.telegramToken != ''
         id: provision
         run: |
-          RESPONSE=$(curl -s -X POST ${{ env.API_URL }}/api/provision \
+          HTTP_CODE=$(curl -s -o /tmp/provision_response.json -w "%{http_code}" -X POST https://${{ env.API_URL }}/api/provision \
             -H "Content-Type: application/json" \
             -d '{
               "telegramToken": "${{ github.event.inputs.telegramToken }}",
               "aiProvider": "openrouter"
             }')
           
+          echo "provision_http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Provision failed (HTTP: $HTTP_CODE)"
+            cat /tmp/provision_response.json
+            exit 1
+          fi
+          
+          RESPONSE=$(cat /tmp/provision_response.json)
           echo "provision_response=$RESPONSE" >> $GITHUB_OUTPUT
           
-          SUCCESS=$(echo $RESPONSE | jq -r '.success // false')
+          SUCCESS=$(echo "$RESPONSE" | jq -r '.success // false')
           
           if [ "$SUCCESS" != "true" ]; then
             echo "❌ Provision failed: $RESPONSE"
