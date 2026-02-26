@@ -354,7 +354,7 @@ export default function WhyAgentbotPage() {
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
               <h3 className="font-bold mb-2">Is Agentbot free?</h3>
               <p className="text-gray-300">
-                Agentbot offers a 3-day free trial with full access. After that, plans start at £9/mo for the Starter plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-400 hover:underline">pricing page</Link> for details.
+                Plans start at £19/mo for the Starter plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-400 hover:underline">pricing page</Link> for details.
               </p>
             </div>
 
