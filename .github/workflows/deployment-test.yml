@@ -1,0 +1,95 @@
+name: Deployment Flow Test
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+    inputs:
+      telegramToken:
+        description: 'Telegram Bot Token for testing'
+        required: false
+        type: string
+
+jobs:
+  test-deployment-flow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get environment variables
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          echo "API_URL=$API_URL" >> $GITHUB_ENV
+          echo "API_KEY=$API_KEY" >> $GITHUB_ENV
+
+      - name: Test health endpoint
+        id: health
+        run: |
+          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.API_URL }}/health || echo "000")
+          echo "health_status=$HEALTH" >> $GITHUB_OUTPUT
+          if [ "$HEALTH" != "200" ]; then
+            echo "❌ Health check failed (status: $HEALTH)"
+            exit 1
+          fi
+          echo "✓ Health check passed"
+
+      - name: Test OpenClaw version endpoint
+        id: version
+        run: |
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ env.API_KEY }}" ${{ env.API_URL }}/api/openclaw/version)
+          echo "version_response=$RESPONSE" >> $GITHUB_OUTPUT
+          
+          VERSION=$(echo $RESPONSE | jq -r '.openclawVersion // empty')
+          IMAGE=$(echo $RESPONSE | jq -r '.image // empty')
+          
+          if [ -z "$VERSION" ]; then
+            echo "❌ Version endpoint returned invalid response"
+            exit 1
+          fi
+          
+          echo "✓ OpenClaw version: $VERSION"
+          echo "✓ Image: $IMAGE"
+
+      - name: Test provision endpoint (optional)
+        if: github.event.inputs.telegramToken != ''
+        id: provision
+        run: |
+          RESPONSE=$(curl -s -X POST ${{ env.API_URL }}/api/provision \
+            -H "Content-Type: application/json" \
+            -d '{
+              "telegramToken": "${{ github.event.inputs.telegramToken }}",
+              "aiProvider": "openrouter"
+            }')
+          
+          echo "provision_response=$RESPONSE" >> $GITHUB_OUTPUT
+          
+          SUCCESS=$(echo $RESPONSE | jq -r '.success // false')
+          
+          if [ "$SUCCESS" != "true" ]; then
+            echo "❌ Provision failed: $RESPONSE"
+            exit 1
+          fi
+          
+          echo "✓ Provision endpoint working"
+          echo "✓ Subdomain: $(echo $RESPONSE | jq -r '.subdomain')"
+
+      - name: Run validation tests
+        run: |
+          echo "=== Deployment Flow Validation ==="
+          echo "✓ Health: ${{ steps.health.outputs.health_status }}"
+          echo "✓ Version: ${{ steps.version.outputs.version_response }}"
+          echo "=== All tests passed ==="
+
+      - name: Send success notification
+        if: success()
+        run: |
+          echo "Deployment flow tests passed"
+
+      - name: Send failure notification
+        if: failure()
+        run: |
+          echo "Deployment flow tests FAILED"
+          echo "Check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
