@@ -12,7 +12,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@coinbase/agentkit": "^0.6.0",
+    "@coinbase/agentkit": "^0.1.2",
     "@coinbase/agentkit-model-context-protocol": "^0.2.0",
     "@coinbase/cdp-sdk": "^1.44.1",
     "@coinbase/onchainkit": "^1.1.2",
