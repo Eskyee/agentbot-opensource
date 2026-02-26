@@ -22,7 +22,8 @@ export async function GET() {
     const data = await response.json()
     return NextResponse.json({
       openclawVersion: data?.openclawVersion || '2026.2.25',
-      image: data?.image
+      image: data?.image,
+      deployedAt: data?.deployedAt
     })
   } catch {
     return NextResponse.json({ openclawVersion: '2026.2.25' })

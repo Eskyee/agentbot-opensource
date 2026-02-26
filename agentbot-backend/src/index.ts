@@ -390,11 +390,45 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/openclaw/version', authenticate, (_req: Request, res: Response) => {
+app.get('/api/openclaw/version', (_req: Request, res: Response) => {
   res.json({
     openclawVersion: OPENCLAW_RUNTIME_VERSION,
     image: OPENCLAW_IMAGE,
+    deployedAt: new Date().toISOString(),
   });
+});
+
+app.get('/api/openclaw/instances', authenticate, async (_req: Request, res: Response) => {
+  try {
+    const { stdout } = await runCommand(`docker ps --filter "name=openclaw-" --format "{{.Names}}|{{.Image}}|{{.Status}}|{{.CreatedAt}}"`);
+    const lines = stdout ? stdout.split('\n').filter(Boolean) : [];
+    const instances = await Promise.all(lines.map(async (line) => {
+      const [name, image, status, createdAt] = line.split('|');
+      const agentId = name.replace('openclaw-', '');
+      const metadata = await readAgentMetadata(agentId);
+      
+      let containerVersion = 'unknown';
+      try {
+        const { stdout: versionOutput } = await runCommand(`docker exec ${name} openclaw --version 2>/dev/null || echo "unknown"`);
+        containerVersion = versionOutput.trim() || 'unknown';
+      } catch {
+        containerVersion = 'unknown';
+      }
+      
+      return {
+        agentId,
+        name,
+        image,
+        status,
+        createdAt,
+        version: containerVersion,
+        metadata,
+      };
+    }));
+    res.json({ instances, count: instances.length });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to list instances' });
+  }
 });
 
 // Agents endpoints
