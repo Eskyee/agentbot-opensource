@@ -841,11 +841,10 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
             ))}
           </div>
 
-          {/* Credits */}
+          {/* Plan */}
           <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-            <div className="text-sm text-gray-400 mb-1">Credits</div>
-            <div className="text-xl font-bold">${credits.toFixed(2)}</div>
-            <div className="text-xs text-blue-400 mt-2">+ Add credits</div>
+            <div className="text-sm text-gray-400 mb-1">Your Plan</div>
+            <div className="text-xl font-bold">Starter</div>
           </Link>
         </nav>
 
