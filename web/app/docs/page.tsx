@@ -19,27 +19,32 @@ const docsSections = [
 ];
 
 const supportedModels = [
-  'Kimi K2.5', 'GPT-4o', 'GPT-4o Mini', 'GPT-4 Turbo', 'GPT-4',
-  'Claude 3.5 Sonnet', 'Claude 3 Opus', 'Claude 3 Haiku',
-  'Gemini 2.0 Flash', 'Gemini 1.5 Flash', 'Gemini 1.5 Pro', 'Gemini 1.0 Pro',
-  'Llama 3.1 405B', 'Llama 3.1 70B', 'Llama 3.1 8B', 'Llama 3 70B',
-  'Mistral Large', 'Mistral Medium', 'Mistral Small',
-  'Groq Llama 3', 'Cohere Command R+', 'DeepInfra Chat', 'Azure OpenAI',
+  // Best Models
+  'Kimi K2.5', 'GPT-4o', 'Claude 3.5 Sonnet',
+  // Good Models
+  'GPT-4o Mini', 'Claude 3 Haiku', 'Gemini 1.5 Pro', 'Mistral Large',
+  // Free/Low Cost Models
+  'Gemini 2.0 Flash', 'Gemini 1.5 Flash', 'Llama 3.1 70B', 'Groq Llama 3',
+  // Other
+  'GPT-4', 'Claude 3 Opus', 'Mistral Medium', 'DeepSeek', 
 ];
 
 const tokenPricing = [
-  { model: 'Kimi K2.5', input: '£0.0005/1k', output: '£0.0015/1k' },
-  { model: 'GPT-4o', input: '£0.0022/1k', output: '£0.0088/1k' },
-  { model: 'GPT-4o Mini', input: '£0.0003/1k', output: '£0.0012/1k' },
-  { model: 'Claude 3.5 Sonnet', input: '£0.0020/1k', output: '£0.0080/1k' },
-  { model: 'Claude 3 Haiku', input: '£0.0002/1k', output: '£0.0010/1k' },
-  { model: 'Gemini 2.0 Flash', input: '£0.0001/1k', output: '£0.0005/1k' },
+  // Free to Very Cheap
+  { model: 'Gemini 2.0 Flash (Free)', input: 'Free', output: 'Free', note: '150 RPM' },
+  { model: 'Groq Llama 3', input: '£0.0002/1k', output: '£0.0002/1k', note: 'Ultra fast' },
+  // Cheap
   { model: 'Gemini 1.5 Flash', input: '£0.0001/1k', output: '£0.0005/1k' },
-  { model: 'Gemini 1.5 Pro', input: '£0.0013/1k', output: '£0.0050/1k' },
   { model: 'Llama 3.1 70B', input: '£0.0004/1k', output: '£0.0004/1k' },
-  { model: 'Llama 3 70B', input: '£0.0004/1k', output: '£0.0004/1k' },
+  // Mid-Range
+  { model: 'Kimi K2.5', input: '£0.0005/1k', output: '£0.0015/1k', note: 'Recommended' },
+  { model: 'GPT-4o Mini', input: '£0.0003/1k', output: '£0.0012/1k' },
+  { model: 'Claude 3 Haiku', input: '£0.0002/1k', output: '£0.0010/1k' },
+  // Premium
+  { model: 'GPT-4o', input: '£0.0022/1k', output: '£0.0088/1k' },
+  { model: 'Claude 3.5 Sonnet', input: '£0.0020/1k', output: '£0.0080/1k' },
+  { model: 'Gemini 1.5 Pro', input: '£0.0013/1k', output: '£0.0050/1k' },
   { model: 'Mistral Large', input: '£0.0015/1k', output: '£0.0060/1k' },
-  { model: 'Groq Llama 3', input: '£0.0002/1k', output: '£0.0002/1k' },
 ];
 
 export default function ViewDocsPage() {
