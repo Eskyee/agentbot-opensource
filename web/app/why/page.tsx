@@ -1,4 +1,7 @@
+
 import Link from 'next/link'
+
+const PRICE_START = "£19/mo";
 
 export default function WhyAgentbotPage() {
   return (
@@ -79,7 +82,7 @@ export default function WhyAgentbotPage() {
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="p-4 font-medium">Cost</td>
-                  <td className="p-4 bg-blue-900/10">£9/mo starter plan</td>
+                  <td className="p-4 bg-blue-900/10">{PRICE_START} starter plan</td>
                   <td className="p-4">VPS costs or dedicated hardware needed for 24/7 use</td>
                 </tr>
               </tbody>
@@ -340,7 +343,7 @@ export default function WhyAgentbotPage() {
 
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-gray-800 rounded-xl p-8 text-center">
             <h3 className="text-2xl font-bold mb-4">Ready to deploy your AI agent?</h3>
-            <p className="text-gray-300 mb-6">Start from £19/month with full access.</p>
+            <p className="text-gray-300 mb-6">Start from {PRICE_START} with full access.</p>
             <Link href="/onboard" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
               Get Started →
             </Link>
@@ -354,7 +357,7 @@ export default function WhyAgentbotPage() {
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
               <h3 className="font-bold mb-2">Is Agentbot free?</h3>
               <p className="text-gray-300">
-                Plans start at £19/mo for the Starter plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-400 hover:underline">pricing page</Link> for details.
+                Plans start at {PRICE_START} for the Starter plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-400 hover:underline">pricing page</Link> for details.
               </p>
             </div>
 
