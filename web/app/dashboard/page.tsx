@@ -188,8 +188,25 @@ function DashboardContent() {
       token = await fetchToken()
     }
     if (token) {
-      navigator.clipboard.writeText(token)
-      alert('Token copied to clipboard!')
+      try {
+        await navigator.clipboard.writeText(token)
+        alert('Token copied to clipboard!')
+      } catch {
+        // Fallback for clipboard issues
+        const textArea = document.createElement('textarea')
+        textArea.value = token
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.select()
+        try {
+          document.execCommand('copy')
+          alert('Token copied to clipboard!')
+        } catch {
+          alert('Failed to copy. Please copy manually.')
+        }
+        document.body.removeChild(textArea)
+      }
     }
   }
 

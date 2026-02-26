@@ -4,5 +4,6 @@
   "plan": "free",
   "aiProvider": "openrouter",
   "port": 19011,
-  "subdomain": "fc2711220884ffe8.agents.localhost"
+  "subdomain": "fc2711220884ffe8.agents.localhost",
+  "gatewayToken": "b22qf7z29savqxmjvhb26"
 }
