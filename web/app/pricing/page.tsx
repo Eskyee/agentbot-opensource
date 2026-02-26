@@ -25,7 +25,7 @@ const plans = [
     id: 'pro',
     name: 'Pro',
     price: '£39',
-    period: '/mo',
+    period: '/mo + usage',
     description: 'For power users',
     features: [
       '1 AI Agent',

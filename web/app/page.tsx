@@ -158,7 +158,7 @@ export default function Home() {
             {/* Pro */}
             <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
               <h3 className="text-lg font-medium">Pro</h3>
-              <p className="mt-2 text-3xl font-bold">£39<span className="text-lg font-normal text-gray-7">/mo</span></p>
+              <p className="mt-2 text-3xl font-bold">£39<span className="text-lg font-normal text-gray-7">/mo + usage</span></p>
               <ul className="mt-6 space-y-3 text-sm text-gray-7">
                 <li>1 AI Agent</li>
                 <li>50GB storage</li>

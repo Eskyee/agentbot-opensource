@@ -131,7 +131,7 @@ export default function BillingPage() {
       credits: '£25',
       price: 39,
       priceId: 'pro',
-      features: ['Telegram + WhatsApp', 'Custom domain', 'Priority support'],
+      features: ['Telegram + WhatsApp', 'Custom domain', 'Priority support', '+ usage'],
     },
     {
       id: 'scale',
