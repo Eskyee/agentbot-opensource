@@ -151,6 +151,15 @@ export default function BillingPage() {
       priceId: 'enterprise',
       features: ['White-label', '24/7 phone support', 'Custom integrations'],
     },
+    {
+      id: 'white_glove',
+      name: 'White Glove',
+      specs: 'Unlimited · 10x · Custom',
+      credits: '£150',
+      price: 199,
+      priceId: 'white_glove',
+      features: ['Everything in Enterprise', 'Dedicated account manager', 'Priority support'],
+    },
   ]
 
   const buyPlan = async (priceId: string) => {

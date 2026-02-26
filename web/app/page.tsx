@@ -195,8 +195,23 @@ export default function Home() {
                 <li>White-label</li>
                 <li>24/7 phone support</li>
               </ul>
-              <a href="/#contact" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
-                Contact Sales
+              <a href="/api/stripe/checkout?plan=enterprise" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+                Get Started
+              </a>
+            </div>
+            
+            {/* White Glove */}
+            <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
+              <h3 className="text-lg font-medium">White Glove</h3>
+              <p className="mt-2 text-3xl font-bold">£199<span className="text-lg font-normal text-gray-7">/mo</span></p>
+              <ul className="mt-6 space-y-3 text-sm text-gray-7">
+                <li>Everything in Enterprise</li>
+                <li>10x resources</li>
+                <li>Dedicated account manager</li>
+                <li>Priority 24/7 support</li>
+              </ul>
+              <a href="/api/stripe/checkout?plan=white_glove" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+                Get Started
               </a>
             </div>
           </div>

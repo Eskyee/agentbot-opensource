@@ -68,8 +68,8 @@ const plans = [
       '24/7 phone support',
       'Custom integrations',
     ],
-    cta: 'Contact Sales',
-    href: '/#contact',
+    cta: 'Get Started',
+    href: '/api/stripe/checkout?plan=enterprise',
     popular: false,
   },
   {
@@ -85,8 +85,8 @@ const plans = [
       'Custom integrations',
       'Dedicated account manager',
     ],
-    cta: 'Contact Sales',
-    href: '/#contact',
+    cta: 'Get Started',
+    href: '/api/stripe/checkout?plan=white_glove',
     popular: false,
   },
 ]
