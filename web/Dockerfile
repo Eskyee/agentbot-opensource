@@ -1,20 +1,20 @@
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV NEXT_PUBLIC_APP_URL=https://agentbot.raveculture.xyz
-ENV NEXTAUTH_URL=https://agentbot.raveculture.xyz
-ENV NEXTAUTH_SECRET=production-secret-change-me
-ENV NEXT_PUBLIC_API_URL=https://api.agentbot.raveculture.xyz
+ENV NODE_ENV=development
+ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
+ENV NEXTAUTH_URL=http://localhost:3000
+ENV NEXTAUTH_SECRET=dev-secret
+ENV NEXT_PUBLIC_API_URL=http://localhost:3001
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN apk add --no-cache openssl
 
-COPY --chown=nextjs:nodejs .next/standalone ./
-COPY --chown=nextjs:nodejs .next/static ./.next/static
-COPY --chown=nextjs:nodejs public ./public
+COPY package*.json ./
+COPY prisma ./prisma
+RUN npm install --legacy-peer-deps --force
 
-USER nextjs
+COPY . .
+
 EXPOSE 3000
 ENV PORT=3000
-CMD ["node", "server.js"]
+CMD ["npm", "run", "dev"]

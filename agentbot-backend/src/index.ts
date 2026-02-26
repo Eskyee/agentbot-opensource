@@ -348,7 +348,8 @@ const createOpenClawConfig = (
       telegram: {
         enabled: true,
         botToken: telegramToken,
-        dmPolicy: 'all',
+        dmPolicy: 'allowlist',
+        allowFrom: [],
       },
     },
     gateway: {

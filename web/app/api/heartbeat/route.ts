@@ -16,17 +16,28 @@ export async function GET() {
       throw new Error(`Backend returned ${response.status}`)
     }
 
-    const agents = await response.json()
-    
+    const data = await response.json()
+
+    const agents = (data || []).map((agent: any) => ({
+      id: agent.id,
+      name: agent.subdomain || agent.id,
+      status: agent.status || 'active',
+      port: agent.port,
+      uptime: agent.uptime || 'unknown',
+      lastHeartbeat: new Date().toLocaleTimeString(),
+      plan: agent.plan || 'free',
+      url: agent.url,
+    }))
+
     return NextResponse.json({
-      agents: agents || [],
-      count: (agents || []).length,
+      agents,
       status: 'ok',
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    console.error('Failed to fetch agents:', error)
+    console.error('Heartbeat error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch agents', agents: [], count: 0 },
+      { error: 'Failed to fetch heartbeat', agents: [] },
       { status: 500 }
     )
   }

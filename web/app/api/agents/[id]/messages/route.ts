@@ -1,0 +1,39 @@
+import { NextResponse } from 'next/server'
+
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const agentId = params.id
+    const url = new URL(request.url)
+    const limit = parseInt(url.searchParams.get('limit') || '50')
+    const offset = parseInt(url.searchParams.get('offset') || '0')
+
+    // Mock messages - replace with real messages from backend
+    const messages = Array.from({ length: Math.min(limit, 100) }).map((_, i) => ({
+      id: `msg-${offset + i}`,
+      agentId,
+      sender: i % 2 === 0 ? 'user' : 'agent',
+      content: i % 2 === 0 
+        ? `User message ${offset + i + 1}` 
+        : `Agent response to message ${offset + i}`,
+      timestamp: new Date(Date.now() - (offset + i) * 60000).toISOString(),
+      platform: ['telegram', 'discord', 'whatsapp'][i % 3],
+    }))
+
+    return NextResponse.json({
+      messages,
+      total: offset + messages.length,
+      limit,
+      offset,
+      status: 'ok',
+    })
+  } catch (error) {
+    console.error('Failed to fetch messages:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch messages', messages: [] },
+      { status: 500 }
+    )
+  }
+}

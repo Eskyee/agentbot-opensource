@@ -99,6 +99,8 @@ services:
       - .env
     environment:
       NODE_ENV: development
+      PORT: 3000
+      BACKEND_API_URL: http://agentbot-api:3001
     ports:
       - "3000:3000"
     depends_on:
@@ -107,7 +109,7 @@ services:
     volumes:
       - ./web:/app
       - /app/node_modules
-    command: sh -c "mkdir -p node_modules && find node_modules -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true; npm install --include=dev && npm run dev"
+    command: npm run dev
     develop:
       watch:
         - path: ./web

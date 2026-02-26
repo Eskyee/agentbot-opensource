@@ -3,9 +3,14 @@ import { NextResponse } from 'next/server'
 const API_URL = process.env.BACKEND_API_URL || 'http://agentbot-api:3001'
 const API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
 
-export async function GET() {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
-    const response = await fetch(`${API_URL}/api/agents`, {
+    const agentId = params.id
+
+    const response = await fetch(`${API_URL}/api/agents/${agentId}`, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
@@ -13,20 +18,25 @@ export async function GET() {
     })
 
     if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json(
+          { error: 'Agent not found' },
+          { status: 404 }
+        )
+      }
       throw new Error(`Backend returned ${response.status}`)
     }
 
-    const agents = await response.json()
-    
+    const agent = await response.json()
+
     return NextResponse.json({
-      agents: agents || [],
-      count: (agents || []).length,
+      agent,
       status: 'ok',
     })
   } catch (error) {
-    console.error('Failed to fetch agents:', error)
+    console.error('Failed to fetch agent:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch agents', agents: [], count: 0 },
+      { error: 'Failed to fetch agent' },
       { status: 500 }
     )
   }
