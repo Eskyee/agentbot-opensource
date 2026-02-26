@@ -72,6 +72,23 @@ const plans = [
     href: '/#contact',
     popular: false,
   },
+  {
+    id: 'white_glove',
+    name: 'White Glove',
+    price: '£199',
+    period: '/mo',
+    description: 'Premium solution',
+    features: [
+      'Everything in Enterprise',
+      '10x resources',
+      'Priority 24/7 support',
+      'Custom integrations',
+      'Dedicated account manager',
+    ],
+    cta: 'Contact Sales',
+    href: '/#contact',
+    popular: false,
+  },
 ]
 
 const navItems = [
