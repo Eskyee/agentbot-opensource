@@ -97,7 +97,7 @@ export default function SignupPage() {
         <div className="flex flex-col gap-3">
           <button
             className="w-full rounded-lg bg-white text-gray-900 font-semibold py-2 flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-100 transition-colors"
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            onClick={() => signIn("google", { callbackUrl: "/onboard" })}
             disabled={loading}
           >
             <svg width="20" height="20" fill="currentColor" className="mr-2" viewBox="0 0 48 48"><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#4285F4"/><path d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z" fill="#34A853"/><path d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z" fill="#FBBC05"/><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#EA4335"/></svg>
@@ -105,7 +105,7 @@ export default function SignupPage() {
           </button>
           <button
             className="w-full rounded-lg bg-gray-900 text-gray-100 font-semibold py-2 flex items-center justify-center gap-2 border border-gray-700 hover:bg-gray-800 transition-colors"
-            onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+            onClick={() => signIn("github", { callbackUrl: "/onboard" })}
             disabled={loading}
           >
             <svg width="20" height="20" fill="currentColor" className="mr-2" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z"/></svg>
