@@ -19,19 +19,23 @@ export async function POST(request: NextRequest) {
     const stripe = new Stripe(stripeKey)
 
     const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
+      mode: 'subscription',
       line_items: [
         {
           price_data: {
             currency: 'gbp',
-            product_data: {
-              name: 'Extra Storage (50 GB)',
-              description: 'Add 50 GB of cloud storage for your agent files',
+            recurring: {
+              interval: 'month',
             },
-            unit_amount: 499, // £4.99
+            product_data: {
+              name: 'Pro Plan',
+              description: 'Upgrade to Pro - 50GB storage, WhatsApp, Custom domain',
+            },
+            unit_amount: 3900, // £39.00/month
           },
           quantity: 1,
         },
+      ],
       ],
       success_url: `${origin}/dashboard/files?upgrade=success`,
       cancel_url: `${origin}/dashboard/files?upgrade=cancelled`,

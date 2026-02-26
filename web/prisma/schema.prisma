@@ -12,13 +12,14 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String    @id @default(cuid())
   name          String?
-  email         String?  @unique
+  email         String?   @unique
   emailVerified DateTime?
   image         String?
-  password      String?  // For credentials provider
-  role          String   @default("user") // user or admin
+  password      String?
+  role          String    @default("user")
+  storageLimit  Int       @default(10)
   accounts      Account[]
   sessions      Session[]
 }

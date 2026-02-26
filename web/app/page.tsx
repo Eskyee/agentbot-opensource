@@ -139,31 +139,16 @@ export default function Home() {
           <h2 className="text-2xl font-semibold text-center mb-4">Simple, Transparent Pricing</h2>
           <p className="text-center text-gray-7 mb-12">Start free, upgrade when you need more.</p>
           
-          <div className="grid sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
-            {/* Free */}
-            <div className="border border-gray-4 rounded-lg p-6 bg-gray-1 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
-              <h3 className="text-lg font-medium">Free</h3>
-              <p className="mt-2 text-3xl font-bold">£0</p>
-              <p className="text-sm text-gray-7 mt-1">3-day trial</p>
-              <ul className="mt-6 space-y-3 text-sm text-gray-7">
-                <li>Full platform access</li>
-                <li>Telegram integration</li>
-                <li>Community support</li>
-              </ul>
-              <a href="/api/stripe/checkout?plan=trial" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
-                Try Free
-              </a>
-            </div>
-            
+          <div className="grid sm:grid-cols-4 gap-4 max-w-5xl mx-auto">
             {/* Starter */}
             <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
               <h3 className="text-lg font-medium">Starter</h3>
-              <p className="mt-2 text-3xl font-bold">£9<span className="text-lg font-normal text-gray-7">/mo</span></p>
-              <p className="text-sm text-gray-7 mt-1">per user</p>
+              <p className="mt-2 text-3xl font-bold">£19<span className="text-lg font-normal text-gray-7">/mo</span></p>
               <ul className="mt-6 space-y-3 text-sm text-gray-7">
-                <li>Everything in Free</li>
-                <li>Bring your own API key</li>
-                <li>Priority support</li>
+                <li>1 AI Agent</li>
+                <li>10GB storage</li>
+                <li>Telegram channel</li>
+                <li>Use your own AI key</li>
               </ul>
               <a href="/api/stripe/checkout?plan=starter" className="mt-6 block w-full rounded-lg bg-white py-2.5 text-center text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
                 Get Started
@@ -171,17 +156,47 @@ export default function Home() {
             </div>
             
             {/* Pro */}
-            <div className="border border-gray-4 rounded-lg p-6 bg-gray-1 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
+            <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
               <h3 className="text-lg font-medium">Pro</h3>
-              <p className="mt-2 text-3xl font-bold">£29<span className="text-lg font-normal text-gray-7">/mo</span></p>
-              <p className="text-sm text-gray-7 mt-1">per user</p>
+              <p className="mt-2 text-3xl font-bold">£39<span className="text-lg font-normal text-gray-7">/mo</span></p>
               <ul className="mt-6 space-y-3 text-sm text-gray-7">
-                <li>3× resources</li>
+                <li>1 AI Agent</li>
+                <li>50GB storage</li>
+                <li>Telegram + WhatsApp</li>
                 <li>Custom domain</li>
-                <li>WhatsApp support</li>
               </ul>
-              <a href="/api/stripe/checkout?plan=pro" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+              <a href="/api/stripe/checkout?plan=pro" className="mt-6 block w-full rounded-lg bg-white py-2.5 text-center text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
                 Get Started
+              </a>
+            </div>
+            
+            {/* Scale */}
+            <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
+              <h3 className="text-lg font-medium">Scale</h3>
+              <p className="mt-2 text-3xl font-bold">£79<span className="text-lg font-normal text-gray-7">/mo</span></p>
+              <ul className="mt-6 space-y-3 text-sm text-gray-7">
+                <li>3 AI Agents</li>
+                <li>100GB storage</li>
+                <li>All channels</li>
+                <li>Advanced analytics</li>
+              </ul>
+              <a href="/api/stripe/checkout?plan=scale" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+                Get Started
+              </a>
+            </div>
+            
+            {/* Enterprise */}
+            <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
+              <h3 className="text-lg font-medium">Enterprise</h3>
+              <p className="mt-2 text-3xl font-bold">£149<span className="text-lg font-normal text-gray-7">/mo</span></p>
+              <ul className="mt-6 space-y-3 text-sm text-gray-7">
+                <li>Unlimited agents</li>
+                <li>500GB storage</li>
+                <li>White-label</li>
+                <li>24/7 phone support</li>
+              </ul>
+              <a href="/#contact" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+                Contact Sales
               </a>
             </div>
           </div>

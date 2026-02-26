@@ -4,14 +4,28 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function FilesPage() {
-  const [files, setFiles] = useState([])
+  const [files, setFiles] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [storageLimit, setStorageLimit] = useState(10)
   const router = useRouter()
 
   useEffect(() => {
     fetchFiles()
+    fetchStorageLimit()
   }, [])
+
+  const fetchStorageLimit = async () => {
+    try {
+      const res = await fetch('/api/user/storage')
+      if (res.ok) {
+        const data = await res.json()
+        setStorageLimit(data.storageLimit || 10)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   const fetchFiles = async () => {
     try {
@@ -76,7 +90,6 @@ export default function FilesPage() {
 
   const totalSize = files.reduce((acc: number, f: any) => acc + (f.size || 0), 0)
   const usedGB = (totalSize / (1024 * 1024 * 1024)).toFixed(2)
-  const storageLimit = 10
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
@@ -99,13 +112,15 @@ export default function FilesPage() {
               <div className="text-2xl font-bold mt-1">{usedGB} GB / {storageLimit} GB</div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-400">Free Tier</div>
-              <button 
-                onClick={upgradeStorage}
-                className="text-sm text-blue-400 mt-1 hover:text-blue-300 transition-colors"
-              >
-                Upgrade for 50 GB (+)
-              </button>
+              <div className="text-sm text-gray-400">{storageLimit === 10 ? 'Free Tier' : 'Pro Plan'}</div>
+              {storageLimit === 10 && (
+                <button 
+                  onClick={upgradeStorage}
+                  className="text-sm text-blue-400 mt-1 hover:text-blue-300 transition-colors"
+                >
+                  Upgrade to Pro (£39/mo)
+                </button>
+              )}
             </div>
           </div>
           <div className="mt-4 bg-gray-800 rounded-full h-2">

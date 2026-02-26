@@ -1,37 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
+const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
+  starter: { amount: 1900, name: 'Starter Plan', description: '1 AI Agent, 10GB storage, Telegram channel' },
+  pro: { amount: 3900, name: 'Pro Plan', description: '1 AI Agent, 50GB storage, Telegram + WhatsApp, Custom domain' },
+  scale: { amount: 7900, name: 'Scale Plan', description: '3 AI Agents, 100GB storage, All channels, Advanced analytics' },
+  enterprise: { amount: 14900, name: 'Enterprise Plan', description: 'Unlimited agents, 500GB storage, White-label, 24/7 support' },
+}
+
 export async function GET(request: NextRequest) {
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
   
-  const validPlans = ['trial', 'starter', 'pro', 'pro_plus', 'scale', 'white_glove']
+  const validPlans = ['starter', 'pro', 'scale', 'enterprise']
   if (!validPlans.includes(plan)) {
     return NextResponse.redirect(new URL(`/onboard?plan=${plan}&payment_error=invalid_plan`, origin), 303)
   }
 
-  const priceIds: Record<string, string> = {
-    trial: process.env.STRIPE_PRICE_ID_TRIAL || process.env.STRIPE_PRICE_ID_STARTER || '',
-    starter: process.env.STRIPE_PRICE_ID_STARTER || '',
-    pro: process.env.STRIPE_PRICE_ID_PRO || '',
-    pro_plus: process.env.STRIPE_PRICE_ID_PRO_PLUS || '',
-    scale: process.env.STRIPE_PRICE_ID_SCALE || '',
-    white_glove: process.env.STRIPE_PRICE_ID_WHITE_GLOVE || '',
-  }
-
-  const priceId = priceIds[plan]
   const stripeKey = process.env.STRIPE_SECRET_KEY
 
   if (!stripeKey) {
     return NextResponse.redirect(new URL(`/onboard?plan=${plan}&payment_error=stripe_not_configured`, origin), 303)
   }
 
-  if (!priceId) {
-    return NextResponse.redirect(new URL(`/onboard?plan=${plan}&payment_error=price_not_configured`, origin), 303)
-  }
-
   try {
     const stripe = new Stripe(stripeKey)
+    
+    const planInfo = PLAN_PRICES[plan]
+    let priceId = process.env[`STRIPE_PRICE_ID_${plan.toUpperCase()}`]
+    
+    if (!priceId) {
+      const price = await stripe.prices.create({
+        unit_amount: planInfo.amount,
+        currency: 'gbp',
+        recurring: { interval: 'month' },
+        product_data: {
+          name: planInfo.name,
+          description: planInfo.description,
+        },
+      })
+      priceId = price.id
+    }
     
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',

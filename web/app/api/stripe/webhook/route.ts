@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
       if (session.metadata?.type === 'storage_upgrade') {
         const userEmail = session.metadata?.userEmail;
-        const storageGB = parseInt(session.metadata?.storageGB || '50');
+        const storageGB = 50;
 
         if (userEmail) {
           await prisma.user.update({
@@ -56,11 +56,10 @@ export async function POST(request: NextRequest) {
 
           await sendEmail({
             to: userEmail,
-            subject: 'Storage Upgraded! - Agentbot',
+            subject: 'Upgraded to Pro Plan! - Agentbot',
             html: `
-              <h1>Storage Upgraded</h1>
-              <p>Your storage has been increased by ${storageGB} GB.</p>
-              <p>You now have additional storage for your agent files.</p>
+              <h1>Pro Plan Activated</h1>
+              <p>Your Pro Plan is now active with 50 GB of additional storage.</p>
               <p>Visit your files: <a href="https://agentbot.raveculture.xyz/dashboard/files">https://agentbot.raveculture.xyz/dashboard/files</a></p>
               <hr />
               <p>Best,<br>The Agentbot Team</p>
