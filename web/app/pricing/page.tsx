@@ -18,7 +18,7 @@ const plans = [
       'Priority support',
     ],
     cta: 'Get Started',
-    href: '/api/stripe/checkout?plan=starter',
+    href: '/signup',
     popular: true,
   },
   {
@@ -35,7 +35,7 @@ const plans = [
       'Priority support',
     ],
     cta: 'Get Started',
-    href: '/api/stripe/checkout?plan=pro',
+    href: '/signup',
     popular: false,
   },
   {
@@ -52,7 +52,7 @@ const plans = [
       'Dedicated support',
     ],
     cta: 'Get Started',
-    href: '/api/stripe/checkout?plan=scale',
+    href: '/signup',
     popular: false,
   },
   {
@@ -69,7 +69,7 @@ const plans = [
       'Custom integrations',
     ],
     cta: 'Get Started',
-    href: '/api/stripe/checkout?plan=enterprise',
+    href: '/signup',
     popular: false,
   },
   {
@@ -86,7 +86,7 @@ const plans = [
       'Dedicated account manager',
     ],
     cta: 'Get Started',
-    href: '/api/stripe/checkout?plan=white_glove',
+    href: '/signup',
     popular: false,
   },
 ]
