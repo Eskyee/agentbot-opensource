@@ -8,6 +8,18 @@ import path from 'path';
 
 dotenv.config();
 
+const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
+  starter: { memory: '2g', cpus: '1' },
+  pro: { memory: '4g', cpus: '2' },
+  scale: { memory: '8g', cpus: '4' },
+  enterprise: { memory: '16g', cpus: '4' },
+  white_glove: { memory: '32g', cpus: '8' },
+};
+
+const getPlanResources = (plan: string) => {
+  return PLAN_RESOURCES[plan] || PLAN_RESOURCES.starter;
+};
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const API_KEY = process.env.INTERNAL_API_KEY;
@@ -155,7 +167,7 @@ const backupContainerData = async (containerName: string, inspect: ContainerInsp
   return null;
 };
 
-const recreateContainerWithImage = async (containerName: string, inspect: ContainerInspect, image: string): Promise<void> => {
+const recreateContainerWithImage = async (containerName: string, inspect: ContainerInspect, image: string, plan: string = 'starter'): Promise<void> => {
   const portMapping = inspect.NetworkSettings.Ports['18789/tcp'];
   const hostPort = portMapping && portMapping[0]?.HostPort;
   if (!hostPort) {
@@ -175,13 +187,15 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
     throw new Error('Unsupported mount configuration');
   }
 
+  const resources = getPlanResources(plan);
+  
   const args: string[] = [
     'docker run -d',
     `--name ${containerName}`,
     '--restart unless-stopped',
     `-p ${hostPort}:18789`,
-    '--memory=1g',
-    '--cpus=1',
+    `--memory=${resources.memory}`,
+    `--cpus=${resources.cpus}`,
   ];
 
   args.push(mountArg);
