@@ -340,7 +340,7 @@ export default function WhyAgentbotPage() {
 
           <div className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-gray-800 rounded-xl p-8 text-center">
             <h3 className="text-2xl font-bold mb-4">Ready to deploy your AI agent?</h3>
-            <p className="text-gray-300 mb-6">Start with a 3-day free trial. No credit card required.</p>
+            <p className="text-gray-300 mb-6">Start from £19/month with full access.</p>
             <Link href="/onboard" className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-100">
               Get Started →
             </Link>
