@@ -28,8 +28,17 @@ export async function GET(request: NextRequest) {
     const stripe = new Stripe(stripeKey)
     
     const planInfo = PLAN_PRICES[plan]
-    let priceId = process.env[`STRIPE_PRICE_ID_${plan.toUpperCase()}`]
     
+    // Find existing active price for this plan, or create new one
+    const existingPrices = await stripe.prices.list({ 
+      active: true, 
+      limit: 100 
+    })
+    let priceId = existingPrices.data.find(p => 
+      p.recurring?.interval === 'month' && 
+      p.unit_amount === planInfo.amount
+    )?.id
+
     if (!priceId) {
       const price = await stripe.prices.create({
         unit_amount: planInfo.amount,
