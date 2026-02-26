@@ -363,7 +363,7 @@ function OnboardContent() {
               <div className="space-y-3">
                 {[
                   { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier', recommended: true },
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'Fast and reliable default model via OpenRouter' },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'Kimi K2.5, Llama, GPT - Fast and reliable' },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
                   { id: 'anthropic', name: 'Anthropic', desc: 'Claude — Best quality (requires API key)' },
                   { id: 'openai', name: 'OpenAI', desc: 'GPT-4 — Popular choice (requires API key)' }

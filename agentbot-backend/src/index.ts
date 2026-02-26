@@ -332,7 +332,7 @@ const createOpenClawConfig = (
       throw new Error('Missing AI API key: set OpenRouter key in onboarding or server env');
     }
     envVars.OPENROUTER_API_KEY = key;
-    model = 'openrouter/openai/gpt-4o-mini';
+    model = 'moonshotai/kimi-k2.5';
   } else {
     throw new Error(`Unsupported aiProvider: ${provider}`);
   }
