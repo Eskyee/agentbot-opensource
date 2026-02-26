@@ -8,9 +8,10 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: agentbot-postgres
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: agentbot
-      POSTGRES_PASSWORD: devpassword
       POSTGRES_DB: agentbot_db
     ports:
       - "5432:5432"
@@ -43,14 +44,11 @@ services:
       context: ./agentbot-backend
       dockerfile: Dockerfile
     container_name: agentbot-api
+    env_file:
+      - .env
     environment:
       NODE_ENV: development
       PORT: 3001
-      DATABASE_URL: postgres://agentbot:devpassword@postgres:5432/agentbot_db
-      REDIS_URL: redis://redis:6379
-      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-secret-key-12345}
-      ALLOWED_ORIGINS: http://localhost:3000,https://agentbot.com
-      AGENTS_DOMAIN: agents.localhost
     ports:
       - "3001:3001"
     depends_on:
@@ -60,9 +58,6 @@ services:
         condition: service_healthy
     volumes:
       - ./agentbot-backend/src:/app/src
-      # Docker socket mount is intentionally kept out of base compose.
-      # For local development where API must create agent containers,
-      # use docker-compose.override.yml to mount /var/run/docker.sock.
       - ./runtime-data:/opt/agentbot/data
     command: npm run dev
     develop:
@@ -76,11 +71,10 @@ services:
       context: ./agentbot-worker
       dockerfile: Dockerfile
     container_name: agentbot-worker
+    env_file:
+      - .env
     environment:
       NODE_ENV: development
-      REDIS_URL: redis://redis:6379
-      DATABASE_URL: postgres://agentbot:devpassword@postgres:5432/agentbot_db
-      AGENTS_DOMAIN: agents.localhost
     depends_on:
       redis:
         condition: service_healthy
@@ -101,16 +95,10 @@ services:
       context: ./web
       dockerfile: Dockerfile
     container_name: agentbot-frontend
+    env_file:
+      - .env
     environment:
       NODE_ENV: development
-      NEXT_PUBLIC_API_URL: http://localhost:3001
-      NEXT_PUBLIC_AGENTS_DOMAIN: agents.localhost
-      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-      BACKEND_API_URL: http://api:3001
-      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-secret-key-12345}
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
-      STRIPE_PRICE_ID_STARTER: ${STRIPE_PRICE_ID_STARTER:-}
-      STRIPE_PRICE_ID_PRO: ${STRIPE_PRICE_ID_PRO:-}
     ports:
       - "3000:3000"
     depends_on:
