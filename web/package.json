@@ -48,5 +48,11 @@
     "prisma": "^5.22.0",
     "tailwindcss": "^3.4",
     "typescript": "5.9.3"
+  },
+  "optionalDependencies": {
+    "elliptic": "^6.6.1"
+  },
+  "overrides": {
+    "elliptic": "^6.6.1"
   }
 }
