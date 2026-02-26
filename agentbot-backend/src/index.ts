@@ -180,15 +180,9 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
     `--name ${containerName}`,
     '--restart unless-stopped',
     `-p ${hostPort}:18789`,
+    '--memory=1g',
+    '--cpus=1.0',
   ];
-
-  if (inspect.HostConfig.Memory && inspect.HostConfig.Memory > 0) {
-    args.push(`--memory ${inspect.HostConfig.Memory}`);
-  }
-  if (inspect.HostConfig.NanoCpus && inspect.HostConfig.NanoCpus > 0) {
-    const cpuValue = (inspect.HostConfig.NanoCpus / 1_000_000_000).toFixed(3);
-    args.push(`--cpus ${cpuValue}`);
-  }
 
   args.push(mountArg);
   args.push(image);
