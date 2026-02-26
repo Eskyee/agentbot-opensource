@@ -29,8 +29,8 @@ export async function GET(request: NextRequest) {
     
     const planInfo = PLAN_PRICES[plan]
     
-    // Check for env var price ID first
-    let priceId = process.env[`STRIPE_PRICE_ID_${plan.toUpperCase()}`]
+    // Always create/find fresh active price - ignore env vars to avoid stale price IDs
+    let priceId: string | undefined
     
     // If no env price ID, try to find existing active price or create new
     if (!priceId) {
