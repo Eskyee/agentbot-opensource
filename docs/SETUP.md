@@ -6,7 +6,10 @@ This guide walks through setting up the Agentbot infrastructure from scratch.
 
 - GCP account with billing enabled (or $300 free credits)
 - Domain name (agentbot.com or similar)
+- Telegram bot token (from @BotFather)
 - Basic familiarity with terminal
+
+---
 
 ## Phase 1: VM Setup (~30 min)
 
@@ -108,43 +111,84 @@ sudo systemctl reload caddy
 
 ---
 
-## Phase 2: Test Your Own Instance (~15 min)
+## Phase 2: Deploy Your First Agent (~15 min)
 
-### Step 7: Create test container
+### Step 7: Create Agent Container
 
 ```bash
-# Pull OpenClaw image
-docker pull ghcr.io/openclaw/openclaw:latest
+# Pull OpenClaw image (check https://github.com/openclaw/containers for latest tag)
+docker pull ghcr.io/openclaw/openclaw:2026.2.25
 
 # Create volume for persistence
-docker volume create openclaw-test
+docker volume create openclaw-agent1
 
 # Run container
 docker run -d \
-  --name openclaw-test \
+  --name agentbot-agent1 \
   --restart unless-stopped \
-  -v openclaw-test:/home/node/.openclaw \
+  -v openclaw-agent1:/home/node/.openclaw \
   -p 18789:18789 \
   --memory="512m" \
   --cpus="0.5" \
-  ghcr.io/openclaw/openclaw:latest
+  ghcr.io/openclaw/openclaw:2026.2.25
+
+# Check it's running
+docker ps
 ```
 
-### Step 8: Run onboarding
+### Step 8: Run Onboarding
 
 ```bash
-docker exec -it openclaw-test openclaw onboard
+docker exec -it agentbot-agent1 openclaw onboard
 ```
 
 Follow prompts:
-1. Select AI provider (Groq for free)
+1. Select AI provider (Groq for free, or Anthropic)
 2. Enter API key
-3. Select Telegram
-4. Create bot via @BotFather
-5. Paste token
-6. Enter your Telegram user ID
+3. Select messaging platforms (Telegram, iMessage)
+4. For Telegram: Create bot via @BotFather, paste token
+5. Enter your Telegram user ID (get via @userinfobot)
+6. Complete onboarding
 
-### Step 9: Add Caddy route
+### Step 9: Configure Secure Messaging
+
+After onboarding, edit the config to use allowlist mode (more secure):
+
+```bash
+docker exec agentbot-agent1 cat /home/node/.openclaw/openclaw.json > /tmp/openclaw.json
+nano /tmp/openclaw.json
+```
+
+Set these security settings:
+
+```json
+{
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": [],
+      "groupPolicy": "allowlist"
+    },
+    "imessage": {
+      "enabled": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": [YOUR_PHONE_NUMBER],
+      "groupPolicy": "allowlist"
+    }
+  }
+}
+```
+
+**Important:** Do NOT add `actions` key - this causes errors.
+
+Copy back to the gateway config:
+```bash
+docker cp /tmp/openclaw.json agentbot-agent1:/home/node/.openclaw/openclaw.json
+docker restart agentbot-agent1
+```
+
+### Step 10: Add Caddy Route
 
 ```bash
 sudo nano /etc/caddy/Caddyfile
@@ -152,7 +196,7 @@ sudo nano /etc/caddy/Caddyfile
 
 Add:
 ```
-test.agentbot.com {
+agent1.agentbot.com {
     reverse_proxy localhost:18789
 }
 ```
@@ -162,17 +206,106 @@ Reload:
 sudo systemctl reload caddy
 ```
 
-### Step 10: Test
+### Step 11: Test
 
-1. Open https://test.agentbot.com
+1. Open https://agent1.agentbot.com
 2. Message your bot on Telegram
 3. Should respond!
 
 ---
 
-## Phase 3: Backup Setup
+## Phase 3: Backend API Setup
 
-### Step 11: Create GCS bucket
+### Install Node.js dependencies
+
+```bash
+# Install Node.js
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Clone or copy agentbot repo
+cd ~
+git clone https://github.com/your-repo/agentbot.git
+cd agentbot
+
+# Install dependencies
+cd web && npm install && cd ..
+cd agentbot-backend && npm install && cd ..
+```
+
+### Configure Environment
+
+```bash
+# Copy example env files
+cp web/.env.local.example web/.env.local
+cp agentbot-backend/.env.example agentbot-backend/.env
+```
+
+Edit `agentbot-backend/.env`:
+```
+# Generate a secure random string
+# openssl rand -hex 32
+
+DATABASE_URL=postgresql://user:pass@localhost:5432/agentbot
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=your-generated-secret
+OPENCLAW_API_TOKEN=your-openclaw-token
+DOCKER_HOST=unix:///var/run/docker.sock
+```
+
+### Set up PostgreSQL
+
+```bash
+# Install PostgreSQL
+sudo apt install postgresql postgresql-contrib
+
+# Create database
+sudo -u postgres psql
+CREATE DATABASE agentbot;
+CREATE USER agentbot WITH PASSWORD 'secure-password';
+GRANT ALL PRIVILEGES ON DATABASE agentbot TO agentbot;
+\q
+```
+
+### Set up Redis
+
+```bash
+sudo apt install redis-server
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
+```
+
+### Configure Docker Socket Access
+
+```bash
+# Add your user to docker group
+sudo usermod -aG docker $USER
+
+# Or for API access, enable TCP
+sudo nano /etc/docker/daemon.json
+# Add: {"hosts": ["unix:///var/run/docker.sock", "tcp://127.0.0.1:2375"]}
+sudo systemctl restart docker
+```
+
+### Start Backend
+
+```bash
+cd agentbot-backend
+npm run dev
+```
+
+### Start Frontend
+
+```bash
+cd web
+npm run dev
+```
+
+---
+
+## Phase 4: Backup Setup
+
+### Create GCS bucket
 
 ```bash
 # Install gsutil
@@ -196,14 +329,25 @@ EOF
 gsutil lifecycle set /tmp/lifecycle.json gs://agentbot-backups
 ```
 
-### Step 12: Setup backup script
+### Setup backup script
 
 ```bash
 sudo mkdir -p /opt/agentbot
 sudo nano /opt/agentbot/backup.sh
 ```
 
-See `infra/scripts/backup.sh` for the full script.
+Backup script example:
+```bash
+#!/bin/bash
+DATE=$(date +%Y-%m-%d)
+CONTAINERS=$(docker ps --format '{{.Names}}')
+
+for container in $CONTAINERS; do
+    docker exec $container tar czf - /home/node/.openclaw > /tmp/${container}-${DATE}.tar.gz
+    gsutil cp /tmp/${container}-${DATE}.tar.gz gs://agentbot-backups/
+    rm /tmp/${container}-${DATE}.tar.gz
+done
+```
 
 ```bash
 sudo chmod +x /opt/agentbot/backup.sh
@@ -214,13 +358,20 @@ echo "0 3 * * * /opt/agentbot/backup.sh" | sudo crontab -
 
 ---
 
-## Phase 4: Provisioning API
+## Phase 5: Production Checklist
 
-See `api/` directory for the backend that:
-1. Creates new containers on signup
-2. Manages Caddy routes
-3. Handles billing webhooks
-4. Runs health checks
+Before going live:
+
+- [ ] SSL certificates working (test with https://)
+- [ ] Telegram bot responding to messages
+- [ ] iMessage working (if configured)
+- [ ] Backend API running and accessible
+- [ ] Frontend dashboard at /dashboard
+- [ ] Container stats showing in dashboard
+- [ ] Health checks configured
+- [ ] Backups running
+- [ ] Logs being collected
+- [ ] Domain pointing to correct IP
 
 ---
 
@@ -233,7 +384,7 @@ See `api/` directory for the backend that:
 docker ps
 
 # View logs
-docker logs openclaw-test --tail 100
+docker logs agentbot-agent1 --tail 100
 
 # Check resource usage
 docker stats
@@ -244,6 +395,19 @@ docker stats
 ```bash
 sudo systemctl status caddy
 sudo journalctl -u caddy -f
+```
+
+### Restore from backup
+
+```bash
+# List available backups
+gsutil ls gs://agentbot-backups/
+
+# Restore specific container
+docker stop agentbot-agent1
+gsutil cp gs://agentbot-backups/agentbot-agent1-2026-02-26.tar.gz /tmp/
+docker cp /tmp/agentbot-agent1-2026-02-26.tar.gz agentbot-agent1:/home/node/.openclaw/
+docker start agentbot-agent1
 ```
 
 ---
@@ -260,7 +424,68 @@ docker logs <container-name>
 sudo journalctl -u caddy | grep -i error
 ```
 
-### Restore from backup
+### OpenClaw gateway errors
+If you see "invalid key: actions" in logs, remove the `actions` key from gateway config. The gateway config does NOT support an `actions` key.
+
+### Docker stats not working
+Ensure Docker socket is mounted or Docker API is accessible:
 ```bash
-/opt/agentbot/restore.sh <user_id> [date]
+docker version
+curl -s http://localhost:2375/version
 ```
+
+### Telegram bot not responding
+1. Check bot token is correct
+2. Ensure you've started a chat with the bot
+3. Check allowlist includes your user ID
+4. View logs: `docker logs agentbot-agent1 | grep -i telegram`
+
+---
+
+## Quick Reference
+
+### Useful Docker Commands
+
+```bash
+# Start/Stop/Restart agent
+docker start agentbot-agent1
+docker stop agentbot-agent1
+docker restart agentbot-agent1
+
+# View logs
+docker logs -f agentbot-agent1
+
+# Access container shell
+docker exec -it agentbot-agent1 sh
+
+# Check resource usage
+docker stats agentbot-agent1
+
+# Update OpenClaw
+docker pull ghcr.io/openclaw/openclaw:latest
+docker stop agentbot-agent1
+docker rm agentbot-agent1
+# Run with new image (data persists in volume)
+```
+
+### Port Allocation
+
+| Agent | Port | Domain |
+|-------|------|--------|
+| agent1 | 18789 | agent1.agentbot.com |
+| agent2 | 18790 | agent2.agentbot.com |
+| agent3 | 18791 | agent3.agentbot.com |
+| ... | ... | ... |
+
+### Security Settings
+
+Always use `dmPolicy: "allowlist"`:
+- **allowlist**: Only approved users can DM the agent
+- **pairing**: Anyone can message, must opt-in (less secure)
+
+### API Endpoints
+
+- Dashboard: `http://localhost:3000/dashboard`
+- Create agent: `POST /api/agents`
+- Delete agent: `DELETE /api/agents/:id`
+- Get stats: `GET /api/agents/:id/stats`

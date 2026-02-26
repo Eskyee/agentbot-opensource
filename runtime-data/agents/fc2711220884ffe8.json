@@ -1,9 +1,8 @@
 {
   "agentId": "fc2711220884ffe8",
-  "createdAt": "2026-02-26T15:46:07.791Z",
+  "createdAt": "2026-02-26T16:56:17.345Z",
   "plan": "free",
   "aiProvider": "openrouter",
   "port": 19011,
-  "subdomain": "fc2711220884ffe8.agents.localhost",
-  "gatewayToken": "b22qf7z29savqxmjvhb26"
+  "subdomain": "fc2711220884ffe8.agents.localhost"
 }

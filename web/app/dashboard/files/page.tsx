@@ -1,19 +1,28 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function FilesPage() {
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     fetchFiles()
   }, [])
 
   const fetchFiles = async () => {
-    const res = await fetch('/api/files?agentId=default')
-    const data = await res.json()
-    setFiles(data.files || [])
+    try {
+      const res = await fetch('/api/files?agentId=default')
+      const data = await res.json()
+      setFiles(data.files || [])
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const uploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,14 +34,49 @@ export default function FilesPage() {
     formData.append('file', file)
     formData.append('agentId', 'default')
 
-    await fetch('/api/files', {
-      method: 'POST',
-      body: formData
-    })
-
-    setUploading(false)
-    fetchFiles()
+    try {
+      const res = await fetch('/api/files', {
+        method: 'POST',
+        body: formData
+      })
+      
+      if (!res.ok) {
+        const error = await res.json()
+        if (error.error?.includes('not running')) {
+          alert('Your agent is not running. Start it first from the dashboard.')
+        } else {
+          alert(error.error || 'Upload failed')
+        }
+      }
+      
+      fetchFiles()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setUploading(false)
+    }
   }
+
+  const upgradeStorage = async () => {
+    const res = await fetch('/api/stripe/storage-upgrade', {
+      method: 'POST'
+    })
+    
+    if (res.ok) {
+      const { url } = await res.json()
+      if (url) {
+        router.push(url)
+      } else {
+        alert('Upgrade not available')
+      }
+    } else {
+      alert('Failed to create checkout session')
+    }
+  }
+
+  const totalSize = files.reduce((acc: number, f: any) => acc + (f.size || 0), 0)
+  const usedGB = (totalSize / (1024 * 1024 * 1024)).toFixed(2)
+  const storageLimit = 10
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
@@ -52,28 +96,38 @@ export default function FilesPage() {
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm text-gray-400">Storage Used</div>
-              <div className="text-2xl font-bold mt-1">0 GB / 10 GB</div>
+              <div className="text-2xl font-bold mt-1">{usedGB} GB / {storageLimit} GB</div>
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-400">Free Tier</div>
-              <div className="text-sm text-blue-400 mt-1">Upgrade for 50 GB</div>
+              <button 
+                onClick={upgradeStorage}
+                className="text-sm text-blue-400 mt-1 hover:text-blue-300 transition-colors"
+              >
+                Upgrade for 50 GB (+)
+              </button>
             </div>
           </div>
           <div className="mt-4 bg-gray-800 rounded-full h-2">
-            <div className="bg-blue-500 h-2 rounded-full w-0"></div>
+            <div 
+              className="bg-blue-500 h-2 rounded-full" 
+              style={{ width: `${Math.min((totalSize / (storageLimit * 1024 * 1024 * 1024)) * 100, 100)}%` }}
+            />
           </div>
         </div>
 
-        {files.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">Loading...</div>
+        ) : files.length === 0 ? (
           <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-xl">
             <p className="text-gray-400">No files uploaded yet</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {files.map((file: any) => (
-              <div key={file.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+            {files.map((file: any, i: number) => (
+              <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
                 <div>
-                  <div className="font-medium">{file.filename}</div>
+                  <div className="font-medium">{file.name}</div>
                   <div className="text-sm text-gray-400">{(file.size / 1024).toFixed(2)} KB</div>
                 </div>
                 <button className="text-red-400 hover:text-red-300">Delete</button>
