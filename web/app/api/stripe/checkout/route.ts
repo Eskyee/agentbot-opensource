@@ -29,26 +29,42 @@ export async function GET(request: NextRequest) {
     
     const planInfo = PLAN_PRICES[plan]
     
-    // Find existing active price for this plan, or create new one
-    const existingPrices = await stripe.prices.list({ 
-      active: true, 
-      limit: 100 
-    })
-    let priceId = existingPrices.data.find(p => 
-      p.recurring?.interval === 'month' && 
-      p.unit_amount === planInfo.amount
-    )?.id
-
+    // Check for env var price ID first
+    let priceId = process.env[`STRIPE_PRICE_ID_${plan.toUpperCase()}`]
+    
+    // If no env price ID, try to find existing price or create new
     if (!priceId) {
-      const price = await stripe.prices.create({
-        unit_amount: planInfo.amount,
-        currency: 'gbp',
-        recurring: { interval: 'month' },
-        product_data: {
-          name: planInfo.name,
-        },
+      const existingPrices = await stripe.prices.list({ 
+        active: true, 
+        limit: 100 
       })
-      priceId = price.id
+      const foundPrice = existingPrices.data.find(p => 
+        p.recurring?.interval === 'month' && 
+        p.unit_amount === planInfo.amount
+      )
+      
+      if (foundPrice) {
+        priceId = foundPrice.id
+      } else {
+        // Create new price with product
+        const products = await stripe.products.list({ active: true, limit: 10 })
+        let productId = products.data.find(p => p.name === planInfo.name)?.id
+        
+        if (!productId) {
+          const newProduct = await stripe.products.create({
+            name: planInfo.name,
+          })
+          productId = newProduct.id
+        }
+        
+        const newPrice = await stripe.prices.create({
+          unit_amount: planInfo.amount,
+          currency: 'gbp',
+          recurring: { interval: 'month' },
+          product: productId,
+        })
+        priceId = newPrice.id
+      }
     }
     
     const session = await stripe.checkout.sessions.create({
