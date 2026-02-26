@@ -28,7 +28,7 @@ jobs:
       - name: Test health endpoint
         id: health
         run: |
-          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.API_URL }}/health || echo "000")
+          HEALTH=$(curl -s -o /dev/null -w "%{http_code}" ${{ env.API_URL }}/api/health || echo "000")
           echo "health_status=$HEALTH" >> $GITHUB_OUTPUT
           if [ "$HEALTH" != "200" ]; then
             echo "❌ Health check failed (status: $HEALTH)"
