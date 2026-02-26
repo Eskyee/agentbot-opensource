@@ -432,6 +432,55 @@ app.get('/api/openclaw/instances', authenticate, async (_req: Request, res: Resp
   }
 });
 
+app.get('/api/openclaw/instances/:id/stats', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const containerName = getContainerName(id);
+  
+  try {
+    const { stdout: stats } = await runCommand(
+      `docker stats ${containerName} --no-stream --format "{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}|{{.BlockIO}}|{{.PIDs}}"`
+    );
+    
+    const { stdout: inspect } = await runCommand(
+      `docker inspect ${containerName} --format "{{.State.StartedAt}}|{{.State.Status}}"`
+    );
+    
+    const [cpu, memUsage, memPerc, netIO, blockIO, pids] = stats.trim().split('|');
+    const [startedAt, status] = inspect.trim().split('|');
+    
+    const startTime = new Date(startedAt);
+    const uptime = Date.now() - startTime.getTime();
+    
+    res.json({
+      agentId: id,
+      cpu: cpu || '0%',
+      memory: memUsage || '0MiB / 0MiB',
+      memoryPercent: memPerc || '0%',
+      network: netIO || '0B / 0B',
+      blockIO: blockIO || '0B / 0B',
+      pids: pids || '0',
+      status: status || 'unknown',
+      uptime: uptime,
+      uptimeFormatted: formatUptime(uptime),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get container stats' });
+  }
+});
+
+function formatUptime(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
+}
+
 // Agents endpoints
 app.get('/api/agents', authenticate, (req: Request, res: Response) => {
   runCommand(`docker ps -a --filter "name=openclaw-" --format "{{.Names}}|{{.Status}}"`)
