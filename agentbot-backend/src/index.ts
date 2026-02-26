@@ -180,8 +180,8 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
     `--name ${containerName}`,
     '--restart unless-stopped',
     `-p ${hostPort}:18789`,
-    '--memory=1g',
-    '--cpus=1.0',
+    '--memory=512m',
+    '--cpus=0.5',
   ];
 
   args.push(mountArg);
