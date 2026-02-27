@@ -59,6 +59,7 @@ export default function BillingPage() {
   const { data: session } = useSession()
   const [currentPlan, setCurrentPlan] = useState('starter')
   const [loading, setLoading] = useState(true)
+  const [credits, setCredits] = useState(0)
 
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
 
@@ -225,39 +226,6 @@ export default function BillingPage() {
               >
                 Learn More
               </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Buy Credits */}
-        <div id="buy-credits" className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Buy Credits</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            {creditPacks.map((pack) => (
-              <div
-                key={pack.amount}
-                className={`relative rounded-xl border p-6 ${
-                  pack.popular 
-                    ? 'border-white bg-white/10' 
-                    : 'border-gray-800 bg-gray-900/50'
-                }`}
-              >
-                {pack.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-black text-xs px-3 py-1 rounded-full font-semibold">
-                    POPULAR
-                  </span>
-                )}
-                <div className="text-3xl font-bold">${(pack.amount / 100).toFixed(0)}</div>
-                <div className="text-gray-400">{pack.amount.toLocaleString()} credits</div>
-                <button 
-                  onClick={() => buyCredits(pack.priceId)}
-                  className={`mt-4 w-full rounded-lg py-2 font-semibold ${
-                    pack.popular 
-                      ? 'bg-white text-black hover:bg-gray-200' 
-                      : 'bg-gray-800 text-white hover:bg-gray-700'
-                  }`}>
-                  Select
-              </button>
             </div>
           </div>
         </div>
