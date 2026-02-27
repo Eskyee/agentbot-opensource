@@ -16,16 +16,16 @@ export async function GET() {
     })
 
     if (!response.ok) {
-      return NextResponse.json({ openclawVersion: '2026.2.27' })
+      return NextResponse.json({ openclawVersion: '2026.2.26' })
     }
 
     const data = await response.json()
     return NextResponse.json({
-      openclawVersion: data?.openclawVersion || '2026.2.27',
+      openclawVersion: data?.openclawVersion || '2026.2.26',
       image: data?.image,
       deployedAt: data?.deployedAt
     })
   } catch {
-    return NextResponse.json({ openclawVersion: '2026.2.27' })
+    return NextResponse.json({ openclawVersion: '2026.2.26' })
   }
 }

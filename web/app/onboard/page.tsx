@@ -22,7 +22,7 @@ function OnboardContent() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ userId: string; subdomain: string; url: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
-  const [openclawVersion, setOpenclawVersion] = useState('2026.2.27')
+  const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
 
   useEffect(() => {
     const loadVersion = async () => {
