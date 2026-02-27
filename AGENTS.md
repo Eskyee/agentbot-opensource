@@ -50,7 +50,8 @@ Users bring their own API keys. No credits to manage.
 ## OpenClaw Versions
 
 ### 1. Personal OpenClaw (Mac mini local)
-- NOT in Docker - runs directly on Mac mini
+- NOT in Docker - runs directly on Mac mini via `openclaw` CLI
+- NOT exposed publicly - local only, just for you
 - Updated via: `openclaw update` CLI
 - For: Your personal testing only
 - Version: 2026.2.26 (latest)
