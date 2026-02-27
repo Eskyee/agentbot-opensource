@@ -5,6 +5,13 @@ CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255),
+  name VARCHAR(255),
+  plan VARCHAR(50) DEFAULT 'free',
+  stripe_customer_id VARCHAR(255),
+  stripe_subscription_id VARCHAR(255),
+  subscription_status VARCHAR(50) DEFAULT 'inactive',
+  subscription_start_date TIMESTAMP,
+  subscription_end_date TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

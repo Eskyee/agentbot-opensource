@@ -1,11 +1,8 @@
 FROM node:20-alpine
 WORKDIR /app
 
-ENV NODE_ENV=development
-ENV NEXT_PUBLIC_APP_URL=http://localhost:3000
-ENV NEXTAUTH_URL=http://localhost:3000
-ENV NEXTAUTH_SECRET=dev-secret
-ENV NEXT_PUBLIC_API_URL=http://localhost:3001
+# Production mode - override with docker-compose for development
+ENV NODE_ENV=production
 
 RUN apk add --no-cache openssl
 
@@ -17,4 +14,4 @@ COPY . .
 
 EXPOSE 3000
 ENV PORT=3000
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

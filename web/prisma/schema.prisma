@@ -20,6 +20,15 @@ model User {
   password      String?
   role          String    @default("user")
   storageLimit  Int       @default(10)
+  
+  // Subscription fields
+  plan          String    @default("free")
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  subscriptionStatus String    @default("inactive")
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+  
   accounts      Account[]
   sessions      Session[]
 }

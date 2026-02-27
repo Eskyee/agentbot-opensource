@@ -252,8 +252,17 @@ const writePorts = async (ports: Record<string, number>): Promise<void> => {
 const getNextPort = async (): Promise<number> => {
   const ports = await readPorts();
   const usedPorts = Object.values(ports);
+  // Account for port offset: each agent uses assignedPort and assignedPort + 2
+  const allUsedPorts = new Set([
+    ...usedPorts,
+    ...usedPorts.map(p => p + 2)
+  ]);
   const maxPort = usedPorts.length > 0 ? Math.max(...usedPorts) : BASE_PORT - 1;
-  return maxPort + 1;
+  
+  // Find next available port accounting for offset
+  let port = BASE_PORT;
+  while (allUsedPorts.has(port) || allUsedPorts.has(port + 2)) port++;
+  return port;
 };
 
 const agentFilePath = (agentId: string): string => path.join(DATA_DIR, 'agents', `${sanitizeAgentId(agentId)}.json`);
@@ -830,9 +839,93 @@ app.post('/api/agents/:id/reset-memory', authenticate, async (req: Request, res:
   }
 });
 
+const OPENCLAW_REPO = 'OpenClaw/openclaw';
+const AUTO_UPDATE_INTERVAL = process.env.AUTO_UPDATE_INTERVAL || '0 3 * * *';
+
+async function checkForOpenClawUpdate(): Promise<string | null> {
+  try {
+    const response = await fetch(`https://api.github.com/repos/${OPENCLAW_REPO}/releases/latest`, {
+      headers: { 'User-Agent': 'Agentbot' }
+    });
+    if (!response.ok) return null;
+    
+    const release = await response.json();
+    const latestVersion = release.tag_name?.replace(/^v/, '') || release.name?.replace(/^v/, '');
+    
+    if (latestVersion && latestVersion !== OPENCLAW_RUNTIME_VERSION) {
+      console.log(`[Auto-Update] New OpenClaw version available: ${latestVersion} (current: ${OPENCLAW_RUNTIME_VERSION})`);
+      return latestVersion;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('[Auto-Update] Failed to check for updates:', error);
+    return null;
+  }
+}
+
+async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number }> {
+  const ports = await readPorts();
+  const results = { success: 0, failed: 0 };
+  const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
+  
+  for (const [agentId, port] of Object.entries(ports)) {
+    const containerName = getContainerName(agentId);
+    try {
+      console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
+      await runCommand(`docker pull ${newImage}`);
+      await runCommand(`docker stop ${containerName}`);
+      await runCommand(`docker rm ${containerName}`);
+      
+      await runCommand([
+        'docker run -d',
+        `--name ${containerName}`,
+        '--restart unless-stopped',
+        `-v agentbot-${agentId}:/home/node/.openclaw`,
+        `-p ${port}:18789`,
+        newImage,
+      ].join(' '));
+      
+      results.success++;
+    } catch (error) {
+      console.error(`[Auto-Update] Failed to update ${agentId}:`, error);
+      results.failed++;
+    }
+  }
+  
+  return results;
+}
+
+function startAutoUpdater() {
+  console.log(`[Auto-Update] Scheduler initialized (${AUTO_UPDATE_INTERVAL})`);
+  
+  const checkAndUpdate = async () => {
+    console.log('[Auto-Update] Checking for OpenClaw updates...');
+    const latestVersion = await checkForOpenClawUpdate();
+    
+    if (latestVersion) {
+      console.log(`[Auto-Update] Updating all containers to v${latestVersion}...`);
+      const results = await updateAllContainers(latestVersion);
+      console.log(`[Auto-Update] Update complete: ${results.success} succeeded, ${results.failed} failed`);
+    } else {
+      console.log('[Auto-Update] Already running latest version');
+    }
+  };
+  
+  const [hour, minute] = (process.env.AUTO_UPDATE_TIME || '03:00').split(':').map(Number);
+  const intervalMs = 24 * 60 * 60 * 1000;
+  
+  setInterval(checkAndUpdate, intervalMs);
+  
+  setTimeout(checkAndUpdate, 5000);
+  
+  console.log('[Auto-Update] Auto-updater started');
+}
+
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
+  startAutoUpdater();
 });
 
 export default app;

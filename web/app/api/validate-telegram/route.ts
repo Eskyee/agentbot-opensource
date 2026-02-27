@@ -10,6 +10,13 @@ export async function POST(request: NextRequest) {
     
     // Validate with Telegram API
     const response = await fetch(`https://api.telegram.org/bot${token}/getMe`)
+    
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error')
+      console.error('Telegram API error:', response.status, errorText)
+      return NextResponse.json({ valid: false, error: 'Failed to validate with Telegram' }, { status: response.status })
+    }
+    
     const data = await response.json()
     
     if (data.ok) {

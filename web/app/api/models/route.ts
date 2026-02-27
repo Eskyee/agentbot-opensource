@@ -4,7 +4,18 @@ export async function GET() {
   try {
     // Fetch OpenRouter models
     const res = await fetch('https://openrouter.ai/api/v1/models')
+    
+    if (!res.ok) {
+      const errorText = await res.text().catch(() => 'Unknown error')
+      console.error('OpenRouter API error:', res.status, errorText)
+      return NextResponse.json({ error: 'Failed to fetch models from provider' }, { status: res.status })
+    }
+    
     const data = await res.json()
+    
+    if (!data.data) {
+      return NextResponse.json({ error: 'Invalid response from provider' }, { status: 500 })
+    }
     
     let models = data.data
       .filter((m: any) => !m.id.includes(':free'))

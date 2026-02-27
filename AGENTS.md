@@ -34,8 +34,7 @@ Agentbot is a hosted OpenClaw platform where users sign up, choose a plan, and d
 - Checkout auto-creates prices if not found
 
 ## GitHub OAuth (for login)
-- Client ID: `Iv23liQYG56ICxARQbHA`
-- Set in Vercel env vars
+- Client ID: Set in Vercel env vars (GITHUB_CLIENT_ID)
 
 ## Docker Resources
 - Each plan gets tiered RAM/CPU limits

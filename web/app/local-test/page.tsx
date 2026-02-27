@@ -59,7 +59,7 @@ export default function LocalTestPage() {
           <div>
             <label className="block text-gray-300 mb-2">OpenRouter API Key</label>
             <input
-              type="text"
+              type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-or-v1-..."

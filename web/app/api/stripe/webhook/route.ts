@@ -40,6 +40,36 @@ export async function POST(request: NextRequest) {
 
       if (customerEmail) {
         await sendPaymentReceiptEmail(customerEmail, amount, plan);
+        
+        // Update user subscription in database
+        if (plan && plan !== 'Unknown') {
+          const planMap: Record<string, string> = {
+            'starter': 'starter',
+            'pro': 'pro', 
+            'scale': 'scale',
+            'enterprise': 'enterprise',
+            'white_glove': 'white_glove'
+          };
+          
+          const mappedPlan = planMap[plan] || 'free';
+          
+          await prisma.user.upsert({
+            where: { email: customerEmail },
+            update: {
+              plan: mappedPlan,
+              stripeSubscriptionId: session.subscription as string || null,
+              subscriptionStatus: 'active',
+              subscriptionStartDate: new Date()
+            },
+            create: {
+              email: customerEmail,
+              plan: mappedPlan,
+              stripeSubscriptionId: session.subscription as string || null,
+              subscriptionStatus: 'active',
+              subscriptionStartDate: new Date()
+            }
+          });
+        }
       }
 
       if (session.metadata?.type === 'storage_upgrade') {

@@ -41,9 +41,16 @@ export const allocatePort = async (agentId: string): Promise<number> => {
     
     if (ports[agentId]) return ports[agentId];
     
-    const usedPorts = new Set(Object.values(ports));
+    const usedPorts = Object.values(ports);
+    // Account for port offset: each agent uses assignedPort and assignedPort + 2
+    const allUsedPorts = new Set([
+      ...usedPorts,
+      ...usedPorts.map((p: number) => p + 2)
+    ]);
+    
+    // Find next available port accounting for offset
     let port = BASE_PORT;
-    while (usedPorts.has(port)) port++;
+    while (allUsedPorts.has(port) || allUsedPorts.has(port + 2)) port++;
     
     ports[agentId] = port;
     await fs.writeFile(PORTS_FILE, JSON.stringify(ports, null, 2));
