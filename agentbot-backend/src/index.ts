@@ -25,11 +25,11 @@ const PORT = process.env.PORT || 3001;
 const API_KEY = process.env.INTERNAL_API_KEY;
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.2.25';
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.2.27';
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
 const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'google/gemini-2.0-flash';
 const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
-const OPENCLAW_RUNTIME_VERSION = process.env.OPENCLAW_RUNTIME_VERSION || '2026.2.25';
+const OPENCLAW_RUNTIME_VERSION = process.env.OPENCLAW_RUNTIME_VERSION || '2026.2.27';
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
@@ -356,7 +356,7 @@ const createOpenClawConfig = (
       telegram: {
         enabled: true,
         botToken: telegramToken,
-        dmPolicy: 'allowlist',
+        dmPolicy: 'pairing',
         allowFrom: [],
       },
     },
@@ -645,6 +645,7 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
         '--restart unless-stopped',
         `-v ${volumeName}:/home/node/.openclaw`,
         `-p ${assignedPort}:18789`,
+        `-p ${assignedPort + 2}:18791`,
         OPENCLAW_IMAGE,
       ].join(' '),
     );
