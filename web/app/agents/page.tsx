@@ -34,7 +34,7 @@ function AgentsSidebar({ userName, credits = 0 }: { userName: string; credits?: 
           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">{userName.charAt(0).toUpperCase()}</div>
           <div>
             <div className="font-medium">{userName}</div>
-            <div className="text-sm text-gray-400">Free Trial</div>
+            <div className="text-sm text-blue-400">Sign up</div>
           </div>
         </div>
       </div>
@@ -44,7 +44,7 @@ function AgentsSidebar({ userName, credits = 0 }: { userName: string; credits?: 
 
 export default function AgentsPage() {
   const { data: session } = useSession()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const [credits, setCredits] = useState(0)
 
   useEffect(() => {

@@ -46,7 +46,7 @@ function MarketplaceSidebar({ userName, credits = 0 }: { userName: string; credi
           </div>
           <div>
             <div className="font-medium">{userName}</div>
-            <div className="text-sm text-gray-400">Free Trial</div>
+            <div className="text-sm text-blue-400">Sign up</div>
           </div>
         </div>
       </div>
@@ -133,7 +133,7 @@ const channels = ['Telegram', 'Discord', 'WhatsApp'];
 
 export default function MarketplacePage() {
   const { data: session } = useSession()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const [credits, setCredits] = useState(0)
 
   useEffect(() => {

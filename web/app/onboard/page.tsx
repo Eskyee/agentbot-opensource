@@ -520,7 +520,7 @@ function OnboardContent() {
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-400">Plan</dt>
-                    <dd>{plan === 'free' ? '3-day Free Trial' : plan}</dd>
+                    <dd>{plan === 'free' ? 'Sign up for plan' : plan}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-400">OpenClaw Version</dt>

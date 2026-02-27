@@ -139,7 +139,7 @@ function PricingSidebar({ userName, credits = 0 }: { userName: string; credits?:
           </div>
           <div>
             <div className="font-medium">{userName}</div>
-            <div className="text-sm text-gray-400">Free Trial</div>
+            <div className="text-sm text-blue-400">Sign up</div>
           </div>
         </div>
       </div>
@@ -149,7 +149,7 @@ function PricingSidebar({ userName, credits = 0 }: { userName: string; credits?:
 
 export default function PricingPage() {
   const { data: session } = useSession()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   
   return (
     <div className="flex h-screen bg-black text-white">

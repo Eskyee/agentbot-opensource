@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import WalletCard from '@/app/components/WalletCard'
@@ -39,23 +39,24 @@ interface InstanceData {
 }
 
 const navItems = [
-  { icon: '📊', label: 'Dashboard', href: '/dashboard', active: true },
-  { icon: '📋', label: 'Tasks', href: '/dashboard/tasks', active: false },
-  { icon: '🎨', label: 'Personality', href: '/dashboard/personality', active: false },
-  { icon: '🔧', label: 'Skills', href: '/dashboard/skills', active: false },
-  { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms', active: false },
-  { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows', active: false },
-  { icon: '📁', label: 'Files', href: '/dashboard/files', active: false },
-  { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat', active: false },
-  { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
-  { icon: '💳', label: 'Billing', href: '/billing', active: false },
-  { icon: '🔑', label: 'API Keys', href: '/dashboard/keys', active: false },
-  { icon: '⚙️', label: 'Settings', href: '/settings', active: false },
+  { icon: '📊', label: 'Dashboard', href: '/dashboard' },
+  { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
+  { icon: '🎨', label: 'Personality', href: '/dashboard/personality' },
+  { icon: '🔧', label: 'Skills', href: '/dashboard/skills' },
+  { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
+  { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
+  { icon: '📁', label: 'Files', href: '/dashboard/files' },
+  { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
+  { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
+  { icon: '💳', label: 'Billing', href: '/billing' },
+  { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },
+  { icon: '⚙️', label: 'Settings', href: '/settings' },
 ]
 
 function DashboardContent() {
+  const pathname = usePathname()
   const { data: session } = useSession()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
   const [stats, setStats] = useState<{ cpu: string; memory: string; uptime?: string; messages?: number; errors?: number; health?: string } | null>(null)
@@ -339,7 +340,7 @@ function DashboardContent() {
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Plan</dt>
                   <dd className="text-gray-300 capitalize flex items-center gap-2">
-                    {instance?.plan || 'Free Trial'}
+                    {instance?.plan || 'Sign up for plan'}
                     {(instance?.plan === 'trial' || !instance?.plan) && (
                       <Link href="/#pricing" className="ml-2 text-xs bg-white hover:bg-gray-200 text-black px-2 py-1 rounded-full">
                         Upgrade
@@ -792,6 +793,7 @@ function DashboardContent() {
 }
 
 function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userName: string; credits?: number; isOpen: boolean; onToggle: () => void }) {
+  const pathname = usePathname()
   return (
     <>
       {/* Mobile overlay */}
@@ -830,7 +832,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
                 href={item.href}
                 onClick={onToggle}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  item.active 
+                  pathname === item.href || pathname.startsWith(item.href + '/')
                     ? 'bg-white/20 text-white' 
                     : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}
@@ -856,7 +858,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate">{userName}</div>
-              <div className="text-sm text-gray-400">Free Trial</div>
+              <div className="text-sm text-blue-400">Sign up</div>
             </div>
           </div>
           <button

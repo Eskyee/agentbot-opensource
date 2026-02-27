@@ -47,7 +47,7 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
           </div>
           <div>
             <div className="font-medium">{userName}</div>
-            <div className="text-sm text-gray-400">Free Trial</div>
+            <div className="text-sm text-blue-400">Sign up</div>
           </div>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true)
   const [credits, setCredits] = useState(0)
 
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Guest'
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   useEffect(() => {
     const fetchBillingData = async () => {
