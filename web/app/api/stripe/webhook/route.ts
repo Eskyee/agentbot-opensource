@@ -37,22 +37,65 @@ export async function POST(request: NextRequest) {
       const customerEmail = session.customer_details?.email || session.customer_email;
       const amount = session.amount_total || 0;
       const plan = session.metadata?.plan || 'Unknown';
+      const userId = session.metadata?.userId;
 
-      if (customerEmail) {
+      // Map plan names to database values
+      const planMap: Record<string, string> = {
+        'starter': 'starter',
+        'pro': 'pro', 
+        'scale': 'scale',
+        'enterprise': 'enterprise',
+        'white_glove': 'white_glove'
+      };
+      const mappedPlan = planMap[plan] || 'free';
+
+      // Update user subscription using user ID if available, otherwise fallback to email
+      if (userId && userId.trim() !== '') {
+        // Prefer using user ID from metadata (more reliable)
+        try {
+          await prisma.user.update({
+            where: { id: userId },
+            data: {
+              plan: mappedPlan,
+              stripeSubscriptionId: session.subscription as string || null,
+              subscriptionStatus: 'active',
+              subscriptionStartDate: new Date()
+            }
+          });
+          console.log(`Updated user ${userId} with plan ${mappedPlan} via checkout.session.completed`);
+          
+          // Send receipt email if we have email
+          if (customerEmail) {
+            await sendPaymentReceiptEmail(customerEmail, amount, plan);
+          }
+        } catch (err) {
+          console.error('Failed to update user by ID, falling back to email:', err);
+          // Fall through to email-based update
+          if (customerEmail) {
+            await sendPaymentReceiptEmail(customerEmail, amount, plan);
+            await prisma.user.upsert({
+              where: { email: customerEmail },
+              update: {
+                plan: mappedPlan,
+                stripeSubscriptionId: session.subscription as string || null,
+                subscriptionStatus: 'active',
+                subscriptionStartDate: new Date()
+              },
+              create: {
+                email: customerEmail,
+                plan: mappedPlan,
+                stripeSubscriptionId: session.subscription as string || null,
+                subscriptionStatus: 'active',
+                subscriptionStartDate: new Date()
+              }
+            });
+          }
+        }
+      } else if (customerEmail) {
+        // Fallback to email lookup if userId not available
         await sendPaymentReceiptEmail(customerEmail, amount, plan);
         
-        // Update user subscription in database
         if (plan && plan !== 'Unknown') {
-          const planMap: Record<string, string> = {
-            'starter': 'starter',
-            'pro': 'pro', 
-            'scale': 'scale',
-            'enterprise': 'enterprise',
-            'white_glove': 'white_glove'
-          };
-          
-          const mappedPlan = planMap[plan] || 'free';
-          
           await prisma.user.upsert({
             where: { email: customerEmail },
             update: {
@@ -70,8 +113,11 @@ export async function POST(request: NextRequest) {
             }
           });
         }
+      } else {
+        console.error('No userId or email found in checkout session metadata');
       }
-
+      
+      // Handle storage upgrades (existing logic)
       if (session.metadata?.type === 'storage_upgrade') {
         const userEmail = session.metadata?.userEmail;
         const storageGB = 50;

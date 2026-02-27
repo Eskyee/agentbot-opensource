@@ -61,3 +61,12 @@ Users bring their own API keys. No credits to manage.
 - New deployments use: `ghcr.io/openclaw/openclaw:2026.2.26`
 - Auto-updater checks GitHub releases daily
 - For: Customer deployments only
+
+## Multi-Agent Orchestration
+
+Agentbot is designed to scale beyond single-agent deployments. Each user's Docker container runs an OpenClaw instance that can orchestrate multiple AI agents working together.
+
+- **Per-Container Architecture:** Each customer gets their own Docker container with dedicated RAM/CPU
+- **Agent Coordination:** OpenClaw handles multi-agent communication and task delegation
+- **Scaling Strategy:** Higher-tier plans provide more resources for complex multi-agent workflows
+- **Future Roadmap:** Multi-container deployments for enterprise customers requiring isolated agent pools

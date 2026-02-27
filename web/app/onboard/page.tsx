@@ -11,6 +11,9 @@ function OnboardContent() {
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') || 'free'
   const mode = searchParams.get('mode') || 'create' // link, create, deploy
+  const isPaid = searchParams.get('paid') === '1'
+  const paymentError = searchParams.get('payment_error')
+  const paymentCancelled = searchParams.get('payment_cancelled') === '1'
   
   const [step, setStep] = useState<Step>('telegram')
   const [telegramToken, setTelegramToken] = useState('')
@@ -23,6 +26,16 @@ function OnboardContent() {
   const [result, setResult] = useState<{ userId: string; subdomain: string; url: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
+
+  useEffect(() => {
+    // Handle payment status messages
+    if (paymentError) {
+      setError(`Payment error: ${paymentError}`)
+    }
+    if (paymentCancelled) {
+      setError('Payment was cancelled. You can try again when ready.')
+    }
+  }, [paymentError, paymentCancelled])
 
   useEffect(() => {
     const loadVersion = async () => {
@@ -147,6 +160,11 @@ function OnboardContent() {
       {/* Header */}
       <div className="text-center mb-12">
         <div className="text-5xl mb-4">🦞</div>
+        {isPaid && (
+          <div className="mb-4 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-2 rounded-lg inline-block">
+            ✓ Payment successful! Your {plan.charAt(0).toUpperCase() + plan.slice(1)} plan is activated.
+          </div>
+        )}
         <h1 className="text-3xl font-bold">
           {mode === 'link' && 'Link Existing OpenClaw'}
           {mode === 'create' && 'Create Agentbot'}

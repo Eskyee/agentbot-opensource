@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../../auth/[...nextauth]/route'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
   starter: { amount: 1900, name: 'Starter Plan', description: '1 AI Agent, 10GB storage, Telegram channel' },
@@ -10,6 +12,13 @@ const PLAN_PRICES: Record<string, { amount: number; name: string; description: s
 }
 
 export async function GET(request: NextRequest) {
+  // Check authentication
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
+    return NextResponse.redirect(new URL(`/login?callbackUrl=/api/stripe/checkout?${request.nextUrl.searchParams.toString()}`, origin), 303)
+  }
+  
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
   
@@ -70,8 +79,9 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    const session = await stripe.checkout.sessions.create({
+    const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      customer_email: session.user.email,
       line_items: [
         {
           price: priceId,
@@ -84,14 +94,16 @@ export async function GET(request: NextRequest) {
       metadata: {
         plan,
         source: 'agentbot-web',
+        userId: session.user.id || '',
+        userEmail: session.user.email,
       },
     })
 
-    if (!session.url) {
+    if (!checkoutSession.url) {
       return NextResponse.redirect(new URL(`/onboard?plan=${plan}&payment_error=no_checkout_url`, origin), 303)
     }
 
-    return NextResponse.redirect(session.url, 303)
+    return NextResponse.redirect(checkoutSession.url, 303)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('Stripe checkout error:', errorMessage, { plan })
