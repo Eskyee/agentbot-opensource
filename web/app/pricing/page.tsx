@@ -195,7 +195,7 @@ export default function PricingPage() {
                 </ul>
 
                 <a
-                  href={plan.href}
+                  href={`/api/stripe/checkout?plan=${plan.id}`}
                   className={`mt-6 block w-full py-3 rounded-lg text-center font-semibold transition-all ${
                     plan.popular
                       ? 'bg-gradient-to-r from-white to-gray-200 hover:from-gray-100 hover:to-gray-300 text-black'

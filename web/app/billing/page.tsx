@@ -132,13 +132,8 @@ export default function BillingPage() {
 
   const buyPlan = async (priceId: string) => {
     try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId, type: 'subscription' })
-      })
-      const data = await res.json()
-      if (data.url) window.location.href = data.url
+      // Use GET request to Stripe checkout route
+      window.location.href = `/api/stripe/checkout?plan=${priceId}`
     } catch (error) {
       console.error('Failed to initiate checkout:', error)
       alert('Failed to start checkout')
