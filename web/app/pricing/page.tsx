@@ -98,7 +98,7 @@ const navItems = [
   { icon: '⚙️', label: 'Account', href: '/settings', active: false },
 ]
 
-function PricingSidebar({ userName, credits = 0 }: { userName: string; credits?: number }) {
+function PricingSidebar({ userName }: { userName: string }) {
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
       <div className="p-6 border-b border-gray-800">
@@ -127,8 +127,8 @@ function PricingSidebar({ userName, credits = 0 }: { userName: string; credits?:
         </div>
 
         <div className="mt-8 p-4 bg-gray-800 rounded-xl">
-          <div className="text-sm text-gray-400 mb-1">Credits</div>
-          <div className="text-xl font-bold">${credits.toFixed(2)}</div>
+          <div className="text-sm text-blue-400 mb-1">Get started</div>
+          <Link href="/billing" className="text-xl font-bold hover:underline">View Plans</Link>
         </div>
       </nav>
 
@@ -153,7 +153,7 @@ export default function PricingPage() {
   
   return (
     <div className="flex h-screen bg-black text-white">
-      <PricingSidebar userName={userName} credits={0} />
+      <PricingSidebar userName={userName} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-5xl mx-auto">

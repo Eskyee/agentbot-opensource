@@ -12,7 +12,7 @@ const navItems = [
   { icon: '⚙️', label: 'Account', href: '/settings', active: false },
 ]
 
-function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?: number }) {
+function BillingSidebar({ userName }: { userName: string }) {
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
       <nav className="flex-1 p-4">
@@ -34,9 +34,7 @@ function BillingSidebar({ userName, credits = 0 }: { userName: string; credits?:
         </div>
 
         <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-          <div className="text-sm text-gray-400 mb-1">Your Plan</div>
-          <div className="text-xl font-bold">Starter</div>
-          <div className="text-xs text-blue-400 mt-2">Manage</div>
+          <div className="text-sm text-blue-400 mb-1">Manage</div>
         </Link>
       </nav>
 
@@ -59,7 +57,6 @@ export default function BillingPage() {
   const { data: session } = useSession()
   const [currentPlan, setCurrentPlan] = useState('starter')
   const [loading, setLoading] = useState(true)
-  const [credits, setCredits] = useState(0)
 
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
@@ -86,7 +83,6 @@ export default function BillingPage() {
       id: 'starter',
       name: 'Starter',
       specs: '1 Agent · 1GB · 10GB',
-      credits: '£15',
       price: 19,
       priceId: 'starter',
       features: ['Telegram channel', 'Use your own AI key', 'Priority support'],
@@ -96,7 +92,6 @@ export default function BillingPage() {
       id: 'pro',
       name: 'Pro',
       specs: '1 Agent · 1GB · 50GB',
-      credits: '£25',
       price: 39,
       priceId: 'pro',
       features: ['Telegram + WhatsApp', 'Custom domain', 'Priority support', '+ usage'],
@@ -105,7 +100,6 @@ export default function BillingPage() {
       id: 'scale',
       name: 'Scale',
       specs: '3 Agents · 2GB · 100GB',
-      credits: '£60',
       price: 79,
       priceId: 'scale',
       features: ['All channels', 'Advanced analytics', 'Dedicated support'],
@@ -114,7 +108,6 @@ export default function BillingPage() {
       id: 'enterprise',
       name: 'Enterprise',
       specs: 'Unlimited · 4GB · 500GB',
-      credits: '£100',
       price: 149,
       priceId: 'enterprise',
       features: ['White-label', '24/7 phone support', 'Custom integrations'],
@@ -123,7 +116,6 @@ export default function BillingPage() {
       id: 'white_glove',
       name: 'White Glove',
       specs: 'Unlimited · 10x · Custom',
-      credits: '£150',
       price: 199,
       priceId: 'white_glove',
       features: ['Everything in Enterprise', 'Dedicated account manager', 'Priority support'],
@@ -150,7 +142,7 @@ export default function BillingPage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <BillingSidebar userName={userName} credits={credits} />
+      <BillingSidebar userName={userName} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">
@@ -257,7 +249,7 @@ export default function BillingPage() {
                     </div>
                     <div className="text-gray-400 mt-1">{plan.specs}</div>
                     <div className="text-sm text-gray-500 mt-2">
-                      {plan.credits}/mo credits · ${plan.price}/mo
+                      £{plan.price}/mo
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
