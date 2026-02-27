@@ -46,3 +46,17 @@ Users bring their own API keys. No credits to manage.
 
 ## Known Issues
 - GitHub OAuth callback needs correct Client ID in Vercel
+
+## OpenClaw Versions
+
+### 1. Personal OpenClaw (Mac mini local)
+- NOT in Docker - runs directly on Mac mini
+- Updated via: `openclaw update` CLI
+- For: Your personal testing only
+- Version: 2026.2.26 (latest)
+
+### 2. Agentbot OpenClaw (Docker containers)
+- Runs in Docker via agentbot-backend
+- New deployments use: `ghcr.io/openclaw/openclaw:2026.2.26`
+- Auto-updater checks GitHub releases daily
+- For: Customer deployments only
