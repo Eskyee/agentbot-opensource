@@ -5,5 +5,26 @@
   "installCommand": "cd web && npm install",
   "outputDirectory": "web/.next",
   "framework": "nextjs",
-  "regions": ["iad1"]
+  "regions": ["lhr1"],
+  "github": {
+    "enabled": true,
+    "autoJobCancelation": true
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

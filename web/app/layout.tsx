@@ -5,6 +5,7 @@ import { GeistMono } from 'geist/font/mono'
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://agentbot.raveculture.xyz'),
@@ -76,6 +77,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body className="bg-black text-white antialiased pt-[60px] flex flex-col min-h-screen font-sans">
+        <SpeedInsights />
         <Providers>
           <Navbar />
           <div className="flex-1">
