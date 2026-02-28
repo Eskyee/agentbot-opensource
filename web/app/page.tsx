@@ -152,7 +152,7 @@ export default function Home() {
                 <li>✓ Telegram channel</li>
                 <li>✓ Use your own AI key</li>
               </ul>
-              <a href="/signup" className="mt-6 block w-full rounded-lg bg-white py-2.5 text-center text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
+              <a href="/api/stripe/checkout?plan=starter" className="mt-6 block w-full rounded-lg bg-white py-2.5 text-center text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
                 Get Started
               </a>
             </div>
@@ -169,7 +169,7 @@ export default function Home() {
                 <li>✓ Telegram + WhatsApp</li>
                 <li>✓ Custom domain</li>
               </ul>
-              <a href="/signup" className="mt-6 block w-full rounded-lg bg-white py-2.5 text-center text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
+              <a href="/api/stripe/checkout?plan=pro" className="mt-6 block w-full rounded-lg bg-white py-2.5 text-center text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
                 Get Started
               </a>
             </div>
@@ -186,7 +186,7 @@ export default function Home() {
                 <li>✓ All channels</li>
                 <li>✓ Advanced analytics</li>
               </ul>
-              <a href="/signup" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+              <a href="/api/stripe/checkout?plan=scale" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
                 Get Started
               </a>
             </div>
@@ -203,7 +203,7 @@ export default function Home() {
                 <li>✓ White-label options</li>
                 <li>✓ 24/7 phone support</li>
               </ul>
-              <a href="/signup" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+              <a href="/api/stripe/checkout?plan=enterprise" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
                 Get Started
               </a>
             </div>
@@ -220,7 +220,7 @@ export default function Home() {
                 <li>Priority 24/7 support</li>
                 <li>Custom SLA</li>
               </ul>
-              <a href="/signup" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
+              <a href="/api/stripe/checkout?plan=white_glove" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
                 Get Started
               </a>
             </div>
