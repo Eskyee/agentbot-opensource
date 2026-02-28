@@ -93,7 +93,7 @@ function getRateLimitKey(request: NextRequest): string {
   return ip
 }
 
-function isRateLimited(key: string): boolean {
+function getRateLimitInfo(key: string): { limited: boolean; remaining: number } {
   const now = Date.now()
   const record = rateLimitMap.get(key)
 
@@ -103,15 +103,17 @@ function isRateLimited(key: string): boolean {
       count: 1,
       resetTime: now + RATE_LIMIT_WINDOW_MS
     })
-    return false
+    return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS - 1 }
   }
 
-  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
-    return true
-  }
-
+  // Increment first, then check - allows exactly RATE_LIMIT_MAX_REQUESTS
   record.count++
-  return false
+  if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+    record.count-- // Don't consume the slot
+    return { limited: true, remaining: 0 }
+  }
+
+  return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS - record.count }
 }
 
 // Paths that should not be rate limited
@@ -185,7 +187,9 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/api/')) {
     const key = getRateLimitKey(request)
 
-    if (isRateLimited(key)) {
+    const rateLimitInfo = getRateLimitInfo(key)
+
+    if (rateLimitInfo.limited) {
       log('warn', 'Rate limit exceeded', { key, pathname })
       return new NextResponse(
         JSON.stringify({ 
@@ -208,6 +212,7 @@ export function middleware(request: NextRequest) {
     // Add rate limit headers to successful responses
     const response = NextResponse.next()
     response.headers.set('X-RateLimit-Limit', String(RATE_LIMIT_MAX_REQUESTS))
+    response.headers.set('X-RateLimit-Remaining', String(rateLimitInfo.remaining))
     log('info', 'Request processed', { key, pathname, method: request.method })
     return response
   }
