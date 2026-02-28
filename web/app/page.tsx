@@ -139,7 +139,7 @@ export default function Home() {
           <h2 className="text-2xl font-semibold text-center mb-4">Simple, Transparent Pricing</h2>
           <p className="text-center text-gray-7 mb-12">Start free, upgrade when you need more.</p>
           
-          <div className="grid sm:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-5 gap-4 max-w-6xl mx-auto">
             {/* Starter */}
             <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
               <h3 className="text-lg font-medium">Starter</h3>
@@ -179,36 +179,6 @@ export default function Home() {
                 <li>100GB storage</li>
                 <li>All channels</li>
                 <li>Advanced analytics</li>
-              </ul>
-              <a href="/signup" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
-                Get Started
-              </a>
-            </div>
-            
-            {/* Enterprise */}
-            <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
-              <h3 className="text-lg font-medium">Enterprise</h3>
-              <p className="mt-2 text-3xl font-bold">£149<span className="text-lg font-normal text-gray-7">/mo</span></p>
-              <ul className="mt-6 space-y-3 text-sm text-gray-7">
-                <li>Unlimited agents</li>
-                <li>500GB storage</li>
-                <li>White-label</li>
-                <li>24/7 phone support</li>
-              </ul>
-              <a href="/signup" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
-                Get Started
-              </a>
-            </div>
-            
-            {/* White Glove */}
-            <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)]">
-              <h3 className="text-lg font-medium">White Glove</h3>
-              <p className="mt-2 text-3xl font-bold">£199<span className="text-lg font-normal text-gray-7">/mo</span></p>
-              <ul className="mt-6 space-y-3 text-sm text-gray-7">
-                <li>Everything in Enterprise</li>
-                <li>10x resources</li>
-                <li>Dedicated account manager</li>
-                <li>Priority 24/7 support</li>
               </ul>
               <a href="/signup" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
                 Get Started
