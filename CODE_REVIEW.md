@@ -256,3 +256,70 @@
 ---
 
 **Approved for deployment** ✅
+
+---
+
+## Middleware Code Review
+**Date:** 2026-02-28  
+**Reviewer:** Kiro AI  
+**Status:** ✅ PASS (with fixes applied)
+
+---
+
+### 1. Duplicate Middleware File Issue ✅ RESOLVED
+**Files:** `web/proxy.ts`, `web/middleware.ts`
+
+**Issue:**
+- `web/proxy.ts` was created as a near-duplicate of `web/middleware.ts`
+- Both files exported middleware with identical matcher patterns
+- Having both would cause double execution → double rate limiting, double logging
+
+**Resolution:**
+- Deleted `web/proxy.ts` - consolidated to single middleware
+
+---
+
+### 2. Rate Limit Logic Fix ✅
+**Files:** `web/middleware.ts`
+
+**Changes:**
+- Fixed rate limit logic from check-then-increment to increment-then-check
+- Now allows exactly 100 requests per window (was inconsistent)
+- Added `X-RateLimit-Remaining` header to successful responses
+
+**Before:**
+```typescript
+if (record.count >= RATE_LIMIT_MAX_REQUESTS) return true
+record.count++
+```
+
+**After:**
+```typescript
+record.count++
+if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+  record.count--
+  return { limited: true, remaining: 0 }
+}
+return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS - record.count }
+```
+
+---
+
+### 3. Vercel Edge Runtime ✅
+**Files:** `web/middleware.ts`
+
+**Changes:**
+- Added `runtime: 'edge'` to middleware config
+- Enables Edge Functions for better performance
+
+---
+
+## Maintenance Notes
+
+This report should be reviewed and updated regularly as the application evolves.
+
+### Key Takeaways:
+1. Avoid duplicate middleware files with overlapping matchers
+2. Test rate limiting logic with exact boundary conditions
+3. Use Edge Runtime for middleware to improve response times
+4. Include `X-RateLimit-Remaining` headers for client visibility
