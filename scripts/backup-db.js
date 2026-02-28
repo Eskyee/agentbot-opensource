@@ -11,6 +11,10 @@
  * 
  * Recommended: Run daily via CRON
  *   0 3 * * * cd /path/to/project && node scripts/backup-db.js
+ * 
+ * LIMITATION: This script creates a basic backup with table data and schema.
+ * It does NOT include: indexes, foreign keys, sequences, views, triggers, or stored procedures.
+ * For production databases requiring full backup capability, consider using pg_dump instead.
  */
 
 const { createClient } = require('@neondatabase/serverless');
@@ -46,8 +50,8 @@ function formatValue(val, col) {
     if (val === null) return 'NULL';
     if (typeof val === 'number') return val;
     if (typeof val === 'boolean') return val ? 'TRUE' : 'FALSE';
-    // Escape single quotes and handle special characters
-    const escaped = String(val).replace(/'/g, "''");
+    // Escape backslashes and single quotes for PostgreSQL
+    const escaped = String(val).replace(/\\/g, '\\\\').replace(/'/g, "''");
     return `'${escaped}'`;
   }
 

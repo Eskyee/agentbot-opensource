@@ -214,7 +214,7 @@ export function middleware(request: NextRequest) {
 
   return NextResponse.next()
   } catch (error) {
-    log('error', 'Middleware error', { 
+    log('error', 'Middleware error', {  
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined 
     })
