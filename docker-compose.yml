@@ -12,6 +12,7 @@ services:
       - .env
     environment:
       POSTGRES_USER: agentbot
+      POSTGRES_PASSWORD: devpassword
       POSTGRES_DB: agentbot_db
     ports:
       - "5432:5432"
