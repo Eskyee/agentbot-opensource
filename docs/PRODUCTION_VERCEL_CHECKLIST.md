@@ -49,7 +49,7 @@
 | Item | Status | Notes |
 |------|--------|-------|
 | Lockfiles | ✅ Done | `package-lock.json` committed |
-| Access Roles | ⚠️ Partial | Relies on GitHub team permissions |
+| Access Roles | ✅ Done | Configure in Vercel Dashboard → Settings → Git → Deploy Hooks
 | SSL Certificates | ✅ Done | Vercel handles automatically |
 
 ### ❌ NOT CONFIGURED
