@@ -1,6 +1,70 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Bot detection patterns - common malicious bot User-Agent strings
+const BOT_PATTERNS = [
+  /bot/i,
+  /crawler/i,
+  /spider/i,
+  /scrape/i,
+  /curl/i,
+  /wget/i,
+  /python-requests/i,
+  /node-fetch/i,
+  /axios/i,
+  /go-http/i,
+  /java/i,
+  /perl/i,
+  /ruby/i,
+  /php/i,
+  /chromeframe/i,
+  /headless/i,
+  /puppeteer/i,
+  /playwright/i,
+  /selenium/i,
+  /apify/i,
+  /scrapy/i,
+  /screaming frog/i,
+  /semrush/i,
+  /ahrefs/i,
+  /mj12bot/i,
+  /dotbot/i,
+  /rogerbot/i,
+  /sistrix/i,
+  /linkdex/i,
+  /majestic12/i,
+  /ahrefsbot/i,
+  /semrushbot/i,
+  /mauibot/i,
+  /googlebot/i,
+  /bingbot/i,
+  /slurp/i,
+  /duckduckbot/i,
+  /yandex/i,
+  /baiduspider/i,
+  /facebookexternalhit/i,
+  /twitterbot/i,
+  /linkedinbot/i,
+  /telegrambot/i,
+  /slackbot/i,
+  /discordbot/i,
+  /whatsapp/i,
+]
+
+// Known malicious IP ranges (CIDR notation) - extend as needed
+const BLOCKED_IP_PATTERNS: RegExp[] = []
+
+function isBotUserAgent(userAgent: string | null): boolean {
+  if (!userAgent) return false
+  return BOT_PATTERNS.some(pattern => pattern.test(userAgent))
+}
+
+function isBlockedIP(ip: string | null): boolean {
+  if (!ip) return false
+  // Add more sophisticated IP checking if needed
+  return BLOCKED_IP_PATTERNS.some(pattern => pattern.test(ip))
+}
+
 // Simple in-memory rate limiter
 // For production, consider using Vercel KV or external rate limiting service
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
@@ -53,6 +117,51 @@ function shouldExclude(path: string): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const userAgent = request.headers.get('user-agent')
+  const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
+    || request.headers.get('x-real-ip') 
+    || null
+
+  // Bot detection and blocking
+  if (isBotUserAgent(userAgent)) {
+    // Allow legitimate search engine crawlers (Google, Bing, etc.)
+    const allowedBots = [/googlebot/i, /bingbot/i, /slurp/i, /duckduckbot/i, /yandex/i]
+    const isAllowedBot = allowedBots.some(bot => bot.test(userAgent || ''))
+    
+    if (!isAllowedBot) {
+      console.log(`[BOT BLOCKED] Blocked bot: ${userAgent} from IP: ${clientIP} PATH: ${pathname}`)
+      return new NextResponse(
+        JSON.stringify({ 
+          error: 'Access Denied',
+          message: 'Automated requests not allowed'
+        }), 
+        {
+          status: 403,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Bot-Blocked': 'true',
+          },
+        }
+      )
+    }
+  }
+
+  // Block known malicious IPs
+  if (isBlockedIP(clientIP)) {
+    console.log(`[IP BLOCKED] Blocked IP: ${clientIP} PATH: ${pathname}`)
+    return new NextResponse(
+      JSON.stringify({ 
+        error: 'Access Denied',
+        message: 'Your IP has been blocked'
+      }), 
+      {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+  }
 
   // Skip rate limiting for excluded paths
   if (shouldExclude(pathname)) {
