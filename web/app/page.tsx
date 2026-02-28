@@ -137,7 +137,7 @@ export default function Home() {
       <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8 border-t border-gray-2 scroll-mt-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-2xl font-semibold text-center mb-4">Simple, Transparent Pricing</h2>
-          <p className="text-center text-gray-7 mb-12">Start free, upgrade when you need more.</p>
+          <p className="text-center text-gray-7 mb-12">Simple, Transparent Pricing</p>
           
           <div className="grid sm:grid-cols-5 gap-4 max-w-6xl mx-auto">
             {/* Starter */}
@@ -214,11 +214,11 @@ export default function Home() {
               <p className="text-sm text-gray-5 mt-1">Premium solution</p>
               <p className="mt-2 text-3xl font-bold">£199<span className="text-lg font-normal text-gray-7">/mo</span></p>
               <ul className="mt-6 space-y-3 text-sm text-gray-7 flex-grow">
-                <li>✓ Unlimited agents</li>
-                <li>✓ 32GB RAM, 8 CPU</li>
-                <li>✓ 500GB+ storage</li>
-                <li>✓ Dedicated account manager</li>
-                <li>✓ Priority 24/7 support</li>
+                <li>Everything in Enterprise</li>
+                <li>10x resources</li>
+                <li>Dedicated account manager</li>
+                <li>Priority 24/7 support</li>
+                <li>Custom SLA</li>
               </ul>
               <a href="/signup" className="mt-6 block w-full rounded-lg border border-gray-5 py-2.5 text-center text-sm font-medium hover:bg-gray-2 hover:border-gray-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors">
                 Get Started
