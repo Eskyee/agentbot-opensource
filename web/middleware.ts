@@ -69,6 +69,18 @@ function isBlockedIP(ip: string | null): boolean {
 // For production, consider using Vercel KV or external rate limiting service
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 
+// Structured logging helper
+function log(level: string, message: string, metadata?: Record<string, unknown>) {
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    level,
+    service: 'middleware',
+    message,
+    ...metadata,
+  }
+  console.log(JSON.stringify(logEntry))
+}
+
 // Rate limit configuration
 const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 100 // max requests per window
@@ -116,20 +128,21 @@ function shouldExclude(path: string): boolean {
 }
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-  const userAgent = request.headers.get('user-agent')
-  const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
-    || request.headers.get('x-real-ip') 
-    || null
+  try {
+    const { pathname } = request.nextUrl
+    const userAgent = request.headers.get('user-agent')
+    const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
+      || request.headers.get('x-real-ip') 
+      || null
 
-  // Bot detection and blocking
+    // Bot detection and blocking
   if (isBotUserAgent(userAgent)) {
     // Allow legitimate search engine crawlers (Google, Bing, etc.)
     const allowedBots = [/googlebot/i, /bingbot/i, /slurp/i, /duckduckbot/i, /yandex/i]
     const isAllowedBot = allowedBots.some(bot => bot.test(userAgent || ''))
     
     if (!isAllowedBot) {
-      console.log(`[BOT BLOCKED] Blocked bot: ${userAgent} from IP: ${clientIP} PATH: ${pathname}`)
+      log('warn', 'Bot blocked', { userAgent, clientIP, pathname })
       return new NextResponse(
         JSON.stringify({ 
           error: 'Access Denied',
@@ -148,7 +161,7 @@ export function middleware(request: NextRequest) {
 
   // Block known malicious IPs
   if (isBlockedIP(clientIP)) {
-    console.log(`[IP BLOCKED] Blocked IP: ${clientIP} PATH: ${pathname}`)
+    log('warn', 'IP blocked', { clientIP, pathname })
     return new NextResponse(
       JSON.stringify({ 
         error: 'Access Denied',
@@ -173,6 +186,7 @@ export function middleware(request: NextRequest) {
     const key = getRateLimitKey(request)
 
     if (isRateLimited(key)) {
+      log('warn', 'Rate limit exceeded', { key, pathname })
       return new NextResponse(
         JSON.stringify({ 
           error: 'Too many requests',
@@ -194,10 +208,18 @@ export function middleware(request: NextRequest) {
     // Add rate limit headers to successful responses
     const response = NextResponse.next()
     response.headers.set('X-RateLimit-Limit', String(RATE_LIMIT_MAX_REQUESTS))
+    log('info', 'Request processed', { key, pathname, method: request.method })
     return response
   }
 
   return NextResponse.next()
+  } catch (error) {
+    log('error', 'Middleware error', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined 
+    })
+    return NextResponse.next()
+  }
 }
 
 export const config = {
