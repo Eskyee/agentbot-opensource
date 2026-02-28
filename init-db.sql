@@ -23,6 +23,12 @@ CREATE TABLE IF NOT EXISTS agents (
   description TEXT,
   config JSONB,
   status VARCHAR(50) DEFAULT 'inactive',
+  verified BOOLEAN DEFAULT FALSE,
+  verification_type VARCHAR(50),
+  attestation_uid VARCHAR(255),
+  verifier_address VARCHAR(255),
+  verified_at TIMESTAMP,
+  verification_metadata JSONB,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

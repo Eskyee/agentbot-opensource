@@ -54,6 +54,13 @@ type AgentMetadata = {
   port: number;
   subdomain: string;
   gatewayToken?: string;
+  // Verification fields for Verified Human Badge
+  verified?: boolean;
+  verificationType?: string;
+  attestationUid?: string;
+  verifierAddress?: string;
+  verifiedAt?: string;
+  verificationMetadata?: Record<string, unknown>;
 };
 
 type ContainerMount = {
@@ -550,6 +557,11 @@ app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
         subdomain,
         url: `https://${subdomain}`,
         openclawVersion,
+        // Include verification status in response
+        verified: metadata?.verified || false,
+        verificationType: metadata?.verificationType || null,
+        attestationUid: metadata?.attestationUid || null,
+        verifiedAt: metadata?.verifiedAt || null,
       });
     })
     .catch((error: unknown) => {
@@ -568,6 +580,90 @@ app.delete('/api/agents/:id', authenticate, (req: Request, res: Response) => {
   const { id } = req.params;
   // TODO: Delete agent
   res.json({ id, message: 'Agent deleted' });
+});
+
+// Agent verification endpoints for Verified Human Badge
+app.get('/api/agents/:id/verification', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const metadata = await readAgentMetadata(id);
+    if (!metadata) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+    res.json({
+      verified: metadata.verified || false,
+      verificationType: metadata.verificationType || null,
+      attestationUid: metadata.attestationUid || null,
+      verifierAddress: metadata.verifierAddress || null,
+      verifiedAt: metadata.verifiedAt || null,
+      metadata: metadata.verificationMetadata || null,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to fetch verification status';
+    res.status(500).json({ error: message });
+  }
+});
+
+app.post('/api/agents/:id/verify', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { verificationType, verified, attestationUid, verifierAddress, metadata } = req.body;
+
+  try {
+    const existingMetadata = await readAgentMetadata(id);
+    if (!existingMetadata) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+
+    // Update verification fields
+    existingMetadata.verified = verified;
+    existingMetadata.verificationType = verificationType;
+    existingMetadata.attestationUid = attestationUid;
+    existingMetadata.verifierAddress = verifierAddress;
+    existingMetadata.verifiedAt = verified ? new Date().toISOString() : undefined;
+    existingMetadata.verificationMetadata = metadata;
+
+    await writeAgentMetadata(existingMetadata);
+
+    res.json({
+      success: true,
+      verified: existingMetadata.verified,
+      verificationType: existingMetadata.verificationType,
+      attestationUid: existingMetadata.attestationUid,
+      verifiedAt: existingMetadata.verifiedAt,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to update verification';
+    res.status(500).json({ error: message });
+  }
+});
+
+app.delete('/api/agents/:id/verify', authenticate, async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const existingMetadata = await readAgentMetadata(id);
+    if (!existingMetadata) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+
+    // Remove verification fields
+    existingMetadata.verified = false;
+    existingMetadata.verificationType = undefined;
+    existingMetadata.attestationUid = undefined;
+    existingMetadata.verifierAddress = undefined;
+    existingMetadata.verifiedAt = undefined;
+    existingMetadata.verificationMetadata = undefined;
+
+    await writeAgentMetadata(existingMetadata);
+
+    res.json({ success: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to remove verification';
+    res.status(500).json({ error: message });
+  }
 });
 
 // Deployments endpoint
@@ -849,7 +945,7 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
     });
     if (!response.ok) return null;
     
-    const release = await response.json();
+    const release = await response.json() as { tag_name?: string; name?: string };
     const latestVersion = release.tag_name?.replace(/^v/, '') || release.name?.replace(/^v/, '');
     
     if (latestVersion && latestVersion !== OPENCLAW_RUNTIME_VERSION) {

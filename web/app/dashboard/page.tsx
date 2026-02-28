@@ -7,6 +7,7 @@ import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import WalletCard from '@/app/components/WalletCard'
+import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -36,6 +37,11 @@ interface InstanceData {
   openclawVersion?: string
   botUsername?: string
   gatewayToken?: string
+  // Verification fields
+  verified?: boolean
+  verificationType?: string | null
+  attestationUid?: string | null
+  verifiedAt?: string | null
 }
 
 const navItems = [
@@ -47,6 +53,7 @@ const navItems = [
   { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
   { icon: '📁', label: 'Files', href: '/dashboard/files' },
   { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
+  { icon: '✅', label: 'Verify', href: '/dashboard/verify' },
   { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
   { icon: '💳', label: 'Billing', href: '/billing' },
   { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },
@@ -293,6 +300,10 @@ function DashboardContent() {
               >
                 <span>+</span> New Agent
               </a>
+              {/* Verification Badge */}
+              {instance?.verified && (
+                <AgentVerifiedBadge verified={instance.verified} verificationType={instance.verificationType} />
+              )}
               <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
                 isRunning ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
               }`}>
