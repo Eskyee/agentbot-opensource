@@ -3,9 +3,9 @@
 import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-type Step = 'telegram' | 'token' | 'userid' | 'ai' | 'deploy' | 'done'
+type Step = 'telegram' | 'token' | 'userid' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
 
-const FLOW_STEPS: Step[] = ['telegram', 'token', 'ai', 'deploy', 'done']
+const FLOW_STEPS: Step[] = ['telegram', 'token', 'ai', 'model', 'skills', 'deploy', 'done']
 
 function OnboardContent() {
   const searchParams = useSearchParams()
@@ -20,12 +20,36 @@ function OnboardContent() {
   const [telegramUserId, setTelegramUserId] = useState('')
   const [aiProvider, setAiProvider] = useState('openrouter')
   const [apiKey, setApiKey] = useState('')
+  const [selectedModel, setSelectedModel] = useState('moonshot/kimi-k2.5-thinking')
+  const [selectedSkills, setSelectedSkills] = useState<string[]>(['web-search', 'file-handler'])
   const [isValidating, setIsValidating] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ userId: string; subdomain: string; url: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
+
+  // Available models
+  const AVAILABLE_MODELS = [
+    { id: 'moonshot/kimi-k2.5-thinking', name: 'Kimi K2.5 Thinking', provider: 'openrouter', description: '128K context, advanced reasoning', recommended: true },
+    { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'openrouter', description: 'OpenAI flagship model' },
+    { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openrouter', description: 'Fast & affordable' },
+    { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'anthropic', description: 'Best quality (requires key)' },
+    { id: 'google/gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'gemini', description: 'Fast & capable' },
+    { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'groq', description: 'Open source, fast' }
+  ]
+
+  // Available ready-to-use skills
+  const AVAILABLE_SKILLS = [
+    { id: 'web-search', name: 'Web Search', description: 'Search the web for information', icon: '🔍' },
+    { id: 'file-handler', name: 'File Handler', description: 'Read, write, and process files', icon: '📁' },
+    { id: 'code-interpreter', name: 'Code Runner', description: 'Execute code snippets safely', icon: '💻' },
+    { id: 'image-analyzer', name: 'Image Analyzer', description: 'Analyze and describe images', icon: '🖼️' },
+    { id: ' scheduler', name: 'Scheduler', description: 'Schedule tasks and reminders', icon: '⏰' },
+    { id: 'email-sender', name: 'Email Sender', description: 'Send emails via SMTP', icon: '📧' },
+    { id: 'api-caller', name: 'API Caller', description: 'Make HTTP requests', icon: '🌐' },
+    { id: 'database-query', name: 'Database Query', description: 'Query databases', icon: '🗄️' }
+  ]
 
   useEffect(() => {
     // Handle payment status messages
@@ -91,7 +115,9 @@ function OnboardContent() {
           telegramUserId,
           aiProvider,
           apiKey,
-          plan
+          plan,
+          model: selectedModel,
+          skills: selectedSkills
         })
       })
       
@@ -369,13 +395,11 @@ function OnboardContent() {
           </div>
         )}
         
-        {/* Step 4: Choose AI */}
+        {/* Step 4: Choose AI - BYOK */}
         {step === 'ai' && (
           <div>
-            <h2 className="text-2xl font-bold mb-2">Step 4: Choose Your AI</h2>
-            {botInfo && (
-              <p className="text-green-400 mb-6">✓ Bot validated: @{botInfo.username}</p>
-            )}
+            <h2 className="text-2xl font-bold mb-2">Step 4: Bring Your Own Key (BYOK)</h2>
+            <p className="text-gray-400 mb-6">Choose your AI provider and enter your own API key. You pay directly—no markup.</p>
             
             <div className="space-y-6">
               <div className="space-y-3">
@@ -487,21 +511,145 @@ function OnboardContent() {
                   ← Back
                 </button>
                 <button
-                  onClick={() => setStep('deploy')}
+                  onClick={() => setStep('model')}
                   disabled={aiProvider !== 'openrouter' && !apiKey}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
-                  {aiProvider === 'openrouter' ? 'Deploy Now (Free)' : 'Continue →'}
+                  {aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
                 </button>
               </div>
             </div>
           </div>
         )}
         
-        {/* Step 5: Deploy */}
+        {/* Step 5: Choose Model */}
+        {step === 'model' && (
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Step 5: Choose Your AI Model</h2>
+            {botInfo && (
+              <p className="text-green-400 mb-6">✓ Bot validated: @{botInfo.username}</p>
+            )}
+            
+            <div className="space-y-6">
+              <div className="space-y-3">
+                {AVAILABLE_MODELS.map((model) => (
+                  <button
+                    key={model.id}
+                    onClick={() => setSelectedModel(model.id)}
+                    className={`w-full text-left p-4 rounded-xl border ${
+                      selectedModel === model.id 
+                        ? 'border-white bg-white/10' 
+                        : 'border-gray-700 hover:border-gray-600'
+                    } transition-colors`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold">{model.name}</div>
+                        <div className="text-sm text-gray-400">{model.description}</div>
+                      </div>
+                      {model.recommended && (
+                        <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full">
+                          Recommended
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                <button
+                  onClick={() => setStep('ai')}
+                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={() => setStep('skills')}
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors sm:flex-1"
+                >
+                  Continue →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Step 6: Choose Skills */}
+        {step === 'skills' && (
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Step 6: Ready-to-Use Skills</h2>
+            {botInfo && (
+              <p className="text-green-400 mb-6">✓ Bot validated: @{botInfo.username}</p>
+            )}
+            
+            <div className="mb-6">
+              <p className="text-gray-400 text-sm">Select skills for your agent. You can always add more later from the dashboard.</p>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {AVAILABLE_SKILLS.map((skill) => {
+                  const isSelected = selectedSkills.includes(skill.id)
+                  return (
+                    <button
+                      key={skill.id}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedSkills(selectedSkills.filter(s => s !== skill.id))
+                        } else {
+                          setSelectedSkills([...selectedSkills, skill.id])
+                        }
+                      }}
+                      className={`text-left p-4 rounded-xl border transition-colors ${
+                        isSelected 
+                          ? 'border-white bg-white/10' 
+                          : 'border-gray-700 hover:border-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{skill.icon}</span>
+                        <div>
+                          <div className="font-semibold">{skill.name}</div>
+                          <div className="text-xs text-gray-400">{skill.description}</div>
+                        </div>
+                        {isSelected && (
+                          <span className="ml-auto text-green-400">✓</span>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+              
+              <div className="bg-gray-800 rounded-xl p-4">
+                <p className="text-sm text-gray-400">
+                  Selected: <span className="text-white">{selectedSkills.length}</span> skills
+                </p>
+              </div>
+              
+              <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                <button
+                  onClick={() => setStep('model')}
+                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                >
+                  ← Back
+                </button>
+                <button
+                  onClick={() => setStep('deploy')}
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors sm:flex-1"
+                >
+                  Continue to Deploy →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Step 7: Deploy */}
         {step === 'deploy' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Step 5: Deploy Your Assistant</h2>
+            <h2 className="text-2xl font-bold mb-6">Step 7: Deploy Your Assistant</h2>
             
             <div className="space-y-6">
               <div className="bg-gray-800 rounded-xl p-6">
@@ -517,6 +665,14 @@ function OnboardContent() {
                          aiProvider === 'gemini' ? 'Google Gemini' :
                          aiProvider === 'groq' ? 'Groq' : 
                          aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1)}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-400">AI Model</dt>
+                    <dd>{AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name || selectedModel}</dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-gray-400">Skills</dt>
+                    <dd>{selectedSkills.length} selected</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-gray-400">Plan</dt>
