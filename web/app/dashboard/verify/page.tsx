@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AgentVerificationPanel } from '@/app/components/VerificationBadge'
 
@@ -11,7 +11,7 @@ interface InstanceData {
   verificationType?: string | null
 }
 
-export default function VerifyPage() {
+function VerifyContent() {
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -40,19 +40,35 @@ export default function VerifyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black text-white p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-800 rounded w-1/3 mb-8"></div>
-            <div className="h-64 bg-gray-900 rounded-xl"></div>
-          </div>
-        </div>
+      <div className="animate-pulse">
+        <div className="h-8 bg-gray-800 rounded w-1/3 mb-8"></div>
+        <div className="h-64 bg-gray-900 rounded-xl"></div>
       </div>
     )
   }
 
   const agentId = instance?.userId || urlUserId || ''
 
+  return (
+    <>
+      {agentId ? (
+        <AgentVerificationPanel
+          agentId={agentId}
+          verified={instance?.verified}
+          verificationType={instance?.verificationType}
+        />
+      ) : (
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
+          <p className="text-gray-400">
+            No agent found. Deploy an agent first to verify it.
+          </p>
+        </div>
+      )}
+    </>
+  )
+}
+
+export default function VerifyPage() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-4xl mx-auto">
@@ -72,19 +88,14 @@ export default function VerifyPage() {
           </ul>
         </div>
 
-        {agentId ? (
-          <AgentVerificationPanel
-            agentId={agentId}
-            verified={instance?.verified}
-            verificationType={instance?.verificationType}
-          />
-        ) : (
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
-            <p className="text-gray-400">
-              No agent found. Deploy an agent first to verify it.
-            </p>
+        <Suspense fallback={
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-800 rounded w-1/3 mb-8"></div>
+            <div className="h-64 bg-gray-900 rounded-xl"></div>
           </div>
-        )}
+        }>
+          <VerifyContent />
+        </Suspense>
 
         <div className="mt-8 text-center">
           <a href="/dashboard" className="text-blue-400 hover:text-blue-300">
