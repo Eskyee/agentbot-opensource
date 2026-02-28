@@ -12,7 +12,7 @@
 |----------|--------|-------|
 | Operational Excellence | ✅ Good | 5/9 |
 | Security | ✅ Good | 7/13 |
-| Reliability | ✅ Good | 5/10 |
+| Reliability | ⚠️ Needs Attention | 5/10 |
 | Performance | ✅ Good | 5/6 |
 | Cost Optimization | ✅ Good | 6/6 |
 
@@ -213,7 +213,7 @@ k6 cloud tests/load.js
 **Recommendations:**
 1. ✅ Speed Insights installed and added to `layout.tsx`
 2. Consider adding `"regions": ["lhr1"]` to `vercel.json` for UK users (✅ Already done)
-3. Review TTFB via Vercel Analytics after enabling Speed Insights
+3. ✅ Review TTFB via Vercel Dashboard → Speed Insights after deployment
 
 ---
 
@@ -318,6 +318,7 @@ k6 cloud tests/load.js
 - ❌ No OpenTelemetry/Tracing package installed
 - ❌ No load testing scripts
 - ✅ Structured logging with JSON format in middleware.ts
+- ❌ No external log aggregation (Log Drains)
 
 ---
 
