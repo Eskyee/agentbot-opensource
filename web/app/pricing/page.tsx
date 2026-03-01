@@ -321,25 +321,16 @@ function PricingCard({
       </ul>
 
       {/* CTA Button */}
-      <button
-        onClick={() => onCheckout(plan.id)}
-        disabled={isLoading}
-        className={`mt-6 w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+      <a
+        href={`/api/stripe/checkout?plan=${plan.id}`}
+        className={`mt-6 w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 text-center block ${
           plan.popular
             ? 'bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/25'
             : 'bg-gray-800 hover:bg-gray-700 text-gray-100 border border-gray-700'
-        } ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-        aria-disabled={isLoading}
+        }`}
       >
-        {isLoading ? (
-          <span className="flex items-center justify-center gap-2">
-            <LoadingSpinner size="sm" />
-            Processing...
-          </span>
-        ) : (
-          plan.cta
-        )}
-      </button>
+        {plan.cta}
+      </a>
     </article>
   )
 }
