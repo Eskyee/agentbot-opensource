@@ -3,7 +3,6 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "outputDirectory": "web/.next",
   "framework": "nextjs",
   "regions": ["lhr1"],
   "headers": [
