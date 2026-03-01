@@ -33,6 +33,10 @@ Last updated: March 2026
 - **Problem:** `/pricing` page uses `useSearchParams` without Suspense boundary
 - **Fix:** Wrapped component in `<Suspense>` boundary
 
+### 7. Pricing Page Checkout Not Working
+- **Problem:** Pricing page used JavaScript fetch to call Stripe checkout, which couldn't handle redirects properly
+- **Fix:** Use direct `<a href="/api/stripe/checkout?plan=...">` links instead of fetch + window.location redirect (same as home page)
+
 ## Valid vercel.json Configuration
 
 ```json
@@ -58,3 +62,4 @@ Last updated: March 2026
 6. Use `findFirst` instead of `findUnique` unless querying by unique fields (id, address)
 7. Wrap `useSearchParams` in Suspense for static generation
 8. Use `experimental-edge` for middleware runtime in Next.js 16
+9. For Stripe checkout, use direct `<a href>` links not fetch + redirect (Stripe redirects don't work with client-side fetch)
