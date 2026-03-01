@@ -132,6 +132,12 @@ function shouldExclude(path: string): boolean {
 export function middleware(request: NextRequest) {
   try {
     const { pathname } = request.nextUrl
+    
+    // Skip middleware for health checks and other internal routes
+    if (pathname === '/api/health' || pathname === '/api/heartbeat') {
+      return NextResponse.next()
+    }
+    
     const userAgent = request.headers.get('user-agent')
     const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() 
       || request.headers.get('x-real-ip') 
