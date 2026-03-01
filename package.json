@@ -5,6 +5,7 @@
     "dev": "./start-local.sh",
     "stop": "./stop-local.sh",
     "restart": "npm run stop && npm run dev",
+    "build": "npm --prefix web run build",
     "dev:frontend": "npm --prefix web run dev",
     "dev:api": "npm --prefix agentbot-backend run dev",
     "dev:worker": "npm --prefix agentbot-worker run dev",

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { Coinbase, Wallet } from '@coinbase/cdp-sdk'
+import { CdpClient, Wallet } from '@coinbase/cdp-sdk'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 
@@ -40,12 +40,12 @@ function decryptWalletSeed(encryptedSeed: string): string {
 }
 
 // Initialize CDP SDK
-function initializeCDP(): void {
+function initializeCDP(): CdpClient {
   if (!isCDPConfigured) {
     throw new Error('CDP API keys not configured')
   }
   
-  Coinbase.configure({
+  return CdpClient.configure({
     apiKeyName: process.env.CDP_API_KEY_NAME!,
     privateKey: process.env.CDP_API_KEY_PRIVATE_KEY!.replace(/\\n/g, '\n'),
   })
