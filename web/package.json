@@ -9,7 +9,7 @@
     "lint": "next lint",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "postinstall": "prisma generate"
+    "postinstall": "npx prisma@5.22.0 generate"
   },
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.44.1",
