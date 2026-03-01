@@ -10,6 +10,12 @@
     "enabled": true,
     "autoJobCancelation": true
   },
+  "protection": {
+    "enabled": true
+  },
+  "preview": {
+    "suffix": "preview"
+  },
   "headers": [
     {
       "source": "/(.*)",
@@ -24,7 +30,7 @@
   "crons": [
     {
       "path": "/api/cron/cleanup",
-      "schedule": "0 3 * * *"
+      "schedule": "0 2 * * *"
     }
   ]
 }

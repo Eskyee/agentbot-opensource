@@ -9,10 +9,9 @@
     "lint": "next lint",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "postinstall": "npx prisma@5.22.0 generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@coinbase/cdp-sdk": "^1.44.1",
     "@coinbase/onchainkit": "^1.1.2",
     "@neondatabase/serverless": "^1.0.2",
     "@next-auth/prisma-adapter": "^1.0.7",
