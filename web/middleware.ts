@@ -234,7 +234,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  runtime: 'edge',
+  runtime: 'experimental-edge',
   matcher: [
     /*
      * Match all request paths except:
