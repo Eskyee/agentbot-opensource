@@ -321,7 +321,7 @@ k6 cloud tests/load.js
 - ✅ Rate limiting active (100 req/min per IP)
 - ✅ Bot protection active (40+ patterns detected)
 - ✅ Deployment protection enabled in vercel.json
-- ✅ Preview suffix configured (`preview`)
+- ✅ Deployment protection enabled (preview deployments require authentication)
 - ✅ Crons configured (cleanup job at 2am)
 - ❌ No OpenTelemetry/Tracing package installed
 - ❌ No load testing scripts
