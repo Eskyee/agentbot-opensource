@@ -85,7 +85,7 @@ const PLANS: Plan[] = [
     price: 39,
     priceId: 'pro',
     description: '1 AI Agent, 50GB storage, Telegram + WhatsApp, Custom domain, + usage',
-    cta: 'Start Free Trial',
+    cta: 'Get Started',
     popular: true,
     resources: { ram: '4GB', cpu: 2 },
     features: [
@@ -469,7 +469,7 @@ function PricingPageContent() {
               Simple, transparent pricing
             </h1>
             <p className="mt-4 text-lg sm:text-xl text-gray-400 animate-fade-in-up">
-              Choose the perfect plan for your needs. All plans include a 14-day free trial.
+              Choose the perfect plan for your needs.
             </p>
           </div>
 
@@ -573,7 +573,7 @@ function PricingPageContent() {
               href="/signup"
               className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
             >
-              Start Free Trial
+              Get Started
             </Link>
             <Link
               href="/docs"
