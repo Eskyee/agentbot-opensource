@@ -61,6 +61,23 @@ CREATE INDEX idx_deployments_agent_id ON deployments(agent_id);
 CREATE INDEX idx_deployments_status ON deployments(status);
 CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
 
+-- Wallet storage for CDP wallets
+-- Stores encrypted wallet seeds for user agents
+CREATE TABLE IF NOT EXISTS wallets (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  address VARCHAR(255) UNIQUE NOT NULL,
+  wallet_seed_encrypted TEXT NOT NULL,
+  network VARCHAR(50) DEFAULT 'base-sepolia',
+  wallet_type VARCHAR(50) DEFAULT 'cdp',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for wallet queries
+CREATE INDEX idx_wallets_user_id ON wallets(user_id);
+CREATE INDEX idx_wallets_address ON wallets(address);
+
 -- Insert sample data for development
 -- WARNING: Remove this in production! Demo credentials should never be used.
 -- This is for local development only.
