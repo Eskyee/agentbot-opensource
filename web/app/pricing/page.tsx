@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
@@ -384,7 +384,7 @@ function ErrorMessage({ message, onDismiss }: { message: string; onDismiss: () =
 /**
  * Main pricing page component
  */
-export default function PricingPage() {
+function PricingPageContent() {
   const searchParams = useSearchParams()
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({
     loading: false,
@@ -590,5 +590,13 @@ export default function PricingPage() {
         <ErrorMessage message={checkoutState.error} onDismiss={dismissError} />
       )}
     </main>
+  )
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <PricingPageContent />
+    </Suspense>
   )
 }
