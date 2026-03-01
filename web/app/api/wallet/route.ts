@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       balance: '0',
       network: wallet.network,
       hasWallet: true,
-      createdAt: wallet.created_at,
+      createdAt: wallet.createdAt,
     })
   } catch (error) {
     console.error('Wallet fetch error:', error)
