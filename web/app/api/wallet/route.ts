@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: { email: session.user.email },
     })
 
@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const wallet = await prisma.wallet.findUnique({
+    const wallet = await prisma.wallet.findFirst({
       where: { userId: user.id },
     })
 
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
     const { action } = await req.json()
 
     if (action === 'create') {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email: session.user.email },
       })
 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      const existingWallet = await prisma.wallet.findUnique({
+      const existingWallet = await prisma.wallet.findFirst({
         where: { userId: user.id },
       })
 
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'get_seed') {
-      const user = await prisma.user.findUnique({
+      const user = await prisma.user.findFirst({
         where: { email: session.user.email },
       })
 
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      const wallet = await prisma.wallet.findUnique({
+      const wallet = await prisma.wallet.findFirst({
         where: { userId: user.id },
       })
 
