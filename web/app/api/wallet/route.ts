@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
-import { CdpClient, Wallet } from '@coinbase/cdp-sdk'
+import { CdpClient } from '@coinbase/cdp-sdk'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 
@@ -146,14 +146,15 @@ export async function POST(req: NextRequest) {
       initializeCDP()
 
       // Create new wallet using CDP SDK
-      const wallet = await Wallet.create()
+      const cdpClient = new CdpClient()
+      const wallet = await cdpClient.evm.createWallet()
       const address = await wallet.getDefaultAddress()
-      const addressId = address.getId()
-      const networkId = wallet.getNetworkId()
+      const addressId = address.address
+      const networkId = wallet.networkId
 
       // Export wallet seed for backup/recovery
       // Note: In production, consider using CDP's seedless wallet feature
-      const walletData = wallet.export()
+      const walletData = await wallet.export()
       const seedJson = JSON.stringify(walletData)
       const encryptedSeed = encryptWalletSeed(seedJson)
 
