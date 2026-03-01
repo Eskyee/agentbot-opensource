@@ -10,8 +10,8 @@
     "enabled": true,
     "autoJobCancelation": true
   },
-  "preview": {
-    "suffix": "preview"
+  "protection": {
+    "enabled": true
   },
   "headers": [
     {
