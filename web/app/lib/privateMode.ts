@@ -9,7 +9,7 @@ export async function checkPrivateAccess(request: any) {
   if (!PRIVATE_MODE) return { allowed: true }
 
   try {
-    const headersList = headers()
+    const headersList = await headers()
     const auth = headersList.get('authorization')
     const inviteCode = headersList.get('x-invite-code')
 
