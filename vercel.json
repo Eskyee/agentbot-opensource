@@ -4,7 +4,7 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["lhr1"],
+  "regions": ["lhr1", "iad1"],
   "headers": [
     {
       "source": "/(.*)",
