@@ -7,6 +7,7 @@ AGENTS_DOMAIN="${AGENTS_DOMAIN:-agents.agentbot.raveculture.xyz}"
 CHECK_STRIPE="${CHECK_STRIPE:-1}"
 CHECK_ROUTES="${CHECK_ROUTES:-1}"
 TIMEOUT_SECONDS="${TIMEOUT_SECONDS:-10}"
+USER_AGENT="Atlas-Platform-Operator/1.0 (Verified Agentbot Ops)"
 
 PASS_COUNT=0
 FAIL_COUNT=0
@@ -39,7 +40,7 @@ require_cmd() {
 
 http_status() {
   local url="$1"
-  curl -sS -o /dev/null -w '%{http_code}' --max-time "$TIMEOUT_SECONDS" "$url" || echo "000"
+  curl -sS -o /dev/null -A "$USER_AGENT" -w '%{http_code}' --max-time "$TIMEOUT_SECONDS" "$url" || echo "000"
 }
 
 check_200() {
@@ -103,7 +104,7 @@ main() {
 
   check_200 "Frontend home is healthy" "$FRONTEND_URL"
   check_200 "Frontend API health is healthy" "${FRONTEND_URL}/api/health"
-  check_200 "Backend API health is healthy" "${API_URL}/health"
+  check_200 "Backend API health is healthy" "${API_URL}/api/health"
 
   if [[ "$CHECK_ROUTES" == "1" ]]; then
     check_route_200 "/signup"
