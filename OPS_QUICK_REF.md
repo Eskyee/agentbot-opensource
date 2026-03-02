@@ -3,6 +3,14 @@
 ## Overview
 These commands allow Atlas (Platform Operator) to manage the production VM instance directly via the Google Cloud SDK (`gcloud`).
 
+## Instance Details (Live)
+- **Name:** agentbot-prod
+- **Zone:** us-central1-a
+- **Machine Type:** e2-standard-4 (4 vCPU, 16GB RAM)
+- **Internal IP:** 10.128.0.3
+- **External IP:** 34.170.109.115
+- **Status:** RUNNING (Last checked: 2026-03-02 21:56 GMT)
+
 ## Instance Management
 - **Stop Instance (Save Costs):**
   `gcloud compute instances stop agentbot-prod --zone=us-central1-a`
