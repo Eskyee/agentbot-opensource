@@ -35,12 +35,24 @@ providers.push(
     },
     async authorize(credentials) {
       if (!credentials) return null;
+      console.log(`[Auth] Attempting credentials login for: ${credentials.email}`);
       const user = await prisma.user.findUnique({
         where: { email: credentials.email },
       });
-      if (user && user.password && await bcrypt.compare(credentials.password, user.password)) {
+      if (!user) {
+        console.log(`[Auth] User not found: ${credentials.email}`);
+        return null;
+      }
+      if (!user.password) {
+        console.log(`[Auth] User has no password (likely OAuth-only): ${credentials.email}`);
+        return null;
+      }
+      const isValid = await bcrypt.compare(credentials.password, user.password);
+      if (isValid) {
+        console.log(`[Auth] Successful credentials login: ${credentials.email}`);
         return { id: user.id, name: user.name, email: user.email };
       }
+      console.log(`[Auth] Invalid password for: ${credentials.email}`);
       return null;
     },
   })
