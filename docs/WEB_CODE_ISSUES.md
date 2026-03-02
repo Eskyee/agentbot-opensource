@@ -15,18 +15,18 @@
 - **Fix:** `const headersList = await headers()`
 
 ### 3. Stripe.subscriptions.del
-- **File:** `app/lib/stripe.ts`
+- **File:** `app/lib/stripe.ts` line 54
 - **Issue:** Method `del()` doesn't exist on `SubscriptionsResource`
 - **Fix:** Use `stripe.subscriptions.cancel()` or check latest SDK
 
-## Root Cause
+---
 
-Next.js 16 has breaking changes. Stripe SDK also updated. Code needs updating.
+## Runtime Issues
 
-## Who Fixes
-
-**Gordon** - Web production code
-
-## Timeline
-
-Fix when Gordon has time. Not blocking core functionality.
+### Auth 403 Error
+- **URL:** `/login?error=Callback`
+- **Status:** 403 on `/api/auth/signin`
+- **Check:** 
+  - NextAuth config
+  - Middleware blocking
+  - Environment variables
