@@ -39,7 +39,8 @@ async function deployAgentService(tier: string, customerId: string, subscription
 export async function POST(request: Request) {
   try {
     const body = await request.text()
-    const sig = headers().get('stripe-signature') || ''
+    const headersList = await headers()
+    const sig = headersList.get('stripe-signature') || ''
 
     // Verify webhook signature
     let event
