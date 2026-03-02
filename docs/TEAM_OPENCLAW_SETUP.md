@@ -1,6 +1,19 @@
-# Team OpenClaw Setup
+# Team Agentbot MCPs & Skills
 
-## Available Skills (43/76 ready)
+## MCP Configuration (opencode.json)
+
+```json
+{
+  "mcp": {
+    "github": { "type": "remote", "url": "https://api.github.com/mcp" },
+    "docker": { "type": "local", "command": ["npx", "-y", "@modelcontextprotocol/server-docker"] },
+    "filesystem": { "type": "local", "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "."] },
+    "sentry": { "type": "remote", "url": "https://mcp.sentry.dev/mcp" },
+    "context7": { "type": "remote", "url": "https://mcp.context7.com/mcp" },
+    "grep": { "type": "remote", "url": "https://mcp.grep.app" }
+  }
+}
+```
 
 ### Essential Skills for Team
 - ✅ apple-notes - Apple Notes management
