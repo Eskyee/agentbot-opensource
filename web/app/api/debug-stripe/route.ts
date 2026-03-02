@@ -6,7 +6,6 @@ export async function GET(request: NextRequest) {
   }
   
   const priceIds = {
-    trial: process.env.STRIPE_PRICE_ID_TRIAL,
     starter: process.env.STRIPE_PRICE_ID_STARTER,
     pro: process.env.STRIPE_PRICE_ID_PRO,
     pro_plus: process.env.STRIPE_PRICE_ID_PRO_PLUS,
