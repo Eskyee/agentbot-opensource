@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, sendPaymentReceiptEmail } from '../../../lib/email';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { stripe } from '../../../lib/stripe';
+import { prisma } from '@/app/lib/prisma';
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -15,20 +14,10 @@ export async function POST(request: NextRequest) {
 
   let event;
   try {
-    const crypto = require('crypto');
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.STRIPE_WEBHOOK_SECRET)
-      .update(body, 'utf8')
-      .digest('hex');
-
-    if (signature !== expectedSignature) {
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-    }
-
-    event = JSON.parse(body);
+    event = stripe.webhooks.constructEvent(body, signature || '', process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('Webhook error:', err);
-    return NextResponse.json({ error: 'Webhook parsing failed' }, { status: 400 });
+    console.error('Webhook signature verification failed:', err);
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
   switch (event.type) {
@@ -160,7 +149,7 @@ export async function POST(request: NextRequest) {
 
     case 'customer.subscription.created':
     case 'customer.subscription.updated': {
-      const subscription = event.data.object;
+      const subscription = event.data.object as any;
       const customerEmail = subscription.customer_email;
 
       if (customerEmail) {

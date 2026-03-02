@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../../auth/[...nextauth]/route'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
   starter: { amount: 1900, name: 'Starter Plan', description: '1 AI Agent, 10GB storage, Telegram channel' },
@@ -17,6 +19,10 @@ export async function GET(request: NextRequest) {
   if (!validPlans.includes(plan)) {
     return NextResponse.redirect(new URL(`/pricing?error=invalid_plan`, origin), 303)
   }
+
+  // Capture the logged-in user's ID so the webhook can reliably update their plan
+  const session = await getServerSession(authOptions)
+  const userId = session?.user?.id || ''
 
   const stripeKey = process.env.STRIPE_SECRET_KEY
 
@@ -120,6 +126,7 @@ export async function GET(request: NextRequest) {
       metadata: {
         plan,
         source: 'agentbot-web',
+        userId,
       },
     })
 

@@ -51,7 +51,7 @@ export async function getSubscription(subscriptionId: string) {
 
 export async function cancelSubscription(subscriptionId: string) {
   try {
-    return await stripe.subscriptions.del(subscriptionId)
+    return await stripe.subscriptions.cancel(subscriptionId)
   } catch (error) {
     console.error('Failed to cancel subscription:', error)
     throw error
