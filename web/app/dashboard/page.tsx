@@ -1,4 +1,3 @@
-export const dynamic = "force-dynamic"
 
 'use client'
 
@@ -355,6 +354,8 @@ function DashboardContent() {
                     {instance?.plan || 'Sign up for plan'}
                 </div>
                 <div>
+                  </dd>
+                </div>
                   <dt className="text-xs text-gray-500 uppercase">Version</dt>
                   <dd className="font-mono text-gray-300">{instance?.openclawVersion || '2026.2.26'}</dd>
                 </div>
