@@ -116,21 +116,6 @@ services:
         - path: ./web
           action: rebuild
 
-  # Nginx reverse proxy for local wildcard subdomain testing
-  nginx:
-    image: nginx:alpine
-    container_name: agentbot-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certs:/etc/nginx/certs:ro
-    depends_on:
-      - frontend
-      - api
-    command: nginx -g 'daemon off;'
-
 volumes:
   postgres_data:
   redis_data:

@@ -8,9 +8,13 @@ RUN apk add --no-cache openssl
 
 COPY package*.json ./
 COPY prisma ./prisma
-RUN npm install --legacy-peer-deps --force
 
+# Install dependencies first (skip scripts to avoid prisma generate failing)
+RUN npm install --ignore-scripts --legacy-peer-deps --force
+
+# Now copy the full app and generate Prisma client with explicit prisma v5
 COPY . .
+RUN npm install -g prisma@5.22.0 && prisma generate
 
 EXPOSE 3000
 ENV PORT=3000
