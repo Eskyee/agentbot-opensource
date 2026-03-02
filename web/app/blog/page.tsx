@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'daily-2026-03-02',
+    date: '2 March 2026',
+    title: 'Daily OpenClaw Updates: Performance & Stability Improvements',
+    excerpt: 'Latest improvements to OpenClaw including gateway stability enhancements and configuration fixes.',
+    tags: ["OpenClaw","Updates"]
+  },
+  {
     slug: 'daily-2026-03-01',
     date: '1 March 2026',
     title: 'Exciting OpenClaw Updates: Improved Performance and Enhanced Usability',
