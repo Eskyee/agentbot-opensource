@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -37,7 +36,6 @@ interface InstanceData {
   openclawVersion?: string
   botUsername?: string
   gatewayToken?: string
-  // Verification fields
   verified?: boolean
   verificationType?: string | null
   attestationUid?: string | null
@@ -200,7 +198,6 @@ function DashboardContent() {
         await navigator.clipboard.writeText(token)
         alert('Token copied to clipboard!')
       } catch {
-        // Fallback for clipboard issues
         const textArea = document.createElement('textarea')
         textArea.value = token
         textArea.style.position = 'fixed'
@@ -232,7 +229,6 @@ function DashboardContent() {
   if (error) {
     return (
       <div className="flex h-screen bg-black">
-        {/* Sidebar */}
         <DashboardSidebar 
           userName={userName} 
           isOpen={sidebarOpen}
@@ -263,7 +259,6 @@ function DashboardContent() {
 
   return (
     <div className="flex h-screen bg-black">
-      {/* Sidebar */}
       <DashboardSidebar 
         userName={userName} 
         credits={credits} 
@@ -271,13 +266,10 @@ function DashboardContent() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="p-4 lg:p-8">
-          {/* Header with menu button */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors z-50"
@@ -300,7 +292,6 @@ function DashboardContent() {
               >
                 <span>+</span> New Agent
               </a>
-              {/* Verification Badge */}
               {instance?.verified && (
                 <AgentVerifiedBadge verified={instance.verified} verificationType={instance.verificationType} />
               )}
@@ -313,9 +304,7 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Main Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Instance Info */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>🤖</span> Agent Details
@@ -350,12 +339,9 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize flex items-center gap-2">
-                    {instance?.plan || 'Sign up for plan'}
+                  <dd className="text-gray-300 capitalize">{instance?.plan || 'Starter'}</dd>
                 </div>
                 <div>
-                  </dd>
-                </div>
                   <dt className="text-xs text-gray-500 uppercase">Version</dt>
                   <dd className="font-mono text-gray-300">{instance?.openclawVersion || '2026.2.26'}</dd>
                 </div>
@@ -366,7 +352,6 @@ function DashboardContent() {
               </dl>
             </div>
 
-            {/* Stats & Health */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>📊</span> Stats & Health
@@ -407,10 +392,7 @@ function DashboardContent() {
                     <span>{stats?.cpu || '0%'}</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    {/* Progress bar: set width via Tailwind or style prop, but avoid custom CSS variables for compatibility */}
-                    <div
-                      className={`h-full bg-white rounded-full ${getBarWidthClass(stats?.cpu)}`}
-                    />
+                    <div className={`h-full bg-white rounded-full ${getBarWidthClass(stats?.cpu)}`} />
                   </div>
                 </div>
                 <div>
@@ -419,21 +401,17 @@ function DashboardContent() {
                     <span>{stats?.memory || '0%'}</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full bg-purple-500 rounded-full ${getBarWidthClass(stats?.memory)}`}
-                    />
+                    <div className={`h-full bg-purple-500 rounded-full ${getBarWidthClass(stats?.memory)}`} />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>⚡</span> Quick Actions
               </h2>
               <div className="space-y-3">
-                {/* Open OpenClaw UI */}
                 <a
                   href={instance?.url}
                   target="_blank"
@@ -443,7 +421,6 @@ function DashboardContent() {
                   <span className="font-semibold">🎮 Open OpenClaw UI</span>
                   <span>→</span>
                 </a>
-                {/* Open Telegram */}
                 {instance?.botUsername && (
                   <a
                     href={`https://t.me/${instance?.botUsername}`}
@@ -493,7 +470,6 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Control Panel */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>🎛️</span> Control Panel
@@ -511,7 +487,6 @@ function DashboardContent() {
                   {actionLoading === 'repair' ? <span className="animate-spin">⏳</span> : <span>→</span>}
                 </button>
                 
-                {/* Gateway Token */}
                 <div className="bg-gray-800 rounded-lg p-3">
                   <div className="text-xs text-gray-400 mb-2">Gateway Token</div>
                   <div className="flex items-center gap-2">
@@ -534,7 +509,6 @@ function DashboardContent() {
                   </div>
                 </div>
                 
-                {/* Reset Memory */}
                 <button
                   onClick={() => {
                     if (confirm('⚠️ Wipe memory, identity & conversation history? This cannot be undone.')) {
@@ -553,12 +527,10 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Tasks */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>📋</span> Tasks
               </h2>
-              {/* Task Tabs */}
               <div className="flex gap-2 mb-4 overflow-x-auto">
                 {['all', 'recurring', 'chat', 'scheduled', 'completed'].map((tab) => (
                   <button
@@ -572,7 +544,6 @@ function DashboardContent() {
                   </button>
                 ))}
               </div>
-              {/* Task Input */}
               <div className="mb-4">
                 <div className="flex gap-2">
                   <input
@@ -592,7 +563,6 @@ function DashboardContent() {
                     Send
                   </button>
                 </div>
-                {/* Quick Actions */}
                 <div className="flex gap-2 mt-3 flex-wrap">
                   <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">🔍 Research</button>
                   <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📧 Draft email</button>
@@ -600,7 +570,6 @@ function DashboardContent() {
                   <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">✍️ Write a post</button>
                 </div>
               </div>
-              {/* Task List */}
               <div className="space-y-2">
                 {tasks.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 text-sm">
@@ -622,20 +591,17 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Heartbeat */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>💓</span> Heartbeat
               </h2>
               <p className="text-sm text-gray-400 mb-4">Your agent's pulse. See when it last checked in and control how often it does.</p>
               
-              {/* Status */}
               <div className="flex items-center gap-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-green-400"></span>
                 <span className="text-sm">On schedule</span>
               </div>
               
-              {/* Frequency */}
               <div className="mb-4">
                 <div className="text-xs text-gray-500 mb-2">Frequency</div>
                 <div className="flex gap-2 flex-wrap">
@@ -653,7 +619,6 @@ function DashboardContent() {
                 </div>
               </div>
               
-              {/* Stats */}
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <div className="text-xs text-gray-500">Last seen</div>
@@ -667,7 +632,6 @@ function DashboardContent() {
                 </div>
               </div>
               
-              {/* Credits */}
               <div className="bg-gray-800 rounded-lg p-3">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-400">Daily heartbeat pool</span>
@@ -680,7 +644,6 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Skills */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>🎯</span> Active Skills
@@ -704,7 +667,6 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Channels */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>💬</span> Channels
@@ -725,10 +687,8 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Agent Wallet */}
             <WalletCard />
 
-            {/* Help */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>❓</span> Help & Support
@@ -747,7 +707,6 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Activity Log */}
           <div className="mt-6 bg-gray-900 rounded-2xl p-6 border border-gray-800">
             <h2 className="text-lg font-semibold mb-4">📝 Recent Activity</h2>
             <div className="text-gray-400 text-sm space-y-2">
@@ -767,7 +726,6 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Referral */}
           <div className="mt-6 bg-gradient-to-r from-white/20 to-gray-200/20 rounded-2xl p-6 border border-white/30">
             <div className="flex items-center justify-between">
               <div>
@@ -803,7 +761,6 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
   const pathname = usePathname()
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black/50 z-40"
@@ -812,14 +769,12 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
         />
       )}
       
-      {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-50
         w-64 bg-gray-900 border-r border-gray-800 flex flex-col
         transform transition-transform duration-200 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Close button (mobile only) */}
         <button
           onClick={onToggle}
           className="lg:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
@@ -830,7 +785,6 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
           </svg>
         </button>
 
-        {/* Nav */}
         <nav className="flex-1 p-4 overflow-y-auto pt-16 lg:pt-4">
           <div className="space-y-1">
             {navItems.map((item) => (
@@ -850,14 +804,12 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
             ))}
           </div>
 
-          {/* Plan */}
           <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
             <div className="text-sm text-gray-400 mb-1">Your Plan</div>
             <div className="text-xl font-bold">Starter</div>
           </Link>
         </nav>
 
-        {/* User */}
         <div className="p-4 border-t border-gray-800">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">
