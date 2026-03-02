@@ -72,23 +72,30 @@ export default function SettingsPage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
-  const [apiKeys, setApiKeys] = useState([
-    { id: '1', name: 'Production Key', key: 'sk_live_...x4a2', created: '2026-02-15' },
-    { id: '2', name: 'Development Key', key: 'sk_test_...b3c1', created: '2026-02-10' },
-  ])
+  const [apiKeys, setApiKeys] = useState<{ id: string; name: string; key: string; created: string }[]>([])
+  const [agents, setAgents] = useState<any[]>([])
   const [referralLink] = useState('https://agentbot.raveculture.xyz/ref/user123')
   const [referrals] = useState(5)
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch('/api/settings')
-        if (res.ok) {
-          const data = await res.json()
+        const [settingsRes, agentsRes] = await Promise.all([
+          fetch('/api/settings'),
+          fetch('/api/agents')
+        ])
+        
+        if (settingsRes.ok) {
+          const data = await settingsRes.json()
           setDisplayName(data.name || '')
           setEmail(data.email || '')
           setCredits(data.credits || 0)
           setTwoFactorEnabled(data.twoFactorEnabled || false)
+        }
+
+        if (agentsRes.ok) {
+          const data = await agentsRes.json()
+          setAgents(data.agents || [])
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error)
@@ -272,43 +279,67 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">API Keys</h2>
-              <button 
-                onClick={createApiKey}
-                className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200"
-              >
-                + Create Key
-              </button>
+              {agents.length > 0 && (
+                <button 
+                  onClick={createApiKey}
+                  className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200"
+                >
+                  + Create Key
+                </button>
+              )}
             </div>
 
-            <div className="rounded-xl border border-gray-800 bg-gray-900/50 overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-800/50">
-                  <tr>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Name</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Key</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Created</th>
-                    <th className="text-right p-4 text-sm font-medium text-gray-400">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {apiKeys.map((key) => (
-                    <tr key={key.id} className="border-t border-gray-800">
-                      <td className="p-4 font-medium">{key.name}</td>
-                      <td className="p-4 font-mono text-sm text-gray-400">{key.key}</td>
-                      <td className="p-4 text-gray-400">{key.created}</td>
-                      <td className="p-4 text-right">
-                        <button 
-                          onClick={() => deleteApiKey(key.id)}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </td>
+            {agents.length === 0 ? (
+              <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-12 text-center">
+                <div className="text-4xl mb-4">🤖</div>
+                <h3 className="text-lg font-medium mb-2">No Agents Deployed</h3>
+                <p className="text-gray-400 text-sm max-w-sm mx-auto mb-6">
+                  API keys are only available once you have a live agent. 
+                  Deploy your first agent from the marketplace to get started.
+                </p>
+                <Link href="/marketplace" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
+                  Go to Marketplace
+                </Link>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-gray-800 bg-gray-900/50 overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-800/50">
+                    <tr>
+                      <th className="text-left p-4 text-sm font-medium text-gray-400">Name</th>
+                      <th className="text-left p-4 text-sm font-medium text-gray-400">Key</th>
+                      <th className="text-left p-4 text-sm font-medium text-gray-400">Created</th>
+                      <th className="text-right p-4 text-sm font-medium text-gray-400">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {apiKeys.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-gray-500 italic">
+                          No API keys created yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      apiKeys.map((key) => (
+                        <tr key={key.id} className="border-t border-gray-800">
+                          <td className="p-4 font-medium">{key.name}</td>
+                          <td className="p-4 font-mono text-sm text-gray-400">{key.key}</td>
+                          <td className="p-4 text-gray-400">{key.created}</td>
+                          <td className="p-4 text-right">
+                            <button 
+                              onClick={() => deleteApiKey(key.id)}
+                              className="text-red-400 hover:text-red-300 text-sm"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
