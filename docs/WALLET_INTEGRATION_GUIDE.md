@@ -34,6 +34,9 @@ User → Agentbot → CDP SDK → Base Network → Blockchain
 
 ### Step 2: Add to Vercel
 ```
+CDP_API_KEY = f7ec7e83-4aef-4c67-851c-e7684807e91b
+CDP_PROJECT_ID = 8fbd3bcb-435d-4fb6-a63b-2a6ad2fe2968
+```
 CDP_API_KEY = your_key_here
 CDP_PROJECT_ID = your_project_id
 ```
