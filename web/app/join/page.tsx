@@ -1,9 +1,10 @@
+export const dynamic = "force-dynamic"
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-export default function JoinPage() {
+function JoinContent() {
   const searchParams = useSearchParams()
   const code = searchParams.get('code')
   const [email, setEmail] = useState('')
@@ -110,5 +111,24 @@ export default function JoinPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function JoinFallback() {
+  return (
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+        <p className="text-xl">Loading...</p>
+      </div>
+    </div>
+  )
+}
+
+export default function JoinPage() {
+  return (
+    <Suspense fallback={<JoinFallback />}>
+      <JoinContent />
+    </Suspense>
   )
 }
