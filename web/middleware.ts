@@ -4,20 +4,18 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  // Allow stripe webhook without any checks
+  // Allow stripe webhook
   if (pathname === '/api/stripe/webhook') {
     return NextResponse.next()
   }
 
-  try {
-    const userAgent = request.headers.get('user-agent')
-    if (userAgent && /curl|wget|bot/i.test(userAgent)) {
-      return new NextResponse(JSON.stringify({ error: 'Access Denied' }), { status: 403 })
-    }
-    return NextResponse.next()
-  } catch (error) {
+  // Allow health checks
+  if (pathname === '/api/health') {
     return NextResponse.next()
   }
+
+  // Allow all other requests
+  return NextResponse.next()
 }
 
 export const config = {
