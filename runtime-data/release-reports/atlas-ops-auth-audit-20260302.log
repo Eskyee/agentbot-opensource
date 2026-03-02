@@ -1,0 +1,26 @@
+# 2026-03-02: Authentication Issue Audit (22:15 GMT)
+
+## Incident Report
+User reports "Invalid email or password" error during login, and OAuth (GitHub/Google) is non-functional.
+
+## Technical Audit
+1.  **Environment Variables:** Verified that `GOOGLE_CLIENT_ID` and `GITHUB_CLIENT_ID` are set in `.env.frontend`. However, these MUST also be set as **Production Environment Variables** in the Vercel Dashboard for OAuth to work in the live environment.
+2.  **NextAuth Configuration:** The `authorize` function in `[...nextauth]/route.ts` was silent on failures.
+3.  **Password Hashing:** Found a discrepancy in `bcrypt` salt rounds:
+    - `register/route.ts` uses **10** rounds.
+    - `auth/reset-password/route.ts` uses **12** rounds.
+    - `nextauth` uses whatever rounds were used during creation. (This is generally safe, as `bcrypt.compare` handles the salt automatically).
+4.  **Registration Logic:** The system correctly sends a welcome email upon registration.
+
+## Actions Taken
+1.  **Debugging Logs:** Injected detailed logging into the `authorize` loop (Commit `66b0745`) to track exactly where the credentials login is failing (User Not Found vs. Password Mismatch vs. OAuth-only account).
+2.  **Verification Flow:** Standing by for Vercel logs to see the output of these new debug statements.
+
+## Required Manual Actions (Eskyee)
+1.  **Vercel Env Vars:** Please double-check that `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET` are exactly the same in **Vercel Project Settings** as they are in your local `.env`. 
+2.  **Redirect URIs:** In the Google/GitHub Developer Consoles, ensure the "Authorized Redirect URIs" are set to:
+    - `https://agentbot.raveculture.xyz/api/auth/callback/google`
+    - `https://agentbot.raveculture.xyz/api/auth/callback/github`
+
+## Ops Observation
+If credentials login is failing for a known user, it is likely that the `NEXTAUTH_SECRET` in Vercel does not match the one used to hash the session, or the user originally signed up via OAuth and never set a password.
