@@ -46,7 +46,7 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
           </div>
           <div>
             <div className="font-medium">{userName}</div>
-            <div className="text-sm text-blue-400">Sign up</div>
+            <div className="text-sm text-blue-400">Account</div>
           </div>
         </div>
       </div>

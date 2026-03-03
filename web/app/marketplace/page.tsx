@@ -174,7 +174,7 @@ export default function MarketplacePage() {
                   ))}
                 </div>
                 <Link
-                  href="/signup"
+                  href={session ? "/dashboard" : "/signup"}
                   className="block w-full text-center rounded-lg bg-gray-900 px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white hover:bg-gray-700 transition-colors"
                 >
                   Use {template.name}
@@ -225,7 +225,7 @@ export default function MarketplacePage() {
                 Deploy agents with crypto wallets. Powered by Coinbase CDP - send USDC, 
                 check balances, swap tokens, and more. Zero-fee onchain payments.
               </p>
-              <Link href="/signup" className="text-sm sm:text-base text-white hover:underline font-semibold">
+              <Link href={session ? "/dashboard" : "/signup"} className="text-sm sm:text-base text-white hover:underline font-semibold">
                 Deploy crypto agent →
               </Link>
             </div>
