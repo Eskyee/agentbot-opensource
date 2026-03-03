@@ -763,21 +763,21 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
     <>
       {isOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
           onClick={onToggle}
           aria-hidden="true"
         />
       )}
       
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50
+        fixed md:static inset-y-0 left-0 z-50
         w-64 bg-gray-900 border-r border-gray-800 flex flex-col
         transform transition-transform duration-200 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <button
           onClick={onToggle}
-          className="lg:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+          className="md:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
           aria-label="Close sidebar"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -785,7 +785,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
           </svg>
         </button>
 
-        <nav className="flex-1 p-4 overflow-y-auto pt-16 lg:pt-4">
+        <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
           <div className="space-y-1">
             {navItems.map((item) => (
               <Link
