@@ -1,6 +1,9 @@
 import Link from 'next/link'
+import { getServerSession } from 'next-auth'
+import { authOptions } from './api/auth/[...nextauth]/route'
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions)
 
   return (
     <main className="min-h-screen">
@@ -26,12 +29,21 @@ export default function Home() {
           </p>
           
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/signup"
-              className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
-            >
-              Get Started →
-            </Link>
+            {session ? (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
+              >
+                Go to Dashboard →
+              </Link>
+            ) : (
+              <Link
+                href="/signup"
+                className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-2.5 text-sm font-medium text-black shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_1px_0_rgba(0,0,0,0.05),0_4px_8px_rgba(0,0,0,0.12)] hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors"
+              >
+                Get Started →
+              </Link>
+            )}
             <Link
               href="/docs"
               className="inline-flex items-center justify-center rounded-lg bg-gray-1 border border-gray-4 px-6 py-2.5 text-sm font-medium text-white hover:bg-gray-2 hover:border-gray-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 transition-colors"
@@ -42,17 +54,35 @@ export default function Home() {
 
           {/* Quick Actions */}
           <div className="mt-12 flex flex-wrap items-center justify-center gap-4 text-sm">
-            <Link href="/signup?mode=link" className="text-gray-6 hover:text-white transition-colors">
-              Link existing OpenClaw →
-            </Link>
-            <span className="text-gray-8">·</span>
-            <Link href="/signup?mode=create" className="text-gray-6 hover:text-white transition-colors">
-              Create Agentbot →
-            </Link>
-            <span className="text-gray-8">·</span>
-            <Link href="/signup?mode=deploy" className="text-gray-6 hover:text-white transition-colors">
-              Deploy OpenClaw with one click →
-            </Link>
+            {session ? (
+              <>
+                <Link href="/agents" className="text-gray-6 hover:text-white transition-colors">
+                  My Agents →
+                </Link>
+                <span className="text-gray-8">·</span>
+                <Link href="/deployments" className="text-gray-6 hover:text-white transition-colors">
+                  Deployments →
+                </Link>
+                <span className="text-gray-8">·</span>
+                <Link href="/settings" className="text-gray-6 hover:text-white transition-colors">
+                  Settings →
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/signup?mode=link" className="text-gray-6 hover:text-white transition-colors">
+                  Link existing OpenClaw →
+                </Link>
+                <span className="text-gray-8">·</span>
+                <Link href="/signup?mode=create" className="text-gray-6 hover:text-white transition-colors">
+                  Create Agentbot →
+                </Link>
+                <span className="text-gray-8">·</span>
+                <Link href="/signup?mode=deploy" className="text-gray-6 hover:text-white transition-colors">
+                  Deploy OpenClaw with one click →
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
