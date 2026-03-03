@@ -77,6 +77,10 @@ export default function SettingsPage() {
   const [referralLink, setReferralLink] = useState('')
   const [referralCount, setReferralCount] = useState(0)
   const [referralCredits, setReferralCredits] = useState(0)
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [passwordLoading, setPasswordLoading] = useState(false)
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -131,6 +135,47 @@ export default function SettingsPage() {
       alert('Failed to update profile')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const savePassword = async () => {
+    setPasswordError('')
+    setPasswordSuccess(false)
+    
+    if (passwordForm.new !== passwordForm.confirm) {
+      setPasswordError('New passwords do not match')
+      return
+    }
+    if (passwordForm.new.length < 6) {
+      setPasswordError('Password must be at least 6 characters')
+      return
+    }
+    
+    setPasswordLoading(true)
+    try {
+      const res = await fetch('/api/settings/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          currentPassword: passwordForm.current, 
+          newPassword: passwordForm.new 
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setPasswordSuccess(true)
+        setPasswordForm({ current: '', new: '', confirm: '' })
+        setTimeout(() => {
+          setShowPasswordModal(false)
+          setPasswordSuccess(false)
+        }, 2000)
+      } else {
+        setPasswordError(data.error || 'Failed to change password')
+      }
+    } catch (error) {
+      setPasswordError('Failed to change password')
+    } finally {
+      setPasswordLoading(false)
     }
   }
 
@@ -476,6 +521,67 @@ export default function SettingsPage() {
             <Link href="/dashboard" className="text-white hover:underline mt-2 inline-block">
               Go to Dashboard →
             </Link>
+          </div>
+        )}
+
+        {/* Password Modal */}
+        {showPasswordModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md">
+              <h3 className="text-xl font-semibold mb-4">Change Password</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Current Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.current}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.new}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.confirm}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-white focus:outline-none"
+                  />
+                </div>
+                
+                {passwordError && (
+                  <p className="text-red-400 text-sm">{passwordError}</p>
+                )}
+                {passwordSuccess && (
+                  <p className="text-green-400 text-sm">Password changed successfully!</p>
+                )}
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => { setShowPasswordModal(false); setPasswordError(''); }}
+                  className="flex-1 rounded-lg border border-gray-700 px-4 py-2 hover:bg-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={savePassword}
+                  disabled={passwordLoading || !passwordForm.current || !passwordForm.new || !passwordForm.confirm}
+                  className="flex-1 rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200 disabled:opacity-50"
+                >
+                  {passwordLoading ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
         </div>
