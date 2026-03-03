@@ -74,15 +74,17 @@ export default function SettingsPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [apiKeys, setApiKeys] = useState<{ id: string; name: string; key: string; created: string }[]>([])
   const [agents, setAgents] = useState<any[]>([])
-  const [referralLink] = useState('https://agentbot.raveculture.xyz/ref/user123')
-  const [referrals] = useState(5)
+  const [referralLink, setReferralLink] = useState('')
+  const [referralCount, setReferralCount] = useState(0)
+  const [referralCredits, setReferralCredits] = useState(0)
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const [settingsRes, agentsRes] = await Promise.all([
+        const [settingsRes, agentsRes, referralRes] = await Promise.all([
           fetch('/api/settings'),
-          fetch('/api/agents')
+          fetch('/api/agents'),
+          fetch('/api/referral')
         ])
         
         if (settingsRes.ok) {
@@ -96,6 +98,13 @@ export default function SettingsPage() {
         if (agentsRes.ok) {
           const data = await agentsRes.json()
           setAgents(data.agents || [])
+        }
+
+        if (referralRes.ok) {
+          const data = await referralRes.json()
+          setReferralLink(`https://agentbot.raveculture.xyz/signup?ref=${data.referralCode || ''}`)
+          setReferralCount(data.referralCount || 0)
+          setReferralCredits(data.creditEarned || 0)
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error)
@@ -365,7 +374,7 @@ export default function SettingsPage() {
                 </button>
               </div>
               <p className="mt-4 text-gray-400">
-                🎉 <strong>{referrals}</strong> people have joined using your link!
+                🎉 <strong>{referralCount}</strong> people have joined using your link! You have £{referralCredits} in credits.
               </p>
             </div>
 
@@ -373,8 +382,8 @@ export default function SettingsPage() {
               <h3 className="font-semibold mb-4">How it works</h3>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>• Share your unique referral link</li>
-                <li>• They get <strong>£30 off</strong> their first month</li>
-                <li>• You get <strong>£30 credit</strong> for each referral</li>
+                <li>• They get <strong>£10 off</strong> their first month</li>
+                <li>• You get <strong>£10 credit</strong> for each referral</li>
               </ul>
             </div>
           </div>
