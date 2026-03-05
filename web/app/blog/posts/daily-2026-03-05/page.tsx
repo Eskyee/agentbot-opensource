@@ -39,12 +39,13 @@ export default function Post() {
           <p className="text-gray-300 mb-4">The Advanced Guide has been rebuilt as the <strong>Developer Guide</strong>. It now features proper documentation for the Bankr SDK, Clanker v4, Agentbot, and OpenClaw, with every section linking to official docs.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Under The Hood</h2>
-          <p className="text-gray-300 mb-4">We've hardened the infrastructure with several key fixes:</p>
+          <p className="text-gray-300 mb-4">We've hardened the infrastructure and expanded our security posture:</p>
           <ul className="list-disc list-inside text-gray-300 mb-4">
-            <li>Security vulnerabilities patched</li>
-            <li>Toast notifications added for better UX</li>
-            <li>Offline detection and error retry logic</li>
-            <li>Enhanced DJ analytics and community page refinements</li>
+            <li><strong>ClawHub + VirusTotal Integration</strong>: Following the official <a href="https://openclaw.ai/blog/virustotal-partnership" className="text-blue-400 hover:underline">OpenClaw partnership</a>, all skills on our platform are now scanned using VirusTotal’s threat intelligence and AI Code Insight.</li>
+            <li>Security vulnerabilities patched and environment variables locked.</li>
+            <li>Toast notifications added for better UX.</li>
+            <li>Offline detection and error retry logic.</li>
+            <li>Enhanced DJ analytics and community page refinements.</li>
           </ul>
 
           <p className="text-gray-300 mt-8 mb-4">What's next? Community-built agent skills, deeper OpenClaw integration, and enhanced trading analytics. baseFM is where underground music meets onchain infrastructure.</p>
