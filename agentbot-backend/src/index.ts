@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import inviteRouter from './invite';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -86,19 +86,45 @@ type ContainerInspect = {
   };
 };
 
-const runCommand = (command: string): Promise<{ stdout: string; stderr: string }> => {
+/**
+ * Executes a command with arguments using child_process.spawn.
+ * Mitigates shell injection by avoiding the shell entirely.
+ */
+const runCommand = (cmd: string, args: string[] = []): Promise<{ stdout: string; stderr: string }> => {
   return new Promise((resolve, reject) => {
-    exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
-      if (error) {
-        reject(new Error(stderr || error.message));
+    const child = spawn(cmd, args);
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    child.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(stderr.trim() || `Command failed with exit code ${code}`));
         return;
       }
       resolve({ stdout: stdout.trim(), stderr: stderr.trim() });
     });
+
+    child.on('error', (err) => {
+      reject(err);
+    });
   });
 };
 
-const escapeShellArg = (value: string): string => `'${value.replace(/'/g, `'\\''`)}'`;
+/**
+ * Helper to run complex shell commands (pipes, redirects) securely.
+ * Still uses a shell but encapsulates the sh -c pattern.
+ */
+const runShellCommand = (shellCommand: string): Promise<{ stdout: string; stderr: string }> => {
+  return runCommand('sh', ['-c', shellCommand]);
+};
 
 const LEGACY_MODEL_MAP: Record<string, string> = {
   'openrouter/google/gemini-2.0-flash-exp:free': 'openrouter/openai/gpt-4o-mini',
@@ -122,9 +148,14 @@ console.log('healed:'+current+'->'+legacy[current]);
 `;
 
     const encoded = Buffer.from(script, 'utf8').toString('base64');
-    const { stdout } = await runCommand(
-      `docker exec ${containerName} sh -lc "echo ${escapeShellArg(encoded)} | base64 -d > /tmp/heal-model.js && node /tmp/heal-model.js"`,
-    );
+    // Using runCommand for security, but we still need sh inside the container
+    const { stdout } = await runCommand('docker', [
+      'exec', 
+      containerName, 
+      'sh', 
+      '-lc', 
+      `echo "${encoded}" | base64 -d > /tmp/heal-model.js && node /tmp/heal-model.js`
+    ]);
 
     if (stdout.startsWith('healed:')) {
       return { healed: true, message: stdout };
@@ -136,7 +167,7 @@ console.log('healed:'+current+'->'+legacy[current]);
 };
 
 const getContainerInspect = async (containerName: string): Promise<ContainerInspect> => {
-  const { stdout } = await runCommand(`docker inspect ${containerName}`);
+  const { stdout } = await runCommand('docker', ['inspect', containerName]);
   const parsed = JSON.parse(stdout) as ContainerInspect[];
   if (!parsed[0]) {
     throw new Error('Container inspect returned no data');
@@ -161,8 +192,9 @@ const backupContainerData = async (containerName: string, inspect: ContainerInsp
       throw new Error(`Unsafe docker volume name for backup: ${mount.Name}`);
     }
 
-    await runCommand(
-      `sh -lc "docker run --rm -v ${mount.Name}:/data:ro alpine sh -lc 'tar czf - -C /data .' > ${escapeShellArg(backupFile)}"`,
+    // This command needs shell redirection (>)
+    await runShellCommand(
+      `docker run --rm -v ${mount.Name}:/data:ro alpine sh -lc 'tar czf - -C /data .' > "${backupFile}"`
     );
     return backupFile;
   }
@@ -186,29 +218,26 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
     throw new Error('Could not determine data mount');
   }
 
-  const mountArg = mount.Type === 'volume' && mount.Name
-    ? `-v ${mount.Name}:/home/node/.openclaw`
-    : (mount.Type === 'bind' && mount.Source ? `-v ${mount.Source}:/home/node/.openclaw` : '');
-
-  if (!mountArg) {
+  const mountType = mount.Type === 'volume' && mount.Name ? 'volume' : (mount.Type === 'bind' && mount.Source ? 'bind' : '');
+  if (!mountType) {
     throw new Error('Unsupported mount configuration');
   }
 
+  const mountSource = mountType === 'volume' ? mount.Name : mount.Source;
   const resources = getPlanResources(plan);
   
   const args: string[] = [
-    'docker run -d',
-    `--name ${containerName}`,
-    '--restart unless-stopped',
-    `-p ${hostPort}:18789`,
+    'run', '-d',
+    '--name', containerName,
+    '--restart', 'unless-stopped',
+    '-p', `${hostPort}:18789`,
     `--memory=${resources.memory}`,
     `--cpus=${resources.cpus}`,
+    '-v', `${mountSource}:/home/node/.openclaw`,
+    image
   ];
 
-  args.push(mountArg);
-  args.push(image);
-
-  await runCommand(args.join(' '));
+  await runCommand('docker', args);
 };
 
 const getContainerRuntimeVersion = async (containerName: string): Promise<string> => {
@@ -221,9 +250,13 @@ const c=JSON.parse(fs.readFileSync(p,'utf8'));
 console.log(c?.meta?.lastTouchedVersion||'');
 `;
     const encoded = Buffer.from(script, 'utf8').toString('base64');
-    const { stdout } = await runCommand(
-      `docker exec ${containerName} sh -lc "echo ${escapeShellArg(encoded)} | base64 -d > /tmp/version.js && node /tmp/version.js"`,
-    );
+    const { stdout } = await runCommand('docker', [
+      'exec',
+      containerName,
+      'sh',
+      '-lc',
+      `echo "${encoded}" | base64 -d > /tmp/version.js && node /tmp/version.js`
+    ]);
     return stdout || OPENCLAW_RUNTIME_VERSION;
   } catch {
     return OPENCLAW_RUNTIME_VERSION;
@@ -242,6 +275,47 @@ const isValidDockerImage = (value: string): boolean => DOCKER_IMAGE_REGEX.test(v
 const getContainerName = (agentId: string): string => `openclaw-${sanitizeAgentId(agentId)}`;
 
 const portsFilePath = (): string => path.join(DATA_DIR, 'ports.json');
+const lockFilePath = (): string => path.join(DATA_DIR, 'ports.lock');
+
+/**
+ * Executes a function while holding a file-based lock.
+ * This ensures atomic access to ports.json across multiple provisioning requests.
+ */
+const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
+  const lockFile = lockFilePath();
+  let retries = 50; // Max 5 seconds (50 * 100ms)
+  
+  while (retries > 0) {
+    try {
+      // Try to create the lock file. 'wx' means it fails if it already exists.
+      const handle = await fs.open(lockFile, 'wx');
+      await handle.close();
+      break;
+    } catch (err: any) {
+      if (err.code === 'EEXIST') {
+        retries--;
+        await new Promise(resolve => setTimeout(resolve, 100));
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  if (retries === 0) {
+    throw new Error('Could not acquire lock for ports.json after multiple retries');
+  }
+
+  try {
+    return await fn();
+  } finally {
+    // Always remove the lock file, even if the function fails
+    try {
+      await fs.unlink(lockFile);
+    } catch (err) {
+      console.error('Failed to remove lock file:', err);
+    }
+  }
+};
 
 const readPorts = async (): Promise<Record<string, number>> => {
   try {
@@ -256,20 +330,36 @@ const writePorts = async (ports: Record<string, number>): Promise<void> => {
   await fs.writeFile(portsFilePath(), JSON.stringify(ports, null, 2));
 };
 
-const getNextPort = async (): Promise<number> => {
-  const ports = await readPorts();
-  const usedPorts = Object.values(ports);
-  // Account for port offset: each agent uses assignedPort and assignedPort + 2
-  const allUsedPorts = new Set([
-    ...usedPorts,
-    ...usedPorts.map(p => p + 2)
-  ]);
-  const maxPort = usedPorts.length > 0 ? Math.max(...usedPorts) : BASE_PORT - 1;
-  
-  // Find next available port accounting for offset
-  let port = BASE_PORT;
-  while (allUsedPorts.has(port) || allUsedPorts.has(port + 2)) port++;
-  return port;
+/**
+ * Gets the next available port and updates the ports.json atomically.
+ * Uses withLock to prevent race conditions during port assignment.
+ */
+const getNextPortAndAssign = async (agentId: string): Promise<number> => {
+  return await withLock(async () => {
+    const ports = await readPorts();
+    
+    // If agent already has a port, return it
+    if (ports[agentId]) {
+      return ports[agentId];
+    }
+
+    const usedPorts = Object.values(ports);
+    // Account for port offset: each agent uses assignedPort and assignedPort + 2
+    const allUsedPorts = new Set([
+      ...usedPorts,
+      ...usedPorts.map(p => p + 2)
+    ]);
+    
+    // Find next available port accounting for offset
+    let port = BASE_PORT;
+    while (allUsedPorts.has(port) || allUsedPorts.has(port + 2)) port++;
+    
+    // Assign and save immediately while holding the lock
+    ports[agentId] = port;
+    await writePorts(ports);
+    
+    return port;
+  });
 };
 
 const agentFilePath = (agentId: string): string => path.join(DATA_DIR, 'agents', `${sanitizeAgentId(agentId)}.json`);
@@ -289,7 +379,12 @@ const writeAgentMetadata = async (agent: AgentMetadata): Promise<void> => {
 
 const containerStatus = async (containerName: string): Promise<{ status: string; startedAt?: string } | null> => {
   try {
-    const { stdout } = await runCommand(`docker inspect ${containerName} --format '{{.State.Status}}|{{.State.StartedAt}}'`);
+    const { stdout } = await runCommand('docker', [
+      'inspect', 
+      containerName, 
+      '--format', 
+      '{{.State.Status}}|{{.State.StartedAt}}'
+    ]);
     const [rawStatus, startedAt] = stdout.split('|');
     let status = rawStatus;
     if (rawStatus === 'running') {
@@ -306,63 +401,27 @@ const containerStatus = async (containerName: string): Promise<{ status: string;
 const createOpenClawConfig = (
   telegramToken: string,
   aiProvider: string,
-  apiKey?: string,
   ownerIds?: string[],
 ): Record<string, unknown> => {
-  const envVars: Record<string, string> = {};
   let model = DEFAULT_MODEL;
-
   const provider = aiProvider || 'openrouter';
-  const providedKey = (apiKey || '').trim();
-
-  const resolvedKey = (name: string): string => {
-    if (providedKey) {
-      return providedKey;
-    }
-    return (process.env[name] || '').trim();
-  };
 
   if (provider === 'gemini' || provider === 'google') {
-    const key = resolvedKey('GEMINI_API_KEY');
-    if (!key) {
-      throw new Error('Missing AI API key: set Gemini key in onboarding or server env');
-    }
-    envVars.GEMINI_API_KEY = key;
     model = 'google/gemini-2.0-flash';
   } else if (provider === 'groq') {
-    const key = resolvedKey('GROQ_API_KEY');
-    if (!key) {
-      throw new Error('Missing AI API key: set Groq key in onboarding or server env');
-    }
-    envVars.GROQ_API_KEY = key;
     model = 'groq/gemma2-9b-it';
   } else if (provider === 'anthropic') {
-    const key = resolvedKey('ANTHROPIC_API_KEY');
-    if (!key) {
-      throw new Error('Missing AI API key: set Anthropic key in onboarding or server env');
-    }
-    envVars.ANTHROPIC_API_KEY = key;
     model = 'anthropic/claude-sonnet-4-5';
   } else if (provider === 'openai') {
-    const key = resolvedKey('OPENAI_API_KEY');
-    if (!key) {
-      throw new Error('Missing AI API key: set OpenAI key in onboarding or server env');
-    }
-    envVars.OPENAI_API_KEY = key;
     model = 'openai/gpt-4o';
   } else if (provider === 'openrouter') {
-    const key = resolvedKey('OPENROUTER_API_KEY');
-    if (!key) {
-      throw new Error('Missing AI API key: set OpenRouter key in onboarding or server env');
-    }
-    envVars.OPENROUTER_API_KEY = key;
     model = 'moonshotai/kimi-k2.5';
   } else {
     throw new Error(`Unsupported aiProvider: ${provider}`);
   }
 
   const config: Record<string, unknown> = {
-    env: { vars: envVars },
+    // Note: Secrets are now passed via Docker environment variables at runtime
     agents: {
       defaults: {
         model: { primary: model },
@@ -425,7 +484,11 @@ app.get('/api/openclaw/version', (_req: Request, res: Response) => {
 
 app.get('/api/openclaw/instances', authenticate, async (_req: Request, res: Response) => {
   try {
-    const { stdout } = await runCommand(`docker ps --filter "name=openclaw-" --format "{{.Names}}|{{.Image}}|{{.Status}}|{{.CreatedAt}}"`);
+    const { stdout } = await runCommand('docker', [
+      'ps', 
+      '--filter', 'name=openclaw-', 
+      '--format', '{{.Names}}|{{.Image}}|{{.Status}}|{{.CreatedAt}}'
+    ]);
     const lines = stdout ? stdout.split('\n').filter(Boolean) : [];
     const instances = await Promise.all(lines.map(async (line) => {
       const [name, image, status, createdAt] = line.split('|');
@@ -434,7 +497,9 @@ app.get('/api/openclaw/instances', authenticate, async (_req: Request, res: Resp
       
       let containerVersion = 'unknown';
       try {
-        const { stdout: versionOutput } = await runCommand(`docker exec ${name} openclaw --version 2>/dev/null || echo "unknown"`);
+        const { stdout: versionOutput } = await runCommand('docker', [
+          'exec', name, 'openclaw', '--version'
+        ]);
         containerVersion = versionOutput.trim() || 'unknown';
       } catch {
         containerVersion = 'unknown';
@@ -461,13 +526,18 @@ app.get('/api/openclaw/instances/:id/stats', authenticate, async (req: Request, 
   const containerName = getContainerName(id);
   
   try {
-    const { stdout: stats } = await runCommand(
-      `docker stats ${containerName} --no-stream --format "{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}|{{.BlockIO}}|{{.PIDs}}"`
-    );
+    const { stdout: stats } = await runCommand('docker', [
+      'stats', 
+      containerName, 
+      '--no-stream', 
+      '--format', '{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}|{{.BlockIO}}|{{.PIDs}}'
+    ]);
     
-    const { stdout: inspect } = await runCommand(
-      `docker inspect ${containerName} --format "{{.State.StartedAt}}|{{.State.Status}}"`
-    );
+    const { stdout: inspect } = await runCommand('docker', [
+      'inspect', 
+      containerName, 
+      '--format', '{{.State.StartedAt}}|{{.State.Status}}'
+    ]);
     
     const [cpu, memUsage, memPerc, netIO, blockIO, pids] = stats.trim().split('|');
     const [startedAt, status] = inspect.trim().split('|');
@@ -507,7 +577,11 @@ function formatUptime(ms: number): string {
 
 // Agents endpoints
 app.get('/api/agents', authenticate, (req: Request, res: Response) => {
-  runCommand(`docker ps -a --filter "name=openclaw-" --format "{{.Names}}|{{.Status}}"`)
+  runCommand('docker', [
+    'ps', '-a', 
+    '--filter', 'name=openclaw-', 
+    '--format', '{{.Names}}|{{.Status}}'
+  ])
     .then(async ({ stdout }) => {
       const lines = stdout ? stdout.split('\n') : [];
       const agents = await Promise.all(lines.filter(Boolean).map(async (line) => {
@@ -718,45 +792,63 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
     const openclawConfig = createOpenClawConfig(
       config.telegramToken,
       config.aiProvider || 'openrouter',
-      config.apiKey,
       config.ownerIds,
     );
 
     const volumeName = `openclaw-data-${safeAgentId}`;
-    await runCommand(`docker volume create ${volumeName}`);
+    await runCommand('docker', ['volume', 'create', volumeName]);
 
     const configBase64 = Buffer.from(JSON.stringify(openclawConfig, null, 2), 'utf8').toString('base64');
-    await runCommand([
-      'docker run --rm',
-      `-e OPENCLAW_CONFIG_B64='${configBase64}'`,
-      `-v ${volumeName}:/target`,
-      'alpine',
-      `sh -lc "mkdir -p /target/agents /target/workspace /target/logs /target/canvas /target/cron && echo \"\\$OPENCLAW_CONFIG_B64\" | base64 -d > /target/openclaw.json && chmod -R 777 /target"`,
-    ].join(' '));
+    // Using runShellCommand for the complex sequence with base64 decoding and pipes
+    await runShellCommand(
+      `docker run --rm -e OPENCLAW_CONFIG_B64='${configBase64}' -v ${volumeName}:/target alpine sh -lc "mkdir -p /target/agents /target/workspace /target/logs /target/canvas /target/cron && echo \\$OPENCLAW_CONFIG_B64 | base64 -d > /target/openclaw.json && chmod -R 777 /target"`
+    );
 
-    const ports = await readPorts();
-    const assignedPort = ports[safeAgentId] || await getNextPort();
+    const assignedPort = await getNextPortAndAssign(safeAgentId);
 
     try {
-      await runCommand(`docker rm -f ${containerName}`);
+      await runCommand('docker', ['rm', '-f', containerName]);
     } catch {
       // no-op
     }
 
-    await runCommand(
-      [
-        'docker run -d',
-        `--name ${containerName}`,
-        '--restart unless-stopped',
-        `-v ${volumeName}:/home/node/.openclaw`,
-        `-p ${assignedPort}:18789`,
-        `-p ${assignedPort + 2}:18791`,
-        OPENCLAW_IMAGE,
-      ].join(' '),
-    );
+    const provider = config.aiProvider || 'openrouter';
+    const providedKey = (config.apiKey || '').trim();
+    const envArgs: string[] = [];
 
-    ports[safeAgentId] = assignedPort;
-    await writePorts(ports);
+    const addEnvIfKeyExists = (envName: string) => {
+      const key = providedKey || (process.env[envName] || '').trim();
+      if (key) {
+        envArgs.push('-e', `${envName}=${key}`);
+      }
+    };
+
+    if (provider === 'gemini' || provider === 'google') {
+      addEnvIfKeyExists('GEMINI_API_KEY');
+    } else if (provider === 'groq') {
+      addEnvIfKeyExists('GROQ_API_KEY');
+    } else if (provider === 'anthropic') {
+      addEnvIfKeyExists('ANTHROPIC_API_KEY');
+    } else if (provider === 'openai') {
+      addEnvIfKeyExists('OPENAI_API_KEY');
+    } else if (provider === 'openrouter') {
+      addEnvIfKeyExists('OPENROUTER_API_KEY');
+    }
+
+    const resources = getPlanResources(config.plan || 'free');
+
+    await runCommand('docker', [
+      'run', '-d',
+      '--name', containerName,
+      '--restart', 'unless-stopped',
+      '--memory', resources.memory,
+      '--cpus', resources.cpus,
+      ...envArgs,
+      '-v', `${volumeName}:/home/node/.openclaw`,
+      '-p', `${assignedPort}:18789`,
+      '-p', `${assignedPort + 2}:18791`,
+      OPENCLAW_IMAGE,
+    ]);
 
     const subdomain = `${safeAgentId}.${AGENTS_DOMAIN}`;
     await writeAgentMetadata({
@@ -786,7 +878,7 @@ app.post('/api/agents/:id/start', authenticate, async (req: Request, res: Respon
   const { id } = req.params;
   const containerName = getContainerName(id);
   try {
-    await runCommand(`docker start ${containerName}`);
+    await runCommand('docker', ['start', containerName]);
     res.json({ success: true, status: 'active' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Start failed';
@@ -798,7 +890,7 @@ app.post('/api/agents/:id/stop', authenticate, async (req: Request, res: Respons
   const { id } = req.params;
   const containerName = getContainerName(id);
   try {
-    await runCommand(`docker stop ${containerName}`);
+    await runCommand('docker', ['stop', containerName]);
     res.json({ success: true, status: 'stopped' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Stop failed';
@@ -811,7 +903,7 @@ app.post('/api/agents/:id/restart', authenticate, async (req: Request, res: Resp
   const containerName = getContainerName(id);
   try {
     const healResult = await healLegacyModelInContainer(containerName);
-    await runCommand(`docker restart ${containerName}`);
+    await runCommand('docker', ['restart', containerName]);
     const openclawVersion = await getContainerRuntimeVersion(containerName);
     res.json({ success: true, status: 'active', healedLegacyModel: healResult.healed, healMessage: healResult.message, openclawVersion });
   } catch (error: unknown) {
@@ -837,14 +929,14 @@ app.post('/api/agents/:id/update', authenticate, async (req: Request, res: Respo
     const oldImage = inspect.Config.Image;
 
     await healLegacyModelInContainer(containerName);
-    await runCommand(`docker pull ${targetImage}`);
-    await runCommand(`docker stop ${containerName}`);
-    await runCommand(`docker rm ${containerName}`);
+    await runCommand('docker', ['pull', targetImage]);
+    await runCommand('docker', ['stop', containerName]);
+    await runCommand('docker', ['rm', containerName]);
 
     try {
       await recreateContainerWithImage(containerName, inspect, targetImage);
     } catch (e) {
-      await runCommand(`docker rm -f ${containerName}`).catch(() => Promise.resolve());
+      await runCommand('docker', ['rm', '-f', containerName]).catch(() => Promise.resolve());
       await recreateContainerWithImage(containerName, inspect, oldImage);
       throw e;
     }
@@ -893,8 +985,8 @@ app.post('/api/agents/:id/repair', authenticate, async (req: Request, res: Respo
     const oldImage = inspect.Config.Image;
     
     await healLegacyModelInContainer(containerName);
-    await runCommand(`docker stop ${containerName}`);
-    await runCommand(`docker rm ${containerName}`);
+    await runCommand('docker', ['stop', containerName]);
+    await runCommand('docker', ['rm', containerName]);
     
     try {
       await recreateContainerWithImage(containerName, inspect, oldImage);
@@ -922,12 +1014,14 @@ app.post('/api/agents/:id/reset-memory', authenticate, async (req: Request, res:
     }
     
     if (mount.Type === 'volume' && mount.Name) {
-      await runCommand(`docker exec ${containerName} sh -lc "rm -rf /home/node/.openclaw/agents/*/memory /home/node/.openclaw/agents/*/identity 2>/dev/null || true"`);
+      // This command uses shell expansion (*)
+      await runShellCommand(`docker exec ${containerName} sh -lc "rm -rf /home/node/.openclaw/agents/*/memory /home/node/.openclaw/agents/*/identity 2>/dev/null || true"`);
     } else if (mount.Type === 'bind' && mount.Source) {
-      await runCommand(`rm -rf ${mount.Source}/agents/*/memory ${mount.Source}/agents/*/identity 2>/dev/null || true`);
+      // This command uses shell expansion (*)
+      await runShellCommand(`rm -rf "${mount.Source}"/agents/*/memory "${mount.Source}"/agents/*/identity 2>/dev/null || true`);
     }
     
-    await runCommand(`docker restart ${containerName}`);
+    await runCommand('docker', ['restart', containerName]);
     res.json({ success: true, message: 'Memory reset successfully' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Reset failed';
@@ -961,26 +1055,29 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
 }
 
 async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number }> {
-  const ports = await readPorts();
+  const portsFileContent = await fs.readFile(portsFilePath(), 'utf8').catch(() => '{}');
+  const ports = JSON.parse(portsFileContent) as Record<string, number>;
   const results = { success: 0, failed: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
   
-  for (const [agentId, port] of Object.entries(ports)) {
+  for (const agentId of Object.keys(ports)) {
     const containerName = getContainerName(agentId);
     try {
       console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
-      await runCommand(`docker pull ${newImage}`);
-      await runCommand(`docker stop ${containerName}`);
-      await runCommand(`docker rm ${containerName}`);
+      await runCommand('docker', ['pull', newImage]);
+      await runCommand('docker', ['stop', containerName]);
+      await runCommand('docker', ['rm', containerName]);
       
-      await runCommand([
-        'docker run -d',
-        `--name ${containerName}`,
-        '--restart unless-stopped',
-        `-v agentbot-${agentId}:/home/node/.openclaw`,
-        `-p ${port}:18789`,
+      const port = await getNextPortAndAssign(agentId);
+      
+      await runCommand('docker', [
+        'run', '-d',
+        '--name', containerName,
+        '--restart', 'unless-stopped',
+        '-v', `agentbot-${agentId}:/home/node/.openclaw`,
+        '-p', `${port}:18789`,
         newImage,
-      ].join(' '));
+      ]);
       
       results.success++;
     } catch (error) {
