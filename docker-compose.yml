@@ -10,6 +10,7 @@ services:
     container_name: agentbot-postgres
     env_file:
       - .env
+      - .env
     environment:
       POSTGRES_USER: agentbot
       POSTGRES_PASSWORD: devpassword
@@ -47,6 +48,7 @@ services:
     container_name: agentbot-api
     env_file:
       - .env
+      - .env
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -74,6 +76,7 @@ services:
     container_name: agentbot-worker
     env_file:
       - .env
+      - .env
     environment:
       NODE_ENV: development
     depends_on:
@@ -97,6 +100,7 @@ services:
       dockerfile: Dockerfile
     container_name: agentbot-frontend
     env_file:
+      - .env
       - .env
     environment:
       NODE_ENV: development
