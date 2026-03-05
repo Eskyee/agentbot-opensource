@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'daily-2026-03-05',
+    date: '5 March 2026',
+    title: 'baseFM March Update: Agent Skills, Autonomous Trading & More',
+    excerpt: 'Explore the latest improvements in the OpenClaw framework that enhance the functionality and user experience on the Agentbot platform.',
+    tags: ["Update", "Skills", "Trading"]
+  },
+  {
     slug: 'daily-2026-03-04',
     date: '4 March 2026',
     title: 'Enhancing User Experience with OpenClaw 2026: Live Activity Connection Status',
