@@ -6,40 +6,69 @@ const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('5000000000000000000000')
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
-declare global {
-  interface Window {
-    ethereum?: any
-  }
-}
-
 export default function DJStreamPage() {
   const [address, setAddress] = useState('')
   const [isConnected, setIsConnected] = useState(false)
   const [raveBalance, setRaveBalance] = useState<string | null>(null)
-  const [djName, setDjName] = useState('DJ Escaba')
+  const [stream, setStream] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [djName, setDjName] = useState('DJ Escaba')
+  const [status, setStatus] = useState('')
 
   const connectWallet = async () => {
-    // Try Coinbase Wallet first, then MetaMask
-    const coinbaseWallet = (window as any).coinbaseWalletExtension
-    const metamask = window.ethereum
-    
-    const provider = coinbaseWallet || metamask
-    
-    if (provider) {
-      try {
-        const accounts = await provider.request({ method: 'eth_requestAccounts' })
-        if (accounts[0]) {
-          setAddress(accounts[0])
-          setIsConnected(true)
-        }
-      } catch (e) {
-        console.error('Error connecting:', e)
-        setError('Failed to connect wallet')
+    try {
+      setStatus('Connecting to Base...')
+      
+      // Check if Base Account SDK is loaded
+      if (!(window as any).createBaseAccountSDK) {
+        // Load the SDK dynamically
+        const script = document.createElement('script')
+        script.src = 'https://unpkg.com/@base-org/account/dist/base-account.min.js'
+        script.onload = () => connectWithBaseSDK()
+        script.onerror = () => setError('Failed to load Base SDK')
+        document.head.appendChild(script)
+      } else {
+        connectWithBaseSDK()
       }
-    } else {
-      setError('Please install Coinbase Wallet or MetaMask')
+    } catch (e: any) {
+      console.error('Error:', e)
+      setError(e.message)
+    }
+  }
+
+  const connectWithBaseSDK = async () => {
+    try {
+      setStatus('Please approve in wallet...')
+      
+      const provider = (window as any).createBaseAccountSDK({
+        appName: 'Agentbot DJ Stream',
+        appLogoUrl: 'https://agentbot.raveculture.xyz/favicon.svg',
+      }).getProvider()
+
+      const nonce = crypto.randomUUID().replace(/-/g, '')
+      
+      const { accounts } = await provider.request({
+        method: 'wallet_connect',
+        params: [{
+          version: '1',
+          capabilities: {
+            signInWithEthereum: {
+              nonce,
+              chainId: '0x2105', // Base Mainnet - 8453
+            },
+          },
+        }],
+      })
+
+      const { address } = accounts[0]
+      setAddress(address)
+      setIsConnected(true)
+      setStatus('')
+    } catch (e: any) {
+      console.error('Connection error:', e)
+      setError(e.message || 'Failed to connect')
+      setStatus('')
     }
   }
 
@@ -112,12 +141,15 @@ export default function DJStreamPage() {
             <h2 className="text-xl font-semibold mb-4">1. Connect Wallet</h2>
             
             {!isConnected ? (
-              <button
-                onClick={connectWallet}
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
-              >
-                <span>🔵</span> Connect Wallet (Coinbase/MetaMask)
-              </button>
+              <div>
+                <button
+                  onClick={connectWallet}
+                  className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+                >
+                  <span>🔵</span> Sign in with Base
+                </button>
+                {status && <p className="mt-2 text-gray-400">{status}</p>}
+              </div>
             ) : (
               <div className="flex items-center gap-4">
                 <div className="bg-green-600 px-4 py-2 rounded-lg">
@@ -130,6 +162,12 @@ export default function DJStreamPage() {
                 >
                   Disconnect
                 </button>
+              </div>
+            )}
+            
+            {error && (
+              <div className="mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-300">
+                {error}
               </div>
             )}
           </div>
@@ -202,11 +240,6 @@ export default function DJStreamPage() {
               >
                 {loading ? 'Creating Stream...' : 'Start Streaming'}
               </button>
-              {error && (
-                <div className="mt-4 p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-300">
-                  {error}
-                </div>
-              )}
             </div>
           )}
 
@@ -219,19 +252,12 @@ export default function DJStreamPage() {
                 <div className="p-4 bg-green-900/30 border border-green-500 rounded-lg">
                   <div className="text-green-400 font-semibold mb-2">✓ Stream created successfully</div>
                   <div className="text-sm text-gray-300">
-                    Your DJ name: {stream.name || 'Anonymous DJ'}
+                    DJ: {stream.name || djName}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-gray-400 text-sm mb-1">RTMP URL</div>
-                  <code className="block bg-black p-3 rounded text-sm break-all">
-                    {stream.rtmpUrl}/{stream.streamKey}
-                  </code>
-                </div>
-
-                <div>
-                  <div className="text-gray-400 text-sm mb-1">Full RTMP (for OBS)</div>
+                  <div className="text-gray-400 text-sm mb-1">Full RTMP (for OBS/Larix)</div>
                   <code className="block bg-black p-3 rounded text-sm break-all">
                     {stream.fullRtmpUrl}
                   </code>
