@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'security-hardening-2026',
+    date: '7 March 2026',
+    title: '🛡️ Security Hardening & Enterprise APIs - March 2026',
+    excerpt: 'Enterprise-grade security with DDoS protection, SQL injection prevention, and 9 new APIs for memory management, swarms, tasks, and more.',
+    tags: ["Security","Enterprise","APIs"]
+  },
+  {
     slug: 'daily-2026-03-01',
     date: '1 March 2026',
     title: 'Exciting OpenClaw Updates: Improved Performance and Enhanced Usability',
