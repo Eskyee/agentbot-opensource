@@ -16,7 +16,7 @@ export default function DJStreamPage() {
   const [address, setAddress] = useState('')
   const [isConnected, setIsConnected] = useState(false)
   const [raveBalance, setRaveBalance] = useState<string | null>(null)
-  const [stream, setStream] = useState<any>(null)
+  const [djName, setDjName] = useState('DJ Escaba')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -75,7 +75,7 @@ export default function DJStreamPage() {
       const res = await fetch('/api/basefm/streams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet: address, name: '' })
+        body: JSON.stringify({ wallet: address, name: djName })
       })
       const data = await res.json()
       
@@ -177,6 +177,18 @@ export default function DJStreamPage() {
           {hasAccess && !stream && (
             <div className="bg-gray-800 p-6 rounded-xl">
               <h2 className="text-xl font-semibold mb-4">3. Create Stream</h2>
+              
+              <div className="mb-4">
+                <label className="block text-sm text-gray-400 mb-1">DJ Name</label>
+                <input
+                  type="text"
+                  value={djName}
+                  onChange={(e) => setDjName(e.target.value)}
+                  placeholder="DJ YourName"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
+                />
+              </div>
+
               <button
                 onClick={createStream}
                 disabled={loading}
