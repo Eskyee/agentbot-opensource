@@ -1,44 +1,84 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
-const API_URL = process.env.BACKEND_API_URL || 'http://agentbot-api:3001'
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
+/**
+ * Heartbeat API - STUBBED
+ * Tracks agent activity and scheduling
+ * 
+ * TODO: Implement database layer
+ * - Store heartbeat schedule preferences
+ * - Track last heartbeat time
+ * - Record agent status history
+ * - Heartbeat frequency analytics
+ */
 
-export async function GET() {
+// In-memory storage for demo (NOT for production)
+const heartbeatSettings = new Map<string, any>()
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // STUBBED: Return default settings
+  const settings = heartbeatSettings.get(session.user.email) || {
+    frequency: '3h',
+    enabled: true,
+    lastHeartbeat: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+    nextHeartbeat: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
+  }
+
+  return NextResponse.json({
+    heartbeat: settings,
+    message: 'Heartbeat scheduling database integration pending'
+  })
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const response = await fetch(`${API_URL}/api/agents`, {
-      headers: {
-        Authorization: `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    })
+    const { frequency, enabled } = await req.json()
 
-    if (!response.ok) {
-      throw new Error(`Backend returned ${response.status}`)
+    const settings = {
+      frequency: frequency || '3h',
+      enabled: enabled !== false,
+      lastUpdated: new Date().toISOString(),
+      lastHeartbeat: new Date().toISOString(),
+      nextHeartbeat: new Date(Date.now() + (3 * 60 * 60 * 1000)).toISOString()
     }
 
-    const data = await response.json()
-
-    const agents = (data || []).map((agent: any) => ({
-      id: agent.id,
-      name: agent.subdomain || agent.id,
-      status: agent.status || 'active',
-      port: agent.port,
-      uptime: agent.uptime || 'unknown',
-      lastHeartbeat: new Date().toLocaleTimeString(),
-      plan: agent.plan || 'free',
-      url: agent.url,
-    }))
+    // STUBBED: Store in memory for demo
+    heartbeatSettings.set(session.user.email, settings)
 
     return NextResponse.json({
-      agents,
-      status: 'ok',
-      timestamp: new Date().toISOString(),
+      ...settings,
+      message: 'Heartbeat settings will persist to database once integration is complete'
     })
   } catch (error) {
-    console.error('Heartbeat error:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch heartbeat', agents: [] },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Heartbeat update failed' }, { status: 500 })
   }
+}
+
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  // STUBBED: Reset to defaults
+  heartbeatSettings.delete(session.user.email)
+
+  return NextResponse.json({
+    success: true,
+    message: 'Heartbeat settings reset - database cleanup will occur once integration is complete'
+  })
 }

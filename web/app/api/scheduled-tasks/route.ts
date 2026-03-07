@@ -2,50 +2,104 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
+/**
+ * Task Persistence API - STUBBED
+ * 
+ * TODO: Implement database layer
+ * - Store tasks in database
+ * - Persist task state
+ * - Track task history
+ * - Task completion tracking
+ * - Recurring task support
+ */
+
+// In-memory storage for demo (NOT for production)
+const userTasks = new Map<string, any[]>()
+
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
+  
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  try {
-    // Return empty scheduled tasks by default
-    return NextResponse.json({
-      tasks: [],
-      count: 0,
-      message: 'No scheduled tasks'
-    })
-  } catch (error) {
-    console.error('Scheduled tasks fetch error:', error)
-    return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 })
-  }
+  // STUBBED: Return empty or demo data
+  const tasks = userTasks.get(session.user.email) || []
+
+  return NextResponse.json({
+    tasks,
+    count: tasks.length,
+    message: 'Task persistence database integration pending'
+  })
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
+  
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { title, description, schedule, agentId } = await req.json()
+    const { title, description, dueDate, priority } = await req.json()
 
     if (!title) {
-      return NextResponse.json({ error: 'Title required' }, { status: 400 })
+      return NextResponse.json({ error: 'title required' }, { status: 400 })
     }
 
-    // Create task
-    return NextResponse.json({
+    const task = {
       id: 'task_' + Date.now(),
       title,
       description,
-      schedule,
-      agentId,
-      status: 'scheduled',
-      created: new Date().toISOString()
-    }, { status: 201 })
+      dueDate,
+      priority: priority || 'medium',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+
+    // STUBBED: Store in memory for demo
+    const tasks = userTasks.get(session.user.email) || []
+    tasks.push(task)
+    userTasks.set(session.user.email, tasks)
+
+    return NextResponse.json(task, { status: 201 })
   } catch (error) {
-    console.error('Task creation error:', error)
-    return NextResponse.json({ error: 'Failed to create task' }, { status: 500 })
+    return NextResponse.json({ error: 'Task creation failed' }, { status: 500 })
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const { taskId, status, title } = await req.json()
+
+    if (!taskId) {
+      return NextResponse.json({ error: 'taskId required' }, { status: 400 })
+    }
+
+    // STUBBED: Update in memory for demo
+    const tasks = userTasks.get(session.user.email) || []
+    const task = tasks.find(t => t.id === taskId)
+    
+    if (!task) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    }
+
+    if (status) task.status = status
+    if (title) task.title = title
+    task.updatedAt = new Date().toISOString()
+
+    return NextResponse.json({
+      ...task,
+      message: 'Task updates will persist to database once integration is complete'
+    })
+  } catch (error) {
+    return NextResponse.json({ error: 'Task update failed' }, { status: 500 })
   }
 }
