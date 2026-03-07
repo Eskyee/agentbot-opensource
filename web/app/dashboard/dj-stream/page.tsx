@@ -1,17 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { OnchainKitProvider, ConnectWallet, Wallet, WalletDropdown, Identity, Name, Address, useAccount } from '@coinbase/onchainkit/wallet'
-import { WagmiProvider, createConfig, http, useConnect, useDisconnect } from 'wagmi'
+import { OnchainKitProvider } from '@coinbase/onchainkit'
+import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { base } from 'viem/chains'
 
-const config = createConfig({
+const config = {
   chains: [base],
   transports: {
-    [base.id]: http(),
+    [base.id]: {},
   },
-})
+}
 
 const queryClient = new QueryClient()
 
@@ -19,10 +19,15 @@ const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('5000000000000000000000')
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
+declare global {
+  interface Window {
+    ethereum?: any
+    coinbaseWalletExtension?: any
+  }
+}
+
 function DJStreamContent() {
   const { address, isConnected } = useAccount()
-  const { connect, connectors } = useConnect()
-  const { disconnect } = useDisconnect()
   const [raveBalance, setRaveBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -58,9 +63,23 @@ function DJStreamContent() {
     }
   }
 
-  const handleConnect = () => {
-    if (connectors[0]) {
-      connect({ connector: connectors[0] })
+  const handleConnect = async () => {
+    try {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+        if (accounts[0]) {
+          // Wallet connected - useAccount will detect it
+        }
+      } else if (window.coinbaseWalletExtension) {
+        const accounts = await window.coinbaseWalletExtension.request({ method: 'eth_requestAccounts' })
+        if (accounts[0]) {
+          // Wallet connected
+        }
+      } else {
+        setError('Please install Coinbase Wallet or MetaMask')
+      }
+    } catch (e: any) {
+      setError(e.message)
     }
   }
 
@@ -90,7 +109,7 @@ function DJStreamContent() {
   }
 
   const hasAccess = raveBalance && BigInt(raveBalance) >= RAVE_THRESHOLD
-  const formatAddress = (addr: string) => addr.slice(0, 6) + '...' + addr.slice(-4)
+  const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
@@ -107,7 +126,7 @@ function DJStreamContent() {
                 onClick={handleConnect}
                 className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
               >
-                <span>🔵</span> Connect Wallet (Coinbase)
+                <span>🔵</span> Connect Wallet (Coinbase/MetaMask)
               </button>
             ) : (
               <div className="flex items-center gap-4">
@@ -115,12 +134,6 @@ function DJStreamContent() {
                   <span className="text-sm text-gray-300">Connected:</span>
                   <span className="ml-2 font-mono">{formatAddress(address || '')}</span>
                 </div>
-                <button
-                  onClick={() => { disconnect(); setRaveBalance(null); setStream(null) }}
-                  className="text-gray-400 hover:text-white"
-                >
-                  Disconnect
-                </button>
               </div>
             )}
             
@@ -257,15 +270,13 @@ function DJStreamContent() {
 
 export default function DJStreamPage() {
   return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <OnchainKitProvider 
-          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || ''}
-          chain={base}
-        >
-          <DJStreamContent />
-        </OnchainKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <OnchainKitProvider 
+        apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || ''}
+        chain={base}
+      >
+        <DJStreamContent />
+      </OnchainKitProvider>
+    </QueryClientProvider>
   )
 }
