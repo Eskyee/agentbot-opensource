@@ -116,7 +116,7 @@ function getRateLimitInfo(key: string): { limited: boolean; remaining: number } 
   return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS - record.count }
 }
 
-// Paths that should not be rate limited
+// Paths that should not be rate limited or bot-checked
 const EXCLUDED_PATHS = [
   '/_next',
   '/favicon.ico',
@@ -242,7 +242,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public files
+     * - /api/stripe/webhook (Stripe webhooks)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/stripe/webhook|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

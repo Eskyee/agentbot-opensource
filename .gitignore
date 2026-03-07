@@ -42,6 +42,10 @@ docker-compose.override.yml
 # Certificates
 certs/
 
+# Docker Secrets (NEVER commit)
+secrets/*.txt
+!secrets/README.md
+
 # Data
 data/
 .vercel

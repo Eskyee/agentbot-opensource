@@ -2,7 +2,6 @@ import NextAuth, { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/lib/prisma";
 
@@ -38,8 +37,8 @@ providers.push(
       const user = await prisma.user.findUnique({
         where: { email: credentials.email },
       });
-      if (user && user.password && await bcrypt.compare(credentials.password, user.password)) {
-        return { id: user.id, name: user.name, email: user.email };
+      if (user && user.password_hash && await bcrypt.compare(credentials.password, user.password_hash)) {
+        return { id: String(user.id), name: user.name, email: user.email };
       }
       return null;
     },
@@ -52,7 +51,6 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXTAUTH_SECRET) {
 }
 
 export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
   providers,
   session: {
     strategy: "jwt",
@@ -96,52 +94,12 @@ export const authOptions: AuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // For OAuth providers (GitHub, Google), allow sign in
-      if (account?.provider === "github" || account?.provider === "google") {
-        // Check if user exists in database
-        if (user.email) {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email },
-            include: { accounts: true },
-          });
-          
-          // If user exists but doesn't have this OAuth account linked, link it
-          if (existingUser) {
-            const existingAccount = existingUser.accounts.find(
-              (acc) => acc.provider === account.provider
-            );
-            
-            if (!existingAccount && account.providerAccountId) {
-              // Create the account link
-              await prisma.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  access_token: account.access_token,
-                  refresh_token: account.refresh_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state,
-                },
-              });
-            }
-          }
-        }
-        return true;
-      }
-      // For credentials provider, allow sign in (authorization already done in provider)
-      return true;
-    },
     async jwt({ token, user, account }) {
       // Initial sign in - persist user id to token
       if (user) {
         token.sub = user.id;
         token.email = user.email;
+        token.name = user.name;
       }
       // On subsequent calls, token already has the data
       return token;
@@ -150,6 +108,7 @@ export const authOptions: AuthOptions = {
       if (token && session.user) {
         session.user.id = token.sub || "";
         session.user.email = token.email;
+        session.user.name = token.name;
       }
       return session;
     },

@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     }
 
     const wallet = await prisma.wallet.findFirst({
-      where: { userId: user.id },
+      where: { user_id: user.id },
     })
 
     if (!wallet) {
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
       balance: '0',
       network: wallet.network,
       hasWallet: true,
-      createdAt: wallet.createdAt,
+      createdAt: wallet.created_at,
     })
   } catch (error) {
     console.error('Wallet fetch error:', error)
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       }
 
       const existingWallet = await prisma.wallet.findFirst({
-        where: { userId: user.id },
+        where: { user_id: user.id },
       })
 
       if (existingWallet) {
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
 
       const newWallet = await prisma.wallet.create({
         data: {
-          userId: user.id,
+          user_id: user.id,
           address: newAddress,
           walletSeedEncrypted: encryptedSeed,
           network: 'base-sepolia',
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       }
 
       const wallet = await prisma.wallet.findFirst({
-        where: { userId: user.id },
+        where: { user_id: user.id },
       })
 
       if (!wallet) {

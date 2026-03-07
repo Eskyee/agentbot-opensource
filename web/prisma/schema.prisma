@@ -12,170 +12,66 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          String    @default("user")
-  storageLimit  Int       @default(10)
+  id                      Int       @id @default(autoincrement())
+  email                   String    @unique
+  password_hash           String?
+  name                    String?
+  plan                    String    @default("free")
+  stripe_customer_id      String?
+  stripe_subscription_id  String?
+  subscription_status     String    @default("inactive")
+  subscription_start_date DateTime?
+  subscription_end_date   DateTime?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @default(now()) @updatedAt
   
-  // Subscription fields
-  plan          String    @default("free")
-  stripeCustomerId    String?
-  stripeSubscriptionId String?
-  subscriptionStatus String    @default("inactive")
-  subscriptionStartDate DateTime?
-  subscriptionEndDate   DateTime?
-  
-  accounts      Account[]
-  sessions      Session[]
-  wallets       Wallet[]
+  agents      Agent[]
+  api_keys    ApiKey[]
+  wallets     Wallet[]
+
+  @@map("users")
 }
 
-model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Agent {
+  id        Int     @id @default(autoincrement())
+  user_id   Int
+  name      String
+  user      User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@map("agents")
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model ApiKey {
+  id      Int     @id @default(autoincrement())
+  user_id Int
+  key     String
+  user    User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-model ScheduledTask {
-  id          String   @id @default(cuid())
-  userId      String
-  agentId     String
-  name        String
-  description String?
-  cronSchedule String  // e.g., "0 9 * * *" for 9am daily
-  prompt      String   // What the agent should do
-  enabled     Boolean  @default(true)
-  lastRun     DateTime?
-  nextRun     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model AgentMemory {
-  id        String   @id @default(cuid())
-  userId    String
-  agentId   String
-  key       String   // e.g., "user_preferences", "conversation_context"
-  value     String   // JSON string
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, agentId, key])
-}
-
-model AgentFile {
-  id        String   @id @default(cuid())
-  userId    String
-  userEmail String?
-  agentId   String
-  filename  String
-  path      String?
-  url       String?
-  size      Int
-  mimeType  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Skill {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  category    String
-  code        String   @db.Text
-  author      String
-  downloads   Int      @default(0)
-  rating      Float    @default(0)
-  featured    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model InstalledSkill {
-  id        String   @id @default(cuid())
-  userId    String
-  agentId   String
-  skillId   String
-  enabled   Boolean  @default(true)
-  createdAt DateTime @default(now())
-  @@unique([userId, agentId, skillId])
-}
-
-model AgentSwarm {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?
-  agents      String   @db.Text // JSON array of agent configs
-  enabled     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model WorkflowNode {
-  id         String   @id @default(cuid())
-  workflowId String
-  type       String   // trigger, action, condition
-  config     String   @db.Text // JSON
-  position   String   // JSON {x, y}
-  createdAt  DateTime @default(now())
-}
-
-model Workflow {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?
-  enabled     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Wallet model for CDP wallets
 model Wallet {
-  id                   String   @id @default(cuid())
-  userId               String
-  address              String   @unique
-  walletSeedEncrypted  String   @db.Text
-  network              String   @default("base-sepolia")
-  walletType           String   @default("cdp")
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                   Int       @id @default(autoincrement())
+  user_id              Int
+  address              String    @unique
+  walletSeedEncrypted  String
+  network              String    @default("base-sepolia")
+  walletType           String    @default("cdp")
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @default(now()) @updatedAt
   
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("wallets")
+}
+
+// Webhook event tracking for idempotency - prevents duplicate processing
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  eventId     String   @unique
+  type        String
+  processedAt DateTime @default(now())
   
-  @@index([userId])
-  @@index([address])
+  @@index([eventId])
+  @@index([type])
 }

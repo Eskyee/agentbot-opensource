@@ -7,7 +7,7 @@ async function main() {
     data: {
       name: 'Demo User',
       email: 'demo@example.com',
-      password: '$2b$10$demoHashedPassword', // Replace with bcrypt hash
+      password_hash: '$2b$10$demoHashedPassword', // Replace with bcrypt hash
     },
   });
 }

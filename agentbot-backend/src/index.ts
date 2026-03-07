@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import inviteRouter from './invite';
+import subscriptionsRouter from './subscriptions';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { exec } from 'child_process';
@@ -45,6 +46,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use('/api/invite', inviteRouter);
+app.use('/api/subscriptions', subscriptionsRouter);
 
 type AgentMetadata = {
   agentId: string;
