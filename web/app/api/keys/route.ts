@@ -1,76 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server'
-import crypto from 'crypto'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { prisma } from '@/app/lib/prisma'
 
-// In-memory store for demo (use database in production)
-const apiKeys = new Map<string, {
-  id: string
-  name: string
-  key: string
-  createdAt: string
-  lastUsed?: string
-  status: 'active' | 'revoked'
-}>()
+// In-memory storage for API keys (in production, use database)
+const apiKeys = new Map<string, any>()
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const keys = Array.from(apiKeys.values()).filter(k => k.status === 'active')
+    // Get all API keys for this user
+    const userKeys = Array.from(apiKeys.values()).filter((k: any) => k.userEmail === session.user?.email)
+
     return NextResponse.json({
-      keys: keys.map(k => ({
+      keys: userKeys.map((k: any) => ({
         id: k.id,
         name: k.name,
-        key: k.key,
+        keyPreview: k.key.substring(0, 8) + '...' + k.key.substring(k.key.length - 4),
         createdAt: k.createdAt,
-        lastUsed: k.lastUsed,
-        status: k.status,
-      })),
-      count: keys.length,
+        lastUsed: k.lastUsed
+      }))
     })
   } catch (error) {
-    console.error('Failed to fetch keys:', error)
-    return NextResponse.json(
-      { error: 'Failed to fetch keys', keys: [] },
-      { status: 500 }
-    )
+    console.error('Keys fetch error:', error)
+    return NextResponse.json({ error: 'Failed to fetch keys' }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const body = await request.json()
-    const { name } = body
+    const { name } = await req.json()
 
-    if (!name || typeof name !== 'string') {
-      return NextResponse.json(
-        { error: 'Key name is required' },
-        { status: 400 }
-      )
+    if (!name) {
+      return NextResponse.json({ error: 'Name required' }, { status: 400 })
     }
 
-    const keyId = crypto.randomBytes(12).toString('hex')
-    const keyValue = `sk-${crypto.randomBytes(32).toString('hex')}`
-    
-    const apiKey = {
-      id: keyId,
-      name: name.trim(),
-      key: keyValue,
+    // Generate API key
+    const key = 'sk_' + Buffer.from(Math.random().toString()).toString('base64').substring(0, 40)
+    const id = 'key_' + Date.now()
+
+    apiKeys.set(id, {
+      id,
+      userEmail: session.user.email,
+      name,
+      key,
       createdAt: new Date().toISOString(),
-      status: 'active' as const,
-    }
+      lastUsed: null
+    })
 
-    apiKeys.set(keyId, apiKey)
-
-    return NextResponse.json(
-      {
-        success: true,
-        key: apiKey,
-      },
-      { status: 201 }
-    )
+    return NextResponse.json({
+      id,
+      name,
+      key, // Only shown once at creation
+      createdAt: new Date().toISOString()
+    }, { status: 201 })
   } catch (error) {
-    console.error('Failed to create key:', error)
-    return NextResponse.json(
-      { error: 'Failed to create key' },
-      { status: 500 }
-    )
+    console.error('Key creation error:', error)
+    return NextResponse.json({ error: 'Failed to create key' }, { status: 500 })
   }
 }

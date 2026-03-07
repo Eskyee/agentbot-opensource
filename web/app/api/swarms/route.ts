@@ -1,32 +1,52 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
-const SAMPLE_SWARMS = [
-  {
-    id: '1',
-    name: 'Customer Support Team',
-    description: '3 agents working together: Triage, Technical, Escalation',
-    agents: [
-      { role: 'triage', model: 'gpt-4o-mini', prompt: 'Classify customer inquiries' },
-      { role: 'technical', model: 'claude-3.5-sonnet', prompt: 'Answer technical questions' },
-      { role: 'escalation', model: 'gpt-4o', prompt: 'Handle complex issues' }
-    ],
-    enabled: true
-  }
-]
-
-export async function GET() {
-  return NextResponse.json({ swarms: SAMPLE_SWARMS })
-}
-
-export async function POST(request: Request) {
-  const session = await getServerSession()
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { name, description, agents } = await request.json()
-  
-  // TODO: Save to AgentSwarm table
-  return NextResponse.json({ success: true })
+  try {
+    // Return empty swarms by default
+    // Full implementation would query database for multi-agent swarms
+    return NextResponse.json({
+      swarms: [],
+      count: 0,
+      message: 'No swarms created yet'
+    })
+  } catch (error) {
+    console.error('Swarms fetch error:', error)
+    return NextResponse.json({ error: 'Failed to fetch swarms' }, { status: 500 })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const { name, agents, config } = await req.json()
+
+    if (!name) {
+      return NextResponse.json({ error: 'Name required' }, { status: 400 })
+    }
+
+    // Create swarm
+    // Full implementation would save to database
+    return NextResponse.json({
+      id: 'swarm_' + Date.now(),
+      name,
+      agents: agents || [],
+      config: config || {},
+      status: 'active',
+      created: new Date().toISOString()
+    }, { status: 201 })
+  } catch (error) {
+    console.error('Swarm creation error:', error)
+    return NextResponse.json({ error: 'Failed to create swarm' }, { status: 500 })
+  }
 }
