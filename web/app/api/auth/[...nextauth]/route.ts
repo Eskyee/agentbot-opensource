@@ -5,7 +5,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/lib/prisma";
 import { SecurityMiddleware } from "@/app/lib/security-middleware";
-import { NextRequest, NextResponse } from "next/server";
 
 const providers = [];
 
@@ -14,6 +13,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     })
   );
 }
@@ -23,6 +23,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     })
   );
 }
@@ -106,7 +107,37 @@ export const authOptions: AuthOptions = {
     },
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      // Handle OAuth sign-in - create user if doesn't exist
+      if (account?.provider === "google" || account?.provider === "github") {
+        try {
+          // Check if user exists
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+          });
+
+          if (!existingUser) {
+            // Create new user from OAuth profile
+            await prisma.user.create({
+              data: {
+                email: user.email!,
+                name: user.name || user.email,
+                image: user.image,
+                plan: "free",
+              },
+            });
+            console.log(`[AUTH] New user created via ${account.provider}: ${user.email}`);
+          } else {
+            console.log(`[AUTH] Existing user signed in via ${account.provider}: ${user.email}`);
+          }
+        } catch (error) {
+          console.error(`[AUTH] Error creating user for ${account.provider}:`, error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         token.sub = user.id;
         token.email = user.email;
@@ -121,6 +152,14 @@ export const authOptions: AuthOptions = {
         session.user.name = token.name;
       }
       return session;
+    },
+  },
+  events: {
+    async signIn({ user, account }) {
+      console.log(`[AUTH] Sign in: ${user.email} via ${account?.provider || 'credentials'}`);
+    },
+    async signOut({ token }) {
+      console.log(`[AUTH] Sign out: ${token?.email}`);
     },
   },
 };
