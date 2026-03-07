@@ -19,6 +19,13 @@ export default function DJStreamPage() {
   const [djName, setDjName] = useState('DJ Escaba')
 
   const handleConnect = () => {
+    if (typeof window === 'undefined') return
+    
+    if (!window.ethereum) {
+      setError('No wallet found. Please install MetaMask or Coinbase Wallet.')
+      return
+    }
+    
     connect({ connector: injected() })
   }
 
@@ -90,15 +97,24 @@ export default function DJStreamPage() {
             <h2 className="text-xl font-semibold mb-4">1. Connect Wallet</h2>
             
             {!isConnected ? (
-              <button
-                onClick={handleConnect}
-                className="bg-white hover:bg-gray-100 text-black font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                </svg>
-                Connect Wallet
-              </button>
+              <div>
+                <button
+                  onClick={handleConnect}
+                  className="bg-white hover:bg-gray-100 text-black font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                  </svg>
+                  Connect Wallet
+                </button>
+                
+                <p className="mt-4 text-sm text-gray-400">
+                  Need a wallet?{' '}
+                  <a href="https://metamask.io/download/" target="_blank" rel="noopener" className="text-blue-400 hover:underline">Install MetaMask</a>
+                  {' '}-{' '}
+                  <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener" className="text-blue-400 hover:underline">Coinbase Wallet</a>
+                </p>
+              </div>
             ) : (
               <div className="flex items-center gap-4">
                 <div className="bg-green-600 px-4 py-2 rounded-lg">
