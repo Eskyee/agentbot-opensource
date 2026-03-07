@@ -33,6 +33,11 @@ export default function DJStreamPage() {
       }
       
       connectWithBaseSDK()
+    } catch (e: any) {
+      console.error('Error:', e)
+      setError(e.message)
+    }
+  }
 
   const connectWithBaseSDK = async () => {
     try {
