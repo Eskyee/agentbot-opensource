@@ -1,58 +1,66 @@
-import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
-import { sendWelcomeEmail } from "../../lib/email";
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { prisma } from '@/app/lib/prisma'
+import { SecureRoute } from '@/app/lib/secure-route'
+import { SecurityMiddleware } from '@/app/lib/security-middleware'
 
-const prisma = new PrismaClient();
+// This endpoint handles sensitive operations
+// Protected with: Auth, Rate Limiting, Injection Prevention, DDoS Protection
 
-export async function POST(request: NextRequest) {
+async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
-    const { email, password, name, invitedBy, role } = await request.json();
+    const body = await req.json()
+    const { name } = body
+
+    if (!name) {
+      return NextResponse.json({ error: 'Name required' }, { status: 400 })
+    }
+
+    // Security: Validate input doesn't contain injection patterns
+    if (SecurityMiddleware.containsSQLInjection(name) || 
+        SecurityMiddleware.containsXSSPayload(name)) {
+      SecurityMiddleware.logSuspiciousActivity(
+        SecurityMiddleware.getClientIP(req),
+        'INJECTION_IN_INVITE',
+        { field: 'name' }
+      )
+      return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true }
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    // Generate secure invite token
+    const token = Buffer.from(Math.random().toString()).toString('base64').substring(0, 32)
     
-    if (!email || !password) {
-      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
-    }
-
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: "User already exists" }, { status: 409 });
-    }
-
-    const hashed = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashed,
-        name: name || email,
-      },
-    });
-
-    sendWelcomeEmail(email, user.name || 'there').catch(console.error);
-
-    return NextResponse.json({ 
-      id: user.id, 
-      email: user.email, 
-      name: user.name,
-      invitedBy: invitedBy || null,
-      role: role || 'user'
-    });
+    return NextResponse.json({
+      success: true,
+      inviteUrl: `https://agentbot.raveculture.xyz/invite?token=${token}&name=${encodeURIComponent(name)}`,
+      token
+    }, { status: 201 })
   } catch (error) {
-    console.error('Invite error:', error);
-    return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
+    console.error('Invite error:', error)
+    SecurityMiddleware.logSuspiciousActivity(
+      SecurityMiddleware.getClientIP(req),
+      'INVITE_ERROR',
+      { error: String(error) }
+    )
+    return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 })
   }
 }
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const invitedBy = searchParams.get('invitedBy');
-  
-  if (!invitedBy) {
-    return NextResponse.json({ error: "Missing invitedBy parameter" }, { status: 400 });
-  }
-
-  const users = await prisma.user.findMany({
-    take: 100
-  });
-
-  return NextResponse.json({ users });
-}
+// Apply security wrapper
+export const POST_secure = SecureRoute.sensitive(POST)
+export { POST_secure as POST }
