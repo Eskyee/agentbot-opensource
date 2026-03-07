@@ -21,9 +21,15 @@ export default function DJStreamPage() {
   const [error, setError] = useState('')
 
   const connectWallet = async () => {
-    if (typeof window.ethereum !== 'undefined') {
+    // Try Coinbase Wallet first, then MetaMask
+    const coinbaseWallet = (window as any).coinbaseWalletExtension
+    const metamask = window.ethereum
+    
+    const provider = coinbaseWallet || metamask
+    
+    if (provider) {
       try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+        const accounts = await provider.request({ method: 'eth_requestAccounts' })
         if (accounts[0]) {
           setAddress(accounts[0])
           setIsConnected(true)
@@ -33,7 +39,7 @@ export default function DJStreamPage() {
         setError('Failed to connect wallet')
       }
     } else {
-      setError('Please install MetaMask or another Web3 wallet')
+      setError('Please install Coinbase Wallet or MetaMask')
     }
   }
 
@@ -108,9 +114,9 @@ export default function DJStreamPage() {
             {!isConnected ? (
               <button
                 onClick={connectWallet}
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold"
+                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
               >
-                Connect Wallet (MetaMask)
+                <span>🔵</span> Connect Wallet (Coinbase/MetaMask)
               </button>
             ) : (
               <div className="flex items-center gap-4">
