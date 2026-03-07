@@ -1,19 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { OnchainKitProvider } from '@coinbase/onchainkit'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { base } from 'viem/chains'
-
-const config = {
-  chains: [base],
-  transports: {
-    [base.id]: {},
-  },
-}
-
-const queryClient = new QueryClient()
 
 const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('5000000000000000000000')
@@ -26,8 +13,9 @@ declare global {
   }
 }
 
-function DJStreamContent() {
-  const { address, isConnected } = useAccount()
+export default function DJStreamPage() {
+  const [address, setAddress] = useState('')
+  const [isConnected, setIsConnected] = useState(false)
   const [raveBalance, setRaveBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -35,10 +23,40 @@ function DJStreamContent() {
   const [djName, setDjName] = useState('DJ Escaba')
 
   useEffect(() => {
-    if (address) {
-      checkRAVEBalance(address)
+    checkIfConnected()
+  }, [])
+
+  const checkIfConnected = async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' })
+        if (accounts[0]) {
+          setAddress(accounts[0])
+          setIsConnected(true)
+          checkRAVEBalance(accounts[0])
+        }
+      } catch (e) {
+        console.error('Error checking connection:', e)
+      }
     }
-  }, [address])
+  }
+
+  const connectWallet = async () => {
+    try {
+      if (window.ethereum) {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+        if (accounts[0]) {
+          setAddress(accounts[0])
+          setIsConnected(true)
+          checkRAVEBalance(accounts[0])
+        }
+      } else {
+        setError('Please install MetaMask or Coinbase Wallet')
+      }
+    } catch (e: any) {
+      setError(e.message)
+    }
+  }
 
   const checkRAVEBalance = async (walletAddress: string) => {
     try {
@@ -60,26 +78,6 @@ function DJStreamContent() {
       setRaveBalance(balance.toString())
     } catch (e) {
       console.error('Error checking balance:', e)
-    }
-  }
-
-  const handleConnect = async () => {
-    try {
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-        if (accounts[0]) {
-          // Wallet connected - useAccount will detect it
-        }
-      } else if (window.coinbaseWalletExtension) {
-        const accounts = await window.coinbaseWalletExtension.request({ method: 'eth_requestAccounts' })
-        if (accounts[0]) {
-          // Wallet connected
-        }
-      } else {
-        setError('Please install Coinbase Wallet or MetaMask')
-      }
-    } catch (e: any) {
-      setError(e.message)
     }
   }
 
@@ -123,17 +121,23 @@ function DJStreamContent() {
             
             {!isConnected ? (
               <button
-                onClick={handleConnect}
+                onClick={connectWallet}
                 className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
               >
-                <span>🔵</span> Connect Wallet (Coinbase/MetaMask)
+                <span>🔵</span> Connect Wallet
               </button>
             ) : (
               <div className="flex items-center gap-4">
                 <div className="bg-green-600 px-4 py-2 rounded-lg">
                   <span className="text-sm text-gray-300">Connected:</span>
-                  <span className="ml-2 font-mono">{formatAddress(address || '')}</span>
+                  <span className="ml-2 font-mono">{formatAddress(address)}</span>
                 </div>
+                <button
+                  onClick={() => { setIsConnected(false); setAddress(''); setRaveBalance(null) }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  Disconnect
+                </button>
               </div>
             )}
             
@@ -265,18 +269,5 @@ function DJStreamContent() {
         </div>
       </div>
     </div>
-  )
-}
-
-export default function DJStreamPage() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <OnchainKitProvider 
-        apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || ''}
-        chain={base}
-      >
-        <DJStreamContent />
-      </OnchainKitProvider>
-    </QueryClientProvider>
   )
 }
