@@ -1,21 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useAccount } from 'wagmi'
+import OnchainWallet from '@/app/components/OnchainWallet'
 
 const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('5000000000000000000000')
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
-declare global {
-  interface Window {
-    ethereum?: any
-    coinbaseWalletExtension?: any
-  }
-}
-
 export default function DJStreamPage() {
-  const [address, setAddress] = useState('')
-  const [isConnected, setIsConnected] = useState(false)
+  const { address, isConnected } = useAccount()
   const [raveBalance, setRaveBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
   const [loading, setLoading] = useState(false)
@@ -23,40 +17,10 @@ export default function DJStreamPage() {
   const [djName, setDjName] = useState('DJ Escaba')
 
   useEffect(() => {
-    checkIfConnected()
-  }, [])
-
-  const checkIfConnected = async () => {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' })
-        if (accounts[0]) {
-          setAddress(accounts[0])
-          setIsConnected(true)
-          checkRAVEBalance(accounts[0])
-        }
-      } catch (e) {
-        console.error('Error checking connection:', e)
-      }
+    if (address) {
+      checkRAVEBalance(address)
     }
-  }
-
-  const connectWallet = async () => {
-    try {
-      if (window.ethereum) {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-        if (accounts[0]) {
-          setAddress(accounts[0])
-          setIsConnected(true)
-          checkRAVEBalance(accounts[0])
-        }
-      } else {
-        setError('Please install MetaMask or Coinbase Wallet')
-      }
-    } catch (e: any) {
-      setError(e.message)
-    }
-  }
+  }, [address])
 
   const checkRAVEBalance = async (walletAddress: string) => {
     try {
@@ -120,24 +84,13 @@ export default function DJStreamPage() {
             <h2 className="text-xl font-semibold mb-4">1. Connect Wallet</h2>
             
             {!isConnected ? (
-              <button
-                onClick={connectWallet}
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
-              >
-                <span>🔵</span> Connect Wallet
-              </button>
+              <OnchainWallet />
             ) : (
               <div className="flex items-center gap-4">
                 <div className="bg-green-600 px-4 py-2 rounded-lg">
                   <span className="text-sm text-gray-300">Connected:</span>
-                  <span className="ml-2 font-mono">{formatAddress(address)}</span>
+                  <span className="ml-2 font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
                 </div>
-                <button
-                  onClick={() => { setIsConnected(false); setAddress(''); setRaveBalance(null) }}
-                  className="text-gray-400 hover:text-white"
-                >
-                  Disconnect
-                </button>
               </div>
             )}
             

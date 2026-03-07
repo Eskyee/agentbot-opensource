@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/lib/prisma";
+import { SiweMessage } from "siwe";
 
 const providers = [];
 
@@ -54,6 +55,69 @@ providers.push(
       }
       console.log(`[Auth] Invalid password for: ${credentials.email}`);
       return null;
+    },
+  })
+);
+
+// Wallet (SIWE - Sign-In with Ethereum) login
+providers.push(
+  CredentialsProvider({
+    name: "Ethereum Wallet",
+    credentials: {
+      message: { label: "Message", type: "text" },
+      signature: { label: "Signature", type: "text" },
+    },
+    async authorize(credentials) {
+      if (!credentials?.message || !credentials?.signature) {
+        return null;
+      }
+
+      try {
+        const siweMessage = new SiweMessage(credentials.message);
+        // @ts-ignore - SIWE verify types
+        const fields = await siweMessage.verify(credentials.signature);
+
+        if (!fields.success) {
+          console.log(`[Auth] SIWE verification failed`);
+          return null;
+        }
+
+        const address = fields.data.address;
+        const domain = fields.data.domain;
+
+        // Find or create user by wallet address
+        let user = await prisma.user.findFirst({
+          where: { 
+            OR: [
+              { name: address },
+              { email: `${address.toLowerCase()}@wallet.base.org` }
+            ]
+          }
+        });
+
+        if (!user) {
+          // Create new user with wallet address as identifier
+          user = await prisma.user.create({
+            data: {
+              name: `Wallet:${address.slice(0, 6)}...${address.slice(-4)}`,
+              email: `${address.toLowerCase()}@wallet.base.org`,
+              emailVerified: new Date(),
+            },
+          });
+          console.log(`[Auth] Created new wallet user: ${user.id}`);
+        }
+
+        console.log(`[Auth] Successful wallet login: ${address}`);
+        return { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email,
+          walletAddress: address 
+        };
+      } catch (error) {
+        console.error(`[Auth] SIWE error:`, error);
+        return null;
+      }
     },
   })
 );
