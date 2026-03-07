@@ -259,7 +259,10 @@ export default function DJStreamPage() {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <OnchainKitProvider chain={base}>
+        <OnchainKitProvider 
+          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || ''}
+          chain={base}
+        >
           <DJStreamContent />
         </OnchainKitProvider>
       </QueryClientProvider>
