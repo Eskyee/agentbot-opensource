@@ -3,23 +3,29 @@ import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { injected } from "wagmi/connectors";
+import { SiweMessage } from "siwe";
 
 function LoginForm() {
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
+  const { address, isConnected } = useAccount()
+  const { connect } = useConnect()
+  const { disconnect } = useDisconnect()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [walletLoading, setWalletLoading] = useState(false);
 
   useEffect(() => {
     if (error) {
-      // Handle specific OAuth errors
       if (error === 'OAuthCallback') {
         setLoginError('Authentication failed. Please try again.')
       } else if (error === 'OAuthAccountNotLinked') {
-        setLoginError('This email is already associated with another account. Please sign in with the original method.')
+        setLoginError('This email is already associated with another account.')
       } else if (error === 'AccessDenied') {
         setLoginError('Access denied. Please try again.')
       } else {
@@ -29,15 +35,67 @@ function LoginForm() {
   }, [error])
 
   useEffect(() => {
-    // Only redirect if we have a confirmed session
     if (session && status === 'authenticated') {
       window.location.href = '/dashboard'
     }
   }, [session, status])
 
+  // Auto-login when wallet connects
+  useEffect(() => {
+    if (isConnected && address && !session && !walletLoading) {
+      loginWithWallet()
+    }
+  }, [isConnected, address])
+
+  const handleWalletConnect = () => {
+    connect({ connector: injected() })
+  }
+
+  const loginWithWallet = async () => {
+    if (!address) return
+    
+    setWalletLoading(true)
+    setLoginError('')
+
+    try {
+      const domain = window.location.host
+      const message = new SiweMessage({
+        domain,
+        address,
+        statement: 'Sign in to Agentbot',
+        uri: window.location.origin,
+        version: '1',
+        chainId: 8453,
+      })
+
+      const signature = await window.ethereum?.request({
+        method: 'personal_sign',
+        params: [message.prepareMessage(), address],
+      })
+
+      if (!signature) throw new Error('Signature denied')
+
+      const res = await signIn('credentials', {
+        message: message.prepareMessage(),
+        signature,
+        redirect: false,
+      })
+
+      if (res?.error) {
+        setLoginError('Wallet login failed. Try again.')
+      } else if (res?.ok) {
+        window.location.href = '/dashboard'
+      }
+    } catch (err: any) {
+      console.error('Wallet login error:', err)
+      setLoginError(err.message || 'Failed to sign in')
+    } finally {
+      setWalletLoading(false)
+    }
+  }
+
   const handleGitHubLogin = () => {
     setLoading(true)
-    // Use redirect: false to handle errors better, then manually redirect on success
     signIn("github", { callbackUrl: "/dashboard" })
   }
 
@@ -57,82 +115,113 @@ function LoginForm() {
     });
     setLoading(false);
     if (res?.error) {
-      setLoginError("Invalid email or password. If you signed up with GitHub or Google, please use the button below.");
+      setLoginError("Invalid email or password.");
     } else if (res?.ok) {
       window.location.href = "/dashboard";
     }
   };
 
   return (
-    <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-      <h1 className="text-2xl font-bold mb-6 text-center">Log in to Agentbot</h1>
-      <form className="space-y-5" onSubmit={handleCredentialsLogin}>
-        <div>
-          <label htmlFor="email" className="block text-gray-300 mb-1">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
-          />
-        </div>
-        <div>
-          <label htmlFor="password" className="block text-gray-300 mb-1">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
-          />
-        </div>
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black transition-colors"
-          disabled={loading}
-        >
-          {loading ? "Logging in..." : "Log in"}
-        </button>
-        <div className="text-center">
-          <Link href="/forgot-password" className="text-sm text-gray-400 hover:text-white">
-            Forgot password?
-          </Link>
-        </div>
-      </form>
-      {loginError && <div className="text-red-500 text-center mt-2">{loginError}</div>}
-      <div className="my-6 flex items-center justify-center gap-2 text-gray-400">
-        <span className="h-px w-10 bg-gray-700" />
-        <span>or</span>
-        <span className="h-px w-10 bg-gray-700" />
+    <div className="w-full max-w-md bg-gray-900 rounded-2xl shadow-2xl p-8 border border-gray-800">
+      <div className="text-center mb-8">
+        <div className="text-5xl mb-3">🦞</div>
+        <h1 className="text-2xl font-bold">Welcome to Agentbot</h1>
+        <p className="text-gray-400 text-sm mt-1">One click to sign in</p>
       </div>
+
+      {/* Apple-style: Wallet Connect - PRIMARY */}
+      <div className="mb-4">
+        <button
+          onClick={handleWalletConnect}
+          disabled={walletLoading}
+          className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all"
+        >
+          {walletLoading ? (
+            <span className="animate-spin">⏳</span>
+          ) : (
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            </svg>
+          )}
+          {walletLoading ? 'Connecting...' : 'Continue with Wallet'}
+        </button>
+      </div>
+
+      {walletLoading && (
+        <div className="text-center text-sm text-gray-400 mb-4">
+          <span className="animate-spin mr-2">⏳</span>
+          Signing message...
+        </div>
+      )}
+
+      <div className="relative mb-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-700"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-4 bg-gray-900 text-gray-500">or</span>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-3">
         <button
           type="button"
-          className="w-full rounded-lg bg-white hover:bg-gray-100 py-3 font-bold text-gray-900 flex items-center justify-center gap-2"
+          className="w-full bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all"
           onClick={handleGoogleLogin}
           disabled={loading}
         >
-          <svg width="20" height="20" fill="currentColor" viewBox="0 0 48 48"><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#4285F4"/><path d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z" fill="#34A853"/><path d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z" fill="#FBBC05"/><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#EA4335"/></svg>
+          <svg width="18" height="18" viewBox="0 0 48 48"><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#4285F4"/><path d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z" fill="#34A853"/><path d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z" fill="#FBBC05"/></svg>
           Continue with Google
         </button>
         <button
           type="button"
-          className="w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black flex items-center justify-center gap-2"
+          className="w-full bg-gray-800 hover:bg-gray-700 text-white font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all"
           onClick={handleGitHubLogin}
           disabled={loading}
         >
-          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z"/></svg>
+          <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.877v-6.987h-2.54v-2.89h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.242 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z"/></svg>
           Continue with GitHub
         </button>
       </div>
-      <p className="mt-8 text-center text-gray-400">
-        Don&apos;t have an account?{' '}
-        <Link href="/signup" className="text-white hover:underline">Sign up</Link>
+
+      {/* Email/Password - collapsible */}
+      <details className="mt-6">
+        <summary className="text-center text-gray-500 text-sm cursor-pointer hover:text-white">
+          Sign in with email instead
+        </summary>
+        <form className="mt-4 space-y-4" onSubmit={handleCredentialsLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-white"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-white"
+          />
+          <button
+            type="submit"
+            className="w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black"
+            disabled={loading}
+          >
+            Continue
+          </button>
+        </form>
+      </details>
+
+      {loginError && (
+        <div className="mt-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
+          {loginError}
+        </div>
+      )}
+
+      <p className="mt-6 text-center text-gray-500 text-xs">
+        By continuing, you agree to Agentbot's Terms
       </p>
     </div>
   );

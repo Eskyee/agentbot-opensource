@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -37,7 +36,6 @@ interface InstanceData {
   openclawVersion?: string
   botUsername?: string
   gatewayToken?: string
-  // Verification fields
   verified?: boolean
   verificationType?: string | null
   attestationUid?: string | null
@@ -52,8 +50,10 @@ const navItems = [
   { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
   { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
   { icon: '📁', label: 'Files', href: '/dashboard/files' },
+  { icon: '📆', label: 'Calendar', href: '/dashboard/calendar' },
   { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
   { icon: '✅', label: 'Verify', href: '/dashboard/verify' },
+  { icon: '🎛️', label: 'DJ Stream', href: '/dashboard/dj-stream' },
   { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
   { icon: '💳', label: 'Billing', href: '/billing' },
   { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },
@@ -79,6 +79,13 @@ function DashboardContent() {
   const [tasks, setTasks] = useState<{id: string; title: string; status: string; type: string}[]>([])
   const [signingOut, setSigningOut] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; icon: string}[]>([
+    { id: '1', action: 'Agent online', agent: 'Atlas', time: '2 min ago', icon: '🟢' },
+    { id: '2', action: 'Calendar sync completed', agent: 'Atlas', time: '8 min ago', icon: '⏱️' },
+    { id: '3', action: 'WhatsApp session started', agent: 'Atlas', time: '22 min ago', icon: '💬' },
+    { id: '4', action: 'Skill installed', agent: 'Atlas', time: '1 hour ago', icon: '🔌' },
+    { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', icon: '⚡' },
+  ])
 
   useEffect(() => {
     const urlUserId = searchParams.get('id')
@@ -200,7 +207,6 @@ function DashboardContent() {
         await navigator.clipboard.writeText(token)
         alert('Token copied to clipboard!')
       } catch {
-        // Fallback for clipboard issues
         const textArea = document.createElement('textarea')
         textArea.value = token
         textArea.style.position = 'fixed'
@@ -232,7 +238,6 @@ function DashboardContent() {
   if (error) {
     return (
       <div className="flex h-screen bg-black">
-        {/* Sidebar */}
         <DashboardSidebar 
           userName={userName} 
           isOpen={sidebarOpen}
@@ -263,7 +268,6 @@ function DashboardContent() {
 
   return (
     <div className="flex h-screen bg-black">
-      {/* Sidebar */}
       <DashboardSidebar 
         userName={userName} 
         credits={credits} 
@@ -271,13 +275,10 @@ function DashboardContent() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="p-4 lg:p-8">
-          {/* Header with menu button */}
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-4">
-              {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors z-50"
@@ -289,33 +290,114 @@ function DashboardContent() {
               </button>
               
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold">Dashboard</h1>
-                <p className="text-gray-400 text-sm lg:text-base">Manage your OpenClaw agent</p>
+                <h1 className="text-2xl lg:text-3xl font-bold">Mission Control</h1>
+                <p className="text-gray-400 text-sm lg:text-base">Agent monitoring & control center</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                <span className="text-sm text-green-400">System Online</span>
+              </div>
               <a
                 href="/agents"
                 className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
               >
                 <span>+</span> New Agent
               </a>
-              {/* Verification Badge */}
               {instance?.verified && (
                 <AgentVerifiedBadge verified={instance.verified} verificationType={instance.verificationType} />
               )}
-              <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-                isRunning ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-              }`}>
-                <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-green-400' : 'bg-red-400'}`} />
-                {instance?.status}
+            </div>
+          </div>
+
+          {/* Mission Control Header */}
+          <div className="grid gap-4 md:grid-cols-4 mb-8">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-400 text-sm">Active Agents</span>
+                <span className="text-2xl">🤖</span>
+              </div>
+              <div className="text-3xl font-bold">1<span className="text-lg text-gray-500 font-normal">/6</span></div>
+              <div className="text-xs text-green-400 mt-1">+2 today</div>
+            </div>
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-400 text-sm">Token Spend</span>
+                <span className="text-2xl">💰</span>
+              </div>
+              <div className="text-3xl font-bold">£12.40</div>
+              <div className="text-xs text-green-400 mt-1">+8.2% this month</div>
+            </div>
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-400 text-sm">Sessions</span>
+                <span className="text-2xl">💬</span>
+              </div>
+              <div className="text-3xl font-bold">11</div>
+              <div className="text-xs text-gray-500 mt-1">active now</div>
+            </div>
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-400 text-sm">Skills</span>
+                <span className="text-2xl">🛠️</span>
+              </div>
+              <div className="text-3xl font-bold">8<span className="text-lg text-gray-500 font-normal">/14</span></div>
+              <div className="text-xs text-blue-400 mt-1">+2 this week</div>
+            </div>
+          </div>
+
+          {/* System Vitals */}
+          <div className="grid gap-4 md:grid-cols-3 mb-8">
+            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-400 text-sm">CPU</span>
+                <span className="text-gray-500 text-sm">{stats?.cpu || '34%'}</span>
+              </div>
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full" style={{ width: stats?.cpu || '34%' }} />
+              </div>
+            </div>
+            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-400 text-sm">Memory</span>
+                <span className="text-gray-500 text-sm">{stats?.memory || '62%'}</span>
+              </div>
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" style={{ width: stats?.memory || '62%' }} />
+              </div>
+            </div>
+            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-gray-400 text-sm">Disk</span>
+                <span className="text-gray-500 text-sm">45%</span>
+              </div>
+              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{ width: '45%' }} />
               </div>
             </div>
           </div>
 
-          {/* Main Grid */}
+          {/* Activity Feed */}
+          <div className="bg-gray-900 rounded-xl border border-gray-800 mb-8">
+            <div className="p-4 border-b border-gray-800">
+              <h2 className="font-semibold">Recent Activity</h2>
+            </div>
+            <div className="divide-y divide-gray-800">
+              {activities.map((activity) => (
+                <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-gray-800/50 transition-colors">
+                  <span className="text-xl">{activity.icon}</span>
+                  <div className="flex-1">
+                    <div className="text-sm">{activity.action}</div>
+                    <div className="text-xs text-gray-500">{activity.agent}</div>
+                  </div>
+                  <div className="text-xs text-gray-500">{activity.time}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Instance Info */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>🤖</span> Agent Details
@@ -350,14 +432,7 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize flex items-center gap-2">
-                    {instance?.plan || 'Sign up for plan'}
-                    {(instance?.plan === 'trial' || !instance?.plan) && (
-                      <Link href="/#pricing" className="ml-2 text-xs bg-white hover:bg-gray-200 text-black px-2 py-1 rounded-full">
-                        Upgrade
-                      </Link>
-                    )}
-                  </dd>
+                  <dd className="text-gray-300 capitalize">{instance?.plan || 'Starter'}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Version</dt>
@@ -370,7 +445,6 @@ function DashboardContent() {
               </dl>
             </div>
 
-            {/* Stats & Health */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>📊</span> Stats & Health
@@ -411,10 +485,7 @@ function DashboardContent() {
                     <span>{stats?.cpu || '0%'}</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    {/* Progress bar: set width via Tailwind or style prop, but avoid custom CSS variables for compatibility */}
-                    <div
-                      className={`h-full bg-white rounded-full ${getBarWidthClass(stats?.cpu)}`}
-                    />
+                    <div className={`h-full bg-white rounded-full ${getBarWidthClass(stats?.cpu)}`} />
                   </div>
                 </div>
                 <div>
@@ -423,21 +494,17 @@ function DashboardContent() {
                     <span>{stats?.memory || '0%'}</span>
                   </div>
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full bg-purple-500 rounded-full ${getBarWidthClass(stats?.memory)}`}
-                    />
+                    <div className={`h-full bg-purple-500 rounded-full ${getBarWidthClass(stats?.memory)}`} />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>⚡</span> Quick Actions
               </h2>
               <div className="space-y-3">
-                {/* Open OpenClaw UI */}
                 <a
                   href={instance?.url}
                   target="_blank"
@@ -447,7 +514,6 @@ function DashboardContent() {
                   <span className="font-semibold">🎮 Open OpenClaw UI</span>
                   <span>→</span>
                 </a>
-                {/* Open Telegram */}
                 {instance?.botUsername && (
                   <a
                     href={`https://t.me/${instance?.botUsername}`}
@@ -497,7 +563,6 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Control Panel */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>🎛️</span> Control Panel
@@ -515,7 +580,6 @@ function DashboardContent() {
                   {actionLoading === 'repair' ? <span className="animate-spin">⏳</span> : <span>→</span>}
                 </button>
                 
-                {/* Gateway Token */}
                 <div className="bg-gray-800 rounded-lg p-3">
                   <div className="text-xs text-gray-400 mb-2">Gateway Token</div>
                   <div className="flex items-center gap-2">
@@ -538,7 +602,6 @@ function DashboardContent() {
                   </div>
                 </div>
                 
-                {/* Reset Memory */}
                 <button
                   onClick={() => {
                     if (confirm('⚠️ Wipe memory, identity & conversation history? This cannot be undone.')) {
@@ -557,12 +620,10 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Tasks */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>📋</span> Tasks
               </h2>
-              {/* Task Tabs */}
               <div className="flex gap-2 mb-4 overflow-x-auto">
                 {['all', 'recurring', 'chat', 'scheduled', 'completed'].map((tab) => (
                   <button
@@ -576,7 +637,6 @@ function DashboardContent() {
                   </button>
                 ))}
               </div>
-              {/* Task Input */}
               <div className="mb-4">
                 <div className="flex gap-2">
                   <input
@@ -596,7 +656,6 @@ function DashboardContent() {
                     Send
                   </button>
                 </div>
-                {/* Quick Actions */}
                 <div className="flex gap-2 mt-3 flex-wrap">
                   <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">🔍 Research</button>
                   <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📧 Draft email</button>
@@ -604,7 +663,6 @@ function DashboardContent() {
                   <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">✍️ Write a post</button>
                 </div>
               </div>
-              {/* Task List */}
               <div className="space-y-2">
                 {tasks.length === 0 ? (
                   <div className="text-center py-8 text-gray-500 text-sm">
@@ -626,20 +684,17 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Heartbeat */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>💓</span> Heartbeat
               </h2>
               <p className="text-sm text-gray-400 mb-4">Your agent's pulse. See when it last checked in and control how often it does.</p>
               
-              {/* Status */}
               <div className="flex items-center gap-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-green-400"></span>
                 <span className="text-sm">On schedule</span>
               </div>
               
-              {/* Frequency */}
               <div className="mb-4">
                 <div className="text-xs text-gray-500 mb-2">Frequency</div>
                 <div className="flex gap-2 flex-wrap">
@@ -657,7 +712,6 @@ function DashboardContent() {
                 </div>
               </div>
               
-              {/* Stats */}
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <div className="text-xs text-gray-500">Last seen</div>
@@ -671,7 +725,6 @@ function DashboardContent() {
                 </div>
               </div>
               
-              {/* Credits */}
               <div className="bg-gray-800 rounded-lg p-3">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-gray-400">Daily heartbeat pool</span>
@@ -684,7 +737,6 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Skills */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>🎯</span> Active Skills
@@ -708,7 +760,6 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Channels */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>💬</span> Channels
@@ -729,10 +780,8 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Agent Wallet */}
             <WalletCard />
 
-            {/* Help */}
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>❓</span> Help & Support
@@ -751,7 +800,6 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Activity Log */}
           <div className="mt-6 bg-gray-900 rounded-2xl p-6 border border-gray-800">
             <h2 className="text-lg font-semibold mb-4">📝 Recent Activity</h2>
             <div className="text-gray-400 text-sm space-y-2">
@@ -771,7 +819,6 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Referral */}
           <div className="mt-6 bg-gradient-to-r from-white/20 to-gray-200/20 rounded-2xl p-6 border border-white/30">
             <div className="flex items-center justify-between">
               <div>
@@ -807,26 +854,23 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
   const pathname = usePathname()
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
           onClick={onToggle}
           aria-hidden="true"
         />
       )}
       
-      {/* Sidebar */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50
+        fixed md:static inset-y-0 left-0 z-50
         w-64 bg-gray-900 border-r border-gray-800 flex flex-col
         transform transition-transform duration-200 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        {/* Close button (mobile only) */}
         <button
           onClick={onToggle}
-          className="lg:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+          className="md:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
           aria-label="Close sidebar"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -834,8 +878,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
           </svg>
         </button>
 
-        {/* Nav */}
-        <nav className="flex-1 p-4 overflow-y-auto pt-16 lg:pt-4">
+        <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
           <div className="space-y-1">
             {navItems.map((item) => (
               <Link
@@ -854,14 +897,12 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
             ))}
           </div>
 
-          {/* Plan */}
           <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
             <div className="text-sm text-gray-400 mb-1">Your Plan</div>
             <div className="text-xl font-bold">Starter</div>
           </Link>
         </nav>
 
-        {/* User */}
         <div className="p-4 border-t border-gray-800">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">

@@ -10,6 +10,7 @@ services:
     container_name: agentbot-postgres
     env_file:
       - .env
+      - .env
     environment:
       POSTGRES_USER: agentbot
       POSTGRES_PASSWORD: devpassword
@@ -47,6 +48,7 @@ services:
     container_name: agentbot-api
     env_file:
       - .env
+      - .env
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -74,6 +76,7 @@ services:
     container_name: agentbot-worker
     env_file:
       - .env
+      - .env
     environment:
       NODE_ENV: development
     depends_on:
@@ -98,6 +101,7 @@ services:
     container_name: agentbot-frontend
     env_file:
       - .env
+      - .env
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -115,21 +119,6 @@ services:
       watch:
         - path: ./web
           action: rebuild
-
-  # Nginx reverse proxy for local wildcard subdomain testing
-  nginx:
-    image: nginx:alpine
-    container_name: agentbot-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./certs:/etc/nginx/certs:ro
-    depends_on:
-      - frontend
-      - api
-    command: nginx -g 'daemon off;'
 
 volumes:
   postgres_data:

@@ -9,10 +9,24 @@ const BACKEND_API_SECRET = process.env.BACKEND_API_SECRET || process.env.API_SEC
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { telegramToken, telegramUserId, aiProvider, apiKey, plan } = body
+    const { 
+      telegramToken, 
+      telegramUserId, 
+      whatsappToken,
+      whatsappPhoneNumberId,
+      whatsappBusinessAccountId,
+      discordBotToken,
+      discordGuildId,
+      discordChannelId,
+      aiProvider, 
+      apiKey, 
+      plan 
+    } = body
     
-    if (!telegramToken) {
-      return NextResponse.json({ error: 'Telegram token required' }, { status: 400 })
+    if (!telegramToken && !whatsappToken && !discordBotToken) {
+      return NextResponse.json({ 
+        error: 'At least one channel token required (telegram, whatsapp, or discord)' 
+      }, { status: 400 })
     }
     
     // Generate unique user ID
@@ -25,6 +39,13 @@ export async function POST(request: NextRequest) {
       version: 'latest',
       config: {
         telegramToken,
+        telegramUserId,
+        whatsappToken,
+        whatsappPhoneNumberId,
+        whatsappBusinessAccountId,
+        discordBotToken,
+        discordGuildId,
+        discordChannelId,
         ownerIds,
         aiProvider: aiProvider || 'openrouter',
         apiKey,
@@ -35,6 +56,9 @@ export async function POST(request: NextRequest) {
     const legacyPayload = {
       userId,
       telegramToken,
+      telegramUserId,
+      whatsappToken,
+      discordBotToken,
       ownerIds,
       aiProvider: aiProvider || 'openrouter',
       apiKey,

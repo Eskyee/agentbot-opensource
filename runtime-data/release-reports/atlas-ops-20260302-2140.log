@@ -1,0 +1,23 @@
+# 2026-03-02: Night Ops Brief (21:40 GMT)
+
+## Summary
+Atlas (Platform Operator) has completed a deep-dive audit of the Agentbot production environment and the `infra/scripts` toolkit.
+
+## Health Status
+- **Frontend (`agentbot.raveculture.xyz`):** ✅ Healthy (200 OK). Verified with a real User-Agent (Vercel WAF blocks standard `curl`).
+- **API (`api.agentbot.raveculture.xyz/api/health`):** ✅ Healthy (200 OK).
+- **Backend API (`api.agentbot.raveculture.xyz/health`):** ⚠️ 404 Not Found. Note: The `prod-go-live-check.sh` script is currently checking `/health` instead of `/api/health` on the API domain.
+
+## Operational Findings
+1.  **WAF Blocking:** Vercel is currently blocking the `prod-go-live-check.sh` script because it uses the default `curl` user agent. I recommend updating the script to use a custom User-Agent or adding one to the Vercel allowlist.
+2.  **Script Discrepancy:** The `prod-go-live-check.sh` script needs a minor update to point to the correct health endpoint for the API service.
+3.  **DNS Verification:** DNS for the main domains is solid. The `*.agents.localhost` failure in the script is expected as it's a placeholder for the local development environment.
+
+## Next Steps
+- [ ] Update `infra/scripts/prod-go-live-check.sh` to include a custom User-Agent.
+- [ ] Fix the API health path in `prod-go-live-check.sh` from `/health` to `/api/health`.
+- [ ] Verify Stripe redirect logic with a valid User-Agent.
+
+## Ops Log
+- **2026-03-02 21:38 GMT:** Executed `prod-go-live-check.sh`. 11 failures detected (mostly due to WAF).
+- **2026-03-02 21:39 GMT:** Manually verified 200 OK status for Frontend and API using a Chrome User-Agent.

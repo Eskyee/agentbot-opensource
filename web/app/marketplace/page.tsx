@@ -62,18 +62,42 @@ const templates = [
     new: true
   },
   {
+    name: 'sound-system',
+    role: 'Sound System Agent',
+    description: 'Sound engineer for dub, reggae, and sound system culture. PA setup, volume calibration, bass curation.',
+    skills: ['Bass Curate', 'PA Setup', 'Dub Mix', 'Sound Check', 'Amp Tuning'],
+    popular: true,
+    new: true
+  },
+  {
+    name: 'crusty-punk',
+    role: 'Crusty Punk Agent',
+    description: 'DIY punk ethos. Connects to underground networks, finds shows, manages zine distro, booking.',
+    skills: ['Show Find', 'Zine Distro', 'Booking', 'DIY Network', 'Tape Trade'],
+    popular: false,
+    new: true
+  },
+  {
+    name: 'warehouse',
+    role: 'Warehouse Party Agent',
+    description: 'Secret venue coordinator. Finds spaces, handles permits, coordinates security, manages guest lists.',
+    skills: ['Space Find', 'Permit Handle', 'Security Coord', 'Door List', 'Afterparty'],
+    popular: false,
+    new: true
+  },
+  {
     name: 'community-treasury',
     role: 'Community Treasury Agent',
     description: 'Transparent fund management for collectives. Track spending, process reimbursements, budget alerts.',
     skills: ['Treasury Track', 'Reimburse', 'Budget Alert', 'Financial Report', 'Multi-sig'],
     popular: true,
-    new: true
+    new: false
   },
   {
     name: 'basefmbot',
     role: 'Onchain Radio Agent',
     description: 'Deep basefm.space knowledge. Grows underground communities organically. Bridges humans and AI agents onchain.',
-    skills: ['BaseFM Know', 'Community Grow', 'Onchain Radio', 'Raveculture', 'Human+Agent Net'],
+    skills: ['BaseFM Know', 'Community Grow', 'Onchain Radio', 'Raveculture', 'Human+Agent Net', 'DJ Streaming'],
     popular: true
   },
   {
@@ -88,42 +112,104 @@ const templates = [
     role: 'Dancehall Dub Agent',
     description: 'London roots and dub culture specialist. Champion selector with deep knowledge of Jamdown and sound system culture.',
     skills: ['Champion Selector', 'Crate Dig Dub', 'Sound System', 'Dancehall Mix', 'Roots Culture'],
-    popular: false
+    popular: false,
+    new: false
   },
   {
     name: 'clawdbotdj',
     role: 'Underground DJ Agent',
     description: 'Deep crate digger with underground music knowledge. Finds rare tracks and creates seamless mixes.',
     skills: ['Crate Dig', 'Mix Sync', 'Track ID', 'Underground Find', 'B2B Flow'],
-    popular: false
+    popular: false,
+    new: false
+  },
+  {
+    name: 'techno-industrial',
+    role: 'Techno Industrial Agent',
+    description: 'EBM, industrial, and dark electronic specialist. Knows the underground circuits across Europe.',
+    skills: ['Dark Synth', 'Industrial Find', 'Europe Circuit', 'Bunker Rave', 'Noise Curate'],
+    popular: false,
+    new: true
+  },
+  {
+    name: 'breakcore',
+    role: 'Breakcore Agent',
+    description: 'Jungle, drum & bass, breakcore. 200+ BPM mayhem. Finds rare breaks and Amen edits.',
+    skills: ['Amen Chop', 'Jungle Find', 'Breaks Curate', 'Rave Set', 'Ridim'],
+    popular: false,
+    new: true
+  },
+  {
+    name: 'ambient-drone',
+    role: 'Ambient Drone Agent',
+    description: 'Ethereal soundscapes and experimental. Perfect for warmups, installations, and meditation.',
+    skills: ['Drone Craft', 'Ambient Mix', 'Soundscape', 'Installation Audio', 'Warmup Set'],
+    popular: false,
+    new: false
+  },
+  {
+    name: 'grime-sink',
+    role: 'Grime Agent',
+    description: 'UK grime and sink. MC bars, radio sets, CYPHER. Knows Logan, Skengdo, whole scene.',
+    skills: ['MC Bars', 'Radio Set', 'Cypher', 'Sink Lyrics', 'UK Flow'],
+    popular: false,
+    new: true
+  },
+  {
+    name: 'hip-hop-beats',
+    role: 'Hip-Hop Beats Agent',
+    description: 'Boom bap, lo-fi, trap. Knows the samples, connects with producers, finds rare vinyl.',
+    skills: ['Sample Find', 'Boom Bap', 'Lo-Fi Curate', 'Vinyl Dig', 'Beat Match'],
+    popular: false,
+    new: false
+  },
+  {
+    name: 'garage-house',
+    role: 'UKG Agent',
+    description: 'UK garage and house. 4x4 rhythm, speed garage, classic sets. Nightlife coordinator.',
+    skills: ['4x4 Mix', 'UKG Classic', 'Speed Garage', 'Night Coord', 'Club Set'],
+    popular: false,
+    new: false
+  },
+  {
+    name: 'vinyl-collective',
+    role: 'Vinyl Collective Agent',
+    description: 'Manages record club, trades rare pressings, catalogs collections, discovers hidden gems.',
+    skills: ['Vinyl Trade', 'Collection Catalog', 'Rare Find', 'Pressing Info', 'Record Fair'],
+    popular: false,
+    new: true
   },
   {
     name: 'cafe',
     role: 'Startup Cafe Agent',
     description: 'Like having a Starbucks barista for your startup. Customer service, product knowledge, and warm recommendations.',
     skills: ['Customer Service', 'Product Knowledge', 'Recommend', 'Order Handle', 'Loyalty Build'],
-    popular: false
+    popular: false,
+    new: false
   },
   {
     name: 'studio',
     role: 'Senior Studio Engineer',
     description: 'Professional audio engineer. Mixes, masters, and produces studio-quality tracks.',
     skills: ['Audio Mix', 'Mastering', 'Sound Design', 'Beat Make', 'Studio Setup'],
-    popular: false
+    popular: false,
+    new: false
   },
   {
     name: 'vault',
     role: 'DeFi Agent',
     description: 'Automated DeFi operations. Yield farming, staking, and portfolio management.',
     skills: ['Yield Farm', 'Stake Tokens', 'Portfolio Track', 'Price Alert'],
-    popular: false
+    popular: false,
+    new: false
   },
   {
     name: 'pay',
     role: 'Commerce Agent',
     description: 'Accept crypto payments, manage subscriptions, and handle refunds.',
     skills: ['Payment Link', 'Invoice Gen', 'Sub Manage', 'Refund Process'],
-    popular: false
+    popular: false,
+    new: false
   }
 ];
 
@@ -174,7 +260,7 @@ export default function MarketplacePage() {
                   ))}
                 </div>
                 <Link
-                  href="/signup"
+                  href={session ? "/dashboard" : "/signup"}
                   className="block w-full text-center rounded-lg bg-gray-900 px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white hover:bg-gray-700 transition-colors"
                 >
                   Use {template.name}
@@ -225,7 +311,7 @@ export default function MarketplacePage() {
                 Deploy agents with crypto wallets. Powered by Coinbase CDP - send USDC, 
                 check balances, swap tokens, and more. Zero-fee onchain payments.
               </p>
-              <Link href="/signup" className="text-sm sm:text-base text-white hover:underline font-semibold">
+              <Link href={session ? "/dashboard" : "/signup"} className="text-sm sm:text-base text-white hover:underline font-semibold">
                 Deploy crypto agent →
               </Link>
             </div>

@@ -16,7 +16,7 @@ export async function GET() {
     })
 
     if (!response.ok) {
-      return NextResponse.json({ openclawVersion: '2026.2.26' })
+      return NextResponse.json({ openclawVersion: '2026.3.2' })
     }
 
     const data = await response.json()
@@ -26,6 +26,6 @@ export async function GET() {
       deployedAt: data?.deployedAt
     })
   } catch {
-    return NextResponse.json({ openclawVersion: '2026.2.26' })
+    return NextResponse.json({ openclawVersion: '2026.3.2' })
   }
 }

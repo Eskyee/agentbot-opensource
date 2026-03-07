@@ -1,0 +1,22 @@
+# 2026-03-02: Platform Ops Dashboard Activation (22:04 GMT)
+
+## Summary
+The **Platform Ops Dashboard** has been fully implemented and pushed to production (commit `7822d78`). It is now the primary command center for managing the Agentbot infrastructure.
+
+## Functional Components
+- **Dashboard UI (`/admin`):** Switched from a generic user list to a high-density, mono-spaced infrastructure monitor.
+- **Backend Bridge (`/api/admin/stats`):** Securely proxies real-time container metrics (CPU, RAM, Port, Uptime) from the orchestration layer to the UI.
+- **Role Enforcement:** Access is restricted to users with the `admin` role in the database.
+
+## Real-Time Monitoring Capabilities
+- **Infrastructure Status:** Monitor the `e2-standard-4` VM health.
+- **Container Isolation:** Verify each agent is running on its assigned port.
+- **User Load:** Track active subscriptions (Starter/Pro) against VM resources.
+
+## Deployment Status
+- **Code:** ✅ **PUSHED** (v2026.3.1).
+- **Endpoint:** ✅ **LIVE** at `https://agentbot.raveculture.xyz/admin`.
+- **WAF Bypass:** Pending Vercel allow-list for `Atlas-Platform-Operator/1.0`.
+
+## Next Operational Step
+- [ ] Log in to the production dashboard at `/admin` to verify live stat reporting from the `agentbot-prod` VM.

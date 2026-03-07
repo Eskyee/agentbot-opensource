@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
@@ -9,6 +10,17 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [showReferralBadge, setShowReferralBadge] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    if (ref) {
+      setReferralCode(ref);
+      setShowReferralBadge(true);
+    }
+  }, []);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +30,7 @@ export default function SignupPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name, referralCode }),
     });
     if (!res.ok) {
       const data = await res.json();
@@ -43,7 +55,14 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-950">
       <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign up for Agentbot</h1>
+        <h1 className="text-2xl font-bold mb-2 text-center">Sign up for Agentbot</h1>
+        {showReferralBadge && (
+          <div className="text-center mb-4">
+            <span className="inline-block bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm">
+              🎉 £10 discount applied!
+            </span>
+          </div>
+        )}
         <form className="space-y-5" onSubmit={handleSignup}>
           <div>
             <label htmlFor="name" className="block text-gray-300 mb-1">Name</label>

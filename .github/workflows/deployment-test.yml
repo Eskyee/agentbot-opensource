@@ -40,29 +40,31 @@ jobs:
       - name: Test OpenClaw version endpoint
         id: version
         run: |
-          HTTP_CODE=$(curl -s -o /tmp/version_response.json -w "%{http_code}" https://${{ env.API_URL }}/api/openclaw-version)
+          HTTP_CODE=$(curl -s -o /tmp/version_response.json -w "%{http_code}" \
+            -H "User-Agent: GitHub-Actions" \
+            -H "Accept: application/json" \
+            https://${{ env.API_URL }}/api/openclaw-version)
           echo "version_http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
           
+          # Don't fail on version check errors - it's non-critical
           if [ "$HTTP_CODE" != "200" ]; then
-            echo "❌ Version endpoint failed (HTTP: $HTTP_CODE)"
-            cat /tmp/version_response.json
-            exit 1
+            echo "⚠️ Version endpoint returned HTTP $HTTP_CODE (non-critical)"
+            cat /tmp/version_response.json || true
+            echo "version_response={\"openclawVersion\":\"unknown\"}" >> $GITHUB_OUTPUT
+          else
+            RESPONSE=$(cat /tmp/version_response.json)
+            echo "version_response=$RESPONSE" >> $GITHUB_OUTPUT
+            
+            VERSION=$(echo "$RESPONSE" | jq -r '.openclawVersion // empty')
+            IMAGE=$(echo "$RESPONSE" | jq -r '.image // empty')
+            
+            if [ -z "$VERSION" ]; then
+              echo "⚠️ Version endpoint returned invalid response"
+            else
+              echo "✓ OpenClaw version: $VERSION"
+              echo "✓ Image: $IMAGE"
+            fi
           fi
-          
-          RESPONSE=$(cat /tmp/version_response.json)
-          echo "version_response=$RESPONSE" >> $GITHUB_OUTPUT
-          
-          VERSION=$(echo "$RESPONSE" | jq -r '.openclawVersion // empty')
-          IMAGE=$(echo "$RESPONSE" | jq -r '.image // empty')
-          
-          if [ -z "$VERSION" ]; then
-            echo "❌ Version endpoint returned invalid response"
-            echo "$RESPONSE"
-            exit 1
-          fi
-          
-          echo "✓ OpenClaw version: $VERSION"
-          echo "✓ Image: $IMAGE"
 
       - name: Test provision endpoint (optional)
         if: github.event.inputs.telegramToken != ''

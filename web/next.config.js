@@ -5,22 +5,26 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        source: '/api/:path*',
         headers: [
-          // Cache headers
           {
             key: 'Cache-Control',
             value: 'no-cache, no-store, must-revalidate, proxy-revalidate, max-age=0',
           },
+        ],
+      },
+      {
+        source: '/(public|_next|assets)/:path*',
+        headers: [
           {
-            key: 'Pragma',
-            value: 'no-cache',
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-          // Security headers
+        ],
+      },
+      {
+        source: '/:path*',
+        headers: [
           {
             key: 'Content-Security-Policy',
             value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://api.openrouter.ai https://api.stripe.com https://m.stripe.com https://vitals.vercel-insights.com wss: ws:; font-src 'self' data:; frame-ancestors 'none';",

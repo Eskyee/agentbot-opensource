@@ -46,7 +46,7 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
           </div>
           <div>
             <div className="font-medium">{userName}</div>
-            <div className="text-sm text-blue-400">Sign up</div>
+            <div className="text-sm text-blue-400">Account</div>
           </div>
         </div>
       </div>
@@ -72,23 +72,43 @@ export default function SettingsPage() {
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
-  const [apiKeys, setApiKeys] = useState([
-    { id: '1', name: 'Production Key', key: 'sk_live_...x4a2', created: '2026-02-15' },
-    { id: '2', name: 'Development Key', key: 'sk_test_...b3c1', created: '2026-02-10' },
-  ])
-  const [referralLink] = useState('https://agentbot.raveculture.xyz/ref/user123')
-  const [referrals] = useState(5)
+  const [apiKeys, setApiKeys] = useState<{ id: string; name: string; key: string; created: string }[]>([])
+  const [agents, setAgents] = useState<any[]>([])
+  const [referralLink, setReferralLink] = useState('')
+  const [referralCount, setReferralCount] = useState(0)
+  const [referralCredits, setReferralCredits] = useState(0)
+  const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
+  const [passwordLoading, setPasswordLoading] = useState(false)
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const res = await fetch('/api/settings')
-        if (res.ok) {
-          const data = await res.json()
+        const [settingsRes, agentsRes, referralRes] = await Promise.all([
+          fetch('/api/settings'),
+          fetch('/api/agents'),
+          fetch('/api/referral')
+        ])
+        
+        if (settingsRes.ok) {
+          const data = await settingsRes.json()
           setDisplayName(data.name || '')
           setEmail(data.email || '')
           setCredits(data.credits || 0)
           setTwoFactorEnabled(data.twoFactorEnabled || false)
+        }
+
+        if (agentsRes.ok) {
+          const data = await agentsRes.json()
+          setAgents(data.agents || [])
+        }
+
+        if (referralRes.ok) {
+          const data = await referralRes.json()
+          setReferralLink(`https://agentbot.raveculture.xyz/signup?ref=${data.referralCode || ''}`)
+          setReferralCount(data.referralCount || 0)
+          setReferralCredits(data.creditEarned || 0)
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error)
@@ -115,6 +135,47 @@ export default function SettingsPage() {
       alert('Failed to update profile')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const savePassword = async () => {
+    setPasswordError('')
+    setPasswordSuccess(false)
+    
+    if (passwordForm.new !== passwordForm.confirm) {
+      setPasswordError('New passwords do not match')
+      return
+    }
+    if (passwordForm.new.length < 6) {
+      setPasswordError('Password must be at least 6 characters')
+      return
+    }
+    
+    setPasswordLoading(true)
+    try {
+      const res = await fetch('/api/settings/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          currentPassword: passwordForm.current, 
+          newPassword: passwordForm.new 
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setPasswordSuccess(true)
+        setPasswordForm({ current: '', new: '', confirm: '' })
+        setTimeout(() => {
+          setShowPasswordModal(false)
+          setPasswordSuccess(false)
+        }, 2000)
+      } else {
+        setPasswordError(data.error || 'Failed to change password')
+      }
+    } catch (error) {
+      setPasswordError('Failed to change password')
+    } finally {
+      setPasswordLoading(false)
     }
   }
 
@@ -272,43 +333,67 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">API Keys</h2>
-              <button 
-                onClick={createApiKey}
-                className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200"
-              >
-                + Create Key
-              </button>
+              {agents.length > 0 && (
+                <button 
+                  onClick={createApiKey}
+                  className="rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200"
+                >
+                  + Create Key
+                </button>
+              )}
             </div>
 
-            <div className="rounded-xl border border-gray-800 bg-gray-900/50 overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-800/50">
-                  <tr>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Name</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Key</th>
-                    <th className="text-left p-4 text-sm font-medium text-gray-400">Created</th>
-                    <th className="text-right p-4 text-sm font-medium text-gray-400">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {apiKeys.map((key) => (
-                    <tr key={key.id} className="border-t border-gray-800">
-                      <td className="p-4 font-medium">{key.name}</td>
-                      <td className="p-4 font-mono text-sm text-gray-400">{key.key}</td>
-                      <td className="p-4 text-gray-400">{key.created}</td>
-                      <td className="p-4 text-right">
-                        <button 
-                          onClick={() => deleteApiKey(key.id)}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </td>
+            {agents.length === 0 ? (
+              <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-12 text-center">
+                <div className="text-4xl mb-4">🤖</div>
+                <h3 className="text-lg font-medium mb-2">No Agents Deployed</h3>
+                <p className="text-gray-400 text-sm max-w-sm mx-auto mb-6">
+                  API keys are only available once you have a live agent. 
+                  Deploy your first agent from the marketplace to get started.
+                </p>
+                <Link href="/marketplace" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200">
+                  Go to Marketplace
+                </Link>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-gray-800 bg-gray-900/50 overflow-hidden">
+                <table className="w-full">
+                  <thead className="bg-gray-800/50">
+                    <tr>
+                      <th className="text-left p-4 text-sm font-medium text-gray-400">Name</th>
+                      <th className="text-left p-4 text-sm font-medium text-gray-400">Key</th>
+                      <th className="text-left p-4 text-sm font-medium text-gray-400">Created</th>
+                      <th className="text-right p-4 text-sm font-medium text-gray-400">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {apiKeys.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="p-8 text-center text-gray-500 italic">
+                          No API keys created yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      apiKeys.map((key) => (
+                        <tr key={key.id} className="border-t border-gray-800">
+                          <td className="p-4 font-medium">{key.name}</td>
+                          <td className="p-4 font-mono text-sm text-gray-400">{key.key}</td>
+                          <td className="p-4 text-gray-400">{key.created}</td>
+                          <td className="p-4 text-right">
+                            <button 
+                              onClick={() => deleteApiKey(key.id)}
+                              className="text-red-400 hover:text-red-300 text-sm"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -334,7 +419,7 @@ export default function SettingsPage() {
                 </button>
               </div>
               <p className="mt-4 text-gray-400">
-                🎉 <strong>{referrals}</strong> people have joined using your link!
+                🎉 <strong>{referralCount}</strong> people have joined using your link! You have £{referralCredits} in credits.
               </p>
             </div>
 
@@ -342,8 +427,8 @@ export default function SettingsPage() {
               <h3 className="font-semibold mb-4">How it works</h3>
               <ul className="space-y-2 text-gray-400 text-sm">
                 <li>• Share your unique referral link</li>
-                <li>• They get <strong>£30 off</strong> their first month</li>
-                <li>• You get <strong>£30 credit</strong> for each referral</li>
+                <li>• They get <strong>£10 off</strong> their first month</li>
+                <li>• You get <strong>£10 credit</strong> for each referral</li>
               </ul>
             </div>
           </div>
@@ -436,6 +521,67 @@ export default function SettingsPage() {
             <Link href="/dashboard" className="text-white hover:underline mt-2 inline-block">
               Go to Dashboard →
             </Link>
+          </div>
+        )}
+
+        {/* Password Modal */}
+        {showPasswordModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+            <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 w-full max-w-md">
+              <h3 className="text-xl font-semibold mb-4">Change Password</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Current Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.current}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, current: e.target.value })}
+                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.new}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, new: e.target.value })}
+                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-white focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={passwordForm.confirm}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirm: e.target.value })}
+                    className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 focus:border-white focus:outline-none"
+                  />
+                </div>
+                
+                {passwordError && (
+                  <p className="text-red-400 text-sm">{passwordError}</p>
+                )}
+                {passwordSuccess && (
+                  <p className="text-green-400 text-sm">Password changed successfully!</p>
+                )}
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => { setShowPasswordModal(false); setPasswordError(''); }}
+                  className="flex-1 rounded-lg border border-gray-700 px-4 py-2 hover:bg-gray-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={savePassword}
+                  disabled={passwordLoading || !passwordForm.current || !passwordForm.new || !passwordForm.confirm}
+                  className="flex-1 rounded-lg bg-white text-black px-4 py-2 font-semibold hover:bg-gray-200 disabled:opacity-50"
+                >
+                  {passwordLoading ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
         </div>

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../../auth/[...nextauth]/route'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
   starter: { amount: 1900, name: 'Starter Plan', description: '1 AI Agent, 10GB storage, Telegram channel' },
@@ -18,6 +20,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/pricing?error=invalid_plan`, origin), 303)
   }
 
+  // Capture the logged-in user's ID so the webhook can reliably update their plan
+  const session = await getServerSession(authOptions)
+  const userId = session?.user?.id || ''
+
   const stripeKey = process.env.STRIPE_SECRET_KEY
 
   if (!stripeKey) {
@@ -35,38 +41,73 @@ export async function GET(request: NextRequest) {
     
     // If no env price ID, try to find existing active price or create new
     if (!priceId) {
-      const existingPrices = await stripe.prices.list({ 
-        active: true, 
-        limit: 100 
-      })
-      const foundPrice = existingPrices.data.find(p => 
-        p.recurring?.interval === 'month' && 
+      // fetch all active GBP prices via pagination
+      let allPrices: Stripe.Price[] = []
+      let lastId: string | undefined
+      do {
+        const resp = await stripe.prices.list({
+          active: true,
+          currency: 'gbp',
+          limit: 100,
+          starting_after: lastId,
+        })
+        allPrices = allPrices.concat(resp.data)
+        lastId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
+      } while (lastId)
+
+      const foundPrice = allPrices.find(p =>
+        p.recurring?.interval === 'month' &&
         p.unit_amount === planInfo.amount &&
         p.active === true
       )
-      
+
       if (foundPrice) {
         priceId = foundPrice.id
       } else {
         // Create new price with active product
-        const products = await stripe.products.list({ active: true, limit: 10 })
-        let productId = products.data.find(p => p.name === planInfo.name && p.active)?.id
-        
-        if (!productId) {
-          const newProduct = await stripe.products.create({
-            name: planInfo.name,
+        // look up product via pagination as well
+        let productId: string | undefined
+        let lastProductId: string | undefined
+        do {
+          const resp = await stripe.products.list({
             active: true,
+            limit: 100,
+            starting_after: lastProductId,
           })
+          const match = resp.data.find(p => p.name === planInfo.name && p.active)
+          if (match) {
+            productId = match.id
+            break
+          }
+          lastProductId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
+        } while (!productId && lastProductId)
+
+        if (!productId) {
+          // deterministic idempotency key for product creation derived from name
+          const normalized = planInfo.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+          const productKey = `product_${normalized}`
+          const newProduct = await stripe.products.create(
+            {
+              name: planInfo.name,
+              active: true,
+            },
+            { idempotencyKey: productKey }
+          )
           productId = newProduct.id
         }
-        
-        const newPrice = await stripe.prices.create({
-          unit_amount: planInfo.amount,
-          currency: 'gbp',
-          recurring: { interval: 'month' },
-          product: productId,
-          active: true,
-        })
+
+        // deterministic idempotency key for price creation
+        const priceKey = `price_gbp_${planInfo.amount}_month`
+        const newPrice = await stripe.prices.create(
+          {
+            unit_amount: planInfo.amount,
+            currency: 'gbp',
+            recurring: { interval: 'month' },
+            product: productId,
+            active: true,
+          },
+          { idempotencyKey: priceKey }
+        )
         priceId = newPrice.id
       }
     }
@@ -85,6 +126,7 @@ export async function GET(request: NextRequest) {
       metadata: {
         plan,
         source: 'agentbot-web',
+        userId,
       },
     })
 

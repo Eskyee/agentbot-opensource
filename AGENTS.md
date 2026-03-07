@@ -32,34 +32,27 @@ Agentbot is a hosted OpenClaw platform where users sign up, choose a plan, and d
 - Products are generally created manually in the Stripe dashboard so the team can control naming and descriptions.
 - There are five plan prices at launch: £19, £39, £79, £149 and £199 per month.
 - **Checkout behavior** – the code in `web/app/api/stripe/checkout/route.ts` drives how the system finds or creates what it needs:
-  1. When a customer opens `/api/stripe/checkout?plan=<plan>`, the handler looks up an *active* price by calling `stripe.prices.list({ active: true, limit: 100 })` and then searches the returned array for a price where:
+  1. When a customer opens `/api/stripe/checkout?plan=<plan>`, the handler attempts to locate an existing price. Instead of a single-page fetch it now pages through all *active* GBP prices (`stripe.prices.list({ active: true, currency: 'gbp', limit: 100, starting_after })`) collecting every item until `has_more` is false. Only after assembling `allPrices` does the handler search for a match where:
      - `recurring.interval === 'month'`
      - `unit_amount` exactly equals the amount for the requested plan (e.g. 1900 for Starter)
      - the price is active
-     (currency is assumed to be GBP since all created prices use `currency: 'gbp'` but is **not** explicitly filtered during the search.)
-  2. If such a price exists, its `id` is used for the checkout session. No further creation is performed.
-  3. If the lookup fails, the code will search active products (`stripe.products.list({ active: true, limit: 10 })`) for one with a matching `name`.
-     - If **no product** is found, a new one is created using `stripe.products.create({ name: planName, active: true })`.
-     - A new Price object is then created via `stripe.prices.create(...)` with the correct `unit_amount`, `currency: 'gbp'`, `recurring: { interval: 'month' }` and the product ID returned above.
-  4. The newly created price ID is used in the `stripe.checkout.sessions.create(...)` call. Metadata (`plan`, `source`) is attached to the session for bookkeeping.
+     - `currency === 'gbp'` (explicit filter on the API call guarantees this)
+  2. If a matching price is found, its `id` is used for the checkout session and no creation occurs.
+  3. If the lookup fails, the code performs a **paginated product search** similar to the price logic. It repeatedly calls `stripe.products.list({ active: true, limit: 100, starting_after })` until it finds a product whose `name` equals the plan's human‑readable name. If no existing product is discovered, the handler creates one.
+     - Both `stripe.products.create` and `stripe.prices.create` calls now supply deterministic idempotency keys derived from stable plan identifiers (`product_<normalizedName>` for products, `price_<currency>_<amount>_<interval>` for prices). Providing a consistent key means concurrent checkout requests race through Stripe's idempotency mechanism rather than spinning up duplicates. The search steps remain as a fallback, but the keys ensure atomic check‑and‑create semantics without needing an external lock.
+     - When creating a price the handler also specifies `currency: 'gbp'` so the new object is correct from the outset.
+  4. The resolved or newly created price ID is used in the `stripe.checkout.sessions.create(...)` call. Metadata (`plan`, `source`) is still attached to the session for bookkeeping.
 
-- **Idempotency & duplicate safeguards**: the flow itself prevents obvious duplicates by performing the search before creating a price. Since the product lookup only uses `name` and the price lookup only uses amount/interval/active, prices can still be duplicated if:
-  * there are more than 100 active prices and the desired one is paged out of the list (the `limit: 100` cutoff);
-  * the currency changes or a plan needs an alternate currency (not currently handled in search);
-  * someone manually creates a price with the same amount but the interval is not `month` (will be skipped and a new price created);
-  * a product’s name is changed, leading to another product being created in checkout.
+- **Idempotency & duplicate safeguards**: the code now actively leverages Stripe’s idempotency feature to make product/price creation repeatable. Keys are deterministic and collision-free, so simultaneous invocations referring to the same plan will return the same existing resource. The previous search‑only approach remains but is no longer the only defense.
+  * Because the list calls paginate, there is no risk of missing a price or product due to pagination limits.
+  * Currency filtering is explicitly applied on the API calls, eliminating confusion between GBP and potential future EUR prices.
+  * The keys use normalized plan names and a combination of currency, amount, and interval to avoid accidental collisions.
 
-  To mitigate these scenarios maintainers should:
-  - manage products manually where possible and **disable the auto-create logic** if duplicate products/prices are unacceptable (comment out or remove the creation blocks in `route.ts`).
-  - keep consistent metadata or use the `nickname` field on prices to add unique identifiers that can be included in the search logic.
-  - periodically audit the Stripe dashboard for unintended duplicates and deactivate any extras.
-
-- **Automatic creation scope**: checkout will **only create a new Price object** and, if absolutely necessary, a corresponding Product. It does **not** create Customers, Subscriptions, or other resources. There is no idempotency key passed to Stripe calls; the search before create is the only safeguard.
+- **Automatic creation scope**: checkout still only creates Price objects (and new Products when absolutely required). Customers, Subscriptions, etc. are unaffected.
 
 - **Potential duplicate scenarios & recommended mitigations**
-  - If team members create products/prices manually with slightly different names or amounts, the lookup may fail and checkout will spin up another product/price. Keep naming consistent and consider adding a shared constant or metadata to detect existing ones.
-  - Because the lookup ignores currency in its filter, creating a GBP price and then a EUR price with the same unit amount would confuse the system; avoid mixing currencies on a given plan or extend the filter accordingly.
-  - For high-volume production, remove or refactor the `limit: 100` retrieve to paginate through all active resources.
+  - Manual edits in the Stripe dashboard (e.g. changing a product name) can still confuse the lookup; keep naming consistent and consider encoding a secret metadata field that the code can also match.
+  - The new logic makes duplicates extremely unlikely, but audits of the Stripe dashboard remain a good practice.
 
 By understanding and documenting this flow, maintainers can make deliberate changes and avoid inconsistent Stripe state.
 ## GitHub OAuth (for login)
@@ -78,18 +71,23 @@ Users bring their own API keys. No credits to manage.
 
 ## OpenClaw Versions
 
-### 1. Personal OpenClaw (Mac mini local)
+### 1. Personal OpenClaw (Mac mini local) - "Atlas"
 - NOT in Docker - runs directly on Mac mini via `openclaw` CLI
 - NOT exposed publicly - local only, just for you
 - Updated via: `openclaw update` CLI
 - For: Your personal testing only
-- Version: 2026.2.26 (latest)
+- Version: 2026.3.1 (latest)
 
 ### 2. Agentbot OpenClaw (Docker containers)
 - Runs in Docker via agentbot-backend
-- New deployments use: `ghcr.io/openclaw/openclaw:2026.2.26`
+- New deployments use: `ghcr.io/openclaw/openclaw:2026.3.1`
 - Auto-updater checks GitHub releases daily
 - For: Customer deployments only
+
+### 3. Gordon - Production Docker
+- Self-managing Docker production
+- Handles web code
+- Updates independently
 
 ## Multi-Agent Orchestration
 

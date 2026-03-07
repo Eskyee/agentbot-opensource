@@ -2,11 +2,39 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
-    slug: 'security-hardening-2026',
-    date: '7 March 2026',
-    title: '🛡️ Security Hardening & Enterprise APIs - March 2026',
-    excerpt: 'Enterprise-grade security with DDoS protection, SQL injection prevention, and 9 new APIs for memory management, swarms, tasks, and more.',
-    tags: ["Security","Enterprise","APIs"]
+    slug: 'daily-2026-03-05',
+    date: '5 March 2026',
+    title: 'baseFM March Update: Agent Skills, Autonomous Trading & More',
+    excerpt: 'Explore the latest improvements in the OpenClaw framework that enhance the functionality and user experience on the Agentbot platform.',
+    tags: ["Update", "Skills", "Trading"]
+  },
+  {
+    slug: 'daily-2026-03-04',
+    date: '4 March 2026',
+    title: 'Enhancing User Experience with OpenClaw 2026: Live Activity Connection Status',
+    excerpt: 'Discover how the latest updates in OpenClaw improve connection management for AI agents deployed on Agentbot.',
+    tags: ["OpenClaw","Agentbot"]
+  },
+  {
+    slug: 'daily-2026-03-03',
+    date: '3 March 2026',
+    title: 'Enhancements in OpenClaw: Elevating Your Agentbot Experience',
+    excerpt: 'Explore the latest improvements in the OpenClaw framework that enhance the functionality and user experience on the Agentbot platform.',
+    tags: ["OpenClaw","Agentbot"]
+  },
+  {
+    slug: 'v2026-3-2',
+    date: '3 March 2026',
+    title: 'OpenClaw v2026.3.2 + Agentbot Platform Update',
+    excerpt: 'OpenClaw v2026.3.2 released with gateway stability fixes. Plus: Agentbot platform is almost live with 5 pricing plans.',
+    tags: ["OpenClaw", "Release", "Platform"]
+  },
+  {
+    slug: 'daily-2026-03-02',
+    date: '2 March 2026',
+    title: 'Daily OpenClaw Updates: Performance & Stability Improvements',
+    excerpt: 'Latest improvements to OpenClaw including gateway stability enhancements and configuration fixes.',
+    tags: ["OpenClaw","Updates"]
   },
   {
     slug: 'daily-2026-03-01',

@@ -2,20 +2,32 @@
 
 ## Supported Versions
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
 | Version | Supported          |
 | ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+| 1.x.x   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you find a security vulnerability, please report it **privately**:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+1. **Do NOT** create a public GitHub issue
+2. Email the maintainers directly, or
+3. Use GitHub's private vulnerability reporting
+
+We appreciate responsible disclosure and will work with you to resolve issues promptly.
+
+## Scope
+
+This security policy covers:
+- API key handling and storage
+- Payment processing (Stripe)
+- User authentication
+- Container isolation
+- Telegram/chat channel security
+
+## Security Best Practices
+
+- Never commit API keys or secrets to the repository
+- Use environment variables for sensitive data
+- Rotate API keys regularly
+- Review the `SECURITY_AUDIT_REPORT.md` for our latest security assessment

@@ -21,6 +21,11 @@ model User {
   role          String    @default("user")
   storageLimit  Int       @default(10)
   
+  // Referral system
+  referralCode      String?   @unique
+  referredBy       String?
+  referralCredits  Int       @default(0)
+  
   // Subscription fields
   plan          String    @default("free")
   stripeCustomerId    String?
@@ -32,6 +37,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   wallets       Wallet[]
+  referrals     Referral[] @relation("Referrer")
+  referredByUser Referral? @relation("Referred")
 }
 
 model Account {
@@ -178,4 +185,17 @@ model Wallet {
   
   @@index([userId])
   @@index([address])
+}
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referredId  String   @unique
+  referralCode String
+  discountApplied Boolean @default(false)
+  referrerReward Boolean @default(false)
+  createdAt   DateTime @default(now())
+  
+  referrer    User     @relation("Referrer", fields: [referrerId], references: [id])
+  referred    User     @relation("Referred", fields: [referredId], references: [id])
 }
