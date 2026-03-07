@@ -20,22 +20,19 @@ export default function DJStreamPage() {
     try {
       setStatus('Connecting to Base...')
       
-      // Check if Base Account SDK is loaded
+      // Check if Base Account SDK is already loaded
       if (!(window as any).createBaseAccountSDK) {
-        // Load the SDK dynamically
-        const script = document.createElement('script')
-        script.src = 'https://unpkg.com/@base-org/account/dist/base-account.min.js'
-        script.onload = () => connectWithBaseSDK()
-        script.onerror = () => setError('Failed to load Base SDK')
-        document.head.appendChild(script)
-      } else {
-        connectWithBaseSDK()
+        // Load the SDK dynamically from CDN
+        await new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = 'https://unpkg.com/@base-org/account@0.2.1/dist/base-account.min.js'
+          script.onload = () => resolve()
+          script.onerror = () => reject(new Error('Failed to load Base SDK'))
+          document.head.appendChild(script)
+        })
       }
-    } catch (e: any) {
-      console.error('Error:', e)
-      setError(e.message)
-    }
-  }
+      
+      connectWithBaseSDK()
 
   const connectWithBaseSDK = async () => {
     try {
