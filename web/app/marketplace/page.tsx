@@ -73,7 +73,7 @@ const templates = [
     name: 'basefmbot',
     role: 'Onchain Radio Agent',
     description: 'Deep basefm.space knowledge. Grows underground communities organically. Bridges humans and AI agents onchain.',
-    skills: ['BaseFM Know', 'Community Grow', 'Onchain Radio', 'Raveculture', 'Human+Agent Net'],
+    skills: ['BaseFM Know', 'Community Grow', 'Onchain Radio', 'Raveculture', 'Human+Agent Net', 'DJ Streaming'],
     popular: true
   },
   {

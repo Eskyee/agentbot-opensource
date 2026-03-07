@@ -70,7 +70,8 @@ const stream = await createStream("0xabc", "DJ Snake");
 4. **Go Live**: Start streaming, listeners auto-tune via baseFM
 
 ## Pricing
-[TBD - working out pricing model]
+- **Free**: 5,000+ RAVE tokens (community perk)
+- **£10/month**: For non-RAVE holders (covers Mux costs)
 
 ## Requirements
 - MUX_TOKEN_ID and MUX_TOKEN_SECRET env vars (for stream creation)
