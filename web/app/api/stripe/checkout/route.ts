@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
-const PLAN_PRICE_IDS: Record<string, string | undefined> = {
-  starter: process.env.STRIPE_PRICE_STARTER,
-  pro: process.env.STRIPE_PRICE_PRO,
-  scale: process.env.STRIPE_PRICE_SCALE,
-  enterprise: process.env.STRIPE_PRICE_ENTERPRISE,
-  white_glove: process.env.STRIPE_PRICE_WHITEGLOVE,
-}
-
-const PLAN_INFO: Record<string, { name: string; description: string }> = {
-  starter: { name: 'Starter Plan', description: '1 AI Agent, 10GB storage, Telegram channel' },
-  pro: { name: 'Pro Plan', description: '1 AI Agent, 50GB storage, Telegram + WhatsApp, Custom domain' },
-  scale: { name: 'Scale Plan', description: '3 AI Agents, 100GB storage, All channels' },
-  enterprise: { name: 'Enterprise Plan', description: 'Unlimited agents, 500GB storage, White-label' },
-  white_glove: { name: 'White Glove Plan', description: 'Everything + Dedicated manager, 10x resources' },
+const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
+  starter: { amount: 1900, name: 'Starter Plan', description: '1 AI Agent, 10GB storage, Telegram channel' },
+  pro: { amount: 3900, name: 'Pro Plan', description: '1 AI Agent, 50GB storage, Telegram + WhatsApp, Custom domain, + usage' },
+  scale: { amount: 7900, name: 'Scale Plan', description: '3 AI Agents, 100GB storage, All channels, Advanced analytics' },
+  enterprise: { amount: 14900, name: 'Enterprise Plan', description: 'Unlimited agents, 500GB storage, White-label, 24/7 support' },
+  white_glove: { amount: 19900, name: 'White Glove Plan', description: 'Premium - Everything in Enterprise, 10x resources, Dedicated account manager' },
 }
 
 export async function GET(request: NextRequest) {
@@ -27,22 +19,57 @@ export async function GET(request: NextRequest) {
   }
 
   const stripeKey = process.env.STRIPE_SECRET_KEY
-  const priceId = PLAN_PRICE_IDS[plan]
 
   if (!stripeKey) {
     console.error('Stripe secret key not configured')
     return NextResponse.redirect(new URL(`/pricing?error=stripe_not_configured`, origin), 303)
   }
 
-  if (!priceId) {
-    console.error(`Stripe price ID not configured for plan: ${plan}`)
-    return NextResponse.redirect(new URL(`/pricing?error=price_not_configured`, origin), 303)
-  }
-
   try {
     const stripe = new Stripe(stripeKey)
     
-    const planInfo = PLAN_INFO[plan]
+    const planInfo = PLAN_PRICES[plan]
+    
+    // Always create/find fresh active price - ignore env vars to avoid stale price IDs
+    let priceId: string | undefined
+    
+    // If no env price ID, try to find existing active price or create new
+    if (!priceId) {
+      const existingPrices = await stripe.prices.list({ 
+        active: true, 
+        limit: 100 
+      })
+      const foundPrice = existingPrices.data.find(p => 
+        p.recurring?.interval === 'month' && 
+        p.unit_amount === planInfo.amount &&
+        p.active === true
+      )
+      
+      if (foundPrice) {
+        priceId = foundPrice.id
+      } else {
+        // Create new price with active product
+        const products = await stripe.products.list({ active: true, limit: 10 })
+        let productId = products.data.find(p => p.name === planInfo.name && p.active)?.id
+        
+        if (!productId) {
+          const newProduct = await stripe.products.create({
+            name: planInfo.name,
+            active: true,
+          })
+          productId = newProduct.id
+        }
+        
+        const newPrice = await stripe.prices.create({
+          unit_amount: planInfo.amount,
+          currency: 'gbp',
+          recurring: { interval: 'month' },
+          product: productId,
+          active: true,
+        })
+        priceId = newPrice.id
+      }
+    }
     
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -53,7 +80,7 @@ export async function GET(request: NextRequest) {
         },
       ],
       allow_promotion_codes: true,
-      success_url: `${origin}/checkout/success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${origin}/onboard?plan=${plan}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?cancelled=1`,
       metadata: {
         plan,

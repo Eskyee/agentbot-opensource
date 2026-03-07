@@ -30,8 +30,9 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
-        plan: true,
-        created_at: true,
+        emailVerified: true,
+        role: true,
+        image: true,
       },
       orderBy: {
         email: 'asc',
@@ -63,7 +64,7 @@ export async function DELETE(request: Request) {
     // Prevent deleting yourself
     const userToDelete = await prisma.user.findUnique({
       where: { id: userId },
-      select: { email: true },
+      select: { email: true, role: true },
     });
 
     if (userToDelete?.email === session.user.email) {
@@ -71,7 +72,7 @@ export async function DELETE(request: Request) {
     }
 
     // Prevent deleting other admins
-    if (userToDelete?.email && ADMIN_EMAILS.includes(userToDelete.email.toLowerCase())) {
+    if (userToDelete?.role === 'admin') {
       return NextResponse.json({ error: 'Cannot delete admin users' }, { status: 400 });
     }
 
