@@ -1,31 +1,41 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { OnchainKitProvider, ConnectWallet, Wallet, WalletDropdown, WalletDropdownDisconnect, useAccount } from '@coinbase/onchainkit/wallet'
-import { Identity, Address, EthBalance, Name } from '@coinbase/onchainkit/identity'
-import { base } from 'viem/chains'
-import { createConfig, http, useAccount as useWagmiAccount, useBalance } from 'wagmi'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import Link from 'next/link'
-
-const wagmiConfig = createConfig({
-  chains: [base],
-  transports: {
-    [base.id]: http(),
-  },
-})
-
-const queryClient = new QueryClient()
 
 const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('5000000000000000000000')
+const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
-function DJStreamContent() {
-  const { address, isConnected } = useWagmiAccount()
+declare global {
+  interface Window {
+    ethereum?: any
+  }
+}
+
+export default function DJStreamPage() {
+  const [address, setAddress] = useState('')
+  const [isConnected, setIsConnected] = useState(false)
   const [raveBalance, setRaveBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const connectWallet = async () => {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+        if (accounts[0]) {
+          setAddress(accounts[0])
+          setIsConnected(true)
+        }
+      } catch (e) {
+        console.error('Error connecting:', e)
+        setError('Failed to connect wallet')
+      }
+    } else {
+      setError('Please install MetaMask or another Web3 wallet')
+    }
+  }
 
   useEffect(() => {
     if (address) {
@@ -83,31 +93,39 @@ function DJStreamContent() {
 
   const hasAccess = raveBalance && BigInt(raveBalance) >= RAVE_THRESHOLD
 
+  const formatAddress = (addr: string) => addr.slice(0, 6) + '...' + addr.slice(-4)
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">🎛️ DJ Stream Dashboard</h1>
-          <Link href="/dashboard" className="text-purple-400 hover:text-purple-300">
-            ← Back to Dashboard
-          </Link>
-        </div>
+        <h1 className="text-3xl font-bold mb-8">🎛️ DJ Stream Dashboard</h1>
 
         <div className="grid gap-6">
           {/* Wallet Connection */}
           <div className="bg-gray-800 p-6 rounded-xl">
             <h2 className="text-xl font-semibold mb-4">1. Connect Wallet</h2>
-            <Wallet>
-              <ConnectWallet />
-              <WalletDropdown>
-                <Identity className="px-4 pt-3 pb-2">
-                  <Name />
-                  <Address />
-                  <EthBalance />
-                </Identity>
-                <WalletDropdownDisconnect />
-              </WalletDropdown>
-            </Wallet>
+            
+            {!isConnected ? (
+              <button
+                onClick={connectWallet}
+                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold"
+              >
+                Connect Wallet (MetaMask)
+              </button>
+            ) : (
+              <div className="flex items-center gap-4">
+                <div className="bg-green-600 px-4 py-2 rounded-lg">
+                  <span className="text-sm text-gray-300">Connected:</span>
+                  <span className="ml-2 font-mono">{formatAddress(address)}</span>
+                </div>
+                <button
+                  onClick={() => { setIsConnected(false); setAddress(''); setRaveBalance(null) }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  Disconnect
+                </button>
+              </div>
+            )}
           </div>
 
           {/* RAVE Balance Check */}
@@ -220,7 +238,7 @@ function DJStreamContent() {
                   <div className="font-semibold mb-2">📺 OBS Studio Settings</div>
                   <div className="text-sm text-gray-300 space-y-1">
                     <div><strong>Service:</strong> Custom</div>
-                    <div><strong>Server:</strong> rtmp://global-live.mux.com:5222/app</div>
+                    <div><strong>Server:</strong> {MUX_RTMP_URL}</div>
                     <div><strong>Stream Key:</strong> {stream.streamKey}</div>
                     <div><strong>Audio:</strong> 256-320 kbps, AAC, 44.1kHz Stereo</div>
                   </div>
@@ -231,25 +249,5 @@ function DJStreamContent() {
         </div>
       </div>
     </div>
-  )
-}
-
-export default function DJStreamPage() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <OnchainKitProvider
-        apiKey={process.env.NEXT_PUBLIC_CDP_API_KEY || ''}
-        chain={base}
-        config={{
-          appearance: {
-            name: 'Agentbot',
-            mode: 'dark',
-            theme: 'base',
-          },
-        }}
-      >
-        <DJStreamContent />
-      </OnchainKitProvider>
-    </QueryClientProvider>
   )
 }
