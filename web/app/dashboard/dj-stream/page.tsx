@@ -1,78 +1,33 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { OnchainKitProvider, ConnectWallet, Wallet, WalletDropdown, Identity, Name, Address, useAccount } from '@coinbase/onchainkit/wallet'
+import { WagmiProvider, createConfig, http, useConnect, useDisconnect } from 'wagmi'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { base } from 'viem/chains'
+
+const config = createConfig({
+  chains: [base],
+  transports: {
+    [base.id]: http(),
+  },
+})
+
+const queryClient = new QueryClient()
 
 const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('5000000000000000000000')
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
-export default function DJStreamPage() {
-  const [address, setAddress] = useState('')
-  const [isConnected, setIsConnected] = useState(false)
+function DJStreamContent() {
+  const { address, isConnected } = useAccount()
+  const { connect, connectors } = useConnect()
+  const { disconnect } = useDisconnect()
   const [raveBalance, setRaveBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [djName, setDjName] = useState('DJ Escaba')
-  const [status, setStatus] = useState('')
-
-  const connectWallet = async () => {
-    try {
-      setStatus('Connecting to Base...')
-      
-      // Check if Base Account SDK is already loaded
-      if (!(window as any).createBaseAccountSDK) {
-        // Load the SDK dynamically from CDN
-        await new Promise<void>((resolve, reject) => {
-          const script = document.createElement('script')
-          script.src = 'https://unpkg.com/@base-org/account@0.2.1/dist/base-account.min.js'
-          script.onload = () => resolve()
-          script.onerror = () => reject(new Error('Failed to load Base SDK'))
-          document.head.appendChild(script)
-        })
-      }
-      
-      connectWithBaseSDK()
-    } catch (e: any) {
-      console.error('Error:', e)
-      setError(e.message)
-    }
-  }
-
-  const connectWithBaseSDK = async () => {
-    try {
-      setStatus('Please approve in wallet...')
-      
-      const provider = (window as any).createBaseAccountSDK({
-        appName: 'Agentbot DJ Stream',
-        appLogoUrl: 'https://agentbot.raveculture.xyz/favicon.svg',
-      }).getProvider()
-
-      const nonce = crypto.randomUUID().replace(/-/g, '')
-      
-      const { accounts } = await provider.request({
-        method: 'wallet_connect',
-        params: [{
-          version: '1',
-          capabilities: {
-            signInWithEthereum: {
-              nonce,
-              chainId: '0x2105', // Base Mainnet - 8453
-            },
-          },
-        }],
-      })
-
-      const { address } = accounts[0]
-      setAddress(address)
-      setIsConnected(true)
-      setStatus('')
-    } catch (e: any) {
-      console.error('Connection error:', e)
-      setError(e.message || 'Failed to connect')
-      setStatus('')
-    }
-  }
 
   useEffect(() => {
     if (address) {
@@ -103,6 +58,12 @@ export default function DJStreamPage() {
     }
   }
 
+  const handleConnect = () => {
+    if (connectors[0]) {
+      connect({ connector: connectors[0] })
+    }
+  }
+
   const createStream = async () => {
     if (!address) return
     setLoading(true)
@@ -129,7 +90,6 @@ export default function DJStreamPage() {
   }
 
   const hasAccess = raveBalance && BigInt(raveBalance) >= RAVE_THRESHOLD
-
   const formatAddress = (addr: string) => addr.slice(0, 6) + '...' + addr.slice(-4)
 
   return (
@@ -143,23 +103,20 @@ export default function DJStreamPage() {
             <h2 className="text-xl font-semibold mb-4">1. Connect Wallet</h2>
             
             {!isConnected ? (
-              <div>
-                <button
-                  onClick={connectWallet}
-                  className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
-                >
-                  <span>🔵</span> Sign in with Base
-                </button>
-                {status && <p className="mt-2 text-gray-400">{status}</p>}
-              </div>
+              <button
+                onClick={handleConnect}
+                className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+              >
+                <span>🔵</span> Connect Wallet (Coinbase)
+              </button>
             ) : (
               <div className="flex items-center gap-4">
                 <div className="bg-green-600 px-4 py-2 rounded-lg">
                   <span className="text-sm text-gray-300">Connected:</span>
-                  <span className="ml-2 font-mono">{formatAddress(address)}</span>
+                  <span className="ml-2 font-mono">{formatAddress(address || '')}</span>
                 </div>
                 <button
-                  onClick={() => { setIsConnected(false); setAddress(''); setRaveBalance(null) }}
+                  onClick={() => { disconnect(); setRaveBalance(null); setStream(null) }}
                   className="text-gray-400 hover:text-white"
                 >
                   Disconnect
@@ -295,5 +252,17 @@ export default function DJStreamPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DJStreamPage() {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <OnchainKitProvider chain={base}>
+          <DJStreamContent />
+        </OnchainKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   )
 }
