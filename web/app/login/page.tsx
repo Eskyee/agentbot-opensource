@@ -3,8 +3,8 @@ import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import OnchainWallet from "@/app/components/OnchainWallet";
-import { useAccount } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { injected } from "wagmi/connectors";
 import { SiweMessage } from "siwe";
 
 function LoginForm() {
@@ -12,6 +12,8 @@ function LoginForm() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
   const { address, isConnected } = useAccount()
+  const { connect } = useConnect()
+  const { disconnect } = useDisconnect()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -40,10 +42,14 @@ function LoginForm() {
 
   // Auto-login when wallet connects
   useEffect(() => {
-    if (isConnected && address && !session) {
+    if (isConnected && address && !session && !walletLoading) {
       loginWithWallet()
     }
   }, [isConnected, address])
+
+  const handleWalletConnect = () => {
+    connect({ connector: injected() })
+  }
 
   const loginWithWallet = async () => {
     if (!address) return
@@ -125,7 +131,20 @@ function LoginForm() {
 
       {/* Apple-style: Wallet Connect - PRIMARY */}
       <div className="mb-4">
-        <OnchainWallet />
+        <button
+          onClick={handleWalletConnect}
+          disabled={walletLoading}
+          className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all"
+        >
+          {walletLoading ? (
+            <span className="animate-spin">⏳</span>
+          ) : (
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            </svg>
+          )}
+          {walletLoading ? 'Connecting...' : 'Continue with Wallet'}
+        </button>
       </div>
 
       {walletLoading && (
