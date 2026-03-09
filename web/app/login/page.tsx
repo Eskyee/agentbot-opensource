@@ -1,8 +1,14 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import SignInWithBase from "@/app/components/SignInWithBase";
+
+// ssr:false — @base-org/account-ui Preact internals crash during prerender
+const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
+  ssr: false,
+  loading: () => <div className="h-11 w-44 rounded-lg bg-gray-800 animate-pulse" />,
+});
 
 function LoginForm() {
   const { data: session, status } = useSession()
