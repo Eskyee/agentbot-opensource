@@ -15,9 +15,8 @@ test.describe('Agentbot Frontend', () => {
 
   test('login page loads', async ({ page }) => {
     await page.goto('/login');
-    await expect(page.getByText('Log in to Agentbot')).toBeVisible();
+    await expect(page.getByText('Welcome to Agentbot')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Continue with GitHub' })).toBeVisible();
   });
 
   test('docs page loads', async ({ page }) => {

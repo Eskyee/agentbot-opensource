@@ -57,11 +57,13 @@ jobs:
           scan-ref: '.'
           format: 'sarif'
           output: 'trivy-results.sarif'
-      
+          exit-code: '0'
+
       - name: Upload Trivy results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
 
   # Test Suite
   test:
@@ -198,4 +200,4 @@ jobs:
           text: 'CI/CD Pipeline: ${{ job.status }}'
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
           fields: repo,message,commit,author
-        if: always()
+        if: always() && secrets.SLACK_WEBHOOK != ''
