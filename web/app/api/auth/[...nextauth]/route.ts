@@ -56,6 +56,7 @@ providers.push(
 // Wallet (SIWE - Sign-In with Ethereum) login
 providers.push(
   CredentialsProvider({
+    id: "wallet",
     name: "Ethereum Wallet",
     credentials: {
       message: { label: "Message", type: "text" },

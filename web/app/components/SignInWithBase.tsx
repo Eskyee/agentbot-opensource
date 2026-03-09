@@ -53,8 +53,8 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
 
       const { message, signature } = accounts[0].capabilities.signInWithEthereum
 
-      // Hand off to NextAuth credentials provider (SIWE backend verifies with viem)
-      const res = await signIn('credentials', {
+      // Hand off to the 'wallet' NextAuth credentials provider (SIWE backend verifies with viem)
+      const res = await signIn('wallet', {
         message,
         signature,
         redirect: false,
