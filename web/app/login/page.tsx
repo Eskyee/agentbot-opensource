@@ -1,9 +1,8 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
-import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount, useConnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { SiweMessage } from "siwe";
 
@@ -13,7 +12,6 @@ function LoginForm() {
   const error = searchParams.get('error')
   const { address, isConnected } = useAccount()
   const { connect } = useConnect()
-  const { disconnect } = useDisconnect()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
