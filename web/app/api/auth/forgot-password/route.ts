@@ -3,8 +3,6 @@ import { prisma } from '@/app/lib/prisma'
 import { randomBytes } from 'crypto'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json()
@@ -35,6 +33,7 @@ export async function POST(request: NextRequest) {
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'}/reset-password?token=${resetToken}`
 
     if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       try {
         const result = await resend.emails.send({
           from: 'Agentbot <noreply@agentbot.raveculture.xyz>',

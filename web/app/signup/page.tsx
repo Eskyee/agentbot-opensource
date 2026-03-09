@@ -1,7 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+
+const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
+  ssr: false,
+  loading: () => <div className="h-11 w-full rounded-lg bg-gray-800 animate-pulse" />,
+});
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -113,6 +119,9 @@ export default function SignupPage() {
           <span className="h-px w-10 bg-gray-700" />
         </div>
         <div className="flex flex-col gap-3">
+          <div className="flex justify-center">
+            <SignInWithBase redirectTo="/onboard" onError={(msg) => setError(msg)} />
+          </div>
           <button
             className="w-full rounded-lg bg-white text-gray-900 font-semibold py-2 flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-100 transition-colors"
             onClick={() => signIn("google", { callbackUrl: "/onboard" })}

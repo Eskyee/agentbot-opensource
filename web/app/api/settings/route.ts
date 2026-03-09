@@ -19,16 +19,47 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        plan: user.plan
-      }
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      credits: user.referralCredits ?? 0,
+      twoFactorEnabled: false,
     })
   } catch (error) {
     console.error('Settings fetch error:', error)
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const body = await req.json()
+    const { name, notifications } = body
+
+    const user = await prisma.user.update({
+      where: { email: session.user.email },
+      data: {
+        ...(name !== undefined && { name }),
+      }
+    })
+
+    return NextResponse.json({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      credits: user.referralCredits ?? 0,
+      twoFactorEnabled: false,
+    })
+  } catch (error) {
+    console.error('Settings update error:', error)
+    return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
   }
 }
 
@@ -39,7 +70,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { name, email, notifications_enabled } = await req.json()
+    const { name, email } = await req.json()
 
     const user = await prisma.user.update({
       where: { email: session.user.email },
@@ -50,13 +81,12 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({
-      success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        plan: user.plan
-      }
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      plan: user.plan,
+      credits: user.referralCredits ?? 0,
+      twoFactorEnabled: false,
     })
   } catch (error) {
     console.error('Settings update error:', error)

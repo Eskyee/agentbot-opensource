@@ -5,6 +5,10 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/lib/prisma";
 import { SiweMessage } from "siwe";
+import { createPublicClient, http } from "viem";
+import { base } from "viem/chains";
+
+const viemClient = createPublicClient({ chain: base, transport: http() });
 
 const providers = [];
 
@@ -52,6 +56,7 @@ providers.push(
 // Wallet (SIWE - Sign-In with Ethereum) login
 providers.push(
   CredentialsProvider({
+    id: "wallet",
     name: "Ethereum Wallet",
     credentials: {
       message: { label: "Message", type: "text" },
@@ -64,16 +69,30 @@ providers.push(
 
       try {
         const siweMessage = new SiweMessage(credentials.message);
-        // @ts-ignore - SIWE verify types
-        const fields = await siweMessage.verify(credentials.signature);
+        const address = siweMessage.address as `0x${string}`;
 
-        if (!fields.success) {
-          console.log(`[Auth] SIWE verification failed`);
+        // Validate domain to prevent SIWE replay attacks from other sites
+        const expectedDomain = process.env.NEXTAUTH_URL
+          ? new URL(process.env.NEXTAUTH_URL).host
+          : 'agentbot.raveculture.xyz';
+        if (siweMessage.domain !== expectedDomain) {
+          console.log(`[Auth] SIWE domain mismatch: ${siweMessage.domain} !== ${expectedDomain}`);
           return null;
         }
 
-        const address = fields.data.address;
-        const domain = fields.data.domain;
+        // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
+        const valid = await viemClient.verifyMessage({
+          address,
+          message: credentials.message,
+          signature: credentials.signature as `0x${string}`,
+        });
+
+        if (!valid) {
+          console.log(`[Auth] SIWE verification failed for ${address}`);
+          return null;
+        }
+
+        const domain = siweMessage.domain;
 
         // Find or create user by wallet address
         let user = await prisma.user.findFirst({
