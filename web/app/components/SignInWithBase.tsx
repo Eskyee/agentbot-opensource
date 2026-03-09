@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { signIn } from 'next-auth/react'
 
@@ -20,30 +20,35 @@ interface Props {
 
 export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: Props) {
   const [loading, setLoading] = useState(false)
+  // Pre-generate nonce on mount so it's ready before the button click.
+  // This avoids popup blockers — any async work between click and wallet_connect
+  // popup causes browsers to classify the popup as unsolicited.
+  const nonceRef = useRef<string>('')
 
-  // Validate redirect destination against whitelist
+  useEffect(() => {
+    nonceRef.current = window.crypto.randomUUID().replace(/-/g, '')
+  }, [])
+
   const safeRedirect = ALLOWED_REDIRECTS.includes(redirectTo) ? redirectTo : '/dashboard'
 
   const handleSignIn = async () => {
     setLoading(true)
     try {
-      // Lazy-init SDK inside handler — avoids module-level browser API access during SSR
+      // Lazy-init SDK — still inside handler to avoid SSR issues,
+      // but SDK init is synchronous so it doesn't delay the popup
       const { createBaseAccountSDK } = await import('@base-org/account')
       const provider = createBaseAccountSDK({
         appName: 'Agentbot',
         appLogoUrl: 'https://agentbot.raveculture.xyz/logo.png',
       }).getProvider()
 
-      // Generate nonce before popup opens (avoids popup blockers)
-      const nonce = window.crypto.randomUUID().replace(/-/g, '')
+      const nonce = nonceRef.current
+      if (!nonce) throw new Error('Nonce not ready — please try again')
 
-      // Switch to Base mainnet
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0x2105' }],
-      }).catch(() => {/* already on Base — ignore */})
-
-      // wallet_connect with SIWE capability → returns address + signed SIWE message
+      // wallet_connect opens the Base Account popup immediately after click.
+      // Chain switching is handled by the SDK via the chainId capability param.
+      // Do NOT do any async work (network calls, wallet_switchEthereumChain) here
+      // — browsers block popups opened after async gaps in user gesture handlers.
       const response = await provider.request({
         method: 'wallet_connect',
         params: [{
@@ -51,7 +56,7 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
           capabilities: {
             signInWithEthereum: {
               nonce,
-              chainId: '0x2105',
+              chainId: '0x2105', // Base Mainnet
             },
           },
         }],
@@ -65,7 +70,7 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
 
       const { message, signature } = siwe
 
-      // Hand off to the 'wallet' NextAuth credentials provider (SIWE backend verifies with viem)
+      // Hand off to the 'wallet' NextAuth credentials provider
       const res = await signIn('wallet', {
         message,
         signature,
@@ -75,12 +80,16 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
       if (res?.ok) {
         window.location.href = safeRedirect
       } else {
+        // Rotate nonce for next attempt
+        nonceRef.current = window.crypto.randomUUID().replace(/-/g, '')
         onError?.('Wallet login failed. Please try again.')
       }
     } catch (err: unknown) {
+      // Rotate nonce so the next attempt uses a fresh one
+      nonceRef.current = window.crypto.randomUUID().replace(/-/g, '')
       const e = err as { code?: number; message?: string }
       if (e?.code !== 4001) {
-        // 4001 = user rejected — don't show error for that
+        // 4001 = user rejected — don't surface an error for that
         console.error('Base Account sign in error:', err)
         onError?.(e.message || 'Failed to sign in with Base')
       }
