@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { useBasename, getWalletAddress } from '@/app/hooks/useBasename'
 
 const navItems = [
   { icon: '🤖', label: 'Agents', href: '/agents', active: false },
@@ -57,6 +58,8 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
 export default function SettingsPage() {
   const { data: session } = useSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
+  const walletAddress = getWalletAddress(session?.user?.email)
+  const { basename } = useBasename(walletAddress)
   const [activeTab, setActiveTab] = useState('profile')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -312,6 +315,39 @@ export default function SettingsPage() {
                 />
                 <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
               </div>
+
+              {walletAddress && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Wallet</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
+                      disabled
+                      className="w-full max-w-md rounded-lg border border-gray-700 bg-gray-800/50 px-4 py-2 text-gray-500 font-mono text-sm"
+                    />
+                  </div>
+                  {basename ? (
+                    <p className="mt-2 flex items-center gap-2 text-sm">
+                      <span className="inline-block w-4 h-4 rounded-full bg-blue-500" aria-hidden="true" />
+                      <span className="text-blue-400 font-medium">{basename}</span>
+                      <span className="text-gray-500">· Base Name</span>
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-500">
+                      No Basename registered.{' '}
+                      <a
+                        href="https://www.base.org/names"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 hover:underline"
+                      >
+                        Get one free →
+                      </a>
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div>
                 <p className="text-sm text-gray-500">Member since Feb 2026</p>

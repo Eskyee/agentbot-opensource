@@ -2,114 +2,137 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  
+
   // Check if user is admin
   const isAdmin = session?.user?.email === 'rbasefm@icloud.com';
+  const walletAddress = getWalletAddress(session?.user?.email);
+  const { basename } = useBasename(walletAddress);
+  // Display name: Basename > truncated address > name > email username
+  const displayName = basename
+    ?? (walletAddress ? `${walletAddress.slice(0, 6)}…${walletAddress.slice(-4)}` : null)
+    ?? session?.user?.name
+    ?? session?.user?.email?.split('@')[0]
+    ?? null;
 
   useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <nav className="w-full flex items-center justify-between px-4 py-3 fixed top-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-3">
-      <div className="flex items-center gap-4">
-        <Link href="/" className="text-lg font-medium text-white flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-8 rounded">
-          <span className="text-2xl" role="img" aria-label="Lobster">🦞</span>
-          <span className="hidden sm:inline">Agentbot</span>
-        </Link>
-      </div>
+    <>
+      <nav className="w-full flex items-center justify-between px-4 py-3 fixed top-0 z-50 bg-black/80 backdrop-blur-md border-b border-gray-800">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="text-lg font-medium text-white flex items-center gap-2 rounded"
+            onClick={closeMenu}
+          >
+            <span className="text-2xl" role="img" aria-label="Lobster">🦞</span>
+            <span className="hidden sm:inline">Agentbot</span>
+          </Link>
+        </div>
 
-      {/* Desktop nav */}
-      <div className="hidden md:flex items-center gap-6">
-        <Link href="/pricing" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Pricing</Link>
-        <Link href="/blog" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Blog</Link>
-        <Link href="/docs" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Docs</Link>
-        <Link href="/marketplace" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">Marketplace</Link>
-        
-        {status === "loading" ? null : session ? (
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">
-              Dashboard
-            </Link>
-            {isAdmin && (
-              <Link href="/admin" className="text-sm text-purple-400 hover:text-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400 rounded transition-colors">
-                Admin
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-6">
+          <Link href="/pricing" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Pricing</Link>
+          <Link href="/blog" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Blog</Link>
+          <Link href="/docs" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
+          <Link href="/marketplace" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Marketplace</Link>
+
+          {status === "loading" ? null : session ? (
+            <div className="flex items-center gap-4">
+              <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
+                Dashboard
               </Link>
-            )}
-            <button 
-              className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors" 
-              onClick={() => signOut()}
-            >
-              Log Out
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded transition-colors">
-              Log In
-            </Link>
-            <Link href="/signup" className="text-sm bg-white text-black px-3 py-1.5 font-medium rounded-lg hover:bg-gray-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white transition-colors">
-              Sign Up
-            </Link>
-          </div>
-        )}
-      </div>
-
-      {/* Mobile menu button */}
-      <button 
-        className="md:hidden p-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-8 rounded" 
-        onClick={() => setMenuOpen(!menuOpen)}
-        aria-label={menuOpen ? "Close menu" : "Open menu"}
-        aria-expanded={menuOpen}
-      >
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          {menuOpen ? (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              {isAdmin && (
+                <Link href="/admin" className="text-sm text-purple-400 hover:text-purple-300 rounded transition-colors">
+                  Admin
+                </Link>
+              )}
+              <button
+                className="text-sm text-gray-400 hover:text-white rounded transition-colors"
+                onClick={() => signOut()}
+              >
+                Log Out
+              </button>
+            </div>
           ) : (
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <div className="flex items-center gap-4">
+              <Link href="/login" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
+                Log In
+              </Link>
+              <Link href="/signup" className="text-sm bg-white text-black px-3 py-1.5 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                Sign Up
+              </Link>
+            </div>
           )}
-        </svg>
-      </button>
+        </div>
 
-      {/* Mobile menu */}
+        {/* Mobile hamburger */}
+        <button
+          className="md:hidden p-2 rounded touch-manipulation"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+        >
+          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            {menuOpen ? (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+      </nav>
+
+      {/* Mobile menu — rendered OUTSIDE <nav> to avoid backdrop-filter compositing layer
+          that breaks touch events on iOS Safari */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-0 top-[57px] bg-black z-[60] p-4 overscroll-contain overflow-y-auto">
-          <div className="flex flex-col gap-4">
-            <Link href="/pricing" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Pricing</Link>
-            <Link href="/blog" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Blog</Link>
-            <Link href="/docs" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Docs</Link>
-            <Link href="/marketplace" className="text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Marketplace</Link>
-            <div className="border-t border-gray-3 pt-4">
+        <div
+          className="md:hidden fixed inset-x-0 bottom-0 bg-black z-[60] overflow-y-auto"
+          style={{ top: 57 }}
+        >
+          <div className="flex flex-col p-4 gap-1">
+            <Link href="/pricing" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Pricing</Link>
+            <Link href="/blog" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Blog</Link>
+            <Link href="/docs" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Docs</Link>
+            <Link href="/marketplace" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Marketplace</Link>
+
+            <div className="border-t border-gray-800 mt-2 pt-4 flex flex-col gap-1">
               {session ? (
                 <>
-                  <div className="text-sm text-gray-6 pb-2">{session.user?.email}</div>
-                  <Link href="/dashboard" className="block text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Dashboard</Link>
-                  {isAdmin && (
-                    <Link href="/admin" className="block text-lg py-3 text-purple-400 hover:text-purple-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-400 rounded" onClick={() => setMenuOpen(false)}>Admin</Link>
+                  {displayName && (
+                    <div className="text-sm text-gray-500 px-2 pb-2">{displayName}</div>
                   )}
-                  <button onClick={() => { setMenuOpen(false); signOut(); }} className="text-left text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded">Log Out</button>
+                  <Link href="/dashboard" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Dashboard</Link>
+                  {isAdmin && (
+                    <Link href="/admin" className="block text-lg py-3 px-2 text-purple-400 hover:text-purple-300 rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Admin</Link>
+                  )}
+                  <button
+                    onClick={() => { closeMenu(); signOut(); }}
+                    className="text-left text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800 w-full"
+                  >
+                    Log Out
+                  </button>
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="block text-lg py-3 text-gray-7 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-7 rounded" onClick={() => setMenuOpen(false)}>Log In</Link>
-                  <Link href="/signup" className="block text-lg py-3 text-white font-medium hover:text-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white rounded" onClick={() => setMenuOpen(false)}>Sign Up</Link>
+                  <Link href="/login" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Log In</Link>
+                  <Link href="/signup" className="block text-lg py-3 px-2 text-white font-medium rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Sign Up</Link>
                 </>
               )}
             </div>
           </div>
         </div>
       )}
-    </nav>
+    </>
   );
 }

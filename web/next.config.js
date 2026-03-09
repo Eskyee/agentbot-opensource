@@ -46,6 +46,12 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
+          {
+            // Allow Base Account popup (keys.coinbase.com) to communicate back.
+            // 'same-origin' breaks the popup; 'same-origin-allow-popups' is recommended.
+            key: 'Cross-Origin-Opener-Policy',
+            value: 'same-origin-allow-popups',
+          },
         ],
       },
     ];
