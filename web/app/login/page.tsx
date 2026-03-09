@@ -2,21 +2,16 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { useAccount, useConnect } from "wagmi";
-import { injected } from "wagmi/connectors";
-import { SiweMessage } from "siwe";
+import SignInWithBase from "@/app/components/SignInWithBase";
 
 function LoginForm() {
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
-  const { address, isConnected } = useAccount()
-  const { connect } = useConnect()
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [walletLoading, setWalletLoading] = useState(false);
 
   useEffect(() => {
     if (error) {
@@ -37,60 +32,6 @@ function LoginForm() {
       window.location.href = '/dashboard'
     }
   }, [session, status])
-
-  // Auto-login when wallet connects
-  useEffect(() => {
-    if (isConnected && address && !session && !walletLoading) {
-      loginWithWallet()
-    }
-  }, [isConnected, address])
-
-  const handleWalletConnect = () => {
-    connect({ connector: injected() })
-  }
-
-  const loginWithWallet = async () => {
-    if (!address) return
-    
-    setWalletLoading(true)
-    setLoginError('')
-
-    try {
-      const domain = window.location.host
-      const message = new SiweMessage({
-        domain,
-        address,
-        statement: 'Sign in to Agentbot',
-        uri: window.location.origin,
-        version: '1',
-        chainId: 8453,
-      })
-
-      const signature = await window.ethereum?.request({
-        method: 'personal_sign',
-        params: [message.prepareMessage(), address],
-      })
-
-      if (!signature) throw new Error('Signature denied')
-
-      const res = await signIn('credentials', {
-        message: message.prepareMessage(),
-        signature,
-        redirect: false,
-      })
-
-      if (res?.error) {
-        setLoginError('Wallet login failed. Try again.')
-      } else if (res?.ok) {
-        window.location.href = '/dashboard'
-      }
-    } catch (err: any) {
-      console.error('Wallet login error:', err)
-      setLoginError(err.message || 'Failed to sign in')
-    } finally {
-      setWalletLoading(false)
-    }
-  }
 
   const handleGoogleLogin = () => {
     setLoading(true)
@@ -122,30 +63,10 @@ function LoginForm() {
         <p className="text-gray-400 text-sm mt-1">One click to sign in</p>
       </div>
 
-      {/* Apple-style: Wallet Connect - PRIMARY */}
-      <div className="mb-4">
-        <button
-          onClick={handleWalletConnect}
-          disabled={walletLoading}
-          className="w-full bg-white hover:bg-gray-100 text-black font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all"
-        >
-          {walletLoading ? (
-            <span className="animate-spin">⏳</span>
-          ) : (
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-            </svg>
-          )}
-          {walletLoading ? 'Connecting...' : 'Continue with Wallet'}
-        </button>
+      {/* Sign in with Base — PRIMARY */}
+      <div className="mb-4 flex justify-center">
+        <SignInWithBase onError={(msg) => setLoginError(msg)} />
       </div>
-
-      {walletLoading && (
-        <div className="text-center text-sm text-gray-400 mb-4">
-          <span className="animate-spin mr-2">⏳</span>
-          Signing message...
-        </div>
-      )}
 
       <div className="relative mb-6">
         <div className="absolute inset-0 flex items-center">

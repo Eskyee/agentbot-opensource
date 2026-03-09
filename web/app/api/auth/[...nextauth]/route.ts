@@ -5,6 +5,10 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/app/lib/prisma";
 import { SiweMessage } from "siwe";
+import { createPublicClient, http } from "viem";
+import { base } from "viem/chains";
+
+const viemClient = createPublicClient({ chain: base, transport: http() });
 
 const providers = [];
 
@@ -64,16 +68,21 @@ providers.push(
 
       try {
         const siweMessage = new SiweMessage(credentials.message);
-        // @ts-ignore - SIWE verify types
-        const fields = await siweMessage.verify(credentials.signature);
+        const address = siweMessage.address as `0x${string}`;
 
-        if (!fields.success) {
-          console.log(`[Auth] SIWE verification failed`);
+        // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
+        const valid = await viemClient.verifyMessage({
+          address,
+          message: credentials.message,
+          signature: credentials.signature as `0x${string}`,
+        });
+
+        if (!valid) {
+          console.log(`[Auth] SIWE verification failed for ${address}`);
           return null;
         }
 
-        const address = fields.data.address;
-        const domain = fields.data.domain;
+        const domain = siweMessage.domain;
 
         // Find or create user by wallet address
         let user = await prisma.user.findFirst({
