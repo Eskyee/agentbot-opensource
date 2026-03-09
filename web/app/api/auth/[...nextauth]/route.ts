@@ -71,6 +71,15 @@ providers.push(
         const siweMessage = new SiweMessage(credentials.message);
         const address = siweMessage.address as `0x${string}`;
 
+        // Validate domain to prevent SIWE replay attacks from other sites
+        const expectedDomain = process.env.NEXTAUTH_URL
+          ? new URL(process.env.NEXTAUTH_URL).host
+          : 'agentbot.raveculture.xyz';
+        if (siweMessage.domain !== expectedDomain) {
+          console.log(`[Auth] SIWE domain mismatch: ${siweMessage.domain} !== ${expectedDomain}`);
+          return null;
+        }
+
         // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
         const valid = await viemClient.verifyMessage({
           address,

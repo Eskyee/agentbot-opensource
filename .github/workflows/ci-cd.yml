@@ -200,4 +200,5 @@ jobs:
           text: 'CI/CD Pipeline: ${{ job.status }}'
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
           fields: repo,message,commit,author
-        if: always() && secrets.SLACK_WEBHOOK != ''
+        if: always()
+        continue-on-error: true

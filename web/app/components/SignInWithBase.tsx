@@ -10,6 +10,9 @@ const SignInWithBaseButton = dynamic(
   { ssr: false }
 )
 
+// Allowed redirect destinations — prevents open redirect
+const ALLOWED_REDIRECTS = ['/dashboard', '/onboard']
+
 interface Props {
   onError?: (msg: string) => void
   redirectTo?: string
@@ -17,6 +20,9 @@ interface Props {
 
 export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: Props) {
   const [loading, setLoading] = useState(false)
+
+  // Validate redirect destination against whitelist
+  const safeRedirect = ALLOWED_REDIRECTS.includes(redirectTo) ? redirectTo : '/dashboard'
 
   const handleSignIn = async () => {
     setLoading(true)
@@ -38,7 +44,7 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
       }).catch(() => {/* already on Base — ignore */})
 
       // wallet_connect with SIWE capability → returns address + signed SIWE message
-      const { accounts } = await provider.request({
+      const response = await provider.request({
         method: 'wallet_connect',
         params: [{
           version: '1',
@@ -51,7 +57,13 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
         }],
       }) as any
 
-      const { message, signature } = accounts[0].capabilities.signInWithEthereum
+      // Validate response structure before destructuring
+      const siwe = response?.accounts?.[0]?.capabilities?.signInWithEthereum
+      if (!siwe?.message || !siwe?.signature) {
+        throw new Error('Invalid response from Base Account SDK')
+      }
+
+      const { message, signature } = siwe
 
       // Hand off to the 'wallet' NextAuth credentials provider (SIWE backend verifies with viem)
       const res = await signIn('wallet', {
@@ -61,15 +73,16 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
       })
 
       if (res?.ok) {
-        window.location.href = redirectTo
+        window.location.href = safeRedirect
       } else {
         onError?.('Wallet login failed. Please try again.')
       }
-    } catch (err: any) {
-      if (err?.code !== 4001) {
+    } catch (err: unknown) {
+      const e = err as { code?: number; message?: string }
+      if (e?.code !== 4001) {
         // 4001 = user rejected — don't show error for that
         console.error('Base Account sign in error:', err)
-        onError?.(err.message || 'Failed to sign in with Base')
+        onError?.(e.message || 'Failed to sign in with Base')
       }
     } finally {
       setLoading(false)
