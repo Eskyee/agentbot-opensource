@@ -30,7 +30,7 @@ export default function CoinbaseWalletButton() {
   if (!session) {
     return (
       <button
-        onClick={() => signIn('github')}
+        onClick={() => signIn('google')}
         className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-gray-200"
       >
         Sign In
