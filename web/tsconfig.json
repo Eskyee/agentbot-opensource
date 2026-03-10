@@ -23,7 +23,31 @@
     ],
     "paths": {
       "@/*": [
+        "./*"
+      ],
+      "@/app/*": [
         "./app/*"
+      ],
+      "@/lib/auth": [
+        "./lib/auth"
+      ],
+      "@/lib/prisma": [
+        "./app/lib/prisma"
+      ],
+      "@/lib/stripe": [
+        "./app/lib/stripe"
+      ],
+      "@/lib/email": [
+        "./app/lib/email"
+      ],
+      "@/lib/cron-parser": [
+        "./lib/cron-parser"
+      ],
+      "@/lib/email/welcome": [
+        "./lib/email/welcome"
+      ],
+      "@/components/*": [
+        "./app/components/*"
       ]
     },
     "target": "ES2020"

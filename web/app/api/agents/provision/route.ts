@@ -68,11 +68,10 @@ export async function POST(request: NextRequest) {
 
     // Check subscription tier
     const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { subscription: true }
+      where: { id: userId }
     });
 
-    if (!user?.subscription) {
+    if (!user || user.subscriptionStatus !== 'active') {
       return NextResponse.json(
         { error: 'Active subscription required to provision agents' },
         { status: 402 }
@@ -84,17 +83,17 @@ export async function POST(request: NextRequest) {
       where: { userId }
     });
 
-    const tierLimits = {
+    const tierLimits: Record<string, number> = {
       starter: 1,
       pro: 3,
       enterprise: 100
     };
 
-    const limit = tierLimits[user.subscription.tier] || 1;
+    const limit = tierLimits[user.plan] || 1;
     if (agentCount >= limit) {
       return NextResponse.json(
         { 
-          error: `Agent limit reached for ${user.subscription.tier} tier`,
+          error: `Agent limit reached for ${user.plan} tier`,
           current: agentCount,
           limit
         },
@@ -119,8 +118,8 @@ export async function POST(request: NextRequest) {
       const gatewayResponse = await provisionAgentOnGateway(agent.id, {
         userId,
         name: agent.name,
-        model: agent.model,
-        config: agent.config
+        model: agent.model || 'default',
+        config: agent.config as Record<string, any> || {}
       });
 
       // Update agent status
@@ -129,7 +128,7 @@ export async function POST(request: NextRequest) {
         data: { 
           status: 'running',
           config: {
-            ...agent.config,
+            ...(agent.config as Record<string, any> || {}),
             gatewayId: gatewayResponse.gatewayId,
             authToken: gatewayResponse.token
           }
@@ -155,7 +154,7 @@ export async function POST(request: NextRequest) {
         data: { 
           status: 'error',
           config: {
-            ...agent.config,
+            ...(agent.config as Record<string, any> || {}),
             error: gatewayError instanceof Error ? gatewayError.message : 'Gateway provisioning failed'
           }
         }
@@ -229,7 +228,7 @@ async function provisionAgentOnGateway(
     model: string;
     config: Record<string, any>;
   }
-) {
+): Promise<{ gatewayId: string; token: string; status: string }> {
   const GATEWAY_URL = 'ws://openclaw-gateway-lqma:10000';
 
   return new Promise((resolve, reject) => {
@@ -269,64 +268,6 @@ function generateAuthToken(): string {
   return Buffer.from(
     `${Date.now()}-${Math.random().toString(36).substring(7)}`
   ).toString('base64');
-}
-
-/**
- * DELETE /api/agents/:id
- * Delete an agent
- */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const agent = await prisma.agent.findUnique({
-      where: { id: params.id }
-    });
-
-    if (!agent || agent.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: 'Agent not found' },
-        { status: 404 }
-      );
-    }
-
-    // Delete from OpenClaw Gateway first
-    await deleteAgentFromGateway(agent.id);
-
-    // Delete database record
-    await prisma.agent.delete({
-      where: { id: params.id }
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: 'Agent deleted'
-    });
-
-  } catch (error) {
-    console.error('Delete agent error:', error);
-    return NextResponse.json(
-      { error: 'Failed to delete agent' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * Helper: Delete agent from gateway
- */
-async function deleteAgentFromGateway(agentId: string) {
-  // TODO: Call OpenClaw Gateway delete endpoint
-  console.log(`Deleting agent ${agentId} from gateway...`);
 }
 
 export const metadata = {

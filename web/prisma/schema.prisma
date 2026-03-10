@@ -116,6 +116,19 @@ model AgentFile {
   updatedAt DateTime @updatedAt
 }
 
+model Agent {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  model        String?
+  config       Json?
+  tier         String   @default("free")
+  status       String   @default("pending")
+  websocketUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
 model Skill {
   id          String   @id @default(cuid())
   name        String
