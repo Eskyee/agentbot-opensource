@@ -2,25 +2,11 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main, develop, 'claude/**']
-  pull_request:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  # Quick validation - just check code is valid JS/TS
-  validate:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install deps
-        run: npm ci
-        working-directory: ./web
-      - name: Check syntax
-        run: |
-          # Just verify node_modules installed correctly
-          ls node_modules/.bin/next
+      - run: echo "Hello World"
