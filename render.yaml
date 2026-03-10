@@ -19,7 +19,6 @@ services:
     runtime: docker
     dockerfilePath: openclaw-gateway/Dockerfile
     dockerContext: openclaw-gateway
-    port: 18789
     autoDeploy: true
 
 databases:
