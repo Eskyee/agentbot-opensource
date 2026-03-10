@@ -12,12 +12,6 @@ services:
     dockerfilePath: agentbot-worker/Dockerfile.prod
     autoDeploy: true
 
-  - type: pserv
-    name: agentbot-redis
-    runtime: docker
-    image: redis:7-alpine
-    plan: starter
-
 databases:
   - name: agentbot-postgres
     version: 15
