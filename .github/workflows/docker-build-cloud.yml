@@ -181,11 +181,11 @@ jobs:
         working-directory: ./web
         run: npm run test --if-present || npm run test:unit --if-present || echo "No test script found"
 
-  # Deploy to Vercel (main branch only)
+  # Deploy to Vercel (main branch only) - only if secrets exist
   deploy-vercel:
     runs-on: ubuntu-latest
     needs: [build-with-docker-build-cloud, lint-and-type-check, test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != ''
     
     steps:
       - uses: actions/checkout@v4
