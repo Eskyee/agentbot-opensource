@@ -14,4 +14,3 @@ services:
 
 databases:
   - name: agentbot-postgres
-    plan: starter
