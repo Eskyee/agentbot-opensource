@@ -14,12 +14,5 @@ services:
     dockerContext: agentbot-worker
     autoDeploy: true
 
-  - type: web
-    name: openclaw-gateway
-    runtime: docker
-    dockerfilePath: openclaw-gateway/Dockerfile
-    dockerContext: openclaw-gateway
-    autoDeploy: true
-
 databases:
   - name: agentbot-postgres
