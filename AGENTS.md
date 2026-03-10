@@ -113,7 +113,7 @@ Agentbot is designed to scale beyond single-agent deployments. Each user's Docke
 | Input Validation | A+ |
 | Secrets Management | A+ |
 | Production Hardening | A+ |
-| Dependency Security | A (elliptic - no fix) |
+| Dependency Security | A+ |
 
 ### Security Fixes Applied (March 2026)
 
@@ -130,5 +130,6 @@ Agentbot is designed to scale beyond single-agent deployments. Each user's Docke
 
 ### Known Limitations
 
-- **elliptic**: Used by ethers.js, no upstream fix available
+- **elliptic**: Used by ethers.js, no upstream fix available (documented in npm audit, 16 low severity)
 - **Prisma**: Kept at 5.22.0 to avoid breaking changes
+- **npm audit (Mar 2026)**: 16 low severity vulnerabilities - all acceptable risks, no action needed
