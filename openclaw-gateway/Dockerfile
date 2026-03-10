@@ -5,11 +5,7 @@ WORKDIR /app
 # Create persistent directories
 RUN mkdir -p ~/.openclaw/workspace ~/.openclaw/config
 
-# Copy startup script (will be executed as-is)
-COPY entrypoint.sh /entrypoint.sh
-
-# Expose WebSocket port
+# Expose WebSocket port (OpenClaw default)
 EXPOSE 18789
 
-# Run entrypoint directly with sh
-CMD ["/bin/sh", "/entrypoint.sh"]
+# Use the image's default entrypoint/CMD
