@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: agentbot-api
+    runtime: docker
+    dockerfilePath: agentbot-backend/Dockerfile.prod
+    healthCheckPath: /health
+    autoDeploy: true
+
+  - type: worker
+    name: agentbot-worker
+    runtime: docker
+    dockerfilePath: agentbot-worker/Dockerfile.prod
+    autoDeploy: true
+
+  - type: pserv
+    name: agentbot-redis
+    runtime: docker
+    image: redis:7-alpine
+    plan: starter
+
+databases:
+  - name: agentbot-postgres
+    version: 15
+    plan: starter
