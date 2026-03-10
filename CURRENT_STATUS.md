@@ -66,6 +66,9 @@
 - ✅ Dashboard error boundary
 - ✅ Deployments route protected
 - ✅ Debug routes blocked in production
+- ✅ Rate limiting (Redis-backed with memory fallback)
+- ✅ CSRF token protection for state-changing operations
+- ✅ Fallback dev keys removed (centralized getInternalApiKey())
 
 ### Known Limitations
 - **elliptic**: Used by ethers.js, no upstream fix (not exploitable)
@@ -84,6 +87,8 @@ STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET
 RESEND_API_KEY
 ADMIN_EMAILS=raveculture@icloud.com
 INTERNAL_API_KEY
+REDIS_URL (for rate limiting)
+REDIS_TOKEN (for rate limiting)
 ```
 
 ### Render (Backend)
