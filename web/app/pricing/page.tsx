@@ -84,7 +84,7 @@ const PLANS: Plan[] = [
     name: 'Pro',
     price: 39,
     priceId: 'pro',
-    description: '1 AI Agent, 50GB storage, Telegram + WhatsApp, Custom domain, + usage',
+    description: 'For professionals. Custom domain, WhatsApp support, priority responses.',
     cta: 'Get Started',
     popular: true,
     resources: { ram: '4GB', cpu: 2 },
@@ -476,7 +476,6 @@ function PricingPageContent() {
               <button
                 className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300 transition-colors"
                 aria-pressed="false"
-                disabled
               >
                 Yearly <span className="ml-1 text-green-400">-20%</span>
               </button>

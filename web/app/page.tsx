@@ -17,11 +17,11 @@ export default async function Home() {
           </div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Deploy OpenClaw in Seconds
+            Your AI Agent. Hosted. Always Online.
           </h1>
           
           <p className="mt-6 text-lg text-gray-7 max-w-2xl mx-auto">
-            OpenClaw is an AI assistant with personality and memory. Agentbot deploys it to the cloud for you in one click—no complex setup, online 24/7.
+            OpenClaw is an AI assistant with personality and memory. Agentbot deploys it to the cloud for you in one click—no complex setup, online 24/7. Bring your own API key—no markup, no credits.
           </p>
           
           <p className="mt-4 text-base text-gray-6 max-w-2xl mx-auto">
@@ -191,7 +191,7 @@ export default async function Home() {
             <div className="border border-gray-4 rounded-lg p-6 bg-gray-2 shadow-[0_0_0_1px_rgba(0,0,0,0.03),0_2px_4px_rgba(0,0,0,0.05)] flex flex-col">
               <h3 className="text-lg font-medium">Pro</h3>
               <p className="text-sm text-gray-5 mt-1">For power users</p>
-              <p className="mt-2 text-3xl font-bold">£39<span className="text-lg font-normal text-gray-7">/mo + usage</span></p>
+              <p className="mt-2 text-3xl font-bold">£39<span className="text-lg font-normal text-gray-7">/mo</span></p>
               <ul className="mt-6 space-y-3 text-sm text-gray-7 flex-grow">
                 <li>✓ 1 AI Agent</li>
                 <li>✓ 4GB RAM, 2 CPU</li>
