@@ -6,15 +6,6 @@ services:
     dockerContext: agentbot-backend
     healthCheckPath: /health
     autoDeploy: true
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: agentbot-postgres
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: agentbot-redis
-          property: connectionString
 
   - type: worker
     name: agentbot-worker
@@ -22,20 +13,14 @@ services:
     dockerfilePath: agentbot-worker/Dockerfile.prod
     dockerContext: agentbot-worker
     autoDeploy: true
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: agentbot-postgres
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: agentbot-redis
-          property: connectionString
 
-  - type: pserv
-    name: agentbot-redis
-    runtime: redis
-    ipAllowList: []
+  - type: web
+    name: openclaw-gateway
+    runtime: docker
+    dockerfilePath: openclaw-gateway/Dockerfile
+    dockerContext: openclaw-gateway
+    port: 18789
+    autoDeploy: true
 
 databases:
   - name: agentbot-postgres
