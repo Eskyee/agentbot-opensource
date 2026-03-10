@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { securityMiddleware, SecurityMiddleware } from './security-middleware'
+import { verifyCSRFToken, generateCSRFToken, CSRFToken } from './csrf'
 
 export type SecureRouteHandler = (
   req: NextRequest,
@@ -121,6 +122,46 @@ export function withJsonValidation(handler: SecureRouteHandler) {
 }
 
 /**
+ * Generate CSRF token for use in forms/requests
+ */
+export function getCSRFToken(): CSRFToken {
+  return generateCSRFToken()
+}
+
+/**
+ * Wraps a route handler with strict CSRF validation
+ */
+export function withCSRF(handler: SecureRouteHandler) {
+  return withSecurity(async (req: NextRequest, context?: { params?: any }) => {
+    const csrfHeader = req.headers.get('x-csrf-token') || req.headers.get('x-xsrf-token')
+    
+    if (!csrfHeader) {
+      return NextResponse.json(
+        { error: 'CSRF token required' },
+        { status: 403 }
+      )
+    }
+    
+    try {
+      const [token, signed] = csrfHeader.split(':')
+      if (!verifyCSRFToken(token, signed)) {
+        return NextResponse.json(
+          { error: 'Invalid CSRF token' },
+          { status: 403 }
+        )
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid CSRF token format' },
+        { status: 403 }
+      )
+    }
+    
+    return handler(req, context)
+  })
+}
+
+/**
  * Apply multiple security layers
  */
 export function withSecurityLayers(
@@ -147,7 +188,7 @@ export const SecureRoute = {
   json: (handler: SecureRouteHandler) =>
     withPostOnly(withJsonValidation(handler)),
   
-  // Maximum security for sensitive operations
+  // Maximum security for sensitive operations (auth + POST + JSON + CSRF)
   sensitive: (handler: SecureRouteHandler) =>
-    withAuth(withPostOnly(withJsonValidation(handler))),
+    withAuth(withPostOnly(withJsonValidation(withCSRF(handler)))),
 }

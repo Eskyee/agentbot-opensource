@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001'
+const BACKEND_API_URL = getBackendApiUrl()
 const BACKEND_API_FALLBACK_URL = (process.env.BACKEND_API_FALLBACK_URL || '').trim()
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
-const BACKEND_API_SECRET = process.env.BACKEND_API_SECRET || process.env.API_SECRET || INTERNAL_API_KEY
+const BACKEND_API_SECRET = process.env.BACKEND_API_SECRET || process.env.API_SECRET || getInternalApiKey()
 
 export async function POST(request: NextRequest) {
   try {
@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       let legacyResponse: Response | null = null
 
       try {
+        const INTERNAL_API_KEY = getInternalApiKey()
         modernResponse = await fetch(`${baseUrl}/api/deployments`, {
           method: 'POST',
           headers: {

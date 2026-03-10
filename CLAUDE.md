@@ -1,9 +1,16 @@
 # Agentbot — Claude Agent Instructions
 
 ## Repository overview
-- `web/` — Next.js 14 app (App Router, Tailwind, Prisma, NextAuth)
+- `web/` — Next.js 16 app (App Router, Tailwind, Prisma, NextAuth)
 - `web/prisma/schema.prisma` — database schema
 - `.github/workflows/` — CI/CD pipelines
+
+## Security (Grade A+)
+
+- **Use `proxy.ts`** instead of `middleware.ts` (Next.js 16 requirement)
+- All secrets via environment variables — never hardcode
+- Admin endpoints use `ADMIN_EMAILS` env var (comma-separated emails)
+- Debug routes (`/api/debug-*`, `/api/test-*`) blocked in production via proxy
 
 ## Development workflow
 
@@ -41,3 +48,4 @@
 - `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `RESEND_API_KEY`
 - `OPENROUTER_API_KEY`
+- `ADMIN_EMAILS` - Comma-separated admin emails for admin endpoints

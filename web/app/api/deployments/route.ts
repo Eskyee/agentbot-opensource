@@ -1,6 +1,25 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+
+function getAdminEmails(): string[] {
+  const adminEmails = process.env.ADMIN_EMAILS;
+  if (!adminEmails) return [];
+  return adminEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+}
+
+async function isAdmin(email: string | null | undefined): Promise<boolean> {
+  if (!email) return false;
+  return getAdminEmails().includes(email.toLowerCase());
+}
 
 export async function GET() {
+  // Require admin authentication
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || !(await isAdmin(session.user.email))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+  }
+  
   try {
     const deployments = [
       {

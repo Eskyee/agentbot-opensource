@@ -5,15 +5,19 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Admin emails - add your email here
-const ADMIN_EMAILS = [
-  'rbasefm@icloud.com',
-  // Add more admin emails here
-];
+// Admin emails from environment variable (comma-separated)
+function getAdminEmails(): string[] {
+  const adminEmails = process.env.ADMIN_EMAILS;
+  if (!adminEmails) {
+    console.warn('ADMIN_EMAILS not configured - no admins will have access');
+    return [];
+  }
+  return adminEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+}
 
 async function isAdmin(email: string | null | undefined): Promise<boolean> {
   if (!email) return false;
-  return ADMIN_EMAILS.includes(email.toLowerCase());
+  return getAdminEmails().includes(email.toLowerCase());
 }
 
 // GET - List all users

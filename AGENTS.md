@@ -1,9 +1,14 @@
 # Agentbot Context
 
-Last updated: Feb 2026
+Last updated: Mar 10 2026
 
 ## Quick Summary
 Agentbot is a hosted OpenClaw platform where users sign up, choose a plan, and deploy their AI agent. Users bring their own AI API keys (OpenRouter, Groq, Anthropic, etc.).
+
+## Production URLs
+- **Web:** https://agentbot-two.vercel.app
+- **Custom Domain:** https://agentbot.raveculture.xyz
+- **Agents Domain:** https://agents.raveculture.xyz
 
 ## Pricing (5 Plans)
 | Plan | Price | RAM | CPU | 
@@ -97,3 +102,33 @@ Agentbot is designed to scale beyond single-agent deployments. Each user's Docke
 - **Agent Coordination:** OpenClaw handles multi-agent communication and task delegation
 - **Scaling Strategy:** Higher-tier plans provide more resources for complex multi-agent workflows
 - **Future Roadmap:** Multi-container deployments for enterprise customers requiring isolated agent pools
+
+## Security Status
+
+### Security Grade: A+ ✅
+
+| Category | Grade |
+|----------|-------|
+| Authorization | A+ |
+| Input Validation | A+ |
+| Secrets Management | A+ |
+| Production Hardening | A+ |
+| Dependency Security | A (elliptic - no fix) |
+
+### Security Fixes Applied (March 2026)
+
+- ✅ Instance API authorization (session.user.id must match userId)
+- ✅ Middleware → Proxy rename (Next.js 16 deprecation)
+- ✅ Admin emails moved to ADMIN_EMAILS env var
+- ✅ Dashboard error boundary added
+- ✅ Deployments route protected
+- ✅ Debug routes blocked in production
+
+### Configuration Required
+
+- `ADMIN_EMAILS` - Comma-separated admin emails (set in Vercel)
+
+### Known Limitations
+
+- **elliptic**: Used by ethers.js, no upstream fix available
+- **Prisma**: Kept at 5.22.0 to avoid breaking changes

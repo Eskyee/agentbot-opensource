@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys';
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001';
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345';
+const BACKEND_API_URL = getBackendApiUrl();
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
+    const INTERNAL_API_KEY = getInternalApiKey();
     
     // Safety: Only admins can access stats
     if (!session || (session.user as any).role !== 'admin') {

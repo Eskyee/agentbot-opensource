@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
+import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const API_URL = process.env.BACKEND_API_URL || 'http://agentbot-api:3001'
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
+const API_URL = getBackendApiUrl()
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const API_KEY = getInternalApiKey()
     const { id: agentId } = await params
 
     const response = await fetch(`${API_URL}/api/agents/${agentId}/config`, {
@@ -47,6 +48,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const API_KEY = getInternalApiKey()
     const { id: agentId } = await params
     const body = await request.json()
 

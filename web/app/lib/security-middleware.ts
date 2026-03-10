@@ -3,8 +3,25 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
+import { Redis } from '@upstash/redis'
+import { verifyCSRFToken, getCSRFTokenFromHeader } from './csrf'
 
-// In-memory stores for rate limiting and bot detection
+// Initialize Redis client (optional - falls back to memory if not available)
+let redis: Redis | null = null
+try {
+  const redisUrl = process.env.REDIS_URL
+  if (redisUrl && !redisUrl.includes('localhost')) {
+    redis = new Redis({
+      url: redisUrl,
+      token: process.env.REDIS_TOKEN || '',
+    })
+    console.log('[SECURITY] Redis rate limiting enabled')
+  }
+} catch (error) {
+  console.warn('[SECURITY] Redis not available, using in-memory rate limiting')
+}
+
+// In-memory stores for rate limiting and bot detection (fallback)
 const requestLog = new Map<string, number[]>()
 const failedAttempts = new Map<string, { count: number; timestamp: number }>()
 const suspiciousPatterns = new Map<string, number>()
@@ -49,11 +66,46 @@ function hashIP(ip: string): string {
   return createHash('sha256').update(ip).digest('hex').substring(0, 16)
 }
 
-// Check if client is rate limited
-export function isRateLimited(ip: string): boolean {
+// Check if client is rate limited (Redis-backed with memory fallback)
+export async function isRateLimited(ip: string): Promise<boolean> {
   const now = Date.now()
   const hashedIP = hashIP(ip)
   
+  // Use Redis if available
+  if (redis) {
+    try {
+      const minuteKey = `ratelimit:minute:${hashedIP}`
+      const hourKey = `ratelimit:hour:${hashedIP}`
+      
+      // Increment and get counts atomically
+      const [minuteCount, hourCount] = await Promise.all([
+        redis.incr(minuteKey),
+        redis.incr(hourKey),
+      ])
+      
+      // Set expiry if this is first request
+      if (minuteCount === 1) {
+        await redis.expire(minuteKey, 60)
+      }
+      if (hourCount === 1) {
+        await redis.expire(hourKey, 3600)
+      }
+      
+      // Check limits
+      if (minuteCount > SECURITY_CONFIG.REQUEST_LIMIT_PER_MINUTE) {
+        return true
+      }
+      if (hourCount > SECURITY_CONFIG.REQUEST_LIMIT_PER_HOUR) {
+        return true
+      }
+      
+      return false
+    } catch (error) {
+      console.warn('[SECURITY] Redis rate limit check failed, falling back to memory')
+    }
+  }
+  
+  // Fallback to in-memory rate limiting
   const requests = requestLog.get(hashedIP) || []
   
   // Remove old requests (older than 1 hour)
@@ -211,7 +263,7 @@ export async function securityMiddleware(
   }
   
   // 2. Check rate limiting
-  if (isRateLimited(ip)) {
+  if (await isRateLimited(ip)) {
     logSuspiciousActivity(ip, 'RATE_LIMIT_EXCEEDED', { method, path: url })
     return NextResponse.json(
       { error: 'Too many requests' },
@@ -219,7 +271,31 @@ export async function securityMiddleware(
     )
   }
   
-  // 3. Check for suspicious user agent
+  // 3. Check CSRF token for state-changing methods
+  if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
+    const csrfHeader = req.headers.get('x-csrf-token') || req.headers.get('x-xsrf-token')
+    if (csrfHeader) {
+      try {
+        const [token, signed] = csrfHeader.split(':')
+        if (!verifyCSRFToken(token, signed)) {
+          logSuspiciousActivity(ip, 'INVALID_CSRF', { method, path: url })
+          return NextResponse.json(
+            { error: 'Invalid CSRF token' },
+            { status: 403 }
+          )
+        }
+      } catch {
+        logSuspiciousActivity(ip, 'INVALID_CSRF_FORMAT', { method, path: url })
+        return NextResponse.json(
+          { error: 'Invalid CSRF token format' },
+          { status: 403 }
+        )
+      }
+    }
+    // CSRF header is optional for now (could be enforced by using withCSRF in secure-route)
+  }
+  
+  // 4. Check for suspicious user agent
   if (isSuspiciousUserAgent(userAgent)) {
     logSuspiciousActivity(ip, 'SUSPICIOUS_USER_AGENT', { userAgent })
     // Allow but mark for monitoring

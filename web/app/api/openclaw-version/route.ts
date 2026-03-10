@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server'
+import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://localhost:3001'
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
+const BACKEND_API_URL = getBackendApiUrl()
 
 export async function GET() {
   try {
+    const INTERNAL_API_KEY = getInternalApiKey()
     const response = await fetch(`${BACKEND_API_URL}/api/openclaw/version`, {
       headers: {
         Authorization: `Bearer ${INTERNAL_API_KEY}`

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const API_URL = process.env.BACKEND_API_URL || 'http://agentbot-api:3001'
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-secret-key-12345'
+const API_URL = getBackendApiUrl()
 
 // Supported verification types
 type VerificationType = 'eas' | 'coinbase' | 'ens' | 'webauthn'
@@ -30,6 +30,7 @@ export async function GET(
     }
 
     const { id: agentId } = await params
+    const API_KEY = getInternalApiKey()
 
     // Fetch current verification status from backend
     const response = await fetch(`${API_URL}/api/agents/${agentId}/verification`, {
@@ -69,6 +70,7 @@ export async function POST(
     }
 
     const { id: agentId } = await params
+    const API_KEY = getInternalApiKey()
     const body: VerifyRequestBody = await request.json()
     const { verificationType, attestationUid, walletAddress, signature } = body
 
@@ -227,6 +229,7 @@ export async function DELETE(
     }
 
     const { id: agentId } = await params
+    const API_KEY = getInternalApiKey()
 
     // Remove verification from agent
     const response = await fetch(`${API_URL}/api/agents/${agentId}/verify`, {

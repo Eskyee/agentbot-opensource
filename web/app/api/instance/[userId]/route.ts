@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import { getInternalApiKey, getBackendApiUrl } from '../../lib/api-keys'
 
 const BACKEND_API_URL = getBackendApiUrl()
@@ -9,6 +11,12 @@ export async function GET(
 ) {
   const INTERNAL_API_KEY = getInternalApiKey()
   const { userId } = await params
+  
+  // Authorization: Verify session user matches requested userId
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id || session.user.id !== userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
   
   try {
     const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}`, {
