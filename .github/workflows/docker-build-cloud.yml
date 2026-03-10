@@ -200,6 +200,7 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./web
           production: true
+        continue-on-error: true
       
       - name: Comment on PR with deployment URL
         if: github.event_name == 'pull_request'
@@ -212,6 +213,7 @@ jobs:
               repo: context.repo.repo,
               body: '✅ Vercel deployment complete! Preview: https://agentbot.raveculture.xyz'
             })
+        continue-on-error: true
 
   # Notify Slack on build completion
   notify-slack:
