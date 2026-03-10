@@ -16,9 +16,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
-import { stripe } from '@/lib/stripe';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { prisma } from '@/app/lib/prisma';
+import { stripe } from '@/app/lib/stripe';
 
 // Types
 interface ProvisionAgentRequest {
@@ -47,7 +48,7 @@ interface AgentConfig {
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user
-    const session = await auth();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -180,7 +181,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: 'Unauthorized' },
