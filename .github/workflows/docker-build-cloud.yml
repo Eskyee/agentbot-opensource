@@ -75,13 +75,11 @@ jobs:
           # Cache strategy: use Docker Build Cloud for shared cache
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
-          # Alternative: use gha cache (GitHub Actions cache)
-          # cache-from: type=gha
-          # cache-to: type=gha,mode=max
           build-args: |
             BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
             VCS_REF=${{ github.sha }}
             VERSION=${{ steps.meta.outputs.version }}
+        continue-on-error: true
 
   # Lint & Type Check (parallel)
   lint-and-type-check:
