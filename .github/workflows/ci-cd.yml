@@ -169,17 +169,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Deploy to Vercel (on main branch) - only if secrets exist
+  # Deploy to Vercel (on main branch)
   deploy-vercel:
     runs-on: ubuntu-latest
     needs: [lint-and-type-check, test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != ''
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    continue-on-error: true
     
     steps:
       - uses: actions/checkout@v4
       
       - name: Deploy to Vercel
         uses: vercel/action@v5
+        continue-on-error: true
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
@@ -187,18 +189,19 @@ jobs:
           working-directory: ./web
           production: true
 
-  # Slack Notification - only if webhook configured
+  # Slack Notification
   notify:
     runs-on: ubuntu-latest
     needs: [lint-and-type-check, test, build-docker]
-    if: always() && secrets.SLACK_WEBHOOK != ''
+    if: always()
     
     steps:
       - name: Send Slack notification
         uses: 8398a7/action-slack@v3
+        continue-on-error: true
         with:
           status: ${{ job.status }}
           text: 'CI/CD Pipeline: ${{ job.status }}'
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
           fields: repo,message,commit,author
-        continue-on-error: true
+        if: always() && secrets.SLACK_WEBHOOK != ''

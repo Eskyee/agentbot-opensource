@@ -181,24 +181,25 @@ jobs:
         working-directory: ./web
         run: npm run test --if-present || npm run test:unit --if-present || echo "No test script found"
 
-  # Deploy to Vercel (main branch only) - only if secrets exist
+  # Deploy to Vercel (main branch only)
   deploy-vercel:
     runs-on: ubuntu-latest
     needs: [build-with-docker-build-cloud, lint-and-type-check, test]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != ''
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    continue-on-error: true
     
     steps:
       - uses: actions/checkout@v4
       
       - name: Deploy to Vercel Production
         uses: vercel/action@v5
+        continue-on-error: true
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./web
           production: true
-        continue-on-error: true
       
       - name: Comment on PR with deployment URL
         if: github.event_name == 'pull_request'
@@ -211,7 +212,6 @@ jobs:
               repo: context.repo.repo,
               body: '✅ Vercel deployment complete! Preview: https://agentbot.raveculture.xyz'
             })
-        continue-on-error: true
 
   # Notify Slack on build completion
   notify-slack:
@@ -222,6 +222,7 @@ jobs:
     steps:
       - name: Send Slack notification - Build Status
         uses: 8398a7/action-slack@v3
+        continue-on-error: true
         with:
           status: ${{ job.status }}
           text: |
@@ -234,7 +235,7 @@ jobs:
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
           fields: repo,message,commit,author,action,eventName
           if_mention: failure
-        if: always() && secrets.SLACK_WEBHOOK != ''
+        if: secrets.SLACK_WEBHOOK != ''
 
   # Generate build report
   build-report:
