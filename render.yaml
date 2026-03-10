@@ -3,6 +3,7 @@ services:
     name: agentbot-api
     runtime: docker
     dockerfilePath: agentbot-backend/Dockerfile.prod
+    dockerContext: agentbot-backend
     healthCheckPath: /health
     autoDeploy: true
 
@@ -10,6 +11,7 @@ services:
     name: agentbot-worker
     runtime: docker
     dockerfilePath: agentbot-worker/Dockerfile.prod
+    dockerContext: agentbot-worker
     autoDeploy: true
 
 databases:

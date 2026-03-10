@@ -3,9 +3,12 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-COPY agentbot-backend/package*.json ./agentbot-backend/
 
-RUN cd agentbot-backend && npm ci && npm run build
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
 
 FROM node:20-alpine
 
@@ -13,9 +16,9 @@ WORKDIR /app
 
 RUN apk add --no-cache dumb-init docker-cli
 
-COPY --from=builder /app/agentbot-backend/dist ./dist
-COPY --from=builder /app/agentbot-backend/node_modules ./node_modules
-COPY --from=builder /app/agentbot-backend/package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
 
 EXPOSE 3001
 
