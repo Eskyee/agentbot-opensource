@@ -5,7 +5,7 @@ WORKDIR /app
 # Create persistent directories
 RUN mkdir -p ~/.openclaw/workspace ~/.openclaw/config
 
-# Expose WebSocket port (OpenClaw default)
-EXPOSE 18789
+# Expose WebSocket port and HTTP health check port
+EXPOSE 18789 18790
 
 # Use the image's default entrypoint/CMD
