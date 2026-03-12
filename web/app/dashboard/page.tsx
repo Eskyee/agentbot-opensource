@@ -6,6 +6,7 @@ import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import WalletCard from '@/app/components/WalletCard'
+import AIModelCard from '@/app/components/AIModelCard'
 import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
 
 // Helper to convert percent string to Tailwind width class
@@ -781,6 +782,7 @@ function DashboardContent() {
             </div>
 
             <WalletCard />
+            <AIModelCard plan={instance?.plan || 'starter'} />
 
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">

@@ -1,0 +1,12 @@
+FROM ollama/ollama:latest
+
+# Pre-configure environment if needed
+ENV OLLAMA_HOST=0.0.0.0
+
+# Optional: Add any pre-installed models to the build 
+# (though it's better to use the /api/pull at runtime to keep image small)
+
+EXPOSE 11434
+
+ENTRYPOINT ["/bin/ollama"]
+CMD ["serve"]

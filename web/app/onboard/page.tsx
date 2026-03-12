@@ -18,25 +18,23 @@ function OnboardContent() {
   const [step, setStep] = useState<Step>('telegram')
   const [telegramToken, setTelegramToken] = useState('')
   const [telegramUserId, setTelegramUserId] = useState('')
-  const [aiProvider, setAiProvider] = useState('openrouter')
+  const [aiProvider, setAiProvider] = useState('ollama')
   const [apiKey, setApiKey] = useState('')
-  const [selectedModel, setSelectedModel] = useState('moonshot/kimi-k2.5-thinking')
+  const [selectedModel, setSelectedModel] = useState('ollama/llama3.3')
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['web-search', 'file-handler'])
   const [isValidating, setIsValidating] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [error, setError] = useState('')
-  const [result, setResult] = useState<{ userId: string; subdomain: string; url: string } | null>(null)
+  const [result, setResult] = useState<{ userId: string; subdomain: string; url: string; streamKey?: string; liveStreamId?: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
 
-  // Available models
+  // Available models (Tiered for OpenClaw)
   const AVAILABLE_MODELS = [
-    { id: 'moonshot/kimi-k2.5-thinking', name: 'Kimi K2.5 Thinking', provider: 'openrouter', description: '128K context, advanced reasoning', recommended: true },
-    { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'openrouter', description: 'OpenAI flagship model' },
-    { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', provider: 'openrouter', description: 'Fast & affordable' },
-    { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'anthropic', description: 'Best quality (requires key)' },
-    { id: 'google/gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'gemini', description: 'Fast & capable' },
-    { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'groq', description: 'Open source, fast' }
+    { id: 'ollama/mistral', name: 'Mistral 7B (OpenClaw Free)', provider: 'ollama', description: 'Lightweight & fast. Free for all users.', recommended: true, tier: 'free' },
+    { id: 'ollama/llama3.3', name: 'Llama 3.3 (Underground Optimized)', provider: 'ollama', description: 'Advanced general assistant. Requires Underground plan.', tier: 'underground' },
+    { id: 'ollama/qwen2.5-coder:32b', name: 'Qwen 2.5 (Collective Tuned)', provider: 'ollama', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
+    { id: 'ollama/deepseek-r1:32b', name: 'DeepSeek R1 (Label Reasoning)', provider: 'ollama', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
   ]
 
   // Available ready-to-use skills
@@ -129,7 +127,9 @@ function OnboardContent() {
           userId: data.userId,
           botUsername: botInfo?.username,
           subdomain: data.subdomain,
-          url: data.url
+          url: data.url,
+          streamKey: data.streamKey,
+          liveStreamId: data.liveStreamId
         }))
         setResult(data)
         setStep('done')
@@ -404,7 +404,8 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'Kimi K2.5, Llama, GPT - Fast and reliable', recommended: true },
+                  { id: 'ollama', name: 'Local Inference (Ollama)', desc: 'Run DeepSeek & Llama on our private hardware', recommended: true },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'Kimi K2.5, Llama, GPT - Fast and reliable' },
                   { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier' },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
                   { id: 'anthropic', name: 'Anthropic', desc: 'Claude — Best quality (requires API key)' },
@@ -434,6 +435,27 @@ function OnboardContent() {
                 ))}
               </div>
               
+              {/* Ollama instructions */}
+              {aiProvider === 'ollama' && (
+                <div className="bg-gray-800 rounded-xl p-6">
+                  <h3 className="font-semibold mb-4 text-green-400">Included in your plan:</h3>
+                  <ol className="space-y-3 text-gray-300 text-sm">
+                    <li className="flex gap-3">
+                      <span className="bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">✓</span>
+                      <span>Run unlimited tasks on our high-performance hardware</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">✓</span>
+                      <span>Access DeepSeek R1 reasoning & Llama 3.3 models</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">✓</span>
+                      <span>No API keys or external billing required</span>
+                    </li>
+                  </ol>
+                </div>
+              )}
+
               {/* OpenRouter instructions */}
               {aiProvider === 'openrouter' && (
                 <div className="bg-gray-800 rounded-xl p-6">
@@ -511,11 +533,11 @@ function OnboardContent() {
                   ← Back
                 </button>
                 <button
-                  onClick={() => setStep('model')}
-                  disabled={aiProvider !== 'openrouter' && !apiKey}
+                  onClick={() => setStep(aiProvider === 'openrouter' || aiProvider === 'ollama' ? 'model' : 'skills')}
+                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'ollama' && aiProvider !== 'groq') && !apiKey}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
-                  {aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
+                  {aiProvider === 'openrouter' || aiProvider === 'ollama' ? 'Select Model →' : 'Continue →'}
                 </button>
               </div>
             </div>
@@ -726,6 +748,25 @@ function OnboardContent() {
             <div className="text-6xl mb-6">🎉</div>
             <h2 className="text-2xl font-bold mb-2">You're Live!</h2>
             <p className="text-gray-400 mb-8">Your AI assistant is ready to chat.</p>
+            
+            <div className="bg-gray-800 rounded-xl p-6 mb-8 text-left">
+              <p className="text-sm font-semibold text-gray-400 mb-4 flex items-center gap-2">
+                <span className="text-lg">📡</span> Broadcast Credentials (OBS)
+              </p>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs text-gray-500 uppercase font-bold mb-1">Server URL</label>
+                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-gray-700 break-all select-all">rtmps://global-live.mux.com:443/app</p>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 uppercase font-bold mb-1">Stream Key</label>
+                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-gray-700 break-all select-all">{result.streamKey || 'Generating...'}</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-500 mt-4">
+                Paste these into OBS to start your station. Do not share your Stream Key.
+              </p>
+            </div>
             
             <div className="bg-gray-800 rounded-xl p-6 mb-8">
               <p className="text-sm text-gray-400 mb-2">Open Telegram and message:</p>

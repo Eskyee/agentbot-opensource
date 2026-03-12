@@ -1,18 +1,72 @@
 services:
+  # Agentbot Backend API (Docker Hub Image)
   - type: web
     name: agentbot-api
-    runtime: docker
-    dockerfilePath: agentbot-backend/Dockerfile.prod
-    dockerContext: agentbot-backend
+    env: docker
+    dockerImage: raveculture/agentbot-api:latest # Pulled from Docker Hub
+    plan: starter
+    region: frankfurt
     healthCheckPath: /health
     autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agentbot-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: agentbot-redis
+          type: redis
+          property: connectionString
+      - key: OLLAMA_URL
+        value: http://agentbot-ollama:11434
+      - key: INTERNAL_API_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+    disk:
+      name: agentbot-data
+      mountPath: /opt/agentbot/data
+      sizeGB: 10
 
+  # Ollama Service (Official Image + Persistent Models)
+  - type: web
+    name: agentbot-ollama
+    env: docker
+    dockerImage: ollama/ollama:latest # Official Docker Hub image
+    plan: starter
+    region: frankfurt
+    mountPath: /root/.ollama
+    disk:
+      name: ollama-models
+      mountPath: /root/.ollama
+      sizeGB: 50
+
+  # Agentbot Deployment Worker (Docker Hub Image)
   - type: worker
     name: agentbot-worker
-    runtime: docker
-    dockerfilePath: agentbot-worker/Dockerfile.prod
-    dockerContext: agentbot-worker
+    env: docker
+    dockerImage: raveculture/agentbot-worker:latest # Pulled from Docker Hub
+    plan: starter
+    region: frankfurt
     autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agentbot-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: agentbot-redis
+          type: redis
+          property: connectionString
 
+# Database & Redis (Render Managed)
 databases:
-  - name: agentbot-postgres
+  - name: agentbot-db
+    plan: starter
+
+redis:
+  - name: agentbot-redis
+    plan: starter
+    ipAllowList: [] # internal only

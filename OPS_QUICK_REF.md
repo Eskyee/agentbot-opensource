@@ -1,30 +1,26 @@
-# Agentbot: Cloud Infrastructure Quick Reference (GCP)
+# Agentbot: Cloud Infrastructure Quick Reference (Render)
 
 ## Overview
-These commands allow Atlas (Platform Operator) to manage the production VM instance directly via the Google Cloud SDK (`gcloud`).
+These notes allow Atlas (Platform Operator) to manage the production environment via the Render Dashboard and API.
 
-## Instance Details (Live)
-- **Name:** agentbot-prod
-- **Zone:** us-central1-a
-- **Machine Type:** e2-standard-4 (4 vCPU, 16GB RAM)
-- **Internal IP:** 10.128.0.3
-- **External IP:** 34.170.109.115
-- **Status:** RUNNING (Last checked: 2026-03-02 21:56 GMT)
+## Environment Details (Live)
+- **Primary Dashboard:** [Render Dashboard](https://dashboard.render.com)
+- **Repo:** `https://github.com/Eskyee/agentbot`
+- **Deployment Flow:** Push to GitHub -> Build Images -> Push to Docker Hub -> Render Auto-deploy.
 
-## Instance Management
-- **GCloud Path:** `/Users/raveculture/google-cloud-sdk/bin/gcloud` (Add to PATH or use absolute path)
-- **Stop Instance (Save Costs):**
-  `/Users/raveculture/google-cloud-sdk/bin/gcloud compute instances stop agentbot-prod --zone=us-central1-a`
-- **Start Instance:**
-  `/Users/raveculture/google-cloud-sdk/bin/gcloud compute instances start agentbot-prod --zone=us-central1-a`
-- **SSH Access:**
-  `/Users/raveculture/google-cloud-sdk/bin/gcloud compute ssh agentbot-prod --zone=us-central1-a`
+## Services
+- **`agentbot-api`:** Primary Express API (Web Service).
+- **`agentbot-worker`:** Background job processing (Worker).
+- **`agentbot-ollama`:** Local LLM Inference (Web Service).
+- **`agentbot-db`:** PostgreSQL 15 (Managed Database).
+- **`agentbot-redis`:** Redis 7 (Managed Cache).
 
-## Logging & Monitoring
-- **Read Last 10 Logs:**
-  `/Users/raveculture/google-cloud-sdk/bin/gcloud logging read "resource.type=gce_instance AND labels.instance_name=agentbot-prod" --limit=10`
+## Deployment Management
+- **Manual Redeploy:** Trigger via Render Dashboard or API hook.
+- **Rollbacks:** Available in the Render "Events" tab for each service.
+- **Logs:** Accessible via the "Logs" tab in the Render Dashboard.
 
 ## Operational Notes
-- Use `stop` during low-traffic windows or development pauses to minimize burn.
-- Use `ssh` to manually inspect Docker containers (`docker ps`) or run local repair scripts.
-- Logs are the primary tool for diagnosing `agentbot-worker` job failures.
+- **Scaling:** Update `plan` in `render.yaml` or manually in the Dashboard to handle increased inference load.
+- **Disks:** `agentbot-ollama` uses a 50GB persistent disk for model weights. **Never delete this disk** without backing up the `.ollama` directory.
+- **Internal Networking:** Services communicate via internal URLs (e.g., `http://agentbot-ollama:11434`).

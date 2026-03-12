@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import inviteRouter from './invite';
+import undergroundRouter from './underground';
+import missionControlRouter from './mission-control'; // Added mission control router
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -45,6 +47,8 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use('/api/invite', inviteRouter);
+app.use('/api/underground', undergroundRouter);
+app.use('/api/mission-control', missionControlRouter); // Registered mission control router
 
 type AgentMetadata = {
   agentId: string;
@@ -812,7 +816,7 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
       // no-op
     }
 
-    const provider = config.aiProvider || 'openrouter';
+    const provider = config.aiProvider || 'ollama';
     const providedKey = (config.apiKey || '').trim();
     const envArgs: string[] = [];
 
@@ -823,7 +827,9 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
       }
     };
 
-    if (provider === 'gemini' || provider === 'google') {
+    if (provider === 'ollama') {
+      envArgs.push('-e', 'OLLAMA_HOST=http://agentbot-ollama:11434');
+    } else if (provider === 'gemini' || provider === 'google') {
       addEnvIfKeyExists('GEMINI_API_KEY');
     } else if (provider === 'groq') {
       addEnvIfKeyExists('GROQ_API_KEY');
@@ -855,7 +861,7 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
       agentId: safeAgentId,
       createdAt: new Date().toISOString(),
       plan: config.plan || 'free',
-      aiProvider: config.aiProvider || 'openrouter',
+      aiProvider: config.aiProvider || 'ollama',
       port: assignedPort,
       subdomain,
     });

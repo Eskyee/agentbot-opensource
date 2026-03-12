@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { Video } from '@/lib/mux'
 
 const BACKEND_API_URL = getBackendApiUrl()
 const BACKEND_API_FALLBACK_URL = (process.env.BACKEND_API_FALLBACK_URL || '').trim()
@@ -32,6 +33,25 @@ export async function POST(request: NextRequest) {
     // Generate unique user ID
     const userId = crypto.randomBytes(8).toString('hex')
 
+    // Create a dedicated Mux Live Stream for the new agent
+    let streamKey = null
+    let liveStreamId = null
+    
+    try {
+      const liveStream = await Video.liveStreams.create({
+        playback_policy: ['public'],
+        new_asset_settings: { playback_policy: ['public'] },
+        test: false,
+        latency_mode: 'low'
+      })
+      
+      streamKey = liveStream.stream_key
+      liveStreamId = liveStream.id
+    } catch (muxError) {
+      console.error('Failed to create Mux live stream for agent:', muxError)
+      // We continue even if streaming fails, as it's a non-blocking feature
+    }
+
     const ownerIds = telegramUserId ? [telegramUserId] : undefined
     
     const modernPayload = {
@@ -47,9 +67,11 @@ export async function POST(request: NextRequest) {
         discordGuildId,
         discordChannelId,
         ownerIds,
-        aiProvider: aiProvider || 'openrouter',
+        aiProvider: aiProvider || 'ollama', // Default to ollama
         apiKey,
-        plan: plan || 'free'
+        plan: plan || 'free',
+        streamKey,
+        liveStreamId
       }
     }
 
@@ -60,9 +82,11 @@ export async function POST(request: NextRequest) {
       whatsappToken,
       discordBotToken,
       ownerIds,
-      aiProvider: aiProvider || 'openrouter',
+      aiProvider: aiProvider || 'ollama', // Default to ollama
       apiKey,
-      plan: plan || 'free'
+      plan: plan || 'free',
+      streamKey,
+      liveStreamId
     }
 
     const backendBaseUrls = [BACKEND_API_URL, BACKEND_API_FALLBACK_URL]
@@ -196,7 +220,9 @@ export async function POST(request: NextRequest) {
         success: true,
         userId,
         subdomain,
-        url: data.url
+        url: data.url,
+        streamKey,
+        liveStreamId
       })
     } else {
       return NextResponse.json(
