@@ -5,7 +5,7 @@ import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { injected } from 'wagmi/connectors'
 
 const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
-const RAVE_THRESHOLD = BigInt('5000000000000000000000')
+const RAVE_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 RAVE in wei
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
 export default function DJStreamPage() {
@@ -151,7 +151,7 @@ export default function DJStreamPage() {
                         {(Number(raveBalance) / 1e18).toLocaleString()} RAVE
                       </div>
                       <div className="text-gray-400 text-sm">
-                        Required: 5,000 RAVE
+                        Required: 1,250,000 RAVE
                       </div>
                     </div>
                     {hasAccess ? (
@@ -168,7 +168,7 @@ export default function DJStreamPage() {
                   {!hasAccess && (
                     <div className="mt-4 p-4 bg-gray-700 rounded-lg">
                       <p className="text-gray-300 mb-2">
-                        Need 5,000 RAVE tokens to stream for free.
+                        Need 1,250,000 RAVE tokens to stream for free.
                       </p>
                       <p className="text-gray-400 text-sm">
                         Or pay £10/month via Stripe (coming soon).

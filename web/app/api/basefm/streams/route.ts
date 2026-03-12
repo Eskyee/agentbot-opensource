@@ -5,7 +5,7 @@ const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app';
 
 const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5';
-const RAVE_TOKEN_THRESHOLD = BigInt('5000000000000000000000'); // 5000 RAVE in wei
+const RAVE_TOKEN_THRESHOLD = BigInt('1250000000000000000000000'); // 1,250,000 RAVE in wei
 
 async function verifyRAVEBalance(walletAddress: string): Promise<boolean> {
   try {
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const hasAccess = await verifyRAVEBalance(wallet);
     if (!hasAccess) {
       return NextResponse.json(
-        { error: 'Insufficient RAVE tokens. Need 5,000 RAVE for DJ access.' },
+        { error: 'Insufficient RAVE tokens. Need 1,250,000 RAVE for DJ access.' },
         { status: 403 }
       );
     }
