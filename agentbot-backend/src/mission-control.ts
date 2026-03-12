@@ -52,4 +52,15 @@ router.get('/fleet/costs', authenticate, async (req: Request, res: Response) => 
   }
 });
 
+// Get talent bookings
+router.get('/fleet/bookings', authenticate, async (req: Request, res: Response) => {
+  const { userId } = req.query;
+  try {
+    const result = await MissionControlService.getBookings(Number(userId));
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

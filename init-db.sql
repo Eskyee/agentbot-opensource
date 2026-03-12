@@ -128,12 +128,46 @@ CREATE TABLE IF NOT EXISTS royalty_recipients (
   paid_at TIMESTAMP
 );
 
--- Indexes for performance
-CREATE INDEX idx_events_agent_id ON events(agent_id);
-CREATE INDEX idx_treasury_user_id ON treasury_transactions(user_id);
-CREATE INDEX idx_treasury_agent_id ON treasury_transactions(agent_id);
-CREATE INDEX idx_royalty_splits_agent_id ON royalty_splits(agent_id);
-CREATE INDEX idx_royalty_recipients_split_id ON royalty_recipients(split_id);
+-- Underground Culture: Talent Booking
+CREATE TABLE IF NOT EXISTS bookings (
+  id SERIAL PRIMARY KEY,
+  event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
+  talent_agent_id VARCHAR(255) NOT NULL, -- Subdomain of the talent agent
+  talent_name VARCHAR(255),
+  offer_amount_usdc DECIMAL(20, 6) NOT NULL,
+  status VARCHAR(50) DEFAULT 'offered', -- offered, countered, accepted, declined, contracted, completed
+  contract_tx_hash VARCHAR(255),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Underground Culture: Social Amplification
+CREATE TABLE IF NOT EXISTS social_campaigns (
+  id SERIAL PRIMARY KEY,
+  agent_id INTEGER REFERENCES agents(id) ON DELETE CASCADE,
+  event_id INTEGER REFERENCES events(id),
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  platforms VARCHAR(255)[], -- ['moltx', 'twitter', 'discord']
+  status VARCHAR(50) DEFAULT 'draft',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS social_amplifications (
+  id SERIAL PRIMARY KEY,
+  campaign_id INTEGER REFERENCES social_campaigns(id) ON DELETE CASCADE,
+  partner_agent_id VARCHAR(255) NOT NULL,
+  status VARCHAR(50) DEFAULT 'requested', -- requested, approved, shared, declined
+  reward_amount_usdc DECIMAL(20, 6) DEFAULT 0,
+  tx_hash VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes
+CREATE INDEX idx_bookings_event_id ON bookings(event_id);
+CREATE INDEX idx_social_campaigns_agent_id ON social_campaigns(agent_id);
+CREATE INDEX idx_social_amplifications_campaign_id ON social_amplifications(campaign_id);
 
 -- Insert sample data for development
 -- WARNING: Remove this in production! Demo credentials should never be used.

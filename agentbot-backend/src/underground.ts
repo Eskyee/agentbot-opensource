@@ -2,7 +2,10 @@ import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
 import { WalletService } from './services/wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
-import { OllamaService } from './services/ollama'; // Import Ollama service
+import { OllamaService } from './services/ollama';
+import { NegotiationService } from './services/negotiation'; // Added
+import { AmplificationService } from './services/amplification'; // Added
+import Queue from 'bull';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -11,6 +14,9 @@ const router = express.Router();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
+
+// Create the split queue instance
+const splitQueue = new Queue('royalty-splits', process.env.REDIS_URL || 'redis://localhost:6379');
 
 // Middleware to verify internal API key (Atlas/Frontend only)
 const authenticate = (req: Request, res: Response, next: any) => {
@@ -72,8 +78,15 @@ router.post('/bus/send', async (req: Request, res: Response) => {
     return res.status(401).json({ error: 'Invalid message signature' });
   }
 
-  // 2. Queue or Deliver
+  // 2. Handle specific Underground logic based on action type
   try {
+    if (message.action.startsWith('BOOKING_')) {
+      await NegotiationService.handleBookingMessage(message);
+    } else if (message.action.startsWith('AMPLIFY_')) {
+      await AmplificationService.handleAmplificationMessage(message);
+    }
+
+    // 3. Deliver to recipient agent webhook
     await AgentBusService.deliverMessage(message);
     res.json({ success: true, messageId: message.messageId });
   } catch (error: any) {
@@ -137,10 +150,9 @@ router.get('/wallets/:address/balance', authenticate, async (req: Request, res: 
  * --- ROYALTY SPLITS ---
  */
 
-// Create and execute a royalty split
+// Create and execute a royalty split (Async Queue version)
 router.post('/splits', authenticate, async (req: Request, res: Response) => {
   const { userId, agentId, fromAddress, name, totalAmount, recipients } = req.body;
-  // recipients: [{ address: string, share: number }]
 
   try {
     // 1. Record split in DB
@@ -150,23 +162,23 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
     );
     const splitId = splitResult.rows[0].id;
 
-    // 2. Process transfers for each recipient
-    const txHashes = [];
+    // 2. Add recipients to DB
     for (const recipient of recipients) {
-      const amount = (totalAmount * recipient.share) / 100;
-      const txHash = await WalletService.transferUSDC(userId, fromAddress, recipient.address, amount);
-      txHashes.push(txHash);
-
       await pool.query(
-        'INSERT INTO royalty_recipients (split_id, wallet_address, share_percentage, amount_usdc, paid, paid_at) VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)',
-        [splitId, recipient.address, recipient.share, amount, true]
+        'INSERT INTO royalty_recipients (split_id, wallet_address, share_percentage, paid) VALUES ($1, $2, $3, FALSE)',
+        [splitId, recipient.address, recipient.share]
       );
     }
 
-    // 3. Mark split as completed
-    await pool.query('UPDATE royalty_splits SET status = $1 WHERE id = $2', ['completed', splitId]);
+    // 3. Queue the background execution
+    await splitQueue.add({
+      splitId,
+      userId,
+      agentId,
+      fromAddress
+    });
 
-    res.json({ success: true, splitId, txHashes });
+    res.json({ success: true, splitId, status: 'queued' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

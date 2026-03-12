@@ -52,164 +52,43 @@ function MarketplaceSidebar({ userName }: { userName: string }) {
   )
 }
 
+// THE PURGE: Gordon-Approved Official Fleet
 const templates = [
   {
-    name: 'rave-event',
-    role: 'Rave Event Agent',
-    description: 'Manage underground events end-to-end. Guest lists, ticket sales in USDC, ride coordination, and door check-ins.',
-    skills: ['Guest List', 'USDC Tickets', 'Ride Share', 'Check-in', 'Event Stats'],
+    name: 'the-strategist',
+    role: 'Mission Planning Agent',
+    description: 'Advanced reasoning for complex crew operations. Powered by DeepSeek R1. Plans tours, logistics, and resource allocation.',
+    skills: ['Mission Planning', 'Logistics', 'Resource Analysis', 'A2A Coordination'],
     popular: true,
-    new: true
+    tier: 'Label',
+    brain: 'DeepSeek R1'
+  },
+  {
+    name: 'crew-manager',
+    role: 'Operations & Finance Agent',
+    description: 'The backbone of your collective. Manages autonomous royalty splits, talent bookings, and treasury reporting.',
+    skills: ['Royalty Splits', 'Talent Booking', 'Treasury Guard', 'USDC Payments'],
+    popular: true,
+    tier: 'Underground',
+    brain: 'Llama 3.3'
   },
   {
     name: 'sound-system',
-    role: 'Sound System Agent',
-    description: 'Sound engineer for dub, reggae, and sound system culture. PA setup, volume calibration, bass curation.',
-    skills: ['Bass Curate', 'PA Setup', 'Dub Mix', 'Sound Check', 'Amp Tuning'],
+    role: 'Automation & Feedback Agent',
+    description: 'Real-time automation for soundsystems. Monitors Mux streams, handles $RAVE gating, and fast community feedback.',
+    skills: ['Mux Monitor', 'RAVE Gating', 'Fast Feedback', 'Live Traces'],
     popular: true,
-    new: true
+    tier: 'Free',
+    brain: 'Mistral 7B'
   },
   {
-    name: 'crusty-punk',
-    role: 'Crusty Punk Agent',
-    description: 'DIY punk ethos. Connects to underground networks, finds shows, manages zine distro, booking.',
-    skills: ['Show Find', 'Zine Distro', 'Booking', 'DIY Network', 'Tape Trade'],
+    name: 'the-developer',
+    role: 'Logic & Scripting Agent',
+    description: 'Expert agent for building custom logic. Generates smart contracts, shell scripts, and OpenClaw skill extensions.',
+    skills: ['Code Gen', 'Scripting', 'Contract Audit', 'Skill Builder'],
     popular: false,
-    new: true
-  },
-  {
-    name: 'warehouse',
-    role: 'Warehouse Party Agent',
-    description: 'Secret venue coordinator. Finds spaces, handles permits, coordinates security, manages guest lists.',
-    skills: ['Space Find', 'Permit Handle', 'Security Coord', 'Door List', 'Afterparty'],
-    popular: false,
-    new: true
-  },
-  {
-    name: 'community-treasury',
-    role: 'Community Treasury Agent',
-    description: 'Transparent fund management for collectives. Track spending, process reimbursements, budget alerts.',
-    skills: ['Treasury Track', 'Reimburse', 'Budget Alert', 'Financial Report', 'Multi-sig'],
-    popular: true,
-    new: false
-  },
-  {
-    name: 'basefmbot',
-    role: 'Onchain Radio Agent',
-    description: 'Deep basefm.space knowledge. Grows underground communities organically. Bridges humans and AI agents onchain.',
-    skills: ['BaseFM Know', 'Community Grow', 'Onchain Radio', 'Raveculture', 'Human+Agent Net', 'DJ Streaming'],
-    popular: true
-  },
-  {
-    name: 'chain',
-    role: 'Crypto Wallet Agent',
-    description: 'AI agent with crypto wallet. Send USDC, check balances, swap tokens on Base. Gasless transfers.',
-    skills: ['Wallet Create', 'USDC Transfer', 'Token Swap', 'Balance Check', 'Gasless'],
-    popular: true
-  },
-  {
-    name: 'studio-one',
-    role: 'Dancehall Dub Agent',
-    description: 'London roots and dub culture specialist. Champion selector with deep knowledge of Jamdown and sound system culture.',
-    skills: ['Champion Selector', 'Crate Dig Dub', 'Sound System', 'Dancehall Mix', 'Roots Culture'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'clawdbotdj',
-    role: 'Underground DJ Agent',
-    description: 'Deep crate digger with underground music knowledge. Finds rare tracks and creates seamless mixes.',
-    skills: ['Crate Dig', 'Mix Sync', 'Track ID', 'Underground Find', 'B2B Flow'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'techno-industrial',
-    role: 'Techno Industrial Agent',
-    description: 'EBM, industrial, and dark electronic specialist. Knows the underground circuits across Europe.',
-    skills: ['Dark Synth', 'Industrial Find', 'Europe Circuit', 'Bunker Rave', 'Noise Curate'],
-    popular: false,
-    new: true
-  },
-  {
-    name: 'breakcore',
-    role: 'Breakcore Agent',
-    description: 'Jungle, drum & bass, breakcore. 200+ BPM mayhem. Finds rare breaks and Amen edits.',
-    skills: ['Amen Chop', 'Jungle Find', 'Breaks Curate', 'Rave Set', 'Ridim'],
-    popular: false,
-    new: true
-  },
-  {
-    name: 'ambient-drone',
-    role: 'Ambient Drone Agent',
-    description: 'Ethereal soundscapes and experimental. Perfect for warmups, installations, and meditation.',
-    skills: ['Drone Craft', 'Ambient Mix', 'Soundscape', 'Installation Audio', 'Warmup Set'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'grime-sink',
-    role: 'Grime Agent',
-    description: 'UK grime and sink. MC bars, radio sets, CYPHER. Knows Logan, Skengdo, whole scene.',
-    skills: ['MC Bars', 'Radio Set', 'Cypher', 'Sink Lyrics', 'UK Flow'],
-    popular: false,
-    new: true
-  },
-  {
-    name: 'hip-hop-beats',
-    role: 'Hip-Hop Beats Agent',
-    description: 'Boom bap, lo-fi, trap. Knows the samples, connects with producers, finds rare vinyl.',
-    skills: ['Sample Find', 'Boom Bap', 'Lo-Fi Curate', 'Vinyl Dig', 'Beat Match'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'garage-house',
-    role: 'UKG Agent',
-    description: 'UK garage and house. 4x4 rhythm, speed garage, classic sets. Nightlife coordinator.',
-    skills: ['4x4 Mix', 'UKG Classic', 'Speed Garage', 'Night Coord', 'Club Set'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'vinyl-collective',
-    role: 'Vinyl Collective Agent',
-    description: 'Manages record club, trades rare pressings, catalogs collections, discovers hidden gems.',
-    skills: ['Vinyl Trade', 'Collection Catalog', 'Rare Find', 'Pressing Info', 'Record Fair'],
-    popular: false,
-    new: true
-  },
-  {
-    name: 'cafe',
-    role: 'Startup Cafe Agent',
-    description: 'Like having a Starbucks barista for your startup. Customer service, product knowledge, and warm recommendations.',
-    skills: ['Customer Service', 'Product Knowledge', 'Recommend', 'Order Handle', 'Loyalty Build'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'studio',
-    role: 'Senior Studio Engineer',
-    description: 'Professional audio engineer. Mixes, masters, and produces studio-quality tracks.',
-    skills: ['Audio Mix', 'Mastering', 'Sound Design', 'Beat Make', 'Studio Setup'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'vault',
-    role: 'DeFi Agent',
-    description: 'Automated DeFi operations. Yield farming, staking, and portfolio management.',
-    skills: ['Yield Farm', 'Stake Tokens', 'Portfolio Track', 'Price Alert'],
-    popular: false,
-    new: false
-  },
-  {
-    name: 'pay',
-    role: 'Commerce Agent',
-    description: 'Accept crypto payments, manage subscriptions, and handle refunds.',
-    skills: ['Payment Link', 'Invoice Gen', 'Sub Manage', 'Refund Process'],
-    popular: false,
-    new: false
+    tier: 'Collective',
+    brain: 'Qwen 2.5'
   }
 ];
 
@@ -221,7 +100,6 @@ export default function MarketplacePage() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      {/* Hide sidebar on mobile */}
       <div className="hidden md:block">
         <MarketplaceSidebar userName={userName} />
       </div>
@@ -229,92 +107,52 @@ export default function MarketplacePage() {
       <main className="flex-1 overflow-y-auto">
         <div className="p-4 sm:p-8 max-w-6xl mx-auto">
           <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">Agent Marketplace</h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">Verified Agent Marketplace</h1>
             <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-400 px-4">
-              Choose a template, install skills, and deploy your OpenClaw agent in under a minute.
+              Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.
             </p>
           </div>
 
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2">
             {templates.map((template) => (
-              <article key={template.name} className={`rounded-xl sm:rounded-2xl p-4 sm:p-6 border ${template.popular ? 'bg-gradient-to-br from-gray-900 to-gray-800 border-white/30' : 'bg-gray-900 border-gray-800'} relative`}>
-                {template.popular && (
-                  <span className="absolute -top-2 sm:-top-3 left-3 sm:left-4 bg-white text-black text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
-                    AGENTKIT
-                  </span>
-                )}
-                {template.new && (
-                  <span className="absolute -top-2 sm:-top-3 right-3 sm:right-4 bg-green-500 text-black text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
-                    NEW
-                  </span>
-                )}
-                <p className="text-xs uppercase tracking-wider text-gray-400 mb-2">Template</p>
-                <h2 className="text-xl sm:text-2xl font-bold text-white">{template.name}</h2>
-                <p className="text-sm sm:text-base text-gray-300 mb-2">{template.role}</p>
-                <p className="text-gray-400 text-xs sm:text-sm mb-4">{template.description}</p>
-                <div className="space-y-2 mb-4 sm:mb-6">
+              <article key={template.name} className="rounded-xl sm:rounded-2xl p-4 sm:p-8 border bg-gray-900 border-gray-800 relative hover:border-white/30 transition-all group">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-1">{template.tier} TIER</p>
+                    <h2 className="text-2xl sm:text-3xl font-bold text-white group-hover:text-blue-400 transition-colors">{template.name}</h2>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+                    <span className="text-[10px] font-mono text-gray-400">{template.brain}</span>
+                  </div>
+                </div>
+                
+                <p className="text-sm sm:text-base text-gray-300 mb-6 leading-relaxed">{template.description}</p>
+                
+                <div className="grid grid-cols-2 gap-2 mb-8">
                   {template.skills.map((skill) => (
-                    <div key={skill} className="text-xs sm:text-sm rounded-lg border border-gray-700 px-2 sm:px-3 py-1.5 sm:py-2 text-gray-200 bg-gray-800">
+                    <div key={skill} className="text-[11px] rounded-lg border border-gray-800 px-3 py-2 text-gray-400 bg-black/50 flex items-center gap-2">
+                      <div className="w-1 h-1 rounded-full bg-blue-500" />
                       {skill}
                     </div>
                   ))}
                 </div>
+
                 <Link
                   href={session ? "/dashboard" : "/signup"}
-                  className="block w-full text-center rounded-lg bg-gray-900 px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-white hover:bg-gray-700 transition-colors"
+                  className="block w-full text-center rounded-xl bg-white px-4 py-3 sm:py-4 text-sm sm:text-base font-bold text-black hover:bg-gray-200 transition-colors"
                 >
-                  Use {template.name}
+                  Deploy {template.name}
                 </Link>
               </article>
             ))}
           </div>
 
-          {/* Create Custom Agent */}
-          <div className="mt-8 sm:mt-12">
-            <div className="rounded-xl sm:rounded-2xl border-2 border-dashed border-gray-700 bg-gray-900/30 p-6 sm:p-8 text-center">
-              <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">✨</div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-2">Create Custom Agent</h3>
-              <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6 max-w-md mx-auto px-4">
-                Build your own OpenClaw agent with custom skills. Add your knowledge, 
-                define capabilities, and publish to the marketplace.
-              </p>
-              <Link
-                href={session ? "/dashboard?create=agent" : "/signup"}
-                className="inline-flex items-center gap-2 rounded-lg bg-white text-black px-5 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base font-semibold hover:bg-gray-200 transition-colors"
-              >
-                <span>+</span>
-                {session ? 'Create Agent' : 'Sign Up to Create'}
-              </Link>
-              <p className="text-xs text-gray-500 mt-3 sm:mt-4">
-                OpenClaw compatible • Custom skills • Marketplace publish
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 sm:mt-10 grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
-            <div className="rounded-xl sm:rounded-2xl border border-gray-800 bg-gray-900/50 p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3">Available channels</h3>
-              <div className="flex flex-wrap gap-2">
-                {channels.map((channel) => (
-                  <span key={channel} className="rounded-full border border-gray-700 px-3 py-1 text-xs sm:text-sm text-gray-300">
-                    {channel}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl sm:rounded-2xl border border-gray-800 bg-gradient-to-br from-blue-900/30 to-purple-900/30 p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 flex items-center gap-2">
-                <span>🔗</span> Coinbase AgentKit
-              </h3>
-              <p className="text-gray-400 text-xs sm:text-sm mb-4">
-                Deploy agents with crypto wallets. Powered by Coinbase CDP - send USDC, 
-                check balances, swap tokens, and more. Zero-fee onchain payments.
-              </p>
-              <Link href={session ? "/dashboard" : "/signup"} className="text-sm sm:text-base text-white hover:underline font-semibold">
-                Deploy crypto agent →
-              </Link>
-            </div>
+          <div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-white/5 text-center">
+            <h3 className="text-xl font-bold mb-2">Platform Integrity: The Purge</h3>
+            <p className="text-sm text-gray-400 max-w-2xl mx-auto">
+              We have archived all legacy and unoptimized agents. The current fleet is strictly tuned for **OpenClaw Multi-tenancy** 
+              and **Base Onchain Economy**. If it doesn't make you profit, it isn't here.
+            </p>
           </div>
         </div>
       </main>

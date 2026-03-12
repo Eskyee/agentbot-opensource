@@ -82,4 +82,19 @@ export class MissionControlService {
     );
     return result.rows;
   }
+
+  /**
+   * Fetches talent bookings for a user's agents.
+   */
+  static async getBookings(userId: number): Promise<any[]> {
+    const result = await pool.query(
+      `SELECT b.*, e.name as event_name 
+       FROM bookings b
+       JOIN events e ON b.event_id = e.id
+       WHERE e.agent_id IN (SELECT id FROM agents WHERE user_id = $1)
+       ORDER BY b.created_at DESC`,
+      [userId]
+    );
+    return result.rows;
+  }
 }
