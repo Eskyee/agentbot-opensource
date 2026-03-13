@@ -11,12 +11,27 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Initialize CDP Client v1.45.0
-const cdp = new CdpClient({
-  apiKeyId: process.env.CDP_API_KEY_NAME || '',
-  apiKeySecret: (process.env.CDP_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-  walletSecret: process.env.CDP_WALLET_SECRET || ''
-});
+// Initialize CDP Client lazily (only if credentials provided)
+let cdp: CdpClient | null = null;
+
+function getCdpClient(): CdpClient {
+  if (!cdp) {
+    const apiKeyId = process.env.CDP_API_KEY_NAME;
+    const privateKey = process.env.CDP_PRIVATE_KEY;
+    const walletSecret = process.env.CDP_WALLET_SECRET;
+
+    if (!apiKeyId || !privateKey || !walletSecret) {
+      throw new Error('CDP credentials not configured. Set CDP_API_KEY_NAME, CDP_PRIVATE_KEY, and CDP_WALLET_SECRET environment variables.');
+    }
+
+    cdp = new CdpClient({
+      apiKeyId,
+      apiKeySecret: privateKey.replace(/\\n/g, '\n'),
+      walletSecret
+    });
+  }
+  return cdp;
+}
 
 type Hex = `0x${string}`;
 
@@ -42,7 +57,8 @@ export class WalletService {
   static async createAgentWallet(userId: number, agentId: number): Promise<{ address: string }> {
     try {
       // 1. Create Server Account
-      const account = await cdp.evm.createAccount({ name: `agent-${agentId}` });
+      const client = getCdpClient();
+      const account = await client.evm.createAccount({ name: `agent-${agentId}` });
       const address = account.address;
       
       // 2. Encrypt and store metadata
@@ -72,13 +88,14 @@ export class WalletService {
     try {
       // 1. Build USDC transfer transaction (ERC20 transfer)
       // USDC on Base: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+      const client = getCdpClient();
       const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as Hex;
       const amountUnits = parseUnits(amount.toString(), 6);
       
       // Data: selector (transfer) + to (padded) + amount (padded)
       const data = `0xa9059cbb${toAddress.replace('0x', '').toLowerCase().padStart(64, '0')}${amountUnits.toString(16).padStart(64, '0')}` as Hex;
 
-      const { transactionHash } = await cdp.evm.sendTransaction({
+      const { transactionHash } = await client.evm.sendTransaction({
         address: fromAddress as Hex,
         transaction: {
           to: usdcAddress,
@@ -106,7 +123,8 @@ export class WalletService {
    */
   static async getBalance(userId: number, address: string): Promise<number> {
     try {
-      const result = await cdp.evm.listTokenBalances({
+      const client = getCdpClient();
+      const result = await client.evm.listTokenBalances({
         address: address as Hex,
         network: 'base'
       });
