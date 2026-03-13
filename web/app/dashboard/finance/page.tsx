@@ -18,7 +18,7 @@ export default function FinancePage() {
 
   const totalSpend = costs?.reduce((sum: number, c: any) => sum + Number(c.total_spend), 0) ?? 0;
   const aiCost = costs?.filter((c: any) => c.category === 'ai_metric').reduce((sum: number, c: any) => sum + Number(c.total_spend), 0) ?? 0;
-  const coordinationRevenue = costs?.filter((c: any) => c.category === 'agent_message').length * 0.01 ?? 0; // 1% tax logic
+  const coordinationRevenue = (costs?.filter((c: any) => c.category === 'agent_message').length ?? 0) * 0.01; // 1% tax logic
 
   return (
     <div className="p-8 bg-black min-h-screen text-white">
@@ -33,19 +33,19 @@ export default function FinancePage() {
           label="Total Fleet Spend"
           value={`$${totalSpend.toFixed(2)}`}
           icon={<DollarSign className="h-4 w-4" />}
-          trend={{ value: '12%', direction: 'down' }}
+          trend={-12}
         />
         <MetricCard
           label="Managed AI Cost"
           value={`$${aiCost.toFixed(2)}`}
           icon={<Activity className="h-4 w-4" />}
-          trend={{ value: '85%', direction: 'down' }} // Highlighting local ollama savings
+          trend={-85} // Highlighting local ollama savings
         />
         <MetricCard
           label="Coordination Revenue"
           value={`$${coordinationRevenue.toFixed(2)}`}
           icon={<TrendingUp className="h-4 w-4" />}
-          trend={{ value: 'new', direction: 'up' }}
+          trend={1}
         />
         <MetricCard
           label="Net Profit Margin"
@@ -67,7 +67,7 @@ export default function FinancePage() {
             </select>
           </div>
           <div className="h-[300px]">
-            <CostCharts data={costs ?? []} />
+            <CostCharts />
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default function FinancePage() {
               <span>🤖</span> Agent Intelligence Usage
             </h2>
           </div>
-          <TokenUsageTable usage={costs ?? []} />
+          <TokenUsageTable />
         </div>
       </div>
 

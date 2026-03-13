@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
-import { authOptions } from './api/auth/[...nextauth]/route'
+import { authOptions } from '@/app/lib/auth'
 import PartnerLogos from './components/PartnerLogos'
 
 export default async function Home() {

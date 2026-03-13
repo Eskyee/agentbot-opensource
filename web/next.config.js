@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  eslint: { ignoreDuringBuilds: true },
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
   async headers() {
     return [

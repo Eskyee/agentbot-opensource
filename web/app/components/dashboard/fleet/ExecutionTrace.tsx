@@ -51,7 +51,7 @@ function formatDuration(startedAt: string, completedAt: string | null): string {
   return `${(diffMs / 60_000).toFixed(1)}m`;
 }
 
-export default function ExecutionTrace({ tasks }: ExecutionTraceProps) {
+export function ExecutionTrace({ tasks }: ExecutionTraceProps) {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   // Take last 10 tasks, ordered most recent first for display

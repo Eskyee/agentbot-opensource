@@ -92,6 +92,7 @@ export default function FleetPage() {
                 nodes={graph?.nodes ?? []} 
                 edges={graph?.edges ?? []} 
                 onNodeClick={(node) => setSelectedAgentId(node.id)}
+                isLive={true}
               />
             )}
           </div>
@@ -109,7 +110,7 @@ export default function FleetPage() {
 
             {/* Execution Trace Feed */}
             <div className="flex-1 overflow-y-auto">
-              <ExecutionTrace traces={traces ?? []} />
+              <ExecutionTrace tasks={traces ?? []} />
             </div>
 
             {/* Selected Agent Quick View */}

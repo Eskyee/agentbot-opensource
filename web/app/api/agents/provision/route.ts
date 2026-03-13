@@ -17,7 +17,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
 import { stripe } from '@/app/lib/stripe';
 
@@ -271,6 +271,4 @@ function generateAuthToken(): string {
   ).toString('base64');
 }
 
-export const metadata = {
-  description: 'Agent provisioning API'
-};
+// metadata removed: not a valid Next.js Route export

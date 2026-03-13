@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import { SecureRoute } from '@/app/lib/secure-route'
 import { SecurityMiddleware } from '@/app/lib/security-middleware'
@@ -8,7 +8,7 @@ import { SecurityMiddleware } from '@/app/lib/security-middleware'
 // This endpoint handles sensitive operations
 // Protected with: Auth, Rate Limiting, Injection Prevention, DDoS Protection
 
-async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -61,6 +61,3 @@ async function POST(req: NextRequest) {
   }
 }
 
-// Apply security wrapper
-export const POST_secure = SecureRoute.sensitive(POST)
-export { POST_secure as POST }

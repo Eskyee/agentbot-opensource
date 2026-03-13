@@ -1,6 +1,6 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/app/lib/auth'
 import TestStreamClient from './TestStreamClient'
 
 export default async function TestStreamPage() {

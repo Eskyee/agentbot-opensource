@@ -1,5 +1,5 @@
 import React from 'react';
-import DigitalWristband from '../../components/DigitalWristband';
+import DigitalWristband from '@/app/components/DigitalWristband';
 
 /**
  * baseFM / RaveCulture — Wristband Page
