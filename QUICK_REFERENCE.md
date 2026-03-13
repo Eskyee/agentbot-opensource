@@ -1,220 +1,196 @@
-# Agentbot Quick Reference
+# 🚀 Quick Reference - Local Docker Development
 
-## Quick Commands
+## Start Everything (1 command)
 
-### Start/Stop
 ```bash
-make start          # Start all services
-make stop           # Stop all services
-make restart        # Restart all services
-./start-dev.sh      # Start with health checks
+docker-compose up -d
 ```
 
-### Logs
+Services start at:
+- Frontend: http://localhost:3000
+- API: http://localhost:3001
+- Database: postgres:5432
+- Redis: localhost:6379
+- Ollama: http://localhost:11434
+
+---
+
+## Test Everything Works
+
 ```bash
-make logs           # All service logs
-make logs-api       # API logs only
-make logs-worker    # Worker logs only
-make logs-frontend  # Frontend logs only
-docker compose logs -f <service>  # Specific service
+# Quick test
+curl http://localhost:3001/health | jq
+
+# Test MCP
+curl http://localhost:3001/api/render-mcp/health | jq
+
+# Test AI models
+curl http://localhost:3001/api/ai/models | jq '.count'
 ```
 
-### Development
+---
+
+## Common Commands
+
 ```bash
-make build          # Build all services
-make rebuild        # Rebuild and restart
-make clean          # Remove everything
+# View all services
+docker-compose ps
+
+# View logs (all services)
+docker-compose logs -f
+
+# View API logs only
+docker-compose logs -f api
+
+# Stop everything
+docker-compose down
+
+# Stop + remove volumes (full reset)
+docker-compose down -v
+
+# Restart API
+docker-compose restart api
+
+# Rebuild API image
+docker-compose build api --no-cache
+
+# Access database CLI
+docker-compose exec postgres psql -U agentbot -d agentbot_db
+
+# Access redis cli
+docker-compose exec redis redis-cli
+
+# SSH into API container
+docker-compose exec api sh
 ```
 
-### Database
+---
+
+## VS Code Setup
+
 ```bash
-make db-shell       # Open PostgreSQL shell
-make redis-cli      # Open Redis CLI
+# Open workspace
+code agentbot.code-workspace
+
+# Run tasks (Ctrl+Shift+B)
+- Docker: Up (Full Stack)
+- Docker: Down
+- Backend: Build
+- Backend: Test
 ```
 
-## Service URLs
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| Frontend | http://localhost:3000 | User dashboard |
-| API | http://localhost:3001 | Backend API |
-| Health Check | http://localhost:3001/health | API health |
-| Nginx | http://agentbot.localhost | Reverse proxy |
-| PostgreSQL | localhost:5432 | Database |
-| Redis | localhost:6379 | Cache/Queue |
-
-## API Endpoints
-
-### Health
-```bash
-GET /health
-```
-
-### Agents
-```bash
-GET    /api/agents           # List all agents
-POST   /api/agents           # Create agent
-GET    /api/agents/:id       # Get agent
-PUT    /api/agents/:id       # Update agent
-DELETE /api/agents/:id       # Delete agent
-```
-
-### Deployments
-```bash
-POST   /api/deployments      # Create deployment
-```
-
-### Authentication
-All API endpoints (except /health) require Bearer token:
-```bash
-curl -H "Authorization: Bearer dev-secret-key-12345" \
-     http://localhost:3001/api/agents
-```
-
-## Environment Variables
-
-### Development (.env.local)
-- `INTERNAL_API_KEY=dev-secret-key-12345`
-- `DATABASE_URL=postgres://agentbot:devpassword@localhost:5432/agentbot_db`
-- `REDIS_URL=redis://localhost:6379`
-
-### Production (.env.production)
-Update with real credentials and domains.
-
-## Project Structure
-
-```
-agentbot/
-├── web/                    # Next.js frontend
-│   ├── app/                # Pages and components
-│   ├── public/             # Static assets
-│   └── Dockerfile
-├── agentbot-backend/       # Express API
-│   ├── src/
-│   │   └── index.ts        # Main API server
-│   ├── package.json
-│   └── Dockerfile
-├── agentbot-worker/        # Deployment worker
-│   ├── src/
-│   │   └── worker.ts       # Queue processor
-│   ├── package.json
-│   └── Dockerfile
-├── api/                    # Legacy OpenClaw API
-│   ├── server.js
-│   └── package.json
-├── docker-compose.yml      # All services
-├── nginx.conf              # Reverse proxy
-├── init-db.sql             # Database schema
-└── Makefile                # Shortcuts
-```
-
-## Common Tasks
-
-### Add a new API endpoint
-1. Edit `agentbot-backend/src/index.ts`
-2. Restart: `docker compose restart api`
-
-### Update frontend
-1. Edit files in `web/app/`
-2. Changes auto-reload with Next.js
-
-### Process deployments
-1. Worker automatically processes jobs from Redis queue
-2. Monitor: `make logs-worker`
-
-### Database changes
-1. Edit `init-db.sql`
-2. Recreate: `docker compose down -v && docker compose up -d`
-
-### Test API locally
-```bash
-# Health check
-curl http://localhost:3001/health
-
-# List agents (with auth)
-curl -H "Authorization: Bearer dev-secret-key-12345" \
-     http://localhost:3001/api/agents
-
-# Create agent
-curl -X POST \
-     -H "Authorization: Bearer dev-secret-key-12345" \
-     -H "Content-Type: application/json" \
-     -d '{"name":"test-agent","config":{}}' \
-     http://localhost:3001/api/agents
-```
-
-## Troubleshooting
-
-### Services won't start
-```bash
-docker compose logs <service>  # Check logs
-docker compose down -v         # Clean slate
-docker compose up --build      # Rebuild
-```
-
-### Port already in use
-```bash
-lsof -i :3000  # Check what's using port
-lsof -i :3001
-lsof -i :5432
-```
-
-### Database connection failed
-```bash
-docker compose ps postgres     # Check if running
-docker compose logs postgres   # Check logs
-make db-shell                  # Try connecting
-```
-
-### Redis connection failed
-```bash
-docker compose ps redis        # Check if running
-docker compose logs redis      # Check logs
-make redis-cli                 # Try connecting
-```
-
-### Frontend not loading
-```bash
-docker compose logs frontend   # Check logs
-docker compose restart frontend # Restart
-```
-
-### API not responding
-```bash
-docker compose logs api        # Check logs
-curl http://localhost:3001/health  # Test health
-docker compose restart api     # Restart
-```
+---
 
 ## Development Workflow
 
-1. **Start services**: `make start`
-2. **Make changes** to code
-3. **View logs**: `make logs`
-4. **Restart if needed**: `make restart`
-5. **Test changes** in browser/API
-6. **Commit and push**
+1. **Edit code** in VS Code
+2. **Save** (auto-format)
+3. **Docker rebuilds** automatically
+4. **Refresh browser** to see changes
+5. **Breakpoints work** automatically
 
-## Production Deployment
+---
 
-### Frontend (Vercel)
-1. Push to GitHub
-2. Vercel auto-deploys
-3. Set environment variables in Vercel
+## Debug Locally
 
-### Backend (Docker)
-1. Build: `docker compose build api worker`
-2. Tag: `docker tag agentbot-api:latest registry/agentbot-api:v1.0`
-3. Push: `docker push registry/agentbot-api:v1.0`
-4. Deploy on server
+```bash
+# In VS Code Debug panel (Ctrl+Shift+D)
+1. Select "Backend - Debug npm start"
+2. Click green play button
+3. Set breakpoints by clicking line numbers
+4. Code execution pauses at breakpoints
+```
 
-### DNS
-- `agentbot.com` → Vercel
-- `api.agentbot.com` → Your server
-- `*.agents.agentbot.com` → Your server
+---
 
-## Resources
+## Push to Production
 
-- [Architecture Guide](ARCHITECTURE.md)
-- [README](README.md)
-- [OpenClaw Docs](https://openclaw.ai)
+```bash
+# 1. Test locally ✅
+curl http://localhost:3001/health
+
+# 2. Commit changes
+git add .
+git commit -m "your message"
+
+# 3. Push (Render auto-deploys)
+git push origin main
+
+# 4. Verify production
+curl https://agentbot-api.onrender.com/health
+./verify-deployment.sh
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| Port 3001 in use | `lsof -i :3001` → `kill -9 <PID>` |
+| Service unhealthy | `docker-compose logs postgres` (check which) |
+| Docker not running | Start Docker Desktop |
+| Hot reload not working | `docker-compose restart api` |
+| Need fresh start | `docker-compose down -v && docker-compose up -d` |
+
+---
+
+## Environment Variables
+
+Edit `.env` to add:
+
+```env
+# Optional - Cloud AI models
+OPENROUTER_API_KEY=sk-or-your-key
+
+# Optional - Render integration
+RENDER_API_KEY=rnd_your-key
+
+# Local dev defaults (in .env.local)
+DATABASE_URL=postgresql://agentbot:devpassword@postgres:5432/agentbot_db
+REDIS_URL=redis://redis:6379
+OLLAMA_URL=http://ollama:11434
+```
+
+---
+
+## File Locations
+
+| Service | Port | Host | URL |
+|---------|------|------|-----|
+| Frontend | 3000 | localhost | http://localhost:3000 |
+| API | 3001 | localhost | http://localhost:3001 |
+| Database | 5432 | postgres | `postgresql://...` |
+| Redis | 6379 | redis | redis://redis:6379 |
+| Ollama | 11434 | ollama | http://ollama:11434 |
+
+---
+
+## Key Files
+
+```
+agentbot/
+├── docker-compose.yml       ← Service definitions
+├── .env.local               ← Default env vars
+├── agentbot.code-workspace  ← VS Code config
+├── LOCAL_DOCKER_SETUP.md    ← Full guide (you are here)
+├── LOCAL_DEVELOPMENT.md     ← Backend-only setup
+├── agentbot-backend/        ← API code
+├── agentbot-worker/         ← Worker code  
+└── web/                     ← Frontend code
+```
+
+---
+
+## Next Steps
+
+1. `docker-compose up -d` - Start services
+2. `code agentbot.code-workspace` - Open in VS Code
+3. Make changes to code
+4. Changes rebuild automatically
+5. Test in browser: http://localhost:3001
+6. `git push` - Deploy to Render
+
+---
+
+**For detailed info:** See `LOCAL_DOCKER_SETUP.md`

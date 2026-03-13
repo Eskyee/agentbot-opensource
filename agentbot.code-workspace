@@ -1,0 +1,221 @@
+{
+  "folders": [
+    {
+      "path": "agentbot-backend",
+      "name": "Backend API"
+    },
+    {
+      "path": "agentbot-worker",
+      "name": "Worker Service"
+    },
+    {
+      "path": "web",
+      "name": "Frontend"
+    }
+  ],
+  "settings": {
+    // Editor Settings
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.rulers": [80, 120],
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "files.exclude": {
+      "**/.git": true,
+      "**/node_modules": true,
+      "**/.DS_Store": true,
+      "**/*.log": true
+    },
+
+    // TypeScript Settings
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+
+    // ESLint
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+    ],
+
+    // Prettier
+    "prettier.printWidth": 100,
+    "prettier.tabWidth": 2,
+    "prettier.useTabs": false,
+    "prettier.semi": true,
+    "prettier.singleQuote": true,
+
+    // Search Exclusions
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.git": true,
+      "**/dist": true,
+      "**/.next": true
+    },
+
+    // Docker
+    "docker.showNotifications": "never",
+
+    // Git
+    "git.autofetch": true,
+    "git.ignoreLimitWarning": true,
+
+    // Test Explorer
+    "testExplorer.onStart": "interactive"
+  },
+  "extensions": {
+    "recommendations": [
+      // Core Development
+      "ms-vscode.vscode-typescript-next",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "eamodio.gitlens",
+
+      // Docker & DevOps
+      "ms-vscode-remote.remote-containers",
+      "ms-vscode.remote-explorer",
+      "ms-azuretools.vscode-docker",
+
+      // API & REST
+      "humao.rest-client",
+      "rangav.vscode-thunder-client",
+
+      // Database
+      "cweijan.vscode-postgresql-client2",
+      "cweijan.vscode-redis-client",
+
+      // Frontend
+      "bradlc.vscode-tailwindcss",
+      "formulahendry.auto-rename-tag",
+
+      // AI & Copilot
+      "GitHub.copilot",
+      "GitHub.copilot-chat",
+
+      // Testing
+      "firsttris.vscode-jest-runner",
+      "orta.vscode-jest",
+
+      // Productivity
+      "ms-vscode.makefile-tools",
+      "ms-vscode-remote.vscode-remote-extensionpack"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Backend - Attach to Node",
+        "type": "node",
+        "request": "attach",
+        "port": 9229,
+        "skipFiles": ["<node_internals>/**"],
+        "sourceMapPathOverride": {
+          "/app/dist/*": "${workspaceFolder:Backend API}/dist/*"
+        }
+      },
+      {
+        "name": "Backend - Debug npm start",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder:Backend API}",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"],
+        "console": "integratedTerminal",
+        "internalConsoleOptions": "neverOpen"
+      }
+    ],
+    "compounds": [
+      {
+        "name": "Full Stack Development",
+        "configurations": [
+          "Backend - Attach to Node",
+          "Frontend - Chrome DevTools"
+        ]
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Docker: Up (Full Stack)",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["up", "-d"],
+        "problemMatcher": [],
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Docker: Down",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["down"],
+        "problemMatcher": [],
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Docker: Logs (API)",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["logs", "-f", "api"],
+        "problemMatcher": [],
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "panel": "shared"
+        }
+      },
+      {
+        "label": "Backend: Build",
+        "type": "shell",
+        "command": "npm",
+        "args": ["run", "build"],
+        "cwd": "${workspaceFolder:Backend API}",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Backend: Test",
+        "type": "shell",
+        "command": "npm",
+        "args": ["test"],
+        "cwd": "${workspaceFolder:Backend API}",
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Verify Endpoints",
+        "type": "shell",
+        "command": "bash",
+        "args": ["./verify-deployment.sh"],
+        "problemMatcher": [],
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "panel": "shared"
+        }
+      }
+    ]
+  }
+}
