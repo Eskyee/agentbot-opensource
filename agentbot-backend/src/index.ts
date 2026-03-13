@@ -1,7 +1,8 @@
 import express, { Request, Response } from 'express';
 import inviteRouter from './invite';
 import undergroundRouter from './underground';
-import missionControlRouter from './mission-control'; // Added mission control router
+import missionControlRouter from './mission-control';
+import aiRouter from './routes/ai';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -48,7 +49,8 @@ app.use(cors({
 app.use(express.json());
 app.use('/api/invite', inviteRouter);
 app.use('/api/underground', undergroundRouter);
-app.use('/api/mission-control', missionControlRouter); // Registered mission control router
+app.use('/api/mission-control', missionControlRouter);
+app.use('/api/ai', aiRouter); // Universal AI provider routes (Ollama + OpenRouter)
 
 type AgentMetadata = {
   agentId: string;
