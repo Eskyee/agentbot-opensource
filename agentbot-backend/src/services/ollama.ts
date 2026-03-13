@@ -28,7 +28,7 @@ export class OllamaService {
       const response = await fetch(`${this.OLLAMA_URL}/api/tags`);
       if (!response.ok) throw new Error('Failed to fetch from Ollama');
       
-      const data = await response.json();
+      const data = await response.json() as { models?: OllamaModel[] };
       return data.models || [];
     } catch (error) {
       console.error('Ollama local fetch failed:', error);
@@ -40,7 +40,15 @@ export class OllamaService {
    * Returns a curated list of "Official" recommended models from the Ollama Library.
    * Categorized by Plan Tier.
    */
-  static getOfficialLibrary(): any[] {
+  static getOfficialLibrary(): Array<{
+    id: string;
+    name: string;
+    description: string;
+    family: string;
+    tier: string;
+    tags: string[];
+    official: boolean;
+  }> {
     return [
       {
         id: 'mistral',
