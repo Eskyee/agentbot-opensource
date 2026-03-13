@@ -2,14 +2,16 @@ import { Router, Request, Response } from 'express';
 
 /**
  * Render MCP Server Integration
- * Exposes Render infrastructure management through MCP protocol
+ * Implements Model Context Protocol for Render infrastructure management
  * Allows AI apps (Cursor, Claude Code, etc.) to manage Render resources
+ * 
+ * Uses Render's REST API: https://api.render.com/docs
  */
 
 const router = Router();
 
-// MCP Server Configuration
-const MCP_SERVER_URL = 'https://mcp.render.com/mcp';
+const RENDER_API_BASE = 'https://api.render.com/v1';
+const RENDER_API_KEY = process.env.RENDER_API_KEY || '';
 
 interface MCPRequest {
   jsonrpc: string;
@@ -26,85 +28,84 @@ interface MCPResponse {
 }
 
 /**
- * MCP Tools exposed by Render
- * See: https://render.com/docs/mcp-server
+ * MCP Tools for Render infrastructure
+ * See: https://render.com/docs/api-reference
  */
 const AVAILABLE_TOOLS = {
-  // Workspace tools
-  list_workspaces: 'List all workspaces',
-  set_workspace: 'Set current workspace',
-  get_workspace: 'Fetch current workspace details',
-
   // Service tools
-  create_service: 'Create new service (web, static, cron, db)',
-  list_services: 'List all services in workspace',
-  get_service: 'Get service details',
-  update_service_env: 'Update service environment variables',
-
+  list_services: 'List all services in account',
+  get_service: 'Get service details by ID',
+  create_service: 'Create new service (web, worker, cron, static)',
+  update_service: 'Update service configuration',
+  delete_service: 'Delete a service',
+  
   // Deployment tools
   list_deploys: 'List deploy history for service',
   get_deploy: 'Get deploy details',
-
+  trigger_deploy: 'Trigger a new deployment',
+  
+  // Environment variables
+  list_env_vars: 'List environment variables for service',
+  set_env_var: 'Set environment variable',
+  delete_env_var: 'Delete environment variable',
+  
   // Logging tools
-  list_logs: 'List logs with filters',
-  list_log_labels: 'Get log label values',
-
-  // Metrics tools
-  get_metrics: 'Fetch performance metrics (CPU, memory, bandwidth)',
-
+  get_service_logs: 'Fetch service logs',
+  
   // Database tools
-  create_postgres: 'Create Render Postgres database',
-  list_postgres: 'List all databases',
+  list_postgres: 'List all Postgres databases',
+  create_postgres: 'Create new Postgres database',
   get_postgres: 'Get database details',
-  query_postgres: 'Run read-only SQL query',
-
-  // Key-Value tools
-  create_keyvalue: 'Create Redis Key-Value instance',
-  list_keyvalue: 'List Key-Value instances',
-  get_keyvalue: 'Get Key-Value instance details',
+  
+  // Redis tools
+  list_redis: 'List all Redis instances',
+  create_redis: 'Create new Redis instance',
+  get_redis: 'Get Redis instance details',
 };
 
-// MCP Server endpoints
+// Helper to make Render API calls
+async function callRenderAPI(
+  method: string,
+  path: string,
+  body?: Record<string, unknown>
+): Promise<unknown> {
+  if (!RENDER_API_KEY) {
+    throw new Error('RENDER_API_KEY not configured');
+  }
+
+  const url = `${RENDER_API_BASE}${path}`;
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${RENDER_API_KEY}`,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Render API error (${response.status}): ${error}`);
+  }
+
+  return response.json();
+}
+
+// MCP Server info
 router.get('/info', (_req: Request, res: Response) => {
   res.json({
     name: 'Render MCP Server',
     version: '1.0.0',
-    documentation: 'https://render.com/docs/mcp-server',
-    mcp_endpoint: MCP_SERVER_URL,
+    description: 'Model Context Protocol integration for Render infrastructure management',
+    documentation: 'https://render.com/docs/api-reference',
+    api_base: RENDER_API_BASE,
+    configured: !!RENDER_API_KEY,
     tools: AVAILABLE_TOOLS,
   });
 });
 
-// MCP Protocol handler
-router.post('/mcp', async (req: Request, res: Response) => {
-  const request = req.body as MCPRequest;
-
-  try {
-    // Forward to Render MCP server
-    const response = await fetch(MCP_SERVER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.RENDER_API_KEY || ''}`,
-      },
-      body: JSON.stringify(request),
-    });
-
-    const data = (await response.json()) as MCPResponse;
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({
-      jsonrpc: '2.0',
-      error: {
-        code: -32603,
-        message: error instanceof Error ? error.message : 'Internal error',
-      },
-      id: request.id,
-    });
-  }
-});
-
-// Tool reference endpoint
+// List available MCP tools
 router.get('/tools', (_req: Request, res: Response) => {
   res.json({
     description: 'MCP Tools for managing Render infrastructure',
@@ -113,101 +114,85 @@ router.get('/tools', (_req: Request, res: Response) => {
       description,
       category: getCategoryForTool(id),
     })),
-    setup_guide: 'https://render.com/docs/mcp-server#setup',
+    api_docs: 'https://render.com/docs/api-reference',
   });
 });
 
-// Configuration instructions endpoint
+// Configuration instructions for different IDEs
 router.get('/config', (_req: Request, res: Response) => {
-  const apiKey = process.env.RENDER_API_KEY ? '***' : 'NOT SET';
+  const isConfigured = !!RENDER_API_KEY;
   
   res.json({
-    status: 'configured' as const,
-    mcp_endpoint: MCP_SERVER_URL,
-    api_key_set: !!process.env.RENDER_API_KEY,
+    status: isConfigured ? 'configured' : 'not-configured',
     instructions: {
-      cursor: {
-        config_file: '~/.cursor/mcp.json',
-        format: {
-          mcpServers: {
-            render: {
-              url: MCP_SERVER_URL,
-              headers: {
-                Authorization: 'Bearer YOUR_API_KEY',
-              },
-            },
-          },
-        },
+      setup: 'Get your API key from https://dashboard.render.com/account/api-tokens',
+      environment: {
+        RENDER_API_KEY: isConfigured ? '***' : 'NOT SET',
       },
-      claude_code: {
-        command: `claude mcp add --transport http render ${MCP_SERVER_URL} --header "Authorization: Bearer YOUR_API_KEY"`,
+      cursor: {
+        file: '~/.cursor/mcp.json or ~/.cursor/extensions/mcp/config.json',
+        setup_url: 'https://docs.cursor.com/context/model-context-protocol',
       },
       claude_desktop: {
-        config_file: '~/Library/Application Support/Claude/claude_desktop_config.json',
-        format: {
-          mcpServers: {
-            render: {
-              command: 'npx',
-              args: ['mcp-remote', MCP_SERVER_URL, '--header', 'Authorization: Bearer YOUR_API_KEY'],
-              env: {
-                RENDER_API_KEY: 'YOUR_API_KEY',
-              },
-            },
-          },
-        },
+        file: '~/Library/Application Support/Claude/claude_desktop_config.json (macOS)',
+        file_win: '%APPDATA%\\Claude\\claude_desktop_config.json (Windows)',
+        setup_url: 'https://modelcontextprotocol.io/quickstart/user#claude-desktop',
       },
-      windsurf: {
-        config_file: '~/.codeium/windsurf/mcp_config.json',
-        format: {
-          mcpServers: {
-            render: {
-              url: MCP_SERVER_URL,
-              headers: {
-                Authorization: 'Bearer YOUR_API_KEY',
-              },
-            },
-          },
-        },
+      vscode_extension: {
+        name: 'Continue',
+        setup_url: 'https://continue.dev/docs/reference/Model%20Context%20Protocol',
       },
     },
+    message: isConfigured
+      ? 'Render MCP Server is configured and ready'
+      : 'Set RENDER_API_KEY environment variable to enable',
   });
 });
 
-// Example prompts endpoint
+// Example prompts for AI apps
 router.get('/examples', (_req: Request, res: Response) => {
   res.json({
+    description: 'Example prompts for AI apps to manage Render infrastructure',
     examples: [
       {
         category: 'Service Management',
         prompts: [
-          'List my Render services',
-          'Create a new web service from https://github.com/render-examples/flask-hello-world',
-          'Deploy an example Postgres database named user-db with 5 GB storage',
-          'Update environment variables for my API service',
+          'List all my Render services',
+          'Get details about my agentbot-api service',
+          'Show recent deployments',
+          'What services have been deployed in the last 24 hours?',
+        ],
+      },
+      {
+        category: 'Environment Variables',
+        prompts: [
+          'List environment variables for my API service',
+          'Set OPENROUTER_API_KEY for the agentbot-api service',
+          'Show which services have DATABASE_URL set',
+        ],
+      },
+      {
+        category: 'Databases',
+        prompts: [
+          'List all my Postgres databases',
+          'Create a new database named user-db',
+          'Show connection string for agentbot-db',
         ],
       },
       {
         category: 'Monitoring',
         prompts: [
-          'What was the busiest traffic day for my service this month?',
-          'Show me CPU and memory usage for all services',
-          'Pull the most recent error-level logs for my API',
-        ],
-      },
-      {
-        category: 'Data Management',
-        prompts: [
-          'Query my Render Postgres database for user counts',
-          'Create a new Redis Key-Value instance for caching',
-          'What did my service autoscaling look like yesterday?',
+          'Get recent logs for my web service',
+          'Show all services and their current status',
+          'Which service is consuming the most resources?',
         ],
       },
       {
         category: 'Troubleshooting',
         prompts: [
-          'Why isn\'t my site at example.onrender.com working?',
-          'Show me recent deployment history',
-          'Check outbound bandwidth usage for this month',
+          'Why is my service not running?',
+          'Show me the last 50 lines of logs',
+          'What changed recently in my deployments?',
         ],
       },
     ],
@@ -216,27 +201,106 @@ router.get('/examples', (_req: Request, res: Response) => {
 
 // Health check
 router.get('/health', (_req: Request, res: Response) => {
-  const isConfigured = !!process.env.RENDER_API_KEY;
+  const isConfigured = !!RENDER_API_KEY;
   
   res.json({
     status: isConfigured ? 'healthy' : 'degraded',
-    mcp_server_url: MCP_SERVER_URL,
-    api_key_configured: isConfigured,
+    mcp_server: 'render',
+    api_configured: isConfigured,
     message: isConfigured
       ? 'Render MCP Server is configured and ready'
-      : 'RENDER_API_KEY environment variable not set',
+      : 'RENDER_API_KEY environment variable is not set. Get it from https://dashboard.render.com/account/api-tokens',
+    setup_docs: 'https://render.com/docs/api-reference',
   });
+});
+
+// MCP Protocol handler - routes requests to appropriate Render API calls
+router.post('/mcp', async (req: Request, res: Response) => {
+  const request = req.body as MCPRequest;
+  const { method, params, id } = request;
+
+  try {
+    let result: unknown;
+
+    // Route to Render API based on method
+    switch (method) {
+      case 'list_services':
+        result = await callRenderAPI('GET', '/services');
+        break;
+
+      case 'get_service':
+        if (!params?.service_id) throw new Error('service_id parameter required');
+        result = await callRenderAPI('GET', `/services/${params.service_id}`);
+        break;
+
+      case 'list_deploys':
+        if (!params?.service_id) throw new Error('service_id parameter required');
+        result = await callRenderAPI('GET', `/services/${params.service_id}/deploys`);
+        break;
+
+      case 'get_deploy':
+        if (!params?.deploy_id) throw new Error('deploy_id parameter required');
+        result = await callRenderAPI('GET', `/deploys/${params.deploy_id}`);
+        break;
+
+      case 'list_postgres':
+        result = await callRenderAPI('GET', '/postgres');
+        break;
+
+      case 'get_postgres':
+        if (!params?.postgres_id) throw new Error('postgres_id parameter required');
+        result = await callRenderAPI('GET', `/postgres/${params.postgres_id}`);
+        break;
+
+      case 'list_redis':
+        result = await callRenderAPI('GET', '/redis');
+        break;
+
+      case 'get_redis':
+        if (!params?.redis_id) throw new Error('redis_id parameter required');
+        result = await callRenderAPI('GET', `/redis/${params.redis_id}`);
+        break;
+
+      case 'get_service_logs':
+        if (!params?.service_id) throw new Error('service_id parameter required');
+        const limit = params.limit || 100;
+        result = await callRenderAPI('GET', `/services/${params.service_id}/logs?limit=${limit}`);
+        break;
+
+      case 'list_env_vars':
+        if (!params?.service_id) throw new Error('service_id parameter required');
+        result = await callRenderAPI('GET', `/services/${params.service_id}/env-vars`);
+        break;
+
+      default:
+        throw new Error(`Unknown method: ${method}`);
+    }
+
+    res.json({
+      jsonrpc: '2.0',
+      result,
+      id,
+    } as MCPResponse);
+  } catch (error) {
+    res.status(400).json({
+      jsonrpc: '2.0',
+      error: {
+        code: -32600,
+        message: error instanceof Error ? error.message : 'Invalid request',
+      },
+      id,
+    } as MCPResponse);
+  }
 });
 
 // Helper function to categorize tools
 function getCategoryForTool(toolId: string): string {
-  if (toolId.includes('workspace')) return 'Workspaces';
   if (toolId.includes('service')) return 'Services';
   if (toolId.includes('deploy')) return 'Deployments';
-  if (toolId.includes('log')) return 'Logging';
-  if (toolId.includes('metric')) return 'Metrics';
+  if (toolId.includes('env')) return 'Environment';
   if (toolId.includes('postgres')) return 'Databases';
-  if (toolId.includes('keyvalue')) return 'Key-Value Storage';
+  if (toolId.includes('redis')) return 'Cache';
+  if (toolId.includes('log')) return 'Logging';
   return 'Other';
 }
 

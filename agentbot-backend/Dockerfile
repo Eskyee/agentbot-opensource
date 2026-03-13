@@ -9,7 +9,7 @@ RUN apk add --no-cache docker-cli
 COPY package*.json ./
 
 # Install dependencies
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm install --production=false
 
 # Copy source code
 COPY . .
