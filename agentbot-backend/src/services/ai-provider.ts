@@ -67,7 +67,10 @@ export class AIProviderService {
    */
   private static async checkOllamaHealth(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.OLLAMA_URL}/api/tags`, { timeout: 5000 });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(`${this.OLLAMA_URL}/api/tags`, { signal: controller.signal });
+      clearTimeout(timeoutId);
       return response.ok;
     } catch {
       return false;

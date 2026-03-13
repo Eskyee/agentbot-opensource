@@ -85,15 +85,7 @@ router.post('/models/select', async (req: Request, res: Response) => {
 
 // Universal chat endpoint - works with any provider
 router.post('/chat', async (req: Request, res: Response) => {
-  const { messages, model, taskType, preferLocal, temperature, top_p, max_tokens } = req.body as {
-    messages?: Array<{ role: string; content: string }>;
-    model?: string;
-    taskType?: string;
-    preferLocal?: boolean;
-    temperature?: number;
-    top_p?: number;
-    max_tokens?: number;
-  };
+  const { messages, model, taskType, preferLocal, temperature, top_p, max_tokens } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Messages array is required' });
@@ -110,8 +102,9 @@ router.post('/chat', async (req: Request, res: Response) => {
       selectedModel = bestModel.id;
     }
 
-    // Send to appropriate provider
-    const response = await AIProviderService.chat(messages, selectedModel, {
+    // Send to appropriate provider - cast messages to correct type
+    const typedMessages = messages as Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+    const response = await AIProviderService.chat(typedMessages, selectedModel, {
       temperature,
       top_p,
       max_tokens,
