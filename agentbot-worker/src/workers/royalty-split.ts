@@ -1,6 +1,6 @@
 import Queue from 'bull';
 import { Pool } from 'pg';
-import { WalletService } from '../../agentbot-backend/src/services/wallet';
+import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -8,6 +8,35 @@ dotenv.config();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
+
+// Wallet service would normally be in agentbot-backend
+// For now, we'll make direct calls or stub this
+class WalletService {
+  static async transferUSDC(
+    userId: number,
+    fromAddress: string,
+    toAddress: string,
+    amount: number
+  ): Promise<string> {
+    // Call to agentbot-backend wallet service
+    // or integrate Coinbase CDP directly
+    const response = await axios.post(
+      `${process.env.AGENTBOT_API_URL || 'http://localhost:3001'}/api/wallets/transfer`,
+      {
+        userId,
+        fromAddress,
+        toAddress,
+        amount,
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.INTERNAL_API_KEY || ''}`,
+        },
+      }
+    );
+    return response.data.txHash;
+  }
+}
 
 // Create the Royalty Split Queue
 const splitQueue = new Queue('royalty-splits', process.env.REDIS_URL || 'redis://localhost:6379');
