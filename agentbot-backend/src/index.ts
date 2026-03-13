@@ -3,6 +3,7 @@ import inviteRouter from './invite';
 import undergroundRouter from './underground';
 import missionControlRouter from './mission-control';
 import aiRouter from './routes/ai';
+import renderMcpRouter from './routes/render-mcp';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -51,6 +52,7 @@ app.use('/api/invite', inviteRouter);
 app.use('/api/underground', undergroundRouter);
 app.use('/api/mission-control', missionControlRouter);
 app.use('/api/ai', aiRouter); // Universal AI provider routes (Ollama + OpenRouter)
+app.use('/api/render-mcp', renderMcpRouter); // Render MCP Server integration
 
 type AgentMetadata = {
   agentId: string;

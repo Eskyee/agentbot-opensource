@@ -18,83 +18,92 @@ export interface OllamaModel {
 }
 
 export class OllamaService {
-  private static OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+  private ollamaUrl: string;
 
-  /**
-   * Fetches models currently pulled/installed on the local Ollama instance.
-   */
-  static async getLocalModels(): Promise<OllamaModel[]> {
+  constructor(url: string = process.env.OLLAMA_URL || 'http://localhost:11434') {
+    this.ollamaUrl = url;
+  }
+
+  async isHealthy(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.OLLAMA_URL}/api/tags`);
+      const response = await fetch(`${this.ollamaUrl}/api/tags`, { signal: AbortSignal.timeout(5000) });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async listModels(): Promise<OllamaModel[]> {
+    try {
+      const response = await fetch(`${this.ollamaUrl}/api/tags`);
       if (!response.ok) throw new Error('Failed to fetch from Ollama');
       
       const data = await response.json() as { models?: OllamaModel[] };
       return data.models || [];
     } catch (error) {
-      console.error('Ollama local fetch failed:', error);
+      console.error('Ollama list models failed:', error);
       return [];
     }
   }
 
-  /**
-   * Returns a curated list of "Official" recommended models from the Ollama Library.
-   * Categorized by Plan Tier.
-   */
-  static getOfficialLibrary(): Array<{
-    id: string;
-    name: string;
-    description: string;
-    family: string;
-    tier: string;
-    tags: string[];
-    official: boolean;
-  }> {
-    return [
-      {
-        id: 'mistral',
-        name: 'Mistral 7B (OpenClaw Tuned)',
-        description: 'FREE TIER: Fast, lightweight executor for basic automation.',
-        family: 'Mistral',
-        tier: 'free',
-        tags: ['fast', 'free'],
-        official: true
-      },
-      {
-        id: 'llama3.3',
-        name: 'Llama 3.3 70B (OpenClaw Optimized)',
-        description: 'UNDERGROUND TIER: High-performance general assistant.',
-        family: 'Llama',
-        tier: 'underground',
-        tags: ['balanced', 'production'],
-        official: true
-      },
-      {
-        id: 'qwen2.5-coder:32b',
-        name: 'Qwen 2.5 Coder (OpenClaw Tuned)',
-        description: 'COLLECTIVE TIER: Specialized for smart contracts & logic.',
-        family: 'Qwen',
-        tier: 'collective',
-        tags: ['coding', 'logic'],
-        official: true
-      },
-      {
-        id: 'deepseek-r1:32b',
-        name: 'DeepSeek R1 32B (Reasoning Engine)',
-        description: 'LABEL TIER: Maximum intelligence for mission planning.',
-        family: 'DeepSeek',
-        tier: 'label',
-        tags: ['reasoning', 'complex-tasks'],
-        official: true
-      }
-    ];
+  async selectBestModel(taskType?: string): Promise<string> {
+    const models = await this.listModels();
+    if (models.length === 0) return 'mistral';
+
+    const modelMap: Record<string, string[]> = {
+      'coding': ['qwen', 'coder', 'deepseek'],
+      'reasoning': ['deepseek', 'llama'],
+      'creative': ['neural', 'creative'],
+      'fast': ['mistral', 'neural-chat']
+    };
+
+    const keywords = modelMap[taskType?.toLowerCase() || 'general'] || ['llama', 'mistral'];
+    const match = models.find(m => keywords.some(k => m.model.toLowerCase().includes(k)));
+    return match?.model || models[0]?.model || 'mistral';
   }
 
-  /**
-   * Triggers a pull of a specific model from the Ollama library.
-   * Useful for "One-Click Install" from the Agentbot dashboard.
-   */
-  static async pullModel(modelName: string): Promise<void> {
-    const response = await fetch(`${this.OLLAMA_URL}/api/pull`, {
+  async chat(
+    messages: Array<{ role: string; content: string }>,
+    model: string,
+    options?: { temperature?: number; top_p?: number; top_k?: number }
+  ): Promise<any> {
+    const response = await fetch(`${this.ollamaUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages,
+        stream: false,
+        options: {
+          temperature: options?.temperature ?? 0.5,
+          top_p: options?.top_p ?? 0.9,
+          top_k: options?.top_k ?? 40
+        }
+      })
+    });
+
+    if (!response.ok) throw new Error(`Chat failed with model ${model}`);
+    return response.json();
+  }
+
+  async generate(prompt: string, model: string): Promise<string> {
+    const response = await fetch(`${this.ollamaUrl}/api/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        prompt,
+        stream: false
+      })
+    });
+
+    if (!response.ok) throw new Error(`Generation failed with model ${model}`);
+    const data = await response.json() as { response: string };
+    return data.response;
+  }
+
+  async pullModel(modelName: string): Promise<void> {
+    const response = await fetch(`${this.ollamaUrl}/api/pull`, {
       method: 'POST',
       body: JSON.stringify({ name: modelName, stream: false })
     });
@@ -104,3 +113,5 @@ export class OllamaService {
     }
   }
 }
+
+export default OllamaService;

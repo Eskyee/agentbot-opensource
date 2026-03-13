@@ -65,7 +65,7 @@ export class AIService {
 
         if (!response.ok) throw new Error(`Model ${model} failed`);
         
-        const data = await response.json();
+        const data = (await response.json()) as { response: string };
         const latency = Date.now() - startTime;
         const source = model.includes('cloud') ? 'cloud' : 'local';
 

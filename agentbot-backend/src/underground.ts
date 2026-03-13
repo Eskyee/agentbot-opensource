@@ -34,17 +34,12 @@ const authenticate = (req: Request, res: Response, next: any) => {
 // List models already installed on the instance
 router.get('/models/installed', authenticate, async (req: Request, res: Response) => {
   try {
-    const models = await OllamaService.getLocalModels();
+    const ollama = new OllamaService();
+    const models = await ollama.listModels();
     res.json(models);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
-});
-
-// List official library of recommended models
-router.get('/models/library', authenticate, (req: Request, res: Response) => {
-  const library = OllamaService.getOfficialLibrary();
-  res.json(library);
 });
 
 // Trigger a pull of a new model into the instance
@@ -55,9 +50,8 @@ router.post('/models/pull', authenticate, async (req: Request, res: Response) =>
   }
 
   try {
-    // Note: This starts the pull. For production, consider using a worker/queue 
-    // since pulls can take minutes. For now, this is the direct integration.
-    await OllamaService.pullModel(modelName);
+    const ollama = new OllamaService();
+    await ollama.pullModel(modelName);
     res.json({ success: true, message: `Started pull for ${modelName}` });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
