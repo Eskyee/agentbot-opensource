@@ -1,9 +1,9 @@
 services:
-  # Agentbot Backend API (Docker Hub Image)
+  # Agentbot Backend API (Built from Source)
   - type: web
     name: agentbot-api
     env: docker
-    dockerImage: raveculture/agentbot-api:latest # Pulled from Docker Hub
+    dockerfilePath: agentbot-backend/Dockerfile
     plan: starter
     region: frankfurt
     healthCheckPath: /health
@@ -42,11 +42,11 @@ services:
       mountPath: /root/.ollama
       sizeGB: 50
 
-  # Agentbot Deployment Worker (Docker Hub Image)
+  # Agentbot Deployment Worker (Built from Source)
   - type: worker
     name: agentbot-worker
     env: docker
-    dockerImage: raveculture/agentbot-worker:latest # Pulled from Docker Hub
+    dockerfilePath: agentbot-worker/Dockerfile
     plan: starter
     region: frankfurt
     autoDeploy: true
