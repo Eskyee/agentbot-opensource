@@ -12,6 +12,9 @@ import path from 'path';
 
 dotenv.config();
 
+// Deployment version: track app changes for cache busting
+const DEPLOYMENT_VERSION = '2026.03.14.001';
+
 const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
   starter: { memory: '2g', cpus: '1' },
   pro: { memory: '4g', cpus: '2' },
@@ -1128,6 +1131,7 @@ function startAutoUpdater() {
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
+  console.log('Routes: /health, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
   startAutoUpdater();
 });
 
