@@ -1,265 +1,398 @@
-# Render MCP Server Setup Guide
+# Render MCP Integration Guide
 
-The AgentBot Render MCP Server allows AI apps (Cursor, Claude Code, VSCode extensions) to manage your Render infrastructure through natural language.
+AgentBot now integrates with the **official Render MCP Server** for comprehensive infrastructure management.
 
-## Quick Start
+## What is the Render MCP Server?
 
-### 1. Get Your Render API Key
+The Render MCP Server is an official tool maintained by Render that implements the **Model Context Protocol**. It allows you to manage all your Render infrastructure through natural language via AI tools like Cursor, Claude Desktop, and VSCode.
+
+**Official Repository:** https://github.com/render-oss/render-mcp-server  
+**Official Docs:** https://render.com/docs/mcp-server
+
+---
+
+## Setup Options
+
+### Option 1: Direct Docker (Recommended for Local Development)
+
+Use the official Docker image directly in your IDE:
+
+```json
+{
+  "mcpServers": {
+    "render": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "RENDER_API_KEY",
+        "-v",
+        "render-mcp-server-config:/config",
+        "ghcr.io/render-oss/render-mcp-server"
+      ],
+      "env": {
+        "RENDER_API_KEY": "rnd_abc123xyz"
+      }
+    }
+  }
+}
+```
+
+**Works in:** Claude Desktop, VS Code with extensions, any MCP-compatible tool
+
+**Requires:**
+- Docker installed
+- `RENDER_API_KEY` set locally
+
+---
+
+### Option 2: Via AgentBot (Production)
+
+Use AgentBot's Render MCP gateway for a managed experience:
+
+```
+Endpoint: https://agentbot-api.onrender.com/api/render-mcp
+```
+
+This approach:
+- ✅ No local Docker required
+- ✅ Works on any device
+- ✅ Shared configuration
+- ✅ Audit logging
+- ✅ Rate limiting
+
+---
+
+## Getting Your RENDER_API_KEY
 
 1. Go to https://dashboard.render.com/account/api-tokens
 2. Click "Create API Token"
-3. Name it (e.g., "AgentBot MCP")
-4. Copy the token (you'll only see it once)
+3. Name it (e.g., "MCP Server")
+4. Copy the token (only shown once!)
+5. Use it in your IDE configuration
 
-### 2. Set Environment Variable
-
-Set `RENDER_API_KEY` in your Render dashboard:
-
-```bash
-# In Render Dashboard -> agentbot-api service -> Environment
-RENDER_API_KEY=your_token_here
-```
-
-Then restart the service.
-
-### 3. Test the MCP Server
-
-```bash
-# Check if configured
-curl https://agentbot-api.onrender.com/api/render-mcp/health
-
-# List available tools
-curl https://agentbot-api.onrender.com/api/render-mcp/tools
-
-# View setup instructions
-curl https://agentbot-api.onrender.com/api/render-mcp/config
-```
+**Security Note:** Treat this like a password. Never commit to git.
 
 ---
 
 ## Configure in Your IDE
 
-### Cursor
+### Cursor IDE
 
-1. Open `~/.cursor/mcp.json` (create if doesn't exist)
-2. Add this configuration:
+**File:** `~/.cursor/mcp.json` (create if doesn't exist)
 
 ```json
 {
   "mcpServers": {
     "render": {
-      "url": "https://agentbot-api.onrender.com/api/render-mcp",
-      "transport": "http",
-      "headers": {
-        "Authorization": "Bearer optional"
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "RENDER_API_KEY",
+        "-v",
+        "render-mcp-server-config:/config",
+        "ghcr.io/render-oss/render-mcp-server"
+      ],
+      "env": {
+        "RENDER_API_KEY": "rnd_your_key_here"
       }
     }
   }
 }
 ```
 
-3. Reload Cursor
-4. Ask: "List my Render services"
+Then reload Cursor and ask:
+```
+"List my Render services"
+"Show me the status of agentbot-api"
+```
 
 ### Claude Desktop
 
-1. Open `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
-2. Add:
+**File:** `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+
+Or: `%APPDATA%\Claude\claude_desktop_config.json` (Windows)
 
 ```json
 {
   "mcpServers": {
     "render": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://agentbot-api.onrender.com/api/render-mcp"],
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "RENDER_API_KEY",
+        "-v",
+        "render-mcp-server-config:/config",
+        "ghcr.io/render-oss/render-mcp-server"
+      ],
       "env": {
-        "MCP_SERVER_URL": "https://agentbot-api.onrender.com/api/render-mcp"
+        "RENDER_API_KEY": "rnd_your_key_here"
       }
     }
   }
 }
 ```
 
-3. Restart Claude
-4. Ask: "What services do I have on Render?"
+Restart Claude, then try:
+```
+"Deploy a new web service from my GitHub repo"
+"Get logs for my API service from the last hour"
+"What databases do I have? Show their sizes"
+```
 
-### VSCode with Continue Extension
+### VS Code (with Continue, Claude, or Cody)
 
-1. Install [Continue](https://marketplace.visualstudio.com/items?itemName=Continue.continue) extension
-2. Open `.continue/config.json` in your project
-3. Add MCP server config:
+Install extension (e.g., [Continue](https://marketplace.visualstudio.com/items?itemName=Continue.continue))
+
+Create `.continue/config.json` in your workspace:
 
 ```json
 {
   "mcpServers": [
     {
       "name": "render",
-      "url": "https://agentbot-api.onrender.com/api/render-mcp",
-      "transport": "http"
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "RENDER_API_KEY",
+        "-v",
+        "render-mcp-server-config:/config",
+        "ghcr.io/render-oss/render-mcp-server"
+      ],
+      "env": {
+        "RENDER_API_KEY": "rnd_your_key_here"
+      }
     }
   ]
 }
 ```
 
-4. Reload VSCode
-5. Use @render to reference Render tools
+---
+
+## Example Workflows
+
+### Deploy a Web Service
+
+```
+You (in Claude):
+"Create a new Node.js web service from https://github.com/my-org/my-app 
+deployed to frankfurt region with start command 'npm start'"
+
+Claude:
+✓ Creates service with your specs
+✓ Returns service URL and details
+✓ Shows next steps
+```
+
+### Manage Environment Variables
+
+```
+You (in Cursor):
+"Update OPENROUTER_API_KEY to sk-or-abc123 for my agentbot-api service"
+
+Cursor:
+✓ Updates the env var
+✓ Restarts service
+✓ Confirms change
+```
+
+### Monitor Deployments
+
+```
+You (in VS Code):
+"Show me recent deployments and their status"
+
+AI:
+✓ Lists last 10 deployments
+✓ Shows status, duration, commit info
+✓ Highlights any failures
+```
+
+### Query Database
+
+```
+You (in Claude):
+"How many users are in my database? 
+Run: SELECT COUNT(*) FROM users"
+
+Claude:
+✓ Connects to your Postgres database
+✓ Runs query (read-only)
+✓ Returns result
+```
+
+### Get Performance Metrics
+
+```
+You (in Cursor):
+"Show me CPU and memory usage for agentbot-api in the last hour"
+
+Cursor:
+✓ Fetches metrics
+✓ Shows average, peak usage
+✓ Identifies trends
+```
 
 ---
 
-## Example Prompts
+## Available Tools
 
-Once configured, try these prompts:
+The official Render MCP server provides these tool categories:
 
-### Service Management
-- "List all my Render services"
-- "Show me the status of agentbot-api"
-- "Get the deploy history for my main API"
-- "Which services were deployed today?"
-
-### Environment Variables
-- "Set OPENROUTER_API_KEY to [key] for agentbot-api"
-- "List environment variables for agentbot-api"
-- "Show all services with DATABASE_URL set"
-
-### Databases
-- "List all my Postgres databases"
-- "What's the connection string for agentbot-db?"
-- "Create a new Redis cache instance"
-
-### Monitoring & Troubleshooting
-- "Get recent logs from agentbot-api"
-- "Why is my web service not running?"
-- "Show me what changed in the last 24 hours"
-- "Which service is consuming the most memory?"
-
----
-
-## Available MCP Tools
+### Workspaces
+- `list_workspaces` - See all your workspaces
+- `select_workspace` - Switch workspace
+- `get_selected_workspace` - Current workspace
 
 ### Services
-- `list_services` - List all services
-- `get_service` - Get details for a specific service
-- `create_service` - Deploy a new service
-- `update_service` - Modify service configuration
-- `delete_service` - Remove a service
+- `list_services` - All services
+- `get_service` - Service details
+- `create_web_service` - Deploy web app
+- `create_static_site` - Deploy static site
+- `create_cron_job` - Schedule jobs
+- `update_environment_variables` - Update config
 
 ### Deployments
-- `list_deploys` - View deployment history
-- `get_deploy` - Get deployment details
-- `trigger_deploy` - Start a new deployment
-
-### Environment Variables
-- `list_env_vars` - List env vars for a service
-- `set_env_var` - Set an environment variable
-- `delete_env_var` - Remove an environment variable
+- `list_deploys` - Deployment history
+- `get_deploy` - Deployment details
 
 ### Databases
-- `list_postgres` - List Postgres databases
-- `create_postgres` - Create new database
-- `get_postgres` - Get database details
-- `list_redis` - List Redis instances
-- `create_redis` - Create Redis cache
-- `get_redis` - Get Redis details
+- `list_postgres_instances` - Your Postgres DBs
+- `get_postgres` - Database details
+- `create_postgres` - New database
+- `query_render_postgres` - Run SQL queries (read-only)
 
-### Logging & Monitoring
-- `get_service_logs` - Fetch service logs
-- `list_services` - Get all services with status
+### Key-Value Store (Redis)
+- `list_key_value` - Your Redis instances
+- `get_key_value` - Instance details
+- `create_key_value` - New cache
+
+### Monitoring
+- `list_logs` - Logs with filters
+- `list_log_label_values` - Available log fields
+- `get_metrics` - Performance metrics (CPU, memory, requests, etc.)
+
+### Complete List
+See https://github.com/render-oss/render-mcp-server#tools for the full reference.
 
 ---
-
-## How It Works
-
-1. You write a natural language request in your IDE
-2. AI app sends it to AgentBot's MCP endpoint
-3. AgentBot routes the request to Render REST API
-4. Response is returned and displayed in your IDE
 
 ## Troubleshooting
 
-### "MCP Server not found"
-- Check RENDER_API_KEY is set and service restarted
-- Verify URL is `https://agentbot-api.onrender.com/api/render-mcp`
+### "Docker: command not found"
+- Install Docker Desktop: https://www.docker.com/products/docker-desktop
+- Make sure it's running
 
-### "Render API error (401)"
-- Your RENDER_API_KEY is invalid or expired
+### "Cannot connect to Docker daemon"
+- Start Docker Desktop
+- Try `docker ps` in terminal to verify
+
+### "RENDER_API_KEY is invalid"
 - Get a new token from https://dashboard.render.com/account/api-tokens
+- Paste the full token (starts with `rnd_`)
+- Reload IDE
 
-### "Unknown method"
-- The tool isn't implemented yet
-- Open an issue or request the feature
+### "No such file or directory"
+- Check IDE config file path is correct
+- For Claude: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
+- For Cursor: `~/.cursor/mcp.json`
 
-### IDE Not Connecting
-- Restart the IDE completely
-- Check firewall/network access to agentbot-api.onrender.com
-- Verify HTTPS is working: `curl https://agentbot-api.onrender.com/api/render-mcp/health`
+### "Permission denied"
+- Make sure Docker has permissions
+- On Linux: `sudo usermod -aG docker $USER` then restart terminal
 
----
-
-## Architecture
-
-```
-Cursor/Claude Code/VSCode
-         ↓
-    MCP Protocol
-         ↓
-AgentBot MCP Server (agentbot-api)
-         ↓
-   Render REST API
-         ↓
-Your Render Infrastructure
-```
+### "Tool not found"
+- Update Docker image: `docker pull ghcr.io/render-oss/render-mcp-server`
+- Some tools may require specific account type
 
 ---
 
-## Security Notes
+## Advanced: Multiple Workspaces
 
-- RENDER_API_KEY should be kept private (don't commit to repos)
-- The MCP server validates all Render API requests
-- Requests are rate-limited by Render API
-- All communication uses HTTPS
+If you have multiple Render workspaces, you can configure multiple MCP server instances:
 
----
-
-## API Reference
-
-### MCP Endpoint
-```
-https://agentbot-api.onrender.com/api/render-mcp
-```
-
-### Health Check
-```bash
-GET https://agentbot-api.onrender.com/api/render-mcp/health
-```
-
-### List Tools
-```bash
-GET https://agentbot-api.onrender.com/api/render-mcp/tools
-```
-
-### Configuration
-```bash
-GET https://agentbot-api.onrender.com/api/render-mcp/config
-```
-
-### MCP Protocol (POST)
-```bash
-POST https://agentbot-api.onrender.com/api/render-mcp/mcp
-Content-Type: application/json
-
+```json
 {
-  "jsonrpc": "2.0",
-  "method": "list_services",
-  "params": {},
-  "id": 1
+  "mcpServers": {
+    "render-prod": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "RENDER_API_KEY", "-v", "render-mcp-prod:/config", "ghcr.io/render-oss/render-mcp-server"],
+      "env": {
+        "RENDER_API_KEY": "rnd_prod_key_123"
+      }
+    },
+    "render-staging": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-e", "RENDER_API_KEY", "-v", "render-mcp-staging:/config", "ghcr.io/render-oss/render-mcp-server"],
+      "env": {
+        "RENDER_API_KEY": "rnd_staging_key_456"
+      }
+    }
+  }
 }
 ```
 
+Then use in Claude: `@render-prod` or `@render-staging`
+
 ---
 
-## Next Steps
+## Security Best Practices
 
-1. Set RENDER_API_KEY in Render dashboard
-2. Configure your IDE (Cursor/Claude Desktop/VSCode)
-3. Try the example prompts
-4. Automate infrastructure management with natural language!
+1. **Never commit API keys to git**
+   - Use `.gitignore` for config files with secrets
+   - Use environment variables instead
+
+2. **Use workspace-specific tokens**
+   - Create separate API keys for prod/staging
+   - Rotate tokens periodically
+
+3. **Limit token scope**
+   - Create tokens with minimal required permissions
+   - Don't reuse prod tokens for testing
+
+4. **Monitor API usage**
+   - Check Render dashboard for token activity
+   - Revoke unused tokens
+
+---
+
+## What's Next?
+
+1. **Get your RENDER_API_KEY** from https://dashboard.render.com/account/api-tokens
+2. **Choose your IDE** (Cursor, Claude, or VS Code)
+3. **Add MCP configuration** using the templates above
+4. **Test with a simple prompt** like "List my services"
+5. **Explore the tools** and automate your workflow
+
+---
+
+## Official Resources
+
+- **GitHub:** https://github.com/render-oss/render-mcp-server
+- **Docs:** https://render.com/docs/mcp-server
+- **MCP Protocol:** https://modelcontextprotocol.io/
+- **Issues/Feedback:** https://github.com/render-oss/render-mcp-server/issues
+
+---
+
+## AgentBot Integration
+
+AgentBot can also expose the Render MCP server for managed access:
+
+```
+Endpoint: https://agentbot-api.onrender.com/api/render-mcp
+Status: https://agentbot-api.onrender.com/api/render-mcp/health
+```
+
+Contact the AgentBot team to enable this if needed for your organization.
