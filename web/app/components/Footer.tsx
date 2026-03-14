@@ -42,7 +42,7 @@ export default function Footer() {
               <span>{isHealthy === null ? 'Checking...' : isHealthy ? 'Operational' : 'Offline'}</span>
             </div>
             <span>•</span>
-            <span>© 2026 Zero Human Company run by Atlas_baseFM</span>
+            <span>© 2026 Zero Human Company</span>
             <span>•</span>
             <span className="text-purple-400">Human Verified by Agentbot</span>
             {version && <><span>•</span><span>OpenClaw v{version}</span></>}

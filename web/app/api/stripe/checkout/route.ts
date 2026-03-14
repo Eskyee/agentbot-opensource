@@ -3,10 +3,10 @@ import Stripe from 'stripe'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
-const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
-  underground: { amount: 2900, name: 'Starter Plan', description: '1 Agent, A2A Bus Access, Basic Analytics' },
-  collective: { amount: 6900, name: 'Collective', description: '3 Agents, Llama 3.3, Royalty Split Engine' },
-  label: { amount: 14900, name: 'White Glove', description: 'Unlimited Agents, DeepSeek R1, Priority A2A' },
+const PLAN_PRICES: Record<string, { amount: number; name: string; description: string; priceId?: string }> = {
+  underground: { amount: 2900, name: 'Pro Plan', description: '1 Agent, A2A Bus Access, Basic Analytics', priceId: 'price_1T2RsJDiHU0UF7aWwJcFgyKT' },
+  collective: { amount: 6900, name: 'Collective', description: '3 Agents, Llama 3.3, Royalty Split Engine', priceId: 'price_1TAqc0DiHU0UF7aWEYTqA7k0' },
+  label: { amount: 14900, name: 'Enterprise Plan', description: 'Unlimited Agents, DeepSeek R1, Priority A2A', priceId: 'price_1T5A68DiHU0UF7aWx9gKqQLq' },
 }
 
 export async function GET(request: NextRequest) {
