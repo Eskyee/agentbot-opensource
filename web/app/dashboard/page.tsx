@@ -918,7 +918,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
 
           <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
             <div className="text-sm text-gray-400 mb-1">Your Plan</div>
-            <div className="text-xl font-bold">Starter</div>
+            <div className="text-xl font-bold capitalize">{instance?.plan || 'Underground'}</div>
           </Link>
         </nav>
 
