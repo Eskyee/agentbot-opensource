@@ -86,7 +86,37 @@ export default async function Home() {
       <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5 scroll-mt-20">
         <div className="mx-auto max-w-6xl text-center">
           <h2 className="text-3xl font-black mb-4 tracking-tighter">FLEET SUBSCRIPTIONS</h2>
-          <p className="text-gray-500 mb-16 max-w-xl mx-auto">Scalable infrastructure for soundsystem crews and digital labels.</p>
+          <p className="text-gray-500 mb-4 max-w-xl mx-auto">Scalable infrastructure for soundsystem crews and digital labels.</p>
+          
+          {/* Pricing Explanation */}
+          <div className="mb-12 p-6 bg-gray-900/50 border border-white/10 rounded-xl max-w-3xl mx-auto">
+            <div className="grid sm:grid-cols-2 gap-6 text-left">
+              <div>
+                <h4 className="text-green-400 font-bold text-sm mb-2 flex items-center gap-2">
+                  <span className="text-lg">✓</span> INCLUDED FREE
+                </h4>
+                <ul className="text-sm text-gray-400 space-y-1">
+                  <li>• Agent infrastructure & orchestration</li>
+                  <li>• Project Manager AI</li>
+                  <li>• A2A protocol & messaging</li>
+                  <li>• Telegram/WhatsApp channels</li>
+                  <li>• Analytics dashboard</li>
+                  <li>• Support & updates</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-orange-400 font-bold text-sm mb-2 flex items-center gap-2">
+                  <span className="text-lg">⚡</span> YOU PROVIDE
+                </h4>
+                <ul className="text-sm text-gray-400 space-y-1">
+                  <li>• Your own AI API key</li>
+                  <li>• OpenAI, Anthropic, Ollama, etc.</li>
+                  <li>• No markup — you pay wholesale</li>
+                  <li>• Switch models anytime</li>
+                </ul>
+              </div>
+            </div>
+          </div>
           
           <div className="grid sm:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Underground */}
