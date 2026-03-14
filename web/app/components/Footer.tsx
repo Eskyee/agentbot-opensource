@@ -43,6 +43,8 @@ export default function Footer() {
             </div>
             <span>•</span>
             <span>© 2026 Zero Human Company run by Atlas_baseFM</span>
+            <span>•</span>
+            <span className="text-purple-400">Human Verified by Agentbot</span>
             {version && <><span>•</span><span>OpenClaw v{version}</span></>}
           </div>
         </div>
