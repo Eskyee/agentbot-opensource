@@ -27,6 +27,6 @@ export async function GET() {
       deployedAt: data?.deployedAt
     })
   } catch {
-    return NextResponse.json({ openclawVersion: '2026.3.2' })
+    return NextResponse.json({ openclawVersion: '2026.3.13' })
   }
 }
