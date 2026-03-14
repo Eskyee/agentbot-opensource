@@ -21,8 +21,8 @@ export default async function Home() {
           </h1>
           
           <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            The multi-tenant orchestration layer for high-performance agent fleets. 
-            Sovereign, autonomous, and tuned for the underground.
+            Deploy autonomous AI agents in seconds. No server management. No infra headaches. 
+            Just bring your API key and let your agents run.
           </p>
           
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
