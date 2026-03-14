@@ -266,9 +266,83 @@ export default function BillingPage() {
                       </div>
                     ))}
                   </div>
-               </div>
+                </div>
 
-               {/* Need custom */}
+                {/* Enterprise Add-ons */}
+                <div className="mt-8">
+                  <h2 className="text-xl font-bold mb-4">Enterprise Add-ons</h2>
+                  <p className="text-sm text-gray-400 mb-4">Supercharge your agents with enterprise integrations</p>
+                  
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">🔐 Audit Logs</h3>
+                        <span className="text-sm font-bold">+£29/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-3">Full traceability of every agent action & decision</p>
+                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
+                        Add to Plan
+                      </button>
+                    </div>
+
+                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">💬 Slack Integration</h3>
+                        <span className="text-sm font-bold">+£19/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-3">Agents work inside your Slack workspace</p>
+                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
+                        Add to Plan
+                      </button>
+                    </div>
+
+                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">☁️ Salesforce Connector</h3>
+                        <span className="text-sm font-bold">+£49/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-3">Sync leads, contacts, and opportunities automatically</p>
+                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
+                        Add to Plan
+                      </button>
+                    </div>
+
+                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">🎯 Custom Integration</h3>
+                        <span className="text-sm font-bold">+£99/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-3">We build a custom connector for your tools</p>
+                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
+                        Request Quote
+                      </button>
+                    </div>
+
+                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">👤 Dedicated Account Manager</h3>
+                        <span className="text-sm font-bold">+£79/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-3">Priority support & personalized onboarding</p>
+                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
+                        Add to Plan
+                      </button>
+                    </div>
+
+                    <div className="border border-blue-500/50 rounded-lg p-4 bg-blue-500/5">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium text-blue-400">🚀 Enterprise Suite</h3>
+                        <span className="text-sm font-bold text-blue-400">+£199/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-3">Everything: Audit Logs + Slack + Salesforce + Priority + Custom</p>
+                      <button className="w-full rounded bg-blue-600 py-2 text-xs font-medium hover:bg-blue-500">
+                        Add Enterprise Suite
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Need custom */}
                <div className="mt-4">
                  <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-4 text-center">
                    <h3 className="font-medium mb-2">Need custom infrastructure?</h3>
