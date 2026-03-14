@@ -273,11 +273,11 @@ export default function BillingPage() {
                   <h2 className="text-xl font-bold mb-4">Enterprise Add-ons</h2>
                   <p className="text-sm text-gray-400 mb-4">Supercharge your agents with enterprise integrations</p>
                   
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium">🔐 Audit Logs</h3>
-                        <span className="text-sm font-bold">+£29/mo</span>
+                        <span className="text-sm font-bold">+£199/mo</span>
                       </div>
                       <p className="text-xs text-gray-400 mb-3">Full traceability of every agent action & decision</p>
                       <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
@@ -288,7 +288,7 @@ export default function BillingPage() {
                     <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium">💬 Slack Integration</h3>
-                        <span className="text-sm font-bold">+£19/mo</span>
+                        <span className="text-sm font-bold">+£149/mo</span>
                       </div>
                       <p className="text-xs text-gray-400 mb-3">Agents work inside your Slack workspace</p>
                       <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
@@ -299,7 +299,7 @@ export default function BillingPage() {
                     <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium">☁️ Salesforce Connector</h3>
-                        <span className="text-sm font-bold">+£49/mo</span>
+                        <span className="text-sm font-bold">+£349/mo</span>
                       </div>
                       <p className="text-xs text-gray-400 mb-3">Sync leads, contacts, and opportunities automatically</p>
                       <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
@@ -309,8 +309,19 @@ export default function BillingPage() {
 
                     <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
                       <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-medium">🔌 API Access</h3>
+                        <span className="text-sm font-bold">+£249/mo</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-3">Programmatic access to your agents via REST API</p>
+                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
+                        Add to Plan
+                      </button>
+                    </div>
+
+                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
+                      <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium">🎯 Custom Integration</h3>
-                        <span className="text-sm font-bold">+£99/mo</span>
+                        <span className="text-sm font-bold">+£499/mo</span>
                       </div>
                       <p className="text-xs text-gray-400 mb-3">We build a custom connector for your tools</p>
                       <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
@@ -321,7 +332,7 @@ export default function BillingPage() {
                     <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-medium">👤 Dedicated Account Manager</h3>
-                        <span className="text-sm font-bold">+£79/mo</span>
+                        <span className="text-sm font-bold">+£399/mo</span>
                       </div>
                       <p className="text-xs text-gray-400 mb-3">Priority support & personalized onboarding</p>
                       <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
@@ -329,14 +340,15 @@ export default function BillingPage() {
                       </button>
                     </div>
 
-                    <div className="border border-blue-500/50 rounded-lg p-4 bg-blue-500/5">
+                    <div className="border-2 border-purple-500 rounded-lg p-4 bg-purple-500/10 col-span-full">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium text-blue-400">🚀 Enterprise Suite</h3>
-                        <span className="text-sm font-bold text-blue-400">+£199/mo</span>
+                        <h3 className="font-medium text-purple-400 text-lg">🚀 Full Enterprise Suite</h3>
+                        <span className="text-lg font-bold text-purple-400">£4,999/mo</span>
                       </div>
-                      <p className="text-xs text-gray-400 mb-3">Everything: Audit Logs + Slack + Salesforce + Priority + Custom</p>
-                      <button className="w-full rounded bg-blue-600 py-2 text-xs font-medium hover:bg-blue-500">
-                        Add Enterprise Suite
+                      <p className="text-sm text-gray-400 mb-3">Everything enterprise: Unlimited agents, Audit Logs, Slack, Salesforce, API, Custom integrations, Priority support, 24/7 SLA</p>
+                      <p className="text-xs text-gray-500 mb-4">Similar to NemoClaw Enterprise — but we manage everything for you</p>
+                      <button className="w-full rounded bg-purple-600 py-3 text-sm font-bold hover:bg-purple-500">
+                        Contact Sales
                       </button>
                     </div>
                   </div>
