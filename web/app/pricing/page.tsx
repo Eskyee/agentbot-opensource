@@ -462,7 +462,7 @@ function PricingPageContent() {
           </h2>
           
           <dl className="space-y-6">
-            [
+            {[
               {
                 question: 'Do I need to provide my own AI API key?',
                 answer: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, Ollama, or other AI provider keys directly. You pay wholesale rates with zero markup from us.',
