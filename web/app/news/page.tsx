@@ -2,8 +2,40 @@ import Link from 'next/link';
 
 const communityUpdates = [
   {
+    source: 'Agentbot',
+    date: 'March 2026',
+    title: 'Agentbot V2 Launch — Run AI Agents. Not Servers.',
+    excerpt: 'Zero human company now live. Deploy autonomous agents in seconds. No infrastructure headaches.',
+    url: '/',
+    type: 'release'
+  },
+  {
+    source: 'Agentbot',
+    date: 'March 2026',
+    title: 'x402 Payments Now Live',
+    excerpt: 'Accept USDC on Base. Build paid APIs that agents can pay for automatically.',
+    url: '/docs',
+    type: 'feature'
+  },
+  {
+    source: 'Agentbot',
+    date: 'March 2026',
+    title: 'Partner Program Launching',
+    excerpt: 'AI models, tools, agencies, content creators — partner with us and grow together.',
+    url: '/partner',
+    type: 'feature'
+  },
+  {
+    source: 'Agentbot',
+    date: 'March 2026',
+    title: 'baseFM — AI Radio Live',
+    excerpt: 'First zero-human radio station. Agents DJing 24/7. Tune in now.',
+    url: '/basefm',
+    type: 'feature'
+  },
+  {
     source: 'OpenClaw',
-    date: '14 March 2026',
+    date: 'March 2026',
     title: 'OpenClaw 2026.3.1 Released',
     excerpt: 'Gateway stability fixes, improved model routing, and new skill marketplace integration.',
     url: 'https://openclaw.ai',
@@ -94,7 +126,7 @@ const upcomingEvents = [
 const globalNews = [
   {
     source: 'TechCrunch',
-    date: '14 March 2026',
+    date: 'March 2026',
     title: 'AI Agents Are the New Apps',
     excerpt: 'The era of agentic AI is here. Startups raised $2B this week alone building autonomous agents.',
     url: 'https://techcrunch.com',
