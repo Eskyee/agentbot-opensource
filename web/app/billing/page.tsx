@@ -55,7 +55,7 @@ function BillingSidebar({ userName, className = '' }: { userName: string; classN
 
 export default function BillingPage() {
   const { data: session } = useSession()
-  const [currentPlan, setCurrentPlan] = useState('starter')
+  const [currentPlan, setCurrentPlan] = useState('underground')
   const [loading, setLoading] = useState(true)
 
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
@@ -67,7 +67,7 @@ export default function BillingPage() {
         const res = await fetch(`/api/instance/${session.user.id}`)
         if (res.ok) {
           const data = await res.json()
-          setCurrentPlan(data.plan || 'starter')
+          setCurrentPlan(data.plan || 'underground')
         }
       } catch (error) {
         console.error('Failed to fetch billing data:', error)
