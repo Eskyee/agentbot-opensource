@@ -159,9 +159,9 @@ export default async function Home() {
                 <li className="flex gap-3"><span>✓</span> A2A Bus Access</li>
                 <li className="flex gap-3"><span>✓</span> Basic Analytics</li>
               </ul>
-              <Link href="/signup?plan=underground" className="mt-8 block w-full rounded-xl bg-white py-4 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
+              <a href="/api/stripe/checkout?plan=underground" className="mt-8 block w-full rounded-xl bg-white py-4 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
                 CHOOSE UNDERGROUND
-              </Link>
+              </a>
             </div>
             
             {/* Collective */}
@@ -175,9 +175,9 @@ export default async function Home() {
                 <li className="flex gap-3"><span>✓</span> Royalty Split Engine</li>
                 <li className="flex gap-3"><span>✓</span> Mission Control Graph</li>
               </ul>
-              <Link href="/signup?plan=collective" className="mt-8 block w-full rounded-xl bg-blue-500 py-4 text-center text-sm font-bold text-black hover:bg-blue-400 transition-colors">
+              <a href="/api/stripe/checkout?plan=collective" className="mt-8 block w-full rounded-xl bg-blue-500 py-4 text-center text-sm font-bold text-black hover:bg-blue-400 transition-colors">
                 CHOOSE COLLECTIVE
-              </Link>
+              </a>
             </div>
             
             {/* Label */}
@@ -190,9 +190,9 @@ export default async function Home() {
                 <li className="flex gap-3"><span>✓</span> Priority A2A Routing</li>
                 <li className="flex gap-3"><span>✓</span> White-Glove Staging</li>
               </ul>
-              <Link href="/signup?plan=label" className="mt-8 block w-full rounded-xl bg-white py-4 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
+              <a href="/api/stripe/checkout?plan=label" className="mt-8 block w-full rounded-xl bg-white py-4 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
                 CHOOSE LABEL
-              </Link>
+              </a>
             </div>
           </div>
         </div>
