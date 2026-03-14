@@ -5,9 +5,9 @@ import { Video } from '@/lib/mux'
 
 const BACKEND_API_URL = getBackendApiUrl()
 const BACKEND_API_FALLBACK_URL = (process.env.BACKEND_API_FALLBACK_URL || '').trim()
-const BACKEND_API_SECRET = process.env.BACKEND_API_SECRET || process.env.API_SECRET || getInternalApiKey()
 
 export async function POST(request: NextRequest) {
+  const BACKEND_API_SECRET = process.env.BACKEND_API_SECRET || process.env.API_SECRET || getInternalApiKey()
   try {
     const body = await request.json()
     const { 
