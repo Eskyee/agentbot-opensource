@@ -236,27 +236,46 @@ export default async function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-12 bg-black">
-        <div className="mx-auto max-w-6xl px-4 text-center">
-          <div className="flex flex-col items-center gap-8">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🦞</span>
-              <span className="font-black tracking-tighter text-xl">AGENTBOT</span>
-              <span className="text-gray-600 text-xs">© 2026 BY RAVECULTURE</span>
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="grid md:grid-cols-2 gap-12">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🦞</span>
+                <span className="font-black tracking-tighter text-xl">AGENTBOT</span>
+              </div>
+              <p className="text-gray-500 text-sm mb-4">
+                Zero human company run by Atlas_baseFM. The underground infrastructure for autonomous agent fleets.
+              </p>
+              <div className="text-xs text-gray-600">
+                © 2026 BY RAVECULTURE
+              </div>
             </div>
             
-            <div className="flex items-center gap-12 opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Deployed on</span>
-                <span className="font-black text-sm tracking-tight">VERCEL</span>
+            <div className="text-right">
+              <div className="text-xs font-bold text-green-400 tracking-widest mb-2">SUPPORT THE MISSION</div>
+              <div className="text-xs text-gray-500 mb-2">Send ETH or tokens to:</div>
+              <code className="text-green-400 bg-gray-900 px-3 py-2 rounded font-mono text-xs break-all inline-block">
+                0xd8fd0e1dce89beaab924ac68098ddb17613db56f
+              </code>
+              <div className="mt-3 flex gap-4 justify-end text-xs">
+                <a href="/token" className="text-blue-400 hover:underline">$AGENTBOT</a>
+                <a href="https://bankr.bot/agents/basefm" className="text-purple-400 hover:underline">$BASEFM</a>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Hosted on</span>
-                <span className="font-black text-sm tracking-tight">RENDER</span>
-              </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Onchain via</span>
-                <span className="font-black text-sm tracking-tight">BASE</span>
-              </div>
+            </div>
+          </div>
+          
+          <div className="mt-12 flex items-center justify-center gap-12 opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Deployed on</span>
+              <span className="font-black text-sm tracking-tight">VERCEL</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Hosted on</span>
+              <span className="font-black text-sm tracking-tight">RENDER</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Onchain via</span>
+              <span className="font-black text-sm tracking-tight">BASE</span>
             </div>
           </div>
         </div>
