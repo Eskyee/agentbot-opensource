@@ -1,3 +1,15 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'AGENTBOT Token | $AGENTBOT',
+  description: 'AGENTBOT - The native token of the Agentbot AI agent deployment platform',
+  openGraph: {
+    title: 'AGENTBOT Token | $AGENTBOT',
+    description: 'The native token of the Agentbot AI agent deployment platform',
+    images: ['/og-image.svg'],
+  },
+};
+
 export default function TokenPage() {
   return (
     <div className="min-h-screen bg-black text-white">

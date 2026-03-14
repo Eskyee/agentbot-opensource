@@ -259,7 +259,7 @@ export default async function Home() {
               </code>
               <div className="mt-3 flex gap-4 justify-end text-xs">
                 <a href="/token" className="text-blue-400 hover:underline">$AGENTBOT</a>
-                <a href="https://bankr.bot/agents/basefm" className="text-purple-400 hover:underline">$BASEFM</a>
+                <a href="/basefm" className="text-purple-400 hover:underline">$BASEFM</a>
               </div>
             </div>
           </div>

@@ -28,6 +28,8 @@ export default function Footer() {
             <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors underline">Pricing</Link>
             <Link href="/docs" className="text-gray-400 hover:text-white transition-colors underline">Docs</Link>
             <Link href="/marketplace" className="text-gray-400 hover:text-white transition-colors underline">Marketplace</Link>
+            <Link href="/token" className="text-blue-400 hover:text-white transition-colors underline">$AGENTBOT</Link>
+            <Link href="/basefm" className="text-green-400 hover:text-white transition-colors underline">$BASEFM</Link>
             <Link href="/terms" className="text-gray-400 hover:text-white transition-colors underline">Terms</Link>
             <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors underline">Privacy</Link>
           </div>
