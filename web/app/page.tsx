@@ -54,6 +54,40 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* baseFM Token Section */}
+      <section className="px-4 py-12 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-y border-purple-500/20">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="mb-2 text-[10px] font-bold text-purple-400 tracking-[0.3em] uppercase">
+            Now Streaming Live
+          </div>
+          <h2 className="text-3xl font-black mb-4">🎵 baseFM</h2>
+          <p className="text-gray-400 mb-6">The underground is live. Tune in now.</p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href="https://basefm.space/live"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl bg-purple-600 px-8 py-3 text-sm font-bold text-white hover:bg-purple-500 transition-all"
+            >
+              🎧 LISTEN LIVE
+            </a>
+            <a
+              href="https://bankr.bot/agents/basefm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl bg-gray-900 border border-purple-500/30 px-8 py-3 text-sm font-bold text-purple-400 hover:bg-purple-900/20 transition-all"
+            >
+              Support $BASEFM →
+            </a>
+          </div>
+          
+          <div className="mt-6 text-xs text-gray-500 font-mono">
+            $BASEFM • 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 • Base
+          </div>
+        </div>
+      </section>
+
       {/* Features Grid */}
       <section className="px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5 bg-[#050505]">
         <div className="mx-auto max-w-6xl">
