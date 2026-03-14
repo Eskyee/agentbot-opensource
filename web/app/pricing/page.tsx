@@ -440,9 +440,9 @@ function PricingPageContent() {
 
       {/* Pricing Grid */}
       <section className="relative pb-20 sm:pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6"
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
             role="list"
             aria-label="Pricing plans"
           >
