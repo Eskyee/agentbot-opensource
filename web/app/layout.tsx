@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
     images: [
       {
-        url: '/og-image.svg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Agentbot - AI Agent Deployment Platform',
@@ -50,11 +50,11 @@ export const metadata: Metadata = {
     title: 'Agentbot | Deploy AI Agents in 60 Seconds',
     description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
     creator: '@agentbot',
-    images: ['/og-image.svg'],
+    images: ['/og-image.png'],
   },
   icons: {
     icon: '/favicon.svg',
-    apple: '/icon.svg',
+    apple: '/apple-touch-icon.png',
   },
   other: {
     'base:app_id': '6951feb4c63ad876c90817aa',

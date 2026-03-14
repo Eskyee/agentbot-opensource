@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/Eskyee/agentbot#readme",
   "devDependencies": {
+    "docx": "^9.6.1",
     "playwright": "^1.58.2",
     "puppeteer": "^24.37.5"
   }
