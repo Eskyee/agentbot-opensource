@@ -4,9 +4,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
-  underground: { amount: 1900, name: 'Starter Plan', description: '1 Agent, A2A Bus Access, Basic Analytics' },
+  underground: { amount: 2900, name: 'Starter Plan', description: '1 Agent, A2A Bus Access, Basic Analytics' },
   collective: { amount: 6900, name: 'Collective', description: '3 Agents, Llama 3.3, Royalty Split Engine' },
-  label: { amount: 7900, name: 'Scale', description: 'Unlimited Agents, DeepSeek R1, Priority A2A' },
+  label: { amount: 14900, name: 'White Glove', description: 'Unlimited Agents, DeepSeek R1, Priority A2A' },
 }
 
 export async function GET(request: NextRequest) {
