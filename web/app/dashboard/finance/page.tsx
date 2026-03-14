@@ -1,24 +1,35 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { DollarSign, TrendingUp, TrendingDown, Wallet, PieChart, Activity } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Wallet, PieChart, Activity, RefreshCw, Loader2 } from 'lucide-react';
 import MetricCard from '@/components/shared/MetricCard';
 import CostCharts from '@/components/dashboard/fleet/CostCharts';
 import TokenUsageTable from '@/components/dashboard/fleet/TokenUsageTable';
 
 export default function FinancePage() {
-  const { data: costs, isLoading } = useQuery({
+  const { data: costs, isLoading: costsLoading } = useQuery({
     queryKey: ['fleet-costs'],
     queryFn: async () => {
       const res = await fetch('/api/mission-control/fleet/costs');
       return res.json();
     },
-    refetchInterval: 10000 // 10s refresh for financials
+    refetchInterval: 10000
+  });
+
+  const { data: balances, isLoading: balancesLoading, refetch: refetchBalances } = useQuery({
+    queryKey: ['bankr-balances'],
+    queryFn: async () => {
+      const res = await fetch('/api/bankr/balances');
+      const data = await res.json();
+      return data.balances || [];
+    },
+    refetchInterval: 30000
   });
 
   const totalSpend = costs?.reduce((sum: number, c: any) => sum + Number(c.total_spend), 0) ?? 0;
   const aiCost = costs?.filter((c: any) => c.category === 'ai_metric').reduce((sum: number, c: any) => sum + Number(c.total_spend), 0) ?? 0;
-  const coordinationRevenue = (costs?.filter((c: any) => c.category === 'agent_message').length ?? 0) * 0.01; // 1% tax logic
+  const coordinationRevenue = (costs?.filter((c: any) => c.category === 'agent_message').length ?? 0) * 0.01;
+  const portfolioValue = balances?.reduce((sum: number, b: any) => sum + Number(b.value || 0), 0) ?? 0;
 
   return (
     <div className="p-8 bg-black min-h-screen text-white">
@@ -27,7 +38,6 @@ export default function FinancePage() {
         <p className="text-gray-400">Real-time spend attribution and revenue tracking across your agent fleet.</p>
       </div>
 
-      {/* High-level metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <MetricCard
           label="Total Fleet Spend"
@@ -39,7 +49,7 @@ export default function FinancePage() {
           label="Managed AI Cost"
           value={`$${aiCost.toFixed(2)}`}
           icon={<Activity className="h-4 w-4" />}
-          trend={-85} // Highlighting local ollama savings
+          trend={-85}
         />
         <MetricCard
           label="Coordination Revenue"
@@ -48,14 +58,13 @@ export default function FinancePage() {
           trend={1}
         />
         <MetricCard
-          label="Net Profit Margin"
-          value="88.2%"
+          label="Crypto Portfolio"
+          value={`$${portfolioValue.toFixed(2)}`}
           icon={<PieChart className="h-4 w-4" />}
         />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* Cost Over Time Chart */}
         <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -71,7 +80,6 @@ export default function FinancePage() {
           </div>
         </div>
 
-        {/* Token Usage Breakdown */}
         <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -82,20 +90,65 @@ export default function FinancePage() {
         </div>
       </div>
 
-      {/* Treasury Alert */}
-      <div className="mt-8 bg-blue-600/10 border border-blue-500/30 rounded-xl p-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-            <Wallet className="h-6 w-6" />
+      <div className="grid gap-8 lg:grid-cols-2 mt-8">
+        <div className="bg-purple-600/10 border border-purple-500/30 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+                <Wallet className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-bold text-purple-400 uppercase text-xs tracking-widest">Crypto Wallet</h3>
+                <p className="text-gray-300">Bankr trading balance</p>
+              </div>
+            </div>
+            <button
+              onClick={() => refetchBalances()}
+              className="p-2 hover:bg-purple-500/20 rounded-lg transition"
+              disabled={balancesLoading}
+            >
+              <RefreshCw className={`h-4 w-4 ${balancesLoading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-          <div>
-            <h3 className="font-bold text-blue-400 uppercase text-xs tracking-widest">Platform Treasury</h3>
-            <p className="text-gray-300">Your $AGENTBOT liquidity is being automatically rebalanced.</p>
+          
+          {balancesLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+            </div>
+          ) : balances && balances.length > 0 ? (
+            <div className="space-y-2">
+              {balances.slice(0, 5).map((b: any, i: number) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span className="text-gray-400">{b.symbol} ({b.chain})</span>
+                  <span className="font-mono">{Number(b.balance).toFixed(4)}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-sm">No crypto holdings</p>
+          )}
+          
+          <div className="mt-4 pt-4 border-t border-purple-500/20">
+            <div className="text-2xl font-mono font-bold text-purple-400">
+              ${portfolioValue.toFixed(2)}
+            </div>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-2xl font-mono font-bold">$12,482.10</div>
-          <div className="text-[10px] text-green-400 font-bold">+2.4% TODAY</div>
+
+        <div className="bg-blue-600/10 border border-blue-500/30 rounded-xl p-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+              <Wallet className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-blue-400 uppercase text-xs tracking-widest">Platform Treasury</h3>
+              <p className="text-gray-300">Your $AGENTBOT liquidity</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-2xl font-mono font-bold">$12,482.10</div>
+            <div className="text-[10px] text-green-400 font-bold">+2.4% TODAY</div>
+          </div>
         </div>
       </div>
     </div>
