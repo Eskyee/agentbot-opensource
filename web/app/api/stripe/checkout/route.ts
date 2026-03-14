@@ -4,18 +4,16 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
-  starter: { amount: 1900, name: 'Starter Plan', description: '1 AI Agent, 10GB storage, Telegram channel' },
-  pro: { amount: 3900, name: 'Pro Plan', description: '1 AI Agent, 50GB storage, Telegram + WhatsApp, Custom domain, + usage' },
-  scale: { amount: 7900, name: 'Scale Plan', description: '3 AI Agents, 100GB storage, All channels, Advanced analytics' },
-  enterprise: { amount: 14900, name: 'Enterprise Plan', description: 'Unlimited agents, 500GB storage, White-label, 24/7 support' },
-  white_glove: { amount: 19900, name: 'White Glove Plan', description: 'Premium - Everything in Enterprise, 10x resources, Dedicated account manager' },
+  underground: { amount: 2900, name: 'Underground', description: '1 Agent, Mistral 7B, A2A Bus Access, Basic Analytics' },
+  collective: { amount: 6900, name: 'Collective', description: '3 Agents, Llama 3.3, Royalty Split Engine, Mission Control Graph' },
+  label: { amount: 19900, name: 'Label', description: 'Unlimited Agents, DeepSeek R1, Priority A2A Routing, 24/7 Signal Guard' },
 }
 
 export async function GET(request: NextRequest) {
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
   
-  const validPlans = ['starter', 'pro', 'scale', 'enterprise', 'white_glove']
+  const validPlans = ['underground', 'collective', 'label']
   if (!validPlans.includes(plan)) {
     return NextResponse.redirect(new URL(`/pricing?error=invalid_plan`, origin), 303)
   }
