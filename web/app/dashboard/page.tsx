@@ -256,8 +256,9 @@ function DashboardContent() {
   if (error) {
     return (
       <div className="flex h-screen bg-black">
-        <DashboardSidebar 
-          userName={userName} 
+        <DashboardSidebar
+          userName={userName}
+          plan={instance?.plan}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
@@ -286,9 +287,10 @@ function DashboardContent() {
 
   return (
     <div className="flex h-screen bg-black">
-      <DashboardSidebar 
-        userName={userName} 
-        credits={credits} 
+      <DashboardSidebar
+        userName={userName}
+        credits={credits}
+        plan={instance?.plan}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
@@ -869,7 +871,7 @@ function DashboardContent() {
   )
 }
 
-function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userName: string; credits?: number; isOpen: boolean; onToggle: () => void }) {
+function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { userName: string; credits?: number; plan?: string; isOpen: boolean; onToggle: () => void }) {
   const pathname = usePathname()
   return (
     <>
@@ -918,7 +920,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
 
           <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
             <div className="text-sm text-gray-400 mb-1">Your Plan</div>
-            <div className="text-xl font-bold capitalize">{instance?.plan || 'Underground'}</div>
+            <div className="text-xl font-bold capitalize">{plan || 'Underground'}</div>
           </Link>
         </nav>
 
