@@ -31,6 +31,8 @@ export default function DemoPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [compareLoading, setCompareLoading] = useState(false)
+  const [apiKey, setApiKey] = useState('')
+  const [showApiKeyInput, setShowApiKeyInput] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -64,7 +66,8 @@ export default function DemoPage() {
         body: JSON.stringify({
           message: input,
           model: selectedModel,
-          conversation
+          conversation,
+          apiKey
         })
       })
 
@@ -124,7 +127,8 @@ export default function DemoPage() {
             body: JSON.stringify({
               message: input,
               model: modelId,
-              conversation
+              conversation,
+              apiKey
             })
           })
           const data = await res.json()
@@ -193,6 +197,46 @@ export default function DemoPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* API Key Input */}
+        {showApiKeyInput && (
+          <div className="mb-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl max-w-3xl mx-auto">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-bold text-blue-400">🔑 OpenRouter API Key</label>
+              <button
+                onClick={() => setShowApiKeyInput(false)}
+                className="text-xs text-gray-500 hover:text-white"
+              >
+                Hide
+              </button>
+            </div>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-or-v1-..."
+              className="w-full bg-gray-900 border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            />
+            <p className="mt-2 text-xs text-gray-500">
+              Get free key at{' '}
+              <a href="https://openrouter.ai" target="_blank" rel="noopener" className="text-blue-400 hover:underline">
+                openrouter.ai
+              </a>
+              {' '}&middot; Demo runs on your key
+            </p>
+          </div>
+        )}
+
+        {!showApiKeyInput && (
+          <div className="mb-8 text-center">
+            <button
+              onClick={() => setShowApiKeyInput(true)}
+              className="text-sm text-gray-500 hover:text-white"
+            >
+              🔑 {apiKey ? 'API key saved' : 'Add API key'}
+            </button>
+          </div>
+        )}
+
         {/* Mode Selector */}
         <div className="flex items-center justify-center gap-4 mb-8">
           <button

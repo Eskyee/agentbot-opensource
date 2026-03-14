@@ -13,14 +13,16 @@ const DEMO_MODELS = [
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, model, mode, conversation } = await req.json()
+    const { message, model, mode, conversation, apiKey } = await req.json()
 
     if (!message) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 })
     }
 
+    const OPENROUTER_API_KEY = apiKey || process.env.OPENROUTER_API_KEY
+
     if (!OPENROUTER_API_KEY) {
-      return NextResponse.json({ error: 'Demo API not configured' }, { status: 503 })
+      return NextResponse.json({ error: 'API key required. Please enter your OpenRouter API key.' }, { status: 401 })
     }
 
     const modelId = model || 'anthropic/claude-3.5-sonnet'
