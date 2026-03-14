@@ -264,18 +264,54 @@ export default async function Home() {
             </div>
           </div>
           
-          <div className="mt-12 flex items-center justify-center gap-12 opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Deployed on</span>
-              <span className="font-black text-sm tracking-tight">VERCEL</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Hosted on</span>
-              <span className="font-black text-sm tracking-tight">RENDER</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Onchain via</span>
-              <span className="font-black text-sm tracking-tight">BASE</span>
+          <div className="mt-12">
+            <p className="text-[10px] font-bold tracking-widest text-gray-500 uppercase text-center mb-6">Built with the best</p>
+            <div className="flex items-center justify-center gap-8 flex-wrap">
+              {/* Vercel */}
+              <div className="flex flex-col items-center gap-1 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="60" height="18" viewBox="0 0 283 64" fill="white" className="h-4">
+                  <path d="M141.552 0C63.069 0 0 63.069 0 141.552c0 78.472 63.069 141.541 141.552 141.541 78.472 0 141.541-63.069 141.541-141.541C283.093 63.069 220.024 0 141.552 0z"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Vercel</span>
+              </div>
+              {/* Render */}
+              <div className="flex flex-col items-center gap-1 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="50" height="18" viewBox="0 0 80 24" fill="white" className="h-4">
+                  <circle cx="40" cy="12" r="10"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Render</span>
+              </div>
+              {/* Base */}
+              <div className="flex flex-col items-center gap-1 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="40" height="18" viewBox="0 0 60 24" fill="#0052FF" className="h-5">
+                  <circle cx="30" cy="12" r="10" fill="#0052FF"/>
+                  <circle cx="30" cy="12" r="4" fill="white"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Base</span>
+              </div>
+              {/* Coinbase */}
+              <div className="flex flex-col items-center gap-1 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="60" height="18" viewBox="0 0 100 24" fill="#0052FF" className="h-4">
+                  <circle cx="50" cy="12" r="10" fill="#0052FF"/>
+                  <circle cx="50" cy="12" r="4" fill="white"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Coinbase</span>
+              </div>
+              {/* Ollama */}
+              <div className="flex flex-col items-center gap-1 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="50" height="18" viewBox="0 0 60 24" fill="#FF6720" className="h-4">
+                  <circle cx="10" cy="12" r="8" fill="#FF6720"/>
+                  <text x="22" y="15" fill="white" fontSize="9" fontWeight="bold">OLLAMA</text>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Ollama</span>
+              </div>
+              {/* Mux */}
+              <div className="flex flex-col items-center gap-1 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="40" height="18" viewBox="0 0 60 24" fill="#FF3344" className="h-4">
+                  <path d="M5 4l10 16-10 4-10-4 10-16zM25 4l10 16-10 4-10-4 10-16zM45 4l10 16-10 4-10-4 10-16z" fill="#FF3344"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Mux</span>
+              </div>
             </div>
           </div>
         </div>
