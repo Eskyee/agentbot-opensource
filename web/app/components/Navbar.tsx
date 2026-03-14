@@ -47,6 +47,7 @@ export default function Navbar() {
           <Link href="/docs" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
           <Link href="/marketplace" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Marketplace</Link>
           <Link href="/basefm" className="text-sm text-green-400 hover:text-white rounded transition-colors">$BASEFM</Link>
+          <Link href="/partner" className="text-sm text-purple-400 hover:text-white rounded transition-colors">Partner</Link>
 
           {status === "loading" ? null : session ? (
             <div className="flex items-center gap-4">

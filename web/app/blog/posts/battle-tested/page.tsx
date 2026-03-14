@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Battle Tested: Live in the Field | Agentbot',
+  title: 'Battle Tested: Living in the Field | Agentbot',
   description: 'How we built Agentbot from the trenches - real problems, real solutions, zero marketing fluff.',
 };
 
