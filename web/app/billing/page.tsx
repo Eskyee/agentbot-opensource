@@ -345,8 +345,19 @@ export default function BillingPage() {
                         <h3 className="font-medium text-purple-400 text-lg">🚀 Full Enterprise Suite</h3>
                         <span className="text-lg font-bold text-purple-400">£4,999/mo</span>
                       </div>
-                      <p className="text-sm text-gray-400 mb-3">Everything enterprise: Unlimited agents, Audit Logs, Slack, Salesforce, API, Custom integrations, Priority support, 24/7 SLA</p>
-                      <p className="text-xs text-gray-500 mb-4">Similar to NemoClaw Enterprise — but we manage everything for you</p>
+                      <p className="text-sm text-gray-400 mb-2">Everything enterprise:</p>
+                      <ul className="text-xs text-gray-300 mb-2 space-y-1">
+                        <li>✓ Unlimited AI Agents with hierarchical task delegation</li>
+                        <li>✓ Enterprise SSO/SAML & Role-based access control (RBAC)</li>
+                        <li>✓ Credential isolation & zero-trust security</li>
+                        <li>✓ Full audit logging & compliance tooling</li>
+                        <li>✓ Pre-built connectors: Salesforce, Cisco, Google Cloud, Adobe, CrowdStrike</li>
+                        <li>✓ Tool use framework for external APIs</li>
+                        <li>✓ Hardware agnostic (NVIDIA, AMD, Intel support)</li>
+                        <li>✓ 24/7 Priority support & SLA guarantee</li>
+                        <li>✓ Mission Control dashboard & analytics</li>
+                      </ul>
+                      <p className="text-xs text-gray-500 mb-4">Matches NemoClaw Enterprise spec — but we manage everything for you</p>
                       <button className="w-full rounded bg-purple-600 py-3 text-sm font-bold hover:bg-purple-500">
                         Contact Sales
                       </button>
