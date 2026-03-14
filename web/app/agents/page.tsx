@@ -11,7 +11,7 @@ const navItems = [
   { icon: '⚙️', label: 'Account', href: '/settings', active: false },
 ]
 
-function AgentsSidebar({ userName }: { userName: string }) {
+function AgentsSidebar({ userName, className = '' }: { userName: string; className?: string }) {
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
       <nav className="flex-1 p-4">
@@ -45,23 +45,27 @@ export default function AgentsPage() {
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (
-    <div className="flex h-screen bg-black text-white">
-      <AgentsSidebar userName={userName} />
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">Agent Builder</h1>
-          <p className="text-xl text-gray-400 mb-8">Create your own AI agent</p>
+    <div className="min-h-screen bg-black text-white">
+      {/* Mobile Sidebar */}
+      <div className="md:hidden">
+        <AgentsSidebar userName={userName} className="mb-6" />
+      </div>
+
+      <main className="px-4 sm:px-6 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Agent Builder</h1>
+          <p className="text-lg sm:text-xl text-gray-400 mb-6">Create your own AI agent</p>
           
-          <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800 text-center">
-            <div className="text-6xl mb-4">🤖</div>
-            <h2 className="text-2xl font-bold mb-2">Coming Soon</h2>
-            <p className="text-gray-400 mb-6">Agent builder is under development</p>
-            <Link href="/dashboard" className="inline-block bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg font-semibold">
+          <div className="bg-gray-900 rounded-2xl p-6 sm:p-8 border border-gray-800 text-center">
+            <div className="text-4xl sm:text-5xl mb-3">🤖</div>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Coming Soon</h2>
+            <p className="text-sm sm:text-base text-gray-400 mb-5">Agent builder is under development</p>
+            <Link href="/dashboard" className="w-full sm:w-auto inline-block bg-white text-black hover:bg-gray-200 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold">
               Go to Dashboard
             </Link>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

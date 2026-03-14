@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import CoinbaseWalletButton from '../components/CoinbaseWallet'
@@ -12,7 +12,7 @@ const navItems = [
   { icon: '⚙️', label: 'Account', href: '/settings', active: false },
 ]
 
-function BillingSidebar({ userName }: { userName: string }) {
+function BillingSidebar({ userName, className = '' }: { userName: string; className?: string }) {
   return (
     <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
       <nav className="flex-1 p-4">
@@ -140,164 +140,168 @@ export default function BillingPage() {
     window.location.href = 'mailto:sales@agentbot.com?subject=Custom Infrastructure Inquiry'
   }
 
-  return (
-    <div className="flex h-screen bg-black text-white">
-      <BillingSidebar userName={userName} />
+   return (
+     <div className="min-h-screen bg-black text-white">
+       {/* Mobile Sidebar */}
+       <div className="md:hidden">
+         <BillingSidebar userName={userName} className="mb-6" />
+       </div>
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-4xl">
-        <h1 className="text-3xl font-bold mb-8">Billing</h1>
+       <main className="px-4 sm:px-6 py-8">
+         <div className="max-w-4xl mx-auto">
+           <h1 className="text-2xl sm:text-3xl font-bold mb-6">Billing</h1>
 
-        {loading ? (
-          <div className="text-center py-12 text-gray-400">Loading...</div>
-        ) : (
-          <>
-        {/* API Keys */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">AI API Keys</h2>
-          <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                <span className="text-2xl">🔑</span>
-              </div>
-              <div>
-                <div className="font-semibold">Bring Your Own API Key</div>
-                <div className="text-sm text-gray-400">Pay directly to AI providers - no markup</div>
-              </div>
-            </div>
-            <p className="text-gray-400 text-sm mb-4">
-              Users provide their own API keys from OpenRouter, Groq, Anthropic, or OpenAI. 
-              You get the best rates directly from the source. No credit system needed.
-            </p>
-            <a href="/settings" className="rounded-lg bg-white text-black px-6 py-2 font-semibold hover:bg-gray-200 inline-block">
-              Configure API Keys
-            </a>
-          </div>
-        </div>
+           {loading ? (
+             <div className="text-center py-6 text-gray-400">Loading...</div>
+           ) : (
+             <React.Fragment>
+               {/* API Keys */}
+               <div className="mb-4">
+                 <h2 className="text-lg font-semibold mb-3">AI API Keys</h2>
+                 <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
+                   <div className="flex items-center gap-3 mb-3">
+                     <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                       <span className="text-xl">🔑</span>
+                     </div>
+                     <div>
+                       <div className="font-medium">Bring Your Own API Key</div>
+                       <div className="text-sm text-gray-400">Pay directly to AI providers - no markup</div>
+                     </div>
+                   </div>
+                   <p className="text-sm text-gray-400 mb-2">
+                     Users provide their own API keys from OpenRouter, Groq, Anthropic, or OpenAI. 
+                     You get the best rates directly from the source. No credit system needed.
+                   </p>
+                   <a href="/settings" className="w-full text-center rounded-lg bg-white text-black px-4 py-2 text-sm font-medium hover:bg-gray-200">
+                     Configure API Keys
+                   </a>
+                 </div>
+               </div>
 
-        {/* USDC on Base */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Pay with USDC</h2>
-          <div className="rounded-2xl border border-gray-800 bg-gradient-to-r from-blue-900/30 to-purple-900/30 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                  <span className="text-2xl">💵</span>
-                </div>
-                <div>
-                  <div className="font-semibold">USDC on Base</div>
-                  <div className="text-sm text-gray-400">Instant, low-fee payments</div>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold">0% fees</div>
-                <div className="text-sm text-gray-500">via Coinbase</div>
-              </div>
-            </div>
-            <p className="text-gray-400 text-sm mb-4">
-              Pay with USDC on Base for instant settlement and near-zero fees. 
-              Connect your wallet to get started.
-            </p>
-            <div className="flex gap-3">
-              <button 
-                onClick={connectWallet}
-                className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-2 font-semibold hover:from-blue-600 hover:to-purple-700"
-              >
-                Connect Wallet
-              </button>
-              <a 
-                href="https://commerce.coinbase.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="rounded-lg border border-gray-700 px-6 py-2 font-semibold hover:bg-gray-800"
-              >
-                Learn More
-              </a>
-            </div>
-          </div>
-        </div>
+               {/* USDC on Base */}
+               <div className="mb-4">
+                 <h2 className="text-lg font-semibold mb-3">Pay with USDC</h2>
+                 <div className="rounded-xl border border-gray-800 bg-gradient-to-r from-blue-900/30 to-purple-900/30 p-4">
+                   <div className="flex items-center justify-between mb-3">
+                     <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                         <span className="text-xl">💵</span>
+                       </div>
+                       <div>
+                         <div className="font-medium">USDC on Base</div>
+                         <div className="text-sm text-gray-400">Instant, low-fee payments</div>
+                       </div>
+                     </div>
+                     <div className="text-right">
+                       <div className="text-lg font-bold">0% fees</div>
+                       <div className="text-sm text-gray-500">via Coinbase</div>
+                     </div>
+                   </div>
+                   <p className="text-sm text-gray-400 mb-2">
+                     Pay with USDC on Base for instant settlement and near-zero fees. 
+                     Connect your wallet to get started.
+                   </p>
+                   <div className="flex gap-2">
+                     <button 
+                       onClick={connectWallet}
+                       className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-sm font-medium hover:from-blue-600 hover:to-purple-700"
+                     >
+                       Connect Wallet
+                     </button>
+                     <a 
+                       href="https://commerce.coinbase.com" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       className="w-full text-center rounded-lg border border-gray-700 text-sm font-medium hover:bg-gray-800"
+                     >
+                       Learn More
+                     </a>
+                   </div>
+                 </div>
+               </div>
 
-        {/* Machines / Subscriptions */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Machines</h2>
-          <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4 mb-4">
-            <div className="text-gray-400">0 of 1 in use</div>
-          </div>
+               {/* Machines / Subscriptions */}
+               <div className="mb-4">
+                 <h2 className="text-lg font-semibold mb-3">Machines</h2>
+                 <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-3 mb-3">
+                   <div className="text-sm text-gray-400">0 of 1 in use</div>
+                 </div>
 
-          <div className="space-y-4">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`relative rounded-xl border p-6 ${
-                  plan.popular 
-                    ? 'border-white bg-white/5' 
-                    : 'border-gray-800 bg-gray-900/50'
-                }`}
-              >
-                {plan.popular && (
-                  <span className="absolute -top-3 left-4 bg-white text-black text-xs px-3 py-1 rounded-full">
-                    POPULAR
-                  </span>
-                )}
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <h3 className="font-semibold text-lg">{plan.name}</h3>
-                      {currentPlan === plan.id && (
-                        <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">Current</span>
-                      )}
-                    </div>
-                    <div className="text-gray-400 mt-1">{plan.specs}</div>
-                    <div className="text-sm text-gray-500 mt-2">
-                      £{plan.price}/mo
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <select className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2" title="Select quantity">
-                      <option>1</option>
-                      <option>2</option>
-                      <option>3</option>
-                    </select>
-                    <button 
-                      onClick={() => buyPlan(plan.priceId)}
-                      className={`rounded-lg px-4 py-2 font-semibold ${
-                        currentPlan === plan.id 
-                          ? 'bg-gray-800 text-gray-400' 
-                          : 'bg-white hover:bg-gray-200 text-black'
-                      }`}>
-                      {currentPlan === plan.id ? 'Current' : 'Buy'}
-                    </button>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {plan.features.map((f) => (
-                    <span key={f} className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded">
-                      {f}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+                 <div className="space-y-3">
+                   {plans.map((plan) => (
+                     <div
+                       key={plan.id}
+                       className={`relative rounded-lg border p-3 ${
+                         plan.popular 
+                           ? 'border-white bg-white/5' 
+                           : 'border-gray-800 bg-gray-900/50'
+                       }`}
+                     >
+                       {plan.popular && (
+                         <span className="absolute -top-2 left-2 bg-white text-black text-xs px-2 py-1 rounded">
+                           POPULAR
+                         </span>
+                       )}
+                       <div className="flex items-center justify-between">
+                         <div>
+                           <div className="flex items-center gap-2">
+                             <h3 className="font-medium text-base">{plan.name}</h3>
+                             {currentPlan === plan.id && (
+                               <span className="text-xs bg-green-500/20 text-green-400 px-1 py-0.5 rounded">Current</span>
+                             )}
+                           </div>
+                           <div className="text-sm text-gray-400">{plan.specs}</div>
+                           <div className="text-xs text-gray-500 mt-1">
+                             £{plan.price}/mo
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-2">
+                           <select className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" title="Select quantity">
+                             <option>1</option>
+                             <option>2</option>
+                             <option>3</option>
+                           </select>
+                           <button 
+                             onClick={() => buyPlan(plan.priceId)}
+                             className={`w-full mt-2 rounded-lg px-4 py-2 font-medium ${
+                               currentPlan === plan.id 
+                                 ? 'bg-gray-800 text-gray-400' 
+                                 : 'bg-white hover:bg-gray-200 text-black'
+                             }`}>
+                             {currentPlan === plan.id ? 'Current' : 'Buy'}
+                           </button>
+                         </div>
+                       </div>
+                       <div className="flex gap-2 mt-2">
+                         {plan.features.map((f, index) => (
+                           <span key={`${f}-${index}`} className="inline-block text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded mr-1 mb-1">
+                             {f}
+                           </span>
+                         ))}
+                       )}
+                   ))}
+                 </div>
+               </div>
 
-        {/* Need custom */}
-        <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-6 text-center">
-          <h3 className="font-semibold mb-2">Need custom infrastructure?</h3>
-          <p className="text-gray-400 text-sm mb-4">
-            Volume discounts, dedicated support, and custom integrations.
-          </p>
-          <button 
-            onClick={contactSales}
-            className="rounded-lg border border-gray-700 px-6 py-2 hover:bg-gray-800"
-          >
-            Contact Sales
-          </button>
-        </div>
-          </>
-        )}
-        </div>
-      </main>
-    </div>
-  )
+               {/* Need custom */}
+               <div className="mt-4">
+                 <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-4 text-center">
+                   <h3 className="font-medium mb-2">Need custom infrastructure?</h3>
+                   <p className="text-sm text-gray-400 mb-2">
+                     Volume discounts, dedicated support, and custom integrations.
+                   </p>
+                   <button 
+                     onClick={contactSales}
+                     className="w-full rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium hover:bg-gray-800"
+                   >
+                     Contact Sales
+                   </button>
+                 </div>
+               </div>
+             </React.Fragment>
+           )}
+         </div>
+       </main>
+     </div>
+   );
 }

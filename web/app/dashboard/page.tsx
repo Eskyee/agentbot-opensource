@@ -88,28 +88,45 @@ function DashboardContent() {
     { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', icon: '⚡' },
   ])
 
-  useEffect(() => {
-    const urlUserId = searchParams.get('id')
-    const storedData = localStorage.getItem('agentbot_instance')
-    
-    let userId = urlUserId
-    let botUsername = ''
-    
-    if (storedData) {
-      const parsed = JSON.parse(storedData)
-      if (!userId) userId = parsed.userId
-      botUsername = parsed.botUsername || ''
-    }
-    
-    if (!userId) {
-      setError('No instance found. Please deploy first.')
-      setLoading(false)
-      return
-    }
-    
-    fetchInstance(userId, botUsername)
-    fetchCredits()
-  }, [searchParams])
+    useEffect(() => {
+      // Clear localStorage instance data when no session (user logged out)
+      if (!session) {
+        localStorage.removeItem('agentbot_instance')
+        setInstance(null)
+        setError('')
+        setLoading(false)
+        return
+      }
+
+      const urlUserId = searchParams.get('id')
+      const storedData = localStorage.getItem('agentbot_instance')
+      
+      // If no session, don't proceed with fetching instance data
+      if (!session) {
+        setInstance(null)
+        setError('')
+        setLoading(false)
+        return
+      }
+      
+      let userId = urlUserId
+      let botUsername = ''
+      
+      if (storedData) {
+        const parsed = JSON.parse(storedData)
+        if (!userId) userId = parsed.userId
+        botUsername = parsed.botUsername || ''
+      }
+      
+      if (!userId) {
+        setError('No instance found. Please deploy first.')
+        setLoading(false)
+        return
+      }
+      
+      fetchInstance(userId, botUsername)
+      fetchCredits()
+    }, [searchParams, session])
 
   const fetchCredits = async () => {
     try {
@@ -225,16 +242,16 @@ function DashboardContent() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🦞</div>
-          <p className="text-gray-400">Loading your instance...</p>
-        </div>
-      </div>
-    )
-  }
+   if (loading) {
+     return (
+       <div className="flex items-center justify-center mt-[4rem] h-[calc(100vh-4rem)] bg-black">
+         <div className="text-center">
+           <div className="text-5xl mb-4 animate-pulse">🦞</div>
+           <p className="text-gray-400">Loading your instance...</p>
+         </div>
+       </div>
+     )
+   }
 
   if (error) {
     return (

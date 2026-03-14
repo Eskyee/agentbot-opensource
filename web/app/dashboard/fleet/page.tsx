@@ -35,7 +35,7 @@ export default function FleetPage() {
   const selectedAgent = agents.find((a: any) => a.id === selectedAgentId);
 
   return (
-    <div className="flex h-screen bg-black text-white">
+    <div className="mt-[4rem] h-[calc(100vh-4rem)] flex bg-black text-white">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
