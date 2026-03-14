@@ -21,8 +21,7 @@ export default async function Home() {
           </h1>
           
           <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Deploy autonomous AI agents in seconds. No server management. No infra headaches. 
-            Just bring your API key and let your agents run.
+            Deploy AI agents. Not infrastructure.
           </p>
           
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
