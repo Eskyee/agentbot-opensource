@@ -92,7 +92,7 @@ export default async function Home() {
             {/* Underground */}
             <div className="border border-white/10 rounded-2xl p-8 bg-gray-900/50 hover:border-blue-500 transition-all group">
               <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">UNDERGROUND</h3>
-              <p className="mt-4 text-5xl font-black">£19<span className="text-lg font-normal text-gray-600">/mo</span></p>
+              <p className="mt-4 text-5xl font-black">£29<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-8 space-y-4 text-sm text-gray-400 text-left">
                 <li className="flex gap-3"><span>✓</span> 1 High-Speed Agent</li>
                 <li className="flex gap-3"><span>✓</span> Mistral 7B (Free Tier)</li>
