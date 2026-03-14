@@ -135,22 +135,25 @@ Users bring their own API keys. No credits to manage.
 
 ## Token Info
 
-### BASEFM (MoltX - Primary)
-- **Contract:** `0x7fc9b35b9375b95a6b2684a9676841267733dba3`
-- **Profile:** https://moltx.io/baseFM
-- **Website:** https://basefm.space
-
-### BASEFM (Bankr - Secondary)
+### BASEFM (Primary Token)
 - **Contract:** `0x9a4376bab717ac0a3901eeed8308a420c59c0ba3`
 - **Profile:** https://bankr.bot/agents/basefm
+- **Website:** https://basefm.space
+- **Tx:** 0x9ef1cb05dd0b1aa5f9d2f11c2e5d44b66acde389e5602aa1870089981b163d3f
 
-### Agentbot Wallets
-- **Main Wallet (fee recipient):** `0xd8fd0e1dce89beaab924ac68098ddb17613db56f`
-- **Bankr Wallet:** Same as main (EVM)
-
-### BASEFM Deployment (on Base)
+### AGENTBOT (Platform Token)
 - **Contract:** `0x986b41c76ab8b7350079613340ee692773b34ba3`
-- **Tx:** 0xb158cf681ae02973a98f9c3fb0d6d61199281d8142e51323843dc2686d5d72dd
+- **Website:** /token
+
+### clawdbotDJ
+- **Contract:** `0x1b07b69a1219f217dd229b6b4d715ed116cb7b07
+
+### Platform Wallets
+- **Trading Wallet:** `0xd8fd0e1dce89beaab924ac68098ddb17613db56f`
+
+### BASEFM on MoltX (Primary Profile)
+- **Contract:** `0x7fc9b35b9375b95a6b2684a9676841267733dba3`
+- **Profile:** https://moltx.io/baseFM
 
 ## Known Issues
 - GitHub OAuth callback needs correct Client ID in Vercel
