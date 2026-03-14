@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY)
       try {
         const result = await resend.emails.send({
-          from: 'Agentbot <noreply@agentbot.raveculture.xyz>',
+          from: 'Agentbot <noreply@raveculture.space>',
           to: email,
           subject: 'Reset your Agentbot password',
           html: `
