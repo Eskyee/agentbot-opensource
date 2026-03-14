@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'battle-tested',
+    date: '14 March 2026',
+    title: 'Battle Tested: Live in the Field',
+    excerpt: 'How we built Agentbot in the trenches - real problems, real solutions, zero marketing fluff.',
+    tags: ["Field Report", "Philosophy", "Build"]
+  },
+  {
     slug: 'zero-human-company',
     date: '14 March 2026',
     title: 'Running a Zero-Human Company with AI Agents',
