@@ -31,6 +31,7 @@ export default function Footer() {
             <Link href="/partner" className="text-gray-400 hover:text-white transition-colors underline">Partner</Link>
             <Link href="/token" className="text-blue-400 hover:text-white transition-colors underline">$AGENTBOT</Link>
             <Link href="/basefm" className="text-green-400 hover:text-white transition-colors underline">$BASEFM</Link>
+            <a href="https://stackoverflow.com/users/13100302/agentbot-openclaw" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">Stack Overflow</a>
             <Link href="/terms" className="text-gray-400 hover:text-white transition-colors underline">Terms</Link>
             <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors underline">Privacy</Link>
           </div>
