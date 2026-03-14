@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
-import { Video } from '@/lib/mux'
+import { getMux } from '@/lib/mux'
 
 const BACKEND_API_URL = getBackendApiUrl()
 const BACKEND_API_FALLBACK_URL = (process.env.BACKEND_API_FALLBACK_URL || '').trim()
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     let liveStreamId = null
     
     try {
-      const liveStream = await Video.liveStreams.create({
+      const liveStream = await getMux().video.liveStreams.create({
         playback_policy: ['public'],
         new_asset_settings: { playback_policy: ['public'] },
         test: false,
