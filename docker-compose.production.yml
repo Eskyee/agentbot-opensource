@@ -1,0 +1,238 @@
+# PRODUCTION-READY DOCKER STACK FOR BASEFM LAUNCH
+# Multi-stage, hardened, optimized for March 31, 2026 launch
+# Use: docker-compose -f docker-compose.production.yml up
+
+version: "3.9"
+
+services:
+  # ============ DATABASE ============
+  postgres:
+    image: postgres:15-alpine
+    container_name: basefm-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-agentbot}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-agentbot_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-agentbot} -d ${DB_NAME:-agentbot_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - basefm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============ CACHE ============
+  redis:
+    image: redis:7-alpine
+    container_name: basefm-redis-prod
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_prod_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - basefm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============ BACKEND API ============
+  api:
+    build:
+      context: ./agentbot-backend
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_ENV: production
+    image: basefm-api:latest
+    container_name: basefm-api-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: ${API_PORT:-3001}
+      DATABASE_URL: postgresql://${DB_USER:-agentbot}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-agentbot_db}
+      REDIS_URL: redis://redis:6379
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      MUX_TOKEN_ID: ${MUX_TOKEN_ID}
+      MUX_TOKEN_SECRET: ${MUX_TOKEN_SECRET}
+      LOG_LEVEL: info
+    ports:
+      - "${API_PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./runtime-data:/opt/agentbot/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - basefm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "1"
+          memory: 512M
+
+  # ============ WORKER ============
+  worker:
+    build:
+      context: ./agentbot-worker
+      dockerfile: Dockerfile.prod
+      args:
+        NODE_ENV: production
+    image: basefm-worker:latest
+    container_name: basefm-worker-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${DB_USER:-agentbot}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-agentbot_db}
+      REDIS_URL: redis://redis:6379
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      JWT_SECRET: ${JWT_SECRET}
+      LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./runtime-data:/opt/agentbot/data
+    networks:
+      - basefm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+        reservations:
+          cpus: "1"
+          memory: 512M
+
+  # ============ MONITORING ============
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: basefm-prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+    networks:
+      - basefm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============ LOGS ============
+  loki:
+    image: grafana/loki:latest
+    container_name: basefm-loki
+    restart: always
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yml
+    networks:
+      - basefm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============ VISUALIZATION ============
+  grafana:
+    image: grafana/grafana:latest
+    container_name: basefm-grafana
+    restart: always
+    ports:
+      - "3200:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - basefm-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  postgres_prod_data:
+    driver: local
+  redis_prod_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  loki_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  basefm-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16

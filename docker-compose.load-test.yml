@@ -1,0 +1,118 @@
+# LOAD TESTING COMPOSE - 5 CONCURRENT AGENTS
+# Run with: docker-compose -f docker-compose.load-test.yml up
+
+version: "3.9"
+
+services:
+  # ========== DATABASE (shared) ==========
+  postgres:
+    image: postgres:15-alpine
+    container_name: loadtest-postgres
+    environment:
+      POSTGRES_USER: agentbot
+      POSTGRES_PASSWORD: test123
+      POSTGRES_DB: agentbot_db
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentbot"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - loadtest-network
+
+  # ========== REDIS (shared) ==========
+  redis:
+    image: redis:7-alpine
+    container_name: loadtest-redis
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - loadtest-network
+
+  # ========== BACKEND API ==========
+  api:
+    build:
+      context: ./agentbot-backend
+      dockerfile: Dockerfile
+    container_name: loadtest-api
+    environment:
+      NODE_ENV: test
+      PORT: 3001
+      DATABASE_URL: postgresql://agentbot:test123@postgres:5432/agentbot_db
+      REDIS_URL: redis://redis:6379
+      INTERNAL_API_KEY: test-key-123
+      JWT_SECRET: test-secret-456
+      MUX_TOKEN_ID: ${MUX_TOKEN_ID}
+      MUX_TOKEN_SECRET: ${MUX_TOKEN_SECRET}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - loadtest-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ========== LOAD TEST RUNNER ==========
+  load-test:
+    image: grafana/k6:latest
+    container_name: loadtest-runner
+    volumes:
+      - ./load-test.js:/scripts/load-test.js:ro
+    environment:
+      API_URL: http://api:3001
+      MUX_SERVER: rtmp://global-live.mux.com:5222/app
+      MUX_TOKEN_ID: ${MUX_TOKEN_ID}
+      MUX_TOKEN_SECRET: ${MUX_TOKEN_SECRET}
+    command: run /scripts/load-test.js
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - loadtest-network
+
+  # ========== METRICS COLLECTION ==========
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: loadtest-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    networks:
+      - loadtest-network
+
+  # ========== VISUALIZATION ==========
+  grafana:
+    image: grafana/grafana:latest
+    container_name: loadtest-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    ports:
+      - "3200:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - loadtest-network
+
+networks:
+  loadtest-network:
+    driver: bridge
