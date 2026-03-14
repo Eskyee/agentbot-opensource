@@ -277,10 +277,11 @@ export default function BillingPage() {
                            <span key={`${f}-${index}`} className="inline-block text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded mr-1 mb-1">
                              {f}
                            </span>
-                         ))}
-                       )}
-                   ))}
-                 </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                </div>
 
                {/* Need custom */}

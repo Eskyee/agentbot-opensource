@@ -13,7 +13,7 @@ import path from 'path';
 dotenv.config();
 
 // Deployment version: track app changes for cache busting
-const DEPLOYMENT_VERSION = '2026.03.14.001';
+const DEPLOYMENT_VERSION = '2026.03.14.002';
 
 const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
   starter: { memory: '2g', cpus: '1' },
@@ -32,11 +32,11 @@ const PORT = process.env.PORT || 3001;
 const API_KEY = process.env.INTERNAL_API_KEY;
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.8';
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.13';
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
 const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'google/gemini-2.0-flash';
 const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
-const OPENCLAW_RUNTIME_VERSION = '2026.3.8'
+const OPENCLAW_RUNTIME_VERSION = '2026.3.13'
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
@@ -1132,7 +1132,9 @@ app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log('Routes: /health, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
-  startAutoUpdater();
+  if (process.env.NODE_ENV === 'production') {
+    startAutoUpdater();
+  }
 });
 
 export default app;
