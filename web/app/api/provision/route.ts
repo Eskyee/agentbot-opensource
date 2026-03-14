@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     let liveStreamId = null
     
     try {
+      if (!Video) throw new Error('Mux not configured')
       const liveStream = await Video.liveStreams.create({
         playback_policy: ['public'],
         new_asset_settings: { playback_policy: ['public'] },

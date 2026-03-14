@@ -7,14 +7,19 @@ import Mux from '@mux/mux-node';
  * Credentials provided by Operator (Atlas) for the RaveCulture ecosystem.
  */
 
-if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
+const hasMuxCreds = !!(process.env.MUX_TOKEN_ID && process.env.MUX_TOKEN_SECRET);
+
+if (!hasMuxCreds) {
   console.warn('Mux credentials missing from environment. Live stream features will be disabled.');
 }
 
-export const muxClient = new Mux({
-  tokenId: process.env.MUX_TOKEN_ID,
-  tokenSecret: process.env.MUX_TOKEN_SECRET,
-});
+// Only instantiate if credentials present — avoids build-time throw
+export const muxClient = hasMuxCreds
+  ? new Mux({
+      tokenId: process.env.MUX_TOKEN_ID!,
+      tokenSecret: process.env.MUX_TOKEN_SECRET!,
+    })
+  : null;
 
 /**
  * Lean Defaults for Agentbot (Cost Optimization)
@@ -26,7 +31,7 @@ export const LEAN_ASSET_SETTINGS = {
   video_quality: 'basic',
 };
 
-export const Video = muxClient.video;
-export const Data = muxClient.data;
+export const Video = muxClient?.video ?? null;
+export const Data = muxClient?.data ?? null;
 
 export default muxClient;
