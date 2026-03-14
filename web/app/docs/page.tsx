@@ -9,12 +9,64 @@ const docsSections = [
   {
     title: 'Plans & Resources',
     description: 'Different plans for different needs. All include cloud hosting.',
-    items: ['Starter: 2GB RAM, 1 CPU', 'Pro: 4GB RAM, 2 CPU', 'Scale: 8GB RAM, 4 CPU', 'Enterprise: 16GB+ RAM']
+    items: ['Starter: 2GB RAM, 1 CPU', 'Pro: 4GB RAM, 2 CPU', 'Scale: 8GB RAM, 4 CPU', 'Enterprise: 16GB+ RAM', 'White Glove: 32GB RAM']
   },
   {
     title: 'AI Models',
     description: 'Bring your own API key. Pay AI providers directly - no markup.',
     items: ['Use OpenRouter, Groq, Anthropic, OpenAI', 'We default to Kimi K2.5', 'Free models to try', 'You pay only for what you use']
+  }
+];
+
+const newFeatures = [
+  {
+    title: 'Crypto Trading',
+    description: 'Bankr integration for autonomous trading. Connect your wallet and let your agent trade.',
+    icon: '💹',
+    links: [
+      { label: 'Trading Dashboard', href: '/dashboard/trading' },
+      { label: 'Bankr Guide', href: '/blog/posts/bankr-wallet-guide' }
+    ]
+  },
+  {
+    title: 'x402 Payments',
+    description: 'Accept USDC payments on Base. Build paid APIs that agents can pay for.',
+    icon: '🔒',
+    links: [
+      { label: 'x402 Setup', href: '#' }
+    ]
+  },
+  {
+    title: 'Agent Skills',
+    description: 'Extend your agent with custom skills. Marketplace coming soon.',
+    icon: '⚡',
+    links: [
+      { label: 'Skills Docs', href: '/dashboard/skills' }
+    ]
+  },
+  {
+    title: 'Scheduled Tasks',
+    description: 'Run agents on autopilot. Set recurring tasks and workflows.',
+    icon: '⏰',
+    links: [
+      { label: 'Tasks', href: '/dashboard/tasks' }
+    ]
+  },
+  {
+    title: 'Agent Swarms',
+    description: 'Deploy multiple agents that work together. Coordinate complex workflows.',
+    icon: '🐝',
+    links: [
+      { label: 'Swarms', href: '/dashboard/swarms' }
+    ]
+  },
+  {
+    title: 'Visual Workflows',
+    description: 'Build workflows with a visual editor. No code required.',
+    icon: '🎨',
+    links: [
+      { label: 'Workflows', href: '/dashboard/workflows' }
+    ]
   }
 ];
 
@@ -59,12 +111,36 @@ export default function ViewDocsPage() {
   return (
     <main className="min-h-screen px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-5xl">
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">View Docs</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Docs</h1>
         <p className="text-lg text-gray-400 mb-10">
-          Everything you need to deploy, operate, and grow OpenClawDeploy.
+          Everything you need to deploy, operate, and grow your AI agents.
         </p>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6">What's New</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {newFeatures.map((feature) => (
+              <div key={feature.title} className="rounded-xl border border-green-500/30 bg-green-500/5 p-5">
+                <div className="text-2xl mb-2">{feature.icon}</div>
+                <h3 className="font-semibold mb-2">{feature.title}</h3>
+                <p className="text-sm text-gray-400 mb-3">{feature.description}</p>
+                <div className="flex flex-wrap gap-2">
+                  {feature.links.map((link) => (
+                    <Link 
+                      key={link.href} 
+                      href={link.href}
+                      className="text-xs text-green-400 hover:underline"
+                    >
+                      {link.label} →
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3 mb-10">
           {docsSections.map((section) => (
             <article key={section.title} className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
               <h2 className="text-2xl font-semibold mb-3">{section.title}</h2>
@@ -116,16 +192,25 @@ export default function ViewDocsPage() {
         </div>
 
         <div className="mt-10 rounded-2xl border border-gray-800 bg-gray-900/60 p-6">
-          <h3 className="text-xl font-semibold mb-3">Core documentation</h3>
+          <h3 className="text-xl font-semibold mb-3">Quick Links</h3>
           <div className="flex flex-wrap gap-3">
             <Link href="/signup" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
               Signup
             </Link>
+            <Link href="/pricing" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+              Pricing
+            </Link>
             <Link href="/marketplace" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
               Marketplace
             </Link>
-            <Link href="/blog" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/blog" className="rounded-full border border-gray-700 px-4 py-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
               Blog
+            </Link>
+            <Link href="/token" className="rounded-full border border-blue-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+              $AGENTBOT
+            </Link>
+            <Link href="/basefm" className="rounded-full border border-green-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+              $BASEFM
             </Link>
             <Link href="/terms" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
               Terms

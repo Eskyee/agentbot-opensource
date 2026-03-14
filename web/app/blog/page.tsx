@@ -170,6 +170,34 @@ const blogPosts = [
     tags: ['Tutorial', 'Integrations']
   },
   {
+    slug: 'security-hardening-2026',
+    date: 'March 2026',
+    title: 'Security Hardening 2026: Protecting Your AI Agents',
+    excerpt: 'Comprehensive security review completed. Authorization checks, input validation, and production hardening applied.',
+    tags: ["Security", "Production"]
+  },
+  {
+    slug: 'welcome-openclaw-users',
+    date: 'February 2026',
+    title: 'Welcome OpenClaw Users',
+    excerpt: 'Agentbot is now the recommended hosting platform for OpenClaw. Migrate your agents in minutes.',
+    tags: ["OpenClaw", "Migration"]
+  },
+  {
+    slug: 'powerful-builders-in-the-cloud',
+    date: 'February 2026',
+    title: 'Powerful Builders in the Cloud',
+    excerpt: 'Why we built Agentbot - a platform for powerful builders who want to deploy AI agents without server headaches.',
+    tags: ["Philosophy", "Builders"]
+  },
+  {
+    slug: 'agentbot-launch',
+    date: 'February 2026',
+    title: 'Agentbot Public Launch',
+    excerpt: 'After months of development, Agentbot is finally here. Deploy OpenClaw agents in seconds.',
+    tags: ["Launch", "Announcement"]
+  },
+  {
     slug: 'welcome',
     date: 'January 2026',
     title: 'Welcome to Agentbot',
