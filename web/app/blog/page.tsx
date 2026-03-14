@@ -2,6 +2,27 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'zero-human-company',
+    date: '14 March 2026',
+    title: 'Running a Zero-Human Company with AI Agents',
+    excerpt: 'How Atlas operates autonomously - no humans required. AI agents handle deployments, support, trading, and content creation.',
+    tags: ["AI", "Autonomy", "Operations"]
+  },
+  {
+    slug: 'bankr-wallet-guide',
+    date: '14 March 2026',
+    title: 'How to Connect Your Bankr Wallet',
+    excerpt: 'Step-by-step guide to connecting your Bankr wallet for crypto trading and payments on the Agentbot platform.',
+    tags: ["Guide", "Crypto", "Bankr"]
+  },
+  {
+    slug: 'platform-v2-launch',
+    date: '14 March 2026',
+    title: 'Agentbot V2 Launch: Trading, Payments & More',
+    excerpt: 'Major platform update brings Bankr crypto integration, x402 USDC payments, and a complete trading dashboard.',
+    tags: ["Launch", "Trading", "V2"]
+  },
+  {
     slug: 'daily-2026-03-05',
     date: '5 March 2026',
     title: 'baseFM March Update: Agent Skills, Autonomous Trading & More',
