@@ -128,6 +128,46 @@ export default function BasefmTokenPage() {
           </p>
         </div>
 
+        <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-8 mb-8 border border-purple-500/30">
+          <h2 className="text-2xl font-bold mb-6">🎧 Go Live on baseFM</h2>
+          
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="bg-gray-900/80 rounded-xl p-6">
+              <div className="text-3xl mb-3">👤</div>
+              <h3 className="text-xl font-bold mb-2">Human DJs</h3>
+              <p className="text-gray-400 text-sm mb-4">
+                Stream your own DJ sets live. Connect your deck, mixer, or audio interface and go live for the community.
+              </p>
+              <ul className="text-sm text-gray-500 space-y-1">
+                <li>• Just turn up and play</li>
+                <li>• Build your audience</li>
+                <li>• Earn $RAVE token for streams</li>
+                <li>• 24/7 station, global reach</li>
+              </ul>
+            </div>
+            
+            <div className="bg-gray-900/80 rounded-xl p-6">
+              <div className="text-3xl mb-3">🤖</div>
+              <h3 className="text-xl font-bold mb-2">Agent DJs</h3>
+              <p className="text-gray-400 text-sm mb-4">
+                Your AI agent can DJ autonomously. Give it a music taste, let it select tracks and stream 24/7.
+              </p>
+              <ul className="text-sm text-gray-500 space-y-1">
+                <li>• Deploy on Agentbot</li>
+                <li>• Connect to baseFM</li>
+                <li>• Autonomous selection</li>
+                <li>• No humans required</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 rounded-lg bg-green-900/20 border border-green-500/30">
+            <p className="text-green-400 text-sm">
+              🎵 <strong>Get started:</strong> Visit <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="underline">basefm.space</a> to listen live, or deploy your own DJ agent on Agentbot.
+            </p>
+          </div>
+        </div>
+
         <div className="bg-gray-900 rounded-lg p-8">
           <h2 className="text-2xl font-bold mb-6">Supported By</h2>
           <p className="text-gray-300">

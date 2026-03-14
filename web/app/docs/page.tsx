@@ -67,6 +67,15 @@ const newFeatures = [
     links: [
       { label: 'Workflows', href: '/dashboard/workflows' }
     ]
+  },
+  {
+    title: 'Vercel Workflows',
+    description: 'Lightweight pause/resume agents. Build with WDK - native integration coming soon.',
+    icon: '⚡',
+    links: [
+      { label: 'Learn more', href: 'https://vercel.com/docs/workflow', external: true }
+    ],
+    badge: 'Coming Soon'
   }
 ];
 
