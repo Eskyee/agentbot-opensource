@@ -132,10 +132,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL(`/pricing?error=no_checkout_url`, origin), 303)
     }
 
-    return NextResponse.redirect(checkoutSession.url, 303)
+    return NextResponse.json({ url: checkoutSession.url })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('Stripe checkout error:', errorMessage, { plan })
-    return NextResponse.redirect(new URL(`/pricing?error=${encodeURIComponent(errorMessage)}`, origin), 303)
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }
