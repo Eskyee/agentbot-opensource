@@ -10,11 +10,11 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 export const metadata: Metadata = {
   metadataBase: new URL('https://agentbot.raveculture.xyz'),
   title: {
-    default: 'Agentbot | Deploy OpenClaw in Seconds',
+    default: 'Agentbot — Deploy AI Agents in 60 Seconds',
     template: '%s | Agentbot',
   },
-  description: 'Deploy OpenClaw AI agents instantly. Kimi K2.5 thinking, crypto wallets, multi-channel messaging. Built for the underground.',
-  keywords: ['AI agent', 'OpenClaw', 'deploy AI', 'Telegram bot', 'crypto agent', 'Kimi K2.5', 'Base', 'USDC'],
+  description: 'Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol. Built for the underground.',
+  keywords: ['AI agent deployment', 'autonomous AI agents', 'BYOK AI', 'agent hosting', 'deploy AI agent', 'Telegram AI bot', 'crypto AI agent', 'Base blockchain', 'agent orchestration', 'AI infrastructure'],
   authors: [{ name: 'Agentbot', url: 'https://agentbot.raveculture.xyz' }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
@@ -61,6 +61,54 @@ export const metadata: Metadata = {
   },
 }
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Agentbot',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  url: 'https://agentbot.raveculture.xyz',
+  description: 'Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key and pay wholesale rates.',
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Underground',
+      price: '29.00',
+      priceCurrency: 'GBP',
+      priceSpecification: {
+        '@type': 'RecurringChargeSpecification',
+        billingDuration: 1,
+        billingIncrement: 1,
+        unitCode: 'MON',
+      },
+    },
+    {
+      '@type': 'Offer',
+      name: 'Collective',
+      price: '69.00',
+      priceCurrency: 'GBP',
+      priceSpecification: {
+        '@type': 'RecurringChargeSpecification',
+        billingDuration: 1,
+        billingIncrement: 1,
+        unitCode: 'MON',
+      },
+    },
+    {
+      '@type': 'Offer',
+      name: 'Label',
+      price: '199.00',
+      priceCurrency: 'GBP',
+      priceSpecification: {
+        '@type': 'RecurringChargeSpecification',
+        billingDuration: 1,
+        billingIncrement: 1,
+        unitCode: 'MON',
+      },
+    },
+  ],
+}
+
 export const viewport = {
   themeColor: '#000000',
   width: 'device-width',
@@ -75,6 +123,10 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className="bg-black text-white antialiased pt-[60px] flex flex-col min-h-screen font-sans">
         <SpeedInsights />

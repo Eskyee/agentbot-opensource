@@ -42,6 +42,19 @@
 - SIWE CredentialsProvider must have `id: "wallet"` to avoid NextAuth provider collision
 - Mobile overlays must NOT be children of elements with `backdrop-filter` — breaks touch events on iOS
 
+## Stripe product catalog (live — do not change IDs)
+
+Active plans (GBP, monthly recurring):
+| Plan       | Product ID              | Price  |
+|------------|-------------------------|--------|
+| Underground| prod_U9B91PN8c9puXP     | £29/mo |
+| Collective | prod_U98tpiNSfUlIlP     | £69/mo |
+| Label      | prod_U9CBhMyxK2fr2z     | £199/mo|
+
+Old archived products: `prod_U3Gdww8XSjeqdg`, `prod_U3GE6JFRWQPhB2`, `prod_U3G8YgmflMAlGr`, `prod_U3FjKT5K7J3i9O`, `prod_U3Fh9KSx8UzKs1`, `prod_U0Spg1EIGmFDYt` — all archived, do not re-activate.
+
+Checkout flow: `GET /api/stripe/checkout?plan=<underground|collective|label>` → 303 redirect to Stripe hosted checkout → subscription mode, monthly recurring, GBP.
+
 ## Environment variables needed
 - `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (optional)

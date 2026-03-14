@@ -411,28 +411,18 @@ function PricingPageContent() {
           {/* Page header */}
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-100 tracking-tight animate-fade-in">
-              Simple, transparent pricing
+              Fleet Subscriptions
             </h1>
             <p className="mt-4 text-lg sm:text-xl text-gray-400 animate-fade-in-up">
-              Choose the perfect plan for your needs.
+              Bring your own AI key. We provide the infrastructure.
             </p>
           </div>
 
-          {/* Billing toggle */}
+          {/* Billing label */}
           <div className="mt-8 flex justify-center animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <div className="inline-flex items-center gap-3 p-1 bg-gray-900 rounded-lg border border-gray-800">
-              <button
-                className="px-4 py-2 text-sm font-medium text-gray-100 bg-gray-800 rounded-md transition-colors"
-                aria-pressed="true"
-              >
-                Monthly
-              </button>
-              <button
-                className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300 transition-colors"
-                aria-pressed="false"
-              >
-                Yearly <span className="ml-1 text-green-400">-20%</span>
-              </button>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 rounded-lg border border-gray-800 text-sm text-gray-400">
+              <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+              Monthly billing — cancel anytime
             </div>
           </div>
         </div>
@@ -441,8 +431,8 @@ function PricingPageContent() {
       {/* Pricing Grid */}
       <section className="relative pb-20 sm:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div 
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6"
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             role="list"
             aria-label="Pricing plans"
           >
@@ -472,26 +462,26 @@ function PricingPageContent() {
           </h2>
           
           <dl className="space-y-6">
-            {[
+            [
               {
-                question: 'Can I change plans later?',
-                answer: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.',
+                question: 'Do I need to provide my own AI API key?',
+                answer: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, Ollama, or other AI provider keys directly. You pay wholesale rates with zero markup from us.',
               },
               {
                 question: 'What payment methods do you accept?',
-                answer: 'We accept all major credit cards, debit cards, and PayPal through our secure Stripe payment processing.',
+                answer: 'We accept all major credit and debit cards through Stripe. Payments are recurring monthly.',
               },
               {
-                question: 'Is there a free trial?',
-                answer: 'Yes! All plans include a 14-day free trial. No credit card required to start.',
-              },
-              {
-                question: 'What happens if I exceed my plan limits?',
-                answer: 'We\'ll notify you when you\'re approaching your limits. You can upgrade your plan or pay for additional usage.',
+                question: 'Can I change plans later?',
+                answer: 'Yes. Upgrade or downgrade at any time from your dashboard. Changes take effect at the next billing cycle.',
               },
               {
                 question: 'Can I cancel my subscription?',
-                answer: 'Yes, you can cancel anytime from your dashboard. You\'ll continue to have access until the end of your billing period.',
+                answer: 'Yes — cancel anytime from your dashboard. You keep access until the end of your paid period.',
+              },
+              {
+                question: 'What is the A2A protocol?',
+                answer: 'Agent-to-Agent (A2A) is our coordination bus — agents can delegate tasks, share context, and execute cross-agent workflows autonomously without human input.',
               },
             ].map((faq, index) => (
               <div key={index} className="bg-gray-900/30 rounded-lg p-6">
@@ -507,10 +497,10 @@ function PricingPageContent() {
       <section className="relative py-16 bg-gradient-to-b from-transparent to-blue-500/5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-100 mb-4">
-            Ready to get started?
+            Ready to deploy your fleet?
           </h2>
           <p className="text-lg text-gray-400 mb-8">
-            Join thousands of users building AI agents with Agentbot.
+            Autonomous agents running 24/7. Sovereign infrastructure. No API tax.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
