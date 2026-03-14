@@ -30,6 +30,9 @@ export async function POST(request: NextRequest) {
 
       // Map plan names to database values
       const planMap: Record<string, string> = {
+        'underground': 'underground',
+        'collective': 'collective',
+        'label': 'label',
         'starter': 'starter',
         'pro': 'pro', 
         'scale': 'scale',

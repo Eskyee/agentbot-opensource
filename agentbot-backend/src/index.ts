@@ -16,6 +16,9 @@ dotenv.config();
 const DEPLOYMENT_VERSION = '2026.03.14.002';
 
 const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
+  underground: { memory: '2g', cpus: '1' },
+  collective: { memory: '4g', cpus: '2' },
+  label: { memory: '8g', cpus: '4' },
   starter: { memory: '2g', cpus: '1' },
   pro: { memory: '4g', cpus: '2' },
   scale: { memory: '8g', cpus: '4' },
