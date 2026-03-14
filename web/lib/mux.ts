@@ -1,37 +1,28 @@
 import Mux from '@mux/mux-node';
 
 /**
- * Centered Mux Client for Agentbot
- * Handles all live streaming, assets, and uploader management.
- * 
- * Credentials provided by Operator (Atlas) for the RaveCulture ecosystem.
+ * Lazy Mux singleton for Agentbot.
+ * Instantiated on first call — never at module level (prevents Vercel build crashes).
  */
 
-const hasMuxCreds = !!(process.env.MUX_TOKEN_ID && process.env.MUX_TOKEN_SECRET);
-
-if (!hasMuxCreds) {
-  console.warn('Mux credentials missing from environment. Live stream features will be disabled.');
-}
-
-// Only instantiate if credentials present — avoids build-time throw
-export const muxClient = hasMuxCreds
-  ? new Mux({
-      tokenId: process.env.MUX_TOKEN_ID!,
-      tokenSecret: process.env.MUX_TOKEN_SECRET!,
-    })
-  : null;
-
-/**
- * Lean Defaults for Agentbot (Cost Optimization)
- * - Basic quality = Free encoding
- * - Public policy = Easy distribution
- */
 export const LEAN_ASSET_SETTINGS = {
   playback_policy: ['public'],
   video_quality: 'basic',
 };
 
-export const Video = muxClient?.video ?? null;
-export const Data = muxClient?.data ?? null;
+let _muxClient: Mux | null = null;
 
-export default muxClient;
+export function getMux(): Mux {
+  if (!_muxClient) {
+    if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) {
+      throw new Error('Mux credentials missing from environment. Live stream features will be disabled.');
+    }
+    _muxClient = new Mux({
+      tokenId: process.env.MUX_TOKEN_ID,
+      tokenSecret: process.env.MUX_TOKEN_SECRET,
+    });
+  }
+  return _muxClient;
+}
+
+export default getMux;

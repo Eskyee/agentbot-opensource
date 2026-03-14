@@ -3,10 +3,10 @@ import Stripe from 'stripe'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
-const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
-  underground: { amount: 2900, name: 'Underground', description: '1 Agent, Mistral 7B, A2A Bus Access, Basic Analytics' },
-  collective: { amount: 6900, name: 'Collective', description: '3 Agents, Llama 3.3, Royalty Split Engine, Mission Control Graph' },
-  label: { amount: 19900, name: 'Label', description: 'Unlimited Agents, DeepSeek R1, Priority A2A Routing, 24/7 Signal Guard' },
+const PLAN_PRICES: Record<string, { amount: number; name: string; description: string; priceId?: string }> = {
+  underground: { amount: 1900, name: 'Starter Plan', description: '1 Agent, A2A Bus Access, Basic Analytics', priceId: 'price_1T59bkDiHU0UF7aWOYKaifpc' },
+  collective: { amount: 6900, name: 'Collective', description: '3 Agents, Llama 3.3, Royalty Split Engine', priceId: 'price_1TAqc0DiHU0UF7aWEYTqA7k0' },
+  label: { amount: 14900, name: 'Enterprise Plan', description: 'Unlimited Agents, DeepSeek R1, Priority A2A', priceId: 'price_1T5A68DiHU0UF7aWx9gKqQLq' },
 }
 
 // Known Stripe product IDs for our 3 active plans
@@ -80,10 +80,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL(`/pricing?error=no_checkout_url`, origin), 303)
     }
 
-    return NextResponse.redirect(checkoutSession.url, 303)
+    return NextResponse.json({ url: checkoutSession.url })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('Stripe checkout error:', errorMessage, { plan })
-    return NextResponse.redirect(new URL(`/pricing?error=${encodeURIComponent(errorMessage)}`, origin), 303)
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

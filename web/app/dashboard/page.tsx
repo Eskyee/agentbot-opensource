@@ -55,6 +55,7 @@ const navItems = [
   { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
   { icon: '✅', label: 'Verify', href: '/dashboard/verify' },
   { icon: '🎛️', label: 'DJ Stream', href: '/dashboard/dj-stream' },
+  { icon: '💹', label: 'Trading', href: '/dashboard/trading' },
   { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
   { icon: '💳', label: 'Billing', href: '/billing' },
   { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },

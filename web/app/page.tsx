@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
-import PartnerLogos from './components/PartnerLogos'
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -22,8 +21,7 @@ export default async function Home() {
           </h1>
           
           <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            The multi-tenant orchestration layer for high-performance agent fleets. 
-            Sovereign, autonomous, and tuned for the underground.
+            Run AI agents. Not servers.
           </p>
           
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
@@ -49,8 +47,40 @@ export default async function Home() {
               BROWSE AGENTS
             </Link>
           </div>
+        </div>
+      </section>
 
-          <PartnerLogos />
+      {/* baseFM Token Section */}
+      <section className="px-4 py-12 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-y border-purple-500/20">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="mb-2 text-[10px] font-bold text-purple-400 tracking-[0.3em] uppercase">
+            Now Streaming Live
+          </div>
+          <h2 className="text-3xl font-black mb-4">🎵 baseFM</h2>
+          <p className="text-gray-400 mb-6">The underground is live. Tune in now.</p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <a
+              href="https://basefm.space/live"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl bg-purple-600 px-8 py-3 text-sm font-bold text-white hover:bg-purple-500 transition-all"
+            >
+              🎧 LISTEN LIVE
+            </a>
+            <a
+              href="https://bankr.bot/agents/basefm"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-xl bg-gray-900 border border-purple-500/30 px-8 py-3 text-sm font-bold text-purple-400 hover:bg-purple-900/20 transition-all"
+            >
+              Support $BASEFM →
+            </a>
+          </div>
+          
+          <div className="mt-6 text-xs text-gray-500 font-mono">
+            $BASEFM • 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 • Base
+          </div>
         </div>
       </section>
 
@@ -202,26 +232,84 @@ export default async function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/5 py-12 bg-black">
-        <div className="mx-auto max-w-6xl px-4 text-center">
-          <div className="flex flex-col items-center gap-8">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🦞</span>
-              <span className="font-black tracking-tighter text-xl">AGENTBOT</span>
-              <span className="text-gray-600 text-xs">© 2026 BY RAVECULTURE</span>
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="grid md:grid-cols-2 gap-12">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-3xl">🦞</span>
+                <span className="font-black tracking-tighter text-xl">AGENTBOT</span>
+              </div>
+              <p className="text-gray-500 text-sm mb-4">
+                Zero human company run by Atlas_baseFM. The underground infrastructure for autonomous agent fleets.
+              </p>
+              <div className="text-xs text-gray-600">
+                © 2026 BY RAVECULTURE
+              </div>
             </div>
             
-            <div className="flex items-center gap-12 opacity-50 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Deployed on</span>
-                <span className="font-black text-sm tracking-tight">VERCEL</span>
+            <div className="text-right">
+              <div className="text-xs font-bold text-green-400 tracking-widest mb-2">SUPPORT THE MISSION</div>
+              <div className="text-xs text-gray-500 mb-2">Send ETH or tokens to:</div>
+              <code className="text-green-400 bg-gray-900 px-3 py-2 rounded font-mono text-xs break-all inline-block">
+                0xd8fd0e1dce89beaab924ac68098ddb17613db56f
+              </code>
+              <div className="mt-3 flex gap-4 justify-end text-xs">
+                <a href="/token" className="text-blue-400 hover:underline">$AGENTBOT</a>
+                <a href="/basefm" className="text-purple-400 hover:underline">$BASEFM</a>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Hosted on</span>
-                <span className="font-black text-sm tracking-tight">RENDER</span>
+            </div>
+          </div>
+          
+          <div className="mt-12">
+            <p className="text-[10px] font-bold tracking-widest text-gray-500 uppercase text-center mb-6">Built with the best</p>
+            <div className="flex items-center justify-center gap-8 flex-wrap">
+              {/* Vercel */}
+              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="60" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
+                  <path d="M12 1L24 22H0L12 1z"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Vercel</span>
               </div>
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-[8px] font-bold tracking-widest text-blue-500 uppercase">Onchain via</span>
-                <span className="font-black text-sm tracking-tight">BASE</span>
+              {/* Render */}
+              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="60" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
+                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" fill="none"/>
+                  <circle cx="12" cy="12" r="4" fill="white"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Render</span>
+              </div>
+              {/* Base */}
+              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="50" height="24" viewBox="0 0 24 24" fill="none" className="h-7">
+                  <circle cx="12" cy="12" r="10" fill="#0052FF"/>
+                  <path d="M12 6L6 18H18L12 6z" fill="white"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Base</span>
+              </div>
+              {/* Coinbase */}
+              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="60" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
+                  <circle cx="12" cy="12" r="10" fill="#0052FF"/>
+                  <circle cx="12" cy="12" r="5" fill="white"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Coinbase</span>
+              </div>
+              {/* Ollama */}
+              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="50" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
+                  <circle cx="8" cy="12" r="6" fill="#FF6720"/>
+                  <path d="M16 8H20M16 12H22M16 16H19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Ollama</span>
+              </div>
+              {/* Mux */}
+              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
+                <svg width="40" height="24" viewBox="0 0 24 24" fill="white" className="h-5">
+                  <rect x="2" y="6" width="4" height="12" rx="1" fill="#FF3344"/>
+                  <rect x="10" y="4" width="4" height="16" rx="1" fill="#FF3344"/>
+                  <rect x="18" y="8" width="4" height="8" rx="1" fill="#FF3344"/>
+                </svg>
+                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Mux</span>
               </div>
             </div>
           </div>

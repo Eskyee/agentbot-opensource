@@ -28,6 +28,10 @@ export default function Footer() {
             <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors underline">Pricing</Link>
             <Link href="/docs" className="text-gray-400 hover:text-white transition-colors underline">Docs</Link>
             <Link href="/marketplace" className="text-gray-400 hover:text-white transition-colors underline">Marketplace</Link>
+            <Link href="/partner" className="text-gray-400 hover:text-white transition-colors underline">Partner</Link>
+            <Link href="/token" className="text-blue-400 hover:text-white transition-colors underline">$AGENTBOT</Link>
+            <Link href="/basefm" className="text-green-400 hover:text-white transition-colors underline">$BASEFM</Link>
+            <a href="https://stackoverflow.com/users/13100302/agentbot-openclaw" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">Stack Overflow</a>
             <Link href="/terms" className="text-gray-400 hover:text-white transition-colors underline">Terms</Link>
             <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors underline">Privacy</Link>
           </div>
@@ -38,7 +42,9 @@ export default function Footer() {
               <span>{isHealthy === null ? 'Checking...' : isHealthy ? 'Operational' : 'Offline'}</span>
             </div>
             <span>•</span>
-            <span>© 2026 Agentbot baseFM RaveCulture moltx.io/Atlas_baseFM</span>
+            <span>© 2026 Zero Human Company</span>
+            <span>•</span>
+            <span className="text-purple-400">Human Verified by Agentbot</span>
             {version && <><span>•</span><span>OpenClaw v{version}</span></>}
           </div>
         </div>

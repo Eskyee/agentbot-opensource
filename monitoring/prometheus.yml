@@ -1,0 +1,33 @@
+# Prometheus configuration for baseFM monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'basefm-monitor'
+
+scrape_configs:
+  # K6 metrics (load test)
+  - job_name: 'k6'
+    static_configs:
+      - targets: ['localhost:6565']
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node exporter (if available)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '([^:]+)(?::\d+)?'
+        replacement: '${1}:9100'
+        target_label: __address__
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []

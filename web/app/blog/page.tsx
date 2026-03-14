@@ -2,6 +2,34 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'battle-tested',
+    date: '14 March 2026',
+    title: 'Battle Tested: Live in the Field',
+    excerpt: 'How we built Agentbot in the trenches - real problems, real solutions, zero marketing fluff.',
+    tags: ["Field Report", "Philosophy", "Build"]
+  },
+  {
+    slug: 'zero-human-company',
+    date: '14 March 2026',
+    title: 'Running a Zero-Human Company with AI Agents',
+    excerpt: 'How Atlas operates autonomously - no humans required. AI agents handle deployments, support, trading, and content creation.',
+    tags: ["AI", "Autonomy", "Operations"]
+  },
+  {
+    slug: 'bankr-wallet-guide',
+    date: '14 March 2026',
+    title: 'How to Connect Your Bankr Wallet',
+    excerpt: 'Step-by-step guide to connecting your Bankr wallet for crypto trading and payments on the Agentbot platform.',
+    tags: ["Guide", "Crypto", "Bankr"]
+  },
+  {
+    slug: 'platform-v2-launch',
+    date: '14 March 2026',
+    title: 'Agentbot V2 Launch: Trading, Payments & More',
+    excerpt: 'Major platform update brings Bankr crypto integration, x402 USDC payments, and a complete trading dashboard.',
+    tags: ["Launch", "Trading", "V2"]
+  },
+  {
     slug: 'daily-2026-03-05',
     date: '5 March 2026',
     title: 'baseFM March Update: Agent Skills, Autonomous Trading & More',
@@ -149,6 +177,34 @@ const blogPosts = [
     tags: ['Tutorial', 'Integrations']
   },
   {
+    slug: 'security-hardening-2026',
+    date: 'March 2026',
+    title: 'Security Hardening 2026: Protecting Your AI Agents',
+    excerpt: 'Comprehensive security review completed. Authorization checks, input validation, and production hardening applied.',
+    tags: ["Security", "Production"]
+  },
+  {
+    slug: 'welcome-openclaw-users',
+    date: 'February 2026',
+    title: 'Welcome OpenClaw Users',
+    excerpt: 'Agentbot is now the recommended hosting platform for OpenClaw. Migrate your agents in minutes.',
+    tags: ["OpenClaw", "Migration"]
+  },
+  {
+    slug: 'powerful-builders-in-the-cloud',
+    date: 'February 2026',
+    title: 'Powerful Builders in the Cloud',
+    excerpt: 'Why we built Agentbot - a platform for powerful builders who want to deploy AI agents without server headaches.',
+    tags: ["Philosophy", "Builders"]
+  },
+  {
+    slug: 'agentbot-launch',
+    date: 'February 2026',
+    title: 'Agentbot Public Launch',
+    excerpt: 'After months of development, Agentbot is finally here. Deploy OpenClaw agents in seconds.',
+    tags: ["Launch", "Announcement"]
+  },
+  {
     slug: 'welcome',
     date: 'January 2026',
     title: 'Welcome to Agentbot',
@@ -161,6 +217,7 @@ const upcomingFeatures = [
   { status: 'In Progress', title: 'Custom Domains', desc: 'Deploy to your own .com' },
   { status: 'In Progress', title: 'Metrics Dashboard', desc: 'Real-time usage graphs' },
   { status: 'In Progress', title: 'REST API', desc: 'Programmatic control' },
+  { status: 'Coming Soon', title: 'Vercel Workflows', desc: 'Lightweight agent workflows' },
   { status: 'Coming Soon', title: 'WhatsApp', desc: 'Deploy agents to WA' },
   { status: 'Coming Soon', title: 'Agent Builder', desc: 'Visual drag-drop UI' },
   { status: 'Coming Soon', title: 'Voice Mode', desc: 'Talk to your agent' },
@@ -172,20 +229,6 @@ export default function BlogPage() {
   return (
     <main className="min-h-screen px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-4xl">
-        <div className="mb-10 p-6 rounded-2xl bg-gradient-to-r from-white/10 to-gray-500/10 border border-white/20">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-white text-black text-xs font-bold px-2 py-1 rounded">LAUNCH</span>
-            <span className="text-xs text-gray-400">Coming Soon</span>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Agentbot Public Launch</h2>
-          <p className="text-gray-300 mb-4">
-            We're launching soon! Sign up now to get early access and lock in launch pricing.
-          </p>
-          <Link href="/signup" className="inline-block bg-white text-black font-semibold px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
-            Get Early Access →
-          </Link>
-        </div>
-
         <h1 className="text-4xl font-bold tracking-tight mb-4">Blog</h1>
         <p className="text-gray-400 mb-2">
           Product updates, deployment tips, and guides for running OpenClaw agents in production.
@@ -193,6 +236,52 @@ export default function BlogPage() {
         <p className="text-sm text-gray-500 mb-10">
           Fresh content published daily at 9am UK London time
         </p>
+
+        <div className="mb-12 p-6 rounded-2xl bg-gray-900 border border-gray-800">
+          <p className="text-xs font-bold text-gray-500 tracking-widest uppercase mb-4">POWERED BY</p>
+          <div className="flex flex-wrap gap-6 text-lg font-bold">
+            <span className="text-gray-400">OpenAI</span>
+            <span className="text-gray-600">•</span>
+            <span className="text-gray-400">Anthropic</span>
+            <span className="text-gray-600">•</span>
+            <span className="text-gray-400">Google</span>
+            <span className="text-gray-600">•</span>
+            <span className="text-gray-400">xAI</span>
+            <span className="text-gray-600">•</span>
+            <span className="text-gray-400">DeepSeek</span>
+            <span className="text-gray-600">•</span>
+            <span className="text-gray-400">Meta</span>
+            <span className="text-gray-600">•</span>
+            <span className="text-gray-400">Ollama</span>
+          </div>
+        </div>
+
+        <Link href="/learn" className="block mb-12 p-6 rounded-2xl bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 hover:border-blue-400/50 transition-colors">
+          <p className="text-xs font-bold text-blue-400 tracking-widest uppercase mb-2">NEW</p>
+          <h2 className="text-2xl font-bold text-white mb-2">📚 Learn Agentbot</h2>
+          <p className="text-gray-300">
+            User guides, advanced tutorials, and embedded OpenClaw docs — everything you need to master agent deployment.
+          </p>
+        </Link>
+
+        <div className="grid gap-6 md:grid-cols-2 mb-12">
+          <Link href="/learn" className="p-6 rounded-2xl bg-gray-900 border border-gray-800 hover:border-white/30 transition-colors">
+            <h3 className="text-xl font-bold mb-2">🚀 User Guide</h3>
+            <p className="text-gray-400 text-sm">Getting started for the first time. Deploy your first agent in 60 seconds.</p>
+          </Link>
+          <Link href="/learn" className="p-6 rounded-2xl bg-gray-900 border border-gray-800 hover:border-white/30 transition-colors">
+            <h3 className="text-xl font-bold mb-2">⚡ Advanced</h3>
+            <p className="text-gray-400 text-sm">Swarms, skills, workflows, and production deployment strategies.</p>
+          </Link>
+        </div>
+
+        <Link href="/news" className="block mb-12 p-6 rounded-2xl bg-gradient-to-r from-green-900/30 to-teal-900/30 border border-green-500/30 hover:border-green-400/50 transition-colors">
+          <p className="text-xs font-bold text-green-400 tracking-widest uppercase mb-2">COMMUNITY</p>
+          <h2 className="text-2xl font-bold text-white mb-2">📰 OpenClaw News</h2>
+          <p className="text-gray-300">
+            Latest updates from Peter and the Claw community — fresh daily.
+          </p>
+        </Link>
 
         <div className="space-y-4">
           {blogPosts.map((post) => (

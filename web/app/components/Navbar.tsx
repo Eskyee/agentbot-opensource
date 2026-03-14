@@ -43,12 +43,18 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
           <Link href="/pricing" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Pricing</Link>
+          <Link href="/learn" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Learn</Link>
+          <Link href="/news" className="text-sm text-gray-400 hover:text-white rounded transition-colors">News</Link>
           <Link href="/blog" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Blog</Link>
           <Link href="/docs" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
-          <Link href="/marketplace" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Marketplace</Link>
+          <Link href="/basefm" className="text-sm text-green-400 hover:text-white rounded transition-colors">$BASEFM</Link>
+          <Link href="/partner" className="text-sm text-purple-400 hover:text-white rounded transition-colors">Partner</Link>
 
           {status === "loading" ? null : session ? (
             <div className="flex items-center gap-4">
+              <Link href="/marketplace" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
+                Marketplace
+              </Link>
               <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
                 Dashboard
               </Link>
@@ -102,6 +108,8 @@ export default function Navbar() {
         >
           <div className="flex flex-col p-4 gap-1">
             <Link href="/pricing" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Pricing</Link>
+            <Link href="/learn" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Learn</Link>
+            <Link href="/news" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>News</Link>
             <Link href="/blog" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Blog</Link>
             <Link href="/docs" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Docs</Link>
             <Link href="/marketplace" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Marketplace</Link>
