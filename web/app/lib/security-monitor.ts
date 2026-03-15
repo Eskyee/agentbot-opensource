@@ -14,21 +14,25 @@ export interface SecurityEvent {
 }
 
 class SecurityMonitor {
-  private logStream: any
+  private logStream: any = null
   private metrics: Map<string, any> = new Map()
   private alerts: SecurityEvent[] = []
-  
+
   constructor() {
-    const logDir = process.env.LOG_DIR || '/var/log/agentbot'
-    const logFile = join(logDir, 'security.log')
-    
-    // Ensure log directory exists
-    if (!existsSync(logDir)) {
-      mkdirSync(logDir, { recursive: true })
+    // Vercel and most serverless platforms have a read-only filesystem
+    // except for /tmp. Wrap in try/catch so the singleton always instantiates
+    // even when the log path is inaccessible — alerting still works.
+    try {
+      const logDir = process.env.LOG_DIR || '/tmp/agentbot-logs'
+      const logFile = join(logDir, 'security.log')
+      if (!existsSync(logDir)) {
+        mkdirSync(logDir, { recursive: true })
+      }
+      this.logStream = createWriteStream(logFile, { flags: 'a' })
+    } catch {
+      // Log file unavailable (expected in serverless) — alerts still fire
+      this.logStream = null
     }
-    
-    // Create write stream for security logs
-    this.logStream = createWriteStream(logFile, { flags: 'a' })
   }
   
   /**
@@ -36,7 +40,7 @@ class SecurityMonitor {
    */
   logEvent(event: SecurityEvent) {
     const logEntry = JSON.stringify(event)
-    this.logStream.write(logEntry + '\n')
+    this.logStream?.write(logEntry + '\n')
     
     // Keep alerts in memory for monitoring
     this.alerts.push(event)
