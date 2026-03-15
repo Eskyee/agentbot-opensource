@@ -135,7 +135,16 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || 'default-dev-secret',
+  secret: (() => {
+    if (!process.env.NEXTAUTH_SECRET) {
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error('NEXTAUTH_SECRET environment variable is required in production')
+      }
+      console.warn('[Auth] NEXTAUTH_SECRET not set — using dev fallback (insecure)')
+      return 'dev-only-fallback-secret'
+    }
+    return process.env.NEXTAUTH_SECRET
+  })(),
   debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login",

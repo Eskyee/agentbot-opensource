@@ -3,17 +3,18 @@ import Stripe from 'stripe'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
-const PLAN_PRICES: Record<string, { amount: number; name: string; description: string; priceId?: string }> = {
-  underground: { amount: 1900, name: 'Starter Plan', description: '1 Agent, A2A Bus Access, Basic Analytics', priceId: 'price_1T59bkDiHU0UF7aWOYKaifpc' },
-  collective: { amount: 6900, name: 'Collective', description: '3 Agents, Llama 3.3, Royalty Split Engine', priceId: 'price_1TAqc0DiHU0UF7aWEYTqA7k0' },
-  label: { amount: 14900, name: 'Enterprise Plan', description: 'Unlimited Agents, DeepSeek R1, Priority A2A', priceId: 'price_1T5A68DiHU0UF7aWx9gKqQLq' },
+// Canonical plan prices — amounts in pence (GBP). Must match what is shown in the UI.
+const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
+  underground: { amount: 2900,  name: 'Underground', description: '1 Agent, A2A Bus Access, Basic Analytics' },
+  collective:  { amount: 6900,  name: 'Collective',  description: '3 Agents, Llama 3.3, Royalty Split Engine' },
+  label:       { amount: 19900, name: 'Label',       description: 'Unlimited Agents, DeepSeek R1, Priority A2A' },
 }
 
-// Known Stripe product IDs for our 3 active plans
+// Known Stripe product IDs for our 3 active plans — do not change these IDs
 const PRODUCT_IDS: Record<string, string> = {
   underground: 'prod_U9B91PN8c9puXP',
-  collective: 'prod_U98tpiNSfUlIlP',
-  label: 'prod_U9CBhMyxK2fr2z',
+  collective:  'prod_U98tpiNSfUlIlP',
+  label:       'prod_U9CBhMyxK2fr2z',
 }
 
 export async function GET(request: NextRequest) {
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
 
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id || ''
+  const userEmail = session?.user?.email || ''
 
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) {
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest) {
       (p) => p.recurring?.interval === 'month' && p.unit_amount === planInfo.amount
     )?.id
 
-    // If no recurring monthly price exists, create one for this product
+    // If no recurring monthly GBP price exists at the correct amount, create one
     if (!priceId) {
       const normalized = plan.replace(/[^a-z0-9]+/g, '_')
       const newPrice = await stripe.prices.create(
@@ -62,28 +64,37 @@ export async function GET(request: NextRequest) {
           product: productId,
           active: true,
         },
-        { idempotencyKey: `price_${normalized}_gbp_month_v2` }
+        { idempotencyKey: `price_${normalized}_gbp_month_v3` }
       )
       priceId = newPrice.id
     }
 
-    const checkoutSession = await stripe.checkout.sessions.create({
+    // Build checkout session params
+    const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
       success_url: `${origin}/onboard?plan=${plan}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?cancelled=1`,
       metadata: { plan, source: 'agentbot-web', userId },
-    })
+    }
+
+    // Pre-fill customer email if user is logged in (improves conversion)
+    if (userEmail) {
+      checkoutParams.customer_email = userEmail
+    }
+
+    const checkoutSession = await stripe.checkout.sessions.create(checkoutParams)
 
     if (!checkoutSession.url) {
       return NextResponse.redirect(new URL(`/pricing?error=no_checkout_url`, origin), 303)
     }
 
-    return NextResponse.json({ url: checkoutSession.url })
+    // Always redirect to Stripe — works for both <a href> links and programmatic navigation
+    return NextResponse.redirect(checkoutSession.url, 303)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('Stripe checkout error:', errorMessage, { plan })
-    return NextResponse.json({ error: errorMessage }, { status: 500 })
+    return NextResponse.redirect(new URL(`/pricing?error=checkout_failed`, origin), 303)
   }
 }

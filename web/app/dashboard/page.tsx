@@ -845,7 +845,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold mb-1">🎁 Invite Friends, Get Free Months</h2>
-                <p className="text-gray-400 text-sm mb-4">Share your link — get £30 off per referral</p>
+                <p className="text-gray-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"

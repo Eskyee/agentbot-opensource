@@ -357,24 +357,10 @@ function PricingPageContent() {
     setCheckoutState({ loading: true, error: null, planId })
 
     try {
-      const response = await fetch(`/api/stripe/checkout?plan=${planId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to create checkout session')
-      }
-
-      const data = await response.json()
-      
-      // Redirect to Stripe checkout
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        throw new Error('No checkout URL received')
-      }
+      // Route now returns a 303 redirect directly to Stripe — navigate there
+      window.location.href = `/api/stripe/checkout?plan=${planId}`
+      // Keep loading state on while browser navigates away
+      return
     } catch (error) {
       console.error('Checkout error:', error)
       setCheckoutState({

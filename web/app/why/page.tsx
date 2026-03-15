@@ -1,7 +1,7 @@
 
 import Link from 'next/link'
 
-const PRICE_START = "£19/mo";
+const PRICE_START = "£29/mo";
 
 export default function WhyAgentbotPage() {
   return (
