@@ -50,6 +50,7 @@ export default function Navbar() {
           <Link href="/blog" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Blog</Link>
           <Link href="/docs" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
           <Link href="/basefm" className="text-sm text-gray-400 hover:text-white rounded transition-colors">$BASEFM</Link>
+          <Link href="/token" className="text-sm text-gray-400 hover:text-white rounded transition-colors">$AGENTBOT</Link>
           <Link href="/partner" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Partner</Link>
 
           {status === "loading" ? null : session ? (
@@ -116,6 +117,7 @@ export default function Navbar() {
             <Link href="/blog" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Blog</Link>
             <Link href="/docs" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Docs</Link>
             <Link href="/marketplace" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Marketplace</Link>
+            <Link href="/token" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>$AGENTBOT</Link>
 
             <div className="border-t border-gray-800 mt-2 pt-4 flex flex-col gap-1">
               {session ? (

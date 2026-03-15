@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import CoinbaseWalletButton from '../components/CoinbaseWallet'
 
 const navItems = [
@@ -54,9 +55,16 @@ function BillingSidebar({ userName, className = '' }: { userName: string; classN
 }
 
 export default function BillingPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const [currentPlan, setCurrentPlan] = useState('underground')
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login?callbackUrl=/billing')
+    }
+  }, [status, router])
 
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
@@ -122,6 +130,14 @@ export default function BillingPage() {
 
   const contactSales = () => {
     window.location.href = 'mailto:sales@agentbot.com?subject=Custom Infrastructure Inquiry'
+  }
+
+  if (status === 'loading' || status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-gray-400">Loading…</div>
+      </div>
+    )
   }
 
    return (

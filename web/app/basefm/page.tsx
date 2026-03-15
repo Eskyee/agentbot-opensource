@@ -108,6 +108,14 @@ export default function BasefmTokenPage() {
               <p className="text-blue-400">View on MoltX →</p>
             </a>
             
+            <a
+              href="/wristband"
+              className="block bg-gray-800 hover:bg-gray-700 rounded-lg p-4 transition-colors"
+            >
+              <p className="text-gray-400 text-sm mb-1">Wristband</p>
+              <p className="text-blue-400">Get your wristband →</p>
+            </a>
+
             <div className="block bg-gray-800 rounded-lg p-4">
               <p className="text-gray-400 text-sm mb-1">Transaction</p>
               <p className="text-green-400 text-sm font-mono break-all">0x9ef1cb05dd0b1aa5f9d2f11c2e5d44b66acde389e5602aa1870089981b163d3f</p>

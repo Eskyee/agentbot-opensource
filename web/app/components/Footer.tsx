@@ -8,8 +8,13 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex flex-col items-center justify-center gap-6 text-center">
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+            <Link href="/why" className="text-gray-400 hover:text-white transition-colors">Why</Link>
+            <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link>
+            <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">Blog</Link>
             <Link href="/docs" className="text-gray-400 hover:text-white transition-colors">Docs</Link>
             <Link href="/marketplace" className="text-gray-400 hover:text-white transition-colors">Marketplace</Link>
+            <Link href="/partner" className="text-gray-400 hover:text-white transition-colors">Partner</Link>
+            <Link href="/token" className="text-gray-400 hover:text-white transition-colors">$AGENTBOT</Link>
             <a href="https://stackoverflow.com/users/13100302/agentbot-openclaw" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">Stack Overflow</a>
             <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">Terms</Link>
             <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">Privacy</Link>
