@@ -6,7 +6,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  deploy:
+    name: Deploy to Vercel Production
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Hello World"
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy to Vercel Production
+        run: vercel deploy --prod --yes --cwd web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: team_YCl90FdrE1nJKMJJm289I6BH
+          VERCEL_PROJECT_ID: prj_9zfDOIj3WRhmZolSJL7ESHzD4EBf
