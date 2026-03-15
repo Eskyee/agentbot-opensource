@@ -80,11 +80,9 @@ const newFeatures = [
 ];
 
 const planResources = [
-  { plan: 'Starter', ram: '2GB', cpu: '1 vCPU', price: '£19/mo' },
-  { plan: 'Pro', ram: '4GB', cpu: '2 vCPU', price: '£39/mo' },
-  { plan: 'Scale', ram: '8GB', cpu: '4 vCPU', price: '£79/mo' },
-  { plan: 'Enterprise', ram: '16GB', cpu: '4 vCPU', price: '£149/mo' },
-  { plan: 'White Glove', ram: '32GB', cpu: '8 vCPU', price: '£199/mo' },
+  { plan: 'Underground', ram: '2GB', cpu: '1 vCPU', price: '£29/mo' },
+  { plan: 'Collective',  ram: '4GB', cpu: '2 vCPU', price: '£69/mo' },
+  { plan: 'Label',       ram: '8GB', cpu: '4 vCPU', price: '£199/mo' },
 ];
 
 const supportedModels = [

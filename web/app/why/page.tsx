@@ -1,7 +1,7 @@
 
 import Link from 'next/link'
 
-const PRICE_START = "£19/mo";
+const PRICE_START = "£29/mo";
 
 export default function WhyAgentbotPage() {
   return (
@@ -82,7 +82,7 @@ export default function WhyAgentbotPage() {
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="p-4 font-medium">Cost</td>
-                  <td className="p-4 bg-blue-900/10">{PRICE_START} starter plan</td>
+                  <td className="p-4 bg-blue-900/10">{PRICE_START} Underground plan</td>
                   <td className="p-4">VPS costs or dedicated hardware needed for 24/7 use</td>
                 </tr>
               </tbody>
@@ -357,7 +357,7 @@ export default function WhyAgentbotPage() {
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
               <h3 className="font-bold mb-2">Is Agentbot free?</h3>
               <p className="text-gray-300">
-                Plans start at {PRICE_START} for the Starter plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-400 hover:underline">pricing page</Link> for details.
+                Plans start at {PRICE_START} for the Underground plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-400 hover:underline">pricing page</Link> for details.
               </p>
             </div>
 

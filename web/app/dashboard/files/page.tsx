@@ -118,7 +118,7 @@ export default function FilesPage() {
                   onClick={upgradeStorage}
                   className="text-sm text-blue-400 mt-1 hover:text-blue-300 transition-colors"
                 >
-                  Upgrade to Pro (£39/mo)
+                  Upgrade Storage (+50GB)
                 </button>
               )}
             </div>
