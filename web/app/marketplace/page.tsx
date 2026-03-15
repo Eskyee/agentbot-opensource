@@ -100,10 +100,12 @@ export default function MarketplacePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Mobile Sidebar */}
-      <div className="md:hidden">
-        <MarketplaceSidebar userName={userName} className="mb-6" />
-      </div>
+      {/* Mobile Sidebar - only show for logged in users */}
+      {session && (
+        <div className="md:hidden">
+          <MarketplaceSidebar userName={userName} className="mb-6" />
+        </div>
+      )}
 
       <main className="px-4 sm:px-6 py-8">
         <div className="max-w-7xl mx-auto">
