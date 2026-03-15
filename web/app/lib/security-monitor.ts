@@ -2,6 +2,7 @@
 
 import { createWriteStream, existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
+import { alertSecurityEvent, alertLoginBurst } from './alerts'
 
 export interface SecurityEvent {
   timestamp: string
@@ -13,21 +14,25 @@ export interface SecurityEvent {
 }
 
 class SecurityMonitor {
-  private logStream: any
+  private logStream: any = null
   private metrics: Map<string, any> = new Map()
   private alerts: SecurityEvent[] = []
-  
+
   constructor() {
-    const logDir = process.env.LOG_DIR || '/var/log/agentbot'
-    const logFile = join(logDir, 'security.log')
-    
-    // Ensure log directory exists
-    if (!existsSync(logDir)) {
-      mkdirSync(logDir, { recursive: true })
+    // Vercel and most serverless platforms have a read-only filesystem
+    // except for /tmp. Wrap in try/catch so the singleton always instantiates
+    // even when the log path is inaccessible — alerting still works.
+    try {
+      const logDir = process.env.LOG_DIR || '/tmp/agentbot-logs'
+      const logFile = join(logDir, 'security.log')
+      if (!existsSync(logDir)) {
+        mkdirSync(logDir, { recursive: true })
+      }
+      this.logStream = createWriteStream(logFile, { flags: 'a' })
+    } catch {
+      // Log file unavailable (expected in serverless) — alerts still fire
+      this.logStream = null
     }
-    
-    // Create write stream for security logs
-    this.logStream = createWriteStream(logFile, { flags: 'a' })
   }
   
   /**
@@ -35,7 +40,7 @@ class SecurityMonitor {
    */
   logEvent(event: SecurityEvent) {
     const logEntry = JSON.stringify(event)
-    this.logStream.write(logEntry + '\n')
+    this.logStream?.write(logEntry + '\n')
     
     // Keep alerts in memory for monitoring
     this.alerts.push(event)
@@ -48,6 +53,13 @@ class SecurityMonitor {
     // Alert to console for critical events
     if (['INJECTION', 'BOT_DETECTED', 'BLOCKED_IP'].includes(event.type)) {
       console.error(`[SECURITY_ALERT] ${event.type}:`, event)
+      // Fire webhook alert (non-blocking)
+      alertSecurityEvent(
+        event.type,
+        event.ip,
+        event.path || 'unknown',
+        JSON.stringify(event.details)
+      ).catch(() => {}) // swallow — never let alerting break the request
     }
   }
   
@@ -63,8 +75,15 @@ class SecurityMonitor {
       path,
       details: { reason: 'Too many requests' }
     })
-    
+
     this.updateMetric('rate_limits', 1)
+
+    // Alert on auth-path rate limits (likely brute force)
+    const authPaths = ['/api/auth', '/api/register', '/api/provision', '/api/demo/chat']
+    if (authPaths.some(p => path?.startsWith(p))) {
+      const count = (this.metrics.get('rate_limits') || 0) as number
+      alertLoginBurst(ip, path, count).catch(() => {})
+    }
   }
   
   /**

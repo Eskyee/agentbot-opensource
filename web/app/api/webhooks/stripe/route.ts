@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/app/lib/stripe'
 import { PRICING_TIERS } from '@/app/lib/pricing'
+import { alertStripeFailure, sendAlert } from '@/app/lib/alerts'
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
 
@@ -82,13 +83,6 @@ export async function POST(request: Request) {
         break
       }
 
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as any
-        console.log(`Subscription deleted for customer ${subscription.customer}`)
-        // Handle cancellations - deactivate service
-        break
-      }
-
       case 'invoice.payment_succeeded': {
         const invoice = event.data.object as any
         console.log(`Payment succeeded for customer ${invoice.customer}`)
@@ -98,7 +92,24 @@ export async function POST(request: Request) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as any
         console.log(`Payment failed for customer ${invoice.customer}`)
-        // Handle failed payments
+        // Alert ops team
+        await alertStripeFailure(
+          'invoice.payment_failed',
+          String(invoice.customer),
+          invoice.amount_due ? `£${(invoice.amount_due / 100).toFixed(2)}` : undefined
+        )
+        break
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as any
+        console.log(`Subscription cancelled for customer ${subscription.customer}`)
+        await sendAlert({
+          title: 'Subscription Cancelled',
+          message: 'A customer cancelled their subscription.',
+          severity: 'warning',
+          fields: { Customer: String(subscription.customer), Plan: String(subscription.items?.data?.[0]?.plan?.nickname || 'unknown') },
+        })
         break
       }
     }

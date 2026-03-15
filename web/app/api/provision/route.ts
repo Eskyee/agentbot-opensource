@@ -5,6 +5,7 @@ import { authOptions } from '@/app/lib/auth'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 import { getMux } from '@/lib/mux'
 import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
+import { alertNewProvision } from '@/app/lib/alerts'
 
 const BACKEND_API_URL = getBackendApiUrl()
 const BACKEND_API_FALLBACK_URL = (process.env.BACKEND_API_FALLBACK_URL || '').trim()
@@ -229,6 +230,8 @@ export async function POST(request: NextRequest) {
     
     if (response.ok && data?.url) {
       const subdomain = data.subdomain || `${userId}.agents.localhost`
+      // Alert ops — non-blocking
+      alertNewProvision(session.user.id, plan || 'free').catch(() => {})
       return NextResponse.json({
         success: true,
         userId,
