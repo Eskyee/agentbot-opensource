@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
 import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
@@ -76,7 +77,8 @@ const navItems = [
 
 function DashboardContent() {
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+  const router = useRouter()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
@@ -100,6 +102,12 @@ function DashboardContent() {
     { id: '4', action: 'Skill installed', agent: 'Atlas', time: '1 hour ago', icon: '🔌' },
     { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', icon: '⚡' },
   ])
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.replace('/login?callbackUrl=/dashboard')
+    }
+  }, [status, router])
 
     useEffect(() => {
       // Clear localStorage instance data when no session (user logged out)
@@ -294,6 +302,17 @@ function DashboardContent() {
   }
 
   if (!instance) return null
+
+  if (status === 'loading' || status === 'unauthenticated') {
+    return (
+      <div className="flex items-center justify-center h-screen bg-black">
+        <div className="text-center">
+          <div className="text-5xl mb-4 animate-pulse">🦞</div>
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   const isRunning = instance.status === 'running'
   const startedAt = instance.startedAt
