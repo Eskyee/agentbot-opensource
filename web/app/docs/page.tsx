@@ -9,7 +9,7 @@ const docsSections = [
   {
     title: 'Plans & Resources',
     description: 'Different plans for different needs. All include cloud hosting.',
-    items: ['Starter: 2GB RAM, 1 CPU', 'Pro: 4GB RAM, 2 CPU', 'Scale: 8GB RAM, 4 CPU', 'Enterprise: 16GB+ RAM', 'White Glove: 32GB RAM']
+    items: ['Underground: 2GB RAM, 1 CPU', 'Collective: 4GB RAM, 2 CPU', 'Label: 8GB RAM, 4 CPU']
   },
   {
     title: 'AI Models',

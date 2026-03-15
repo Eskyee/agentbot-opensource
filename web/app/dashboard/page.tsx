@@ -465,7 +465,7 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize">{instance?.plan || 'Starter'}</dd>
+                  <dd className="text-gray-300 capitalize">{instance?.plan || 'free'}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Version</dt>
