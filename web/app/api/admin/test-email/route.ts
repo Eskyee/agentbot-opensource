@@ -6,7 +6,7 @@ import { Resend } from 'resend'
 export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get('secret')
   const to = request.nextUrl.searchParams.get('to')
-  const adminSecret = process.env.ADMIN_SECRET || process.env.NEXTAUTH_SECRET
+  const adminSecret = process.env.ADMIN_SECRET
 
   if (!secret || secret !== adminSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
