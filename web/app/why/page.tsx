@@ -18,9 +18,60 @@ export const metadata: Metadata = {
 
 const PRICE_START = "£29/mo";
 
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Is Agentbot free?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Plans start at £29/mo for the Underground plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is Agentbot?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Agentbot is a cloud-based AI assistant platform that deploys OpenClaw to the cloud in one click. You get a 24/7 personal AI assistant with long-term memory, customizable personality, ready-to-use skills, and multi-channel access via Telegram, Discord, and WhatsApp — all without server setup or terminal commands.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can Agentbot handle crypto transactions?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Agentbot integrates with Coinbase Agentic Wallet, enabling your agent to execute onchain transactions autonomously. Your agent can send payments, interact with smart contracts, swap tokens, mint NFTs, and manage crypto assets through natural language commands.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I use the terminal to control Agentbot?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Agentbot does not currently support direct terminal access. A terminal UI is coming soon. For now, you can send commands via chat (Telegram, Discord, WhatsApp) and let Agentbot execute them for you.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I deploy a pre-configured agent?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Visit the marketplace to browse pre-configured agent templates including basefmbot (Onchain Radio Agent), cafe (customer service), chain (Crypto Agent), and more. Choose a template, customize it, and deploy in one click.',
+      },
+    },
+  ],
+}
+
 export default function WhyAgentbotPage() {
   return (
     <div className="min-h-screen bg-black text-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <article className="max-w-4xl mx-auto px-6 py-16">
         <Link href="/" className="text-blue-400 hover:underline mb-8 inline-block">
           ← Back to Home
