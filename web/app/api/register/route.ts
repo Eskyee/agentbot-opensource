@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "@/lib/email/welcome";
 import { prisma } from "@/app/lib/prisma";
 import { isRateLimited, getClientIP } from "@/app/lib/security-middleware";
+import { alertNewUser } from "@/app/lib/alerts";
 
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request);
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
   }
 
   sendWelcomeEmail(email, user.name || 'there').catch(console.error);
+  alertNewUser(email, 'email').catch(() => {});
 
   return NextResponse.json({ id: user.id, email: user.email, name: user.name });
 }

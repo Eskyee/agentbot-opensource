@@ -2,6 +2,7 @@
 
 import { createWriteStream, existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
+import { alertSecurityEvent, alertLoginBurst } from './alerts'
 
 export interface SecurityEvent {
   timestamp: string
@@ -48,6 +49,13 @@ class SecurityMonitor {
     // Alert to console for critical events
     if (['INJECTION', 'BOT_DETECTED', 'BLOCKED_IP'].includes(event.type)) {
       console.error(`[SECURITY_ALERT] ${event.type}:`, event)
+      // Fire webhook alert (non-blocking)
+      alertSecurityEvent(
+        event.type,
+        event.ip,
+        event.path || 'unknown',
+        JSON.stringify(event.details)
+      ).catch(() => {}) // swallow — never let alerting break the request
     }
   }
   
@@ -63,8 +71,15 @@ class SecurityMonitor {
       path,
       details: { reason: 'Too many requests' }
     })
-    
+
     this.updateMetric('rate_limits', 1)
+
+    // Alert on auth-path rate limits (likely brute force)
+    const authPaths = ['/api/auth', '/api/register', '/api/provision', '/api/demo/chat']
+    if (authPaths.some(p => path?.startsWith(p))) {
+      const count = (this.metrics.get('rate_limits') || 0) as number
+      alertLoginBurst(ip, path, count).catch(() => {})
+    }
   }
   
   /**
