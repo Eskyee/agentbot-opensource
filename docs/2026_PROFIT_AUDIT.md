@@ -6,13 +6,12 @@
 | :--- | :--- | :--- | :--- |
 | **`agentbot-api`** | Render Starter Web | $7.00 | Backend API & Provisioning. |
 | **`agentbot-worker`** | Render Starter Worker | $7.00 | Deployment Orchestration. |
-| **`agentbot-ollama`** | Render Pro Web (8GB) | $40.00 | **DeepSeek R1 / Llama 3.3 Inference.** |
 | **`agentbot-db`** | Render Managed PG | $7.00 | Multi-tenant user & agent metadata. |
 | **`agentbot-redis`** | Render Managed Redis | $10.00 | Bull Queue state & Session cache. |
-| **Persistent Disk** | Render 50GB SSD | $12.50 | **Local Model Storage (Crucial for 32B).** |
 | **Frontend (Next.js)** | Vercel Pro | $20.00 | **Production Dashboard & Global Edge.** |
 | **Mux (Live)** | Base Plan | $20.00 | baseFM DJ Streaming infrastructure. |
-| **TOTAL** | | **~$123.50** | **(~£98.00 / mo)** |
+| **OpenRouter API** | Usage-based | ~$10.00 | **AI inference via OpenRouter (pay-per-token).** |
+| **TOTAL** | | **~$81.00** | **(~£64.00 / mo)** |
 
 ---
 
@@ -45,6 +44,6 @@ We must account for these to ensure we never run at a loss:
 ---
 
 ## 🚀 Status: High-Profit Mode
-Even with Vercel Pro and potential overages, the business remains extremely lean. We are capturing the "Inference Margin" by running our own models while using Vercel for the world-class frontend experience.
+Even with Vercel Pro and potential overages, the business remains extremely lean. OpenRouter provides access to all major models with zero self-hosted infrastructure overhead.
 
 **Atlas Verdict:** Infrastructure is optimized. Hidden costs are identified and mitigated. The platform is ready for commercial launch.

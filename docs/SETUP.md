@@ -37,7 +37,7 @@ docker push raveculture/agentbot-worker:latest
 Render will provision the following automatically:
 - **`agentbot-db`:** PostgreSQL 15.
 - **`agentbot-redis`:** Redis 7 (Internal).
-- **`agentbot-ollama`:** Inference engine with 50GB persistent disk.
+- **AI Inference:** Handled via OpenRouter API (no self-hosted inference needed).
 
 ---
 
@@ -54,8 +54,8 @@ openclaw start
 
 ## Monitoring & Operations
 
-- **Logs:** View via Render Dashboard for `api`, `worker`, and `ollama`.
-- **Scaling:** Update the `plan` in `render.yaml` to scale horizontal workers or vertical inference RAM.
+- **Logs:** View via Render Dashboard for `api` and `worker`.
+- **Scaling:** Update the `plan` in `render.yaml` to scale horizontal workers.
 - **Backups:** Managed automatically by Render for PostgreSQL. Agent data is stored on persistent disks.
 
 ---
@@ -73,4 +73,3 @@ openclaw start
 | Service | Port | URL |
 | :--- | :--- | :--- |
 | API | 3001 | `http://agentbot-api:3001` |
-| Ollama | 11434 | `http://agentbot-ollama:11434` |

@@ -18,9 +18,9 @@ function OnboardContent() {
   const [step, setStep] = useState<Step>('telegram')
   const [telegramToken, setTelegramToken] = useState('')
   const [telegramUserId, setTelegramUserId] = useState('')
-  const [aiProvider, setAiProvider] = useState('ollama')
+  const [aiProvider, setAiProvider] = useState('openrouter')
   const [apiKey, setApiKey] = useState('')
-  const [selectedModel, setSelectedModel] = useState('ollama/llama3.3')
+  const [selectedModel, setSelectedModel] = useState('openrouter/meta-llama/llama-3.3-70b-instruct')
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['web-search', 'file-handler'])
   const [isValidating, setIsValidating] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
@@ -29,12 +29,12 @@ function OnboardContent() {
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
 
-  // Available models (Tiered for OpenClaw)
+  // Available models (Tiered for OpenClaw) - via OpenRouter
   const AVAILABLE_MODELS = [
-    { id: 'ollama/mistral', name: 'Mistral 7B (OpenClaw Free)', provider: 'ollama', description: 'Lightweight & fast. Free for all users.', recommended: true, tier: 'free' },
-    { id: 'ollama/llama3.3', name: 'Llama 3.3 (Underground Optimized)', provider: 'ollama', description: 'Advanced general assistant. Requires Underground plan.', tier: 'underground' },
-    { id: 'ollama/qwen2.5-coder:32b', name: 'Qwen 2.5 (Collective Tuned)', provider: 'ollama', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
-    { id: 'ollama/deepseek-r1:32b', name: 'DeepSeek R1 (Label Reasoning)', provider: 'ollama', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
+    { id: 'openrouter/mistralai/mistral-7b-instruct', name: 'Mistral 7B (OpenClaw Free)', provider: 'openrouter', description: 'Lightweight & fast. Free for all users.', recommended: true, tier: 'free' },
+    { id: 'openrouter/meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 (Underground Optimized)', provider: 'openrouter', description: 'Advanced general assistant. Requires Underground plan.', tier: 'underground' },
+    { id: 'openrouter/qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 (Collective Tuned)', provider: 'openrouter', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
+    { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1 (Label Reasoning)', provider: 'openrouter', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
   ]
 
   // Available ready-to-use skills
@@ -404,8 +404,7 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'ollama', name: 'Local Inference (Ollama)', desc: 'Run DeepSeek & Llama on our private hardware', recommended: true },
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'Kimi K2.5, Llama, GPT - Fast and reliable' },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'Kimi K2.5, Llama, GPT, DeepSeek - Fast and reliable', recommended: true },
                   { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier' },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
                   { id: 'anthropic', name: 'Anthropic', desc: 'Claude — Best quality (requires API key)' },
@@ -435,27 +434,6 @@ function OnboardContent() {
                 ))}
               </div>
               
-              {/* Ollama instructions */}
-              {aiProvider === 'ollama' && (
-                <div className="bg-gray-800 rounded-xl p-6">
-                  <h3 className="font-semibold mb-4 text-green-400">Included in your plan:</h3>
-                  <ol className="space-y-3 text-gray-300 text-sm">
-                    <li className="flex gap-3">
-                      <span className="bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">✓</span>
-                      <span>Run unlimited tasks on our high-performance hardware</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">✓</span>
-                      <span>Access DeepSeek R1 reasoning & Llama 3.3 models</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span className="bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">✓</span>
-                      <span>No API keys or external billing required</span>
-                    </li>
-                  </ol>
-                </div>
-              )}
-
               {/* OpenRouter instructions */}
               {aiProvider === 'openrouter' && (
                 <div className="bg-gray-800 rounded-xl p-6">
@@ -533,11 +511,11 @@ function OnboardContent() {
                   ← Back
                 </button>
                 <button
-                  onClick={() => setStep(aiProvider === 'openrouter' || aiProvider === 'ollama' ? 'model' : 'skills')}
-                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'ollama' && aiProvider !== 'groq') && !apiKey}
+                  onClick={() => setStep(aiProvider === 'openrouter' ? 'model' : 'skills')}
+                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq') && !apiKey}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
-                  {aiProvider === 'openrouter' || aiProvider === 'ollama' ? 'Select Model →' : 'Continue →'}
+                  {aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
                 </button>
               </div>
             </div>

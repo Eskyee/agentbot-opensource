@@ -86,7 +86,7 @@ describe('72-Hour Load Test with Bob Marley Stream Loop', () => {
           body: JSON.stringify({
             telegramToken: `load-test-agent-${i}-${Date.now()}`,
             telegramUserId: `${3000000000 + i}`,
-            aiProvider: 'ollama',
+            aiProvider: 'openrouter',
             plan: 'pro'
           })
         });

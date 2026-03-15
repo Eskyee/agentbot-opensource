@@ -252,7 +252,7 @@ export default function BlogPage() {
             <span className="text-gray-600">•</span>
             <span className="text-gray-400">Meta</span>
             <span className="text-gray-600">•</span>
-            <span className="text-gray-400">Ollama</span>
+            <span className="text-gray-400">OpenRouter</span>
           </div>
         </div>
 

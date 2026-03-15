@@ -25,7 +25,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
         body: JSON.stringify({
           telegramToken: `valid-token-${Date.now()}`,
           telegramUserId: '987654321',
-          aiProvider: 'ollama',
+          aiProvider: 'openrouter',
           plan: 'free'
         })
       });
@@ -55,7 +55,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
           discordBotToken: `discord-token-${Date.now()}`,
           discordGuildId: 'guild-123',
           discordChannelId: 'channel-123',
-          aiProvider: 'ollama',
+          aiProvider: 'openrouter',
           plan: 'free'
         })
       });
@@ -81,7 +81,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
         body: JSON.stringify({
           telegramToken: `mux-test-${Date.now()}`,
           telegramUserId: '111111111',
-          aiProvider: 'ollama',
+          aiProvider: 'openrouter',
           plan: 'pro'
         })
       });
@@ -112,7 +112,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          aiProvider: 'ollama',
+          aiProvider: 'openrouter',
           plan: 'free'
         })
       });
@@ -133,7 +133,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
         body: JSON.stringify({
           telegramToken: `connection-test-${Date.now()}`,
           telegramUserId: '222222222',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         }),
         signal: AbortSignal.timeout(10000)
       });
@@ -171,7 +171,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
         body: JSON.stringify({
           telegramToken: `url-format-test-${Date.now()}`,
           telegramUserId: '333333333',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -192,7 +192,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
         body: JSON.stringify({
           telegramToken: `subdomain-test-${Date.now()}`,
           telegramUserId: '444444444',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -212,7 +212,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
         body: JSON.stringify({
           telegramToken: `structure-test-${Date.now()}`,
           telegramUserId: '555555555',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -230,25 +230,6 @@ describe('Provision Endpoint (POST /api/provision)', () => {
   });
 
   describe('Different AI Providers', () => {
-    it('should support ollama provider', async () => {
-      const response = await fetch(`${API_URL}/api/provision`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          telegramToken: `ollama-${Date.now()}`,
-          telegramUserId: '666666666',
-          aiProvider: 'ollama',
-          plan: 'free'
-        })
-      });
-
-      expect(response.ok).toBe(true);
-      const data = await response.json();
-      expect(data.success).toBe(true);
-      console.log(`✅ Ollama provider works`);
-      createdAgentIds.push(data.userId);
-    }, 30000);
-
     it('should support openrouter provider', async () => {
       const response = await fetch(`${API_URL}/api/provision`, {
         method: 'POST',
@@ -285,7 +266,7 @@ describe('Provision Endpoint (POST /api/provision)', () => {
           body: JSON.stringify({
             telegramToken: `plan-${plan}-${Date.now()}`,
             telegramUserId: '888888888',
-            aiProvider: 'ollama',
+            aiProvider: 'openrouter',
             plan
           })
         });

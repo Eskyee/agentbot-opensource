@@ -23,7 +23,7 @@ describe('Error Recovery & Resilience', () => {
             body: JSON.stringify({
               telegramToken: `retry-test-${attempt}-${Date.now()}`,
               telegramUserId: `${2000000000 + attempt}`,
-              aiProvider: 'ollama'
+              aiProvider: 'openrouter'
             }),
             signal: AbortSignal.timeout(10000)
           });
@@ -65,7 +65,7 @@ describe('Error Recovery & Resilience', () => {
           body: JSON.stringify({
             telegramToken: `timeout-test-${Date.now()}`,
             telegramUserId: '2111111111',
-            aiProvider: 'ollama'
+            aiProvider: 'openrouter'
           }),
           signal: controller.signal
         });
@@ -123,7 +123,7 @@ describe('Error Recovery & Resilience', () => {
         body: JSON.stringify({
           telegramToken: `invalid-plan-${Date.now()}`,
           telegramUserId: '2333333333',
-          aiProvider: 'ollama',
+          aiProvider: 'openrouter',
           plan: 'invalid-plan'
         })
       });
@@ -150,7 +150,7 @@ describe('Error Recovery & Resilience', () => {
         body: JSON.stringify({
           telegramToken: `graceful-degrade-${Date.now()}`,
           telegramUserId: '2444444444',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -176,7 +176,7 @@ describe('Error Recovery & Resilience', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           // No token provided
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -212,7 +212,7 @@ describe('Error Recovery & Resilience', () => {
             body: JSON.stringify({
               telegramToken: `concurrent-${i}-${Date.now()}`,
               telegramUserId: `${2500000000 + i}`,
-              aiProvider: 'ollama'
+              aiProvider: 'openrouter'
             })
           })
         );
@@ -253,7 +253,7 @@ describe('Error Recovery & Resilience', () => {
         body: JSON.stringify({
           telegramToken: token,
           telegramUserId: '2600000000',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -268,7 +268,7 @@ describe('Error Recovery & Resilience', () => {
         body: JSON.stringify({
           telegramToken: token,
           telegramUserId: '2600000000',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -298,7 +298,7 @@ describe('Error Recovery & Resilience', () => {
         body: JSON.stringify({
           telegramToken: `cleanup-test-${Date.now()}`,
           telegramUserId: '2700000000',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 

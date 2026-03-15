@@ -20,7 +20,7 @@ describe('Mux Video Integration', () => {
         body: JSON.stringify({
           telegramToken: `mux-stream-test-${Date.now()}`,
           telegramUserId: '999999999',
-          aiProvider: 'ollama',
+          aiProvider: 'openrouter',
           plan: 'pro'
         })
       });
@@ -70,7 +70,7 @@ describe('Mux Video Integration', () => {
           body: JSON.stringify({
             telegramToken: `unique-key-test-${i}-${Date.now()}`,
             telegramUserId: `${1000000000 + i}`,
-            aiProvider: 'ollama',
+            aiProvider: 'openrouter',
             plan: 'free'
           })
         });
@@ -160,7 +160,7 @@ describe('Mux Video Integration', () => {
         body: JSON.stringify({
           telegramToken: `no-mux-creds-${Date.now()}`,
           telegramUserId: '1111111111',
-          aiProvider: 'ollama'
+          aiProvider: 'openrouter'
         })
       });
 
@@ -191,7 +191,7 @@ describe('Mux Video Integration', () => {
           body: JSON.stringify({
             telegramToken: `mux-retry-${attempt}-${Date.now()}`,
             telegramUserId: `${1111111111 + attempt}`,
-            aiProvider: 'ollama'
+            aiProvider: 'openrouter'
           })
         });
 

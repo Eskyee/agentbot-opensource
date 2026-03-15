@@ -24,7 +24,7 @@ const doc = new Document({
       }),
       new Paragraph({
         children: [
-          new TextRun({ text: "The gist: Agentbot lets anyone deploy their own AI agent fleet on dedicated servers. They bring their own API keys (OpenAI, Anthropic, Groq, Ollama). We handle the infrastructure — Docker containers, RAM/CPU allocation, scaling.", size: 22 })
+          new TextRun({ text: "The gist: Agentbot lets anyone deploy their own AI agent fleet on dedicated servers. They bring their own API keys (OpenAI, Anthropic, Groq, OpenRouter). We handle the infrastructure — Docker containers, RAM/CPU allocation, scaling.", size: 22 })
         ],
         spacing: { after: 200 }
       }),

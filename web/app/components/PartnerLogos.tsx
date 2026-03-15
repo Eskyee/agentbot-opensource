@@ -7,7 +7,7 @@ const partners = [
   { name: 'Render', icon: Flame, description: 'Cloud hosting' },
   { name: 'Base', icon: Building2, description: 'Blockchain' },
   { name: 'Coinbase', icon: Coins, description: 'Crypto payments' },
-  { name: 'Ollama', icon: Cpu, description: 'Local AI' },
+  { name: 'OpenRouter', icon: Cpu, description: 'AI Gateway' },
   { name: 'Mux', icon: Video, description: 'Video streaming' }
 ]
 

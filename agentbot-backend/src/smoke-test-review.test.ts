@@ -3,8 +3,6 @@ import app from './index';
 import { WalletService } from './services/wallet';
 import { AgentBusService } from './services/bus';
 import { AIService } from './services/ai';
-import { OllamaService } from './services/ollama';
-
 describe('Agentbot Phase 1 Smoke Test', () => {
   const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || 'test-key';
 
@@ -70,7 +68,7 @@ describe('Agentbot Phase 1 Smoke Test', () => {
     });
   });
 
-  describe('AI Tiers & Ollama Integration', () => {
+  describe('AI Tiers & OpenRouter Integration', () => {
     it('should have AIService with tiered configuration', () => {
       expect(AIService.prompt).toBeDefined();
     });

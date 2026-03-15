@@ -451,7 +451,7 @@ function PricingPageContent() {
             {[
               {
                 question: 'Do I need to provide my own AI API key?',
-                answer: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, Ollama, or other AI provider keys directly. You pay wholesale rates with zero markup from us.',
+                answer: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, OpenRouter, or other AI provider keys directly. You pay wholesale rates with zero markup from us.',
               },
               {
                 question: 'What payment methods do you accept?',

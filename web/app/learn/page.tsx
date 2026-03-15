@@ -93,7 +93,7 @@ const openclawDocs = [
   },
   {
     title: 'Providers',
-    description: 'OpenAI, Anthropic, Ollama, Google, xAI, DeepSeek and more',
+    description: 'OpenRouter, OpenAI, Anthropic, Google, xAI, DeepSeek and more',
     href: 'https://docs.openclaw.ai/providers',
     icon: '🤖'
   },
@@ -360,7 +360,7 @@ OPENROUTER_API_KEY=...`}
               <pre className="text-sm text-gray-400 overflow-x-auto">
 {`Primary: Kimi K2.5 (fast)
 Fallback: GPT-4o Mini
-Local: DeepSeek R1 (Ollama)
+Reasoning: DeepSeek R1
 Vision: Claude 3.5 Sonnet`}
               </pre>
             </div>

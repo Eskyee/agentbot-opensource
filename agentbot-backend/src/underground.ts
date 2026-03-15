@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
 import { WalletService } from './services/wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
-import { OllamaService } from './services/ollama';
 import { NegotiationService } from './services/negotiation'; // Added
 import { AmplificationService } from './services/amplification'; // Added
 import Queue from 'bull';
@@ -26,37 +25,6 @@ const authenticate = (req: Request, res: Response, next: any) => {
   }
   next();
 };
-
-/**
- * --- OLLAMA MODEL MARKETPLACE ---
- */
-
-// List models already installed on the instance
-router.get('/models/installed', authenticate, async (req: Request, res: Response) => {
-  try {
-    const ollama = new OllamaService();
-    const models = await ollama.listModels();
-    res.json(models);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Trigger a pull of a new model into the instance
-router.post('/models/pull', authenticate, async (req: Request, res: Response) => {
-  const { modelName } = req.body;
-  if (!modelName) {
-    return res.status(400).json({ error: 'Model name is required' });
-  }
-
-  try {
-    const ollama = new OllamaService();
-    await ollama.pullModel(modelName);
-    res.json({ success: true, message: `Started pull for ${modelName}` });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
 /**
  * --- AGENT-TO-AGENT BUS ---

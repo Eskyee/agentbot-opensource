@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         discordGuildId,
         discordChannelId,
         ownerIds,
-        aiProvider: aiProvider || 'ollama', // Default to ollama
+        aiProvider: aiProvider || 'openrouter',
         apiKey,
         plan: plan || 'free',
         streamKey,
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       whatsappToken,
       discordBotToken,
       ownerIds,
-      aiProvider: aiProvider || 'ollama', // Default to ollama
+      aiProvider: aiProvider || 'openrouter',
       apiKey,
       plan: plan || 'free',
       streamKey,

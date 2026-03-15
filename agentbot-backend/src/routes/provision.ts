@@ -30,7 +30,7 @@ router.post('/', async (req: Request, res: Response) => {
       telegramUserId,
       discordBotToken,
       whatsappToken,
-      aiProvider = 'ollama',
+      aiProvider = 'openrouter',
       plan = 'free',
     } = req.body;
 
@@ -43,7 +43,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Validate AI provider
-    const validProviders = ['ollama', 'openrouter', 'gemini', 'groq', 'anthropic', 'openai'];
+    const validProviders = ['openrouter', 'gemini', 'groq', 'anthropic', 'openai'];
     if (!validProviders.includes(aiProvider)) {
       return res.status(400).json({
         success: false,
@@ -129,11 +129,6 @@ router.post('/', async (req: Request, res: Response) => {
  */
 function getAiProviderConfig(provider: string) {
   const configs: Record<string, Record<string, unknown>> = {
-    ollama: {
-      model: 'llama2',
-      baseUrl: 'http://agentbot-ollama:11434',
-      temperature: 0.7,
-    },
     openrouter: {
       model: 'openai/gpt-4o-mini',
       baseUrl: 'https://openrouter.ai/api/v1',
@@ -160,7 +155,7 @@ function getAiProviderConfig(provider: string) {
       requiresKey: true,
     },
   };
-  return configs[provider] || configs.ollama;
+  return configs[provider] || configs.openrouter;
 }
 
 export default router;

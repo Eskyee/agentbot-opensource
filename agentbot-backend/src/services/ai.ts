@@ -13,33 +13,34 @@ export interface AIResponse {
   model: string;
   response: string;
   latency: number;
-  source: 'local' | 'cloud';
+  source: 'cloud';
 }
 
 export class AIService {
-  private static OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+  private static OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
+  private static OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
   private static TIER_CONFIG: Record<ModelTier, { primary: string; fallbacks: string[] }> = {
     reasoning: {
-      primary: 'deepseek-r1:32b',
-      fallbacks: ['llama3.3', 'kimi-k2.5:cloud']
+      primary: 'deepseek/deepseek-r1',
+      fallbacks: ['meta-llama/llama-3.3-70b-instruct', 'moonshotai/kimi-k2.5']
     },
     coding: {
-      primary: 'qwen2.5-coder:32b',
-      fallbacks: ['gpt-oss:20b', 'gemini-3-flash-preview:latest']
+      primary: 'qwen/qwen-2.5-coder-32b-instruct',
+      fallbacks: ['deepseek/deepseek-r1', 'google/gemini-2.0-flash-001']
     },
     fast: {
-      primary: 'llama3.3',
-      fallbacks: ['mistral', 'minimax-m2.5:cloud']
+      primary: 'meta-llama/llama-3.3-70b-instruct',
+      fallbacks: ['mistralai/mistral-7b-instruct', 'google/gemini-2.0-flash-001']
     },
     creative: {
-      primary: 'kimi-k2.5:cloud',
-      fallbacks: ['gpt-oss:20b', 'deepseek-r1:32b']
+      primary: 'moonshotai/kimi-k2.5',
+      fallbacks: ['deepseek/deepseek-r1', 'meta-llama/llama-3.3-70b-instruct']
     }
   };
 
   /**
-   * Executes a prompt using the tiered fallback system.
+   * Executes a prompt using the tiered fallback system via OpenRouter.
    */
   static async prompt(tier: ModelTier, prompt: string, systemPrompt?: string): Promise<AIResponse> {
     const config = this.TIER_CONFIG[tier];
@@ -48,39 +49,41 @@ export class AIService {
 
     for (const model of models) {
       try {
-        const response = await fetch(`${this.OLLAMA_URL}/api/generate`, {
+        const response = await fetch(this.OPENROUTER_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.OPENROUTER_API_KEY}`,
+            'HTTP-Referer': 'https://agentbot.raveculture.xyz',
+            'X-Title': 'Agentbot'
+          },
           body: JSON.stringify({
             model: model,
-            prompt: prompt,
-            system: systemPrompt,
-            stream: false,
-            options: {
-              num_ctx: 8192,
-              temperature: tier === 'creative' ? 0.7 : 0.2
-            }
+            messages: [
+              ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+              { role: 'user', content: prompt }
+            ],
+            temperature: tier === 'creative' ? 0.7 : 0.2
           }),
         });
 
         if (!response.ok) throw new Error(`Model ${model} failed`);
-        
-        const data = (await response.json()) as { response: string };
+
+        const data = (await response.json()) as { choices: Array<{ message: { content: string } }> };
         const latency = Date.now() - startTime;
-        const source = model.includes('cloud') ? 'cloud' : 'local';
 
         // Log the success for benchmarking
-        await this.logMetric(model, tier, latency, true, source);
+        await this.logMetric(model, tier, latency, true, 'cloud');
 
         return {
           model,
-          response: data.response,
+          response: data.choices[0]?.message?.content || '',
           latency,
-          source: source as 'local' | 'cloud'
+          source: 'cloud'
         };
       } catch (error) {
         console.error(`Tier ${tier}: Model ${model} failed, trying fallback...`);
-        await this.logMetric(model, tier, Date.now() - startTime, false, model.includes('cloud') ? 'cloud' : 'local');
+        await this.logMetric(model, tier, Date.now() - startTime, false, 'cloud');
       }
     }
 

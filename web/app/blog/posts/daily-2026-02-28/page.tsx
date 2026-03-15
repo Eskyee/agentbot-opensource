@@ -28,7 +28,7 @@ export default function Post() {
           
           <li>**CSP Enhancements for Control UI**: The gateway now allows required Google Fonts origins in the Control UI Content Security Policy (CSP). This update ensures that your agent interfaces are visually appealing and consistent across platforms without compromising security.</li>
           <li>**Testing Improvements**: We have implemented more robust testing measures, including assertions to ensure that the Control UI CSP accommodates the necessary Google Fonts origins. This improves the reliability of our platform as you deploy your AI agents.</li>
-          <li>**Ollama API Key Configuration**: The CLI now supports seeding the Ollama provider on the API key set process, allowing for a smoother setup. This means you can configure your AI agents to use Ollama’s capabilities without unnecessary complexity.</li>
+          <li>**API Key Configuration**: The CLI now supports seeding AI providers on the API key set process, allowing for a smoother setup. This means you can configure your AI agents to use OpenRouter and other providers without unnecessary complexity.</li>
           <li>**Model Fallback Reasoning Fix**: This release also includes a fix for model fallback reasoning, ensuring that your AI agents can make smarter decisions by selecting the most appropriate model for any given task.</li>
           
           <h2 className="text-2xl font-bold mt-8 mb-4">Benefits for Agentbot Users</h2>
@@ -37,7 +37,7 @@ export default function Post() {
           
           <li>**Improved Aesthetics**: With the allowance of Google Fonts, you can create more engaging and aesthetically pleasing interfaces for your users.</li>
           <li>**Enhanced Security**: The refined CSP settings bolster the security of your deployment, reducing vulnerabilities associated with external fonts.</li>
-          <li>**Easier Configurations**: The updates to how API keys are handled with Ollama will simplify your workflow, allowing you to focus more on building and deploying effective AI agents.</li>
+          <li>**Easier Configurations**: The updates to how API keys are handled will simplify your workflow, allowing you to focus more on building and deploying effective AI agents.</li>
           <li>**Better Decision Making**: The fix for model fallback reasoning means that your agents will be smarter and more responsive, leading to improved user satisfaction.</li>
           
           <h2 className="text-2xl font-bold mt-8 mb-4">Conclusion</h2>

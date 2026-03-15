@@ -37,7 +37,7 @@ export default function AIModelCard({ plan }: { plan: string }) {
           <span>🧠</span> AI Intelligence
         </h2>
         <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full uppercase font-bold">
-          Local (Ollama)
+          OpenRouter
         </span>
       </div>
 
@@ -55,7 +55,7 @@ export default function AIModelCard({ plan }: { plan: string }) {
             />
           </div>
           <p className="text-[10px] text-gray-500 mt-2 italic">
-            Running on private Agentbot hardware. No external API fees.
+            Powered by OpenRouter. Pay-per-token, no markup.
           </p>
         </div>
 

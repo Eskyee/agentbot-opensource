@@ -100,7 +100,7 @@ export default async function Home() {
             <div>
               <div className="text-blue-500 font-bold mb-4 font-mono text-xs">01 // INTELLIGENCE</div>
               <h3 className="text-xl font-bold mb-2">Tiered Sovereignty</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">Local Ollama inference with DeepSeek R1 and Llama 3.3. No external API tax. 100% margin.</p>
+              <p className="text-sm text-gray-500 leading-relaxed">OpenRouter-powered inference with DeepSeek R1 and Llama 3.3. BYOK with zero markup.</p>
             </div>
             <div>
               <div className="text-blue-500 font-bold mb-4 font-mono text-xs">02 // ECONOMY</div>
@@ -149,7 +149,7 @@ export default async function Home() {
                 </h4>
                 <ul className="text-sm text-gray-400 space-y-1">
                   <li>• Your own AI API key</li>
-                  <li>• OpenAI, Anthropic, Ollama, etc.</li>
+                  <li>• OpenAI, Anthropic, OpenRouter, etc.</li>
                   <li>• No markup — you pay wholesale</li>
                   <li>• Switch models anytime</li>
                 </ul>
@@ -303,13 +303,13 @@ export default async function Home() {
                 </svg>
                 <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Coinbase</span>
               </div>
-              {/* Ollama */}
+              {/* OpenRouter */}
               <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
                 <svg width="50" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
-                  <circle cx="8" cy="12" r="6" fill="#FF6720"/>
-                  <path d="M16 8H20M16 12H22M16 16H19" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                  <circle cx="12" cy="12" r="10" fill="#6366F1"/>
+                  <path d="M8 12H16M12 8V16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
-                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Ollama</span>
+                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">OpenRouter</span>
               </div>
               {/* Mux */}
               <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
