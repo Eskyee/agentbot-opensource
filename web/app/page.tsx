@@ -23,6 +23,9 @@ export default async function Home() {
           <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Run AI agents. Not servers.
           </p>
+          <p className="mt-3 text-sm text-gray-600 max-w-xl mx-auto">
+            Your autonomous crew handles bookings, splits, and promo — while you stay in the studio. From £29/mo. No markup on AI costs.
+          </p>
           
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
             {session ? (
@@ -158,11 +161,12 @@ export default async function Home() {
             {/* Underground */}
             <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-blue-500 transition-all group">
               <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">UNDERGROUND</h3>
+              <p className="mt-2 text-xs text-gray-600">Solo operator. One agent, always on.</p>
               <p className="mt-4 text-4xl font-black">£29<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 1 Agent</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 2GB RAM</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 1 CPU</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 1 Autonomous Agent</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> All channels included</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> BYOK — zero AI markup</li>
               </ul>
               <Link href="/api/stripe/checkout?plan=underground" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
                 SELECT
@@ -173,11 +177,12 @@ export default async function Home() {
             <div className="border-2 border-blue-500 rounded-2xl p-6 bg-blue-500/5 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-blue-500 text-black text-[10px] font-black px-3 py-1 uppercase tracking-tighter">POPULAR</div>
               <h3 className="text-lg font-bold text-blue-400">COLLECTIVE</h3>
+              <p className="mt-2 text-xs text-gray-500">Your crew. Bookings, promo, and comms — automated.</p>
               <p className="mt-4 text-4xl font-black">£69<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-400 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 3 Agents</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 4GB RAM</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 2 CPU</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 3 Autonomous Agents</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> Royalty split engine</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> Mission Control graph</li>
               </ul>
               <Link href="/api/stripe/checkout?plan=collective" className="mt-6 block w-full rounded-xl bg-blue-500 py-3 text-center text-sm font-bold text-black hover:bg-blue-400 transition-colors">
                 SELECT
@@ -187,11 +192,12 @@ export default async function Home() {
             {/* Label */}
             <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-purple-500 transition-all group">
               <h3 className="text-lg font-bold text-gray-400 group-hover:text-purple-400 transition-colors">LABEL</h3>
+              <p className="mt-2 text-xs text-gray-600">Full label infrastructure. Everything, automated.</p>
               <p className="mt-4 text-4xl font-black">£199<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 10 Agents</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 8GB RAM</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 4 CPU</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> Unlimited Agents</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> Priority A2A routing</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 24/7 support</li>
               </ul>
               <Link href="/api/stripe/checkout?plan=label" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
                 SELECT

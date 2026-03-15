@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
@@ -12,6 +13,11 @@ const DEMO_MODELS = [
 ]
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIP(req)
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   try {
     const { message, model, mode, conversation } = await req.json()
 
