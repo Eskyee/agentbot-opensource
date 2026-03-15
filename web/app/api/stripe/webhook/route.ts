@@ -27,110 +27,77 @@ export async function POST(request: NextRequest) {
       const amount = session.amount_total || 0;
       const plan = session.metadata?.plan || 'Unknown';
       const userId = session.metadata?.userId;
+      const stripeCustomerId = session.customer as string | null || null;
 
-      // Map plan names to database values
+      // Only map current active plans — deprecated plan names fall back to 'free'
       const planMap: Record<string, string> = {
-        'underground': 'underground',
-        'collective': 'collective',
-        'label': 'label',
-        'starter': 'starter',
-        'pro': 'pro', 
-        'scale': 'scale',
-        'enterprise': 'enterprise',
-        'white_glove': 'white_glove'
+        underground: 'underground',
+        collective:  'collective',
+        label:       'label',
       };
       const mappedPlan = planMap[plan] || 'free';
 
-      // Update user subscription using user ID if available, otherwise fallback to email
+      const subscriptionData = {
+        plan: mappedPlan,
+        stripeCustomerId,
+        stripeSubscriptionId: session.subscription as string || null,
+        subscriptionStatus: 'active',
+        subscriptionStartDate: new Date(),
+      };
+
+      // Update user subscription — prefer userId from metadata (most reliable)
       if (userId && userId.trim() !== '') {
-        // Prefer using user ID from metadata (more reliable)
         try {
           await prisma.user.update({
             where: { id: userId },
-            data: {
-              plan: mappedPlan,
-              stripeSubscriptionId: session.subscription as string || null,
-              subscriptionStatus: 'active',
-              subscriptionStartDate: new Date()
-            }
+            data: subscriptionData,
           });
-          console.log(`Updated user ${userId} with plan ${mappedPlan} via checkout.session.completed`);
-          
-          // Send receipt email if we have email
+          console.log(`Updated user ${userId} to plan ${mappedPlan}`);
           if (customerEmail) {
             await sendPaymentReceiptEmail(customerEmail, amount, plan);
           }
         } catch (err) {
           console.error('Failed to update user by ID, falling back to email:', err);
-          // Fall through to email-based update
           if (customerEmail) {
             await sendPaymentReceiptEmail(customerEmail, amount, plan);
             await prisma.user.upsert({
               where: { email: customerEmail },
-              update: {
-                plan: mappedPlan,
-                stripeSubscriptionId: session.subscription as string || null,
-                subscriptionStatus: 'active',
-                subscriptionStartDate: new Date()
-              },
-              create: {
-                email: customerEmail,
-                plan: mappedPlan,
-                stripeSubscriptionId: session.subscription as string || null,
-                subscriptionStatus: 'active',
-                subscriptionStartDate: new Date()
-              }
+              update: subscriptionData,
+              create: { email: customerEmail, ...subscriptionData },
             });
           }
         }
       } else if (customerEmail) {
-        // Fallback to email lookup if userId not available
+        // No userId in metadata (guest checkout) — upsert by email
         await sendPaymentReceiptEmail(customerEmail, amount, plan);
-        
         if (plan && plan !== 'Unknown') {
           await prisma.user.upsert({
             where: { email: customerEmail },
-            update: {
-              plan: mappedPlan,
-              stripeSubscriptionId: session.subscription as string || null,
-              subscriptionStatus: 'active',
-              subscriptionStartDate: new Date()
-            },
-            create: {
-              email: customerEmail,
-              plan: mappedPlan,
-              stripeSubscriptionId: session.subscription as string || null,
-              subscriptionStatus: 'active',
-              subscriptionStartDate: new Date()
-            }
+            update: subscriptionData,
+            create: { email: customerEmail, ...subscriptionData },
           });
         }
       } else {
         console.error('No userId or email found in checkout session metadata');
       }
-      
-      // Handle storage upgrades (existing logic)
+
+      // Handle storage upgrades (separate product type)
       if (session.metadata?.type === 'storage_upgrade') {
         const userEmail = session.metadata?.userEmail;
         const storageGB = 50;
-
         if (userEmail) {
           await prisma.user.update({
             where: { email: userEmail },
-            data: {
-              storageLimit: { increment: storageGB }
-            }
+            data: { storageLimit: { increment: storageGB } },
           });
-
           await sendEmail({
             to: userEmail,
-            subject: 'Upgraded to Pro Plan! - Agentbot',
+            subject: 'Storage Upgraded — Agentbot',
             html: `
-              <h1>Pro Plan Activated</h1>
-              <p>Your Pro Plan is now active with 50 GB of additional storage.</p>
-              <p>Visit your files: <a href="https://agentbot.raveculture.xyz/dashboard/files">https://agentbot.raveculture.xyz/dashboard/files</a></p>
-              <hr />
-              <p>Best,<br>The Agentbot Team</p>
+              <h1>Storage Upgrade Active</h1>
+              <p>Your account now has ${storageGB}GB of additional storage.</p>
+              <p>Visit your files: <a href="https://agentbot.raveculture.xyz/dashboard/files">Dashboard</a></p>
+              <hr /><p>Best,<br>The Agentbot Team</p>
             `,
           });
         }
@@ -143,7 +110,6 @@ export async function POST(request: NextRequest) {
       const customerEmail = invoice.customer_email;
       const amount = invoice.amount_paid;
       const plan = invoice.metadata?.plan || 'Subscription';
-
       if (customerEmail) {
         await sendPaymentReceiptEmail(customerEmail, amount, plan);
       }
@@ -154,7 +120,6 @@ export async function POST(request: NextRequest) {
     case 'customer.subscription.updated': {
       const subscription = event.data.object as any;
       const customerEmail = subscription.customer_email;
-
       if (customerEmail) {
         await sendEmail({
           to: customerEmail,
@@ -162,9 +127,8 @@ export async function POST(request: NextRequest) {
           html: `
             <h1>Subscription Confirmed</h1>
             <p>Your subscription has been successfully activated.</p>
-            <p>Visit your dashboard: <a href="https://agentbot.raveculture.xyz/dashboard">https://agentbot.raveculture.xyz/dashboard</a></p>
-            <hr />
-            <p>Best,<br>The Agentbot Team</p>
+            <p>Visit your dashboard: <a href="https://agentbot.raveculture.xyz/dashboard">Dashboard</a></p>
+            <hr /><p>Best,<br>The Agentbot Team</p>
           `,
         });
       }

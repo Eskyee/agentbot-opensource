@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
 import crypto from 'crypto'
 
 const invites = new Map()
@@ -12,40 +14,43 @@ interface Invite {
   userId?: string
 }
 
+function isAdmin(email?: string | null) {
+  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  return !!email && adminEmails.includes(email.toLowerCase())
+}
+
 export async function GET() {
+  const session = await getServerSession(authOptions)
+  if (!isAdmin(session?.user?.email)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
   try {
-    // Get all invites (admin only)
     const inviteList = Array.from(invites.values())
-    
     return NextResponse.json({
       invites: inviteList,
       total: inviteList.length,
-      active: inviteList.filter(i => i.status === 'active').length,
+      active: inviteList.filter((i: Invite) => i.status === 'active').length,
     })
   } catch (error) {
     console.error('Failed to get invites:', error)
-    return NextResponse.json(
-      { error: 'Failed to get invites' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to get invites' }, { status: 500 })
   }
 }
 
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!isAdmin(session?.user?.email)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
   try {
     const body = await request.json()
     const { email } = body
 
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
 
-    // Generate unique invite code
     const code = `invite-${crypto.randomBytes(12).toString('hex')}`
-    
     const invite: Invite = {
       code,
       email,
@@ -66,9 +71,6 @@ export async function POST(request: Request) {
     )
   } catch (error) {
     console.error('Failed to create invite:', error)
-    return NextResponse.json(
-      { error: 'Failed to create invite' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 })
   }
 }

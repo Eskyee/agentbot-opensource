@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react'
 import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
 import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
+import HelpChat from '@/app/components/HelpChat'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -45,16 +46,28 @@ interface InstanceData {
 
 const navItems = [
   { icon: '📊', label: 'Dashboard', href: '/dashboard' },
+  // Mission Control
+  { icon: '🛸', label: 'Agent Fleet', href: '/dashboard/fleet' },
+  { icon: '💰', label: 'Cost Tracking', href: '/dashboard/cost' },
+  { icon: '📡', label: 'System Pulse', href: '/dashboard/system-pulse' },
+  { icon: '🧠', label: 'Memory Log', href: '/dashboard/memory' },
+  { icon: '🌅', label: 'Daily Brief', href: '/dashboard/daily-brief' },
+  { icon: '🔭', label: 'Tech Updates', href: '/dashboard/tech-updates' },
+  { icon: '📈', label: 'Market Intel', href: '/dashboard/market-intel' },
+  { icon: '🔊', label: 'Signals', href: '/dashboard/signals' },
+  // Agent Management
   { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
   { icon: '🎨', label: 'Personality', href: '/dashboard/personality' },
   { icon: '🔧', label: 'Skills', href: '/dashboard/skills' },
   { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
   { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
+  // Tools & Account
   { icon: '📁', label: 'Files', href: '/dashboard/files' },
   { icon: '📆', label: 'Calendar', href: '/dashboard/calendar' },
   { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
   { icon: '✅', label: 'Verify', href: '/dashboard/verify' },
   { icon: '🎛️', label: 'DJ Stream', href: '/dashboard/dj-stream' },
+  { icon: '💹', label: 'Trading', href: '/dashboard/trading' },
   { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
   { icon: '💳', label: 'Billing', href: '/billing' },
   { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },
@@ -256,8 +269,9 @@ function DashboardContent() {
   if (error) {
     return (
       <div className="flex h-screen bg-black">
-        <DashboardSidebar 
-          userName={userName} 
+        <DashboardSidebar
+          userName={userName}
+          plan={instance?.plan}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
@@ -286,9 +300,10 @@ function DashboardContent() {
 
   return (
     <div className="flex h-screen bg-black">
-      <DashboardSidebar 
-        userName={userName} 
-        credits={credits} 
+      <DashboardSidebar
+        userName={userName}
+        credits={credits}
+        plan={instance?.plan}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
@@ -450,7 +465,7 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize">{instance?.plan || 'Starter'}</dd>
+                  <dd className="text-gray-300 capitalize">{instance?.plan || 'free'}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Version</dt>
@@ -842,7 +857,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold mb-1">🎁 Invite Friends, Get Free Months</h2>
-                <p className="text-gray-400 text-sm mb-4">Share your link — get £30 off per referral</p>
+                <p className="text-gray-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
@@ -869,7 +884,7 @@ function DashboardContent() {
   )
 }
 
-function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userName: string; credits?: number; isOpen: boolean; onToggle: () => void }) {
+function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { userName: string; credits?: number; plan?: string; isOpen: boolean; onToggle: () => void }) {
   const pathname = usePathname()
   return (
     <>
@@ -918,7 +933,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
 
           <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
             <div className="text-sm text-gray-400 mb-1">Your Plan</div>
-            <div className="text-xl font-bold capitalize">{instance?.plan || 'Underground'}</div>
+            <div className="text-xl font-bold capitalize">{plan || 'Underground'}</div>
           </Link>
         </nav>
 
@@ -940,6 +955,7 @@ function DashboardSidebar({ userName, credits = 0, isOpen, onToggle }: { userNam
           </button>
         </div>
       </aside>
+      <HelpChat />
     </>
   )
 }

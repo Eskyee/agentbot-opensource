@@ -208,7 +208,20 @@ model Referral {
   discountApplied Boolean @default(false)
   referrerReward Boolean @default(false)
   createdAt   DateTime @default(now())
-  
+
   referrer    User     @relation("Referrer", fields: [referrerId], references: [id])
   referred    User     @relation("Referred", fields: [referredId], references: [id])
+}
+
+// Persistent API key storage (replaces in-memory Map)
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  keyHash   String   @unique  // bcrypt hash — never store plaintext
+  keyPrefix String             // first 8 chars for display preview
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

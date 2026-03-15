@@ -1,6 +1,6 @@
 # Agentbot Context
 
-Last updated: Mar 10 2026
+Last updated: Mar 14 2026
 
 ## Quick Summary
 Agentbot is a hosted OpenClaw platform where users sign up, choose a plan, and deploy their AI agent. Users bring their own AI API keys (OpenRouter, Groq, Anthropic, etc.).
@@ -60,6 +60,68 @@ Agentbot is a hosted OpenClaw platform where users sign up, choose a plan, and d
   - The new logic makes duplicates extremely unlikely, but audits of the Stripe dashboard remain a good practice.
 
 By understanding and documenting this flow, maintainers can make deliberate changes and avoid inconsistent Stripe state.
+
+## x402 Payments (USDC on Base)
+
+Agentbot supports x402 payment protocol for paid API endpoints - agents can pay for API access using USDC on Base.
+
+### Setup
+
+- **Packages installed:** `@x402/express`, `@x402/core`, `@x402/evm`, `@x402/extensions`
+- **Payment address:** Bankr wallet `0xd8fd0e1dce89beaab924ac68098ddb17613db56f`
+- **Config file:** `web/lib/x402.ts`
+
+### Creating Paid Endpoints
+
+Import the x402 config in your route:
+
+```typescript
+import { getX402Server, x402Config } from "@/lib/x402";
+```
+
+Example paid endpoint structure:
+
+```typescript
+export async function GET(req: NextRequest) {
+  const server = getX402Server();
+  
+  const paymentRequirements = {
+    accepts: {
+      scheme: "exact",
+      price: "$0.001",
+      network: "eip155:8453",
+      payTo: x402Config.payTo,
+    },
+    description: "Endpoint description",
+    mimeType: "application/json",
+  };
+
+  // Check for payment header
+  const authHeader = req.headers.get("x-payments");
+  if (!authHeader) {
+    return new NextResponse(JSON.stringify({ 
+      error: "Payment required",
+      payment: paymentRequirements 
+    }), { status: 402 });
+  }
+
+  // Verify payment and return data
+  // ...
+}
+```
+
+### Environment Variables
+
+```bash
+X402_PAY_TO=0xd8fd0e1dce89beaab924ac68098ddb17613db56f
+X402_FACILITATOR_URL=https://x402.org/facilitator
+```
+
+### Supported Networks
+
+- Base mainnet: `eip155:8453`
+- Base Sepolia: `eip155:84532`
+
 ## GitHub OAuth (for login)
 - Client ID: Set in Vercel env vars (GITHUB_CLIENT_ID)
 
@@ -70,6 +132,28 @@ By understanding and documenting this flow, maintainers can make deliberate chan
 
 ## No Credit System
 Users bring their own API keys. No credits to manage.
+
+## Token Info
+
+### BASEFM (Primary Token)
+- **Contract:** `0x9a4376bab717ac0a3901eeed8308a420c59c0ba3`
+- **Profile:** https://bankr.bot/agents/basefm
+- **Website:** https://basefm.space
+- **Tx:** 0x9ef1cb05dd0b1aa5f9d2f11c2e5d44b66acde389e5602aa1870089981b163d3f
+
+### AGENTBOT (Platform Token)
+- **Contract:** `0x986b41c76ab8b7350079613340ee692773b34ba3`
+- **Website:** /token
+
+### clawdbotDJ
+- **Contract:** `0x1b07b69a1219f217dd229b6b4d715ed116cb7b07
+
+### Platform Wallets
+- **Trading Wallet:** `0xd8fd0e1dce89beaab924ac68098ddb17613db56f`
+
+### BASEFM on MoltX (Primary Profile)
+- **Contract:** `0x7fc9b35b9375b95a6b2684a9676841267733dba3`
+- **Profile:** https://moltx.io/baseFM
 
 ## Known Issues
 - GitHub OAuth callback needs correct Client ID in Vercel

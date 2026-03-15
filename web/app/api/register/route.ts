@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sendWelcomeEmail } from "@/lib/email/welcome";
 import { prisma } from "@/app/lib/prisma";
+import { isRateLimited, getClientIP } from "@/app/lib/security-middleware";
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request);
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const { email, password, name, referralCode } = await request.json();
   if (!email || !password) {
     return NextResponse.json({ error: "Email and password required" }, { status: 400 });
