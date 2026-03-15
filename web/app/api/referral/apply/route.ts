@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth";
 import { prisma } from "@/app/lib/prisma";
 
 export async function POST(request: NextRequest) {
-  const { referralCode, userId } = await request.json();
-
-  if (!referralCode || !userId) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Find the referrer
+  const { referralCode } = await request.json();
+
+  if (!referralCode) {
+    return NextResponse.json({ error: "Missing referral code" }, { status: 400 });
+  }
+
+  // userId comes from verified session — never from request body
+  const userId = session.user.id;
+
   const referrer = await prisma.user.findUnique({
     where: { referralCode: referralCode.toUpperCase() },
   });
@@ -21,7 +30,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Cannot refer yourself" }, { status: 400 });
   }
 
-  // Create referral record
+  // Idempotency: check if this referral has already been applied
+  const existing = await prisma.referral.findFirst({
+    where: { referrerId: referrer.id, referredId: userId },
+  });
+
+  if (existing) {
+    return NextResponse.json({ error: "Referral already applied" }, { status: 409 });
+  }
+
   await prisma.referral.create({
     data: {
       referrerId: referrer.id,
@@ -30,7 +47,6 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  // Give new user £10 discount (store in subscriptionCredits or similar)
   await prisma.user.update({
     where: { id: userId },
     data: { referralCredits: { increment: 10 } },

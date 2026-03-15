@@ -46,11 +46,22 @@ interface InstanceData {
 
 const navItems = [
   { icon: '📊', label: 'Dashboard', href: '/dashboard' },
+  // Mission Control
+  { icon: '🛸', label: 'Agent Fleet', href: '/dashboard/fleet' },
+  { icon: '💰', label: 'Cost Tracking', href: '/dashboard/cost' },
+  { icon: '📡', label: 'System Pulse', href: '/dashboard/system-pulse' },
+  { icon: '🧠', label: 'Memory Log', href: '/dashboard/memory' },
+  { icon: '🌅', label: 'Daily Brief', href: '/dashboard/daily-brief' },
+  { icon: '🔭', label: 'Tech Updates', href: '/dashboard/tech-updates' },
+  { icon: '📈', label: 'Market Intel', href: '/dashboard/market-intel' },
+  { icon: '🔊', label: 'Signals', href: '/dashboard/signals' },
+  // Agent Management
   { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
   { icon: '🎨', label: 'Personality', href: '/dashboard/personality' },
   { icon: '🔧', label: 'Skills', href: '/dashboard/skills' },
   { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
   { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
+  // Tools & Account
   { icon: '📁', label: 'Files', href: '/dashboard/files' },
   { icon: '📆', label: 'Calendar', href: '/dashboard/calendar' },
   { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
@@ -454,7 +465,7 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize">{instance?.plan || 'Starter'}</dd>
+                  <dd className="text-gray-300 capitalize">{instance?.plan || 'free'}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-gray-500 uppercase">Version</dt>
@@ -846,7 +857,7 @@ function DashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold mb-1">🎁 Invite Friends, Get Free Months</h2>
-                <p className="text-gray-400 text-sm mb-4">Share your link — get £30 off per referral</p>
+                <p className="text-gray-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"

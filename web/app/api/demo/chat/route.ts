@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
@@ -12,27 +13,38 @@ const DEMO_MODELS = [
 ]
 
 export async function POST(req: NextRequest) {
+  const ip = getClientIP(req)
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   try {
-    const { message, model, mode, conversation, apiKey } = await req.json()
+    const { message, model, mode, conversation } = await req.json()
 
     if (!message) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 })
     }
 
-    const OPENROUTER_API_KEY = apiKey || process.env.OPENROUTER_API_KEY
+    // Always use server-side key — never accept caller-supplied keys
+    const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 
     if (!OPENROUTER_API_KEY) {
-      return NextResponse.json({ error: 'API key required. Please enter your OpenRouter API key.' }, { status: 401 })
+      return NextResponse.json({ error: 'Demo unavailable — service not configured.' }, { status: 503 })
     }
 
     const modelId = model || 'anthropic/claude-3.5-sonnet'
-    
+
+    // Only allow user-role messages from client conversation history (prevent role injection)
+    const safeHistory = (Array.isArray(conversation) ? conversation : [])
+      .filter((m: any) => m && m.role === 'user' && typeof m.content === 'string')
+      .map((m: any) => ({ role: 'user' as const, content: String(m.content).slice(0, 4000) }))
+
     const messages = [
       {
         role: 'system',
         content: 'You are Agentbot, an AI agent platform. Be helpful, concise, and demonstrate agent capabilities. If asked about pricing or plans, mention the Underground plan at £29/mo.'
       },
-      ...(conversation || []),
+      ...safeHistory,
       { role: 'user', content: message }
     ]
 
@@ -53,11 +65,10 @@ export async function POST(req: NextRequest) {
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      console.error('OpenRouter error:', response.status, error)
-      return NextResponse.json({ 
-        error: `AI API error: ${response.status}`,
-        details: error 
+      const rawError = await response.text()
+      console.error('OpenRouter error:', response.status, rawError)
+      return NextResponse.json({
+        error: 'AI service error. Please try again.'
       }, { status: response.status })
     }
 

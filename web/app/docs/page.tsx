@@ -1,4 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Docs — Agentbot Developer & Operator Guide',
+  description: 'Complete documentation for deploying and operating AI agents on Agentbot. Plans, models, API keys, skills, scheduled tasks, crypto wallets, and more.',
+  keywords: ['Agentbot docs', 'AI agent documentation', 'BYOK AI guide', 'agent hosting docs', 'deploy AI agent guide', 'OpenRouter guide'],
+  openGraph: {
+    title: 'Agentbot Docs — Developer & Operator Guide',
+    description: 'Everything you need to deploy, operate, and grow your AI agents. Plans from £29/mo, BYOK, 15+ supported models.',
+    url: 'https://agentbot.raveculture.xyz/docs',
+  },
+  alternates: {
+    canonical: 'https://agentbot.raveculture.xyz/docs',
+  },
+}
 
 const docsSections = [
   {
@@ -9,7 +24,7 @@ const docsSections = [
   {
     title: 'Plans & Resources',
     description: 'Different plans for different needs. All include cloud hosting.',
-    items: ['Starter: 2GB RAM, 1 CPU', 'Pro: 4GB RAM, 2 CPU', 'Scale: 8GB RAM, 4 CPU', 'Enterprise: 16GB+ RAM', 'White Glove: 32GB RAM']
+    items: ['Underground: 2GB RAM, 1 CPU', 'Collective: 4GB RAM, 2 CPU', 'Label: 8GB RAM, 4 CPU']
   },
   {
     title: 'AI Models',
@@ -80,11 +95,9 @@ const newFeatures = [
 ];
 
 const planResources = [
-  { plan: 'Starter', ram: '2GB', cpu: '1 vCPU', price: '£19/mo' },
-  { plan: 'Pro', ram: '4GB', cpu: '2 vCPU', price: '£39/mo' },
-  { plan: 'Scale', ram: '8GB', cpu: '4 vCPU', price: '£79/mo' },
-  { plan: 'Enterprise', ram: '16GB', cpu: '4 vCPU', price: '£149/mo' },
-  { plan: 'White Glove', ram: '32GB', cpu: '8 vCPU', price: '£199/mo' },
+  { plan: 'Underground', ram: '2GB', cpu: '1 vCPU', price: '£29/mo' },
+  { plan: 'Collective',  ram: '4GB', cpu: '2 vCPU', price: '£69/mo' },
+  { plan: 'Label',       ram: '8GB', cpu: '4 vCPU', price: '£199/mo' },
 ];
 
 const supportedModels = [

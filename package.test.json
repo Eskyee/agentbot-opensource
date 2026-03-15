@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:e2e": "jest tests/e2e",
+    "test:provision": "jest tests/unit/provision-endpoint.test.ts",
+    "test:mux": "jest tests/unit/mux-integration.test.ts",
+    "test:error-recovery": "jest tests/integration/error-recovery.test.ts",
+    "test:load-72h": "jest tests/e2e/load-test-72h.test.ts --testTimeout=260000000",
+    "test:ci": "jest --ci --coverage --maxWorkers=2"
+  }
+}

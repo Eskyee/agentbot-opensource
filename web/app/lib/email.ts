@@ -20,7 +20,7 @@ export async function sendEmail({
 
   try {
     const result = await resend.emails.send({
-      from: 'Agentbot <noreply@agentbot.raveculture.xyz>',
+      from: 'Agentbot <noreply@raveculture.space>',
       to,
       subject,
       html,

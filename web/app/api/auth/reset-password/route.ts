@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   try {
     const { token, password } = await request.json()
 

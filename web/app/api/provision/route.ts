@@ -1,12 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 import { getMux } from '@/lib/mux'
+import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
 
 const BACKEND_API_URL = getBackendApiUrl()
 const BACKEND_API_FALLBACK_URL = (process.env.BACKEND_API_FALLBACK_URL || '').trim()
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const BACKEND_API_SECRET = process.env.BACKEND_API_SECRET || process.env.API_SECRET || getInternalApiKey()
   try {
     const body = await request.json()

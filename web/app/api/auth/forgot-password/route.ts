@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { randomBytes } from 'crypto'
 import { Resend } from 'resend'
+import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIP(request)
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+  }
+
   try {
     const { email } = await request.json()
 
@@ -36,7 +42,7 @@ export async function POST(request: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY)
       try {
         const result = await resend.emails.send({
-          from: 'Agentbot <noreply@agentbot.raveculture.xyz>',
+          from: 'Agentbot <noreply@raveculture.space>',
           to: email,
           subject: 'Reset your Agentbot password',
           html: `
@@ -67,7 +73,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Email service error' }, { status: 500 })
       }
     } else {
-      console.log(`Password reset for ${email}: ${resetUrl}`)
+      console.log(`Password reset requested for ${email} (RESEND_API_KEY not configured — email not sent)`)
+      // NOTE: do NOT log resetUrl — it contains a single-use secret token
     }
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent' })

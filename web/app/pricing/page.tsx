@@ -60,93 +60,57 @@ const DESIGN_TOKENS = {
 
 const PLANS: Plan[] = [
   {
-    id: 'starter',
-    name: 'Starter',
-    price: 19,
-    priceId: 'starter',
-    description: '1 Agent, 2GB RAM, 1 CPU',
+    id: 'underground',
+    name: 'Underground',
+    price: 29,
+    priceId: 'underground',
+    description: 'Solo operator. One focused agent handles your most important job, 24/7.',
     cta: 'Get Started',
     resources: { ram: '2GB', cpu: 1 },
     features: [
-      { name: '1 Agent', included: true },
-      { name: '2GB RAM', included: true },
-      { name: '1 CPU', included: true },
+      { name: '1 High-Speed Agent', included: true },
+      { name: 'Mistral 7B', included: true },
       { name: 'A2A Bus Access', included: true },
       { name: 'Basic Analytics', included: true },
+      { name: 'Telegram Channel', included: true },
       { name: 'Use your own AI key', included: true },
       { name: 'Priority Support', included: false },
     ],
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    price: 39,
-    priceId: 'pro',
-    description: '2 Agents, 4GB RAM, 2 CPU',
+    id: 'collective',
+    name: 'Collective',
+    price: 69,
+    priceId: 'collective',
+    description: 'Your crew. Three agents covering bookings, promo, and fan comms — all automated.',
     cta: 'Get Started',
     popular: true,
     resources: { ram: '4GB', cpu: 2 },
     features: [
-      { name: '2 Agents', included: true },
-      { name: '4GB RAM', included: true },
-      { name: '2 CPUs', included: true },
-      { name: 'A2A Bus Access', included: true },
-      { name: 'Analytics', included: true },
-      { name: 'Use your own AI key', included: true },
+      { name: '3 Autonomous Agents', included: true },
+      { name: 'Llama 3.3 Optimized', included: true },
+      { name: 'Royalty Split Engine', included: true },
+      { name: 'Mission Control Graph', included: true },
+      { name: 'Telegram + WhatsApp', included: true },
+      { name: 'Custom Domain', included: true },
       { name: 'Priority Support', included: true },
     ],
   },
   {
-    id: 'scale',
-    name: 'Scale',
-    price: 79,
-    priceId: 'scale',
-    description: '4 Agents, 8GB RAM, 4 CPU',
+    id: 'label',
+    name: 'Label',
+    price: 199,
+    priceId: 'label',
+    description: 'Full label infrastructure. Unlimited agents for your entire operation, with priority routing.',
     cta: 'Get Started',
     resources: { ram: '8GB', cpu: 4 },
     features: [
-      { name: '4 Agents', included: true },
-      { name: '8GB RAM', included: true },
-      { name: '4 CPUs', included: true },
-      { name: 'A2A Bus Access', included: true },
-      { name: 'Advanced Analytics', included: true },
-      { name: 'Custom Domain', included: true },
-      { name: 'Priority Support', included: true },
-    ],
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 149,
-    priceId: 'enterprise',
-    description: '8 Agents, 16GB RAM, 4 CPU',
-    cta: 'Get Started',
-    resources: { ram: '16GB', cpu: 4 },
-    features: [
-      { name: '8 Agents', included: true },
-      { name: '16GB RAM', included: true },
-      { name: '4 CPUs', included: true },
+      { name: 'Unlimited Agents', included: true },
+      { name: 'DeepSeek R1 Reasoning', included: true },
       { name: 'Priority A2A Routing', included: true },
+      { name: 'White-glove staging', included: true },
+      { name: 'All Channels', included: true },
       { name: 'Advanced Analytics', included: true },
-      { name: 'Custom Domain', included: true },
-      { name: 'Priority Support', included: true },
-    ],
-  },
-  {
-    id: 'white-glove',
-    name: 'White Glove',
-    price: 199,
-    priceId: 'white-glove',
-    description: '16 Agents, 32GB RAM, 8 CPU',
-    cta: 'Get Started',
-    resources: { ram: '32GB', cpu: 8 },
-    features: [
-      { name: '16 Agents', included: true },
-      { name: '32GB RAM', included: true },
-      { name: '8 CPUs', included: true },
-      { name: 'Priority A2A Routing', included: true },
-      { name: 'Advanced Analytics', included: true },
-      { name: 'Custom Domain', included: true },
       { name: '24/7 Support', included: true },
     ],
   },
@@ -393,24 +357,10 @@ function PricingPageContent() {
     setCheckoutState({ loading: true, error: null, planId })
 
     try {
-      const response = await fetch(`/api/stripe/checkout?plan=${planId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      })
-
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to create checkout session')
-      }
-
-      const data = await response.json()
-      
-      // Redirect to Stripe checkout
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        throw new Error('No checkout URL received')
-      }
+      // Route now returns a 303 redirect directly to Stripe — navigate there
+      window.location.href = `/api/stripe/checkout?plan=${planId}`
+      // Keep loading state on while browser navigates away
+      return
     } catch (error) {
       console.error('Checkout error:', error)
       setCheckoutState({
@@ -447,28 +397,18 @@ function PricingPageContent() {
           {/* Page header */}
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-100 tracking-tight animate-fade-in">
-              Simple, transparent pricing
+              Fleet Subscriptions
             </h1>
             <p className="mt-4 text-lg sm:text-xl text-gray-400 animate-fade-in-up">
-              Choose the perfect plan for your needs.
+              Bring your own AI key. We provide the infrastructure.
             </p>
           </div>
 
-          {/* Billing toggle */}
+          {/* Billing label */}
           <div className="mt-8 flex justify-center animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <div className="inline-flex items-center gap-3 p-1 bg-gray-900 rounded-lg border border-gray-800">
-              <button
-                className="px-4 py-2 text-sm font-medium text-gray-100 bg-gray-800 rounded-md transition-colors"
-                aria-pressed="true"
-              >
-                Monthly
-              </button>
-              <button
-                className="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-300 transition-colors"
-                aria-pressed="false"
-              >
-                Yearly <span className="ml-1 text-green-400">-20%</span>
-              </button>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 rounded-lg border border-gray-800 text-sm text-gray-400">
+              <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
+              Monthly billing — cancel anytime
             </div>
           </div>
         </div>
@@ -510,24 +450,24 @@ function PricingPageContent() {
           <dl className="space-y-6">
             {[
               {
-                question: 'Can I change plans later?',
-                answer: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately and billing is prorated.',
+                question: 'Do I need to provide my own AI API key?',
+                answer: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, Ollama, or other AI provider keys directly. You pay wholesale rates with zero markup from us.',
               },
               {
                 question: 'What payment methods do you accept?',
-                answer: 'We accept all major credit cards, debit cards, and PayPal through our secure Stripe payment processing.',
+                answer: 'We accept all major credit and debit cards through Stripe. Payments are recurring monthly.',
               },
               {
-                question: 'Is there a free trial?',
-                answer: 'Yes! All plans include a 14-day free trial. No credit card required to start.',
-              },
-              {
-                question: 'What happens if I exceed my plan limits?',
-                answer: 'We\'ll notify you when you\'re approaching your limits. You can upgrade your plan or pay for additional usage.',
+                question: 'Can I change plans later?',
+                answer: 'Yes. Upgrade or downgrade at any time from your dashboard. Changes take effect at the next billing cycle.',
               },
               {
                 question: 'Can I cancel my subscription?',
-                answer: 'Yes, you can cancel anytime from your dashboard. You\'ll continue to have access until the end of your billing period.',
+                answer: 'Yes — cancel anytime from your dashboard. You keep access until the end of your paid period.',
+              },
+              {
+                question: 'What is the A2A protocol?',
+                answer: 'Agent-to-Agent (A2A) is our coordination bus — agents can delegate tasks, share context, and execute cross-agent workflows autonomously without human input.',
               },
             ].map((faq, index) => (
               <div key={index} className="bg-gray-900/30 rounded-lg p-6">
@@ -543,10 +483,10 @@ function PricingPageContent() {
       <section className="relative py-16 bg-gradient-to-b from-transparent to-blue-500/5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-100 mb-4">
-            Ready to get started?
+            Ready to deploy your fleet?
           </h2>
           <p className="text-lg text-gray-400 mb-8">
-            Join thousands of users building AI agents with Agentbot.
+            Autonomous agents running 24/7. Sovereign infrastructure. No API tax.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

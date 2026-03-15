@@ -30,6 +30,13 @@ const blogPosts = [
     tags: ["Launch", "Trading", "V2"]
   },
   {
+    slug: 'security-hardening-2026',
+    date: '7 March 2026',
+    title: 'Security Hardening 2026: Protecting Your AI Agents',
+    excerpt: 'Comprehensive security review completed. Authorization checks, rate limiting, input validation, and production hardening applied across all endpoints.',
+    tags: ["Security", "Production"]
+  },
+  {
     slug: 'daily-2026-03-05',
     date: '5 March 2026',
     title: 'baseFM March Update: Agent Skills, Autonomous Trading & More',
@@ -175,13 +182,6 @@ const blogPosts = [
     title: 'API Webhooks and External Integrations',
     excerpt: 'Connect your AI agent to external systems using webhooks, APIs, and custom workflows.',
     tags: ['Tutorial', 'Integrations']
-  },
-  {
-    slug: 'security-hardening-2026',
-    date: 'March 2026',
-    title: 'Security Hardening 2026: Protecting Your AI Agents',
-    excerpt: 'Comprehensive security review completed. Authorization checks, input validation, and production hardening applied.',
-    tags: ["Security", "Production"]
   },
   {
     slug: 'welcome-openclaw-users',

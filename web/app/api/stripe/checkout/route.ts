@@ -4,24 +4,23 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
-  starter: { amount: 1900, name: 'Starter' },
-  pro: { amount: 3900, name: 'Pro' },
-  scale: { amount: 7900, name: 'Scale' },
-  enterprise: { amount: 14900, name: 'Enterprise' },
-  'white-glove': { amount: 19900, name: 'White Glove' },
+  underground: { amount: 2900, name: 'Underground' },
+  collective: { amount: 6900, name: 'Collective' },
+  label: { amount: 19900, name: 'Label' },
 }
 
 export async function GET(request: NextRequest) {
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
-  
-  const validPlans = ['starter', 'pro', 'scale', 'enterprise', 'white-glove']
+
+  const validPlans = ['underground', 'collective', 'label']
   if (!validPlans.includes(plan)) {
     return NextResponse.redirect(new URL(`/pricing?error=invalid_plan`, origin), 303)
   }
 
   const session = await getServerSession(authOptions)
   const userId = session?.user?.id || ''
+  const userEmail = session?.user?.email || ''
 
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) {
@@ -96,23 +95,29 @@ export async function GET(request: NextRequest) {
       priceId = newPrice.id
     }
     
-    const checkoutSession = await stripe.checkout.sessions.create({
+    const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
       success_url: `${origin}/onboard?plan=${plan}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?cancelled=1`,
       metadata: { plan, source: 'agentbot-web', userId },
-    })
+    }
+    // Pre-fill customer email if logged in — improves conversion
+    if (userEmail) {
+      checkoutParams.customer_email = userEmail
+    }
+    const checkoutSession = await stripe.checkout.sessions.create(checkoutParams)
 
     if (!checkoutSession.url) {
       return NextResponse.redirect(new URL(`/pricing?error=no_checkout_url`, origin), 303)
     }
 
-    return NextResponse.json({ url: checkoutSession.url })
+    // Always redirect to Stripe — works for both <a href> links and programmatic navigation
+    return NextResponse.redirect(checkoutSession.url, 303)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)
     console.error('Stripe checkout error:', errorMessage, { plan })
-    return NextResponse.json({ error: errorMessage }, { status: 500 })
+    return NextResponse.redirect(new URL(`/pricing?error=checkout_failed`, origin), 303)
   }
 }

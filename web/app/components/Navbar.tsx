@@ -8,8 +8,8 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = session?.user?.email === 'rbasefm@icloud.com';
+  // isAdmin is set server-side from ADMIN_EMAILS env var via JWT callback
+  const isAdmin = session?.user?.isAdmin === true;
   const walletAddress = getWalletAddress(session?.user?.email);
   const { basename } = useBasename(walletAddress);
   // Display name: Basename > truncated address > name > email username
@@ -40,15 +40,16 @@ export default function Navbar() {
           </Link>
         </div>
 
-         {/* Desktop nav */}
-         <div className="hidden md:flex items-center gap-6">
-           <Link href="/pricing" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Pricing</Link>
-           <Link href="/demo" className="text-sm text-blue-400 hover:text-white rounded transition-colors">Demo</Link>
-           <Link href="/learn" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Learn</Link>
-           <Link href="/news" className="text-sm text-gray-400 hover:text-white rounded transition-colors">News</Link>
-           <Link href="/blog" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Blog</Link>
-           <Link href="/docs" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
-           <Link href="/partner" className="text-sm text-purple-400 hover:text-white rounded transition-colors">Partner</Link>
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-6">
+          <Link href="/pricing" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Pricing</Link>
+          <Link href="/demo" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Demo</Link>
+          <Link href="/learn" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Learn</Link>
+          <Link href="/news" className="text-sm text-gray-400 hover:text-white rounded transition-colors">News</Link>
+          <Link href="/blog" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Blog</Link>
+          <Link href="/docs" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
+          <Link href="/basefm" className="text-sm text-gray-400 hover:text-white rounded transition-colors">$BASEFM</Link>
+          <Link href="/partner" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Partner</Link>
 
           {status === "loading" ? null : session ? (
             <div className="flex items-center gap-4">
