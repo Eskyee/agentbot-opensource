@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react'
 import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
 import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
+import HelpChat from '@/app/components/HelpChat'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -954,6 +955,7 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
           </button>
         </div>
       </aside>
+      <HelpChat />
     </>
   )
 }

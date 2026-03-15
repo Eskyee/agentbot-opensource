@@ -3,18 +3,10 @@ import Stripe from 'stripe'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
-// Canonical plan prices — amounts in pence (GBP). Must match what is shown in the UI.
-const PLAN_PRICES: Record<string, { amount: number; name: string; description: string }> = {
-  underground: { amount: 2900,  name: 'Underground', description: '1 Agent, A2A Bus Access, Basic Analytics' },
-  collective:  { amount: 6900,  name: 'Collective',  description: '3 Agents, Llama 3.3, Royalty Split Engine' },
-  label:       { amount: 19900, name: 'Label',       description: 'Unlimited Agents, DeepSeek R1, Priority A2A' },
-}
-
-// Known Stripe product IDs for our 3 active plans — do not change these IDs
-const PRODUCT_IDS: Record<string, string> = {
-  underground: 'prod_U9B91PN8c9puXP',
-  collective:  'prod_U98tpiNSfUlIlP',
-  label:       'prod_U9CBhMyxK2fr2z',
+const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
+  underground: { amount: 2900, name: 'Underground' },
+  collective: { amount: 6900, name: 'Collective' },
+  label: { amount: 14900, name: 'Enterprise Plan' },
 }
 
 export async function GET(request: NextRequest) {
@@ -39,23 +31,57 @@ export async function GET(request: NextRequest) {
   try {
     const stripe = new Stripe(stripeKey)
     const planInfo = PLAN_PRICES[plan]
-    const productId = PRODUCT_IDS[plan]
+    
+    let allPrices: Stripe.Price[] = []
+    let lastId: string | undefined
+    do {
+      const resp = await stripe.prices.list({
+        active: true,
+        currency: 'gbp',
+        limit: 100,
+        starting_after: lastId,
+      })
+      allPrices = allPrices.concat(resp.data)
+      lastId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
+    } while (lastId)
 
-    // Find existing active recurring monthly GBP price for this specific product
-    const pricesResp = await stripe.prices.list({
-      product: productId,
-      active: true,
-      currency: 'gbp',
-      limit: 20,
-    })
+    const foundPrice = allPrices.find(p =>
+      p.recurring?.interval === 'month' &&
+      p.unit_amount === planInfo.amount &&
+      p.active === true
+    )
 
-    let priceId: string | undefined = pricesResp.data.find(
-      (p) => p.recurring?.interval === 'month' && p.unit_amount === planInfo.amount
-    )?.id
+    let priceId: string
+    if (foundPrice) {
+      priceId = foundPrice.id
+    } else {
+      let productId: string | undefined
+      let lastProductId: string | undefined
+      do {
+        const resp = await stripe.products.list({
+          active: true,
+          limit: 100,
+          starting_after: lastProductId,
+        })
+        const match = resp.data.find(p => p.name === planInfo.name && p.active)
+        if (match) {
+          productId = match.id
+          break
+        }
+        lastProductId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
+      } while (!productId && lastProductId)
 
-    // If no recurring monthly GBP price exists at the correct amount, create one
-    if (!priceId) {
-      const normalized = plan.replace(/[^a-z0-9]+/g, '_')
+      if (!productId) {
+        const normalized = planInfo.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+        const productKey = `product_${normalized}`
+        const newProduct = await stripe.products.create(
+          { name: planInfo.name, active: true },
+          { idempotencyKey: productKey }
+        )
+        productId = newProduct.id
+      }
+
+      const priceKey = `price_gbp_${planInfo.amount}_month`
       const newPrice = await stripe.prices.create(
         {
           unit_amount: planInfo.amount,
@@ -64,27 +90,19 @@ export async function GET(request: NextRequest) {
           product: productId,
           active: true,
         },
-        { idempotencyKey: `price_${normalized}_gbp_month_v3` }
+        { idempotencyKey: priceKey }
       )
       priceId = newPrice.id
     }
-
-    // Build checkout session params
-    const checkoutParams: Stripe.Checkout.SessionCreateParams = {
+    
+    const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
       success_url: `${origin}/onboard?plan=${plan}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?cancelled=1`,
       metadata: { plan, source: 'agentbot-web', userId },
-    }
-
-    // Pre-fill customer email if user is logged in (improves conversion)
-    if (userEmail) {
-      checkoutParams.customer_email = userEmail
-    }
-
-    const checkoutSession = await stripe.checkout.sessions.create(checkoutParams)
+    })
 
     if (!checkoutSession.url) {
       return NextResponse.redirect(new URL(`/pricing?error=no_checkout_url`, origin), 303)
