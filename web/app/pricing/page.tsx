@@ -64,7 +64,7 @@ const PLANS: Plan[] = [
     name: 'Underground',
     price: 29,
     priceId: 'underground',
-    description: '1 Agent, Mistral 7B, A2A Bus Access, Basic Analytics',
+    description: 'Solo operator. One focused agent handles your most important job, 24/7.',
     cta: 'Get Started',
     resources: { ram: '2GB', cpu: 1 },
     features: [
@@ -82,7 +82,7 @@ const PLANS: Plan[] = [
     name: 'Collective',
     price: 69,
     priceId: 'collective',
-    description: '3 Agents, Llama 3.3, Royalty Split Engine, Mission Control Graph',
+    description: 'Your crew. Three agents covering bookings, promo, and fan comms — all automated.',
     cta: 'Get Started',
     popular: true,
     resources: { ram: '4GB', cpu: 2 },
@@ -101,7 +101,7 @@ const PLANS: Plan[] = [
     name: 'Label',
     price: 199,
     priceId: 'label',
-    description: 'Unlimited Agents, DeepSeek R1, Priority A2A Routing, White-glove staging',
+    description: 'Full label infrastructure. Unlimited agents for your entire operation, with priority routing.',
     cta: 'Get Started',
     resources: { ram: '8GB', cpu: 4 },
     features: [

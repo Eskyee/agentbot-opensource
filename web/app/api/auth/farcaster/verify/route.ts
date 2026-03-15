@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Farcaster verification failed:', error)
     return NextResponse.json(
-      { error: 'Verification failed', details: String(error) },
+      { error: 'Verification failed' },
       { status: 500 }
     )
   }

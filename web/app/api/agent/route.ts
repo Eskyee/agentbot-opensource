@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/lib/auth';
 
 const API_VERSION = '1.0.0';
 const AGENTBOT_VERSION = '2026.3.1';
@@ -24,9 +27,15 @@ const agentInstances = new Map<string, {
 }>();
 
 export async function GET(request: NextRequest) {
+  const authSession = await getServerSession(authOptions);
+  if (!authSession?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
-  const userId = searchParams.get('userId');
+  // Always use authenticated user id — never trust caller-supplied userId
+  const userId = authSession.user.id;
   const sessionId = searchParams.get('sessionId');
 
   if (action === 'health') {
@@ -128,9 +137,16 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authSession = await getServerSession(authOptions);
+  if (!authSession?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
-    const { action, userId, message, sessionId, skillId, enabled, key, value } = body;
+    const { action, message, sessionId, skillId, enabled, key, value } = body;
+    // Always bind userId to verified session — never from request body
+    const userId = authSession.user.id;
 
     if (action === 'chat' || !action) {
       if (!userId || !message) {
@@ -141,7 +157,7 @@ export async function POST(request: NextRequest) {
         Array.from(sessions.values()).find(s => s.userId === userId && s.status === 'active');
 
       if (!session) {
-        const newSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+        const newSessionId = 'sess_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
         session = {
           id: newSessionId,
           userId,
@@ -186,7 +202,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'userId required' }, { status: 400 });
       }
 
-      const newSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+      const newSessionId = 'sess_' + crypto.randomUUID().replace(/-/g, '').substring(0, 16);
       const session = {
         id: newSessionId,
         userId,

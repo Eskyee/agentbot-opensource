@@ -1,33 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
-
-// In-memory storage (in production, use database)
-const apiKeys = new Map<string, any>()
+import { prisma } from '@/app/lib/prisma'
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
     const { id } = await params
-    const apiKey = apiKeys.get(id)
+    const apiKey = await prisma.apiKey.findFirst({
+      where: { id, userId: session.user.id },
+      select: { id: true, name: true, keyPrefix: true, lastUsed: true, createdAt: true },
+    })
 
-    if (!apiKey || apiKey.userEmail !== session.user.email) {
+    if (!apiKey) {
       return NextResponse.json({ error: 'Key not found' }, { status: 404 })
     }
 
     return NextResponse.json({
       id: apiKey.id,
       name: apiKey.name,
-      keyPreview: apiKey.key.substring(0, 8) + '...' + apiKey.key.substring(apiKey.key.length - 4),
+      keyPreview: apiKey.keyPrefix + '...',
       createdAt: apiKey.createdAt,
-      lastUsed: apiKey.lastUsed
+      lastUsed: apiKey.lastUsed,
     })
   } catch (error) {
     console.error('Key fetch error:', error)
@@ -40,19 +41,20 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
     const { id } = await params
-    const apiKey = apiKeys.get(id)
 
-    if (!apiKey || apiKey.userEmail !== session.user.email) {
+    const deleted = await prisma.apiKey.deleteMany({
+      where: { id, userId: session.user.id },
+    })
+
+    if (deleted.count === 0) {
       return NextResponse.json({ error: 'Key not found' }, { status: 404 })
     }
-
-    apiKeys.delete(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

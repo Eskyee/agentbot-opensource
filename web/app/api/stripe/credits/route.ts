@@ -1,10 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
+
+// Allowlist of valid credit top-up price IDs (Stripe price IDs, not product IDs)
+// Add additional price IDs here or configure via STRIPE_CREDIT_PRICE_IDS env var
+function getAllowedPriceIds(): Set<string> {
+  const envIds = (process.env.STRIPE_CREDIT_PRICE_IDS || '')
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean)
+  return new Set(envIds)
+}
 
 export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) {
+    const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
+    return NextResponse.redirect(new URL(`/billing?error=unauthorized`, origin), 303)
+  }
+
   const priceId = request.nextUrl.searchParams.get('price') || ''
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
-  
+
   const stripeKey = process.env.STRIPE_SECRET_KEY
 
   if (!stripeKey) {
@@ -12,6 +30,12 @@ export async function GET(request: NextRequest) {
   }
 
   if (!priceId) {
+    return NextResponse.redirect(new URL(`/billing?error=invalid_price`, origin), 303)
+  }
+
+  // Validate priceId against allowlist to prevent arbitrary Stripe price abuse
+  const allowedPriceIds = getAllowedPriceIds()
+  if (allowedPriceIds.size > 0 && !allowedPriceIds.has(priceId)) {
     return NextResponse.redirect(new URL(`/billing?error=invalid_price`, origin), 303)
   }
 
