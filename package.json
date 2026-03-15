@@ -9,7 +9,15 @@
     "dev:frontend": "npm --prefix web run dev",
     "dev:api": "npm --prefix agentbot-backend run dev",
     "dev:worker": "npm --prefix agentbot-worker run dev",
-    "install:all": "npm --prefix web install && npm --prefix agentbot-backend install && npm --prefix agentbot-worker install"
+    "install:all": "npm --prefix web install && npm --prefix agentbot-backend install && npm --prefix agentbot-worker install",
+    "test": "jest --config jest.config.js",
+    "test:provision": "jest tests/unit/provision-endpoint.test.ts --config jest.config.js",
+    "test:mux": "jest tests/unit/mux-integration.test.ts --config jest.config.js",
+    "test:error-recovery": "jest tests/integration/error-recovery.test.ts --config jest.config.js",
+    "test:load-72h": "jest tests/e2e/load-test-72h.test.ts --config jest.config.js --testTimeout=259200000",
+    "test:coverage": "jest --config jest.config.js --coverage",
+    "test:mock-server": "node test-mock-server.js",
+    "test:with-mock": "npm run test:mock-server & sleep 2 && npm test; kill %1 2>/dev/null || true"
   },
   "version": "1.0.0",
   "description": "**Deploy and manage AI agents in 60 seconds. No servers, no terminal, no BS.**",
@@ -30,8 +38,12 @@
   },
   "homepage": "https://github.com/Eskyee/agentbot#readme",
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "docx": "^9.6.1",
+    "jest": "^30.3.0",
     "playwright": "^1.58.2",
-    "puppeteer": "^24.37.5"
+    "puppeteer": "^24.37.5",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
   }
 }
