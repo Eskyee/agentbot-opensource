@@ -54,7 +54,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.svg',
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.svg',
   },
   other: {
     'base:app_id': '6951feb4c63ad876c90817aa',
