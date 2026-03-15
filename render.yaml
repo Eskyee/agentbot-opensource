@@ -13,19 +13,6 @@ services:
     plan: starter
     region: frankfurt
 
-  # Ollama Service (LLM Inference)
-  - type: web
-    name: agentbot-ollama
-    env: docker
-    dockerImage: ollama/ollama:latest
-    plan: starter+
-    region: frankfurt
-    healthCheckPath: /api/status
-    disk:
-      name: ollama-models
-      mountPath: /root/.ollama
-      sizeGB: 50
-
   # Agentbot Backend API
   - type: web
     name: agentbot-api
@@ -53,8 +40,6 @@ services:
           name: agentbot-redis
           type: redis
           property: connectionString
-      - key: OLLAMA_URL
-        value: http://agentbot-ollama:11434
       - key: INTERNAL_API_KEY
         generateValue: true
       - key: JWT_SECRET

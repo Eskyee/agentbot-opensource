@@ -58,7 +58,7 @@ app.use(express.json());
 app.use('/api/invite', inviteRouter);
 app.use('/api/underground', undergroundRouter);
 app.use('/api/mission-control', missionControlRouter);
-app.use('/api/ai', aiRouter); // Universal AI provider routes (Ollama + OpenRouter)
+app.use('/api/ai', aiRouter); // Universal AI provider routes (OpenRouter)
 app.use('/api/render-mcp', renderMcpRouter); // Render MCP Server integration
 app.use('/api/provision', provisionRouter); // BASEFM agent provisioning
 
@@ -828,7 +828,7 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
       // no-op
     }
 
-    const provider = config.aiProvider || 'ollama';
+    const provider = config.aiProvider || 'openrouter';
     const providedKey = (config.apiKey || '').trim();
     const envArgs: string[] = [];
 
@@ -839,9 +839,7 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
       }
     };
 
-    if (provider === 'ollama') {
-      envArgs.push('-e', 'OLLAMA_HOST=http://agentbot-ollama:11434');
-    } else if (provider === 'gemini' || provider === 'google') {
+    if (provider === 'gemini' || provider === 'google') {
       addEnvIfKeyExists('GEMINI_API_KEY');
     } else if (provider === 'groq') {
       addEnvIfKeyExists('GROQ_API_KEY');
@@ -873,7 +871,7 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
       agentId: safeAgentId,
       createdAt: new Date().toISOString(),
       plan: config.plan || 'free',
-      aiProvider: config.aiProvider || 'ollama',
+      aiProvider: config.aiProvider || 'openrouter',
       port: assignedPort,
       subdomain,
     });

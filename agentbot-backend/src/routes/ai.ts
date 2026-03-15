@@ -5,7 +5,7 @@ const router = Router();
 
 /**
  * Universal AI Provider Routes
- * Supports: Ollama (local) + OpenRouter (cloud)
+ * Supports: OpenRouter (cloud)
  * Users can choose which provider/model they want
  */
 
@@ -13,7 +13,7 @@ const router = Router();
 router.get('/health', async (_req: Request, res: Response) => {
   try {
     const providers = await AIProviderService.checkProviders();
-    const status = providers.ollama || providers.openrouter ? 'healthy' : 'degraded';
+    const status = providers.openrouter ? 'healthy' : 'degraded';
 
     res.json({
       status,
@@ -33,7 +33,6 @@ router.get('/models', async (_req: Request, res: Response) => {
     res.json({
       models,
       count: models.length,
-      ollama: models.filter((m) => m.provider === 'ollama').length,
       openrouter: models.filter((m) => m.provider === 'openrouter').length,
       timestamp: new Date().toISOString(),
     });
@@ -63,10 +62,10 @@ router.get('/models/:provider', async (req: Request, res: Response) => {
 
 // Smart model selection
 router.post('/models/select', async (req: Request, res: Response) => {
-  const { taskType, preferLocal } = req.body as { taskType?: string; preferLocal?: boolean };
+  const { taskType } = req.body as { taskType?: string };
 
   try {
-    const model = await AIProviderService.selectBestModel(taskType || 'general', preferLocal !== false);
+    const model = await AIProviderService.selectBestModel(taskType || 'general');
 
     if (!model) {
       return res.status(404).json({ error: 'No models available' });
@@ -75,7 +74,6 @@ router.post('/models/select', async (req: Request, res: Response) => {
     res.json({
       model,
       taskType: taskType || 'general',
-      preferLocal: preferLocal !== false,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -85,7 +83,7 @@ router.post('/models/select', async (req: Request, res: Response) => {
 
 // Universal chat endpoint - works with any provider
 router.post('/chat', async (req: Request, res: Response) => {
-  const { messages, model, taskType, preferLocal, temperature, top_p, max_tokens } = req.body;
+  const { messages, model, taskType, temperature, top_p, max_tokens } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Messages array is required' });
@@ -95,7 +93,7 @@ router.post('/chat', async (req: Request, res: Response) => {
     // Determine which model to use
     let selectedModel = model;
     if (!selectedModel) {
-      const bestModel = await AIProviderService.selectBestModel(taskType || 'general', preferLocal !== false);
+      const bestModel = await AIProviderService.selectBestModel(taskType || 'general');
       if (!bestModel) {
         return res.status(404).json({ error: 'No models available' });
       }

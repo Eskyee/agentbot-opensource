@@ -40,16 +40,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Ollama for local LLM inference
-  ollama:
-    image: ollama/ollama:latest
-    container_name: agentbot-ollama
-    restart: always
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
-
   # Backend API
   api:
     build:
@@ -133,7 +123,6 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  ollama_data:
 
 networks:
   default:

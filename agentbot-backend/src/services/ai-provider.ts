@@ -2,11 +2,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-/**
- * Universal AI Provider Interface
- * Supports: Ollama (local), OpenRouter (cloud), and other providers
- */
-
 export interface AIMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -15,7 +10,7 @@ export interface AIMessage {
 export interface AIResponse {
   id: string;
   model: string;
-  provider: 'ollama' | 'openrouter' | 'anthropic' | 'openai' | 'groq';
+  provider: 'openrouter' | 'anthropic' | 'openai' | 'groq';
   message: {
     role: 'assistant';
     content: string;
@@ -42,7 +37,6 @@ export interface AvailableModel {
 }
 
 export class AIProviderService {
-  private static OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
   private static OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
   private static OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
@@ -50,72 +44,18 @@ export class AIProviderService {
    * Check which providers are available
    */
   static async checkProviders(): Promise<{
-    ollama: boolean;
     openrouter: boolean;
   }> {
-    const ollamaHealthy = await this.checkOllamaHealth();
-    const openrouterHealthy = !!this.OPENROUTER_API_KEY;
-
     return {
-      ollama: ollamaHealthy,
-      openrouter: openrouterHealthy,
+      openrouter: !!this.OPENROUTER_API_KEY,
     };
   }
 
   /**
-   * Check Ollama health
-   */
-  private static async checkOllamaHealth(): Promise<boolean> {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-      const response = await fetch(`${this.OLLAMA_URL}/api/tags`, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      return response.ok;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Get all available models from all providers
+   * Get all available models from OpenRouter
    */
   static async getAllModels(): Promise<AvailableModel[]> {
-    const models: AvailableModel[] = [];
-
-    // Get Ollama models
-    const ollamaModels = await this.getOllamaModels();
-    models.push(...ollamaModels);
-
-    // Get OpenRouter models
-    const openrouterModels = await this.getOpenRouterModels();
-    models.push(...openrouterModels);
-
-    return models;
-  }
-
-  /**
-   * Get models from Ollama
-   */
-  private static async getOllamaModels(): Promise<AvailableModel[]> {
-    try {
-      const response = await fetch(`${this.OLLAMA_URL}/api/tags`);
-      if (!response.ok) return [];
-
-      const data = await response.json() as { models?: Array<{ name: string }> };
-      const models = data.models || [];
-
-      return models.map((m) => ({
-        id: m.name,
-        name: m.name,
-        provider: 'ollama',
-        description: `Local Ollama Model: ${m.name}`,
-        tags: ['local', 'free', 'open-source'],
-        available: true,
-      }));
-    } catch {
-      return [];
-    }
+    return this.getOpenRouterModels();
   }
 
   /**
@@ -166,40 +106,28 @@ export class AIProviderService {
    */
   static async selectBestModel(
     taskType: string = 'general',
-    preferLocal: boolean = true
   ): Promise<AvailableModel | null> {
     const allModels = await this.getAllModels();
 
-    // Priority map: task type to model characteristics
-    const taskMap: Record<string, { tags: string[]; providers: string[] }> = {
-      coding: { tags: ['coding', 'logic'], providers: ['openrouter'] },
-      analysis: { tags: ['analysis'], providers: ['openrouter', 'ollama'] },
-      creative: { tags: ['creative'], providers: ['openrouter'] },
-      quick: { tags: ['fast', 'local'], providers: ['ollama'] },
-      long: { tags: ['long-context'], providers: ['openrouter'] },
-      general: { tags: ['general', 'balanced'], providers: preferLocal ? ['ollama', 'openrouter'] : ['openrouter', 'ollama'] },
+    const taskMap: Record<string, string[]> = {
+      coding: ['coding', 'logic'],
+      analysis: ['analysis'],
+      creative: ['creative'],
+      long: ['long-context'],
+      general: ['general', 'balanced'],
     };
 
-    const taskConfig = taskMap[taskType] || taskMap.general;
+    const tags = taskMap[taskType] || taskMap.general;
 
-    // Filter by provider preference
-    let candidates = allModels.filter((m) =>
-      taskConfig.providers.includes(m.provider)
+    const match = allModels.find((m) =>
+      m.tags.some((tag) => tags.includes(tag))
     );
 
-    // Filter by tags
-    if (candidates.length === 0) {
-      candidates = allModels.filter((m) =>
-        m.tags.some((tag) => taskConfig.tags.includes(tag))
-      );
-    }
-
-    // Return first available
-    return candidates[0] || allModels[0] || null;
+    return match || allModels[0] || null;
   }
 
   /**
-   * Send message to AI provider (auto-detects provider from model ID)
+   * Send message to OpenRouter
    */
   static async chat(
     messages: AIMessage[],
@@ -210,77 +138,7 @@ export class AIProviderService {
       max_tokens?: number;
     }
   ): Promise<AIResponse> {
-    // Determine provider from model ID
-    const provider = this.getProviderFromModel(modelId);
-
-    switch (provider) {
-      case 'ollama':
-        return this.chatOllama(messages, modelId, options);
-      case 'openrouter':
-        return this.chatOpenRouter(messages, modelId, options);
-      default:
-        throw new Error(`Unknown provider for model: ${modelId}`);
-    }
-  }
-
-  /**
-   * Determine provider from model ID
-   */
-  private static getProviderFromModel(modelId: string): string {
-    // OpenRouter models contain slashes (e.g., "openai/gpt-4")
-    if (modelId.includes('/')) {
-      return 'openrouter';
-    }
-    // Ollama models are simple names
-    return 'ollama';
-  }
-
-  /**
-   * Chat with Ollama
-   */
-  private static async chatOllama(
-    messages: AIMessage[],
-    modelId: string,
-    options?: { temperature?: number; top_p?: number; max_tokens?: number }
-  ): Promise<AIResponse> {
-    const response = await fetch(`${this.OLLAMA_URL}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: modelId,
-        messages,
-        stream: false,
-        temperature: options?.temperature ?? 0.7,
-        top_p: options?.top_p ?? 0.9,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Ollama chat failed: ${response.status}`);
-    }
-
-    const data = await response.json() as {
-      message?: { content: string };
-      done?: boolean;
-      prompt_eval_count?: number;
-      eval_count?: number;
-    };
-
-    return {
-      id: `ollama-${Date.now()}`,
-      model: modelId,
-      provider: 'ollama',
-      message: {
-        role: 'assistant',
-        content: data.message?.content || '',
-      },
-      usage: {
-        prompt_tokens: data.prompt_eval_count,
-        completion_tokens: data.eval_count,
-        total_tokens: (data.prompt_eval_count || 0) + (data.eval_count || 0),
-      },
-      timestamp: new Date().toISOString(),
-    };
+    return this.chatOpenRouter(messages, modelId, options);
   }
 
   /**
