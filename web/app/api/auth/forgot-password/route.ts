@@ -67,7 +67,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Email service error' }, { status: 500 })
       }
     } else {
-      console.log(`Password reset for ${email}: ${resetUrl}`)
+      console.log(`Password reset requested for ${email} (RESEND_API_KEY not configured — email not sent)`)
+      // NOTE: do NOT log resetUrl — it contains a single-use secret token
     }
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent' })
