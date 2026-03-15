@@ -1,12 +1,23 @@
 "use client";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
+
+const moreLinks = [
+  { href: "/demo",    label: "Demo" },
+  { href: "/learn",   label: "Learn" },
+  { href: "/news",    label: "News" },
+  { href: "/blog",    label: "Blog" },
+  { href: "/basefm",  label: "$BASEFM" },
+  { href: "/partner", label: "Partner" },
+];
 
 export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement>(null);
 
   // isAdmin is set server-side from ADMIN_EMAILS env var via JWT callback
   const isAdmin = session?.user?.isAdmin === true;
@@ -19,10 +30,22 @@ export default function Navbar() {
     ?? session?.user?.email?.split('@')[0]
     ?? null;
 
+  // Close mobile menu + lock scroll
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+
+  // Close "More" dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
+        setMoreOpen(false);
+      }
+    }
+    if (moreOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [moreOpen]);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -42,17 +65,45 @@ export default function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
+          {/* Primary links — always visible */}
           <Link href="/pricing" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Pricing</Link>
-          <Link href="/demo" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Demo</Link>
-          <Link href="/why" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Why</Link>
-          <Link href="/learn" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Learn</Link>
-          <Link href="/news" className="text-sm text-gray-400 hover:text-white rounded transition-colors">News</Link>
-          <Link href="/blog" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Blog</Link>
-          <Link href="/docs" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
-          <Link href="/basefm" className="text-sm text-gray-400 hover:text-white rounded transition-colors">$BASEFM</Link>
-          <Link href="/token" className="text-sm text-gray-400 hover:text-white rounded transition-colors">$AGENTBOT</Link>
-          <Link href="/partner" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Partner</Link>
+          <Link href="/why"     className="text-sm text-gray-400 hover:text-white rounded transition-colors">Why</Link>
+          <Link href="/docs"    className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
+          <Link href="/token"   className="text-sm text-gray-400 hover:text-white rounded transition-colors">$AGENTBOT</Link>
 
+          {/* More dropdown */}
+          <div className="relative" ref={moreRef}>
+            <button
+              onClick={() => setMoreOpen(!moreOpen)}
+              className="flex items-center gap-1 text-sm text-gray-400 hover:text-white rounded transition-colors"
+              aria-expanded={moreOpen}
+            >
+              More
+              <svg
+                className={`w-3.5 h-3.5 transition-transform ${moreOpen ? "rotate-180" : ""}`}
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {moreOpen && (
+              <div className="absolute top-full right-0 mt-2 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-xl py-1 z-50">
+                {moreLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Auth */}
           {status === "loading" ? null : session ? (
             <div className="flex items-center gap-4">
               <Link href="/marketplace" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
@@ -110,15 +161,24 @@ export default function Navbar() {
           style={{ top: 57 }}
         >
           <div className="flex flex-col p-4 gap-1">
-            <Link href="/pricing" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Pricing</Link>
-            <Link href="/why" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Why</Link>
-            <Link href="/learn" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Learn</Link>
-            <Link href="/news" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>News</Link>
-            <Link href="/blog" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Blog</Link>
-            <Link href="/docs" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Docs</Link>
+            {/* Primary */}
+            <Link href="/pricing"  className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Pricing</Link>
+            <Link href="/why"      className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Why</Link>
+            <Link href="/docs"     className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Docs</Link>
+            <Link href="/token"    className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>$AGENTBOT</Link>
             <Link href="/marketplace" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Marketplace</Link>
-            <Link href="/token" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>$AGENTBOT</Link>
 
+            {/* More section */}
+            <div className="border-t border-gray-800 mt-2 pt-3">
+              <p className="text-xs text-gray-600 px-2 pb-1 uppercase tracking-wider">More</p>
+              {moreLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="block text-base py-2.5 px-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Auth */}
             <div className="border-t border-gray-800 mt-2 pt-4 flex flex-col gap-1">
               {session ? (
                 <>
@@ -138,7 +198,7 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link href="/login" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Log In</Link>
+                  <Link href="/login"  className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Log In</Link>
                   <Link href="/signup" className="block text-lg py-3 px-2 text-white font-medium rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Sign Up</Link>
                 </>
               )}
