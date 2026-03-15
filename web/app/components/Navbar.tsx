@@ -8,8 +8,8 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = session?.user?.email === 'rbasefm@icloud.com';
+  // isAdmin is set server-side from ADMIN_EMAILS env var via JWT callback
+  const isAdmin = session?.user?.isAdmin === true;
   const walletAddress = getWalletAddress(session?.user?.email);
   const { basename } = useBasename(walletAddress);
   // Display name: Basename > truncated address > name > email username

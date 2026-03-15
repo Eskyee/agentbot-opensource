@@ -213,6 +213,10 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.sub = user.id;
         token.email = user.email;
+        // Set admin flag from ADMIN_EMAILS env var — re-evaluated on every sign-in
+        const adminEmails = (process.env.ADMIN_EMAILS || '')
+          .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+        token.isAdmin = adminEmails.includes((user.email || '').toLowerCase());
       }
       return token;
     },
@@ -220,6 +224,7 @@ export const authOptions: AuthOptions = {
       if (token && session.user) {
         session.user.id = token.sub || "";
         session.user.email = token.email;
+        session.user.isAdmin = token.isAdmin ?? false;
       }
       return session;
     },
