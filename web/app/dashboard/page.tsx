@@ -45,11 +45,22 @@ interface InstanceData {
 
 const navItems = [
   { icon: '📊', label: 'Dashboard', href: '/dashboard' },
+  // Mission Control
+  { icon: '🛸', label: 'Agent Fleet', href: '/dashboard/fleet' },
+  { icon: '💰', label: 'Cost Tracking', href: '/dashboard/cost' },
+  { icon: '📡', label: 'System Pulse', href: '/dashboard/system-pulse' },
+  { icon: '🧠', label: 'Memory Log', href: '/dashboard/memory' },
+  { icon: '🌅', label: 'Daily Brief', href: '/dashboard/daily-brief' },
+  { icon: '🔭', label: 'Tech Updates', href: '/dashboard/tech-updates' },
+  { icon: '📈', label: 'Market Intel', href: '/dashboard/market-intel' },
+  { icon: '🔊', label: 'Signals', href: '/dashboard/signals' },
+  // Agent Management
   { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
   { icon: '🎨', label: 'Personality', href: '/dashboard/personality' },
   { icon: '🔧', label: 'Skills', href: '/dashboard/skills' },
   { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
   { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
+  // Tools & Account
   { icon: '📁', label: 'Files', href: '/dashboard/files' },
   { icon: '📆', label: 'Calendar', href: '/dashboard/calendar' },
   { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },

@@ -62,7 +62,7 @@ const PLANS: Plan[] = [
   {
     id: 'underground',
     name: 'Underground',
-    price: 19,
+    price: 29,
     priceId: 'underground',
     description: '1 Agent, Mistral 7B, A2A Bus Access, Basic Analytics',
     cta: 'Get Started',
