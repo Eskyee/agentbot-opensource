@@ -16,6 +16,11 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://agentbot.raveculture.xyz/why</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://agentbot.raveculture.xyz/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

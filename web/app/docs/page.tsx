@@ -1,4 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Docs — Agentbot Developer & Operator Guide',
+  description: 'Complete documentation for deploying and operating AI agents on Agentbot. Plans, models, API keys, skills, scheduled tasks, crypto wallets, and more.',
+  keywords: ['Agentbot docs', 'AI agent documentation', 'BYOK AI guide', 'agent hosting docs', 'deploy AI agent guide', 'OpenRouter guide'],
+  openGraph: {
+    title: 'Agentbot Docs — Developer & Operator Guide',
+    description: 'Everything you need to deploy, operate, and grow your AI agents. Plans from £29/mo, BYOK, 15+ supported models.',
+    url: 'https://agentbot.raveculture.xyz/docs',
+  },
+  alternates: {
+    canonical: 'https://agentbot.raveculture.xyz/docs',
+  },
+}
 
 const docsSections = [
   {

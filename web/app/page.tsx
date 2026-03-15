@@ -154,74 +154,46 @@ export default async function Home() {
             </div>
           </div>
           
-          <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
-            {/* Starter */}
+          <div className="grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            {/* Underground */}
             <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-blue-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">STARTER</h3>
-              <p className="mt-4 text-4xl font-black">£19<span className="text-lg font-normal text-gray-600">/mo</span></p>
+              <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">UNDERGROUND</h3>
+              <p className="mt-4 text-4xl font-black">£29<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 1 Agent</li>
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 2GB RAM</li>
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 1 CPU</li>
               </ul>
-              <Link href="/signup?plan=starter" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
+              <Link href="/api/stripe/checkout?plan=underground" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
                 SELECT
               </Link>
             </div>
-            
-            {/* Pro */}
-            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-blue-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">PRO</h3>
-              <p className="mt-4 text-4xl font-black">£39<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 2 Agents</li>
+
+            {/* Collective */}
+            <div className="border-2 border-blue-500 rounded-2xl p-6 bg-blue-500/5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-blue-500 text-black text-[10px] font-black px-3 py-1 uppercase tracking-tighter">POPULAR</div>
+              <h3 className="text-lg font-bold text-blue-400">COLLECTIVE</h3>
+              <p className="mt-4 text-4xl font-black">£69<span className="text-lg font-normal text-gray-600">/mo</span></p>
+              <ul className="mt-6 space-y-2 text-sm text-gray-400 text-left">
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 3 Agents</li>
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 4GB RAM</li>
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 2 CPU</li>
               </ul>
-              <Link href="/signup?plan=pro" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
+              <Link href="/api/stripe/checkout?plan=collective" className="mt-6 block w-full rounded-xl bg-blue-500 py-3 text-center text-sm font-bold text-black hover:bg-blue-400 transition-colors">
                 SELECT
               </Link>
             </div>
-            
-            {/* Scale */}
-            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-blue-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">SCALE</h3>
-              <p className="mt-4 text-4xl font-black">£79<span className="text-lg font-normal text-gray-600">/mo</span></p>
+
+            {/* Label */}
+            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-purple-500 transition-all group">
+              <h3 className="text-lg font-bold text-gray-400 group-hover:text-purple-400 transition-colors">LABEL</h3>
+              <p className="mt-4 text-4xl font-black">£199<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 4 Agents</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 10 Agents</li>
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 8GB RAM</li>
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 4 CPU</li>
               </ul>
-              <Link href="/signup?plan=scale" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
-                SELECT
-              </Link>
-            </div>
-            
-            {/* Enterprise */}
-            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-blue-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">ENTERPRISE</h3>
-              <p className="mt-4 text-4xl font-black">£149<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 8 Agents</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 16GB RAM</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 4 CPU</li>
-              </ul>
-              <Link href="/signup?plan=enterprise" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
-                SELECT
-              </Link>
-            </div>
-            
-            {/* White Glove */}
-            <div className="border-2 border-purple-500 rounded-2xl p-6 bg-purple-500/5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-purple-500 text-black text-[10px] font-black px-3 py-1 uppercase tracking-tighter">MAX</div>
-              <h3 className="text-lg font-bold text-purple-400">WHITE GLOVE</h3>
-              <p className="mt-4 text-4xl font-black">£199<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-400 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> Unlimited Agents</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 32GB RAM</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 8 CPU</li>
-              </ul>
-              <Link href="/signup?plan=white-glove" className="mt-6 block w-full rounded-xl bg-purple-500 py-3 text-center text-sm font-bold text-black hover:bg-purple-400 transition-colors">
+              <Link href="/api/stripe/checkout?plan=label" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
                 SELECT
               </Link>
             </div>

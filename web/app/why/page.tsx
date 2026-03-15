@@ -1,5 +1,20 @@
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = {
+  title: 'Why Agentbot? — Cloud AI Agents vs Local Setup',
+  description: 'Discover why Agentbot beats running OpenClaw locally. 24/7 uptime, instant skills, Telegram/Discord/WhatsApp channels — no terminal commands, no server costs. From £29/mo.',
+  keywords: ['why Agentbot', 'AI agent cloud hosting', 'OpenClaw cloud', 'deploy AI agent', 'BYOK AI agent', 'AI agent vs local'],
+  openGraph: {
+    title: 'Why Agentbot? Cloud AI Agents vs Local Setup',
+    description: 'No hardware. No terminal. 24/7 AI agents with persistent memory, skills, and multi-channel deployment.',
+    url: 'https://agentbot.raveculture.xyz/why',
+  },
+  alternates: {
+    canonical: 'https://agentbot.raveculture.xyz/why',
+  },
+}
 
 const PRICE_START = "£29/mo";
 
