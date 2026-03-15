@@ -6,7 +6,7 @@ import { authOptions } from '@/app/lib/auth'
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
   underground: { amount: 2900, name: 'Underground' },
   collective: { amount: 6900, name: 'Collective' },
-  label: { amount: 14900, name: 'Enterprise Plan' },
+  label: { amount: 19900, name: 'Label' },
 }
 
 export async function GET(request: NextRequest) {
@@ -95,14 +95,19 @@ export async function GET(request: NextRequest) {
       priceId = newPrice.id
     }
     
-    const checkoutSession = await stripe.checkout.sessions.create({
+    const checkoutParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
       success_url: `${origin}/onboard?plan=${plan}&paid=1&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pricing?cancelled=1`,
       metadata: { plan, source: 'agentbot-web', userId },
-    })
+    }
+    // Pre-fill customer email if logged in — improves conversion
+    if (userEmail) {
+      checkoutParams.customer_email = userEmail
+    }
+    const checkoutSession = await stripe.checkout.sessions.create(checkoutParams)
 
     if (!checkoutSession.url) {
       return NextResponse.redirect(new URL(`/pricing?error=no_checkout_url`, origin), 303)
