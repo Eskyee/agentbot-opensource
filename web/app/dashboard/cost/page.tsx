@@ -111,7 +111,7 @@ export default function CostPage() {
               <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 10 }} />
               <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} tickFormatter={v => `$${v}`} />
               <Tooltip
-                formatter={(v: number) => [`$${v.toFixed(2)}`, 'Cost']}
+                formatter={(v) => [`$${Number(v).toFixed(2)}`, 'Cost']}
                 contentStyle={{ background: '#111', border: '1px solid #374151', fontSize: 12 }}
               />
               <Area type="monotone" dataKey="cost" stroke="#10b981" fill="url(#costGrad)" strokeWidth={1.5} dot={false} />
@@ -128,7 +128,7 @@ export default function CostPage() {
               <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 10 }} tickFormatter={v => `$${v}`} />
               <YAxis type="category" dataKey="name" tick={{ fill: '#9ca3af', fontSize: 11 }} width={80} />
               <Tooltip
-                formatter={(v: number) => [`$${v.toFixed(2)}`, 'Cost']}
+                formatter={(v) => [`$${Number(v).toFixed(2)}`, 'Cost']}
                 contentStyle={{ background: '#111', border: '1px solid #374151', fontSize: 12 }}
               />
               <Bar dataKey="cost" fill="#3b82f6" radius={[0, 4, 4, 0]} />
