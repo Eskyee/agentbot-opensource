@@ -121,6 +121,28 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Powered By — clean text strip */}
+      <section className="border-y border-white/[0.04] bg-black">
+        <div className="mx-auto max-w-4xl px-4 py-10">
+          <p className="text-center text-[11px] font-medium tracking-[0.2em] uppercase text-gray-500 mb-6">
+            Powered by
+          </p>
+          <div className="flex items-center justify-center gap-x-10 gap-y-3 flex-wrap">
+            <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Vercel</a>
+            <span className="text-gray-800 hidden sm:inline">|</span>
+            <a href="https://render.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Render</a>
+            <span className="text-gray-800 hidden sm:inline">|</span>
+            <a href="https://base.org" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Base</a>
+            <span className="text-gray-800 hidden sm:inline">|</span>
+            <a href="https://coinbase.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Coinbase</a>
+            <span className="text-gray-800 hidden sm:inline">|</span>
+            <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">OpenRouter</a>
+            <span className="text-gray-800 hidden sm:inline">|</span>
+            <a href="https://mux.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Mux</a>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing: Repriced for Profit */}
       <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5 scroll-mt-20">
         <div className="mx-auto max-w-6xl text-center">
@@ -265,60 +287,6 @@ export default async function Home() {
               <div className="mt-3 flex gap-4 justify-end text-xs">
                 <a href="/token" className="text-blue-400 hover:underline">$AGENTBOT</a>
                 <a href="/basefm" className="text-purple-400 hover:underline">$BASEFM</a>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-12">
-            <p className="text-[10px] font-bold tracking-widest text-gray-500 uppercase text-center mb-6">Built with the best</p>
-            <div className="flex items-center justify-center gap-8 flex-wrap">
-              {/* Vercel */}
-              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-                <svg width="60" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
-                  <path d="M12 1L24 22H0L12 1z"/>
-                </svg>
-                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Vercel</span>
-              </div>
-              {/* Render */}
-              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-                <svg width="60" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
-                  <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2" fill="none"/>
-                  <circle cx="12" cy="12" r="4" fill="white"/>
-                </svg>
-                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Render</span>
-              </div>
-              {/* Base */}
-              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-                <svg width="50" height="24" viewBox="0 0 24 24" fill="none" className="h-7">
-                  <circle cx="12" cy="12" r="10" fill="#0052FF"/>
-                  <path d="M12 6L6 18H18L12 6z" fill="white"/>
-                </svg>
-                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Base</span>
-              </div>
-              {/* Coinbase */}
-              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-                <svg width="60" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
-                  <circle cx="12" cy="12" r="10" fill="#0052FF"/>
-                  <circle cx="12" cy="12" r="5" fill="white"/>
-                </svg>
-                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Coinbase</span>
-              </div>
-              {/* OpenRouter */}
-              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-                <svg width="50" height="24" viewBox="0 0 24 24" fill="white" className="h-6">
-                  <circle cx="12" cy="12" r="10" fill="#6366F1"/>
-                  <path d="M8 12H16M12 8V16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">OpenRouter</span>
-              </div>
-              {/* Mux */}
-              <div className="flex flex-col items-center gap-2 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all">
-                <svg width="40" height="24" viewBox="0 0 24 24" fill="white" className="h-5">
-                  <rect x="2" y="6" width="4" height="12" rx="1" fill="#FF3344"/>
-                  <rect x="10" y="4" width="4" height="16" rx="1" fill="#FF3344"/>
-                  <rect x="18" y="8" width="4" height="8" rx="1" fill="#FF3344"/>
-                </svg>
-                <span className="text-[8px] font-bold tracking-widest text-gray-500 uppercase">Mux</span>
               </div>
             </div>
           </div>

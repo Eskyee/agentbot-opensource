@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/lib/auth';
+import { prisma } from '@/app/lib/prisma';
 
 const PLANS = {
   starter: {
@@ -26,8 +29,17 @@ const PLANS = {
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth required for all billing actions
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { action, userId, plan, apiKey, provider } = body;
+    const { action, plan, apiKey, provider } = body;
+
+    // Always use session userId — never trust client-supplied userId
+    const userId = session.user.id;
 
     if (action === 'create-checkout') {
       const selectedPlan = PLANS[plan as keyof typeof PLANS];
@@ -36,8 +48,8 @@ export async function POST(request: NextRequest) {
       }
 
       const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-      
-      const session = await stripe.checkout.sessions.create({
+
+      const checkoutSession = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         line_items: [{
           price: selectedPlan.priceId,
@@ -53,7 +65,7 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      return NextResponse.json({ url: session.url });
+      return NextResponse.json({ url: checkoutSession.url });
     }
 
     if (action === 'enable-byok') {
@@ -111,17 +123,31 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
+  // Auth required — users can only see their own billing info
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-  return NextResponse.json({
-    plans: PLANS,
-    currentPlan: 'starter',
-    byokEnabled: false,
-    usage: {
-      dailyUnits: 600,
-      used: 245,
-      remaining: 355
-    }
-  });
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true, subscriptionStatus: true, referralCredits: true }
+    });
+
+    return NextResponse.json({
+      plans: PLANS,
+      currentPlan: user?.plan || 'free',
+      subscriptionStatus: user?.subscriptionStatus || 'inactive',
+      byokEnabled: false,
+      usage: {
+        dailyUnits: 600,
+        used: 245,
+        remaining: 355
+      }
+    });
+  } catch (error) {
+    console.error('Billing fetch error:', error);
+    return NextResponse.json({ error: 'Failed to fetch billing info' }, { status: 500 });
+  }
 }

@@ -4,7 +4,15 @@ import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex')
+// WALLET_ENCRYPTION_KEY MUST be set in production — random fallback would change on
+// every serverless cold start, making existing wallets permanently undecryptable.
+const ENCRYPTION_KEY = (() => {
+  const key = process.env.WALLET_ENCRYPTION_KEY
+  if (!key && process.env.NODE_ENV === 'production') {
+    throw new Error('WALLET_ENCRYPTION_KEY is required in production')
+  }
+  return key || 'dev-only-fallback-encryption-key-32b'
+})()
 const IV_LENGTH = 16
 
 function encryptWalletSeed(seed: string): string {
@@ -35,20 +43,12 @@ function generateRandomAddress(): string {
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await prisma.user.findFirst({
-      where: { email: session.user.email },
-    })
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     const wallet = await prisma.wallet.findFirst({
-      where: { userId: user.id },
+      where: { userId: session.user.id },
     })
 
     if (!wallet) {
@@ -77,23 +77,15 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { action } = await req.json()
 
     if (action === 'create') {
-      const user = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      })
-
-      if (!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 })
-      }
-
       const existingWallet = await prisma.wallet.findFirst({
-        where: { userId: user.id },
+        where: { userId: session.user.id },
       })
 
       if (existingWallet) {
@@ -109,7 +101,7 @@ export async function POST(req: NextRequest) {
 
       const newWallet = await prisma.wallet.create({
         data: {
-          userId: user.id,
+          userId: session.user.id,
           address: newAddress,
           walletSeedEncrypted: encryptedSeed,
           network: 'base-sepolia',
@@ -124,29 +116,32 @@ export async function POST(req: NextRequest) {
       })
     }
 
+    // get_seed: Returns ONLY the address — private key NEVER leaves the server.
+    // If you need to sign transactions, do it server-side via a dedicated signing endpoint.
     if (action === 'get_seed') {
-      const user = await prisma.user.findFirst({
-        where: { email: session.user.email },
-      })
-
-      if (!user) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 })
-      }
-
       const wallet = await prisma.wallet.findFirst({
-        where: { userId: user.id },
+        where: { userId: session.user.id },
       })
 
       if (!wallet) {
         return NextResponse.json({ error: 'No wallet found' }, { status: 404 })
       }
 
-      const seedJson = decryptWalletSeed(wallet.walletSeedEncrypted)
-      
+      // Return wallet address only — never expose private key material over HTTP
       return NextResponse.json({
-        seed: JSON.parse(seedJson),
-        warning: 'Keep this seed secure.'
+        address: wallet.address,
+        network: wallet.network,
+        createdAt: wallet.createdAt,
+        warning: 'Private keys are stored encrypted server-side and never exposed.'
       })
+    }
+
+    // export_seed: Admin-only, requires re-authentication (future implementation)
+    if (action === 'export_seed') {
+      return NextResponse.json(
+        { error: 'Seed export is disabled for security. Contact support if you need your private key.' },
+        { status: 403 }
+      )
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

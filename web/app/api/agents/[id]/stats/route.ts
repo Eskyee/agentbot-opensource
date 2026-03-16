@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
+import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 const BACKEND_API_URL = getBackendApiUrl()
@@ -8,7 +11,21 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { id: agentId } = await params
+
+    // Ownership check
+    const ownedAgent = await prisma.agent.findFirst({
+      where: { id: agentId, userId: session.user.id }
+    })
+    if (!ownedAgent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
     const INTERNAL_API_KEY = getInternalApiKey()
 
     const response = await fetch(`${BACKEND_API_URL}/api/openclaw/instances/${agentId}/stats`, {

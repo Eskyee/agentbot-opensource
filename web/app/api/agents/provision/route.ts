@@ -20,6 +20,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
 import { stripe } from '@/app/lib/stripe';
+import crypto from 'crypto';
 
 // Types
 interface ProvisionAgentRequest {
@@ -266,9 +267,8 @@ async function provisionAgentOnGateway(
  * Helper: Generate auth token for agent
  */
 function generateAuthToken(): string {
-  return Buffer.from(
-    `${Date.now()}-${Math.random().toString(36).substring(7)}`
-  ).toString('base64');
+  // Cryptographically secure token — never use Math.random() for auth
+  return crypto.randomBytes(32).toString('base64url');
 }
 
 // metadata removed: not a valid Next.js Route export

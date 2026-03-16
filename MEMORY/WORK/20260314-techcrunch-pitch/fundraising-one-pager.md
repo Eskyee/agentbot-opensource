@@ -26,7 +26,7 @@ Agentbot provides dedicated server infrastructure for AI agent fleets. Users sig
 - **Live product:** agentbot.raveculture.xyz/demo
 - **Payments:** Stripe checkout processing subscriptions
 - **Platform:** Running on Base (crypto-native)
-- **Pricing:** £19-£199/month (5 tiers)
+- **Pricing:** £29-£199/month (3 tiers)
 
 ### Revenue Model
 
@@ -34,13 +34,11 @@ Subscription infrastructure. Users bring their own AI keys — we take 100% marg
 
 ### Pricing
 
-| Plan | Price | Specs |
-|------|-------|-------|
-| Starter | £19/mo | 2GB RAM, 1 CPU |
-| Pro | £39/mo | 4GB RAM, 2 CPU |
-| Scale | £79/mo | 8GB RAM, 4 CPU |
-| Enterprise | £149/mo | 16GB RAM, 4 CPU |
-| White Glove | £199/mo | 32GB RAM, 8 CPU |
+| Plan | Price |
+|------|-------|
+| Underground | £29/mo |
+| Collective | £69/mo |
+| Label | £199/mo |
 
 ### The Team
 

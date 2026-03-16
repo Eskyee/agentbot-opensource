@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 
+function isAdmin(email: string | null | undefined): boolean {
+  if (!email) return false
+  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  return adminEmails.includes(email.toLowerCase())
+}
+
 export async function GET() {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not available in production' }, { status: 404 })
+  // Admin-only — blocked in production for non-admins
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email || !isAdmin(session.user.email)) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  
+
   const hasDbUrl = !!process.env.DATABASE_URL
 
   try {

@@ -20,12 +20,12 @@ model User {
   password      String?
   role          String    @default("user")
   storageLimit  Int       @default(10)
-  
+
   // Referral system
   referralCode      String?   @unique
   referredBy       String?
   referralCredits  Int       @default(0)
-  
+
   // Subscription fields
   plan          String    @default("free")
   stripeCustomerId    String?
@@ -33,12 +33,21 @@ model User {
   subscriptionStatus String    @default("inactive")
   subscriptionStartDate DateTime?
   subscriptionEndDate   DateTime?
-  
-  accounts      Account[]
-  sessions      Session[]
-  wallets       Wallet[]
-  referrals     Referral[] @relation("Referrer")
-  referredByUser Referral? @relation("Referred")
+
+  // Relations
+  accounts       Account[]
+  sessions       Session[]
+  wallets        Wallet[]
+  referrals      Referral[]      @relation("Referrer")
+  referredByUser Referral?       @relation("Referred")
+  agents         Agent[]
+  apiKeys        ApiKey[]
+  scheduledTasks ScheduledTask[]
+  agentMemories  AgentMemory[]
+  agentFiles     AgentFile[]
+  installedSkills InstalledSkill[]
+  agentSwarms    AgentSwarm[]
+  workflows      Workflow[]
 }
 
 model Account {
@@ -75,6 +84,29 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model Agent {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  model        String?
+  config       Json?
+  tier         String   @default("free")
+  status       String   @default("pending")
+  websocketUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledTasks  ScheduledTask[]
+  memories        AgentMemory[]
+  files           AgentFile[]
+  installedSkills InstalledSkill[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+}
+
 model ScheduledTask {
   id          String   @id @default(cuid())
   userId      String
@@ -88,6 +120,13 @@ model ScheduledTask {
   nextRun     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([agentId])
+  @@index([enabled, nextRun])
 }
 
 model AgentMemory {
@@ -99,7 +138,11 @@ model AgentMemory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
   @@unique([userId, agentId, key])
+  @@index([agentId])
 }
 
 model AgentFile {
@@ -114,19 +157,12 @@ model AgentFile {
   mimeType  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
 
-model Agent {
-  id           String   @id @default(cuid())
-  userId       String
-  name         String
-  model        String?
-  config       Json?
-  tier         String   @default("free")
-  status       String   @default("pending")
-  websocketUrl String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([agentId])
 }
 
 model Skill {
@@ -141,6 +177,11 @@ model Skill {
   featured    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  installedSkills InstalledSkill[]
+
+  @@index([category])
+  @@index([featured])
 }
 
 model InstalledSkill {
@@ -150,7 +191,14 @@ model InstalledSkill {
   skillId   String
   enabled   Boolean  @default(true)
   createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
   @@unique([userId, agentId, skillId])
+  @@index([userId])
+  @@index([agentId])
 }
 
 model AgentSwarm {
@@ -162,6 +210,10 @@ model AgentSwarm {
   enabled     Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model WorkflowNode {
@@ -171,6 +223,10 @@ model WorkflowNode {
   config     String   @db.Text // JSON
   position   String   // JSON {x, y}
   createdAt  DateTime @default(now())
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
 }
 
 model Workflow {
@@ -181,6 +237,11 @@ model Workflow {
   enabled     Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodes WorkflowNode[]
+
+  @@index([userId])
 }
 
 // Wallet model for CDP wallets
@@ -193,9 +254,9 @@ model Wallet {
   walletType           String   @default("cdp")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
-  
+
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@index([userId])
   @@index([address])
 }
@@ -211,6 +272,8 @@ model Referral {
 
   referrer    User     @relation("Referrer", fields: [referrerId], references: [id])
   referred    User     @relation("Referred", fields: [referredId], references: [id])
+
+  @@index([referrerId])
 }
 
 // Persistent API key storage (replaces in-memory Map)
@@ -222,6 +285,8 @@ model ApiKey {
   keyPrefix String             // first 8 chars for display preview
   lastUsed  DateTime?
   createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }

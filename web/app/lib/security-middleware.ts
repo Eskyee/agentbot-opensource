@@ -7,6 +7,8 @@ import { Redis } from '@upstash/redis'
 import { verifyCSRFToken, getCSRFTokenFromHeader } from './csrf'
 
 // Initialize Redis client (optional - falls back to memory if not available)
+// WARNING: In-memory fallback resets on every serverless cold start (Vercel).
+// For production, set REDIS_URL + REDIS_TOKEN for persistent rate limiting.
 let redis: Redis | null = null
 try {
   const redisUrl = process.env.REDIS_URL
@@ -16,6 +18,8 @@ try {
       token: process.env.REDIS_TOKEN || '',
     })
     console.log('[SECURITY] Redis rate limiting enabled')
+  } else if (process.env.NODE_ENV === 'production') {
+    console.warn('[SECURITY] ⚠️  REDIS_URL not set — rate limiting uses in-memory fallback which resets on cold starts. Set REDIS_URL for persistent rate limiting.')
   }
 } catch (error) {
   console.warn('[SECURITY] Redis not available, using in-memory rate limiting')

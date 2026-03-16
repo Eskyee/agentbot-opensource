@@ -1,16 +1,36 @@
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
+import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 const API_URL = getBackendApiUrl()
+
+/**
+ * Verify the authenticated user owns the agent. Returns null if unauthorized.
+ */
+async function verifyAgentOwnership(agentId: string) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return null
+  const agent = await prisma.agent.findFirst({
+    where: { id: agentId, userId: session.user.id }
+  })
+  return agent
+}
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const API_KEY = getInternalApiKey()
     const { id: agentId } = await params
 
+    const agent = await verifyAgentOwnership(agentId)
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
+    const API_KEY = getInternalApiKey()
     const response = await fetch(`${API_URL}/api/agents/${agentId}/config`, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
@@ -48,8 +68,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const API_KEY = getInternalApiKey()
     const { id: agentId } = await params
+
+    const agent = await verifyAgentOwnership(agentId)
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
+    const API_KEY = getInternalApiKey()
     const body = await request.json()
 
     const response = await fetch(`${API_URL}/api/agents/${agentId}/config`, {

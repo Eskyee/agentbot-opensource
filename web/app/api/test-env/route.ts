@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
+
+function isAdmin(email: string | null | undefined): boolean {
+  if (!email) return false
+  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  return adminEmails.includes(email.toLowerCase())
+}
 
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not available in production' }, { status: 404 })
+  // Admin-only
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email || !isAdmin(session.user.email)) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
-  
-  const stripeKey = process.env.STRIPE_SECRET_KEY
-  const starterPrice = process.env.STRIPE_PRICE_ID_STARTER
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL
-  
+
   return NextResponse.json({
-    hasStripeKey: !!stripeKey,
-    stripeKeyPrefix: stripeKey?.substring(0, 8),
-    starterPrice,
-    appUrl,
+    hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+    // Never expose key prefixes — boolean only
+    starterPrice: process.env.STRIPE_PRICE_ID_STARTER ? 'set' : 'missing',
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
     envCount: Object.keys(process.env).filter(k => k.startsWith('STRIPE')).length,
   })
 }

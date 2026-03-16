@@ -22,8 +22,9 @@ agentbot.raveculture.xyz
 
 deploy in seconds. scale from 2gb to 32gb ram.
 
-starter: £19/mo
-white glove: £199/mo
+underground: £29/mo
+collective: £69/mo
+label: £199/mo
 
 demo live → /demo
 
