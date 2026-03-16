@@ -72,6 +72,19 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email } = await req.json()
 
+    // Validate email format if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+    }
+
+    // Check email uniqueness before updating
+    if (email && email !== session.user.email) {
+      const emailTaken = await prisma.user.findUnique({ where: { email } })
+      if (emailTaken) {
+        return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
+      }
+    }
+
     const user = await prisma.user.update({
       where: { email: session.user.email },
       data: {

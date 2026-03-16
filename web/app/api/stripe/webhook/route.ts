@@ -68,38 +68,46 @@ export async function POST(request: NextRequest) {
           }
         }
       } else if (customerEmail) {
-        // No userId in metadata (guest checkout) — upsert by email
+        // No userId in metadata (guest checkout) — only update existing users, never create
         await sendPaymentReceiptEmail(customerEmail, amount, plan);
         if (plan && plan !== 'Unknown') {
-          await prisma.user.upsert({
-            where: { email: customerEmail },
-            update: subscriptionData,
-            create: { email: customerEmail, ...subscriptionData },
-          });
+          const existingUser = await prisma.user.findUnique({ where: { email: customerEmail } });
+          if (existingUser) {
+            await prisma.user.update({
+              where: { email: customerEmail },
+              data: subscriptionData,
+            });
+          } else {
+            console.error(`Guest checkout for unknown email ${customerEmail} — user must register first`);
+          }
         }
       } else {
         console.error('No userId or email found in checkout session metadata');
       }
 
-      // Handle storage upgrades (separate product type)
+      // Handle storage upgrades — use userId (verified at checkout), never trust email from metadata
       if (session.metadata?.type === 'storage_upgrade') {
-        const userEmail = session.metadata?.userEmail;
+        const storageUserId = session.metadata?.userId;
         const storageGB = 50;
-        if (userEmail) {
-          await prisma.user.update({
-            where: { email: userEmail },
+        if (storageUserId) {
+          const storageUser = await prisma.user.update({
+            where: { id: storageUserId },
             data: { storageLimit: { increment: storageGB } },
           });
-          await sendEmail({
-            to: userEmail,
-            subject: 'Storage Upgraded — Agentbot',
-            html: `
-              <h1>Storage Upgrade Active</h1>
-              <p>Your account now has ${storageGB}GB of additional storage.</p>
-              <p>Visit your files: <a href="https://agentbot.raveculture.xyz/dashboard/files">Dashboard</a></p>
-              <hr /><p>Best,<br>The Agentbot Team</p>
-            `,
-          });
+          if (storageUser.email) {
+            await sendEmail({
+              to: storageUser.email,
+              subject: 'Storage Upgraded — Agentbot',
+              html: `
+                <h1>Storage Upgrade Active</h1>
+                <p>Your account now has ${storageGB}GB of additional storage.</p>
+                <p>Visit your files: <a href="https://agentbot.raveculture.xyz/dashboard/files">Dashboard</a></p>
+                <hr /><p>Best,<br>The Agentbot Team</p>
+              `,
+            });
+          }
+        } else {
+          console.error('Storage upgrade missing userId in metadata — cannot apply');
         }
       }
       break;

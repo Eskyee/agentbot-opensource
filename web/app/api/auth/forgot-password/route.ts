@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+    }
 
     const user = await prisma.user.findUnique({
       where: { email },

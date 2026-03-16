@@ -92,12 +92,16 @@ providers.push(
           return null;
         }
 
+        // Normalize wallet address to lowercase for consistent lookups
+        const normalizedAddress = address.toLowerCase();
+        const walletEmail = `${normalizedAddress}@wallet.base.org`;
+
         // Find or create user by wallet address
         let user = await prisma.user.findFirst({
           where: {
             OR: [
+              { email: walletEmail },
               { name: address },
-              { email: `${address.toLowerCase()}@wallet.base.org` }
             ]
           }
         });
@@ -106,7 +110,7 @@ providers.push(
           user = await prisma.user.create({
             data: {
               name: `Wallet:${address.slice(0, 6)}...${address.slice(-4)}`,
-              email: `${address.toLowerCase()}@wallet.base.org`,
+              email: walletEmail,
               emailVerified: new Date(),
             },
           });
@@ -135,9 +139,14 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  // NEXTAUTH_SECRET must be set in Vercel env vars.
-  // Fallback is intentionally weak — production deployments without this set are insecure.
-  secret: process.env.NEXTAUTH_SECRET || 'dev-only-fallback-secret',
+  // NEXTAUTH_SECRET must be set in production — fail hard if missing.
+  secret: (() => {
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (!secret && process.env.NODE_ENV === 'production') {
+      throw new Error('NEXTAUTH_SECRET is required in production');
+    }
+    return secret || 'dev-only-fallback-secret';
+  })(),
   debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login",
