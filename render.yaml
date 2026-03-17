@@ -1,4 +1,4 @@
-# Agentbot Render Blueprint
+# Agentbot Render Blueprint - using pre-built OpenClaw image
 
 services:
   # PostgreSQL
@@ -13,33 +13,23 @@ services:
     plan: starter
     region: oregon
 
-  # Backend API - Agentbot provisioning
+  # OpenClaw - pre-built image
   - type: web
     name: agentbot-api
-    env: docker
-    dockerfilePath: agentbot-backend/Dockerfile
-    rootDir: agentbot-backend
+    image:
+      url: ghcr.io/openclaw/openclaw:latest
     plan: starter
     region: oregon
     healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: PORT
-        value: "3001"
+        value: "8080"
+      - key: SETUP_PASSWORD
+        sync: false
       - key: NODE_ENV
         value: production
-      - key: ALLOWED_ORIGINS
-        value: https://agentbot-api.onrender.com
-
-  # Worker
-  - type: worker
-    name: agentbot-worker
-    env: docker
-    dockerfilePath: agentbot-worker/Dockerfile
-    rootDir: agentbot-worker
-    plan: starter
-    region: oregon
-    autoDeploy: true
-    envVars:
-      - key: NODE_ENV
-        value: production
+    disk:
+      name: agentbot-data
+      mountPath: /data
+      sizeGB: 1
