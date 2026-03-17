@@ -45,5 +45,10 @@
     "puppeteer": "^24.37.5",
     "ts-jest": "^29.4.6",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "^6.0.116",
+    "braintrust": "^3.4.0",
+    "zod": "^4.3.6"
   }
 }
