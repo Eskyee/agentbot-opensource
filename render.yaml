@@ -17,7 +17,7 @@ services:
   - type: web
     name: agentbot-api
     env: docker
-    dockerfilePath: agentbot-backend/Dockerfile.prod
+    dockerfilePath: agentbot-backend/Dockerfile
     rootDir: agentbot-backend
     plan: starter
     region: oregon
