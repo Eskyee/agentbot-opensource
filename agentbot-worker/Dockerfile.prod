@@ -19,8 +19,8 @@ WORKDIR /app
 
 RUN apk add --no-cache dumb-init
 
-RUN addgroup -g 1000 appuser && \
-    adduser -u 1000 -G appuser -s /sbin/nologin -D appuser
+RUN addgroup -S appuser 2>/dev/null || true && \
+    adduser -S appuser -G appuser -s /sbin/nologin 2>/dev/null || true
 
 COPY --from=builder --chown=appuser:appuser /build/dist ./dist
 COPY --from=builder --chown=appuser:appuser /build/node_modules ./node_modules
