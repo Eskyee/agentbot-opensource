@@ -6,8 +6,15 @@ import { authOptions } from '@/app/lib/auth'
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
   solo: { amount: 2900, name: 'Solo' },
   collective: { amount: 6900, name: 'Collective' },
-  label: { amount: 14900, name: 'Label' },
+  label: { amount: 19900, name: 'Label' },
   network: { amount: 49900, name: 'Network' },
+}
+
+const FALLBACK_PRICE_IDS: Record<string, string> = {
+  solo: 'price_1T2RrcDiHU0UF7aWn48IDbe6',
+  collective: 'price_1T3SgXDiHU0UF7aW06D9eJEh',
+  label: 'price_1T2RthDiHU0UF7aW9mobq19y',
+  network: 'price_1T3SiaDiHU0UF7aW9EehdNPj',
 }
 
 export async function GET(request: NextRequest) {
@@ -32,68 +39,81 @@ export async function GET(request: NextRequest) {
   try {
     const stripe = new Stripe(stripeKey)
     const planInfo = PLAN_PRICES[plan]
+    const fallbackPriceId = FALLBACK_PRICE_IDS[plan]
     
-    let allPrices: Stripe.Price[] = []
-    let lastId: string | undefined
-    do {
-      const resp = await stripe.prices.list({
-        active: true,
-        currency: 'gbp',
-        limit: 100,
-        starting_after: lastId,
-      })
-      allPrices = allPrices.concat(resp.data)
-      lastId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
-    } while (lastId)
-
-    const foundPrice = allPrices.find(p =>
-      p.recurring?.interval === 'month' &&
-      p.unit_amount === planInfo.amount &&
-      p.active === true
-    )
-
     let priceId: string
-    if (foundPrice) {
-      priceId = foundPrice.id
-    } else {
-      let productId: string | undefined
-      let lastProductId: string | undefined
+    
+    // Try to find existing price in Stripe
+    try {
+      let allPrices: Stripe.Price[] = []
+      let lastId: string | undefined
       do {
-        const resp = await stripe.products.list({
+        const resp = await stripe.prices.list({
           active: true,
-          limit: 100,
-          starting_after: lastProductId,
-        })
-        const match = resp.data.find(p => p.name === planInfo.name && p.active)
-        if (match) {
-          productId = match.id
-          break
-        }
-        lastProductId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
-      } while (!productId && lastProductId)
-
-      if (!productId) {
-        const normalized = planInfo.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
-        const productKey = `product_${normalized}`
-        const newProduct = await stripe.products.create(
-          { name: planInfo.name, active: true },
-          { idempotencyKey: productKey }
-        )
-        productId = newProduct.id
-      }
-
-      const priceKey = `price_gbp_${planInfo.amount}_month`
-      const newPrice = await stripe.prices.create(
-        {
-          unit_amount: planInfo.amount,
           currency: 'gbp',
-          recurring: { interval: 'month' },
-          product: productId,
-          active: true,
-        },
-        { idempotencyKey: priceKey }
+          limit: 100,
+          starting_after: lastId,
+        })
+        allPrices = allPrices.concat(resp.data)
+        lastId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
+      } while (lastId)
+
+      const foundPrice = allPrices.find(p =>
+        p.recurring?.interval === 'month' &&
+        p.unit_amount === planInfo.amount &&
+        p.active === true
       )
-      priceId = newPrice.id
+
+      if (foundPrice) {
+        priceId = foundPrice.id
+      } else {
+        // Create new product and price
+        let productId: string | undefined
+        let lastProductId: string | undefined
+        do {
+          const resp = await stripe.products.list({
+            active: true,
+            limit: 100,
+            starting_after: lastProductId,
+          })
+          const match = resp.data.find(p => p.name === planInfo.name && p.active)
+          if (match) {
+            productId = match.id
+            break
+          }
+          lastProductId = resp.has_more ? resp.data[resp.data.length - 1].id : undefined
+        } while (!productId && lastProductId)
+
+        if (!productId) {
+          const normalized = planInfo.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+          const productKey = `product_${normalized}`
+          const newProduct = await stripe.products.create(
+            { name: planInfo.name, active: true },
+            { idempotencyKey: productKey }
+          )
+          productId = newProduct.id
+        }
+
+        const priceKey = `price_gbp_${planInfo.amount}_month`
+        const newPrice = await stripe.prices.create(
+          {
+            unit_amount: planInfo.amount,
+            currency: 'gbp',
+            recurring: { interval: 'month' },
+            product: productId,
+            active: true,
+          },
+          { idempotencyKey: priceKey }
+        )
+        priceId = newPrice.id
+      }
+    } catch (stripeError) {
+      // Fallback to existing price IDs if Stripe API fails
+      console.error('Stripe API error, using fallback:', stripeError)
+      if (!fallbackPriceId) {
+        throw new Error('No fallback price available')
+      }
+      priceId = fallbackPriceId
     }
     
     const checkoutParams: Stripe.Checkout.SessionCreateParams = {
