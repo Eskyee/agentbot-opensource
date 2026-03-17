@@ -4,12 +4,10 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 
 # Build
 COPY . .
 RUN npm run build
 
-EXPOSE 3001
-
-CMD ["npm", "start"]
+CMD ["node", "dist/worker.js"]
