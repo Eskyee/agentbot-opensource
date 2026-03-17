@@ -10,12 +10,7 @@ const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
   network: { amount: 49900, name: 'Network' },
 }
 
-const FALLBACK_PRICE_IDS: Record<string, string> = {
-  solo: 'price_1T2RrcDiHU0UF7aWn48IDbe6',
-  collective: 'price_1T3SgXDiHU0UF7aW06D9eJEh',
-  label: 'price_1T2RthDiHU0UF7aW9mobq19y',
-  network: 'price_1T3SiaDiHU0UF7aW9EehdNPj',
-}
+// No fallback prices - always create dynamically to avoid stale IDs
 
 export async function GET(request: NextRequest) {
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
@@ -39,7 +34,6 @@ export async function GET(request: NextRequest) {
   try {
     const stripe = new Stripe(stripeKey)
     const planInfo = PLAN_PRICES[plan]
-    const fallbackPriceId = FALLBACK_PRICE_IDS[plan]
     
     let priceId: string
     
@@ -108,12 +102,9 @@ export async function GET(request: NextRequest) {
         priceId = newPrice.id
       }
     } catch (stripeError) {
-      // Fallback to existing price IDs if Stripe API fails
-      console.error('Stripe API error, using fallback:', stripeError)
-      if (!fallbackPriceId) {
-        throw new Error('No fallback price available')
-      }
-      priceId = fallbackPriceId
+      // Re-throw Stripe API errors - let user see the error
+      console.error('Stripe API error:', stripeError)
+      throw stripeError
     }
     
     const checkoutParams: Stripe.Checkout.SessionCreateParams = {

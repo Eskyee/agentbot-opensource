@@ -34,7 +34,7 @@ const docsSections = [
   {
     title: 'AI Models',
     description: 'Bring your own API key. Pay AI providers directly - no markup.',
-    items: ['Use OpenRouter, Anthropic, OpenAI, or local Ollama', 'We default to Kimi K2.5 via OpenCode', 'Free models to try', 'You pay only for what you use']
+    items: ['Use OpenRouter, Anthropic, OpenAI, or local Ollama', 'We default to Kimi K2.5 via OpenRouter', 'Free models to try', 'You pay only for what you use']
   }
 ];
 
@@ -220,33 +220,30 @@ export default function ViewDocsPage() {
         </div>
 
         <div className="mt-10 rounded-2xl border border-gray-800 bg-gray-900/60 p-6">
-          <h3 className="text-xl font-semibold mb-3">Quick Links</h3>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/signup" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+          <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/signup" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
               Signup
             </Link>
-            <Link href="/why" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
-              Why Agentbot?
-            </Link>
-            <Link href="/pricing" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/pricing" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
               Pricing
             </Link>
-            <Link href="/marketplace" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/marketplace" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
               Marketplace
             </Link>
-            <Link href="/blog" className="rounded-full border border-gray-700 px-4 py-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/blog" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
               Blog
             </Link>
-            <Link href="/token" className="rounded-full border border-blue-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/token" className="px-4 py-2 text-sm text-blue-300 bg-blue-900/20 border border-blue-800 hover:bg-blue-800/40 hover:border-blue-600 hover:text-blue-200 rounded-lg transition-all duration-200">
               $AGENTBOT
             </Link>
-            <Link href="/basefm" className="rounded-full border border-green-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/basefm" className="px-4 py-2 text-sm text-purple-300 bg-purple-900/20 border border-purple-800 hover:bg-purple-800/40 hover:border-purple-600 hover:text-purple-200 rounded-lg transition-all duration-200">
               $BASEFM
             </Link>
-            <Link href="/terms" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/terms" className="px-4 py-2 text-sm text-gray-400 bg-gray-800/30 border border-gray-800 hover:bg-gray-700 hover:border-gray-600 hover:text-gray-200 rounded-lg transition-all duration-200">
               Terms
             </Link>
-            <Link href="/privacy" className="rounded-full border border-gray-700 px-4 py-2 text-sm hover:border-white hover:text-white transition-colors">
+            <Link href="/privacy" className="px-4 py-2 text-sm text-gray-400 bg-gray-800/30 border border-gray-800 hover:bg-gray-700 hover:border-gray-600 hover:text-gray-200 rounded-lg transition-all duration-200">
               Privacy
             </Link>
           </div>
