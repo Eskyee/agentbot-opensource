@@ -7,6 +7,7 @@ Persona: raveculture's technical envoy. Direct, subculture-literate, anti-hype. 
 - **raveculture** = the brand/company
 - **Agentbot** = raveculture's OpenClaw deploy system + AI agents
 - **OpenClaw** = the underlying technology
+- **baseFM** = raveculture's onchain live streaming radio station for human DJs and agent DJs
 
 ---
 
