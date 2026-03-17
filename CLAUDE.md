@@ -168,23 +168,23 @@ Checkout flow: `GET /api/stripe/checkout?plan=<underground|collective|label>` â†
 
 ---
 
-## RENDER MCP SERVER
+## VERCEL MCP SERVER
 
-Connect AI apps (Cursor, Claude Code) to debug builds and manage Render resources.
+Connect AI apps (Cursor, Claude Code) to debug builds and manage Vercel deployments.
 
 ### Setup
 
-1. Get Render API key from: https://dashboard.render.com/settings/api-keys
+1. Get Vercel token from: https://vercel.com/account/tokens
 2. Add to Claude Code/Cursor in project:
 
 ```json
 {
   "mcpServers": {
-    "render": {
+    "vercel": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-render"],
+      "args": ["-y", "@vercel/mcp-server"],
       "env": {
-        "RENDER_API_KEY": "your-render-api-key"
+        "VERCEL_API_TOKEN": "your-vercel-token"
       }
     }
   }
@@ -195,7 +195,7 @@ Connect AI apps (Cursor, Claude Code) to debug builds and manage Render resource
 
 - Query build logs with natural language
 - Diagnose deployment failures
+- Check deployment status and logs
 - Manage environment variables
-- Check service health and metrics
 
 Example: "Why did my last deployment fail? Check the logs and explain the error."
