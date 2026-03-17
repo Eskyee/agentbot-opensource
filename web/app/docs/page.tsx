@@ -100,9 +100,10 @@ const newFeatures = [
 ];
 
 const planResources = [
-  { plan: 'Underground', ram: '2GB', cpu: '1 vCPU', price: '£29/mo' },
-  { plan: 'Collective',  ram: '4GB', cpu: '2 vCPU', price: '£69/mo' },
-  { plan: 'Label',       ram: '8GB', cpu: '4 vCPU', price: '£199/mo' },
+  { plan: 'Solo', ram: '2GB', cpu: '1 vCPU', price: '£29/mo', description: 'Creative only' },
+  { plan: 'Collective', ram: '4GB', cpu: '2 vCPU', price: '£69/mo', description: '+1 OpenClaw seat' },
+  { plan: 'Label', ram: '8GB', cpu: '4 vCPU', price: '£149/mo', description: '+3 OpenClaw seats' },
+  { plan: 'Network', ram: '16GB', cpu: '8 vCPU', price: '£499/mo', description: 'Unlimited' },
 ];
 
 const supportedModels = [

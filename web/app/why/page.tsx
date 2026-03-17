@@ -3,12 +3,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Why Agentbot? — Cloud AI Agents vs Local Setup',
-  description: 'Discover why Agentbot beats running OpenClaw locally. 24/7 uptime, instant skills, Telegram/Discord/WhatsApp channels — no terminal commands, no server costs. From £29/mo.',
-  keywords: ['why Agentbot', 'AI agent cloud hosting', 'OpenClaw cloud', 'deploy AI agent', 'BYOK AI agent', 'AI agent vs local'],
+  title: 'Why Agentbot? — Creative Crew + Business Operations',
+  description: 'Dual-agent AI: Agentbot (fan engagement, promo, music) + OpenClaw (email, contracts, invoicing). 24/7 uptime, instant skills, multi-channel. From £29/mo.',
+  keywords: ['why Agentbot', 'AI agent cloud hosting', 'OpenClaw cloud', 'deploy AI agent', 'BYOK AI agent', 'Agentbot vs OpenClaw'],
   openGraph: {
-    title: 'Why Agentbot? Cloud AI Agents vs Local Setup',
-    description: 'No hardware. No terminal. 24/7 AI agents with persistent memory, skills, and multi-channel deployment.',
+    title: 'Why Agentbot? One Creative Crew, One Business Mind',
+    description: 'Agentbot handles your fans. OpenClaw handles your inbox. Both run on Base, paid in USDC.',
     url: 'https://agentbot.raveculture.xyz/why',
   },
   alternates: {
@@ -24,10 +24,18 @@ const faqSchema = {
   mainEntity: [
     {
       '@type': 'Question',
+      name: 'What is the difference between Agentbot and OpenClaw?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Agentbot = Creative Crew (fan engagement, promo, music, A&R, artwork). OpenClaw = Business Operations (email inbox, contract analysis, gig scraping, x402 invoicing). Solo tier gets Agentbot only. Collective+ includes OpenClaw seats.',
+      },
+    },
+    {
+      '@type': 'Question',
       name: 'Is Agentbot free?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Plans start at £29/mo for the Underground plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free.',
+        text: 'Plans start at £29/mo for Solo (Agentbot creative only). Collective at £69 adds 1 OpenClaw seat (digital tour manager). If you already run OpenClaw locally, you can link it to Agentbot for free.',
       },
     },
     {

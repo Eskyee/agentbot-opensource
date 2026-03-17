@@ -294,7 +294,17 @@ export default function DemoPage() {
                 <div className="h-full flex flex-col items-center justify-center text-gray-500">
                   <div className="text-4xl mb-4">🤖</div>
                   <p className="text-lg font-medium mb-2">Try Agentbot for free</p>
-                  <p className="text-sm">Send a message to chat with AI models</p>
+                  <p className="text-sm mb-4">Send a message to chat with AI models</p>
+                  
+                  {/* Quick Help Links */}
+                  <div className="text-xs space-y-2 mt-4">
+                    <p className="text-gray-400">Need help choosing?</p>
+                    <div className="flex gap-2 flex-wrap justify-center">
+                      <Link href="/pricing" className="text-blue-400 hover:underline">View Plans →</Link>
+                      <span className="text-gray-600">|</span>
+                      <span className="text-gray-500">Solo £29 (chat) • Collective £69 (+ business) • Label £149 (full back office)</span>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-4">

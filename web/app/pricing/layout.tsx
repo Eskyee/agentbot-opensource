@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Pricing — Fleet Subscriptions',
-  description: 'Deploy AI agents on your own API keys. Underground £29/mo, Collective £69/mo, Label £199/mo. No markup on AI costs — BYOK infrastructure for autonomous agent fleets.',
-  keywords: ['AI agent pricing', 'BYOK AI', 'agent hosting', 'Agentbot plans', 'autonomous agents', 'AI infrastructure'],
+  title: 'Pricing — Agentbot + OpenClaw',
+  description: 'Dual-agent architecture: Agentbot (Creative Crew) + OpenClaw (Business Ops). Solo £29, Collective £69 (+ tour manager), Label £149 (full back office), Network £499. BYOK — no markup on AI costs.',
+  keywords: ['AI agent pricing', 'BYOK AI', 'agent hosting', 'Agentbot plans', 'OpenClaw pricing', 'autonomous agents', 'AI infrastructure'],
   openGraph: {
-    title: 'Agentbot Pricing — Fleet Subscriptions',
-    description: 'Deploy autonomous AI agents. Bring your own AI key, pay wholesale. From £29/mo.',
+    title: 'Agentbot Pricing — One Creative Crew, One Business Mind',
+    description: 'Agentbot handles your fans. OpenClaw handles your inbox. From £29/mo.',
     url: 'https://agentbot.raveculture.xyz/pricing',
   },
   alternates: {
