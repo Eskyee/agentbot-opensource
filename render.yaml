@@ -50,6 +50,22 @@ services:
         sync: false
       - key: ALLOWED_ORIGINS
         value: https://agentbot.onrender.com,http://localhost:3000
+      - key: WALLET_ENCRYPTION_KEY
+        generateValue: true
+      - key: MUX_TOKEN_ID
+        sync: false
+      - key: MUX_TOKEN_SECRET
+        sync: false
+      - key: MUX_SIGNING_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        value: https://agentbot.onrender.com
     disk:
       name: agentbot-data
       mountPath: /opt/agentbot/data
@@ -81,3 +97,9 @@ services:
         generateValue: true
       - key: JWT_SECRET
         generateValue: true
+      - key: WALLET_ENCRYPTION_KEY
+        generateValue: true
+      - key: MUX_TOKEN_ID
+        sync: false
+      - key: MUX_TOKEN_SECRET
+        sync: false
