@@ -1,20 +1,6 @@
-# Agentbot Render Blueprint
+# Agentbot Render Blueprint - Docker services only
 
 services:
-  # PostgreSQL
-  - type: pserv
-    name: agentbot-postgres
-    plan: starter
-    region: oregon
-    postgres:
-      version: 15
-
-  # Redis
-  - type: redis
-    name: agentbot-redis
-    plan: starter
-    region: oregon
-
   # Backend API
   - type: web
     name: agentbot-api
