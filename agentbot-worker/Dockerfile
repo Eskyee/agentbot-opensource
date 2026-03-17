@@ -19,12 +19,12 @@ WORKDIR /app
 
 RUN apk add --no-cache dumb-init curl
 
-RUN addgroup -g 1000 appuser && \
-    adduser -u 1000 -G appuser -s /sbin/nologin -D appuser
+RUN addgroup -g 1001 appuser && \
+    adduser -u 1001 -G appuser -s /sbin/nologin -D appuser
 
-COPY --from=builder --chown=appuser:appuser /build/dist ./dist
-COPY --from=builder --chown=appuser:appuser /build/node_modules ./node_modules
-COPY --from=builder --chown=appuser:appuser /build/package*.json ./
+COPY --from=builder --chown=1001:1001 /build/dist ./dist
+COPY --from=builder --chown=1001:1001 /build/node_modules ./node_modules
+COPY --from=builder --chown=1001:1001 /build/package*.json ./
 
 RUN mkdir -p /app/data && chown -R appuser:appuser /app/data
 
