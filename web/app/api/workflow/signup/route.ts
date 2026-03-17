@@ -13,10 +13,10 @@ export async function POST(req: Request) {
     
     return Response.json({ 
       runId: run.runId,
-      message: "Signup workflow started" 
+      message: "Workflow started" 
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Workflow error:", error);
-    return Response.json({ error: "Workflow failed" }, { status: 500 });
+    return Response.json({ error: error.message || "Workflow failed" }, { status: 500 });
   }
 }
