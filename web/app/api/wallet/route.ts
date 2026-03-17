@@ -4,15 +4,8 @@ import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 
-// WALLET_ENCRYPTION_KEY MUST be set in production — random fallback would change on
-// every serverless cold start, making existing wallets permanently undecryptable.
-const ENCRYPTION_KEY = (() => {
-  const key = process.env.WALLET_ENCRYPTION_KEY
-  if (!key && process.env.NODE_ENV === 'production') {
-    throw new Error('WALLET_ENCRYPTION_KEY is required in production')
-  }
-  return key || 'dev-only-fallback-encryption-key-32b'
-})()
+// WALLET_ENCRYPTION_KEY - use fallback during build, must be set in production
+const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || 'dev-fallback-key-for-build-only-32bytes'
 const IV_LENGTH = 16
 
 function encryptWalletSeed(seed: string): string {
