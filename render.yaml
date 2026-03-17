@@ -1,16 +1,13 @@
 # Agentbot Render Blueprint
-# Apply via: render-blueprint apply https://raw.githubusercontent.com/Eskyee/agentbot/main/render.yaml
 
 services:
-  # PostgreSQL Database
+  # PostgreSQL
   - type: pserv
     name: agentbot-postgres
     plan: starter
     region: oregon
-    postgres:
-      version: 15
 
-  # Redis Cache
+  # Redis
   - type: redis
     name: agentbot-redis
     plan: starter
@@ -26,16 +23,9 @@ services:
     region: oregon
     healthCheckPath: /health
     autoDeploy: true
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: "3001"
-      - key: ALLOWED_ORIGINS
-        value: https://agentbot-api.onrender.com
 
   # Worker
-  - type: worker
+  - type: background_worker
     name: agentbot-worker
     env: docker
     dockerfilePath: agentbot-worker/Dockerfile
@@ -43,6 +33,3 @@ services:
     plan: starter
     region: oregon
     autoDeploy: true
-    envVars:
-      - key: NODE_ENV
-        value: production
