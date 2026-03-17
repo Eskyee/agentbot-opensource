@@ -1,105 +1,48 @@
+# Agentbot Render Blueprint
+# Apply via: render-blueprint apply https://raw.githubusercontent.com/Eskyee/agentbot/main/render.yaml
+
 services:
-  # PostgreSQL Database (Managed by Render)
+  # PostgreSQL Database
   - type: pserv
-    name: agentbot-db
+    name: agentbot-postgres
     plan: starter
-    region: frankfurt
+    region: oregon
     postgres:
       version: 15
 
-  # Redis Cache (Managed by Render)
+  # Redis Cache
   - type: redis
     name: agentbot-redis
     plan: starter
-    region: frankfurt
+    region: oregon
 
-  # Agentbot Backend API
+  # Backend API
   - type: web
     name: agentbot-api
     env: docker
     dockerfilePath: agentbot-backend/Dockerfile.prod
-    buildCommand: npm run build
-    startCommand: npm start
-    plan: starter+
-    region: frankfurt
+    rootDir: agentbot-backend
+    plan: starter
+    region: oregon
     healthCheckPath: /health
     autoDeploy: true
-    numInstances: 1
-    maxNumInstances: 2
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: "3001"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: agentbot-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: agentbot-redis
-          type: redis
-          property: connectionString
-      - key: INTERNAL_API_KEY
-        generateValue: true
-      - key: JWT_SECRET
-        generateValue: true
-      - key: RENDER_API_KEY
-        sync: false
-      - key: OPENROUTER_API_KEY
-        sync: false
       - key: ALLOWED_ORIGINS
-        value: https://agentbot.onrender.com,http://localhost:3000
-      - key: WALLET_ENCRYPTION_KEY
-        generateValue: true
-      - key: MUX_TOKEN_ID
-        sync: false
-      - key: MUX_TOKEN_SECRET
-        sync: false
-      - key: MUX_SIGNING_SECRET
-        sync: false
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      - key: NEXTAUTH_SECRET
-        generateValue: true
-      - key: NEXTAUTH_URL
-        value: https://agentbot.onrender.com
-    disk:
-      name: agentbot-data
-      mountPath: /opt/agentbot/data
-      sizeGB: 10
+        value: https://agentbot-api.onrender.com
 
-  # Agentbot Worker Service (Job Processing)
+  # Worker
   - type: worker
     name: agentbot-worker
     env: docker
     dockerfilePath: agentbot-worker/Dockerfile
-    buildCommand: npm run build
-    startCommand: npm start
+    rootDir: agentbot-worker
     plan: starter
-    region: frankfurt
+    region: oregon
     autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: agentbot-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          name: agentbot-redis
-          type: redis
-          property: connectionString
-      - key: INTERNAL_API_KEY
-        generateValue: true
-      - key: JWT_SECRET
-        generateValue: true
-      - key: WALLET_ENCRYPTION_KEY
-        generateValue: true
-      - key: MUX_TOKEN_ID
-        sync: false
-      - key: MUX_TOKEN_SECRET
-        sync: false

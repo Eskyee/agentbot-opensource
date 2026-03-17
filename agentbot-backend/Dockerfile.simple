@@ -1,0 +1,14 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy built JS (build locally first)
+COPY dist ./dist
+
+EXPOSE 3001
+
+CMD ["node", "dist/index.js"]
