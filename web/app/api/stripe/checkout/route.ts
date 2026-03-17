@@ -4,16 +4,17 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
-  underground: { amount: 2900, name: 'Underground' },
+  solo: { amount: 2900, name: 'Solo' },
   collective: { amount: 6900, name: 'Collective' },
-  label: { amount: 19900, name: 'Label' },
+  label: { amount: 14900, name: 'Label' },
+  network: { amount: 49900, name: 'Network' },
 }
 
 export async function GET(request: NextRequest) {
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
 
-  const validPlans = ['underground', 'collective', 'label']
+  const validPlans = ['solo', 'collective', 'label', 'network']
   if (!validPlans.includes(plan)) {
     return NextResponse.redirect(new URL(`/pricing?error=invalid_plan`, origin), 303)
   }

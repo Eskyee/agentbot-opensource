@@ -23,13 +23,18 @@ const docsSections = [
   },
   {
     title: 'Plans & Resources',
-    description: 'Different plans for different needs. All include cloud hosting.',
-    items: ['Underground: 2GB RAM, 1 CPU', 'Collective: 4GB RAM, 2 CPU', 'Label: 8GB RAM, 4 CPU']
+    description: 'Dual-agent architecture: Agentbot (Creative) + OpenClaw (Business).',
+    items: ['Solo £29: Creative only, no business automation', 'Collective £69: 1 OpenClaw seat (tour manager)', 'Label £149: 3 OpenClaw seats (full back office)', 'Network £499: Unlimited, white-label, SLA']
+  },
+  {
+    title: 'Agentbot vs OpenClaw',
+    description: 'Two agents, one mission: automate your music business.',
+    items: ['Agentbot: Fan engagement, promo, A&R, artwork', 'OpenClaw: Email, contracts, scraping, invoicing', 'A2A Bus: They talk to each other (Collective+)']
   },
   {
     title: 'AI Models',
     description: 'Bring your own API key. Pay AI providers directly - no markup.',
-    items: ['Use OpenRouter, Groq, Anthropic, OpenAI', 'We default to Kimi K2.5', 'Free models to try', 'You pay only for what you use']
+    items: ['Use OpenRouter, Anthropic, OpenAI, or local Ollama', 'We default to Kimi K2.5 via OpenCode', 'Free models to try', 'You pay only for what you use']
   }
 ];
 

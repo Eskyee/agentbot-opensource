@@ -21,10 +21,10 @@ export default async function Home() {
           </h1>
           
           <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Run AI agents. Not servers.
+            Your autonomous crew handles bookings, splits, and promo — while you stay in the studio.
           </p>
           <p className="mt-3 text-sm text-gray-600 max-w-xl mx-auto">
-            Your autonomous crew handles bookings, splits, and promo — while you stay in the studio. From £29/mo. No markup on AI costs.
+            <span className="text-green-400">Agentbot</span> = Creative crew (fans, promo, music). <span className="text-blue-400">OpenClaw</span> = Business ops (email, contracts, invoicing). From £29/mo.
           </p>
           
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
@@ -146,23 +146,34 @@ export default async function Home() {
       {/* Pricing: Repriced for Profit */}
       <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5 scroll-mt-20">
         <div className="mx-auto max-w-6xl text-center">
-          <h2 className="text-3xl font-black mb-4 tracking-tighter">FLEET SUBSCRIPTIONS</h2>
-          <p className="text-gray-500 mb-4 max-w-xl mx-auto">Scalable infrastructure for soundsystem crews and digital labels.</p>
+          <h2 className="text-3xl font-black mb-4 tracking-tighter">ONE CREATIVE CREW, ONE BUSINESS MIND</h2>
+          <p className="text-gray-500 mb-4 max-w-xl mx-auto">Agentbot handles your fans. OpenClaw handles your inbox. Both run on Base, paid in USDC.</p>
           
           {/* Pricing Explanation */}
-          <div className="mb-12 p-6 bg-gray-900/50 border border-white/10 rounded-xl max-w-3xl mx-auto">
-            <div className="grid sm:grid-cols-2 gap-6 text-left">
+          <div className="mb-12 p-6 bg-gray-900/50 border border-white/10 rounded-xl max-w-4xl mx-auto">
+            <div className="grid sm:grid-cols-3 gap-6 text-left">
               <div>
                 <h4 className="text-green-400 font-bold text-sm mb-2 flex items-center gap-2">
-                  <span className="text-lg">✓</span> INCLUDED FREE
+                  <span className="text-lg">🎵</span> AGENTBOT
                 </h4>
+                <p className="text-xs text-gray-500 mb-2">Creative Crew</p>
                 <ul className="text-sm text-gray-400 space-y-1">
-                  <li>• Agent infrastructure & orchestration</li>
-                  <li>• Project Manager AI</li>
-                  <li>• A2A protocol & messaging</li>
-                  <li>• Telegram/WhatsApp channels</li>
-                  <li>• Analytics dashboard</li>
-                  <li>• Support & updates</li>
+                  <li>• Fan engagement (Telegram/WhatsApp)</li>
+                  <li>• BlockDB queries for A&R</li>
+                  <li>• Base FM submissions</li>
+                  <li>• Visual artwork generation</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-blue-400 font-bold text-sm mb-2 flex items-center gap-2">
+                  <span className="text-lg">💼</span> OPENCLAW
+                </h4>
+                <p className="text-xs text-gray-500 mb-2">Business Operations</p>
+                <ul className="text-sm text-gray-400 space-y-1">
+                  <li>• Email inbox management</li>
+                  <li>• Contract/Rider analysis (PDF)</li>
+                  <li>• Web scraping (gig listings)</li>
+                  <li>• x402 USDC invoicing</li>
                 </ul>
               </div>
               <div>
@@ -171,26 +182,27 @@ export default async function Home() {
                 </h4>
                 <ul className="text-sm text-gray-400 space-y-1">
                   <li>• Your own AI API key</li>
-                  <li>• OpenAI, Anthropic, OpenRouter, etc.</li>
-                  <li>• No markup — you pay wholesale</li>
+                  <li>• OpenAI, Anthropic, Ollama</li>
+                  <li>• No markup — wholesale rates</li>
                   <li>• Switch models anytime</li>
                 </ul>
               </div>
             </div>
           </div>
           
-          <div className="grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
-            {/* Underground */}
-            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-blue-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-blue-400 transition-colors">UNDERGROUND</h3>
-              <p className="mt-2 text-xs text-gray-600">Solo operator. One agent, always on.</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+            {/* Solo */}
+            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-green-500 transition-all group">
+              <h3 className="text-lg font-bold text-gray-400 group-hover:text-green-400 transition-colors">SOLO</h3>
+              <p className="mt-2 text-xs text-gray-600">Creative agents only. Chat with fans, generate artwork. No business automation.</p>
               <p className="mt-4 text-4xl font-black">£29<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 1 Autonomous Agent</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> All channels included</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> BYOK — zero AI markup</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 1 Creative Agent thread</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> Fan engagement (Telegram)</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> BlockDB queries for A&R</li>
+                <li className="flex gap-2"><span className="text-gray-600">✗</span> No OpenClaw business</li>
               </ul>
-              <Link href="/api/stripe/checkout?plan=underground" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
+              <Link href="/api/stripe/checkout?plan=solo" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
                 SELECT
               </Link>
             </div>
@@ -199,12 +211,13 @@ export default async function Home() {
             <div className="border-2 border-blue-500 rounded-2xl p-6 bg-blue-500/5 relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-blue-500 text-black text-[10px] font-black px-3 py-1 uppercase tracking-tighter">POPULAR</div>
               <h3 className="text-lg font-bold text-blue-400">COLLECTIVE</h3>
-              <p className="mt-2 text-xs text-gray-500">Your crew. Bookings, promo, and comms — automated.</p>
+              <p className="mt-2 text-xs text-gray-500">Creative crew + 1 OpenClaw seat (digital tour manager).</p>
               <p className="mt-4 text-4xl font-black">£69<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-400 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 3 Autonomous Agents</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> Royalty split engine</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> Mission Control graph</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 3 Creative Agent threads</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> 1 OpenClaw Business seat</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> Email Triage (50/day)</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> x402 USDC Invoicing</li>
               </ul>
               <Link href="/api/stripe/checkout?plan=collective" className="mt-6 block w-full rounded-xl bg-blue-500 py-3 text-center text-sm font-bold text-black hover:bg-blue-400 transition-colors">
                 SELECT
@@ -214,14 +227,31 @@ export default async function Home() {
             {/* Label */}
             <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-purple-500 transition-all group">
               <h3 className="text-lg font-bold text-gray-400 group-hover:text-purple-400 transition-colors">LABEL</h3>
-              <p className="mt-2 text-xs text-gray-600">Full label infrastructure. Everything, automated.</p>
-              <p className="mt-4 text-4xl font-black">£199<span className="text-lg font-normal text-gray-600">/mo</span></p>
+              <p className="mt-2 text-xs text-gray-600">Full back office — 3 OpenClaw seats + 10 creative agents.</p>
+              <p className="mt-4 text-4xl font-black">£149<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> Unlimited Agents</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> Priority A2A routing</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 24/7 support</li>
+                <li className="flex gap-2"><span className="text-green-500">✓</span> 10 Creative Agent threads</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> 3 OpenClaw Business seats</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> Multi-inbox (A&R@, Booking@)</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> White-label emails</li>
               </ul>
               <Link href="/api/stripe/checkout?plan=label" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
+                SELECT
+              </Link>
+            </div>
+
+            {/* Network */}
+            <div className="border border-orange-500/50 rounded-2xl p-6 bg-orange-500/5 hover:border-orange-500 transition-all group">
+              <h3 className="text-lg font-bold text-orange-400 group-hover:text-orange-300 transition-colors">NETWORK</h3>
+              <p className="mt-2 text-xs text-gray-600">Agencies — resell the future. Unlimited everything.</p>
+              <p className="mt-4 text-4xl font-black">£499<span className="text-lg font-normal text-gray-600">/mo</span></p>
+              <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
+                <li className="flex gap-2"><span className="text-green-500">✓</span> Unlimited Creative Agents</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> Unlimited OpenClaw seats</li>
+                <li className="flex gap-2"><span className="text-blue-500">✓</span> White-label (resell)</li>
+                <li className="flex gap-2"><span className="text-orange-500">✓</span> 99.9% SLA guarantee</li>
+              </ul>
+              <Link href="/api/stripe/checkout?plan=network" className="mt-6 block w-full rounded-xl bg-orange-500 py-3 text-center text-sm font-bold text-black hover:bg-orange-400 transition-colors">
                 SELECT
               </Link>
             </div>

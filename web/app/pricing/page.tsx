@@ -56,25 +56,26 @@ const DESIGN_TOKENS = {
 
 // ============================================================================
 // Plan Data (synced with API route)
+// Dual Agent Architecture: Agentbot = Creative Crew, OpenClaw = Business Ops
 // ============================================================================
 
 const PLANS: Plan[] = [
   {
-    id: 'underground',
-    name: 'Underground',
+    id: 'solo',
+    name: 'Solo',
     price: 29,
-    priceId: 'underground',
-    description: 'Solo operator. One focused agent handles your most important job, 24/7.',
+    priceId: 'solo',
+    description: 'For bedroom producers. Creative agents only — chat with fans, generate artwork.',
     cta: 'Get Started',
     resources: { ram: '2GB', cpu: 1 },
     features: [
-      { name: '1 High-Speed Agent', included: true },
-      { name: 'Mistral 7B', included: true },
-      { name: 'A2A Bus Access', included: true },
-      { name: 'Basic Analytics', included: true },
-      { name: 'Telegram Channel', included: true },
+      { name: '1 Creative Agent thread (chat only)', included: true },
+      { name: 'Fan engagement (Telegram)', included: true },
+      { name: 'BlockDB queries for A&R', included: true },
+      { name: 'Base FM submissions', included: true },
+      { name: 'Visual artwork generation', included: true },
       { name: 'Use your own AI key', included: true },
-      { name: 'Priority Support', included: false },
+      { name: 'OpenClaw Business (email, contracts)', included: false },
     ],
   },
   {
@@ -82,35 +83,58 @@ const PLANS: Plan[] = [
     name: 'Collective',
     price: 69,
     priceId: 'collective',
-    description: 'Your crew. Three agents covering bookings, promo, and fan comms — all automated.',
+    description: 'DJs with day jobs — get a digital tour manager + 3 creative agents.',
     cta: 'Get Started',
     popular: true,
     resources: { ram: '4GB', cpu: 2 },
     features: [
-      { name: '3 Autonomous Agents', included: true },
-      { name: 'Llama 3.3 Optimized', included: true },
-      { name: 'Royalty Split Engine', included: true },
-      { name: 'Mission Control Graph', included: true },
+      { name: '3 Creative Agent threads', included: true },
+      { name: '1 OpenClaw Business seat', included: true, tooltip: 'Tour Manager: email triage, calendar, scraping, PDF contracts, x402 invoicing' },
+      { name: 'Email Triage (50/day)', included: true },
+      { name: 'PDF Contract Reading (50 pages/day)', included: true },
+      { name: 'Simple Scraping (3 sites)', included: true },
+      { name: 'x402 USDC Invoicing', included: true },
       { name: 'Telegram + WhatsApp', included: true },
-      { name: 'Custom Domain', included: true },
-      { name: 'Priority Support', included: true },
+      { name: 'A2A Bus (Agent coordination)', included: true },
     ],
   },
   {
     id: 'label',
     name: 'Label',
-    price: 199,
+    price: 149,
     priceId: 'label',
-    description: 'Full label infrastructure. Unlimited agents for your entire operation, with priority routing.',
+    description: 'Indie labels — full back office with 3 OpenClaw seats + 10 creative agents.',
     cta: 'Get Started',
     resources: { ram: '8GB', cpu: 4 },
     features: [
-      { name: 'Unlimited Agents', included: true },
-      { name: 'DeepSeek R1 Reasoning', included: true },
-      { name: 'Priority A2A Routing', included: true },
-      { name: 'White-glove staging', included: true },
-      { name: 'All Channels', included: true },
-      { name: 'Advanced Analytics', included: true },
+      { name: '10 Creative Agent threads', included: true },
+      { name: '3 OpenClaw Business seats', included: true, tooltip: 'Multi-inbox, rider analysis, lead qualification, contract lifecycle' },
+      { name: 'Multi-inbox (A&R@, Booking@, Press@)', included: true },
+      { name: 'Email Processing (500/day)', included: true },
+      { name: 'Unlimited Scraping', included: true },
+      { name: 'Rider Analysis & Comparison', included: true },
+      { name: 'Bankr Integration (tour budget)', included: true },
+      { name: 'White-label emails (@yourlabel.com)', included: true },
+      { name: 'All channels', included: true },
+    ],
+  },
+  {
+    id: 'network',
+    name: 'Network',
+    price: 499,
+    priceId: 'network',
+    description: 'Agencies — resell the future. Unlimited everything + white-label.',
+    cta: 'Contact Sales',
+    resources: { ram: '16GB', cpu: 8 },
+    features: [
+      { name: 'Unlimited Creative Agents', included: true },
+      { name: 'Unlimited OpenClaw seats', included: true },
+      { name: 'Full white-label (clients see "Managed by [Agency] AI")', included: true },
+      { name: 'Sub-accounts (resell at your markup)', included: true },
+      { name: 'Custom vertical scrapers', included: true },
+      { name: 'SLA guarantees (99.9% uptime)', included: true },
+      { name: 'Dedicated proxy pool', included: true },
+      { name: 'Crew Coordination (A2A Bus)', included: true },
       { name: '24/7 Support', included: true },
     ],
   },
@@ -397,10 +421,10 @@ function PricingPageContent() {
           {/* Page header */}
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-100 tracking-tight animate-fade-in">
-              Fleet Subscriptions
+              One Creative Crew, One Business Mind
             </h1>
             <p className="mt-4 text-lg sm:text-xl text-gray-400 animate-fade-in-up">
-              Bring your own AI key. We provide the infrastructure.
+              Agentbot handles your fans. OpenClaw handles your inbox. Both run on Base, paid in USDC.
             </p>
           </div>
 
@@ -416,9 +440,9 @@ function PricingPageContent() {
 
       {/* Pricing Grid */}
       <section className="relative pb-20 sm:pb-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
             role="list"
             aria-label="Pricing plans"
           >
@@ -450,16 +474,20 @@ function PricingPageContent() {
           <dl className="space-y-6">
             {[
               {
+                question: 'What is the difference between Agentbot and OpenClaw?',
+                answer: 'Agentbot = Creative Crew (fan engagement, promo, music). OpenClaw = Business Operations (email, contracts, invoicing). Solo tier gets Agentbot only. Collective+ includes OpenClaw seats.',
+              },
+              {
                 question: 'Do I need to provide my own AI API key?',
-                answer: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, OpenRouter, or other AI provider keys directly. You pay wholesale rates with zero markup from us.',
+                answer: 'Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, OpenRouter, or local Ollama keys directly. You pay wholesale rates with zero markup.',
               },
               {
                 question: 'What payment methods do you accept?',
-                answer: 'We accept all major credit and debit cards through Stripe. Payments are recurring monthly.',
+                answer: 'We accept all major credit cards through Stripe, or USDC on Base via x402.',
               },
               {
                 question: 'Can I change plans later?',
-                answer: 'Yes. Upgrade or downgrade at any time from your dashboard. Changes take effect at the next billing cycle.',
+                answer: 'Yes. Upgrade or downgrade at any time from your dashboard. OpenClaw seats can be added incrementally on Collective+ tiers.',
               },
               {
                 question: 'Can I cancel my subscription?',
@@ -467,7 +495,7 @@ function PricingPageContent() {
               },
               {
                 question: 'What is the A2A protocol?',
-                answer: 'Agent-to-Agent (A2A) is our coordination bus — agents can delegate tasks, share context, and execute cross-agent workflows autonomously without human input.',
+                answer: 'Agent-to-Agent (A2A) lets Agentbot and OpenClaw coordinate — fans ask about bookings, OpenClaw checks your calendar, responds back through Agentbot. Available on Collective+.',
               },
             ].map((faq, index) => (
               <div key={index} className="bg-gray-900/30 rounded-lg p-6">
@@ -483,10 +511,10 @@ function PricingPageContent() {
       <section className="relative py-16 bg-gradient-to-b from-transparent to-blue-500/5">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-gray-100 mb-4">
-            Ready to deploy your fleet?
+            Ready to automate your music business?
           </h2>
           <p className="text-lg text-gray-400 mb-8">
-            Autonomous agents running 24/7. Sovereign infrastructure. No API tax.
+            Solo: chat with fans. Collective+: add a digital tour manager. Label+: full back office.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

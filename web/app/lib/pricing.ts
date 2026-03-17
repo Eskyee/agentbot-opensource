@@ -1,136 +1,147 @@
-// Pricing tiers for AgentBot
+// Agentbot Pricing - Dual Agent Architecture
+// Agentbot = Creative Crew, OpenClaw = Business Operations
+
 export const PRICING_TIERS = {
-  starter: {
-    id: 'starter',
-    name: 'Starter',
-    price: 19,
+  solo: {
+    id: 'solo',
+    name: 'Solo',
+    price: 29,
     currency: 'GBP',
     period: 'month',
-    description: 'Perfect for individuals',
+    description: 'For bedroom producers',
     features: [
-      '1 AI Agent',
-      '2GB RAM, 1 CPU',
-      '10GB storage',
+      '1 Creative Agent thread (chat only)',
+      'Shared cluster resources',
       'Telegram channel',
       'Use your own AI key',
+      'No business automation',
     ],
     limits: {
       agents: 1,
+      threads: 1,
+      openclowSeats: 0,
       ram: 2,
       cpu: 1,
       storage: 10,
       channels: ['telegram'],
+      emailProcessing: 0,
+      documentPages: 0,
+      scrapingJobs: 0,
     },
-    stripeProductId: process.env.STRIPE_PRODUCT_STARTER,
-    stripePriceId: process.env.STRIPE_PRICE_STARTER,
+    stripeProductId: process.env.STRIPE_PRODUCT_SOLO,
+    stripePriceId: process.env.STRIPE_PRICE_SOLO,
   },
-  pro: {
-    id: 'pro',
-    name: 'Pro',
-    price: 39,
+  collective: {
+    id: 'collective',
+    name: 'Collective',
+    price: 69,
     currency: 'GBP',
     period: 'month',
-    description: 'For power users',
+    description: 'DJs with day jobs - first step to autonomy',
     features: [
-      '1 AI Agent',
-      '4GB RAM, 2 CPU',
-      '50GB storage',
+      '3 Creative Agent threads',
+      '1 OpenClaw Business seat (Tour Manager)',
+      'Priority queue',
+      'Email Triage (50/day)',
+      'Calendar Guard',
+      'Simple Scraping (3 sites)',
+      'PDF Contract Reading (50 pages/day)',
+      'x402 USDC Invoicing',
       'Telegram + WhatsApp',
-      'Custom domain',
-      'Usage-based pricing',
     ],
     limits: {
-      agents: 1,
+      agents: 3,
+      threads: 3,
+      openclowSeats: 1,
       ram: 4,
       cpu: 2,
       storage: 50,
       channels: ['telegram', 'whatsapp'],
-      customDomain: true,
+      emailProcessing: 50,
+      documentPages: 50,
+      scrapingJobs: 3,
     },
-    stripeProductId: process.env.STRIPE_PRODUCT_PRO,
-    stripePriceId: process.env.STRIPE_PRICE_PRO,
+    stripeProductId: process.env.STRIPE_PRODUCT_COLLECTIVE,
+    stripePriceId: process.env.STRIPE_PRICE_COLLECTIVE,
   },
-  scale: {
-    id: 'scale',
-    name: 'Scale',
-    price: 79,
+  label: {
+    id: 'label',
+    name: 'Label',
+    price: 149,
     currency: 'GBP',
     period: 'month',
-    description: 'For growing teams',
+    description: 'Indie labels - full infrastructure',
     features: [
-      '3 AI Agents',
-      '8GB RAM, 4 CPU',
-      '100GB storage',
+      '10 Creative Agent threads',
+      '3 OpenClaw Business seats',
+      'Dedicated 4vCPU container',
+      'Multi-inbox (A&R@, Booking@, Press@)',
+      'Rider Analysis & Comparison',
+      'Lead Qualification (Resident Advisor, Songkick)',
+      'Contract Lifecycle Management',
+      'Bankr Integration (tour budget, stablecoins)',
+      'Email Processing (500/day)',
+      'Unlimited Scraping',
+      'White-label emails (@yourlabel.com)',
       'All channels',
-      'Advanced analytics',
     ],
     limits: {
-      agents: 3,
+      agents: 10,
+      threads: 10,
+      openclowSeats: 3,
       ram: 8,
       cpu: 4,
       storage: 100,
       channels: ['telegram', 'whatsapp', 'discord'],
-      analytics: true,
+      emailProcessing: 500,
+      documentPages: 500,
+      scrapingJobs: -1, // Unlimited
+      whiteLabel: true,
     },
-    stripeProductId: process.env.STRIPE_PRODUCT_SCALE,
-    stripePriceId: process.env.STRIPE_PRICE_SCALE,
+    stripeProductId: process.env.STRIPE_PRODUCT_LABEL,
+    stripePriceId: process.env.STRIPE_PRICE_LABEL,
   },
-  enterprise: {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 149,
+  network: {
+    id: 'network',
+    name: 'Network',
+    price: 499,
     currency: 'GBP',
     period: 'month',
-    description: 'Full service solution',
+    description: 'Agencies - resell the future',
     features: [
-      'Unlimited agents',
-      '16GB RAM, 4 CPU',
-      '500GB storage',
-      'White-label options',
-      '24/7 phone support',
+      'Unlimited Creative Agents',
+      'Unlimited OpenClaw Business seats',
+      'Dedicated 16GB VM',
+      'Full white-label (clients see "Managed by [Agency] AI")',
+      'Sub-accounts (resell at your markup)',
+      'Custom vertical scrapers',
+      'SLA guarantees (99.9% uptime)',
+      'Unlimited everything',
+      'Dedicated proxy pool',
+      'Crew Coordination (A2A Bus)',
     ],
     limits: {
       agents: -1, // Unlimited
+      threads: -1, // Unlimited
+      openclowSeats: -1, // Unlimited
       ram: 16,
-      cpu: 4,
+      cpu: 8,
       storage: 500,
-      channels: ['telegram', 'whatsapp', 'discord', 'twitter'],
-      whiteLabelOption: true,
-      support: '24/7 phone',
-    },
-    stripeProductId: process.env.STRIPE_PRODUCT_ENTERPRISE,
-    stripePriceId: process.env.STRIPE_PRICE_ENTERPRISE,
-  },
-  whiteglove: {
-    id: 'whiteglove',
-    name: 'White Glove',
-    price: 199,
-    currency: 'GBP',
-    period: 'month',
-    description: 'Premium solution',
-    features: [
-      'Everything in Enterprise',
-      '10x resources',
-      'Dedicated account manager',
-      'Priority 24/7 support',
-      'Custom SLA',
-    ],
-    limits: {
-      agents: -1, // Unlimited
-      ram: 160,
-      cpu: 40,
-      storage: 5000,
       channels: ['telegram', 'whatsapp', 'discord', 'twitter', 'custom'],
-      dedicatedManager: true,
-      support: 'Priority 24/7',
-      customSLA: true,
+      emailProcessing: -1, // Unlimited
+      documentPages: -1, // Unlimited
+      scrapingJobs: -1, // Unlimited
+      whiteLabel: true,
+      customScrapers: true,
+      sla: '99.9%',
+      dedicatedProxy: true,
     },
-    stripeProductId: process.env.STRIPE_PRODUCT_WHITEGLOVE,
-    stripePriceId: process.env.STRIPE_PRICE_WHITEGLOVE,
+    stripeProductId: process.env.STRIPE_PRODUCT_NETWORK,
+    stripePriceId: process.env.STRIPE_PRICE_NETWORK,
   },
 }
 
-export const TIER_ORDER = ['starter', 'pro', 'scale', 'enterprise', 'whiteglove']
+export const TIER_ORDER = ['solo', 'collective', 'label', 'network']
 
 export function getTier(tierId: string) {
   return PRICING_TIERS[tierId as keyof typeof PRICING_TIERS]
@@ -140,16 +151,55 @@ export function getTierByProductId(productId: string) {
   return Object.values(PRICING_TIERS).find(tier => tier.stripeProductId === productId)
 }
 
-export function checkTierLimits(tier: typeof PRICING_TIERS.starter, currentUsage: any) {
+export function checkTierLimits(tier: typeof PRICING_TIERS.solo, currentUsage: any) {
   const errors: string[] = []
 
-  if (tier.limits.agents > 0 && currentUsage.agents >= tier.limits.agents) {
-    errors.push(`Agent limit reached (${tier.limits.agents})`)
+  if (tier.limits.threads > 0 && currentUsage.threads >= tier.limits.threads) {
+    errors.push(`Thread limit reached (${tier.limits.threads})`)
+  }
+
+  if (tier.limits.openclowSeats >= 0 && currentUsage.openclowSeats > tier.limits.openclowSeats) {
+    errors.push(`OpenClaw seats limit reached (${tier.limits.openclowSeats})`)
   }
 
   if (currentUsage.storage > tier.limits.storage) {
     errors.push(`Storage limit exceeded (${tier.limits.storage}GB)`)
   }
 
+  if (tier.limits.emailProcessing > 0 && currentUsage.emailsProcessed > tier.limits.emailProcessing) {
+    errors.push(`Daily email limit exceeded (${tier.limits.emailProcessing})`)
+  }
+
+  if (tier.limits.documentPages > 0 && currentUsage.documentPages > tier.limits.documentPages) {
+    errors.push(`Daily document limit exceeded (${tier.limits.documentPages})`)
+  }
+
   return { allowed: errors.length === 0, errors }
+}
+
+// Feature flags for display
+export const TIER_FEATURES = {
+  solo: {
+    creative: true,
+    business: false,
+    a2aBus: false,
+  },
+  collective: {
+    creative: true,
+    business: true,
+    a2aBus: true,
+  },
+  label: {
+    creative: true,
+    business: true,
+    a2aBus: true,
+    whiteLabel: true,
+  },
+  network: {
+    creative: true,
+    business: true,
+    a2aBus: true,
+    whiteLabel: true,
+    resell: true,
+  },
 }
