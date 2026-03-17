@@ -165,3 +165,37 @@ Checkout flow: `GET /api/stripe/checkout?plan=<underground|collective|label>` â†
 - `RESEND_API_KEY`
 - `OPENROUTER_API_KEY`
 - `ADMIN_EMAILS` - Comma-separated admin emails for admin endpoints
+
+---
+
+## RENDER MCP SERVER
+
+Connect AI apps (Cursor, Claude Code) to debug builds and manage Render resources.
+
+### Setup
+
+1. Get Render API key from: https://dashboard.render.com/settings/api-keys
+2. Add to Claude Code/Cursor in project:
+
+```json
+{
+  "mcpServers": {
+    "render": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-render"],
+      "env": {
+        "RENDER_API_KEY": "your-render-api-key"
+      }
+    }
+  }
+}
+```
+
+### What you can do
+
+- Query build logs with natural language
+- Diagnose deployment failures
+- Manage environment variables
+- Check service health and metrics
+
+Example: "Why did my last deployment fail? Check the logs and explain the error."
