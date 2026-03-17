@@ -10,7 +10,8 @@ RUN npm install --production
 COPY . .
 RUN npm run build
 
-# Listen on all interfaces (Render handles this)
-EXPOSE 3001
+# Listen on all interfaces
+ENV PORT=8080
+EXPOSE 8080
 
 CMD ["node", "dist/index.js"]

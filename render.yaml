@@ -16,20 +16,21 @@ services:
   # Backend API
   - type: web
     name: agentbot-api
-    env: docker
+    runtime: docker
     dockerfilePath: agentbot-backend/Dockerfile.prod
     rootDir: agentbot-backend
     plan: starter
     region: oregon
     healthCheckPath: /health
     autoDeploy: true
-
-  # Worker
-  - type: background_worker
-    name: agentbot-worker
-    env: docker
-    dockerfilePath: agentbot-worker/Dockerfile
-    rootDir: agentbot-worker
-    plan: starter
-    region: oregon
-    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: NODE_ENV
+        value: production
+      - key: SETUP_PASSWORD
+        sync: false
+    disk:
+      name: agentbot-data
+      mountPath: /data
+      sizeGB: 1
