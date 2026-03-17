@@ -6,7 +6,7 @@ import { authOptions } from '@/app/lib/auth'
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
   solo: { amount: 2900, name: 'Solo' },
   collective: { amount: 6900, name: 'Collective' },
-  label: { amount: 19900, name: 'Label' },
+  label: { amount: 14900, name: 'Label' },
   network: { amount: 49900, name: 'Network' },
 }
 
