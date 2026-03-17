@@ -6,6 +6,8 @@ services:
     name: agentbot-postgres
     plan: starter
     region: oregon
+    postgres:
+      version: 15
 
   # Redis
   - type: redis
@@ -28,6 +30,7 @@ services:
         value: "3001"
       - key: NODE_ENV
         value: production
+    ipAllowList: []
 
   # Worker
   - type: worker
