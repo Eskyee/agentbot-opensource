@@ -13,10 +13,10 @@ services:
     plan: starter
     region: oregon
 
-  # Backend API
+  # Backend API - Agentbot provisioning
   - type: web
     name: agentbot-api
-    runtime: docker
+    env: docker
     dockerfilePath: agentbot-backend/Dockerfile.prod
     rootDir: agentbot-backend
     plan: starter
@@ -25,12 +25,21 @@ services:
     autoDeploy: true
     envVars:
       - key: PORT
-        value: "8080"
+        value: "3001"
       - key: NODE_ENV
         value: production
-      - key: SETUP_PASSWORD
-        sync: false
-    disk:
-      name: agentbot-data
-      mountPath: /data
-      sizeGB: 1
+      - key: ALLOWED_ORIGINS
+        value: https://agentbot-api.onrender.com
+
+  # Worker
+  - type: worker
+    name: agentbot-worker
+    env: docker
+    dockerfilePath: agentbot-worker/Dockerfile
+    rootDir: agentbot-worker
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
