@@ -1,18 +1,34 @@
+# PRODUCTION DOCKERFILE FOR WORKER - MULTI-STAGE BUILD
+
+FROM node:20-alpine AS builder
+
+WORKDIR /build
+
+RUN apk add --no-cache python3 make g++ dumb-init
+
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+COPY . .
+RUN npm run build
+
+# ========== RUNTIME ==========
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+RUN apk add --no-cache dumb-init curl
 
-# Install dependencies
-RUN npm install
+RUN addgroup -g 1000 appuser && \
+    adduser -u 1000 -G appuser -s /sbin/nologin -D appuser
 
-# Copy source code
-COPY . .
+COPY --from=builder --chown=appuser:appuser /build/dist ./dist
+COPY --from=builder --chown=appuser:appuser /build/node_modules ./node_modules
+COPY --from=builder --chown=appuser:appuser /build/package*.json ./
 
-# Build TypeScript
-RUN npm run build
+RUN mkdir -p /app/data && chown -R appuser:appuser /app/data
 
-# Start server
-CMD ["node", "dist/worker.js"]
+USER appuser
+
+ENTRYPOINT ["/sbin/dumb-init", "--"]
+CMD ["node", "dist/index.js"]
