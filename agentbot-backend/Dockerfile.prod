@@ -1,26 +1,24 @@
-FROM node:20-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dumb-init for signal handling
-RUN apt-get update && apt-get install -y dumb-init curl && rm -rf /var/lib/apt/lists/*
+# Install build tools
+RUN apk add --no-cache python3 make g++
 
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm install
 
-# Copy built files
-COPY dist ./dist
+# Copy source
+COPY . .
 
-# Create non-root user
-RUN useradd -m -s /bin/bash appuser && chown -R appuser:appuser /app
+# Build TypeScript
+RUN npm run build
 
-USER appuser
-
+# Expose port
 EXPOSE 3001
 
-ENTRYPOINT ["dumb-init", "--"]
-
-CMD ["node", "dist/index.js"]
+# Start server
+CMD ["npm", "start"]
