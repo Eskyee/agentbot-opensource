@@ -2,23 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install build tools
-RUN apk add --no-cache python3 make g++
-
-# Copy package files
-COPY package*.json ./
-
 # Install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Copy source
+# Build
 COPY . .
-
-# Build TypeScript
 RUN npm run build
 
-# Expose port
 EXPOSE 3001
 
-# Start server
 CMD ["npm", "start"]
