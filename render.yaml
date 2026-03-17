@@ -17,7 +17,7 @@ services:
   - type: web
     name: agentbot-api
     env: docker
-    dockerfilePath: agentbot-backend/Dockerfile
+    dockerfilePath: agentbot-backend/Dockerfile.prod
     buildCommand: npm run build
     startCommand: npm start
     plan: starter+
