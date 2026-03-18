@@ -263,7 +263,7 @@ export default function PricingPage() {
               Get Started
             </Link>
             <Link
-              href="https://raveculture.mintlify.app"
+              href="/docs"
               className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
             >
               View Documentation
