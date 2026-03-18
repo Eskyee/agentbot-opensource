@@ -177,6 +177,28 @@ const SKILLS = [
     downloads: 1100,
     rating: 4.7,
     featured: false
+  },
+  {
+    id: 'royalty-tracker',
+    name: 'Royalty Tracker',
+    description: 'Track streaming royalties across platforms in USDC.',
+    category: 'finance',
+    icon: '💰',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'demo-submitter',
+    name: 'Demo Submitter',
+    description: 'Submit demos to Base FM for airplay consideration.',
+    category: 'music',
+    icon: '📀',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
   }
 ]
 

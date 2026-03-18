@@ -52,7 +52,6 @@ function MarketplaceSidebar({ userName, className = '' }: { userName: string; cl
   )
 }
 
-// THE PURGE: Gordon-Approved Official Fleet
 const templates = [
   {
     name: 'the-strategist',
@@ -92,7 +91,40 @@ const templates = [
   }
 ];
 
-const channels = ['Telegram', 'Discord', 'WhatsApp'];
+const musicSkills = [
+  {
+    id: 'visual-synthesizer',
+    name: 'Visual Synthesizer',
+    description: 'Generate release artwork and social media assets using Stable Diffusion XL.',
+    icon: '🎨',
+    category: 'Creative',
+    security: 'API key required, no user data stored'
+  },
+  {
+    id: 'track-archaeologist',
+    name: 'Track Archaeologist',
+    description: 'Deep catalog digging via BlockDB similarity search. Find tracks, clear samples.',
+    icon: '🔍',
+    category: 'Music',
+    security: 'Read-only, mock data only'
+  },
+  {
+    id: 'setlist-oracle',
+    name: 'Setlist Oracle',
+    description: 'Analyze BPM, key, and energy curves to build perfect DJ sets with Camelot mixing.',
+    icon: '🎧',
+    category: 'Music',
+    security: 'Read-only, mock data only'
+  },
+  {
+    id: 'groupie-manager',
+    name: 'Groupie Manager',
+    description: 'Fan segmentation, lifecycle tracking, and automated merch drop campaigns.',
+    icon: '👥',
+    category: 'Marketing',
+    security: 'Input validated, sanitized'
+  }
+];
 
 export default function MarketplacePage() {
   const { data: session } = useSession()
@@ -100,7 +132,6 @@ export default function MarketplacePage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Mobile Sidebar - only show for logged in users */}
       {session && (
         <div className="md:hidden">
           <MarketplaceSidebar userName={userName} className="mb-6" />
@@ -150,6 +181,48 @@ export default function MarketplacePage() {
                 </div>
               </article>
             ))}
+          </div>
+          
+          {/* Music Skills Section */}
+          <div className="mt-12">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Music Skills</h2>
+              <p className="mt-2 text-gray-400">
+                Extend your agent with music-specific capabilities. Available on all tiers.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:gap-5 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+              {musicSkills.map((skill) => (
+                <article key={skill.id} className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden group">
+                  <div className="p-4 sm:p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{skill.icon}</span>
+                        <div>
+                          <h3 className="font-bold text-white group-hover:text-blue-400 transition-colors">{skill.name}</h3>
+                          <p className="text-xs text-blue-400">{skill.category}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-300 mb-4 leading-relaxed">{skill.description}</p>
+                    
+                    <div className="text-xs text-gray-500 mb-4 flex items-center gap-1">
+                      <span className="text-green-500">✓</span>
+                      {skill.security}
+                    </div>
+                    
+                    <Link
+                      href={session ? "/dashboard/skills" : "/signup"}
+                      className="w-full text-center rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors"
+                    >
+                      Enable {skill.name}
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
           
           <div className="mt-8 p-5 rounded-lg bg-gradient-to-br from-blue-600/10 to-purple-600/10 border border-white/5 text-center">
