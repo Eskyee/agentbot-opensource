@@ -5,9 +5,8 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init curl
 
 COPY package*.json ./
-RUN npm install
+RUN npm install && npm install -D ts-node-dev
 
 COPY . .
-RUN npm run build
 
-CMD ["node", "dist/worker.js"]
+CMD ["npm", "run", "dev"]
