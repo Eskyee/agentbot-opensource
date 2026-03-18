@@ -30,7 +30,7 @@ export default function SkillsPage() {
         </div>
 
         <div className="flex gap-3 mb-8">
-          {['all', 'data', 'web', 'automation'].map(cat => (
+          {['all', 'music', 'events', 'creative', 'marketing', 'finance', 'channels', 'productivity'].map(cat => (
             <button
               key={cat}
               onClick={() => setCategory(cat)}

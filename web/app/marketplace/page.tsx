@@ -123,6 +123,57 @@ const musicSkills = [
     icon: '👥',
     category: 'Marketing',
     security: 'Input validated, sanitized'
+  },
+  {
+    id: 'royalty-tracker',
+    name: 'Royalty Tracker',
+    description: 'Track streaming royalties across Spotify, Apple Music, Beatport with automatic split calculations.',
+    icon: '💰',
+    category: 'Finance',
+    security: 'Mock data, no real payments'
+  },
+  {
+    id: 'demo-submitter',
+    name: 'Demo Submitter',
+    description: 'Submit demos to labels via AI-curated submission system with pitch optimization.',
+    icon: '📩',
+    category: 'A&R',
+    security: 'Demo validation, sanitized uploads'
+  }
+];
+
+const eventSkills = [
+  {
+    id: 'event-ticketing',
+    name: 'Event Ticketing',
+    description: 'Sell tickets for events with USDC payments on Base. x402 protocol enabled.',
+    icon: '🎫',
+    category: 'Events',
+    security: 'Email validated, x402 USDC payments'
+  },
+  {
+    id: 'event-scheduler',
+    name: 'Event Scheduler',
+    description: 'Schedule events across Telegram, Discord, WhatsApp, Email with recurring support.',
+    icon: '📅',
+    category: 'Events',
+    security: 'Input validated, 5 channel limit'
+  },
+  {
+    id: 'venue-finder',
+    name: 'Venue Finder',
+    description: 'Find and book venues worldwide. UK, Europe, US, Asia. Filter by capacity and price.',
+    icon: '🏠',
+    category: 'Events',
+    security: 'Read-only, mock venue data'
+  },
+  {
+    id: 'festival-finder',
+    name: 'Festival Finder',
+    description: 'Discover festivals globally, compare lineups, get UK and Europe recommendations.',
+    icon: '🎪',
+    category: 'Events',
+    security: 'Read-only, mock festival data'
   }
 ];
 
@@ -194,6 +245,48 @@ export default function MarketplacePage() {
 
             <div className="grid gap-4 sm:gap-5 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
               {musicSkills.map((skill) => (
+                <article key={skill.id} className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden group">
+                  <div className="p-4 sm:p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{skill.icon}</span>
+                        <div>
+                          <h3 className="font-bold text-white group-hover:text-blue-400 transition-colors">{skill.name}</h3>
+                          <p className="text-xs text-blue-400">{skill.category}</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-300 mb-4 leading-relaxed">{skill.description}</p>
+                    
+                    <div className="text-xs text-gray-500 mb-4 flex items-center gap-1">
+                      <span className="text-green-500">✓</span>
+                      {skill.security}
+                    </div>
+                    
+                    <Link
+                      href={session ? "/dashboard/skills" : "/signup"}
+                      className="w-full text-center rounded-lg bg-white/10 border border-white/20 px-3 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors"
+                    >
+                      Enable {skill.name}
+                    </Link>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+          
+          {/* Event Skills Section */}
+          <div className="mt-12">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Event Skills</h2>
+              <p className="mt-2 text-gray-400">
+                Full event management suite with x402 USDC payments. Global venue database.
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:gap-5 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {eventSkills.map((skill) => (
                 <article key={skill.id} className="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden group">
                   <div className="p-4 sm:p-5">
                     <div className="flex justify-between items-start mb-3">

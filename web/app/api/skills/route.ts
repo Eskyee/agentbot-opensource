@@ -199,6 +199,94 @@ const SKILLS = [
     downloads: 0,
     rating: 5.0,
     featured: true
+  },
+  {
+    id: 'visual-synthesizer',
+    name: 'Visual Synthesizer',
+    description: 'Generate release artwork and social media assets using Stable Diffusion XL.',
+    category: 'creative',
+    icon: '🎨',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'track-archaeologist',
+    name: 'Track Archaeologist',
+    description: 'Deep catalog digging via BlockDB similarity search. Find tracks, clear samples.',
+    category: 'music',
+    icon: '🔍',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'setlist-oracle',
+    name: 'Setlist Oracle',
+    description: 'Analyze BPM, key, and energy curves to build perfect DJ sets with Camelot mixing.',
+    category: 'music',
+    icon: '🎧',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'groupie-manager',
+    name: 'Groupie Manager',
+    description: 'Fan segmentation, lifecycle tracking, and automated merch drop campaigns.',
+    category: 'marketing',
+    icon: '👥',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'event-ticketing',
+    name: 'Event Ticketing',
+    description: 'Sell tickets with USDC payments on Base via x402 protocol.',
+    category: 'events',
+    icon: '🎫',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'event-scheduler',
+    name: 'Event Scheduler',
+    description: 'Schedule events across Telegram, Discord, WhatsApp, Email with recurring support.',
+    category: 'events',
+    icon: '📅',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'venue-finder',
+    name: 'Venue Finder',
+    description: 'Find venues worldwide. UK, Europe, US, Asia with capacity and price filters.',
+    category: 'events',
+    icon: '🏠',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
+  },
+  {
+    id: 'festival-finder',
+    name: 'Festival Finder',
+    description: 'Discover festivals globally, compare lineups, get UK and Europe recommendations.',
+    category: 'events',
+    icon: '🎪',
+    author: 'Agentbot',
+    downloads: 0,
+    rating: 5.0,
+    featured: true
   }
 ]
 
