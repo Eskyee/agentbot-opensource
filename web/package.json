@@ -55,7 +55,9 @@
     "zustand": "^5.0.11"
   },
   "overrides": {
-    "@openzeppelin/contracts": "4.9.6"
+    "@openzeppelin/contracts": "4.9.6",
+    "prisma": "5.22.0",
+    "@prisma/client": "5.22.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
