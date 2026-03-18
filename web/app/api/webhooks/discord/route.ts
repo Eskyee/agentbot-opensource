@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+const WEBHOOK_API_KEY = process.env.WEBHOOK_API_KEY;
+
+function verifyApiKey(request: NextRequest): boolean {
+  const providedKey = request.headers.get('x-api-key');
+  
+  // Fail closed if API key not configured
+  if (!WEBHOOK_API_KEY) {
+    console.error('[SECURITY] WEBHOOK_API_KEY not configured - rejecting request');
+    return false;
+  }
+  
+  return providedKey === WEBHOOK_API_KEY;
+}
 
 export async function POST(request: NextRequest) {
+  // Verify API key
+  if (!verifyApiKey(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { guildId, channelId, message, embed } = body;

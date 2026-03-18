@@ -154,6 +154,11 @@ function getAiProviderConfig(provider: string) {
       baseUrl: 'https://api.openai.com/v1',
       requiresKey: true,
     },
+    minimax: {
+      model: 'MiniMax/MiniMax-Text-01',
+      baseUrl: 'https://api.minimax.chat/v1',
+      requiresKey: true,
+    },
   };
   return configs[provider] || configs.openrouter;
 }

@@ -1,13 +1,17 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 
 export default function PricingPage() {
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
+  
   const plans = [
     {
       id: 'solo',
       name: 'SOLO',
-      price: 29,
+      price: billingCycle === 'monthly' ? 29 : 25,
+      yearlyPrice: 290,
       description: 'Creative agents only. Chat with fans, generate artwork. No business automation.',
       color: 'green',
       features: [
@@ -20,7 +24,8 @@ export default function PricingPage() {
     {
       id: 'collective',
       name: 'COLLECTIVE',
-      price: 69,
+      price: billingCycle === 'monthly' ? 69 : 59,
+      yearlyPrice: 690,
       description: 'Creative crew + 1 OpenClaw seat (digital tour manager).',
       color: 'blue',
       popular: true,
@@ -28,13 +33,14 @@ export default function PricingPage() {
         { text: '3 Creative Agent threads', included: true },
         { text: '1 OpenClaw Business seat', included: true },
         { text: 'Email Triage (50/day)', included: true },
-        { text: 'x402 USDC Invoicing', included: true },
+        { text: 'USDC Invoicing', included: true },
       ],
     },
     {
       id: 'label',
       name: 'LABEL',
-      price: 149,
+      price: billingCycle === 'monthly' ? 149 : 129,
+      yearlyPrice: 1490,
       description: 'Full back office — 3 OpenClaw seats + 10 creative agents.',
       color: 'purple',
       features: [
@@ -47,7 +53,8 @@ export default function PricingPage() {
     {
       id: 'network',
       name: 'NETWORK',
-      price: 499,
+      price: billingCycle === 'monthly' ? 499 : 429,
+      yearlyPrice: 4990,
       description: 'Agencies — resell the future. Unlimited everything.',
       color: 'orange',
       features: [
@@ -109,14 +116,30 @@ export default function PricingPage() {
             ONE CREATIVE CREW, ONE BUSINESS MIND
           </h1>
           
-          <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Agentbot handles your fans. OpenClaw handles your inbox. Both run on Base, paid in USDC.
+          <p className="mt-6 text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+            Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card, Apple Pay, or crypto.
           </p>
           
-          <div className="mt-8 flex justify-center animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 rounded-lg border border-gray-800 text-sm text-gray-400">
-              <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
-              Monthly billing — cancel anytime
+          {/* Billing Toggle */}
+          <div className="mt-8 flex justify-center">
+            <div className="inline-flex items-center gap-1 p-1 bg-gray-900 rounded-lg border border-gray-800">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  billingCycle === 'monthly' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle('yearly')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  billingCycle === 'yearly' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
+                }`}
+              >
+                Yearly
+                <span className="ml-2 text-xs text-green-400 font-bold">Save 15%</span>
+              </button>
             </div>
           </div>
         </div>
@@ -146,8 +169,11 @@ export default function PricingPage() {
                   <p className="mt-2 text-xs text-gray-500">{plan.description}</p>
                   
                   <p className="mt-4 text-4xl font-black">
-                    £{plan.price}<span className="text-lg font-normal text-gray-600">/mo</span>
+                    £{billingCycle === 'monthly' ? plan.price : plan.yearlyPrice}<span className="text-lg font-normal text-gray-600">/mo</span>
                   </p>
+                  {billingCycle === 'yearly' && (
+                    <p className="text-xs text-green-400 mt-1">Billed £{plan.yearlyPrice}/year</p>
+                  )}
                   
                   <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
                     {plan.features.map((feature, i) => (
@@ -172,6 +198,36 @@ export default function PricingPage() {
               )
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Payment Methods */}
+      <section className="px-4 py-12 bg-black border-t border-white/5">
+        <div className="mx-auto max-w-3xl text-center">
+          <h3 className="text-lg font-bold text-gray-300 mb-6">Accepted Payment Methods</h3>
+          <div className="flex flex-wrap justify-center gap-4 items-center">
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-lg border border-gray-800">
+              <span className="text-white font-semibold">Visa</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-lg border border-gray-800">
+              <span className="text-white font-semibold">Mastercard</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-lg border border-gray-800">
+              <span className="text-white font-semibold">Apple Pay</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-lg border border-gray-800">
+              <span className="text-white font-semibold">Google Pay</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-lg border border-gray-800">
+              <span className="text-white font-semibold">PayPal</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-900 rounded-lg border border-gray-800">
+              <span className="text-white font-semibold">USDC</span>
+            </div>
+          </div>
+          <p className="mt-6 text-sm text-gray-500">
+            Secure payments via Stripe. Crypto optional — use USDC on Base for discounts.
+          </p>
         </div>
       </section>
 

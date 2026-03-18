@@ -71,17 +71,18 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-6">
           {/* Primary links — always visible */}
-          <Link href="/pricing" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Pricing</Link>
-          <Link href="/why"     className="text-sm text-gray-400 hover:text-white rounded transition-colors">Why</Link>
-          <Link href="https://raveculture.mintlify.app"    className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
-          <Link href="/token"   className="text-sm text-gray-400 hover:text-white rounded transition-colors">$AGENTBOT</Link>
+          <Link href="/pricing" className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">Pricing</Link>
+          <Link href="/why"     className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">Why</Link>
+          <Link href="https://raveculture.mintlify.app"    className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">Docs</Link>
+          <Link href="/token"   className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">$AGENTBOT</Link>
 
           {/* More dropdown */}
           <div className="relative" ref={moreRef}>
             <button
               onClick={() => setMoreOpen(!moreOpen)}
-              className="flex items-center gap-1 text-sm text-gray-400 hover:text-white rounded transition-colors"
+              className="flex items-center gap-1 text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors"
               aria-expanded={moreOpen}
+              aria-label="Open more menu"
             >
               More
               <svg
@@ -111,19 +112,20 @@ export default function Navbar() {
           {/* Auth */}
           {(!mounted || status === "loading") ? null : session ? (
             <div className="flex items-center gap-4">
-              <Link href="/marketplace" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
+              <Link href="/marketplace" className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">
                 Marketplace
               </Link>
-              <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
+              <Link href="/dashboard" className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">
                 Dashboard
               </Link>
               {isAdmin && (
-                <Link href="/admin" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
+                <Link href="/admin" className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">
                   Admin
                 </Link>
               )}
               <button
-                className="text-sm text-gray-400 hover:text-white rounded transition-colors"
+                className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors"
+                aria-label="Log out"
                 onClick={() => signOut()}
               >
                 Log Out
@@ -131,7 +133,7 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              <Link href="/login" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
+              <Link href="/login" className="text-sm text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/50 rounded transition-colors">
                 Log In
               </Link>
               <Link href="/signup" className="text-sm bg-white text-black px-3 py-1.5 font-medium rounded-lg hover:bg-gray-200 transition-colors">

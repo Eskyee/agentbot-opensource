@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
+const WHATSAPP_WEBHOOK_SECRET = process.env.WHATSAPP_WEBHOOK_SECRET;
+
+function verifyWhatsAppSignature(body: string, signature: string): boolean {
+  // Fail closed if no secret configured
+  if (!WHATSAPP_WEBHOOK_SECRET) {
+    console.error('[SECURITY] WHATSAPP_WEBHOOK_SECRET not configured');
+    return false;
+  }
+
+  // WhatsApp signs with HMAC-SHA256
+  const expectedSignature = crypto
+    .createHmac('sha256', WHATSAPP_WEBHOOK_SECRET)
+    .update(body)
+    .digest('hex');
+
+  // Timing-safe comparison
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -17,8 +39,24 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const entry = body.entry?.[0];
+    // Verify webhook signature if secret is configured
+    const signature = request.headers.get('x-hub-signature-256');
+    const body = await request.text();
+
+    if (WHATSAPP_WEBHOOK_SECRET && signature) {
+      const isValid = verifyWhatsAppSignature(body, signature.replace(/^sha256=/, ''));
+      if (!isValid) {
+        console.error('[SECURITY] WhatsApp webhook signature verification failed');
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+      }
+    } else if (WHATSAPP_WEBHOOK_SECRET && !signature) {
+      // Secret is configured but no signature provided
+      console.error('[SECURITY] WhatsApp webhook missing signature');
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+    }
+
+    const data = JSON.parse(body);
+    const entry = data.entry?.[0];
     const changes = entry?.changes?.[0];
     const message = changes?.value?.messages?.[0];
     

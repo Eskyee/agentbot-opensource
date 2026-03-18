@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'royaltybot-launch',
+    date: '18 March 2026',
+    title: 'Introducing RoyaltyBot: Instant Payment Layer for Music',
+    excerpt: 'Reprtoir calculates your splits. We execute them instantly. Welcome to the autonomous payment layer the music industry has been waiting for.',
+    tags: ["Launch", "Payments", "RoyaltyBot"]
+  },
+  {
     slug: 'battle-tested',
     date: '14 March 2026',
     title: 'Battle Tested: Live in the Field',

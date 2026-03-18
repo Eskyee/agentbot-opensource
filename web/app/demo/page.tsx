@@ -20,6 +20,7 @@ const DEFAULT_MODELS: Model[] = [
   { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
   { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
   { id: 'google/gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', provider: 'Google' },
+  { id: 'minimax/minimax-chat', name: 'MiniMax M2.7', provider: 'MiniMax' },
 ]
 
 export default function DemoPage() {

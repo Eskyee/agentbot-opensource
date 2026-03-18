@@ -10,9 +10,10 @@ import crypto from 'crypto';
 const MUX_SIGNING_SECRET = process.env.MUX_SIGNING_SECRET || process.env.MUX_WEBHOOK_SECRET;
 
 function verifyMuxSignature(body: string, signature: string): boolean {
+  // Fail closed - deny if signing secret not configured
   if (!MUX_SIGNING_SECRET) {
-    console.warn('MUX_SIGNING_SECRET not configured - skipping verification');
-    return true;
+    console.error('[SECURITY] MUX_SIGNING_SECRET not configured - rejecting request');
+    return false;
   }
 
   // Mux sends signature in format: t=timestamp,v1=signature
@@ -22,13 +23,24 @@ function verifyMuxSignature(body: string, signature: string): boolean {
 
   if (!timestamp || !sig) return false;
 
+  // Verify timestamp is within 5 minutes to prevent replay attacks
+  const webhookAge = Date.now() - parseInt(timestamp) * 1000;
+  if (webhookAge > 5 * 60 * 1000) {
+    console.error('[SECURITY] Mux webhook timestamp too old, possible replay attack');
+    return false;
+  }
+
   const payload = timestamp + '.' + body;
   const expectedSignature = crypto
     .createHmac('sha256', MUX_SIGNING_SECRET)
     .update(payload)
     .digest('hex');
 
-  return sig === expectedSignature;
+  // Timing-safe comparison
+  return crypto.timingSafeEqual(
+    Buffer.from(sig),
+    Buffer.from(expectedSignature)
+  );
 }
 
 export async function POST(request: NextRequest) {

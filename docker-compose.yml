@@ -1,16 +1,11 @@
-# DEVELOPMENT ENVIRONMENT ONLY
-# These credentials are for local development.
-# NEVER use these values in production!
-# Update credentials in production deployment.
+# DEVELOPMENT ENVIRONMENT
+# Copy .env.docker to .env and fill in values for local dev
 
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: agentbot-postgres
-    env_file:
-      - .env
-      - .env
     environment:
       POSTGRES_USER: agentbot
       POSTGRES_PASSWORD: devpassword
@@ -47,8 +42,7 @@ services:
       dockerfile: Dockerfile
     container_name: agentbot-api
     env_file:
-      - .env
-      - .env
+      - .env.docker
     environment:
       NODE_ENV: development
       PORT: 3001
@@ -75,8 +69,7 @@ services:
       dockerfile: Dockerfile
     container_name: agentbot-worker
     env_file:
-      - .env
-      - .env
+      - .env.docker
     environment:
       NODE_ENV: development
     depends_on:
@@ -100,8 +93,7 @@ services:
       dockerfile: Dockerfile
     container_name: agentbot-frontend
     env_file:
-      - .env
-      - .env
+      - .env.docker
     environment:
       NODE_ENV: development
       PORT: 3000

@@ -10,6 +10,7 @@ const DEMO_MODELS = [
   { id: 'google/gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', provider: 'Google' },
   { id: 'moonshot/kimi-k2.5-thinking', name: 'Kimi K2.5 Thinking', provider: 'Moonshot' },
   { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'Meta' },
+  { id: 'minimax/minimax-chat', name: 'MiniMax M2.7', provider: 'MiniMax' },
 ]
 
 export async function POST(req: NextRequest) {

@@ -2,27 +2,42 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
 const DISCORD_PUBLIC_KEY = process.env.DISCORD_PUBLIC_KEY;
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
 
 function verifyDiscordSignature(
   signature: string,
   timestamp: string,
   body: string
 ): boolean {
-  if (!DISCORD_PUBLIC_KEY) return true;
+  // Fail closed - deny if public key not configured
+  if (!DISCORD_PUBLIC_KEY) {
+    console.error('Discord webhook: DISCORD_PUBLIC_KEY not configured');
+    return false;
+  }
 
   const message = timestamp + body;
-  const expectedSignature = crypto
-    .createHmac('sha256', DISCORD_PUBLIC_KEY)
-    .update(message)
-    .digest('hex');
-
-  return `sha256=${expectedSignature}` === signature;
+  
+  try {
+    // Discord sends signature as hex string prefixed with sha256=
+    const expectedSignature = crypto
+      .createHash('sha256')
+      .update(message)
+      .digest('hex');
+    
+    // Timing-safe comparison
+    const sig = signature.replace(/^sha256=/, '');
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature),
+      Buffer.from(sig)
+    );
+  } catch (err) {
+    console.error('Discord signature verification error:', err);
+    return false;
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const signature = request.headers.get('x-signature-ed25519');
+    const signature = request.headers.get('x-signature-ed25519') || request.headers.get('x-signature-sha256');
     const timestamp = request.headers.get('x-signature-timestamp');
 
     if (!signature || !timestamp) {

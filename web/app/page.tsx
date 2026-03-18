@@ -10,7 +10,7 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="px-4 py-24 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-8 text-6xl sm:text-8xl" role="img" aria-label="Lobster emoji">🦞</div>
+          <span className="mb-8 text-6xl sm:text-8xl" aria-hidden="true">🦞</span>
           
           <div className="mb-4 text-[10px] font-bold text-blue-500 tracking-[0.3em] uppercase">
             Platform Operator Protocol
@@ -20,7 +20,7 @@ export default async function Home() {
             AGENTBOT
           </h1>
           
-          <p className="mt-6 text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-6 text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
             Your autonomous crew handles bookings, splits, and promo — while you stay in the studio.
           </p>
           <p className="mt-3 text-sm text-gray-600 max-w-xl mx-auto">
@@ -59,6 +59,42 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* MiniMax AI Section */}
+      <section className="px-4 py-16 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border-y border-blue-500/20">
+        <div className="mx-auto max-w-4xl text-center">
+          <div className="mb-2 text-[10px] font-bold text-blue-400 tracking-[0.3em] uppercase">
+            Powered by MiniMax M2.7
+          </div>
+          <h2 className="text-3xl font-black mb-4">Your 24/7 Personal Assistant</h2>
+          
+          <div className="mt-8 space-y-8">
+            <div className="text-left max-w-2xl mx-auto">
+              <h3 className="text-xl font-bold text-white mb-2">Make it yours.</h3>
+              <p className="text-gray-300">Name it, shape its personality, and it remembers every conversation and preference.</p>
+            </div>
+            
+            <div className="text-left max-w-2xl mx-auto">
+              <h3 className="text-xl font-bold text-white mb-2">Always on, zero wait.</h3>
+              <p className="text-gray-300">Live in 10 seconds, running 24/7 in the cloud.</p>
+            </div>
+            
+            <div className="text-left max-w-2xl mx-auto">
+              <h3 className="text-xl font-bold text-white mb-2">Right where you need it.</h3>
+              <p className="text-gray-300">Accessible in your daily apps, with expanding support for more.</p>
+            </div>
+          </div>
+          
+          <div className="mt-10">
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-8 py-4 text-sm font-bold text-white hover:bg-blue-500 transition-all"
+            >
+              Get Agentbot →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* baseFM Token Section */}
       <section className="px-4 py-12 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-y border-purple-500/20">
         <div className="mx-auto max-w-4xl text-center">
@@ -66,7 +102,7 @@ export default async function Home() {
             Now Streaming Live
           </div>
           <h2 className="text-3xl font-black mb-4">🎵 baseFM</h2>
-          <p className="text-gray-400 mb-6">The underground is live. Tune in now.</p>
+          <p className="text-gray-300 mb-6">The underground is live. Tune in now.</p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
@@ -157,7 +193,7 @@ export default async function Home() {
                   <span className="text-lg">🎵</span> AGENTBOT
                 </h4>
                 <p className="text-xs text-gray-500 mb-2">Creative Crew</p>
-                <ul className="text-sm text-gray-400 space-y-1">
+                <ul className="text-sm text-gray-300 space-y-1">
                   <li>• Fan engagement (Telegram/WhatsApp)</li>
                   <li>• BlockDB queries for A&R</li>
                   <li>• Base FM submissions</li>
@@ -169,7 +205,7 @@ export default async function Home() {
                   <span className="text-lg">💼</span> OPENCLAW
                 </h4>
                 <p className="text-xs text-gray-500 mb-2">Business Operations</p>
-                <ul className="text-sm text-gray-400 space-y-1">
+                <ul className="text-sm text-gray-300 space-y-1">
                   <li>• Email inbox management</li>
                   <li>• Contract/Rider analysis (PDF)</li>
                   <li>• Web scraping (gig listings)</li>
@@ -180,7 +216,7 @@ export default async function Home() {
                 <h4 className="text-orange-400 font-bold text-sm mb-2 flex items-center gap-2">
                   <span className="text-lg">⚡</span> YOU PROVIDE
                 </h4>
-                <ul className="text-sm text-gray-400 space-y-1">
+                <ul className="text-sm text-gray-300 space-y-1">
                   <li>• Your own AI API key</li>
                   <li>• OpenAI, Anthropic, Ollama</li>
                   <li>• No markup — wholesale rates</li>
@@ -193,7 +229,7 @@ export default async function Home() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {/* Solo */}
             <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-green-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-green-400 transition-colors">SOLO</h3>
+              <h3 className="text-lg font-bold text-gray-300 group-hover:text-green-400 transition-colors">SOLO</h3>
               <p className="mt-2 text-xs text-gray-600">Creative agents only. Chat with fans, generate artwork. No business automation.</p>
               <p className="mt-4 text-4xl font-black">£29<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
@@ -213,7 +249,7 @@ export default async function Home() {
               <h3 className="text-lg font-bold text-blue-400">COLLECTIVE</h3>
               <p className="mt-2 text-xs text-gray-500">Creative crew + 1 OpenClaw seat (digital tour manager).</p>
               <p className="mt-4 text-4xl font-black">£69<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-400 text-left">
+              <ul className="mt-6 space-y-2 text-sm text-gray-300 text-left">
                 <li className="flex gap-2"><span className="text-green-500">✓</span> 3 Creative Agent threads</li>
                 <li className="flex gap-2"><span className="text-blue-500">✓</span> 1 OpenClaw Business seat</li>
                 <li className="flex gap-2"><span className="text-blue-500">✓</span> Email Triage (50/day)</li>
@@ -226,7 +262,7 @@ export default async function Home() {
 
             {/* Label */}
             <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-purple-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-400 group-hover:text-purple-400 transition-colors">LABEL</h3>
+              <h3 className="text-lg font-bold text-gray-300 group-hover:text-purple-400 transition-colors">LABEL</h3>
               <p className="mt-2 text-xs text-gray-600">Full back office — 3 OpenClaw seats + 10 creative agents.</p>
               <p className="mt-4 text-4xl font-black">£149<span className="text-lg font-normal text-gray-600">/mo</span></p>
               <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
@@ -269,7 +305,7 @@ export default async function Home() {
           <div className="p-8 rounded-3xl bg-gray-900/50 border border-white/10 shadow-2xl">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
               <div className="flex items-center gap-4 text-left">
-                <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-4xl" role="img" aria-label="Lobster">🦞</div>
+                <span className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-4xl" aria-hidden="true">🦞</span>
                 <div>
                   <div className="font-black text-2xl tracking-tighter">AGENTBOT</div>
                   <div className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">/WETH ON BASE</div>
@@ -281,7 +317,7 @@ export default async function Home() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 mb-8">
-              <a href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3" target="_blank" className="bg-black/50 border border-white/5 rounded-xl p-4 text-[10px] font-bold text-gray-400 hover:border-white/20 transition-all">VIEW SCANNER</a>
+              <a href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3" target="_blank" className="bg-black/50 border border-white/5 rounded-xl p-4 text-[10px] font-bold text-gray-300 hover:border-white/20 transition-all">VIEW SCANNER</a>
               <a href="https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc" target="_blank" className="bg-white text-black rounded-xl p-4 text-[10px] font-bold hover:bg-gray-200 transition-all">BUY $AGENTBOT</a>
             </div>
             <div className="pt-6 border-t border-white/5 text-[10px] font-mono text-gray-600 truncate">
