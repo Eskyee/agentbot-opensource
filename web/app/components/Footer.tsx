@@ -11,7 +11,7 @@ export default function Footer() {
             <Link href="/why" className="text-gray-400 hover:text-white transition-colors">Why</Link>
             <Link href="/pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link>
             <Link href="/blog" className="text-gray-400 hover:text-white transition-colors">Blog</Link>
-            <Link href="/docs" className="text-gray-400 hover:text-white transition-colors">Docs</Link>
+            <Link href="https://raveculture.mintlify.app" className="text-gray-400 hover:text-white transition-colors">Docs</Link>
             <Link href="/marketplace" className="text-gray-400 hover:text-white transition-colors">Marketplace</Link>
             <Link href="/partner" className="text-gray-400 hover:text-white transition-colors">Partner</Link>
             <Link href="/token" className="text-gray-400 hover:text-white transition-colors">$AGENTBOT</Link>

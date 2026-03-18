@@ -1,14 +1,35 @@
-import { sleep, getWritable } from "workflow";
+"use workflow"
+
+import { sleep } from "workflow";
+import { sendWelcomeEmailStep } from "./steps/send-welcome-email";
+import { notifyNewUser } from "./steps/discord-notify";
+import { notifyNewUserTelegram } from "./steps/telegram-notify";
+import { provisionAgentStep } from "./steps/provision-agent";
 
 export async function handleUserSignup(email: string) {
-  "use workflow";
+  const userId = "user_" + Date.now();
+  
+  await sendWelcomeEmailStep({ 
+    email, 
+    name: email.split("@")[0] 
+  });
 
-  const writable = getWritable();
-  const writer = writable.getWriter();
-  await writer.write("🚀 Starting for: " + email + "\n");
-  writer.releaseLock();
+  await notifyNewUser(email, userId);
 
-  await sleep("2s");
+  await notifyNewUserTelegram(email, userId);
 
-  return { userId: "user_" + Date.now(), email, status: "ok" };
+  const provisioningResult = await provisionAgentStep({ 
+    userId, 
+    email,
+    plan: "free"
+  });
+
+  await sleep("1s");
+
+  return { 
+    userId, 
+    email, 
+    status: "welcome_sent",
+    agentProvisioned: provisioningResult.success
+  };
 }

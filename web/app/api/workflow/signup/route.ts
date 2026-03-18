@@ -1,4 +1,4 @@
-import { start } from "workflow/api";
+import { start } from "@workflow/core/runtime";
 import { handleUserSignup } from "./workflow";
 
 export async function POST(req: Request) {

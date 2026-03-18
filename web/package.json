@@ -16,6 +16,7 @@
     "@account-abstraction/sdk": "^0.6.0",
     "@base-org/account": "^2.5.2",
     "@base-org/account-ui": "^1.0.1",
+    "@coinbase/cdp-sdk": "^1.45.0",
     "@coinbase/onchainkit": "^1.1.2",
     "@mux/mux-node": "^9.0.1",
     "@neondatabase/serverless": "^1.0.2",

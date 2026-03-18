@@ -34,6 +34,21 @@ function generateRandomAddress(): string {
 }
 
 export async function GET(req: NextRequest) {
+  // Return CDP Agentic Wallet status if configured
+  const hasCDP = !!(process.env.CDP_PROJECT_ID);
+  
+  if (hasCDP) {
+    return NextResponse.json({
+      agenticWallet: {
+        status: 'configured',
+        projectId: process.env.CDP_PROJECT_ID?.slice(0, 8) + '...',
+        features: ['create_wallet', 'get_balance', 'send_usdc', 'trade_tokens', 'x402_payments'],
+      },
+      instructions: 'CDP Agentic Wallet is configured. Use /api/wallet/cdp/* endpoints.',
+    });
+  }
+
+  // Otherwise return user wallet status
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {

@@ -9,6 +9,7 @@ Agentbot is a hosted OpenClaw platform where users sign up, choose a plan, and d
 - **Web:** https://agentbot-two.vercel.app
 - **Custom Domain:** https://agentbot.raveculture.xyz
 - **Agents Domain:** https://agents.raveculture.xyz
+- **Vercel Project ID:** prj_QiczofbfSBhjq5bbcFtcPprLdB8w
 
 ## Pricing (5 Plans)
 | Plan | Price | RAM | CPU | 

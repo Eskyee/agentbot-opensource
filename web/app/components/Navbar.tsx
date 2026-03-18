@@ -68,7 +68,7 @@ export default function Navbar() {
           {/* Primary links — always visible */}
           <Link href="/pricing" className="text-sm text-gray-400 hover:text-white rounded transition-colors">Pricing</Link>
           <Link href="/why"     className="text-sm text-gray-400 hover:text-white rounded transition-colors">Why</Link>
-          <Link href="/docs"    className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
+          <Link href="https://raveculture.mintlify.app"    className="text-sm text-gray-400 hover:text-white rounded transition-colors">Docs</Link>
           <Link href="/token"   className="text-sm text-gray-400 hover:text-white rounded transition-colors">$AGENTBOT</Link>
 
           {/* More dropdown */}
@@ -164,7 +164,7 @@ export default function Navbar() {
             {/* Primary */}
             <Link href="/pricing"  className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Pricing</Link>
             <Link href="/why"      className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Why</Link>
-            <Link href="/docs"     className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Docs</Link>
+            <Link href="https://raveculture.mintlify.app"     className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Docs</Link>
             <Link href="/token"    className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>$AGENTBOT</Link>
             <Link href="/marketplace" className="block text-lg py-3 px-2 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800" onClick={closeMenu}>Marketplace</Link>
 
