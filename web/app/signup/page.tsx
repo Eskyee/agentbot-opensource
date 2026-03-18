@@ -38,8 +38,17 @@ export default function SignupPage() {
       body: JSON.stringify({ email, password, name, referralCode }),
     });
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Signup failed");
+      let errorMsg = "Signup failed";
+      try {
+        const text = await res.text();
+        if (text) {
+          const data = JSON.parse(text);
+          errorMsg = data.error || errorMsg;
+        }
+      } catch {
+        errorMsg = `Server error: ${res.status}`;
+      }
+      setError(errorMsg);
       setLoading(false);
       return;
     }
