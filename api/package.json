@@ -1,5 +1,5 @@
 {
-  "name": "2openclaw-api",
+  "name": "agentbot-api",
   "version": "1.0.0",
   "description": "2OpenClaw Provisioning API",
   "main": "server.js",
