@@ -10,14 +10,58 @@ Agentbot is a hosted OpenClaw platform where users sign up, choose a plan, and d
 - **Custom Domain:** https://agentbot.raveculture.xyz
 - **Agents Domain:** https://agents.raveculture.xyz
 
-## Pricing (5 Plans)
-| Plan | Price | RAM | CPU | 
-|------|-------|-----|-----|
-| Starter | £19/mo | 2GB | 1 |
-| Pro | £39/mo | 4GB | 2 |
-| Scale | £79/mo | 8GB | 4 |
-| Enterprise | £149/mo | 16GB | 4 |
-| White Glove | £199/mo | 32GB | 8 |
+## Pricing (4 Plans)
+
+SOLO
+Creative agents only. Chat with fans, generate artwork. No business automation.
+£29/mo
+✓
+1 Creative Agent thread
+✓
+Fan engagement (Telegram)
+✓
+BlockDB queries for A&R
+✗
+No OpenClaw business
+SELECT
+POPULAR
+COLLECTIVE
+Creative crew + 1 OpenClaw seat (digital tour manager).
+£69/mo
+✓
+3 Creative Agent threads
+✓
+1 OpenClaw Business seat
+✓
+Email Triage (50/day)
+✓
+x402 USDC Invoicing
+SELECT
+LABEL
+Full back office — 3 OpenClaw seats + 10 creative agents.
+£149/mo
+✓
+10 Creative Agent threads
+✓
+3 OpenClaw Business seats
+✓
+Multi-inbox (A&R@, Booking@)
+✓
+White-label emails
+SELECT
+NETWORK
+Agencies — resell the future. Unlimited everything.
+£499/mo
+✓
+Unlimited Creative Agents
+✓
+Unlimited OpenClaw seats
+✓
+White-label (resell)
+✓
+99.9% SLA guarantee
+SELECT
+
 
 ## Key Tech
 - **Frontend:** Next.js 16 (Vercel)
