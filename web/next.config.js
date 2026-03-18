@@ -1,7 +1,5 @@
-const { withWorkflow } = require('workflow/next');
-
 /** @type {import('next').NextConfig} */
-const nextConfig = withWorkflow({
+const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
@@ -58,6 +56,6 @@ const nextConfig = withWorkflow({
       },
     ];
   },
-});
+};
 
-module.exports = withWorkflow(nextConfig);
+module.exports = nextConfig;

@@ -3,6 +3,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 // ssr:false — @base-org/account-ui Preact internals crash during prerender
 const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
@@ -122,8 +123,19 @@ function LoginForm() {
           >
             Continue
           </button>
+          <div className="text-center">
+            <Link href="/forgot-password" className="text-sm text-gray-400 hover:text-white">
+              Forgot password?
+            </Link>
+          </div>
         </form>
       </details>
+
+      <div className="mt-4 text-center">
+        <Link href="/forgot-password" className="text-sm text-gray-400 hover:text-white">
+          Forgot password?
+        </Link>
+      </div>
 
       {loginError && (
         <div className="mt-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
