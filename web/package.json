@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",
-    "test:ui": "playwright test --ui",
-    "postinstall": "npx prisma generate"
+    "test:ui": "playwright test --ui"
   },
   "dependencies": {
     "@account-abstraction/contracts": "^0.8.0",
