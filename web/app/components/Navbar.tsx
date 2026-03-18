@@ -185,7 +185,7 @@ export default function Navbar() {
 
             {/* Auth */}
             <div className="border-t border-gray-800 mt-2 pt-4 flex flex-col gap-1">
-              {session ? (
+              {!mounted || !session ? (
                 <>
                   {displayName && (
                     <div className="text-sm text-gray-500 px-2 pb-2">{displayName}</div>
