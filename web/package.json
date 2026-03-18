@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx --no-install prisma@5.22.0 generate && next build",
+    "build": "node_modules/.bin/prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",
