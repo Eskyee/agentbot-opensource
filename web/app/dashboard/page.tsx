@@ -840,7 +840,7 @@ function DashboardContent() {
                 <span>❓</span> Help & Support
               </h2>
               <div className="space-y-3 text-sm">
-                <a href="https://docs.agentbot.raveculture.xyz" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
+                <a href="https://raveculture.mintlify.app" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
                   <span>📚</span> Documentation
                 </a>
                 <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
