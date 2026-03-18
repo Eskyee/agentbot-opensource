@@ -14,7 +14,7 @@ export default function HelpChat() {
     {
       id: '1',
       role: 'assistant',
-      content: '👋 Hi! I\'m your Agentbot helper. Need help deploying your AI agent? Ask me anything!'
+      content: '🔮 Hey! I\'m your Agentbot — deploying autonomous agents for music operations on Base. Ask me about pricing, skills (Visual Synthesizer, Track Archaeologist, Setlist Oracle, Groupie Manager), or how to get your crew running 24/7.'
     }
   ])
   const [input, setInput] = useState('')

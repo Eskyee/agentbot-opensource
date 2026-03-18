@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 
 const PERSONALITIES = [
-  { id: 'professional', name: 'Professional', tone: 'formal', emoji: '💼' },
-  { id: 'friendly', name: 'Friendly', tone: 'casual', emoji: '😊' },
-  { id: 'technical', name: 'Technical', tone: 'precise', emoji: '🔧' },
-  { id: 'creative', name: 'Creative', tone: 'playful', emoji: '🎨' },
-  { id: 'concise', name: 'Concise', tone: 'brief', emoji: '⚡' }
+  { id: 'basement', name: 'Basement', tone: 'dark & hypnotic', emoji: '🔮', description: 'Underground techno energy. Minimal, hypnotic, warehouse vibes.' },
+  { id: 'selector', name: 'Selector', tone: 'DJ & curation', emoji: '🎧', description: 'Track recommendations, setlists, BPM matching. Always reading the room.' },
+  { id: 'ar', name: 'A&R', tone: 'industry & discovery', emoji: '🎤', description: 'Finding the next hits. Connecting artists, labels, and opportunities.' },
+  { id: 'road', name: 'Road', tone: 'logistics & touring', emoji: '🚛', description: 'Buses, venues, rider requirements. Making sure the show goes on.' },
+  { id: 'label', name: 'Label', tone: 'operations & roster', emoji: '🏷️', description: 'Release schedules, royalty splits, catalog management.' },
 ]
 
 export default function PersonalityPage() {
