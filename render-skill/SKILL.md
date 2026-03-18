@@ -46,6 +46,19 @@ Manage your Render cloud platform through the Render API (v1). This skill works 
 ### Custom Domains
 - **List domains**: All custom domains with verification status
 
+### Projects & Environments
+- **List projects**: All projects with environment counts
+- **Get project details**: Full project config including services
+- **List environments**: Environments within a project
+- **Get environment details**: Environment-specific config and services
+- **List instances**: All running instances for a service
+
+### Environment Groups
+- **List env groups**: All shared environment variable groups
+- **Create env group**: Create a new group with variables
+- **Update env group**: Add or modify variables
+- **Delete env group**: Remove a group
+
 ## Common Workflows
 
 ### Check deploy status after a push

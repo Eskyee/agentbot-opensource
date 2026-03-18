@@ -15,6 +15,7 @@ import { registerServiceTools } from "./tools/services.js";
 import { registerDeployTools } from "./tools/deploys.js";
 import { registerDatabaseTools } from "./tools/databases.js";
 import { registerLogsAndEnvTools } from "./tools/logs.js";
+import { registerProjectTools } from "./tools/projects.js";
 
 // Create MCP server
 const server = new McpServer({
@@ -27,6 +28,7 @@ registerServiceTools(server);
 registerDeployTools(server);
 registerDatabaseTools(server);
 registerLogsAndEnvTools(server);
+registerProjectTools(server);
 
 // Start server
 async function main(): Promise<void> {

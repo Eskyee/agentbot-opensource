@@ -5,7 +5,7 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 const DEMO_MODELS = [
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
+  { id: 'anthropic/claude-sonnet-4.5', name: 'Claude Sonnet 4.5', provider: 'Anthropic' },
   { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
   { id: 'google/gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', provider: 'Google' },
   { id: 'moonshot/kimi-k2.5-thinking', name: 'Kimi K2.5 Thinking', provider: 'Moonshot' },
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Demo unavailable — service not configured.' }, { status: 503 })
     }
 
-    const modelId = model || 'anthropic/claude-3.5-sonnet'
+    const modelId = model || 'anthropic/claude-sonnet-4.5'
 
     // Only allow user-role messages from client conversation history (prevent role injection)
     const safeHistory = (Array.isArray(conversation) ? conversation : [])

@@ -58,6 +58,15 @@ Add to your MCP config (`.claude/mcp.json` or Claude Code settings):
 | `render_set_env_var` | Set an environment variable |
 | `render_delete_env_var` | Delete an environment variable |
 | `render_list_custom_domains` | List custom domains |
+| `render_list_projects` | List all projects |
+| `render_get_project` | Get project details |
+| `render_list_environments` | List project environments |
+| `render_get_environment` | Get environment details |
+| `render_list_instances` | List service instances |
+| `render_list_env_groups` | List environment groups |
+| `render_create_env_group` | Create environment group |
+| `render_update_env_group` | Update environment group |
+| `render_delete_env_group` | Delete environment group |
 
 ## Requirements
 

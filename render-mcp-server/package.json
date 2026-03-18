@@ -1,6 +1,6 @@
 {
-  "name": "render-mcp-server",
-  "version": "1.0.0",
+  "name": "@agentbot-atlas_basefm/render-mcp-server",
+  "version": "1.0.2",
   "description": "MCP server for Render cloud platform API — manage services, deploys, databases, and infrastructure",
   "type": "module",
   "main": "dist/index.js",
