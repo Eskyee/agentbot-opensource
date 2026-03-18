@@ -17,7 +17,12 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // isAdmin is set server-side from ADMIN_EMAILS env var via JWT callback
   const isAdmin = session?.user?.isAdmin === true;
@@ -104,7 +109,7 @@ export default function Navbar() {
           </div>
 
           {/* Auth */}
-          {status === "loading" ? null : session ? (
+          {(!mounted || status === "loading") ? null : session ? (
             <div className="flex items-center gap-4">
               <Link href="/marketplace" className="text-sm text-gray-400 hover:text-white rounded transition-colors">
                 Marketplace
