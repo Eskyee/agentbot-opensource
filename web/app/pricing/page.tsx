@@ -1,17 +1,13 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly')
-  
   const plans = [
     {
       id: 'solo',
       name: 'SOLO',
-      price: billingCycle === 'monthly' ? 29 : 25,
-      yearlyPrice: 290,
+      price: 29,
       description: 'Creative agents only. Chat with fans, generate artwork. No business automation.',
       color: 'green',
       features: [
@@ -24,8 +20,7 @@ export default function PricingPage() {
     {
       id: 'collective',
       name: 'COLLECTIVE',
-      price: billingCycle === 'monthly' ? 69 : 59,
-      yearlyPrice: 690,
+      price: 69,
       description: 'Creative crew + 1 OpenClaw seat (digital tour manager).',
       color: 'blue',
       popular: true,
@@ -39,8 +34,7 @@ export default function PricingPage() {
     {
       id: 'label',
       name: 'LABEL',
-      price: billingCycle === 'monthly' ? 149 : 129,
-      yearlyPrice: 1490,
+      price: 149,
       description: 'Full back office — 3 OpenClaw seats + 10 creative agents.',
       color: 'purple',
       features: [
@@ -53,8 +47,7 @@ export default function PricingPage() {
     {
       id: 'network',
       name: 'NETWORK',
-      price: billingCycle === 'monthly' ? 499 : 429,
-      yearlyPrice: 4990,
+      price: 499,
       description: 'Agencies — resell the future. Unlimited everything.',
       color: 'orange',
       features: [
@@ -117,28 +110,18 @@ export default function PricingPage() {
           </h1>
           
           <p className="mt-6 text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card, Apple Pay, or crypto.
+            Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card or Apple Pay.
           </p>
           
           {/* Billing Toggle */}
           <div className="mt-8 flex justify-center">
             <div className="inline-flex items-center gap-1 p-1 bg-gray-900 rounded-lg border border-gray-800">
               <button
-                onClick={() => setBillingCycle('monthly')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  billingCycle === 'monthly' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
+                  true ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 Monthly
-              </button>
-              <button
-                onClick={() => setBillingCycle('yearly')}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  billingCycle === 'yearly' ? 'bg-white text-black' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Yearly
-                <span className="ml-2 text-xs text-green-400 font-bold">Save 15%</span>
               </button>
             </div>
           </div>
@@ -169,11 +152,8 @@ export default function PricingPage() {
                   <p className="mt-2 text-xs text-gray-500">{plan.description}</p>
                   
                   <p className="mt-4 text-4xl font-black">
-                    £{billingCycle === 'monthly' ? plan.price : plan.yearlyPrice}<span className="text-lg font-normal text-gray-600">/mo</span>
+                    £{plan.price}<span className="text-lg font-normal text-gray-600">/mo</span>
                   </p>
-                  {billingCycle === 'yearly' && (
-                    <p className="text-xs text-green-400 mt-1">Billed £{plan.yearlyPrice}/year</p>
-                  )}
                   
                   <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
                     {plan.features.map((feature, i) => (
@@ -283,7 +263,7 @@ export default function PricingPage() {
               Get Started
             </Link>
             <Link
-              href="/docs"
+              href="https://raveculture.mintlify.app"
               className="inline-flex items-center justify-center px-6 py-3 text-base font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
             >
               View Documentation

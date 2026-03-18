@@ -123,7 +123,7 @@ export default function WelcomeOpenClawUsersPost() {
                 <Link href="/signup" className="inline-block bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition-colors">
                   Get Started Free
                 </Link>
-                <Link href="/docs" className="inline-block border border-gray-500 text-gray-300 px-6 py-2.5 rounded-lg font-medium hover:border-gray-300 transition-colors">
+                <Link href="https://raveculture.mintlify.app" className="inline-block border border-gray-500 text-gray-300 px-6 py-2.5 rounded-lg font-medium hover:border-gray-300 transition-colors">
                   Read Docs
                 </Link>
               </div>

@@ -263,25 +263,6 @@ export default function BlogPage() {
           </div>
         </div>
 
-        <Link href="/learn" className="block mb-12 p-6 rounded-2xl bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 hover:border-blue-400/50 transition-colors">
-          <p className="text-xs font-bold text-blue-400 tracking-widest uppercase mb-2">NEW</p>
-          <h2 className="text-2xl font-bold text-white mb-2">📚 Learn Agentbot</h2>
-          <p className="text-gray-300">
-            User guides, advanced tutorials, and embedded OpenClaw docs — everything you need to master agent deployment.
-          </p>
-        </Link>
-
-        <div className="grid gap-6 md:grid-cols-2 mb-12">
-          <Link href="/learn" className="p-6 rounded-2xl bg-gray-900 border border-gray-800 hover:border-white/30 transition-colors">
-            <h3 className="text-xl font-bold mb-2">🚀 User Guide</h3>
-            <p className="text-gray-400 text-sm">Getting started for the first time. Deploy your first agent in 60 seconds.</p>
-          </Link>
-          <Link href="/learn" className="p-6 rounded-2xl bg-gray-900 border border-gray-800 hover:border-white/30 transition-colors">
-            <h3 className="text-xl font-bold mb-2">⚡ Advanced</h3>
-            <p className="text-gray-400 text-sm">Swarms, skills, workflows, and production deployment strategies.</p>
-          </Link>
-        </div>
-
         <Link href="/news" className="block mb-12 p-6 rounded-2xl bg-gradient-to-r from-green-900/30 to-teal-900/30 border border-green-500/30 hover:border-green-400/50 transition-colors">
           <p className="text-xs font-bold text-green-400 tracking-widest uppercase mb-2">COMMUNITY</p>
           <h2 className="text-2xl font-bold text-white mb-2">📰 OpenClaw News</h2>
