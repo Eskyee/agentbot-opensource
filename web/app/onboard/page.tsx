@@ -3,9 +3,9 @@
 import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 
-type Step = 'telegram' | 'token' | 'userid' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
+type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
 
-const FLOW_STEPS: Step[] = ['telegram', 'token', 'ai', 'model', 'skills', 'deploy', 'done']
+const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'model', 'skills', 'deploy', 'done']
 
 function OnboardContent() {
   const searchParams = useSearchParams()
@@ -22,6 +22,7 @@ function OnboardContent() {
   const [apiKey, setApiKey] = useState('')
   const [selectedModel, setSelectedModel] = useState('openrouter/meta-llama/llama-3.3-70b-instruct')
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['web-search', 'file-handler'])
+  const [agentType, setAgentType] = useState('general')
   const [isValidating, setIsValidating] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [error, setError] = useState('')
@@ -47,6 +48,16 @@ function OnboardContent() {
     { id: 'email-sender', name: 'Email Sender', description: 'Send emails via SMTP', icon: '📧' },
     { id: 'api-caller', name: 'API Caller', description: 'Make HTTP requests', icon: '🌐' },
     { id: 'database-query', name: 'Database Query', description: 'Query databases', icon: '🗄️' }
+  ]
+
+  // Agent types - each with different default config
+  const AGENT_TYPES = [
+    { id: 'general', name: 'General Assistant', description: 'Versatile agent for any task', icon: '🤖', color: 'purple' },
+    { id: 'dj', name: 'Music DJ', description: '24/7 music streaming with track selection', icon: '🎵', color: 'green' },
+    { id: 'business', name: 'Business Assistant', description: 'Email, calendar, and admin tasks', icon: '💼', color: 'blue' },
+    { id: 'social', name: 'Social Media', description: 'Post to Twitter, generate content', icon: '📱', color: 'pink' },
+    { id: 'support', name: 'Customer Support', description: 'FAQ, tickets, and helpdesk', icon: '🎫', color: 'orange' },
+    { id: 'research', name: 'Research Agent', description: 'Web search, analysis, and reports', icon: '🔬', color: 'cyan' },
   ]
 
   useEffect(() => {
@@ -115,7 +126,8 @@ function OnboardContent() {
           apiKey,
           plan,
           model: selectedModel,
-          skills: selectedSkills
+          skills: selectedSkills,
+          agentType
         })
       })
       
@@ -384,13 +396,58 @@ function OnboardContent() {
                   ← Back
                 </button>
                 <button
-                  onClick={() => setStep('ai')}
+                  onClick={() => setStep('agenttype')}
                   disabled={!telegramUserId}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   Continue →
                 </button>
               </div>
+            </div>
+          </div>
+          )}
+        
+        {/* Step 4: Choose Agent Type */}
+        {step === 'agenttype' && (
+          <div>
+            <h2 className="text-2xl font-bold mb-2">Choose Your Agent Type</h2>
+            <p className="text-gray-400 mb-6">Select the type of agent that best fits your needs. Each comes pre-configured with relevant skills.</p>
+            
+            <div className="grid gap-4 sm:grid-cols-2">
+              {AGENT_TYPES.map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setAgentType(type.id)}
+                  className={`text-left p-4 rounded-xl border transition-all ${
+                    agentType === type.id 
+                      ? 'border-white bg-white/10' 
+                      : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">{type.icon}</div>
+                    <div>
+                      <div className="font-semibold">{type.name}</div>
+                      <div className="text-sm text-gray-400">{type.description}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <div className="flex gap-3 mt-8">
+              <button
+                onClick={() => setStep('token')}
+                className="px-6 py-3 border border-gray-700 text-gray-300 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={() => setStep('agenttype')}
+                className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              >
+                Continue →
+              </button>
             </div>
           </div>
         )}
@@ -559,7 +616,7 @@ function OnboardContent() {
               
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
-                  onClick={() => setStep('ai')}
+                  onClick={() => setStep('agenttype')}
                   className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
                 >
                   ← Back
@@ -693,7 +750,7 @@ function OnboardContent() {
               
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
-                  onClick={() => setStep('ai')}
+                  onClick={() => setStep('agenttype')}
                   className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
                 >
                   ← Back
