@@ -36,7 +36,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block text-4xl mb-4" aria-hidden="true">🤖</Link>
+          <Link href="/" className="inline-block text-4xl mb-4" aria-hidden="true">🦞</Link>
           <h1 className="text-2xl font-bold">Log in to Agentbot</h1>
         </div>
 
