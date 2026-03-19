@@ -18,6 +18,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }) as unknown as ReturnType<typeof CredentialsProvider>
   );
 }
@@ -27,6 +28,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }) as unknown as ReturnType<typeof CredentialsProvider>
   );
 }
@@ -187,34 +189,43 @@ export const authOptions: AuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (account?.provider === "google" || account?.provider === "github") {
         if (user.email) {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email },
-            include: { accounts: true },
-          });
-          if (existingUser) {
-            const existingAccount = existingUser.accounts.find(
-              (acc) => acc.provider === account.provider
-            );
-            if (!existingAccount && account.providerAccountId) {
-              await prisma.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  access_token: account.access_token,
-                  refresh_token: account.refresh_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state,
-                },
-              });
+          try {
+            const existingUser = await prisma.user.findUnique({
+              where: { email: user.email },
+              include: { accounts: true },
+            });
+            if (existingUser) {
+              const existingAccount = existingUser.accounts.find(
+                (acc) => acc.provider === account.provider
+              );
+              if (!existingAccount && account.providerAccountId) {
+                await prisma.account.create({
+                  data: {
+                    userId: existingUser.id,
+                    type: account.type,
+                    provider: account.provider,
+                    providerAccountId: account.providerAccountId,
+                    access_token: account.access_token ?? undefined,
+                    refresh_token: account.refresh_token ?? undefined,
+                    expires_at: account.expires_at ?? undefined,
+                    token_type: account.token_type ?? undefined,
+                    scope: account.scope ?? undefined,
+                    id_token: account.id_token ?? undefined,
+                    session_state: account.session_state as string | undefined,
+                  },
+                });
+                console.log(`[Auth] Linked ${account.provider} to existing user ${existingUser.email}`);
+              }
+              // Override the user id so JWT gets the existing user, not a new one
+              user.id = existingUser.id;
+              user.name = existingUser.name || user.name;
             }
+          } catch (error) {
+            console.error(`[Auth] Account linking error for ${account.provider}:`, error);
+            // Still allow sign-in even if linking fails
           }
         }
         return true;
