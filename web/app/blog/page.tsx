@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'botid-protection',
+    date: '19 March 2026',
+    title: 'BotID: Invisible Protection for AI Agents',
+    excerpt: 'We added Vercel BotID to protect our platform from automated attacks. Here is why it matters for AI agents.',
+    tags: ["Security", "Bot Protection", "Vercel"]
+  },
+  {
     slug: 'opensource-release',
     date: '19 March 2026',
     title: 'Agentbot is Now Open Source',
