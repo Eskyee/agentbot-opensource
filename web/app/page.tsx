@@ -6,358 +6,296 @@ export default async function Home() {
   const session = await getServerSession(authOptions)
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500 selection:text-white">
-      {/* Hero Section */}
-      <section className="px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <span className="mb-8 text-6xl sm:text-8xl" aria-hidden="true">🦞</span>
-          
-          <div className="mb-4 text-[10px] font-bold text-blue-500 tracking-[0.3em] uppercase">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+      {/* Hero */}
+      <section className="max-w-7xl mx-auto px-6 py-32 md:py-44">
+        <div className="max-w-3xl">
+          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest mb-8">
             Platform Operator Protocol
           </div>
-          
-          <h1 className="text-5xl font-black tracking-tighter sm:text-6xl lg:text-8xl mb-6">
-            AGENTBOT
+
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.9]">
+            Deploy AI<br />
+            <span className="text-zinc-700">Agents</span>
           </h1>
-          
-          <p className="mt-6 text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Your autonomous crew handles bookings, splits, and promo — while you stay in the studio.
+
+          <p className="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed mt-8">
+            Your autonomous crew handles bookings, splits, and promo — while you
+            stay in the studio. Agentbot is the creative crew. OpenClaw is the business mind.
           </p>
-          <p className="mt-3 text-sm text-gray-600 max-w-xl mx-auto">
-            <span className="text-green-400">Agentbot</span> = Creative crew (fans, promo, music). <span className="text-blue-400">OpenClaw</span> = Business ops (email, contracts, invoicing). From £29/mo.
-          </p>
-          
-          <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
+
+          <div className="flex flex-col sm:flex-row gap-3 mt-10">
             {session ? (
               <Link
                 href="/dashboard"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-sm font-bold text-black hover:bg-gray-200 transition-all transform hover:scale-105"
+                className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
-                ENTER MISSION CONTROL →
+                Mission Control
               </Link>
             ) : (
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-sm font-bold text-black hover:bg-gray-200 transition-all transform hover:scale-105"
+                className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
-                DEPLOY YOUR FLEET →
+                Deploy Fleet
               </Link>
             )}
             <Link
               href="/demo"
-              className="inline-flex items-center justify-center rounded-xl bg-gray-900 border border-white/10 px-8 py-4 text-sm font-bold text-white hover:bg-gray-800 transition-all"
+              className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
             >
-              TRY DEMO
+              Try Demo
             </Link>
             <Link
               href="/marketplace"
-              className="inline-flex items-center justify-center rounded-xl bg-gray-900 border border-white/10 px-8 py-4 text-sm font-bold text-white hover:bg-gray-800 transition-all"
+              className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
             >
-              BROWSE AGENTS
+              Browse Agents
             </Link>
           </div>
         </div>
       </section>
 
-      {/* baseFM Token Section */}
-      <section className="px-4 py-12 sm:px-6 lg:px-8 bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-y border-purple-500/20">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-2 text-[10px] font-bold text-purple-400 tracking-[0.3em] uppercase">
-            Now Streaming Live
-          </div>
-          <h2 className="text-3xl font-black mb-4">🎵 baseFM</h2>
-          <p className="text-gray-300 mb-6">The underground is live. Tune in now.</p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a
-              href="https://basefm.space/live"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-xl bg-purple-600 px-8 py-3 text-sm font-bold text-white hover:bg-purple-500 transition-all"
-            >
-              🎧 LISTEN LIVE
-            </a>
-            <a
-              href="https://bankr.bot/agents/basefm"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-xl bg-gray-900 border border-purple-500/30 px-8 py-3 text-sm font-bold text-purple-400 hover:bg-purple-900/20 transition-all"
-            >
-              Support $BASEFM →
-            </a>
-          </div>
-          
-          <div className="mt-6 text-xs text-gray-500 font-mono">
-            $BASEFM • 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 • Base
+      {/* baseFM */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="flex flex-col md:flex-row gap-16 items-start">
+            <div className="flex-1 space-y-6">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Now Streaming</div>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
+              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
+                The underground is live. Tune in now.
+              </p>
+              <div className="flex gap-3">
+                <a
+                  href="https://basefm.space/live"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Listen Live
+                </a>
+                <a
+                  href="https://bankr.bot/agents/basefm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  Support $BASEFM
+                </a>
+              </div>
+            </div>
+            <div className="text-zinc-600 text-[10px] font-mono">
+              $BASEFM · 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 · Base
+            </div>
           </div>
         </div>
       </section>
 
-      {/* MiniMax AI Section */}
-      <section className="px-4 py-16 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-900/20 to-cyan-900/20 border-y border-blue-500/20">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-2 text-[10px] font-bold text-blue-400 tracking-[0.3em] uppercase">
-            Powered by MiniMax M2.7
-          </div>
-          <h2 className="text-3xl font-black mb-4">Your 24/7 Personal Assistant</h2>
-          
-          <div className="mt-8 space-y-8">
-            <div className="text-left max-w-2xl mx-auto">
-              <h3 className="text-xl font-bold text-white mb-2">Make it yours.</h3>
-              <p className="text-gray-300">Name it, shape its personality, and it remembers every conversation and preference.</p>
+      {/* MiniMax */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="max-w-2xl space-y-10">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Powered by MiniMax M2.7</div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+              Your 24/7<br />
+              <span className="text-zinc-700">Personal Assistant</span>
+            </h2>
+
+            <div className="space-y-8 pt-4">
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Make it yours.</h3>
+                <p className="text-zinc-500 text-sm">Name it, shape its personality, and it remembers every conversation and preference.</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Always on, zero wait.</h3>
+                <p className="text-zinc-500 text-sm">Live in 10 seconds, running 24/7 in the cloud.</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Right where you need it.</h3>
+                <p className="text-zinc-500 text-sm">Accessible in your daily apps, with expanding support for more.</p>
+              </div>
             </div>
-            
-            <div className="text-left max-w-2xl mx-auto">
-              <h3 className="text-xl font-bold text-white mb-2">Always on, zero wait.</h3>
-              <p className="text-gray-300">Live in 10 seconds, running 24/7 in the cloud.</p>
-            </div>
-            
-            <div className="text-left max-w-2xl mx-auto">
-              <h3 className="text-xl font-bold text-white mb-2">Right where you need it.</h3>
-              <p className="text-gray-300">Accessible in your daily apps, with expanding support for more.</p>
-            </div>
-          </div>
-          
-          <div className="mt-10">
+
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-8 py-4 text-sm font-bold text-white hover:bg-blue-500 transition-all"
+              className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
             >
-              Get Agentbot →
+              Get Agentbot
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5 bg-[#050505]">
-        <div className="mx-auto max-w-6xl">
+      {/* Features */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-6 py-20">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
-            <div>
-              <div className="text-blue-500 font-bold mb-4 font-mono text-xs">01 // INTELLIGENCE</div>
-              <h3 className="text-xl font-bold mb-2">Tiered Sovereignty</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">OpenRouter-powered inference with DeepSeek R1 and Llama 3.3. BYOK with zero markup.</p>
-            </div>
-            <div>
-              <div className="text-blue-500 font-bold mb-4 font-mono text-xs">02 // ECONOMY</div>
-              <h3 className="text-xl font-bold mb-2">Autonomous Splits</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">Self-executing royalty splits and booking contracts via CDP wallets on Base.</p>
-            </div>
-            <div>
-              <div className="text-blue-500 font-bold mb-4 font-mono text-xs">03 // NETWORK</div>
-              <h3 className="text-xl font-bold mb-2">A2A Protocol</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">Cryptographic agent-to-agent coordination for bookings, promotion, and trade.</p>
-            </div>
-            <div>
-              <div className="text-blue-500 font-bold mb-4 font-mono text-xs">04 // MISSION</div>
-              <h3 className="text-xl font-bold mb-2">Industrial Control</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">High-fidelity visualization of agent swarms and execution traces in real-time.</p>
-            </div>
+            {[
+              { num: '01', label: 'Intelligence', title: 'Tiered Sovereignty', desc: 'OpenRouter-powered inference with DeepSeek R1 and Llama 3.3. BYOK with zero markup.' },
+              { num: '02', label: 'Economy', title: 'Autonomous Splits', desc: 'Self-executing royalty splits and booking contracts via CDP wallets on Base.' },
+              { num: '03', label: 'Network', title: 'A2A Protocol', desc: 'Cryptographic agent-to-agent coordination for bookings, promotion, and trade.' },
+              { num: '04', label: 'Mission', title: 'Industrial Control', desc: 'High-fidelity visualization of agent swarms and execution traces in real-time.' },
+            ].map((f) => (
+              <div key={f.num}>
+                <div className="text-blue-500 text-[10px] uppercase tracking-widest mb-4">{f.num} // {f.label}</div>
+                <h3 className="text-sm font-bold uppercase tracking-wider mb-2">{f.title}</h3>
+                <p className="text-zinc-500 text-xs leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Powered By — clean text strip */}
-      <section className="border-y border-white/[0.04] bg-black">
-        <div className="mx-auto max-w-4xl px-4 py-10">
-          <p className="text-center text-[11px] font-medium tracking-[0.2em] uppercase text-gray-500 mb-6">
-            Powered by
-          </p>
-          <div className="flex items-center justify-center gap-x-10 gap-y-3 flex-wrap">
-            <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Vercel</a>
-            <span className="text-gray-800 hidden sm:inline">|</span>
-            <a href="https://render.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Render</a>
-            <span className="text-gray-800 hidden sm:inline">|</span>
-            <a href="https://base.org" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Base</a>
-            <span className="text-gray-800 hidden sm:inline">|</span>
-            <a href="https://coinbase.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Coinbase</a>
-            <span className="text-gray-800 hidden sm:inline">|</span>
-            <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">OpenRouter</a>
-            <span className="text-gray-800 hidden sm:inline">|</span>
-            <a href="https://mux.com" target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-gray-500 hover:text-white transition-colors duration-200">Mux</a>
+      {/* Powered By */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-6 py-10">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 text-center mb-6">Powered By</div>
+          <div className="flex items-center justify-center gap-8 flex-wrap">
+            {['Vercel', 'Render', 'Base', 'Coinbase', 'OpenRouter', 'Mux'].map((name) => (
+              <span key={name} className="text-zinc-600 text-xs uppercase tracking-widest hover:text-white transition-colors cursor-default">
+                {name}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing: Repriced for Profit */}
-      <section id="pricing" className="px-4 py-24 sm:px-6 lg:px-8 border-t border-white/5 scroll-mt-20">
-        <div className="mx-auto max-w-6xl text-center">
-          <h2 className="text-3xl font-black mb-4 tracking-tighter">ONE CREATIVE CREW, ONE BUSINESS MIND</h2>
-          <p className="text-gray-500 mb-4 max-w-xl mx-auto">Agentbot handles your fans. OpenClaw handles your inbox. Both run on Base, paid in USDC.</p>
-          
-          {/* Pricing Explanation */}
-          <div className="mb-12 p-6 bg-gray-900/50 border border-white/10 rounded-xl max-w-4xl mx-auto">
-            <div className="grid sm:grid-cols-3 gap-6 text-left">
-              <div>
-                <h4 className="text-green-400 font-bold text-sm mb-2 flex items-center gap-2">
-                  <span className="text-lg">🎵</span> AGENTBOT
-                </h4>
-                <p className="text-xs text-gray-500 mb-2">Creative Crew</p>
-                <ul className="text-sm text-gray-300 space-y-1">
-                  <li>• Fan engagement (Telegram/WhatsApp)</li>
-                  <li>• BlockDB queries for A&R</li>
-                  <li>• Base FM submissions</li>
-                  <li>• Visual artwork generation</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-blue-400 font-bold text-sm mb-2 flex items-center gap-2">
-                  <span className="text-lg">💼</span> OPENCLAW
-                </h4>
-                <p className="text-xs text-gray-500 mb-2">Business Operations</p>
-                <ul className="text-sm text-gray-300 space-y-1">
-                  <li>• Email inbox management</li>
-                  <li>• Contract/Rider analysis (PDF)</li>
-                  <li>• Web scraping (gig listings)</li>
-                  <li>• x402 USDC invoicing</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="text-orange-400 font-bold text-sm mb-2 flex items-center gap-2">
-                  <span className="text-lg">⚡</span> YOU PROVIDE
-                </h4>
-                <ul className="text-sm text-gray-300 space-y-1">
-                  <li>• Your own AI API key</li>
-                  <li>• OpenAI, Anthropic, Ollama</li>
-                  <li>• No markup — wholesale rates</li>
-                  <li>• Switch models anytime</li>
-                </ul>
-              </div>
+      {/* Pricing */}
+      <section id="pricing" className="border-t border-zinc-900 scroll-mt-20">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="max-w-2xl mb-16">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Pricing</div>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+              One Creative Crew,<br />
+              <span className="text-zinc-700">One Business Mind</span>
+            </h2>
+            <p className="text-zinc-500 text-sm mt-4 max-w-md">
+              Agentbot handles your fans. OpenClaw handles your inbox. Both run on Base, paid in USDC.
+            </p>
+          </div>
+
+          {/* What's included */}
+          <div className="grid sm:grid-cols-3 gap-8 mb-16 pb-16 border-b border-zinc-900">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Agentbot</div>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-3">Creative Crew</h4>
+              <ul className="space-y-1.5 text-xs text-zinc-500">
+                <li>Fan engagement (Telegram/WhatsApp)</li>
+                <li>BlockDB queries for A&R</li>
+                <li>Base FM submissions</li>
+                <li>Visual artwork generation</li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">OpenClaw</div>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-3">Business Operations</h4>
+              <ul className="space-y-1.5 text-xs text-zinc-500">
+                <li>Email inbox management</li>
+                <li>Contract/Rider analysis (PDF)</li>
+                <li>Web scraping (gig listings)</li>
+                <li>x402 USDC invoicing</li>
+              </ul>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">You Provide</div>
+              <h4 className="text-xs font-bold uppercase tracking-wider mb-3">Your Own Keys</h4>
+              <ul className="space-y-1.5 text-xs text-zinc-500">
+                <li>Your own AI API key</li>
+                <li>OpenAI, Anthropic, Ollama</li>
+                <li>No markup — wholesale rates</li>
+                <li>Switch models anytime</li>
+              </ul>
             </div>
           </div>
-          
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {/* Solo */}
-            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-green-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-300 group-hover:text-green-400 transition-colors">SOLO</h3>
-              <p className="mt-2 text-xs text-gray-600">Creative agents only. Chat with fans, generate artwork. No business automation.</p>
-              <p className="mt-4 text-4xl font-black">£29<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 1 Creative Agent thread</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> Fan engagement (Telegram)</li>
-                <li className="flex gap-2"><span className="text-green-500">✓</span> BlockDB queries for A&R</li>
-                <li className="flex gap-2"><span className="text-gray-600">✗</span> No OpenClaw business</li>
-              </ul>
-              <Link href="/api/stripe/checkout?plan=solo" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
-                SELECT
-              </Link>
-            </div>
 
-            {/* Collective */}
-            <div className="border-2 border-blue-500 rounded-2xl p-6 bg-blue-500/5 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-blue-500 text-black text-[10px] font-black px-3 py-1 uppercase tracking-tighter">POPULAR</div>
-              <h3 className="text-lg font-bold text-blue-400">COLLECTIVE</h3>
-              <p className="mt-2 text-xs text-gray-500">Creative crew + 1 OpenClaw seat (digital tour manager).</p>
-              <p className="mt-4 text-4xl font-black">£69<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-300 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 3 Creative Agent threads</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> 1 OpenClaw Business seat</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> Email Triage (50/day)</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> x402 USDC Invoicing</li>
-              </ul>
-              <Link href="/api/stripe/checkout?plan=collective" className="mt-6 block w-full rounded-xl bg-blue-500 py-3 text-center text-sm font-bold text-black hover:bg-blue-400 transition-colors">
-                SELECT
-              </Link>
-            </div>
-
-            {/* Label */}
-            <div className="border border-white/10 rounded-2xl p-6 bg-gray-900/30 hover:border-purple-500 transition-all group">
-              <h3 className="text-lg font-bold text-gray-300 group-hover:text-purple-400 transition-colors">LABEL</h3>
-              <p className="mt-2 text-xs text-gray-600">Full back office — 3 OpenClaw seats + 10 creative agents.</p>
-              <p className="mt-4 text-4xl font-black">£149<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> 10 Creative Agent threads</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> 3 OpenClaw Business seats</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> Multi-inbox (A&R@, Booking@)</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> White-label emails</li>
-              </ul>
-              <Link href="/api/stripe/checkout?plan=label" className="mt-6 block w-full rounded-xl bg-white py-3 text-center text-sm font-bold text-black hover:bg-gray-200 transition-colors">
-                SELECT
-              </Link>
-            </div>
-
-            {/* Network */}
-            <div className="border border-orange-500/50 rounded-2xl p-6 bg-orange-500/5 hover:border-orange-500 transition-all group">
-              <h3 className="text-lg font-bold text-orange-400 group-hover:text-orange-300 transition-colors">NETWORK</h3>
-              <p className="mt-2 text-xs text-gray-600">Agencies — resell the future. Unlimited everything.</p>
-              <p className="mt-4 text-4xl font-black">£499<span className="text-lg font-normal text-gray-600">/mo</span></p>
-              <ul className="mt-6 space-y-2 text-sm text-gray-500 text-left">
-                <li className="flex gap-2"><span className="text-green-500">✓</span> Unlimited Creative Agents</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> Unlimited OpenClaw seats</li>
-                <li className="flex gap-2"><span className="text-blue-500">✓</span> White-label (resell)</li>
-                <li className="flex gap-2"><span className="text-orange-500">✓</span> 99.9% SLA guarantee</li>
-              </ul>
-              <Link href="/api/stripe/checkout?plan=network" className="mt-6 block w-full rounded-xl bg-orange-500 py-3 text-center text-sm font-bold text-black hover:bg-orange-400 transition-colors">
-                SELECT
-              </Link>
-            </div>
+          {/* Plan Cards */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+            {[
+              { id: 'solo', name: 'Solo', price: '29', features: ['1 Creative Agent thread', 'Fan engagement (Telegram)', 'BlockDB queries for A&R'] },
+              { id: 'collective', name: 'Collective', price: '69', popular: true, features: ['3 Creative Agent threads', '1 OpenClaw Business seat', 'Email Triage (50/day)', 'x402 USDC Invoicing'] },
+              { id: 'label', name: 'Label', price: '149', features: ['10 Creative Agent threads', '3 OpenClaw Business seats', 'Multi-inbox (A&R@, Booking@)', 'White-label emails'] },
+              { id: 'network', name: 'Network', price: '499', features: ['Unlimited Creative Agents', 'Unlimited OpenClaw seats', 'White-label (resell)', '99.9% SLA guarantee'] },
+            ].map((plan) => (
+              <div key={plan.id} className="bg-black p-8 flex flex-col">
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
+                  {plan.popular && (
+                    <span className="text-[9px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-2 py-0.5">Popular</span>
+                  )}
+                </div>
+                <div className="text-3xl font-bold tracking-tighter mb-6">
+                  £{plan.price}<span className="text-sm font-normal text-zinc-600">/mo</span>
+                </div>
+                <ul className="space-y-2 text-xs text-zinc-500 mb-8 flex-1">
+                  {plan.features.map((f, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="text-zinc-600">—</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={`/api/stripe/checkout?plan=${plan.id}`}
+                  className={`block w-full py-3 text-center text-xs font-bold uppercase tracking-widest transition-colors ${
+                    plan.popular
+                      ? 'bg-white text-black hover:bg-zinc-200'
+                      : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+                  }`}
+                >
+                  Select
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Token Info */}
-      <section className="py-24 border-t border-white/5 bg-[#050505]">
-        <div className="mx-auto max-w-2xl px-4 text-center">
-          <div className="mb-12">
-            <h2 className="text-2xl font-black tracking-tighter mb-2 uppercase">Protocol Liquidity</h2>
-            <p className="text-gray-500 text-sm">The $AGENTBOT treasury fuels the autonomous economy.</p>
-          </div>
-          <div className="p-8 rounded-3xl bg-gray-900/50 border border-white/10 shadow-2xl">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
-              <div className="flex items-center gap-4 text-left">
-                <span className="w-16 h-16 rounded-full bg-white flex items-center justify-center text-4xl" aria-hidden="true">🦞</span>
+      {/* Token */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="flex flex-col md:flex-row gap-16 items-start">
+            <div className="flex-1">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Protocol</div>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase mb-4">
+                Protocol<br />
+                <span className="text-zinc-700">Liquidity</span>
+              </h2>
+              <p className="text-zinc-500 text-sm max-w-md">
+                The $AGENTBOT treasury fuels the autonomous economy.
+              </p>
+            </div>
+
+            <div className="flex-1 w-full max-w-md border border-zinc-900 p-8 space-y-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-black text-2xl tracking-tighter">AGENTBOT</div>
-                  <div className="text-[10px] text-gray-500 font-bold tracking-widest uppercase">/WETH ON BASE</div>
+                  <div className="font-bold text-lg tracking-tighter uppercase">Agentbot</div>
+                  <div className="text-[10px] text-zinc-600 uppercase tracking-widest">/WETH on Base</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-bold tracking-tighter">$0.0000002</div>
+                  <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Market Cap: $20K</div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-black font-mono tracking-tighter">$0.0000002</div>
-                <div className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Market Cap: $20K</div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <a href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3" target="_blank" className="border border-zinc-800 py-3 text-center text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">
+                  View Scanner
+                </a>
+                <a href="https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc" target="_blank" className="bg-white text-black py-3 text-center text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+                  Buy $AGENTBOT
+                </a>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <a href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3" target="_blank" className="bg-black/50 border border-white/5 rounded-xl p-4 text-[10px] font-bold text-gray-300 hover:border-white/20 transition-all">VIEW SCANNER</a>
-              <a href="https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc" target="_blank" className="bg-white text-black rounded-xl p-4 text-[10px] font-bold hover:bg-gray-200 transition-all">BUY $AGENTBOT</a>
-            </div>
-            <div className="pt-6 border-t border-white/5 text-[10px] font-mono text-gray-600 truncate">
-              0x986b41C76aB8B7350079613340ee692773B34bA3
+
+              <div className="pt-4 border-t border-zinc-900 text-[10px] text-zinc-700 truncate">
+                0x986b41C76aB8B7350079613340ee692773B34bA3
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-12 bg-black">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">🦞</span>
-                <span className="font-black tracking-tighter text-xl">AGENTBOT</span>
-              </div>
-              <p className="text-gray-500 text-sm mb-4">
-                Zero human company run by Atlas_baseFM. The underground infrastructure for autonomous agent fleets.
-              </p>
-              <div className="text-xs text-gray-600">
-                © 2026 BY RAVECULTURE
-              </div>
-            </div>
-            
-            <div className="text-right">
-              <div className="text-xs font-bold text-green-400 tracking-widest mb-2">SUPPORT THE MISSION</div>
-              <div className="text-xs text-gray-500 mb-2">Send ETH or tokens to:</div>
-              <code className="text-green-400 bg-gray-900 px-3 py-2 rounded font-mono text-xs break-all inline-block">
-                0xd8fd0e1dce89beaab924ac68098ddb17613db56f
-              </code>
-              <div className="mt-3 flex gap-4 justify-end text-xs">
-                <a href="/token" className="text-blue-400 hover:underline">$AGENTBOT</a>
-                <a href="/basefm" className="text-purple-400 hover:underline">$BASEFM</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Footer is handled by layout */}
     </main>
   )
 }

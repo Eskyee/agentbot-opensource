@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 
@@ -30,20 +30,16 @@ export default function Navbar() {
   const isLoggedIn = mounted && session;
   const isDashboard = pathname.startsWith('/dashboard');
 
-  // Hide top nav completely on dashboard -- sidebar handles navigation
   if (isDashboard && isLoggedIn) return null;
 
   return (
     <>
-      <nav className="w-full flex items-center justify-between px-4 lg:px-6 h-14 fixed top-0 z-50 bg-black/90 backdrop-blur-md border-b border-white/[0.06]">
-        {/* Left: Logo */}
-        <Link href="/" className="flex items-center gap-2.5" onClick={closeMenu}>
-          <span className="text-xl">🦞</span>
-          <span className="font-bold tracking-tight text-[15px]">Agentbot</span>
+      <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-900 font-mono">
+        <Link href="/" className="flex items-center gap-2" onClick={closeMenu}>
+          <span className="text-sm font-bold tracking-tight">Agentbot</span>
         </Link>
 
-        {/* Center: Primary nav (desktop) */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-6">
           {isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
@@ -63,54 +59,51 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Right: Auth actions (desktop) */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-4">
           {!mounted || status === "loading" ? (
             <div className="w-16 h-8" />
           ) : isLoggedIn ? (
             <>
               {isAdmin && <NavLink href="/admin" current={pathname}>Admin</NavLink>}
-              <span className="text-sm text-gray-400 truncate max-w-[120px]">{displayName}</span>
+              <span className="text-[11px] text-zinc-500 truncate max-w-[120px] uppercase tracking-wider">{displayName}</span>
               <button
                 onClick={() => signOut()}
-                className="text-sm text-gray-400 hover:text-white transition-colors"
+                className="text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
               >
                 Log out
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="text-sm text-gray-300 hover:text-white transition-colors px-3 py-1.5">
+              <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
                 Log in
               </Link>
-              <Link href="/signup" className="text-sm bg-white text-black px-4 py-1.5 font-semibold rounded-lg hover:bg-gray-200 transition-colors">
+              <Link href="/signup" className="text-[11px] bg-white text-black px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
                 Get Started
               </Link>
             </>
           )}
         </div>
 
-        {/* Mobile hamburger */}
         <button
-          className="md:hidden p-2 -mr-2 rounded-lg touch-manipulation"
+          className="md:hidden p-2 -mr-2"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
         >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {menuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
             )}
           </svg>
         </button>
       </nav>
 
-      {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden fixed inset-x-0 bottom-0 bg-black z-[60] overflow-y-auto" style={{ top: 56 }}>
-          <div className="flex flex-col p-4 gap-0.5">
+        <div className="md:hidden fixed inset-x-0 bottom-0 bg-black z-[60] overflow-y-auto font-mono" style={{ top: 56 }}>
+          <div className="flex flex-col p-6 gap-1">
             {isLoggedIn ? (
               <>
                 <MobileSection label="Navigate">
@@ -120,13 +113,13 @@ export default function Navbar() {
                   <MobileLink href="https://raveculture.mintlify.app" onClick={closeMenu}>Docs</MobileLink>
                 </MobileSection>
                 <MobileSection label="Account">
-                  {displayName && <div className="text-sm text-gray-500 px-3 py-2">{displayName}</div>}
+                  {displayName && <div className="text-[10px] text-zinc-600 px-3 py-2 uppercase tracking-widest">{displayName}</div>}
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                   {isAdmin && <MobileLink href="/admin" onClick={closeMenu}>Admin</MobileLink>}
                   <button
                     onClick={() => { closeMenu(); signOut(); }}
-                    className="text-left text-base py-2.5 px-3 text-gray-400 hover:text-white rounded-lg hover:bg-gray-900 w-full"
+                    className="text-left text-xs py-2.5 px-3 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
                   >
                     Log out
                   </button>
@@ -149,12 +142,12 @@ export default function Navbar() {
                   <MobileLink href="/basefm" onClick={closeMenu}>$BASEFM</MobileLink>
                   <MobileLink href="/partner" onClick={closeMenu}>Partner</MobileLink>
                 </MobileSection>
-                <div className="border-t border-gray-800 mt-3 pt-4 flex flex-col gap-2">
-                  <Link href="/login" onClick={closeMenu} className="block text-center py-3 px-4 text-white rounded-xl border border-gray-700 hover:bg-gray-900 font-medium">
+                <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
+                  <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
                     Log in
                   </Link>
-                  <Link href="/signup" onClick={closeMenu} className="block text-center py-3 px-4 bg-white text-black rounded-xl font-semibold hover:bg-gray-200">
-                    Get Started Free
+                  <Link href="/signup" onClick={closeMenu} className="block text-center py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+                    Get Started
                   </Link>
                 </div>
               </>
@@ -173,8 +166,8 @@ function NavLink({ href, current, children }: { href: string; current: string; c
     <Link
       href={href}
       {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-      className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
-        isActive ? 'text-white bg-white/[0.08]' : 'text-gray-400 hover:text-white hover:bg-white/[0.04]'
+      className={`text-[11px] uppercase tracking-widest transition-colors ${
+        isActive ? 'text-white' : 'text-zinc-500 hover:text-white'
       }`}
     >
       {children}
@@ -184,8 +177,8 @@ function NavLink({ href, current, children }: { href: string; current: string; c
 
 function MobileSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-gray-800 first:border-0 mt-2 first:mt-0 pt-3 first:pt-0">
-      <p className="text-[11px] text-gray-600 px-3 pb-1 uppercase tracking-wider font-medium">{label}</p>
+    <div className="border-t border-zinc-900 first:border-0 mt-3 first:mt-0 pt-4 first:pt-0">
+      <p className="text-[10px] text-zinc-700 px-3 pb-2 uppercase tracking-widest">{label}</p>
       {children}
     </div>
   );
@@ -193,7 +186,7 @@ function MobileSection({ label, children }: { label: string; children: React.Rea
 
 function MobileLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
   return (
-    <Link href={href} onClick={onClick} className="block text-base py-2.5 px-3 text-gray-300 hover:text-white rounded-lg hover:bg-gray-900 active:bg-gray-800">
+    <Link href={href} onClick={onClick} className="block text-xs py-2.5 px-3 text-zinc-400 hover:text-white uppercase tracking-wider transition-colors">
       {children}
     </Link>
   );
