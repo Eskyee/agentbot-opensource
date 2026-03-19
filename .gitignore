@@ -11,22 +11,35 @@ dist/
 agentbot-backend/dist/
 agentbot-worker/dist/
 
-# Environment files
+# Environment files (CRITICAL - never commit secrets)
 .env
 .env.local
 .env.*.local
 .env.prodcheck
 .env.production
 .env.vercel
+.env.example
+.env.security
+.env.frontend
+.env.development.local
+web/.env
+web/.env.local
 web/.env.prodcheck
 web/.env.production
 web/.env.vercel
-**/.env.prodcheck
+web/.env.example
+web/.env.recoverycheck
+agentbot-backend/.env
+agentbot-backend/.env.local
+**/.env
+**/.env.*
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.log
+logs/
 
 # OS files
 .DS_Store
@@ -35,14 +48,34 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Docker
 docker-compose.override.yml
+*.dockerignore
 
 # Certificates
 certs/
 
 # Data
 data/
+*.db
+*.sqlite
+
+# Vercel
 .vercel
-.env*.local
+
+# Secrets and keys
+*.pem
+*.key
+credentials.json
+service-account-key.json
+
+# Claude worktrees (contains secrets)
+.claude/worktrees/*/
+
+# Test results
+test-results/
+playwright-report/
+playwright-results/
