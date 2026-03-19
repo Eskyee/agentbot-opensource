@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd web && npm install
+          cd ../agentbot-backend && npm install
+
+      - name: Lint
+        run: |
+          cd web && npm run lint
+          cd ../agentbot-backend && npm run lint
+
+      - name: Build
+        run: |
+          cd web && npm run build
+          cd ../agentbot-backend && npm run build
