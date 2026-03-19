@@ -1,0 +1,23 @@
+# Code Owners - Agentbot
+
+# Default owner for everything
+*       @raveculture
+
+# Web application
+/web/   @raveculture @agentbot/web-team
+
+# Backend API
+/agentbot-backend/   @raveculture @agentbot/backend-team
+
+# Security-sensitive files
+/.github/workflows/   @raveculture
+**/auth*             @raveculture
+**/payment*          @raveculture
+**/stripe*           @raveculture
+
+# Documentation
+/docs/        @raveculture @agentbot/docs-team
+/mintlify*/   @raveculture
+
+# Skills
+/skills/      @raveculture @agentbot/ai-team
