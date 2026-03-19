@@ -5,11 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Eskyee/agentbot-opensource)
 
 Deploy autonomous AI agents in 60 seconds.
 
-<img src="https://github.com/Eskyee/agentbot-opensource/blob/main/web/public/opengraph-image.png" width="600" alt="Agentbot" />
+<img src="https://github.com/Eskyee/agentbot-opensource/raw/main/web/public/og-image.png" width="600" alt="Agentbot" />
 
 **[Website](https://agentbot.raveculture.xyz)** · **[Documentation](https://raveculture.mintlify.app)** · **[Discord](https://discord.gg/eskyee)** · **[GitHub](https://github.com/Eskyee/agentbot-opensource)**
 
