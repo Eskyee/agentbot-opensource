@@ -1,8 +1,0 @@
-{
-  "agentId": "test-quick",
-  "createdAt": "2026-02-26T15:36:27.611Z",
-  "plan": "free",
-  "aiProvider": "openrouter",
-  "port": 19006,
-  "subdomain": "test-quick.agents.localhost"
-}

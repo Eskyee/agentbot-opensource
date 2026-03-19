@@ -1,8 +1,0 @@
-{
-  "agentId": "64d4ef3e8ee82cbe",
-  "createdAt": "2026-02-19T05:27:31.638Z",
-  "plan": "free",
-  "aiProvider": "openrouter",
-  "port": 19003,
-  "subdomain": "64d4ef3e8ee82cbe.agents.localhost"
-}

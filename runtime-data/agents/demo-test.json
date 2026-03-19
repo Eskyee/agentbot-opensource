@@ -1,8 +1,0 @@
-{
-  "agentId": "demo-test",
-  "createdAt": "2026-02-26T15:37:22.051Z",
-  "plan": "Free Trial",
-  "aiProvider": "openrouter",
-  "port": 19007,
-  "subdomain": "demo-test.agents.localhost"
-}

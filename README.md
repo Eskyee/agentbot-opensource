@@ -7,7 +7,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
-Deploy autonomous AI agents in 60 seconds. Open source platform for building, deploying, and scaling AI agents.
+Deploy autonomous AI agents in 60 seconds.
 
 **[Website](https://agentbot.raveculture.xyz)** · **[Documentation](https://raveculture.mintlify.app)** · **[Discord](https://discord.gg/eskyee)** · **[GitHub](https://github.com/raveculture/agentbot)**
 
@@ -23,26 +23,12 @@ Deploy autonomous AI agents in 60 seconds. Open source platform for building, de
 
 ## Quick Start
 
-### 1. Clone the repo
-
 ```bash
 git clone https://github.com/raveculture/agentbot.git
 cd agentbot
-```
-
-### 2. Set up environment
-
-```bash
-# Copy example env
 cp .env.example .env
+# Edit .env with your API keys
 
-# Edit with your API keys
-nano .env
-```
-
-### 3. Start locally
-
-```bash
 # Frontend
 cd web && npm install && npm run dev
 
@@ -52,128 +38,319 @@ cd agentbot-backend && npm install && npm run dev
 
 Visit http://localhost:3000
 
-### 4. Deploy your first agent
+## Architecture
 
-1. Go to http://localhost:3000/onboard
-2. Connect Telegram bot (get token from @BotFather)
-3. Add your OpenRouter API key (free at openrouter.ai)
-4. Click Deploy!
+### High-Level Overview
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         USER                                   │
+│                  (Telegram / Discord / WhatsApp)             │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     AGENTBOT PLATFORM                         │
+│                                                                  │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐  │
+│  │   Web UI   │    │  Dashboard │    │   Onboarding Flow   │  │
+│  │ (Next.js)  │    │  (Next.js) │    │     (Next.js)      │  │
+│  └──────┬──────┘    └──────┬──────┘    └──────────┬──────────┘  │
+│         │                   │                      │             │
+│         └──────────────────┼──────────────────────┘             │
+│                            │                                    │
+│                    ┌───────▼───────┐                          │
+│                    │  REST API    │                          │
+│                    │ (Express.js)  │                          │
+│                    └───────┬───────┘                          │
+└────────────────────────────┼──────────────────────────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+         ▼                   ▼                   ▼
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│  PostgreSQL     │ │    OpenClaw    │ │   Skills &     │
+│   (Neon)       │ │  Container     │ │   Tools        │
+│                 │ │  (Docker)      │ │   Registry     │
+└─────────────────┘ └─────────────────┘ └─────────────────┘
+```
+
+### Agent Provisioning Flow
+
+```
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  User clicks │────▶│  Validate    │────▶│  Create      │────▶│  Pull       │
+│  "Deploy"    │     │  Telegram    │     │  Docker      │     │  OpenClaw   │
+│              │     │  Token       │     │  Container   │     │  Image      │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+                                                                        │
+                                                                        ▼
+┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+│  User chats  │◀────│  Webhook    │◀────│  Agent       │◀────│  Configure  │
+│  with Agent  │     │  Receives   │     │  Running     │     │  AI Model   │
+└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+```
+
+### Message Flow
+
+```
+┌─────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│ Telegram │────▶│   Webhook   │────▶│   OpenClaw  │────▶│    AI       │
+│  User   │     │   Handler   │     │   Container │     │   Provider  │
+└─────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+                                         │                    │
+                                         ▼                    ▼
+┌─────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│ Telegram │◀────│   Format   │◀────│   Process   │<────│   Response │
+│  Bot    │     │   Response │     │   Tool Use  │     │   (LLM)    │
+└─────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+```
+
+### Container Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  DOCKER CONTAINER                          │
+│                   (Per Agent)                              │
+│                                                             │
+│  ┌───────────────────────────────────────────────────┐   │
+│  │                  OPENCLAW                          │   │
+│  │                                                    │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────────────┐  │   │
+│  │  │ Message │  │  Agent  │  │    Skills      │  │   │
+│  │  │ Handler │─▶│  Core   │─▶│  (web-search,  │  │   │
+│  │  └─────────┘  └────┬────┘  │   file-handler, │  │   │
+│  │                    │        │   code-runner)   │  │   │
+│  │                    ▼        └─────────────────┘  │   │
+│  │              ┌─────────┐                        │   │
+│  │              │   AI    │◀─────── API Keys      │   │
+│  │              │ Provider│                        │   │
+│  │              └─────────┘                        │   │
+│  └────────────────────────────────────────────────┘   │
+│                                                             │
+│  Mounted Volume: /home/node/.openclaw                     │
+│  - agents/       (agent configs)                         │
+│  - workspace/    (files)                                  │
+│  - logs/         (runtime logs)                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Supported Channels
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    CHANNELS                               │
+├──────────────┬──────────────┬──────────────┬──────────────┤
+│   📱         │    🎮       │    💬       │    🌐        │
+│  Telegram    │   Discord   │  WhatsApp   │   Webhooks   │
+├──────────────┼──────────────┼──────────────┼──────────────┤
+│ @BotFather  │ Dev Portal  │  Business   │   REST      │
+│  Bot Token  │  Bot Token  │    API      │   API       │
+└──────────────┴──────────────┴──────────────┴──────────────┘
+```
+
+### AI Providers
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    AI PROVIDERS                          │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│   │  OpenRouter │  │  Anthropic  │  │   OpenAI    │   │
+│   │  (Default)  │  │  (Claude)   │  │   (GPT-4)   │   │
+│   └─────────────┘  └─────────────┘  └─────────────┘   │
+│                                                          │
+│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
+│   │   Google    │  │    Groq     │  │   Local    │   │
+│   │   Gemini    │  │   (Fast)    │  │   Ollama    │   │
+│   └─────────────┘  └─────────────┘  └─────────────┘   │
+│                                                          │
+│   BYOK: Bring Your Own API Key                         │
+└──────────────────────────────────────────────────────────┘
+```
+
+## Marketplace Agents
+
+Agentbot includes Gordon-Approved production agents tuned for high-performance crew operations.
+
+### Core Agents
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│                              MARKETPLACE AGENTS                                     │
+├─────────────────┬─────────────────┬─────────────────┬─────────────────────────────┤
+│  THE-STRATEGIST │  CREW-MANAGER   │  SOUND-SYSTEM   │  THE-DEVELOPER             │
+│  ┌───────────┐  │  ┌───────────┐  │  ┌───────────┐  │  ┌───────────────────┐    │
+│  │ 🤖 Mission│  │  │ 💰 Ops &  │  │  │ 🔊 Auto   │  │  │ 💻 Logic &        │    │
+│  │ Planning  │  │  │ Finance   │  │  │ Feedback  │  │  │ Scripting         │    │
+│  └─────┬─────┘  │  └─────┬─────┘  │  └─────┬─────┘  │  └─────────┬─────────┘    │
+│        │         │        │         │        │         │           │             │
+│  Brain:       │  Brain:       │  Brain:       │  Brain:               │             │
+│  DeepSeek R1  │  Llama 3.3    │  Mistral 7B   │  Qwen 2.5             │             │
+│        │         │        │         │        │         │           │             │
+│  Tier:        │  Tier:        │  Tier:        │  Tier:                 │             │
+│  LABEL ●      │  UNDERGROUND ●│  FREE ●       │  COLLECTIVE ●          │             │
+└─────────────────┴─────────────────┴─────────────────┴─────────────────────────────┘
+
+SKILLS:
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ MUSIC SKILLS                        │ EVENT SKILLS                               │
+├─────────────────────────────────────┼────────────────────────────────────────────┤
+│ 🎨 Visual Synthesizer               │ 🎫 Event Ticketing (x402 USDC)            │
+│    Generate artwork w/ Stable Diff  │    Sell tickets with Base payments         │
+│                                     │                                            │
+│ 🔍 Track Archaeologist               │ 📅 Event Scheduler                        │
+│    Deep catalog, sample clearing   │    Multi-channel (TG, DC, WA, Email)     │
+│                                     │                                            │
+│ 🎧 Setlist Oracle                   │ 🏠 Venue Finder                           │
+│    BPM/Key analysis, Camelot mix   │    Global venue booking                   │
+│                                     │                                            │
+│ 👥 Groupie Manager                  │ 🎪 Festival Finder                       │
+│    Fan segmentation, merch drops    │    Global festival discovery               │
+│                                     │                                            │
+│ 💰 Royalty Tracker                  │                                            │
+│    Streaming royalties, splits     │                                            │
+│                                     │                                            │
+│ 📩 Demo Submitter                   │                                            │
+│    AI-curated demo submissions      │                                            │
+└─────────────────────────────────────┴────────────────────────────────────────────┘
+```
+
+### Agent Interaction Flow
+
+```
+                    ┌─────────────────┐
+                    │   User Message  │
+                    │ (Telegram/Discord/
+                    │  WhatsApp/Web)  │
+                    └────────┬────────┘
+                             │
+                             ▼
+              ┌──────────────────────────────┐
+              │    Message Router           │
+              │  (Channel → Agent Mapping)  │
+              └──────────────┬──────────────┘
+                             │
+              ┌──────────────┼──────────────┐
+              │              │              │
+              ▼              ▼              ▼
+       ┌───────────┐  ┌───────────┐  ┌───────────┐
+       │ STRATEGIST│  │  CREW-    │  │  SOUND-  │
+       │ (Mission) │  │ MANAGER   │  │  SYSTEM  │
+       └─────┬─────┘  └─────┬─────┘  └─────┬─────┘
+             │              │              │
+             └──────────────┼──────────────┘
+                            │
+                            ▼
+              ┌──────────────────────────────┐
+              │    Skills Executor           │
+              │                             │
+              │  ┌────────┐ ┌────────┐ ┌───┐ │
+              │  │ Music │ │ Events │ │ A │ │
+              │  │Skills │ │Skills  │ │I  │ │
+              │  └────────┘ └────────┘ └───┘ │
+              └──────────────┬──────────────┘
+                             │
+                             ▼
+              ┌──────────────────────────────┐
+              │    AI Provider (LLM)         │
+              │   OpenRouter / Anthropic /   │
+              │   OpenAI / Gemini / Groq     │
+              └──────────────┬──────────────┘
+                             │
+                             ▼
+                    ┌─────────────────┐
+                    │  Response to    │
+                    │  User Channel  │
+                    └─────────────────┘
+```
 
 ## Features
 
-### 🤖 AI Agents
 - Multiple AI providers (OpenRouter, Anthropic, OpenAI, Gemini, Groq)
-- Custom system prompts
-- Conversation memory
-- Tool execution
-
-### 💬 Channels
-- **Telegram** - Bot tokens from @BotFather
-- **Discord** - Bot tokens from Discord Developer Portal
-- **WhatsApp** - Business API credentials
-
-### 🛠️ Skills
-- Web search
-- File handling
-- Code execution
-- Image analysis
-- API calls
-
-### 📊 Dashboard
-- Real-time agent status
-- Usage analytics
-- Conversation history
-- API key management
-
-## Architecture
-
-```
-┌─────────────┐     ┌──────────────────┐     ┌─────────────┐
-│   Telegram  │     │   Agentbot API   │     │   OpenClaw  │
-│  Discord    │────▶│   (Next.js)     │────▶│  Container   │
-│  WhatsApp   │     │   (Express)      │     │   (Docker)   │
-└─────────────┘     └──────────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌─────────────┐
-                    │  PostgreSQL │
-                    │    Neon     │
-                    └─────────────┘
-```
-
-## Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes |
-| `NEXTAUTH_SECRET` | Auth secret (generate with `openssl rand -base64 32`) | Yes |
-| `OPENROUTER_API_KEY` | Your OpenRouter key for AI | No |
-| `TELEGRAM_BOT_TOKEN` | Telegram bot token | No |
-| `DISCORD_BOT_TOKEN` | Discord bot token | No |
-
-See `.env.example` for full list.
+- Telegram, Discord, WhatsApp channels
+- Web search, file handling, code execution
+- Real-time dashboard
 
 ## Deployment
 
-### Vercel (Recommended)
-
+**Vercel:**
 ```bash
-cd web
-vercel --prod
+cd web && vercel --prod
 ```
 
-### Docker
-
+**Docker:**
 ```bash
 docker-compose up -d
 ```
 
-### Render / Railway
+## For Developers & AI Agents
 
-1. Push to GitHub
-2. Connect repo to Render/Railway
-3. Set environment variables
-4. Deploy
+Agentbot is built for extensibility. Developers and AI agents (Claude Code, Codex, OpenClaw) can contribute:
 
-## Contributing
+### Building New Skills
 
-Contributions welcome! Please read our [Contributing Guide](CONTRIBUTING.md).
-
-```bash
-# Fork the repo
-# Create a feature branch
-# Make your changes
-# Submit a PR
+```typescript
+// skills/my-skill.ts
+export const skill = {
+  name: 'my-skill',
+  description: 'What my skill does',
+  parameters: {
+    input: z.string(),
+    options: z.object({}).optional()
+  },
+  execute: async (input, options, context) => {
+    // Your logic here
+    return { result: '...' }
+  }
+}
 ```
 
-## Community
+### Adding New Agents
 
-- [Discord](https://discord.gg/eskyee) - Get help and connect with other users
-- [GitHub Issues](https://github.com/raveculture/agentbot/issues) - Report bugs and request features
-- [Documentation](https://raveculture.mintlify.app) - Full docs
+```typescript
+// Define agent configuration
+const agent = {
+  name: 'my-agent',
+  brain: 'llama-3.3-70b',
+  skills: ['web-search', 'my-skill'],
+  systemPrompt: 'You are a helpful agent...'
+}
+```
 
-## Roadmap
+### Claude Code Integration
 
-- [ ] Agent swarms (multiple agents working together)
-- [ ] Voice channels (Discord voice, Telegram voice)
-- [ ] More skill integrations
-- [ ] Web dashboard for agent configuration
-- [ ] Team collaboration features
+```bash
+# Use Claude Code skills for local development
+claude --prompt "Help me build a new skill for Agentbot"
+```
+
+### OpenClaw Builders
+
+```bash
+# Clone and extend OpenClaw
+git clone https://github.com/raveculture/openclaw.git
+cd openclaw
+# Add your custom tools
+# Deploy as Agentbot agent
+```
+
+## Project Structure
+
+```
+agentbot/
+├── web/                    # Next.js frontend
+│   ├── app/               # App router pages
+│   ├── components/       # React components  
+│   └── lib/              # Utilities
+├── agentbot-backend/      # Express API server
+│   └── src/
+│       ├── routes/       # API endpoints
+│       └── services/     # Business logic
+└── skills/               # Claude Code skills
+```
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Acknowledgments
-
-- [OpenClaw](https://github.com/openclaw/agentbot) - The core agent framework
-- [Next.js](https://nextjs.org) - Frontend framework
-- [Docker](https://docker.com) - Container runtime
-
----
-
-<div align="center">
-
-Built with ⚡ on [Base](https://base.org)
-
-</div>
+MIT - see [LICENSE](LICENSE)

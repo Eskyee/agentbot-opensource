@@ -1,8 +1,0 @@
-{
-  "agentId": "test-local",
-  "createdAt": "2026-02-26T15:35:33.502Z",
-  "plan": "3-day Free Trial",
-  "aiProvider": "openrouter",
-  "port": 19005,
-  "subdomain": "test-local.agents.localhost"
-}

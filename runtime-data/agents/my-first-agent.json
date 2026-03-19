@@ -1,8 +1,0 @@
-{
-  "agentId": "my-first-agent",
-  "createdAt": "2026-02-26T15:38:07.387Z",
-  "plan": "Free Trial",
-  "aiProvider": "openrouter",
-  "port": 19008,
-  "subdomain": "my-first-agent.agents.localhost"
-}
