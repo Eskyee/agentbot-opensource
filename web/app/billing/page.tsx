@@ -58,6 +58,7 @@ export default function BillingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [currentPlan, setCurrentPlan] = useState('underground')
+  const [subscriptionStatus, setSubscriptionStatus] = useState('inactive')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -72,10 +73,11 @@ export default function BillingPage() {
     const fetchBillingData = async () => {
       if (!session?.user?.id) return
       try {
-        const res = await fetch(`/api/instance/${session.user.id}`)
+        const res = await fetch(`/api/billing`)
         if (res.ok) {
           const data = await res.json()
           setCurrentPlan(data.plan || 'underground')
+          setSubscriptionStatus(data.subscriptionStatus || 'inactive')
         }
       } catch (error) {
         console.error('Failed to fetch billing data:', error)
@@ -111,6 +113,57 @@ export default function BillingPage() {
       price: 199,
       priceId: 'label',
       features: ['Priority A2A Routing', '24/7 Signal Guard', 'White-glove staging', 'Custom integrations'],
+    },
+  ]
+
+  const addons = [
+    {
+      id: 'audit-logs',
+      name: 'Audit Logs',
+      description: 'Full traceability of every agent action & decision',
+      price: 199,
+      priceId: 'price_audit_logs',
+      icon: '🔐',
+    },
+    {
+      id: 'slack',
+      name: 'Slack Integration',
+      description: 'Agents work inside your Slack workspace',
+      price: 149,
+      priceId: 'price_slack_integration',
+      icon: '💬',
+    },
+    {
+      id: 'salesforce',
+      name: 'Salesforce Connector',
+      description: 'Sync leads, contacts, and opportunities automatically',
+      price: 349,
+      priceId: 'price_salesforce_connector',
+      icon: '☁️',
+    },
+    {
+      id: 'api-access',
+      name: 'API Access',
+      description: 'Programmatic access to your agents via REST API',
+      price: 249,
+      priceId: 'price_api_access',
+      icon: '🔌',
+    },
+    {
+      id: 'custom-integration',
+      name: 'Custom Integration',
+      description: 'We build a custom connector for your tools',
+      price: 499,
+      priceId: 'price_custom_integration',
+      icon: '🎯',
+    },
+    {
+      id: 'dedicated-manager',
+      name: 'Dedicated Account Manager',
+      description: 'Priority support & personalized onboarding',
+      price: 399,
+      priceId: 'price_dedicated_manager',
+      icon: '👤',
     },
   ]
 
@@ -244,11 +297,14 @@ export default function BillingPage() {
                        )}
                        <div className="flex items-center justify-between">
                          <div>
-                           <div className="flex items-center gap-2">
-                             <h3 className="font-medium text-base">{plan.name}</h3>
-                             {currentPlan === plan.id && (
-                               <span className="text-xs bg-green-500/20 text-green-400 px-1 py-0.5 rounded">Current</span>
-                             )}
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium text-base">{plan.name}</h3>
+                              {currentPlan === plan.id && subscriptionStatus === 'active' && (
+                                <span className="text-xs bg-green-500/20 text-green-400 px-1 py-0.5 rounded">Current</span>
+                              )}
+                              {currentPlan === plan.id && subscriptionStatus !== 'active' && (
+                                <span className="text-xs bg-yellow-500/20 text-yellow-400 px-1 py-0.5 rounded">Unpaid</span>
+                              )}
                            </div>
                            <div className="text-sm text-gray-400">{plan.specs}</div>
                            <div className="text-xs text-gray-500 mt-1">
@@ -261,15 +317,23 @@ export default function BillingPage() {
                              <option>2</option>
                              <option>3</option>
                            </select>
-                           <button 
-                             onClick={() => buyPlan(plan.priceId)}
-                             className={`w-full mt-2 rounded-lg px-4 py-2 font-medium ${
-                               currentPlan === plan.id 
-                                 ? 'bg-gray-800 text-gray-400' 
-                                 : 'bg-white hover:bg-gray-200 text-black'
-                             }`}>
-                             {currentPlan === plan.id ? 'Current' : 'Buy'}
-                           </button>
+                            <button 
+                              onClick={() => {
+                                if (subscriptionStatus !== 'active') {
+                                  router.push('/pricing')
+                                } else if (currentPlan === plan.id) {
+                                  return // Already on current plan
+                                } else {
+                                  buyPlan(plan.priceId)
+                                }
+                              }}
+                              className={`w-full mt-2 rounded-lg px-4 py-2 font-medium ${
+                                currentPlan === plan.id && subscriptionStatus === 'active'
+                                  ? 'bg-gray-800 text-gray-400' 
+                                  : 'bg-white hover:bg-gray-200 text-black'
+                              }`}>
+                              {currentPlan === plan.id && subscriptionStatus === 'active' ? 'Current' : subscriptionStatus !== 'active' ? 'Upgrade' : 'Buy'}
+                            </button>
                          </div>
                        </div>
                        <div className="flex gap-2 mt-2">
@@ -373,11 +437,72 @@ export default function BillingPage() {
                         <li>✓ 24/7 Priority support & SLA guarantee</li>
                         <li>✓ Mission Control dashboard & analytics</li>
                       </ul>
-                      <p className="text-xs text-gray-500 mb-4">Matches NemoClaw Enterprise spec — but we manage everything for you</p>
-                      <button className="w-full rounded bg-purple-600 py-3 text-sm font-bold hover:bg-purple-500">
-                        Contact Sales
-                      </button>
+                       <p className="text-xs text-gray-500 mb-4">Matches NemoClaw Enterprise spec — but we manage everything for you</p>
+                       <button className="w-full rounded bg-purple-600 py-3 text-sm font-bold hover:bg-purple-500">
+                         Contact Sales
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+
+                {/* Enterprise Add-ons */}
+                <div className="mt-8">
+                  <h2 className="text-xl font-bold mb-4">Enterprise Add-ons</h2>
+                  <p className="text-gray-400 text-sm mb-6">Supercharge your agents with enterprise integrations</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {addons.map((addon) => (
+                      <div key={addon.id} className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <span className="text-2xl">{addon.icon}</span>
+                          <div>
+                            <h3 className="font-medium">{addon.name}</h3>
+                            <p className="text-xs text-gray-400">{addon.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-4">
+                          <div className="text-lg font-bold">£{addon.price}/mo</div>
+                          <button 
+                            onClick={() => buyPlan(addon.priceId)}
+                            className="rounded-lg bg-white text-black px-4 py-2 text-sm font-medium hover:bg-gray-200"
+                          >
+                            Add to Plan
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Full Enterprise Suite */}
+                  <div className="mt-6 rounded-xl border-2 border-purple-500/50 bg-purple-900/10 p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold flex items-center gap-2">
+                          🚀 Full Enterprise Suite
+                        </h3>
+                        <p className="text-gray-400 text-sm mt-1">Everything enterprise:</p>
+                        <ul className="text-xs text-gray-400 mt-2 space-y-1">
+                          <li>✓ Unlimited AI Agents with hierarchical task delegation</li>
+                          <li>✓ Enterprise SSO/SAML & Role-based access control (RBAC)</li>
+                          <li>✓ Credential isolation & zero-trust security</li>
+                          <li>✓ Full audit logging & compliance tooling</li>
+                          <li>✓ Pre-built connectors: Salesforce, Cisco, Google Cloud, Adobe, CrowdStrike</li>
+                          <li>✓ Tool use framework for external APIs</li>
+                          <li>✓ Hardware agnostic (NVIDIA, AMD, Intel support)</li>
+                          <li>✓ 24/7 Priority support & SLA guarantee</li>
+                          <li>✓ Mission Control dashboard & analytics</li>
+                        </ul>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold">£4,999/mo</div>
+                      </div>
                     </div>
+                    <button 
+                      onClick={() => buyPlan('price_enterprise_suite')}
+                      className="w-full rounded bg-purple-600 py-3 text-sm font-bold hover:bg-purple-500 mt-4"
+                    >
+                      Get Enterprise Suite
+                    </button>
                   </div>
                 </div>
 
