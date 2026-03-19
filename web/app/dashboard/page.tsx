@@ -10,6 +10,9 @@ import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
 import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
 import HelpChat from '@/app/components/HelpChat'
+import { HistoricalMetrics } from './components/HistoricalMetrics'
+import { PerformanceAlerts } from './components/PerformanceAlerts'
+import { MusicMetrics } from './components/MusicMetrics'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -55,6 +58,11 @@ const navItems = [
   { icon: '🌅', label: 'Daily Brief', href: '/dashboard/daily-brief' },
   { icon: '🔭', label: 'Tech Updates', href: '/dashboard/tech-updates' },
   { icon: '📈', label: 'Market Intel', href: '/dashboard/market-intel' },
+  // Music Industry
+  { icon: '🏟️', label: 'Venue Finder', href: '/dashboard/venue-finder' },
+  { icon: '🎤', label: 'Tour', href: '/dashboard/tour' },
+  { icon: '🎵', label: 'Streaming', href: '/dashboard/streaming' },
+  { icon: '📊', label: 'Analytics', href: '/dashboard/analytics' },
   { icon: '🔊', label: 'Signals', href: '/dashboard/signals' },
   // Agent Management
   { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
@@ -450,6 +458,17 @@ function DashboardContent() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* New Performance Monitoring Components */}
+            {instance && (
+              <>
+                <div className="md:col-span-2">
+                  <HistoricalMetrics userId={instance.userId} />
+                </div>
+                <PerformanceAlerts userId={instance.userId} />
+                <MusicMetrics userId={instance.userId} />
+              </>
+            )}
+
             <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <span>🤖</span> Agent Details

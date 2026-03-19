@@ -35,7 +35,7 @@ export default function SignupPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name, referralCode }),
+      body: JSON.stringify({ email, password, name, referralCode, useMusicWizard: true }),
     });
     if (!res.ok) {
       let errorMsg = "Signup failed";
