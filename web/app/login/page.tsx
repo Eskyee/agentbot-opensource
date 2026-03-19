@@ -4,6 +4,12 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
+
+const SignInWithBase = dynamic(() => import('@/app/components/SignInWithBase'), {
+  ssr: false,
+  loading: () => <div className="h-11 w-full bg-zinc-900 animate-pulse" />,
+})
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -41,6 +47,10 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-3">
+          <div className="flex justify-center">
+            <SignInWithBase redirectTo="/dashboard" onError={(msg: string) => setLoginError(msg)} />
+          </div>
+
           <button
             onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
             className="w-full flex items-center justify-center gap-3 bg-white hover:bg-zinc-200 text-black py-3 px-4 text-xs font-bold uppercase tracking-widest transition-colors"
@@ -115,6 +125,11 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </div>
+
+        <p className="text-center text-zinc-500 text-[11px] uppercase tracking-wider">
+          Don&apos;t have an account?{' '}
+          <Link href="/signup" className="text-white hover:underline">Sign up</Link>
+        </p>
 
         {loginError && (
           <div

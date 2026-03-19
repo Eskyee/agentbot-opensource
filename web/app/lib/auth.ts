@@ -75,24 +75,31 @@ providers.push(
       signature: { label: "Signature", type: "text" },
     },
     async authorize(credentials) {
+      console.log(`[Auth] Wallet authorize starting...`);
       if (!credentials?.message || !credentials?.signature) {
+        console.log(`[Auth] Missing credentials: message=${!!credentials?.message}, signature=${!!credentials?.signature}`);
         return null;
       }
 
       try {
         const siweMessage = new SiweMessage(credentials.message);
         const address = siweMessage.address as `0x${string}`;
+        console.log(`[Auth] SIWE address extracted: ${address}`);
 
         // Validate domain to prevent SIWE replay attacks from other sites
         const expectedDomain = process.env.NEXTAUTH_URL
           ? new URL(process.env.NEXTAUTH_URL).host
-          : 'agentbot.raveculture.xyz';
+          : (process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL).host : 'agentbot.raveculture.xyz');
+        
+        console.log(`[Auth] Domain check: received=${siweMessage.domain}, expected=${expectedDomain}`);
+        
         if (siweMessage.domain !== expectedDomain) {
           console.log(`[Auth] SIWE domain mismatch: ${siweMessage.domain} !== ${expectedDomain}`);
           return null;
         }
 
         // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
+        console.log(`[Auth] Verifying signature for ${address}...`);
         const valid = await viemClient.verifyMessage({
           address,
           message: credentials.message,
@@ -103,6 +110,7 @@ providers.push(
           console.log(`[Auth] SIWE verification failed for ${address}`);
           return null;
         }
+        console.log(`[Auth] SIWE signature valid for ${address}`);
 
         // Normalize wallet address to lowercase for consistent lookups
         const normalizedAddress = address.toLowerCase();
@@ -119,6 +127,7 @@ providers.push(
         });
 
         if (!user) {
+          console.log(`[Auth] User not found, creating new wallet user for ${address}`);
           user = await prisma.user.create({
             data: {
               name: `Wallet:${address.slice(0, 6)}...${address.slice(-4)}`,
@@ -129,12 +138,13 @@ providers.push(
           console.log(`[Auth] Created new wallet user: ${user.id}`);
         }
 
-        console.log(`[Auth] Successful wallet login: ${address}`);
+        console.log(`[Auth] Successful wallet login: ${address} (UserID: ${user.id})`);
         return {
           id: user.id,
           name: user.name,
           email: user.email,
-          walletAddress: address
+          walletAddress: address,
+          providerAccountId: normalizedAddress, // Pass this for the signIn callback to use
         };
       } catch (error) {
         console.error(`[Auth] SIWE error:`, error);
@@ -190,24 +200,32 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google" || account?.provider === "github") {
+      console.log(`[Auth] signIn callback: provider=${account?.provider}, userEmail=${user.email}`);
+      
+      // Handle OAuth and Wallet providers
+      if (account?.provider === "google" || account?.provider === "github" || account?.provider === "wallet") {
         if (user.email) {
           try {
             const existingUser = await prisma.user.findUnique({
               where: { email: user.email },
               include: { accounts: true },
             });
+            
             if (existingUser) {
               const existingAccount = existingUser.accounts.find(
                 (acc) => acc.provider === account.provider
               );
-              if (!existingAccount && account.providerAccountId) {
+              
+              // For CredentialsProvider (wallet), we may need to get providerAccountId from user object
+              const providerAccountId = account.providerAccountId || (user as any).providerAccountId;
+              
+              if (!existingAccount && providerAccountId) {
                 await prisma.account.create({
                   data: {
                     userId: existingUser.id,
-                    type: account.type,
+                    type: account.type || (account.provider === "wallet" ? "credentials" : "oauth"),
                     provider: account.provider,
-                    providerAccountId: account.providerAccountId,
+                    providerAccountId: providerAccountId,
                     access_token: account.access_token ?? undefined,
                     refresh_token: account.refresh_token ?? undefined,
                     expires_at: account.expires_at ?? undefined,

@@ -25,8 +25,17 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
   // popup causes browsers to classify the popup as unsolicited.
   const nonceRef = useRef<string>('')
 
+  const generateNonce = () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 16; i++) {
+      result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+  }
+
   useEffect(() => {
-    nonceRef.current = window.crypto.randomUUID().replace(/-/g, '')
+    nonceRef.current = generateNonce();
   }, [])
 
   const safeRedirect = ALLOWED_REDIRECTS.includes(redirectTo) ? redirectTo : '/dashboard'
@@ -44,6 +53,7 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
 
       const nonce = nonceRef.current
       if (!nonce) throw new Error('Nonce not ready — please try again')
+      console.log('[Auth] Starting wallet_connect with nonce:', nonce)
 
       // wallet_connect opens the Base Account popup immediately after click.
       // Chain switching is handled by the SDK via the chainId capability param.
@@ -62,31 +72,30 @@ export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: P
         }],
       }) as any
 
+      console.log('[Auth] wallet_connect response received')
+
       // Validate response structure before destructuring
       const siwe = response?.accounts?.[0]?.capabilities?.signInWithEthereum
       if (!siwe?.message || !siwe?.signature) {
+        console.error('[Auth] Invalid SIWE response structure:', response)
         throw new Error('Invalid response from Base Account SDK')
       }
 
       const { message, signature } = siwe
+      console.log('[Auth] Handing off to NextAuth wallet provider...')
 
       // Hand off to the 'wallet' NextAuth credentials provider
-      const res = await signIn('wallet', {
+      // Use redirect: true to ensure NextAuth handles the navigation flow correctly
+      await signIn('wallet', {
         message,
         signature,
-        redirect: false,
+        callbackUrl: safeRedirect,
+        redirect: true,
       })
 
-      if (res?.ok) {
-        window.location.href = safeRedirect
-      } else {
-        // Rotate nonce for next attempt
-        nonceRef.current = window.crypto.randomUUID().replace(/-/g, '')
-        onError?.('Wallet login failed. Please try again.')
-      }
     } catch (err: unknown) {
       // Rotate nonce so the next attempt uses a fresh one
-      nonceRef.current = window.crypto.randomUUID().replace(/-/g, '')
+      nonceRef.current = generateNonce();
       const e = err as { code?: number; message?: string }
       if (e?.code !== 4001) {
         // 4001 = user rejected — don't surface an error for that
