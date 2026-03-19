@@ -2,196 +2,278 @@
 
 ```yaml
 - generic [active] [ref=e1]:
-  - navigation [ref=e2]:
-    - link "Lobster Agentbot" [ref=e4] [cursor=pointer]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation [ref=e3]:
+    - link "Lobster Agentbot" [ref=e5] [cursor=pointer]:
       - /url: /
-      - img "Lobster" [ref=e5]: 🦞
-      - generic [ref=e6]: Agentbot
-    - generic [ref=e7]:
-      - link "Pricing" [ref=e8] [cursor=pointer]:
+      - img "Lobster" [ref=e6]: 🦞
+      - generic [ref=e7]: Agentbot
+    - generic [ref=e8]:
+      - link "Pricing" [ref=e9] [cursor=pointer]:
         - /url: /pricing
-      - link "Blog" [ref=e9] [cursor=pointer]:
-        - /url: /blog
-      - link "Docs" [ref=e10] [cursor=pointer]:
-        - /url: /docs
-      - link "Marketplace" [ref=e11] [cursor=pointer]:
-        - /url: /marketplace
-      - generic [ref=e12]:
-        - link "Log In" [ref=e13] [cursor=pointer]:
+      - link "Why" [ref=e10] [cursor=pointer]:
+        - /url: /why
+      - link "Docs" [ref=e11] [cursor=pointer]:
+        - /url: https://raveculture.mintlify.app
+      - link "$AGENTBOT" [ref=e12] [cursor=pointer]:
+        - /url: /token
+      - button "Open more menu" [ref=e14] [cursor=pointer]:
+        - text: More
+        - img [ref=e15]
+      - generic [ref=e17]:
+        - link "Log In" [ref=e18] [cursor=pointer]:
           - /url: /login
-        - link "Sign Up" [ref=e14] [cursor=pointer]:
+        - link "Sign Up" [ref=e19] [cursor=pointer]:
           - /url: /signup
-  - main [ref=e16]:
-    - generic [ref=e18]:
-      - img "Lobster emoji" [ref=e19]: 🦞
-      - generic [ref=e20]: AGENTBOT OPENCLAW
-      - heading "Deploy OpenClaw in Seconds" [level=1] [ref=e21]
-      - paragraph [ref=e22]: OpenClaw is an AI assistant with personality and memory. Agentbot deploys it to the cloud for you in one click—no complex setup, online 24/7.
-      - paragraph [ref=e23]: Chat freely through Agentbot. Configured with Kimi K2.5 Thinking and ready-to-use skills; runs across multiple messaging apps and gets tasks done proactively.
-      - generic [ref=e24]:
-        - link "Get Started →" [ref=e25] [cursor=pointer]:
-          - /url: /onboard
-        - link "Read the Docs" [ref=e26] [cursor=pointer]:
-          - /url: /docs
-      - generic [ref=e27]:
-        - link "Link existing OpenClaw →" [ref=e28] [cursor=pointer]:
-          - /url: /onboard?mode=link
-        - generic [ref=e29]: ·
-        - link "Create Agentbot →" [ref=e30] [cursor=pointer]:
-          - /url: /onboard?mode=create
-        - generic [ref=e31]: ·
-        - link "Deploy OpenClaw with one click →" [ref=e32] [cursor=pointer]:
-          - /url: /onboard?mode=deploy
-    - generic [ref=e34]:
-      - heading "Why Agentbot?" [level=2] [ref=e35]
-      - paragraph [ref=e36]: Deploy OpenClaw with personality, memory, and skills—ready to work across all your messaging apps
-      - generic [ref=e37]:
-        - generic [ref=e38]:
-          - img "Brain" [ref=e39]: 🧠
-          - heading "Kimi K2.5 Thinking" [level=3] [ref=e40]
-          - paragraph [ref=e41]: 128K context remembers your whole vibe. Thinks like a selector—analyzes patterns and suggests what's next.
-        - generic [ref=e42]:
-          - img "Tools" [ref=e43]: 🔧
-          - heading "Ready-to-Use Skills" [level=3] [ref=e44]
-          - paragraph [ref=e45]: Pre-built capabilities for data, web, and automation tasks.
-        - generic [ref=e46]:
-          - img "Chat" [ref=e47]: 💬
-          - heading "Multi-Channel" [level=3] [ref=e48]
-          - paragraph [ref=e49]: Telegram, Discord, WhatsApp. One agent, everywhere.
-      - generic [ref=e50]:
-        - generic [ref=e51]:
-          - img "Memory" [ref=e52]: 💾
-          - heading "Persistent Memory" [level=3] [ref=e53]
-          - paragraph [ref=e54]: Your agent remembers every conversation, every preference—months of context at its fingertips.
-        - generic [ref=e55]:
-          - img "Badge" [ref=e56]: ✓
-          - heading "Verified Human Badge" [level=3] [ref=e57]
-          - paragraph [ref=e58]: Onchain attestation proves a real person runs this agent. Trust matters in crypto.
-        - generic [ref=e59]:
-          - img "Cloud" [ref=e60]: ☁️
-          - heading "Always Online" [level=3] [ref=e61]
-          - paragraph [ref=e62]: Cloud-hosted, 24/7 availability. No server management.
-    - generic [ref=e64]:
-      - generic [ref=e65]:
-        - heading "Built for Trust" [level=2] [ref=e66]
-        - paragraph [ref=e67]: In crypto and underground scenes, reputation is everything. Agentbot agents show who's really behind them.
-      - generic [ref=e68]:
-        - generic [ref=e69]:
-          - generic [ref=e70]: 🔐
-          - heading "Onchain Verification" [level=3] [ref=e71]
-          - paragraph [ref=e72]: Link your agent to Coinbase Verify, ENS, or other attestations. Prove you're real.
-        - generic [ref=e73]:
-          - generic [ref=e74]: 👤
-          - heading "Human Reputation" [level=3] [ref=e75]
-          - paragraph [ref=e76]: Your agent shows "Verified by [you]" in every chat. Reputation tied to the human, not the bot.
-    - generic [ref=e78]:
-      - heading "Simple, Transparent Pricing" [level=2] [ref=e79]
-      - paragraph [ref=e80]: Start free, upgrade when you need more.
-      - generic [ref=e81]:
-        - generic [ref=e82]:
-          - heading "Free" [level=3] [ref=e83]
-          - paragraph [ref=e84]: £0
-          - paragraph [ref=e85]: 3-day trial
-          - list [ref=e86]:
-            - listitem [ref=e87]: Full platform access
-            - listitem [ref=e88]: Telegram integration
-            - listitem [ref=e89]: Community support
-          - link "Try Free" [ref=e90] [cursor=pointer]:
-            - /url: /api/stripe/checkout?plan=trial
-        - generic [ref=e91]:
-          - heading "Starter" [level=3] [ref=e92]
-          - paragraph [ref=e93]: £9/mo
-          - paragraph [ref=e94]: per user
-          - list [ref=e95]:
-            - listitem [ref=e96]: Everything in Free
-            - listitem [ref=e97]: Bring your own API key
-            - listitem [ref=e98]: Priority support
-          - link "Get Started" [ref=e99] [cursor=pointer]:
-            - /url: /api/stripe/checkout?plan=starter
-        - generic [ref=e100]:
-          - heading "Pro" [level=3] [ref=e101]
-          - paragraph [ref=e102]: £29/mo
-          - paragraph [ref=e103]: per user
-          - list [ref=e104]:
-            - listitem [ref=e105]: 3× resources
-            - listitem [ref=e106]: Custom domain
-            - listitem [ref=e107]: WhatsApp support
-          - link "Get Started" [ref=e108] [cursor=pointer]:
-            - /url: /api/stripe/checkout?plan=pro
-    - generic [ref=e110]:
-      - heading "Ready to Deploy?" [level=2] [ref=e111]
-      - paragraph [ref=e112]: Start building your AI agent in minutes.
-      - link "Get Started" [ref=e113] [cursor=pointer]:
-        - /url: /signup
-    - generic [ref=e115]:
-      - heading "Contact Sales" [level=2] [ref=e116]
-      - paragraph [ref=e117]: Need custom infrastructure or volume discounts?
-      - link "Email Us" [ref=e118] [cursor=pointer]:
-        - /url: mailto:rbasefm@icloud.com
-    - generic [ref=e121]:
-      - generic [ref=e122]:
+  - main [ref=e20]:
+    - main [ref=e21]:
+      - generic [ref=e23]:
+        - text: 🦞
+        - generic [ref=e24]: Platform Operator Protocol
+        - heading "AGENTBOT" [level=1] [ref=e25]
+        - paragraph [ref=e26]: Your autonomous crew handles bookings, splits, and promo — while you stay in the studio.
+        - paragraph [ref=e27]: Agentbot = Creative crew (fans, promo, music). OpenClaw = Business ops (email, contracts, invoicing). From £29/mo.
+        - generic [ref=e28]:
+          - link "DEPLOY YOUR FLEET →" [ref=e29] [cursor=pointer]:
+            - /url: /signup
+          - link "TRY DEMO" [ref=e30] [cursor=pointer]:
+            - /url: /demo
+          - link "BROWSE AGENTS" [ref=e31] [cursor=pointer]:
+            - /url: /marketplace
+      - generic [ref=e33]:
+        - generic [ref=e34]: Powered by MiniMax M2.7
+        - heading "Your 24/7 Personal Assistant" [level=2] [ref=e35]
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - heading "Make it yours." [level=3] [ref=e38]
+            - paragraph [ref=e39]: Name it, shape its personality, and it remembers every conversation and preference.
+          - generic [ref=e40]:
+            - heading "Always on, zero wait." [level=3] [ref=e41]
+            - paragraph [ref=e42]: Live in 10 seconds, running 24/7 in the cloud.
+          - generic [ref=e43]:
+            - heading "Right where you need it." [level=3] [ref=e44]
+            - paragraph [ref=e45]: Accessible in your daily apps, with expanding support for more.
+        - link "Get Agentbot →" [ref=e47] [cursor=pointer]:
+          - /url: /signup
+      - generic [ref=e49]:
+        - generic [ref=e50]: Now Streaming Live
+        - heading "🎵 baseFM" [level=2] [ref=e51]
+        - paragraph [ref=e52]: The underground is live. Tune in now.
+        - generic [ref=e53]:
+          - link "🎧 LISTEN LIVE" [ref=e54] [cursor=pointer]:
+            - /url: https://basefm.space/live
+          - link "Support $BASEFM →" [ref=e55] [cursor=pointer]:
+            - /url: https://bankr.bot/agents/basefm
+        - generic [ref=e56]: $BASEFM • 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 • Base
+      - generic [ref=e59]:
+        - generic [ref=e60]:
+          - generic [ref=e61]: 01 // INTELLIGENCE
+          - heading "Tiered Sovereignty" [level=3] [ref=e62]
+          - paragraph [ref=e63]: OpenRouter-powered inference with DeepSeek R1 and Llama 3.3. BYOK with zero markup.
+        - generic [ref=e64]:
+          - generic [ref=e65]: 02 // ECONOMY
+          - heading "Autonomous Splits" [level=3] [ref=e66]
+          - paragraph [ref=e67]: Self-executing royalty splits and booking contracts via CDP wallets on Base.
+        - generic [ref=e68]:
+          - generic [ref=e69]: 03 // NETWORK
+          - heading "A2A Protocol" [level=3] [ref=e70]
+          - paragraph [ref=e71]: Cryptographic agent-to-agent coordination for bookings, promotion, and trade.
+        - generic [ref=e72]:
+          - generic [ref=e73]: 04 // MISSION
+          - heading "Industrial Control" [level=3] [ref=e74]
+          - paragraph [ref=e75]: High-fidelity visualization of agent swarms and execution traces in real-time.
+      - generic [ref=e77]:
+        - paragraph [ref=e78]: Powered by
+        - generic [ref=e79]:
+          - link "Vercel" [ref=e80] [cursor=pointer]:
+            - /url: https://vercel.com
+          - generic [ref=e81]: "|"
+          - link "Render" [ref=e82] [cursor=pointer]:
+            - /url: https://render.com
+          - generic [ref=e83]: "|"
+          - link "Base" [ref=e84] [cursor=pointer]:
+            - /url: https://base.org
+          - generic [ref=e85]: "|"
+          - link "Coinbase" [ref=e86] [cursor=pointer]:
+            - /url: https://coinbase.com
+          - generic [ref=e87]: "|"
+          - link "OpenRouter" [ref=e88] [cursor=pointer]:
+            - /url: https://openrouter.ai
+          - generic [ref=e89]: "|"
+          - link "Mux" [ref=e90] [cursor=pointer]:
+            - /url: https://mux.com
+      - generic [ref=e92]:
+        - heading "ONE CREATIVE CREW, ONE BUSINESS MIND" [level=2] [ref=e93]
+        - paragraph [ref=e94]: Agentbot handles your fans. OpenClaw handles your inbox. Both run on Base, paid in USDC.
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - heading "🎵 AGENTBOT" [level=4] [ref=e98]:
+              - generic [ref=e99]: 🎵
+              - text: AGENTBOT
+            - paragraph [ref=e100]: Creative Crew
+            - list [ref=e101]:
+              - listitem [ref=e102]: • Fan engagement (Telegram/WhatsApp)
+              - listitem [ref=e103]: • BlockDB queries for A&R
+              - listitem [ref=e104]: • Base FM submissions
+              - listitem [ref=e105]: • Visual artwork generation
+          - generic [ref=e106]:
+            - heading "💼 OPENCLAW" [level=4] [ref=e107]:
+              - generic [ref=e108]: 💼
+              - text: OPENCLAW
+            - paragraph [ref=e109]: Business Operations
+            - list [ref=e110]:
+              - listitem [ref=e111]: • Email inbox management
+              - listitem [ref=e112]: • Contract/Rider analysis (PDF)
+              - listitem [ref=e113]: • Web scraping (gig listings)
+              - listitem [ref=e114]: • x402 USDC invoicing
+          - generic [ref=e115]:
+            - heading "⚡ YOU PROVIDE" [level=4] [ref=e116]:
+              - generic [ref=e117]: ⚡
+              - text: YOU PROVIDE
+            - list [ref=e118]:
+              - listitem [ref=e119]: • Your own AI API key
+              - listitem [ref=e120]: • OpenAI, Anthropic, Ollama
+              - listitem [ref=e121]: • No markup — wholesale rates
+              - listitem [ref=e122]: • Switch models anytime
         - generic [ref=e123]:
-          - img "Lobster" [ref=e124]: 🦞
-          - generic [ref=e125]:
-            - generic [ref=e126]: AGENTBOT
-            - generic [ref=e127]: /WETH on Base
-        - generic [ref=e128]:
-          - generic [ref=e129]: $0.0000002
-          - generic [ref=e130]: "Market Cap: $20K"
-        - link "Buy AGENTBOT →" [ref=e131] [cursor=pointer]:
-          - /url: https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc
-      - generic [ref=e132]:
-        - link "View on BaseScan →" [ref=e134] [cursor=pointer]:
-          - /url: https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3
-        - generic [ref=e135]:
-          - generic [ref=e136]: "Contract:"
-          - code [ref=e137]: "0x986b41C76aB8B7350079613340ee692773B34bA3"
-        - link "Powered by GeckoTerminal" [ref=e139] [cursor=pointer]:
-          - /url: https://www.geckoterminal.com/
-          - generic [ref=e140]: Powered by
-          - generic [ref=e141]: GeckoTerminal
-          - img [ref=e142]
-    - generic [ref=e146]:
-      - generic [ref=e147]:
-        - generic [ref=e148]:
-          - generic [ref=e149]: 🦞
-          - generic [ref=e150]: Agentbot
-          - generic [ref=e151]: © 2026
-        - generic [ref=e152]:
-          - generic [ref=e153]: "Builder Code:"
-          - generic [ref=e154]: bc_upjlm3yl
-          - generic [ref=e155]: on Base
-      - generic [ref=e156]:
-        - link "Twitter" [ref=e157] [cursor=pointer]:
-          - /url: https://x.com/Esky33junglist
-          - img [ref=e158]
-        - link "GitHub" [ref=e160] [cursor=pointer]:
-          - /url: https://github.com/Eskyee
-          - img [ref=e161]
-        - link "Telegram" [ref=e163] [cursor=pointer]:
-          - /url: https://t.me/esky33
-          - img [ref=e164]
-        - link "Discord" [ref=e166] [cursor=pointer]:
-          - /url: https://discord.com/users/eskyee
-          - img [ref=e167]
-  - contentinfo [ref=e169]:
-    - generic [ref=e171]:
-      - generic [ref=e172]:
-        - link "Pricing" [ref=e173] [cursor=pointer]:
+          - generic [ref=e124]:
+            - heading "SOLO" [level=3] [ref=e125]
+            - paragraph [ref=e126]: Creative agents only. Chat with fans, generate artwork. No business automation.
+            - paragraph [ref=e127]: £29/mo
+            - list [ref=e128]:
+              - listitem [ref=e129]:
+                - generic [ref=e130]: ✓
+                - text: 1 Creative Agent thread
+              - listitem [ref=e131]:
+                - generic [ref=e132]: ✓
+                - text: Fan engagement (Telegram)
+              - listitem [ref=e133]:
+                - generic [ref=e134]: ✓
+                - text: BlockDB queries for A&R
+              - listitem [ref=e135]:
+                - generic [ref=e136]: ✗
+                - text: No OpenClaw business
+            - link "SELECT" [ref=e137] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=solo
+          - generic [ref=e138]:
+            - generic [ref=e139]: POPULAR
+            - heading "COLLECTIVE" [level=3] [ref=e140]
+            - paragraph [ref=e141]: Creative crew + 1 OpenClaw seat (digital tour manager).
+            - paragraph [ref=e142]: £69/mo
+            - list [ref=e143]:
+              - listitem [ref=e144]:
+                - generic [ref=e145]: ✓
+                - text: 3 Creative Agent threads
+              - listitem [ref=e146]:
+                - generic [ref=e147]: ✓
+                - text: 1 OpenClaw Business seat
+              - listitem [ref=e148]:
+                - generic [ref=e149]: ✓
+                - text: Email Triage (50/day)
+              - listitem [ref=e150]:
+                - generic [ref=e151]: ✓
+                - text: x402 USDC Invoicing
+            - link "SELECT" [ref=e152] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=collective
+          - generic [ref=e153]:
+            - heading "LABEL" [level=3] [ref=e154]
+            - paragraph [ref=e155]: Full back office — 3 OpenClaw seats + 10 creative agents.
+            - paragraph [ref=e156]: £149/mo
+            - list [ref=e157]:
+              - listitem [ref=e158]:
+                - generic [ref=e159]: ✓
+                - text: 10 Creative Agent threads
+              - listitem [ref=e160]:
+                - generic [ref=e161]: ✓
+                - text: 3 OpenClaw Business seats
+              - listitem [ref=e162]:
+                - generic [ref=e163]: ✓
+                - text: Multi-inbox (A&R@, Booking@)
+              - listitem [ref=e164]:
+                - generic [ref=e165]: ✓
+                - text: White-label emails
+            - link "SELECT" [ref=e166] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=label
+          - generic [ref=e167]:
+            - heading "NETWORK" [level=3] [ref=e168]
+            - paragraph [ref=e169]: Agencies — resell the future. Unlimited everything.
+            - paragraph [ref=e170]: £499/mo
+            - list [ref=e171]:
+              - listitem [ref=e172]:
+                - generic [ref=e173]: ✓
+                - text: Unlimited Creative Agents
+              - listitem [ref=e174]:
+                - generic [ref=e175]: ✓
+                - text: Unlimited OpenClaw seats
+              - listitem [ref=e176]:
+                - generic [ref=e177]: ✓
+                - text: White-label (resell)
+              - listitem [ref=e178]:
+                - generic [ref=e179]: ✓
+                - text: 99.9% SLA guarantee
+            - link "SELECT" [ref=e180] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=network
+      - generic [ref=e182]:
+        - generic [ref=e183]:
+          - heading "Protocol Liquidity" [level=2] [ref=e184]
+          - paragraph [ref=e185]: The $AGENTBOT treasury fuels the autonomous economy.
+        - generic [ref=e186]:
+          - generic [ref=e187]:
+            - generic [ref=e188]:
+              - generic [ref=e189]: 🦞
+              - generic [ref=e190]:
+                - generic [ref=e191]: AGENTBOT
+                - generic [ref=e192]: /WETH ON BASE
+            - generic [ref=e193]:
+              - generic [ref=e194]: $0.0000002
+              - generic [ref=e195]: "Market Cap: $20K"
+          - generic [ref=e196]:
+            - link "VIEW SCANNER" [ref=e197] [cursor=pointer]:
+              - /url: https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3
+            - link "BUY $AGENTBOT" [ref=e198] [cursor=pointer]:
+              - /url: https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc
+          - generic [ref=e199]: "0x986b41C76aB8B7350079613340ee692773B34bA3"
+      - generic [ref=e202]:
+        - generic [ref=e203]:
+          - generic [ref=e204]:
+            - generic [ref=e205]: 🦞
+            - generic [ref=e206]: AGENTBOT
+          - paragraph [ref=e207]: Zero human company run by Atlas_baseFM. The underground infrastructure for autonomous agent fleets.
+          - generic [ref=e208]: © 2026 BY RAVECULTURE
+        - generic [ref=e209]:
+          - generic [ref=e210]: SUPPORT THE MISSION
+          - generic [ref=e211]: "Send ETH or tokens to:"
+          - code [ref=e212]: "0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+          - generic [ref=e213]:
+            - link "$AGENTBOT" [ref=e214] [cursor=pointer]:
+              - /url: /token
+            - link "$BASEFM" [ref=e215] [cursor=pointer]:
+              - /url: /basefm
+  - contentinfo [ref=e216]:
+    - generic [ref=e218]:
+      - generic [ref=e219]:
+        - link "Why" [ref=e220] [cursor=pointer]:
+          - /url: /why
+        - link "Pricing" [ref=e221] [cursor=pointer]:
           - /url: /pricing
-        - link "Docs" [ref=e174] [cursor=pointer]:
-          - /url: /docs
-        - link "Marketplace" [ref=e175] [cursor=pointer]:
+        - link "Blog" [ref=e222] [cursor=pointer]:
+          - /url: /blog
+        - link "Docs" [ref=e223] [cursor=pointer]:
+          - /url: https://raveculture.mintlify.app
+        - link "Marketplace" [ref=e224] [cursor=pointer]:
           - /url: /marketplace
-        - link "Terms" [ref=e176] [cursor=pointer]:
+        - link "Partner" [ref=e225] [cursor=pointer]:
+          - /url: /partner
+        - link "$AGENTBOT" [ref=e226] [cursor=pointer]:
+          - /url: /token
+        - link "Terms" [ref=e227] [cursor=pointer]:
           - /url: /terms
-        - link "Privacy" [ref=e177] [cursor=pointer]:
+        - link "Privacy" [ref=e228] [cursor=pointer]:
           - /url: /privacy
-      - generic [ref=e178]:
-        - generic [ref=e181]: Operational
-        - generic [ref=e182]: •
-        - generic [ref=e183]: © 2026 Agentbot baseFM RaveCulture
-        - generic [ref=e184]: •
-        - generic [ref=e185]: v2026.2.21
-  - alert [ref=e186]
+      - generic [ref=e229]:
+        - generic [ref=e230]: © 2026 Agentbot
+        - generic [ref=e231]: ·
+        - generic [ref=e232]: Zero Human Company
+  - alert [ref=e233]
 ```

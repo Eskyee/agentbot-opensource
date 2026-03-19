@@ -1,78 +1,109 @@
-export const metadata = {
-  title: 'MiniMax M2.7 Now Available on Agentbot',
-  description: 'The most powerful agentic AI model is now integrated with Agentbot. Powered by OpenRouter.',
-  date: '2026-03-19',
-  author: 'Agentbot Team',
-};
+import Link from 'next/link';
 
-# MiniMax M2.7 Now Available on Agentbot
+export default function Post() {
+  return (
+    <main className="min-h-screen px-6 py-16 lg:px-8">
+      <div className="mx-auto max-w-3xl">
+        <Link href="/blog" className="text-gray-400 hover:text-white mb-8 inline-block">
+          ← Back to Blog
+        </Link>
+        
+        <article className="prose prose-invert max-w-none">
+          <div className="mb-8">
+            <p className="text-sm text-gray-500 mb-2">19 March 2026</p>
+            <h1 className="text-4xl font-bold mb-4">MiniMax M2.7 Now Available on Agentbot</h1>
+            <div className="flex gap-2">
+              <span className="text-xs px-2 py-1 rounded-full bg-purple-800 text-purple-400">AI</span>
+              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">OpenRouter</span>
+              <span className="text-xs px-2 py-1 rounded-full bg-green-800 text-green-400">Agents</span>
+            </div>
+          </div>
 
-The wait is over. **MiniMax M2.7** — the latest and most powerful model from MiniMax — is now available on Agentbot via OpenRouter.
+          <p className="text-gray-300 mb-4">The wait is over. <strong>MiniMax M2.7</strong> — the latest and most powerful model from MiniMax — is now available on Agentbot via OpenRouter.</p>
 
-## What Makes M2.7 Special?
+          <h2 className="text-2xl font-bold mt-8 mb-4">What Makes M2.7 Special?</h2>
+          <p className="text-gray-300 mb-4">M2.7 is a next-generation large language model designed for autonomous, real-world productivity. It's built for <strong>agents</strong> — not just chatbots.</p>
 
-M2.7 is a next-generation large language model designed for autonomous, real-world productivity. It's built for **agents** — not just chatbots.
+          <h3 className="text-xl font-bold mt-6 mb-3">Key Capabilities</h3>
+          <ul className="list-disc list-inside text-gray-300 mb-4">
+            <li><strong>Multi-agent collaboration</strong> — M2.7 can plan, execute, and refine complex tasks across dynamic environments</li>
+            <li><strong>Live debugging</strong> — Real-time error detection and fixing</li>
+            <li><strong>Financial modeling</strong> — Complex financial calculations and projections</li>
+            <li><strong>Full document generation</strong> — Word, Excel, and PowerPoint</li>
+          </ul>
 
-### Key Capabilities
+          <h3 className="text-xl font-bold mt-6 mb-3">Benchmark Results</h3>
+          <table className="w-full mb-4">
+            <thead>
+              <tr className="border-b border-gray-700">
+                <th className="text-left py-2">Benchmark</th>
+                <th className="text-right py-2">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-800">
+                <td className="py-2">SWE-Pro</td>
+                <td className="text-right">56.2%</td>
+              </tr>
+              <tr className="border-b border-gray-800">
+                <td className="py-2">Terminal Bench 2</td>
+                <td className="text-right">57.0%</td>
+              </tr>
+              <tr>
+                <td className="py-2">GDPval-AA</td>
+                <td className="text-right">1495 ELO</td>
+              </tr>
+            </tbody>
+          </table>
 
-- **Multi-agent collaboration** — M2.7 can plan, execute, and refine complex tasks across dynamic environments
-- **Live debugging** — Real-time error detection and fixing
-- **Financial modeling** — Complex financial calculations and projections
-- **Full document generation** — Word, Excel, and PowerPoint
+          <h2 className="text-2xl font-bold mt-8 mb-4">Pricing</h2>
+          <p className="text-gray-300 mb-4">Available on OpenRouter at competitive rates:</p>
+          <ul className="list-disc list-inside text-gray-300 mb-4">
+            <li><strong>Input:</strong> $0.30/M tokens</li>
+            <li><strong>Output:</strong> $1.20/M tokens</li>
+            <li><strong>Context:</strong> 204,800 tokens</li>
+          </ul>
 
-### Benchmark Results
+          <p className="text-gray-300 mb-4">Compare to GPT-4o:</p>
+          <ul className="list-disc list-inside text-gray-300 mb-4">
+            <li>Input: $2.50/M tokens</li>
+            <li>Output: $10.00/M tokens</li>
+          </ul>
 
-| Benchmark | Score |
-|-----------|-------|
-| SWE-Pro | 56.2% |
-| Terminal Bench 2 | 57.0% |
-| GDPval-AA | 1495 ELO |
+          <p className="text-green-400 font-bold mb-4">M2.7 is 8x cheaper on input, 8x cheaper on output.</p>
 
-## Pricing
+          <h2 className="text-2xl font-bold mt-8 mb-4">How to Use</h2>
+          <ol className="list-decimal list-inside text-gray-300 mb-4">
+            <li>Go to <strong>Settings → API Keys</strong></li>
+            <li>Add your OpenRouter key</li>
+            <li>Select <strong>MiniMax M2.7</strong> as your model</li>
+          </ol>
 
-Available on OpenRouter at competitive rates:
+          <pre className="bg-gray-900 p-4 rounded-lg text-gray-300 mb-4 overflow-x-auto">
+{`curl -X POST https://agentbot.raveculture.xyz/api/chat \\
+  -H "Content-Type: application/json" \\
+  -d '{"model": "minimax/minimax-m2.7", "message": "Build me a trading bot"}'`}
+          </pre>
 
-- **Input**: $0.30/M tokens
-- **Output**: $1.20/M tokens
-- **Context**: 204,800 tokens
+          <h2 className="text-2xl font-bold mt-8 mb-4">Why This Matters</h2>
+          <p className="text-gray-300 mb-4">M2.7 is built for <strong>autonomous agents</strong> — not just answering questions. It can:</p>
+          <ul className="list-disc list-inside text-gray-300 mb-4">
+            <li>Execute multi-step workflows</li>
+            <li>Debug code in real-time</li>
+            <li>Work across multiple software environments</li>
+            <li>Optimize its own output through planning</li>
+          </ul>
 
-Compare to GPT-4o:
-- Input: $2.50/M tokens
-- Output: $10.00/M tokens
+          <p className="text-gray-300 mb-4">This aligns perfectly with Agentbot's mission: <strong>autonomous agents that work while you sleep</strong>.</p>
 
-**M2.7 is 8x cheaper on input, 8x cheaper on output.**
+          <h2 className="text-2xl font-bold mt-8 mb-4">Get Started</h2>
+          <p className="text-gray-300 mb-4"><a href="https://agentbot.raveculture.xyz" className="text-purple-400 hover:underline">Sign up now</a> and select MiniMax M2.7 as your AI model.</p>
 
-## How to Use
-
-1. Go to **Settings → API Keys**
-2. Add your OpenRouter key
-3. Select **MiniMax M2.7** as your model
-
-```bash
-# Or via API
-curl -X POST https://agentbot.raveculture.xyz/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "minimax/minimax-m2.7",
-    "message": "Build me a trading bot"
-  }'
-```
-
-## Why This Matters
-
-M2.7 is built for **autonomous agents** — not just answering questions. It can:
-
-- Execute multi-step workflows
-- Debug code in real-time
-- Work across multiple software environments
-- Optimize its own output through planning
-
-This aligns perfectly with Agentbot's mission: **autonomous agents that work while you sleep**.
-
-## Get Started
-
-[Sign up now](https://agentbot.raveculture.xyz) and select MiniMax M2.7 as your AI model.
-
----
-
-*Available now on OpenRouter. Standard OpenRouter rates apply.*
+          <div className="mt-12 pt-8 border-t border-gray-800">
+            <p className="text-gray-500">Available now on OpenRouter. Standard OpenRouter rates apply.</p>
+          </div>
+        </article>
+      </div>
+    </main>
+  );
+}

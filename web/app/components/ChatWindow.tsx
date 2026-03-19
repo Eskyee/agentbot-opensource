@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { Streamdown } from 'streamdown'
 
 interface Message {
   id: string
@@ -148,7 +149,11 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
                   : 'bg-gray-700 text-white'
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              {message.role === 'assistant' ? (
+                <Streamdown>{message.content}</Streamdown>
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              )}
               <p className={`text-xs mt-1 ${
                 message.role === 'user' ? 'text-black/60' : 'text-gray-400'
               }`}>
