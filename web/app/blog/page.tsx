@@ -2,6 +2,20 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'opensource-release',
+    date: '19 March 2026',
+    title: 'Agentbot is Now Open Source',
+    excerpt: 'The entire Agentbot codebase is now open source under MIT license. Build, customize, and deploy your own AI agents.',
+    tags: ["Open Source", "Community", "Build"]
+  },
+  {
+    slug: 'sponsor-us',
+    date: '19 March 2026',
+    title: 'Sponsor Agentbot & Build the Future of Agentic AI',
+    excerpt: 'Partner with us to build the infrastructure for autonomous AI agents. Sponsors get roadmap input, early access, and more.',
+    tags: ["Sponsors", "Partnership", "Agentic AI"]
+  },
+  {
     slug: 'royaltybot-launch',
     date: '18 March 2026',
     title: 'Introducing RoyaltyBot: Instant Payment Layer for Music',
