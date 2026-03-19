@@ -6,6 +6,17 @@ import { isRateLimited, getClientIP } from "@/app/lib/security-middleware";
 import { alertNewUser } from "@/app/lib/alerts";
 
 export async function POST(request: NextRequest) {
+  // BotID protection
+  try {
+    const { checkBotId } = await import('botid/server')
+    const { isBot } = await checkBotId()
+    if (isBot) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 })
+    }
+  } catch (e) {
+    // BotID not configured - continue in dev
+  }
+
   const ip = getClientIP(request);
   if (await isRateLimited(ip)) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });

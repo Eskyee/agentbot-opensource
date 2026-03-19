@@ -32,6 +32,7 @@
     "@x402/extensions": "^2.6.0",
     "ai": "^6.0.98",
     "bcryptjs": "^3.0.3",
+    "botid": "^1.5.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dockerode": "^4.0.9",
