@@ -1,5 +1,6 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
@@ -11,6 +12,15 @@ import { base } from "viem/chains";
 const viemClient = createPublicClient({ chain: base, transport: http() });
 
 const providers: ReturnType<typeof CredentialsProvider>[] = [];
+
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  providers.push(
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    }) as unknown as ReturnType<typeof CredentialsProvider>
+  );
+}
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   providers.push(
@@ -178,7 +188,7 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "google") {
+      if (account?.provider === "google" || account?.provider === "github") {
         if (user.email) {
           const existingUser = await prisma.user.findUnique({
             where: { email: user.email },
