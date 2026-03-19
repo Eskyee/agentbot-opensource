@@ -4,13 +4,18 @@ import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 
-// WALLET_ENCRYPTION_KEY - use fallback during build, must be set in production
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || 'dev-fallback-key-for-build-only-32bytes'
+// WALLET_ENCRYPTION_KEY - MUST be set in production
+const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY
+if (!ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error('WALLET_ENCRYPTION_KEY must be set in production')
+}
+const DEV_ENCRYPTION_KEY = 'dev-fallback-key-for-build-only-32bytes'
+const ACTIVE_KEY = ENCRYPTION_KEY || DEV_ENCRYPTION_KEY
 const IV_LENGTH = 16
 
 function encryptWalletSeed(seed: string): string {
   const iv = crypto.randomBytes(IV_LENGTH)
-  const key = Buffer.from(ENCRYPTION_KEY.slice(0, 32), 'utf8')
+  const key = Buffer.from(ACTIVE_KEY.slice(0, 32), 'utf8')
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
   let encrypted = cipher.update(seed, 'utf8', 'hex')
   encrypted += cipher.final('hex')
@@ -21,7 +26,7 @@ function decryptWalletSeed(encryptedSeed: string): string {
   const parts = encryptedSeed.split(':')
   const iv = Buffer.from(parts[0], 'hex')
   const encrypted = parts[1]
-  const key = Buffer.from(ENCRYPTION_KEY.slice(0, 32), 'utf8')
+  const key = Buffer.from(ACTIVE_KEY.slice(0, 32), 'utf8')
   const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
   let decrypted = decipher.update(encrypted, 'hex', 'utf8')
   decrypted += decipher.final('utf8')

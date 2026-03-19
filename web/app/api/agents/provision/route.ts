@@ -68,6 +68,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate name length (max 100 chars)
+    if (body.name.trim().length > 100) {
+      return NextResponse.json(
+        { error: 'Agent name must be 100 characters or less' },
+        { status: 400 }
+      );
+    }
+
     // Check subscription tier
     const user = await prisma.user.findUnique({
       where: { id: userId }

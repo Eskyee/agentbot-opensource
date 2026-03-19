@@ -21,6 +21,16 @@ export async function POST(request: NextRequest) {
   if (password.length < 8) {
     return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
   }
+  // Password complexity: at least 1 number, 1 uppercase, 1 symbol
+  if (!/[0-9]/.test(password)) {
+    return NextResponse.json({ error: "Password must contain at least 1 number" }, { status: 400 });
+  }
+  if (!/[A-Z]/.test(password)) {
+    return NextResponse.json({ error: "Password must contain at least 1 uppercase letter" }, { status: 400 });
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return NextResponse.json({ error: "Password must contain at least 1 special character" }, { status: 400 });
+  }
   if (referralCode && (referralCode.length > 20 || !/^[a-zA-Z0-9-]+$/.test(referralCode))) {
     return NextResponse.json({ error: "Invalid referral code" }, { status: 400 });
   }

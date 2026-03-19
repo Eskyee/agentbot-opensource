@@ -34,8 +34,13 @@ const getPlanResources = (plan: string) => {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// API key - use env var or fallback (Render will set it via generateValue)
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only'
+// API key - MUST be set in production
+const API_KEY = process.env.INTERNAL_API_KEY
+if (!API_KEY && process.env.NODE_ENV === 'production') {
+  throw new Error('INTERNAL_API_KEY must be set in production')
+}
+const DEV_API_KEY = 'dev-api-key-build-only'
+const ACTIVE_API_KEY = API_KEY || DEV_API_KEY
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';

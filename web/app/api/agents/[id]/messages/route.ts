@@ -24,8 +24,12 @@ export async function GET(
     }
 
     const url = new URL(request.url)
-    const limit = parseInt(url.searchParams.get('limit') || '50')
-    const offset = parseInt(url.searchParams.get('offset') || '0')
+    let limit = parseInt(url.searchParams.get('limit') || '50')
+    let offset = parseInt(url.searchParams.get('offset') || '0')
+    
+    // Validate and clamp limit/offset
+    limit = isNaN(limit) ? 50 : Math.max(1, Math.min(limit, 100))
+    offset = isNaN(offset) ? 0 : Math.max(0, offset)
 
     // Mock messages - replace with real messages from backend
     const messages = Array.from({ length: Math.min(limit, 100) }).map((_, i) => ({
