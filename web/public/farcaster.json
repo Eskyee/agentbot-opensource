@@ -1,0 +1,50 @@
+{
+  "manifest_version": "1",
+  "name": "Agentbot Frame",
+  "description": "Agentic software platform with $RAVE token gating",
+  "icon": "https://agentbot.raveculture.xyz/icon.png",
+  "homePageUrl": "https://agentbot.raveculture.xyz",
+  "splashImageUrl": "https://agentbot.raveculture.xyz/splash.png",
+  "splash": {
+    "imageUrl": "https://agentbot.raveculture.xyz/splash.png",
+    "backgroundColor": "#0a0e27"
+  },
+  "acceptedProtocols": ["xmtp"],
+  "permissionRequests": [
+    {
+      "required": false,
+      "permission": "PERMISSION_CAST_READ"
+    },
+    {
+      "required": false,
+      "permission": "PERMISSION_CAST_WRITE"
+    },
+    {
+      "required": false,
+      "permission": "PERMISSION_TRANSACTION_SEND"
+    }
+  ],
+  "blockchain": {
+    "chain": "base",
+    "rpcUrl": "https://mainnet.base.org"
+  },
+  "tokenGating": {
+    "enabled": true,
+    "token": "RAVE",
+    "chain": "base",
+    "contractAddress": "0x6EE72eEDEfBa8937Ec8c36dEd9B8c1ef9ca7A3db",
+    "minBalance": "1000000000000000000",
+    "minBalanceDescription": "1 RAVE minimum"
+  },
+  "authentication": {
+    "type": "farcaster_v2",
+    "verificationUrl": "https://agentbot.raveculture.xyz/api/auth/farcaster/verify",
+    "refreshTokenUrl": "https://agentbot.raveculture.xyz/api/auth/farcaster/refresh"
+  },
+  "metadata": {
+    "minTargetSDK": "2.13.0",
+    "specVersion": "1.0.0",
+    "createdAt": "2026-03-09T09:35:00Z",
+    "updatedAt": "2026-03-09T09:35:00Z"
+  }
+}

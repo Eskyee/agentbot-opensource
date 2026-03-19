@@ -1,0 +1,292 @@
+// Prisma schema for NextAuth.js with Postgres
+// Docs: https://next-auth.js.org/adapters/prisma
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("user")
+  storageLimit  Int       @default(10)
+
+  // Referral system
+  referralCode      String?   @unique
+  referredBy       String?
+  referralCredits  Int       @default(0)
+
+  // Subscription fields
+  plan          String    @default("free")
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  subscriptionStatus String    @default("inactive")
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+
+  // Relations
+  accounts       Account[]
+  sessions       Session[]
+  wallets        Wallet[]
+  referrals      Referral[]      @relation("Referrer")
+  referredByUser Referral?       @relation("Referred")
+  agents         Agent[]
+  apiKeys        ApiKey[]
+  scheduledTasks ScheduledTask[]
+  agentMemories  AgentMemory[]
+  agentFiles     AgentFile[]
+  installedSkills InstalledSkill[]
+  agentSwarms    AgentSwarm[]
+  workflows      Workflow[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Agent {
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  model        String?
+  config       Json?
+  tier         String   @default("free")
+  status       String   @default("pending")
+  websocketUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledTasks  ScheduledTask[]
+  memories        AgentMemory[]
+  files           AgentFile[]
+  installedSkills InstalledSkill[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+}
+
+model ScheduledTask {
+  id          String   @id @default(cuid())
+  userId      String
+  agentId     String
+  name        String
+  description String?
+  cronSchedule String  // e.g., "0 9 * * *" for 9am daily
+  prompt      String   // What the agent should do
+  enabled     Boolean  @default(true)
+  lastRun     DateTime?
+  nextRun     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([agentId])
+  @@index([enabled, nextRun])
+}
+
+model AgentMemory {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  key       String   // e.g., "user_preferences", "conversation_context"
+  value     String   // JSON string
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId, key])
+  @@index([agentId])
+}
+
+model AgentFile {
+  id        String   @id @default(cuid())
+  userId    String
+  userEmail String?
+  agentId   String
+  filename  String
+  path      String?
+  url       String?
+  size      Int
+  mimeType  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([agentId])
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  category    String
+  code        String   @db.Text
+  author      String
+  downloads   Int      @default(0)
+  rating      Float    @default(0)
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  installedSkills InstalledSkill[]
+
+  @@index([category])
+  @@index([featured])
+}
+
+model InstalledSkill {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  skillId   String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agent Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId, skillId])
+  @@index([userId])
+  @@index([agentId])
+}
+
+model AgentSwarm {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  agents      String   @db.Text // JSON array of agent configs
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WorkflowNode {
+  id         String   @id @default(cuid())
+  workflowId String
+  type       String   // trigger, action, condition
+  config     String   @db.Text // JSON
+  position   String   // JSON {x, y}
+  createdAt  DateTime @default(now())
+
+  workflow Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+}
+
+model Workflow {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodes WorkflowNode[]
+
+  @@index([userId])
+}
+
+// Wallet model for CDP wallets
+model Wallet {
+  id                   String   @id @default(cuid())
+  userId               String
+  address              String   @unique
+  walletSeedEncrypted  String   @db.Text
+  network              String   @default("base-sepolia")
+  walletType           String   @default("cdp")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([address])
+}
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referredId  String   @unique
+  referralCode String
+  discountApplied Boolean @default(false)
+  referrerReward Boolean @default(false)
+  createdAt   DateTime @default(now())
+
+  referrer    User     @relation("Referrer", fields: [referrerId], references: [id])
+  referred    User     @relation("Referred", fields: [referredId], references: [id])
+
+  @@index([referrerId])
+}
+
+// Persistent API key storage (replaces in-memory Map)
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  keyHash   String   @unique  // bcrypt hash — never store plaintext
+  keyPrefix String             // first 8 chars for display preview
+  lastUsed  DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

@@ -1,0 +1,65 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "@/app/*": [
+        "./app/*"
+      ],
+      "@/lib/auth": [
+        "./lib/auth"
+      ],
+      "@/lib/prisma": [
+        "./app/lib/prisma"
+      ],
+      "@/lib/stripe": [
+        "./app/lib/stripe"
+      ],
+      "@/lib/email": [
+        "./app/lib/email"
+      ],
+      "@/lib/cron-parser": [
+        "./lib/cron-parser"
+      ],
+      "@/lib/email/welcome": [
+        "./lib/email/welcome"
+      ],
+      "@/components/*": [
+        "./app/components/*"
+      ]
+    },
+    "target": "ES2020"
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

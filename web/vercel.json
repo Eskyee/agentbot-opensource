@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.com/vercel.json",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install --include=dev",
+  "framework": "nextjs",
+  "regions": ["lhr1", "iad1"],
+  "rewrites": [
+    { "source": "/docs", "destination": "https://raveculture.mintlify.app" },
+    { "source": "/docs/:path*", "destination": "https://raveculture.mintlify.app/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}
