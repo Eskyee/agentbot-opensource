@@ -353,6 +353,25 @@ agentbot/
 └── skills/               # Claude Code skills
 ```
 
+## Self-Host or Use Our Platform
+
+You have two options:
+
+### Option 1: Self-Host (Free)
+Clone the code and run it on your own infrastructure:
+- Your own servers or cloud (AWS, DigitalOcean, etc.)
+- You manage updates, security, scaling
+- Free - no monthly fees
+
+### Option 2: Hosted by Us
+Use our managed platform - we handle everything:
+- **SOLO** - £29/mo - 1 Creative Agent
+- **COLLECTIVE** - £69/mo - 3 Creative Agents + 1 OpenClaw
+- **LABEL** - £149/mo - 10 Creative Agents + 3 OpenClaw
+- **NETWORK** - £499/mo - Unlimited everything
+
+Same pricing whether you self-host or use our platform. The difference is we manage the infrastructure for you.
+
 ## License
 
 MIT - see [LICENSE](LICENSE)
