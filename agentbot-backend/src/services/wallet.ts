@@ -6,22 +6,37 @@ import { parseUnits } from 'viem';
 
 dotenv.config();
 
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || 'default-secret-key-change-me';
+const ENCRYPTION_KEY = (() => {
+  const key = process.env.WALLET_ENCRYPTION_KEY;
+  if (!key) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('WALLET_ENCRYPTION_KEY must be set in production');
+    }
+    console.warn('[Wallet] Using dev-only encryption key. NEVER use this in production.');
+    return 'dev-only-insecure-key-do-not-use-in-production';
+  }
+  return key;
+})();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
 // Initialize CDP Client lazily (only if credentials provided)
 let cdp: CdpClient | null = null;
+let cdpDisabled = false;
 
 function getCdpClient(): CdpClient {
+  if (cdpDisabled) {
+    throw new Error('CDP is disabled — no credentials configured. This is an open source demo. Add CDP credentials to enable wallet features.');
+  }
   if (!cdp) {
     const apiKeyId = process.env.CDP_API_KEY_NAME;
     const privateKey = process.env.CDP_PRIVATE_KEY;
     const walletSecret = process.env.CDP_WALLET_SECRET;
 
     if (!apiKeyId || !privateKey || !walletSecret) {
-      throw new Error('CDP credentials not configured. Set CDP_API_KEY_NAME, CDP_PRIVATE_KEY, and CDP_WALLET_SECRET environment variables.');
+      cdpDisabled = true;
+      throw new Error('CDP is disabled — no credentials configured. This is an open source demo. Add CDP credentials to enable wallet features.');
     }
 
     cdp = new CdpClient({

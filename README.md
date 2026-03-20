@@ -25,9 +25,21 @@ Deploy autonomous AI agents in 60 seconds.
 
 ## Quick Start
 
+### Option 1: Docker (Recommended)
+
 ```bash
 git clone https://github.com/Eskyee/agentbot-opensource.git
-cd agentbot
+cd agentbot-opensource
+docker compose up -d
+```
+
+Visit http://localhost:3000
+
+### Option 2: Manual Setup
+
+```bash
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot-opensource
 cp .env.example .env
 # Edit .env with your API keys
 
@@ -38,7 +50,51 @@ cd web && npm install && npm run dev
 cd agentbot-backend && npm install && npm run dev
 ```
 
-Visit http://localhost:3000
+### Quick Start Script
+
+```bash
+./quick-start.sh    # One-click: starts stack + health check
+make up             # Start all services
+make logs           # Tail logs
+make health         # Check service status
+make test           # Quick load test
+make dashboard      # Open control panel
+```
+
+### VS Code
+
+Open in VS Code and use `Cmd+Shift+P` → "Run Task" for:
+- 🦞 Quick Start
+- ⬆️ Start Stack
+- ⬇️ Stop Stack
+- 📋 Tail Logs
+- 🔍 Health Check
+- 🔥 Load Test
+
+### Dashboard
+
+A browser-based control panel is included:
+```bash
+python3 -m http.server 8080 dashboard/
+# Then open http://localhost:8080
+```
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `INTERNAL_API_KEY` | Yes | Your API key for authentication |
+| `OPENROUTER_API_KEY` | BYOK | OpenRouter API key (default provider) |
+| `ANTHROPIC_API_KEY` | BYOK | Anthropic Claude key |
+| `OPENAI_API_KEY` | BYOK | OpenAI GPT key |
+| `GEMINI_API_KEY` | BYOK | Google Gemini key |
+| `GROQ_API_KEY` | BYOK | Groq inference key |
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `REDIS_URL` | Yes | Redis connection string |
+
+**BYOK** = Bring Your Own Key — no markup on API costs.
 
 ## Architecture
 

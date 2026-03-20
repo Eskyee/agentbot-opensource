@@ -9,6 +9,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
+import { timingSafeEqual, randomBytes } from 'crypto';
+import rateLimit from 'express-rate-limit';
 import path from 'path';
 
 dotenv.config();
@@ -40,7 +42,7 @@ if (!API_KEY && process.env.NODE_ENV === 'production') {
   throw new Error('INTERNAL_API_KEY must be set in production')
 }
 const DEV_API_KEY = 'dev-api-key-build-only'
-const ACTIVE_API_KEY = API_KEY || DEV_API_KEY
+const ACTIVE_API_KEY = API_KEY || (process.env.NODE_ENV !== 'production' ? DEV_API_KEY : (() => { throw new Error('INTERNAL_API_KEY must be set'); })())
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
@@ -52,12 +54,30 @@ const OPENCLAW_RUNTIME_VERSION = '2026.3.13'
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
+// Rate limiting
+const globalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 attempts per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts.' },
+});
+
 // Middleware
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://agentbot.com'],
   credentials: true,
 }));
 app.use(express.json());
+app.use(globalLimiter);
 app.use('/api/invite', inviteRouter);
 app.use('/api/underground', undergroundRouter);
 app.use('/api/mission-control', missionControlRouter);
@@ -475,22 +495,41 @@ const createOpenClawConfig = (
   return config;
 };
 
-// Auth middleware
+// Auth middleware — constant-time comparison to prevent timing attacks
 const authenticate = (req: Request, res: Response, next: any) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const token = auth.substring(7);
-  if (token !== API_KEY) {
+
+  if (!ACTIVE_API_KEY) {
+    return res.status(500).json({ error: 'Server misconfiguration' });
+  }
+
+  // Constant-time comparison
+  try {
+    const tokenBuf = Buffer.from(token, 'utf8');
+    const keyBuf = Buffer.from(ACTIVE_API_KEY, 'utf8');
+
+    if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+  } catch {
     return res.status(403).json({ error: 'Forbidden' });
   }
+
   next();
 };
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    mode: process.env.NODE_ENV === 'production' ? 'production' : 'demo',
+    version: DEPLOYMENT_VERSION,
+  });
 });
 
 app.get('/api/openclaw/version', (_req: Request, res: Response) => {
@@ -627,8 +666,7 @@ app.post('/api/agents', authenticate, (req: Request, res: Response) => {
   if (!name) {
     return res.status(400).json({ error: 'Name required' });
   }
-  // TODO: Create agent in database and deploy
-  res.status(201).json({ id: 'new-agent-id', name, status: 'deploying' });
+  res.status(501).json({ error: 'Agent creation not yet implemented. Use /api/deployments instead.' });
 });
 
 app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
@@ -664,15 +702,11 @@ app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
 });
 
 app.put('/api/agents/:id', authenticate, (req: Request, res: Response) => {
-  const { id } = req.params;
-  // TODO: Update agent
-  res.json({ id, message: 'Agent updated' });
+  res.status(501).json({ error: 'Agent update not yet implemented. Use /api/agents/:id/restart or /api/agents/:id/update instead.' });
 });
 
 app.delete('/api/agents/:id', authenticate, (req: Request, res: Response) => {
-  const { id } = req.params;
-  // TODO: Delete agent
-  res.json({ id, message: 'Agent deleted' });
+  res.status(501).json({ error: 'Agent deletion not yet implemented.' });
 });
 
 // Agent verification endpoints for Verified Human Badge
@@ -984,7 +1018,7 @@ app.get('/api/agents/:id/token', authenticate, async (req: Request, res: Respons
       return;
     }
     if (!metadata.gatewayToken) {
-      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const token = randomBytes(32).toString('hex');
       metadata.gatewayToken = token;
       await writeAgentMetadata(metadata);
     }
