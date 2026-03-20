@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 /**
  * Agent Provisioning API
  * Allows users to deploy new OpenClaw agents

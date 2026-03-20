@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail, sendPaymentReceiptEmail } from '../../../lib/email';
 import { stripe } from '../../../lib/stripe';
