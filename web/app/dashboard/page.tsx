@@ -135,6 +135,18 @@ function DashboardContent() {
         botUsername = parsed.botUsername || ''
       }
       
+      // Fallback: fetch from API if no localStorage data
+      if (!userId) {
+        try {
+          const agentsRes = await fetch('/api/agents')
+          const agentsData = await agentsRes.json()
+          if (agentsData.agents && agentsData.agents.length > 0) {
+            userId = agentsData.agents[0].userId
+            botUsername = agentsData.agents[0].botUsername || ''
+          }
+        } catch {}
+      }
+      
       if (!userId) {
         setError('No instance found. Please deploy first.')
         setLoading(false)
