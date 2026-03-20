@@ -1,0 +1,30 @@
+# Agentbot Render Blueprint
+services:
+  # Backend API
+  - type: web
+    name: agentbot-api
+    env: docker
+    dockerfilePath: agentbot-backend/Dockerfile
+    rootDir: agentbot-backend
+    plan: starter
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "3001"
+      - key: NODE_ENV
+        value: production
+
+  # Worker
+  - type: worker
+    name: agentbot-worker
+    env: docker
+    dockerfilePath: agentbot-worker/Dockerfile
+    rootDir: agentbot-worker
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
