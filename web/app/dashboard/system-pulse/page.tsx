@@ -118,7 +118,7 @@ export default function SystemPulsePage() {
 
         {/* CPU + Memory chart */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">CPU &amp; Memory — 10 min rolling</h2>
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">CPU & Memory — 10 min rolling</h2>
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={history}>
               <defs>

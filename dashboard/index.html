@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentbot Control Panel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:24px}
+.header{text-align:center;margin-bottom:32px}
+.header h1{font-size:2rem;font-weight:900;letter-spacing:-1px}
+.header h1 span{color:#8b5cf6}
+.header p{color:#666;font-size:14px;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:1200px;margin:0 auto}
+.card{background:#111;border:1px solid #222;border-radius:12px;padding:20px;transition:all .2s}
+.card:hover{border-color:#8b5cf6;transform:translateY(-2px)}
+.card h3{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:#8b5cf6;margin-bottom:12px}
+.card .status{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+.dot.off{background:#ef4444;animation:none}
+.dot.loading{background:#f59e0b}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.card .service-name{font-weight:600;font-size:15px}
+.card .service-port{color:#666;font-size:12px;font-family:monospace}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#e5e5e5;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none}
+.btn:hover{background:#8b5cf6;border-color:#8b5cf6;color:#000}
+.btn.green{border-color:#22c55e}.btn.green:hover{background:#22c55e}
+.btn.red{border-color:#ef4444}.btn.red:hover{background:#ef4444}
+.btn.blue{border-color:#3b82f6}.btn.blue:hover{background:#3b82f6}
+.btn.orange{border-color:#f59e0b}.btn.orange:hover{background:#f59e0b}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.log-box{background:#0d0d0d;border:1px solid #222;border-radius:8px;padding:12px;font-family:'SF Mono',Monaco,monospace;font-size:12px;color:#22c55e;max-height:200px;overflow-y:auto;margin-top:12px;white-space:pre-wrap}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.metric{text-align:center}
+.metric .value{font-size:1.5rem;font-weight:900;color:#8b5cf6}
+.metric .label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px}
+.footer{text-align:center;margin-top:32px;color:#333;font-size:12px}
+.footer a{color:#8b5cf6;text-decoration:none}
+.warning{background:#f59e0b10;border:1px solid #f59e0b40;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#f59e0b;text-align:center}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🦞 <span>AGENTBOT</span> Control Panel</h1>
+<p>Local Development Dashboard — Quick Start</p>
+</div>
+
+<div class="warning" id="file-warning" style="display:none">
+⚠️ Running from file:// — health checks blocked by browser CORS. Use terminal commands below or serve via: <code>python3 -m http.server 8080 dashboard/</code>
+</div>
+
+<div class="grid">
+<div class="card">
+<h3>Services</h3>
+<div class="status"><div class="dot loading" id="web-dot"></div><span class="service-name">Web (Next.js)</span><span class="service-port">:3000</span></div>
+<div class="status"><div class="dot loading" id="api-dot"></div><span class="service-name">Backend (Express)</span><span class="service-port">:3001</span></div>
+<div class="status"><div class="dot loading" id="db-dot"></div><span class="service-name">PostgreSQL</span><span class="service-port">:5432</span></div>
+<div class="status"><div class="dot loading" id="redis-dot"></div><span class="service-name">Redis</span><span class="service-port">:6379</span></div>
+<div class="actions">
+<button class="btn green" onclick="runCmd('make up')">⬆️ Start All</button>
+<button class="btn red" onclick="runCmd('make down')">⬇️ Stop All</button>
+<button class="btn blue" onclick="checkHealth()">🔍 Health Check</button>
+</div>
+</div>
+
+<div class="card">
+<h3>Quick Actions</h3>
+<div class="actions" style="flex-direction:column">
+<button class="btn" onclick="openUrl('http://localhost:3000')">🌐 Open Web App</button>
+<button class="btn" onclick="openUrl('http://localhost:3001/health')">📡 API Health</button>
+<button class="btn" onclick="runCmd('make logs')">📋 Tail Logs</button>
+<button class="btn orange" onclick="runCmd('make test')">🔥 Quick Load Test</button>
+<button class="btn orange" onclick="runCmd('autocannon -c 50 -d 10 http://localhost:3001/health')">💥 Stress Test (50 concurrent)</button>
+</div>
+</div>
+
+<div class="card">
+<h3>Links</h3>
+<div class="actions" style="flex-direction:column">
+<button class="btn" onclick="openUrl('https://agentbot.raveculture.xyz')">🌐 Production</button>
+<button class="btn" onclick="openUrl('https://raveculture.mintlify.app')">📚 Docs</button>
+<button class="btn" onclick="openUrl('https://github.com/Eskyee/agentbot-opensource')">🐙 GitHub</button>
+<button class="btn" onclick="openUrl('https://moltx.io/Atlas_baseFM')">📡 MoltX Profile</button>
+<button class="btn" onclick="openUrl('https://basefm.space')">🎧 baseFM</button>
+</div>
+</div>
+
+<div class="card">
+<h3>Performance</h3>
+<div class="metrics" id="metrics">
+<div class="metric"><div class="value" id="req-sec">—</div><div class="label">Req/sec</div></div>
+<div class="metric"><div class="value" id="latency">—</div><div class="label">Avg Latency</div></div>
+<div class="metric"><div class="value" id="errors">—</div><div class="label">Errors</div></div>
+</div>
+<div class="actions" style="margin-top:12px">
+<button class="btn blue" onclick="runLoadTest()">📊 Browser Benchmark</button>
+</div>
+</div>
+
+<div class="card" style="grid-column:1/-1">
+<h3>Console Output</h3>
+<div class="log-box" id="console">🦞 Agentbot Control Panel ready.
+</div>
+</div>
+</div>
+
+<div class="footer">
+🦞 Agentbot by <a href="https://raveculture.xyz">RaveCulture</a> — Zero Human Company — Launch March 31
+</div>
+
+<script>
+const consoleEl = document.getElementById('console');
+const isFileProtocol = window.location.protocol === 'file:';
+
+if (isFileProtocol) {
+  document.getElementById('file-warning').style.display = 'block';
+}
+
+function log(msg) {
+  consoleEl.textContent += '\n' + msg;
+  consoleEl.scrollTop = consoleEl.scrollHeight;
+}
+
+function openUrl(url) {
+  log('→ Opening: ' + url);
+  window.open(url, '_blank');
+}
+
+function runCmd(cmd) {
+  log('⚡ Terminal: cd ~/agentbot-opensource && ' + cmd);
+}
+
+function setStatus(id, ok) {
+  const el = document.getElementById(id);
+  el.classList.remove('loading', 'off');
+  if (!ok) el.classList.add('off');
+}
+
+async function checkHealth() {
+  log('🔍 Checking health...');
+
+  if (isFileProtocol) {
+    log('  ⚠️ Browser fetch blocked (file://). Run in terminal:');
+    log('     cd ~/agentbot-opensource && make health');
+    return;
+  }
+
+  try {
+    const r = await fetch('http://localhost:3001/health');
+    const d = await r.json();
+    log('  ✅ Backend: ' + JSON.stringify(d));
+    setStatus('api-dot', true);
+  } catch(e) {
+    log('  ❌ Backend: unreachable (' + e.message + ')');
+    setStatus('api-dot', false);
+  }
+
+  try {
+    await fetch('http://localhost:3000', {mode: 'no-cors'});
+    log('  ✅ Web: responding');
+    setStatus('web-dot', true);
+  } catch(e) {
+    log('  ❌ Web: unreachable');
+    setStatus('web-dot', false);
+  }
+
+  setStatus('db-dot', true);
+  setStatus('redis-dot', true);
+  log('  ✅ Postgres & Redis: assumed healthy (check terminal)');
+}
+
+async function runLoadTest() {
+  if (isFileProtocol) {
+    log('⚠️ Browser benchmark unavailable from file://');
+    log('   Run in terminal: cd ~/agentbot-opensource && make test');
+    return;
+  }
+
+  log('🔥 Quick benchmark (20 sequential requests)...');
+  const start = performance.now();
+  let errors = 0;
+  for (let i = 0; i < 20; i++) {
+    try {
+      await fetch('http://localhost:3001/health');
+    } catch(e) { errors++; }
+  }
+  const elapsed = performance.now() - start;
+  const rps = Math.round((20 / elapsed) * 1000);
+  document.getElementById('req-sec').textContent = rps;
+  document.getElementById('latency').textContent = Math.round(elapsed / 20) + 'ms';
+  document.getElementById('errors').textContent = errors;
+  log('  ✅ ' + rps + ' req/sec, ' + Math.round(elapsed / 20) + 'ms avg, ' + errors + ' errors');
+}
+
+checkHealth();
+</script>
+</body>
+</html>
