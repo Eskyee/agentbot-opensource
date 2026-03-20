@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
+    // Get user email from session
+    const session = await getServerSession(authOptions)
+    const userEmail = session?.user?.email || ''
+
     const body = await request.json()
     const { 
       telegramToken, 
@@ -11,7 +17,8 @@ export async function POST(request: NextRequest) {
       discordBotToken,
       aiProvider, 
       apiKey, 
-      plan 
+      plan,
+      email, // pass user email for admin check
     } = body
     
     if (!telegramToken && !whatsappToken && !discordBotToken) {
@@ -32,6 +39,7 @@ export async function POST(request: NextRequest) {
       aiProvider: aiProvider || 'openrouter',
       apiKey,
       plan: plan || 'free',
+      email: email || userEmail,
     }
 
     // Try Render backend directly — /api/provision has no auth middleware
@@ -46,7 +54,10 @@ export async function POST(request: NextRequest) {
         console.log(`[Provision] Trying ${baseUrl}/api/provision`)
         const res = await fetch(`${baseUrl}/api/provision`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-User-Email': email || userEmail || '',
+          },
           body: JSON.stringify(legacyPayload),
           signal: AbortSignal.timeout(15000),
         })
