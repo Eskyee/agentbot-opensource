@@ -53,11 +53,11 @@ export class AgentBusService {
         payload: message.payload
       };
 
-      const hash = ethers.utils.keccak256(
-        ethers.utils.toUtf8Bytes(JSON.stringify(messageContent))
+      const hash = ethers.keccak256(
+        ethers.toUtf8Bytes(JSON.stringify(messageContent))
       );
 
-      const recoveredAddress = ethers.utils.verifyMessage(
+      const recoveredAddress = ethers.verifyMessage(
         hash,
         message.from.signature
       );

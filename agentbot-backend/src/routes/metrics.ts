@@ -63,7 +63,7 @@ const generateRealMetrics = async (userId: string, timeRange: string): Promise<M
       '--no-stream'
     ]);
 
-    const stats = statsOutput.trim().split('|');
+    const stats = (statsOutput as any).toString().trim().split('|');
     if (stats.length >= 2) {
       const cpuPercent = parseFloat(stats[0].replace('%', '')) || 0;
       const memUsage = stats[1]; // Format: "100MiB / 1GiB" - need to parse
@@ -154,7 +154,7 @@ router.get('/:userId/performance', async (req: Request, res: Response) => {
         '--no-stream'
       ]);
 
-      const statsData = stats.trim().split('|');
+      const statsData = (stats as any).toString().trim().split('|');
       if (statsData.length >= 2) {
         performanceData.cpu = parseFloat(statsData[0].replace('%', '')) || 0;
         
@@ -214,7 +214,7 @@ router.get('/:userId/summary', async (req: Request, res: Response) => {
         '--no-stream'
       ]);
 
-      const statsData = stats.trim().split('|');
+      const statsData = (stats as any).toString().trim().split('|');
       if (statsData.length >= 2) {
         performanceData.cpu = parseFloat(statsData[0].replace('%', '')) || 0;
         
