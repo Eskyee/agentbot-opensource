@@ -46,9 +46,12 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       whatsappToken,
       aiProvider = 'openrouter',
       plan = 'free',
-      email, // user email for admin/stripe check
+      email: bodyEmail, // user email from body
       stripeSubscriptionId, // from Stripe checkout
     } = req.body;
+
+    // Also check header for email (set by auth middleware)
+    const email = bodyEmail || (req.headers['x-user-email'] as string);
 
     // Kill switch check
     if (KILL_SWITCH) {
