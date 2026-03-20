@@ -16,13 +16,13 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: '24'
 
-      - name: Install dependencies
-        run: |
-          cd web && npm install
-          cd ../agentbot-backend && npm install
+      - name: Install backend dependencies
+        run: cd agentbot-backend && npm ci
+
+      - name: Install web dependencies
+        run: cd web && npm ci
 
       - name: Lint
         run: |
