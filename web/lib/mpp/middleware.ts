@@ -13,7 +13,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyMppCredential, getMppChallenge, MPP_CONFIG } from './config';
+import { verifyMppCredential, MPP_CONFIG } from './config';
 
 // Payment method enum
 export type PaymentMethod = 'stripe' | 'mpp';

@@ -24,7 +24,6 @@ export {
 
 // Configuration
 export {
-  TEMPO_CONFIG,
   MPP_CONFIG,
   verifyMppCredential,
   formatChallengeHeader,

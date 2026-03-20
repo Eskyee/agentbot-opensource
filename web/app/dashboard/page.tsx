@@ -10,9 +10,6 @@ import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
 import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
 import HelpChat from '@/app/components/HelpChat'
-import { HistoricalMetrics } from './components/HistoricalMetrics'
-import { PerformanceAlerts } from './components/PerformanceAlerts'
-import { MusicMetrics } from './components/MusicMetrics'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -48,67 +45,31 @@ interface InstanceData {
   verifiedAt?: string | null
 }
 
-interface NavSection {
-  label: string
-  items: { icon: string; label: string; href: string }[]
-}
-
-const navSections: NavSection[] = [
-  {
-    label: '',
-    items: [
-      { icon: '📊', label: 'Overview', href: '/dashboard' },
-    ],
-  },
-  {
-    label: 'Music',
-    items: [
-      { icon: '📈', label: 'Analytics', href: '/dashboard/analytics' },
-      { icon: '🏟️', label: 'Venue Finder', href: '/dashboard/venue-finder' },
-      { icon: '🎤', label: 'Tour', href: '/dashboard/tour' },
-      { icon: '🎵', label: 'Streaming', href: '/dashboard/streaming' },
-      { icon: '🎛️', label: 'DJ Stream', href: '/dashboard/dj-stream' },
-    ],
-  },
-  {
-    label: 'Agents',
-    items: [
-      { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
-      { icon: '🔧', label: 'Skills', href: '/dashboard/skills' },
-      { icon: '🎨', label: 'Personality', href: '/dashboard/personality' },
-      { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
-      { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
-    ],
-  },
-  {
-    label: 'Intel',
-    items: [
-      { icon: '📡', label: 'System Pulse', href: '/dashboard/system-pulse' },
-      { icon: '🌅', label: 'Daily Brief', href: '/dashboard/daily-brief' },
-      { icon: '🔊', label: 'Signals', href: '/dashboard/signals' },
-      { icon: '🔭', label: 'Tech Updates', href: '/dashboard/tech-updates' },
-      { icon: '📈', label: 'Market Intel', href: '/dashboard/market-intel' },
-    ],
-  },
-  {
-    label: 'Tools',
-    items: [
-      { icon: '📁', label: 'Files', href: '/dashboard/files' },
-      { icon: '📆', label: 'Calendar', href: '/dashboard/calendar' },
-      { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
-      { icon: '💹', label: 'Trading', href: '/dashboard/trading' },
-      { icon: '✅', label: 'Verify', href: '/dashboard/verify' },
-    ],
-  },
-  {
-    label: '',
-    items: [
-      { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
-      { icon: '💳', label: 'Billing', href: '/billing' },
-      { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },
-      { icon: '⚙️', label: 'Settings', href: '/settings' },
-    ],
-  },
+const navItems = [
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: 'Agent Fleet', href: '/dashboard/fleet' },
+  { label: 'Cost Tracking', href: '/dashboard/cost' },
+  { label: 'System Pulse', href: '/dashboard/system-pulse' },
+  { label: 'Memory Log', href: '/dashboard/memory' },
+  { label: 'Daily Brief', href: '/dashboard/daily-brief' },
+  { label: 'Tech Updates', href: '/dashboard/tech-updates' },
+  { label: 'Market Intel', href: '/dashboard/market-intel' },
+  { label: 'Signals', href: '/dashboard/signals' },
+  { label: 'Tasks', href: '/dashboard/tasks' },
+  { label: 'Personality', href: '/dashboard/personality' },
+  { label: 'Skills', href: '/dashboard/skills' },
+  { label: 'Swarms', href: '/dashboard/swarms' },
+  { label: 'Workflows', href: '/dashboard/workflows' },
+  { label: 'Files', href: '/dashboard/files' },
+  { label: 'Calendar', href: '/dashboard/calendar' },
+  { label: 'Heartbeat', href: '/dashboard/heartbeat' },
+  { label: 'Verify', href: '/dashboard/verify' },
+  { label: 'DJ Stream', href: '/dashboard/dj-stream' },
+  { label: 'Trading', href: '/dashboard/trading' },
+  { label: 'Marketplace', href: '/marketplace' },
+  { label: 'Billing', href: '/billing' },
+  { label: 'API Keys', href: '/dashboard/keys' },
+  { label: 'Settings', href: '/settings' },
 ]
 
 function DashboardContent() {
@@ -131,12 +92,12 @@ function DashboardContent() {
   const [tasks, setTasks] = useState<{id: string; title: string; status: string; type: string}[]>([])
   const [signingOut, setSigningOut] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; icon: string}[]>([
-    { id: '1', action: 'Agent online', agent: 'Atlas', time: '2 min ago', icon: '🟢' },
-    { id: '2', action: 'Calendar sync completed', agent: 'Atlas', time: '8 min ago', icon: '⏱️' },
-    { id: '3', action: 'WhatsApp session started', agent: 'Atlas', time: '22 min ago', icon: '💬' },
-    { id: '4', action: 'Skill installed', agent: 'Atlas', time: '1 hour ago', icon: '🔌' },
-    { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', icon: '⚡' },
+  const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; status: string}[]>([
+    { id: '1', action: 'Agent online', agent: 'Atlas', time: '2 min ago', status: 'green' },
+    { id: '2', action: 'Calendar sync completed', agent: 'Atlas', time: '8 min ago', status: 'blue' },
+    { id: '3', action: 'WhatsApp session started', agent: 'Atlas', time: '22 min ago', status: 'blue' },
+    { id: '4', action: 'Skill installed', agent: 'Atlas', time: '1 hour ago', status: 'zinc' },
+    { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', status: 'green' },
   ])
 
   useEffect(() => {
@@ -158,10 +119,9 @@ function DashboardContent() {
       const urlUserId = searchParams.get('id')
       const storedData = localStorage.getItem('agentbot_instance')
       
-      // If no session, don't proceed with fetching instance data
+      // If no session, show login prompt
       if (!session) {
-        setInstance(null)
-        setError('')
+        setError('Please sign in to view your dashboard')
         setLoading(false)
         return
       }
@@ -301,18 +261,19 @@ function DashboardContent() {
 
    if (loading) {
      return (
-       <div className="flex items-center justify-center mt-[4rem] h-[calc(100vh-4rem)] bg-black">
+       <div className="flex items-center justify-center mt-[4rem] h-[calc(100vh-4rem)] bg-black font-mono">
          <div className="text-center">
-           <div className="text-5xl mb-4 animate-pulse">🦞</div>
-           <p className="text-gray-400">Loading your instance...</p>
+           <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
+           <p className="text-zinc-400 text-sm">Loading your instance...</p>
          </div>
        </div>
      )
    }
 
   if (error) {
+    const isAuthError = error.includes('sign in') || error.includes('Unauthorized')
     return (
-      <div className="flex h-screen bg-black">
+      <div className="flex h-screen bg-black font-mono">
         <DashboardSidebar
           userName={userName}
           plan={instance?.plan}
@@ -322,15 +283,23 @@ function DashboardContent() {
         
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-md">
-            <div className="text-6xl mb-4">🚀</div>
-            <h1 className="text-2xl font-bold mb-4">Deploy your first agent</h1>
-            <p className="text-gray-400 mb-8">{error}</p>
-            <Link
-              href="/onboard"
-              className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-            >
-              Deploy New Agent →
-            </Link>
+            <h1 className="text-2xl font-bold uppercase tracking-tighter mb-4">{isAuthError ? 'Sign in required' : 'Deploy your first agent'}</h1>
+            <p className="text-zinc-400 text-sm mb-8">{error}</p>
+            {isAuthError ? (
+              <Link
+                href="/login?callbackUrl=/dashboard"
+                className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
+                Sign In
+              </Link>
+            ) : (
+              <Link
+                href="/onboard"
+                className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
+                Deploy New Agent
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -341,10 +310,10 @@ function DashboardContent() {
 
   if (status === 'loading' || status === 'unauthenticated') {
     return (
-      <div className="flex items-center justify-center h-screen bg-black">
+      <div className="flex items-center justify-center h-screen bg-black font-mono">
         <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🦞</div>
-          <p className="text-gray-400">Loading...</p>
+          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
+          <p className="text-zinc-400 text-sm">Loading...</p>
         </div>
       </div>
     )
@@ -353,8 +322,14 @@ function DashboardContent() {
   const isRunning = instance.status === 'running'
   const startedAt = instance.startedAt
 
+  const activityDotColor = (s: string) => {
+    if (s === 'green') return 'bg-green-400'
+    if (s === 'blue') return 'bg-blue-500'
+    return 'bg-zinc-500'
+  }
+
   return (
-    <div className="flex h-screen bg-black">
+    <div className="flex h-screen bg-black font-mono">
       <DashboardSidebar
         userName={userName}
         credits={credits}
@@ -369,7 +344,7 @@ function DashboardContent() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors z-50"
+                className="lg:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
                 aria-label="Open menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -378,18 +353,18 @@ function DashboardContent() {
               </button>
               
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold">Mission Control</h1>
-                <p className="text-gray-400 text-sm lg:text-base">Agent monitoring & control center</p>
+                <h1 className="text-2xl lg:text-3xl font-bold uppercase tracking-tighter">Mission Control</h1>
+                <p className="text-zinc-400 text-sm">Agent monitoring & control center</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full">
+              <div className="flex items-center gap-2 border border-zinc-800 px-3 py-1 text-[10px] uppercase tracking-widest">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-sm text-green-400">System Online</span>
+                <span className="text-zinc-400">System Online</span>
               </div>
               <a
                 href="/agents"
-                className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
+                className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
               >
                 <span>+</span> New Agent
               </a>
@@ -399,118 +374,103 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Mission Control Header */}
+          {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-4 mb-8">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Active Agents</span>
-                <span className="text-2xl">🤖</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Active Agents</span>
               </div>
-              <div className="text-3xl font-bold">1<span className="text-lg text-gray-500 font-normal">/6</span></div>
+              <div className="text-3xl font-bold">1<span className="text-lg text-zinc-500 font-normal">/6</span></div>
               <div className="text-xs text-green-400 mt-1">+2 today</div>
             </div>
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Token Spend</span>
-                <span className="text-2xl">💰</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Token Spend</span>
               </div>
               <div className="text-3xl font-bold">£12.40</div>
               <div className="text-xs text-green-400 mt-1">+8.2% this month</div>
             </div>
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Sessions</span>
-                <span className="text-2xl">💬</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions</span>
               </div>
               <div className="text-3xl font-bold">11</div>
-              <div className="text-xs text-gray-500 mt-1">active now</div>
+              <div className="text-xs text-zinc-500 mt-1">active now</div>
             </div>
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Skills</span>
-                <span className="text-2xl">🛠️</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Skills</span>
               </div>
-              <div className="text-3xl font-bold">8<span className="text-lg text-gray-500 font-normal">/14</span></div>
-              <div className="text-xs text-blue-400 mt-1">+2 this week</div>
+              <div className="text-3xl font-bold">8<span className="text-lg text-zinc-500 font-normal">/14</span></div>
+              <div className="text-xs text-blue-500 mt-1">+2 this week</div>
             </div>
           </div>
 
           {/* System Vitals */}
           <div className="grid gap-4 md:grid-cols-3 mb-8">
-            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">CPU</span>
-                <span className="text-gray-500 text-sm">{stats?.cpu || '34%'}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">CPU</span>
+                <span className="text-zinc-500 text-sm">{stats?.cpu || '34%'}</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full" style={{ width: stats?.cpu || '34%' }} />
+              <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-white" style={{ width: stats?.cpu || '34%' }} />
               </div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Memory</span>
-                <span className="text-gray-500 text-sm">{stats?.memory || '62%'}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Memory</span>
+                <span className="text-zinc-500 text-sm">{stats?.memory || '62%'}</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" style={{ width: stats?.memory || '62%' }} />
+              <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-blue-500" style={{ width: stats?.memory || '62%' }} />
               </div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Disk</span>
-                <span className="text-gray-500 text-sm">45%</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Disk</span>
+                <span className="text-zinc-500 text-sm">45%</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{ width: '45%' }} />
+              <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-white" style={{ width: '45%' }} />
               </div>
             </div>
           </div>
 
           {/* Activity Feed */}
-          <div className="bg-gray-900 rounded-xl border border-gray-800 mb-8">
-            <div className="p-4 border-b border-gray-800">
-              <h2 className="font-semibold">Recent Activity</h2>
+          <div className="bg-zinc-900 border border-zinc-800 mb-8">
+            <div className="p-4 border-b border-zinc-800">
+              <h2 className="text-xs font-bold uppercase tracking-widest">Recent Activity</h2>
             </div>
-            <div className="divide-y divide-gray-800">
-              {activities.map((activity) => (
-                <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-gray-800/50 transition-colors">
-                  <span className="text-xl">{activity.icon}</span>
+            <div>
+              {activities.map((activity, i) => (
+                <div key={activity.id} className={`flex items-center gap-4 p-4 hover:bg-zinc-800/50 transition-colors ${i > 0 ? 'border-t border-zinc-900' : ''}`}>
+                  <span className={`w-2 h-2 rounded-full ${activityDotColor(activity.status)}`} />
                   <div className="flex-1">
-                    <div className="text-sm">{activity.action}</div>
-                    <div className="text-xs text-gray-500">{activity.agent}</div>
+                    <div className="text-sm text-zinc-400">{activity.action}</div>
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600">{activity.agent}</div>
                   </div>
-                  <div className="text-xs text-gray-500">{activity.time}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">{activity.time}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* New Performance Monitoring Components */}
-            {instance && (
-              <>
-                <div className="md:col-span-2">
-                  <HistoricalMetrics userId={instance.userId} />
-                </div>
-                <PerformanceAlerts userId={instance.userId} />
-                <MusicMetrics userId={instance.userId} />
-              </>
-            )}
-
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>🤖</span> Agent Details
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Agent Details
               </h2>
               <dl className="space-y-3">
                 {instance?.botUsername && (
                   <div>
-                    <dt className="text-xs text-gray-500 uppercase">Telegram</dt>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Telegram</dt>
                     <dd className="font-mono">
                       <a 
                         href={`https://t.me/${instance?.botUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline"
+                        className="text-blue-500 hover:underline"
                       >
                         @{instance?.botUsername}
                       </a>
@@ -518,59 +478,59 @@ function DashboardContent() {
                   </div>
                 )}
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Instance ID</dt>
-                  <dd className="font-mono text-sm text-gray-300">{instance?.userId}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Instance ID</dt>
+                  <dd className="font-mono text-sm text-zinc-400">{instance?.userId}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">URL</dt>
-                  <dd className="font-mono text-sm text-gray-300 break-all">
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">URL</dt>
+                  <dd className="font-mono text-sm text-zinc-400 break-all">
                     <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
                       {instance?.subdomain}
                     </a>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize">{instance?.plan || 'free'}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Plan</dt>
+                  <dd className="text-zinc-400 capitalize">{instance?.plan || 'free'}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Version</dt>
-                  <dd className="font-mono text-gray-300">{instance?.openclawVersion || '2026.2.26'}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
+                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || '2026.2.26'}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Started</dt>
-                  <dd className="text-gray-300">{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>
+                  <dd className="text-zinc-400">{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
                 </div>
               </dl>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>📊</span> Stats & Health
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Stats & Health
               </h2>
               <dl className="space-y-3">
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">CPU</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.cpu || 'N/A'}</dd>
+                  <dt className="text-zinc-500">CPU</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.cpu || 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Memory</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.memory || 'N/A'}</dd>
+                  <dt className="text-zinc-500">Memory</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.memory || 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Uptime</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.uptime || 'N/A'}</dd>
+                  <dt className="text-zinc-500">Uptime</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.uptime || 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Messages</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.messages ?? 'N/A'}</dd>
+                  <dt className="text-zinc-500">Messages</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.messages ?? 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Errors</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.errors ?? 'N/A'}</dd>
+                  <dt className="text-zinc-500">Errors</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.errors ?? 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Health</dt>
+                  <dt className="text-zinc-500">Health</dt>
                   <dd className={`font-mono ${stats?.health === 'healthy' ? 'text-green-400' : 'text-yellow-400'}`}>
                     {stats?.health || 'N/A'}
                   </dd>
@@ -579,38 +539,38 @@ function DashboardContent() {
               
               <div className="mt-4 space-y-3">
                 <div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
                     <span>CPU</span>
                     <span>{stats?.cpu || '0%'}</span>
                   </div>
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className={`h-full bg-white rounded-full ${getBarWidthClass(stats?.cpu)}`} />
+                  <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                    <div className={`h-full bg-white ${getBarWidthClass(stats?.cpu)}`} />
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
                     <span>Memory</span>
                     <span>{stats?.memory || '0%'}</span>
                   </div>
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className={`h-full bg-purple-500 rounded-full ${getBarWidthClass(stats?.memory)}`} />
+                  <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                    <div className={`h-full bg-blue-500 ${getBarWidthClass(stats?.memory)}`} />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>⚡</span> Quick Actions
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Quick Actions
               </h2>
               <div className="space-y-3">
                 <a
                   href={instance?.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full bg-green-600 hover:bg-green-500 px-4 py-3 rounded-lg transition-colors"
+                  className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                 >
-                  <span className="font-semibold">🎮 Open OpenClaw UI</span>
+                  <span>Open OpenClaw UI</span>
                   <span>→</span>
                 </a>
                 {instance?.botUsername && (
@@ -618,118 +578,120 @@ function DashboardContent() {
                     href={`https://t.me/${instance?.botUsername}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between w-full bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded-lg transition-colors"
+                    className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
                   >
-                    <span className="font-semibold">📱 Open Telegram</span>
+                    <span>Open Telegram</span>
                     <span>→</span>
                   </a>
                 )}
                 <button
                   onClick={() => performAction('update')}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-purple-600 hover:bg-purple-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
                 >
-                  <span>Update OpenClaw</span>
-                  {actionLoading === 'update' ? <span className="animate-spin">⏳</span> : <span>⬆️</span>}
+                  <span>Update</span>
+                  {actionLoading === 'update' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↑</span>}
                 </button>
                 <button
                   onClick={() => performAction('restart')}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
                 >
                   <span>Restart</span>
-                  {actionLoading === 'restart' ? <span className="animate-spin">⏳</span> : <span>🔄</span>}
+                  {actionLoading === 'restart' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↻</span>}
                 </button>
                 {isRunning ? (
                   <button
                     onClick={() => performAction('stop')}
                     disabled={!!actionLoading}
-                    className="flex items-center justify-between w-full bg-red-600 hover:bg-red-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                   >
                     <span>Stop</span>
-                    {actionLoading === 'stop' ? <span className="animate-spin">⏳</span> : <span>⏹</span>}
+                    {actionLoading === 'stop' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>■</span>}
                   </button>
                 ) : (
                   <button
                     onClick={() => performAction('start')}
                     disabled={!!actionLoading}
-                    className="flex items-center justify-between w-full bg-green-600 hover:bg-green-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
                   >
                     <span>Start</span>
-                    {actionLoading === 'start' ? <span className="animate-spin">⏳</span> : <span>▶️</span>}
+                    {actionLoading === 'start' ? <span className="w-2 h-2 rounded-full bg-black animate-pulse" /> : <span>▶</span>}
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>🎛️</span> Control Panel
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Control Panel
               </h2>
               <div className="space-y-3">
                 <button
                   onClick={() => performAction('repair')}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-orange-600 hover:bg-orange-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
                 >
                   <div className="text-left">
-                    <div className="font-semibold">🔧 Repair Agent</div>
-                    <div className="text-xs opacity-70">Full reconfigure — fixes broken proxy, tokens, config</div>
+                    <div>Repair Agent</div>
+                    <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-600 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
                   </div>
-                  {actionLoading === 'repair' ? <span className="animate-spin">⏳</span> : <span>→</span>}
+                  {actionLoading === 'repair' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>→</span>}
                 </button>
                 
-                <div className="bg-gray-800 rounded-lg p-3">
-                  <div className="text-xs text-gray-400 mb-2">Gateway Token</div>
+                <div className="border border-zinc-800 p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Gateway Token</div>
                   <div className="flex items-center gap-2">
                     <input
                       type="password"
                       readOnly
                       value={instance?.gatewayToken ? '••••••••••••' : ''}
                       placeholder="Click to load token"
-                      className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm font-mono"
+                      className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm font-mono focus:outline-none focus:border-zinc-600"
                     />
                     <button
                       onClick={handleCopyToken}
-                      className="bg-white text-black hover:bg-gray-200 px-3 py-2 rounded text-sm font-semibold"
+                      className="bg-white text-black px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                     >
-                      📋
+                      Copy
                     </button>
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-[10px] text-zinc-600 mt-2">
                     Paste this token in the Control UI settings to connect.
                   </div>
                 </div>
                 
                 <button
                   onClick={() => {
-                    if (confirm('⚠️ Wipe memory, identity & conversation history? This cannot be undone.')) {
+                    if (confirm('Wipe memory, identity & conversation history? This cannot be undone.')) {
                       performAction('reset-memory')
                     }
                   }}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-red-700 hover:bg-red-600 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                 >
                   <div className="text-left">
-                    <div className="font-semibold">⚠️ Reset Agent Memory</div>
-                    <div className="text-xs opacity-70">Wipe memory, identity & conversation history</div>
+                    <div>Reset Agent Memory</div>
+                    <div className="text-[10px] font-normal normal-case tracking-normal text-red-400/60 mt-1">Wipe memory, identity & conversation history</div>
                   </div>
-                  {actionLoading === 'reset-memory' ? <span className="animate-spin">⏳</span> : <span>→</span>}
+                  {actionLoading === 'reset-memory' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>→</span>}
                 </button>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>📋</span> Tasks
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Tasks
               </h2>
               <div className="flex gap-2 mb-4 overflow-x-auto">
                 {['all', 'recurring', 'chat', 'scheduled', 'completed'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTaskTab(tab)}
-                    className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap ${
-                      activeTaskTab === tab ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
+                    className={`border px-3 py-1.5 text-[10px] uppercase tracking-widest whitespace-nowrap transition-colors ${
+                      activeTaskTab === tab
+                        ? 'bg-white text-black border-white'
+                        : 'border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
                     }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -743,7 +705,7 @@ function DashboardContent() {
                     value={taskInput}
                     onChange={(e) => setTaskInput(e.target.value)}
                     placeholder="Tell your agent what to do..."
-                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-white"
+                    className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm focus:outline-none focus:border-zinc-600"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && taskInput.trim()) {
                         setTasks([...tasks, { id: Date.now().toString(), title: taskInput, status: 'pending', type: 'chat' }])
@@ -751,29 +713,28 @@ function DashboardContent() {
                       }
                     }}
                   />
-                  <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200">
+                  <button className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
                     Send
                   </button>
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">🔍 Research</button>
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📧 Draft email</button>
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📈 Market update</button>
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">✍️ Write a post</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Research</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Draft email</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Market update</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Write a post</button>
                 </div>
               </div>
               <div className="space-y-2">
                 {tasks.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    <div className="text-4xl mb-2">📋</div>
+                  <div className="text-center py-8 text-zinc-500 text-sm">
                     No tasks yet
                   </div>
                 ) : (
                   tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab).map((task) => (
-                    <div key={task.id} className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
-                      <span className="text-sm">{task.title}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        task.status === 'completed' ? 'bg-green-900 text-green-400' : 'bg-yellow-900 text-yellow-400'
+                    <div key={task.id} className="flex items-center justify-between border border-zinc-800 px-4 py-2">
+                      <span className="text-sm text-zinc-400">{task.title}</span>
+                      <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 ${
+                        task.status === 'completed' ? 'text-green-400' : 'text-yellow-400'
                       }`}>
                         {task.status}
                       </span>
@@ -783,26 +744,28 @@ function DashboardContent() {
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>💓</span> Heartbeat
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Heartbeat
               </h2>
-              <p className="text-sm text-gray-400 mb-4">Your agent's pulse. See when it last checked in and control how often it does.</p>
+              <p className="text-sm text-zinc-400 mb-4">Your agent&apos;s pulse. See when it last checked in and control how often it does.</p>
               
               <div className="flex items-center gap-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                <span className="text-sm">On schedule</span>
+                <span className="text-sm text-zinc-400">On schedule</span>
               </div>
               
               <div className="mb-4">
-                <div className="text-xs text-gray-500 mb-2">Frequency</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Frequency</div>
                 <div className="flex gap-2 flex-wrap">
                   {['1h', '3h', '6h', '12h', 'Off'].map((freq) => (
                     <button
                       key={freq}
                       onClick={() => setHeartbeatFreq(freq)}
-                      className={`px-3 py-1.5 rounded-lg text-xs ${
-                        heartbeatFreq === freq ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
+                      className={`border px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+                        heartbeatFreq === freq
+                          ? 'bg-white text-black border-white'
+                          : 'border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
                       }`}
                     >
                       {freq}
@@ -813,135 +776,137 @@ function DashboardContent() {
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <div className="text-xs text-gray-500">Last seen</div>
-                  <div className="text-sm">{lastSeen || 'Just now'}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Last seen</div>
+                  <div className="text-sm text-zinc-400">{lastSeen || 'Just now'}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">Next in</div>
-                  <div className="text-sm">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Next in</div>
+                  <div className="text-sm text-zinc-400">
                     {heartbeatFreq === 'Off' ? '—' : heartbeatFreq}
                   </div>
                 </div>
               </div>
               
-              <div className="bg-gray-800 rounded-lg p-3">
+              <div className="border border-zinc-800 p-4">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-400">Daily heartbeat pool</span>
-                  <span>{heartbeatCredits} of 200 remaining</span>
+                  <span className="text-zinc-400">Daily heartbeat pool</span>
+                  <span className="text-zinc-400">{heartbeatCredits} of 200 remaining</span>
                 </div>
-                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${(200 - heartbeatCredits) / 2}%` }} />
+                <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                  <div className="h-full bg-white" style={{ width: `${(200 - heartbeatCredits) / 2}%` }} />
                 </div>
-                <div className="text-xs text-gray-500 mt-2">Separate from your daily credits - heartbeats never eat into your quota.</div>
+                <div className="text-[10px] text-zinc-600 mt-2">Separate from your daily credits — heartbeats never eat into your quota.</div>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>🎯</span> Active Skills
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Active Skills
               </h2>
               <div className="space-y-2">
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Web Scraping</span>
-                  <span className="text-green-400">✓</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Web Scraping</span>
+                  <span className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Email</span>
-                  <span className="text-green-400">✓</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Email</span>
+                  <span className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Calendar</span>
-                  <span className="text-green-400">✓</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Calendar</span>
+                  <span className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
-                <a href="/marketplace" className="block text-center text-sm text-white hover:underline mt-3">
-                  + Add more skills →
+                <a href="/marketplace" className="block text-center text-sm text-zinc-400 hover:text-white mt-3 transition-colors">
+                  + Add more skills
                 </a>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>💬</span> Channels
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Channels
               </h2>
               <div className="space-y-2">
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Telegram</span>
-                  <span className="text-green-400">✓ Connected</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Telegram</span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-500">Connected</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Discord</span>
-                  <span className="text-gray-500">Not connected</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Discord</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Not connected</span>
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>WhatsApp</span>
-                  <span className="text-gray-500">Not connected</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">WhatsApp</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Not connected</span>
                 </div>
               </div>
             </div>
 
             <WalletCard />
-            <AIModelCard plan={instance?.plan || 'starter'} />
+            <AIModelCard plan={instance?.plan || 'free'} />
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>❓</span> Help & Support
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Help & Support
               </h2>
               <div className="space-y-3 text-sm">
-                <a href="https://raveculture.mintlify.app" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
-                  <span>📚</span> Documentation
+                <a href="/docs" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Documentation
                 </a>
-                <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
-                  <span>💬</span> Discord
+                <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Discord
                 </a>
-                <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
-                  <span>📧</span> Contact
+                <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Contact
                 </a>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 bg-gray-900 rounded-2xl p-6 border border-gray-800">
-            <h2 className="text-lg font-semibold mb-4">📝 Recent Activity</h2>
-            <div className="text-gray-400 text-sm space-y-2">
+          <div className="mt-6 bg-zinc-900 border border-zinc-800 p-6">
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-4">Recent Activity</h2>
+            <div className="text-zinc-400 text-sm space-y-2">
               <div className="flex items-center gap-3">
-                <span>•</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                 <span>Instance started</span>
-                <span className="ml-auto text-gray-600">{startedAt ? new Date(startedAt).toLocaleTimeString() : 'N/A'}</span>
+                <span className="ml-auto text-zinc-600 text-[10px] uppercase tracking-widest">{startedAt ? new Date(startedAt).toLocaleTimeString() : 'N/A'}</span>
               </div>
               <div className="flex items-center gap-3">
-                <span>•</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                 <span>Connected to Telegram</span>
               </div>
               <div className="flex items-center gap-3">
-                <span>•</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                 <span>Skills loaded</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 bg-gradient-to-r from-white/20 to-gray-200/20 rounded-2xl p-6 border border-white/30">
+          <div className="mt-6 border border-zinc-800 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold mb-1">🎁 Invite Friends, Get Free Months</h2>
-                <p className="text-gray-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
+                <h2 className="text-xs font-bold uppercase tracking-widest mb-1">Invite Friends, Get Free Months</h2>
+                <p className="text-zinc-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
                 <div className="flex items-center gap-3">
                   <input
                     type="text"
                     readOnly
                     value={`https://agentbot.raveculture.xyz/ref/${instance?.userId}`}
-                    className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-300 w-64"
+                    className="bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm text-zinc-400 w-64 font-mono focus:outline-none"
                     placeholder="Referral link"
                     title="Referral link"
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(`https://agentbot.raveculture.xyz/ref/${instance?.userId}`)}
-                    className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold"
+                    className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                   >
                     Copy
                   </button>
                 </div>
               </div>
-              <div className="hidden md:block text-5xl">🎁</div>
             </div>
           </div>
         </div>
@@ -952,116 +917,72 @@ function DashboardContent() {
 
 function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { userName: string; credits?: number; plan?: string; isOpen: boolean; onToggle: () => void }) {
   const pathname = usePathname()
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
-
-  const toggleSection = (label: string) => {
-    setCollapsed(prev => ({ ...prev, [label]: !prev[label] }))
-  }
-
   return (
     <>
       {isOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
           onClick={onToggle}
           aria-hidden="true"
         />
       )}
       
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-60 bg-[#0a0a0a] border-r border-white/[0.06] flex flex-col
+        fixed md:static inset-y-0 left-0 z-50
+        w-64 bg-zinc-950 border-r border-zinc-900 flex flex-col font-mono
         transform transition-transform duration-200 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/[0.06]">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-lg">🦞</span>
-            <span className="font-bold text-sm tracking-tight">Agentbot</span>
-          </Link>
-          <button
-            onClick={onToggle}
-            className="lg:hidden p-1.5 text-gray-500 hover:text-white rounded-lg hover:bg-white/[0.06] transition-colors"
-            aria-label="Close sidebar"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <button
+          onClick={onToggle}
+          className="md:hidden absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+          aria-label="Close sidebar"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-2 px-2">
-          {navSections.map((section, idx) => (
-            <div key={section.label || idx} className={section.label ? 'mt-4' : ''}>
-              {section.label && (
-                <button
-                  onClick={() => toggleSection(section.label)}
-                  className="flex items-center justify-between w-full px-3 py-1.5 mb-0.5"
-                >
-                  <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">{section.label}</span>
-                  <svg
-                    className={`w-3 h-3 text-gray-600 transition-transform ${collapsed[section.label] ? '-rotate-90' : ''}`}
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              )}
-              {!collapsed[section.label] && (
-                <div className="space-y-0.5">
-                  {section.items.map((item) => {
-                    const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href + '/'))
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={onToggle}
-                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors ${
-                          isActive
-                            ? 'bg-white/[0.08] text-white font-medium'
-                            : 'text-gray-400 hover:bg-white/[0.04] hover:text-gray-200'
-                        }`}
-                      >
-                        <span className="text-sm w-5 text-center">{item.icon}</span>
-                        <span>{item.label}</span>
-                      </Link>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
+        <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
+          <div className="space-y-0.5">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={onToggle}
+                className={`flex items-center px-4 py-2.5 text-sm transition-colors ${
+                  pathname === item.href || pathname.startsWith(item.href + '/')
+                    ? 'bg-zinc-900 text-white' 
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                }`}
+              >
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          <Link href="/billing" onClick={onToggle} className="block mt-8 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
+            <div className="text-xl font-bold capitalize">{plan || 'Underground'}</div>
+          </Link>
         </nav>
 
-        {/* Plan card */}
-        <div className="px-3 pb-2">
-          <Link href="/billing" onClick={onToggle} className="block p-3 bg-white/[0.04] rounded-lg hover:bg-white/[0.06] transition-colors">
-            <div className="text-[11px] text-gray-500 uppercase tracking-wider">Plan</div>
-            <div className="text-sm font-semibold capitalize mt-0.5">{plan || 'Underground'}</div>
-          </Link>
-        </div>
-
-        {/* User */}
-        <div className="p-3 border-t border-white/[0.06]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center font-bold text-black text-xs flex-shrink-0">
+        <div className="p-4 border-t border-zinc-900">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-white">
               {userName.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium truncate">{userName}</div>
+              <div className="font-medium truncate text-sm">{userName}</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Sign up</div>
             </div>
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="p-1.5 text-gray-500 hover:text-white rounded-lg hover:bg-white/[0.06] transition-colors flex-shrink-0"
-              title="Sign out"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
           </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="w-full flex items-center justify-center gap-2 border border-zinc-800 px-4 py-2 text-sm text-zinc-500 hover:text-white hover:border-zinc-600 transition-colors"
+          >
+            Sign Out
+          </button>
         </div>
       </aside>
       <HelpChat />
@@ -1072,10 +993,10 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
 export default function Dashboard() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center h-screen bg-black">
+      <div className="flex items-center justify-center h-screen bg-black font-mono">
         <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🦞</div>
-          <p className="text-gray-400">Loading...</p>
+          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
+          <p className="text-zinc-400 text-sm">Loading...</p>
         </div>
       </div>
     }>

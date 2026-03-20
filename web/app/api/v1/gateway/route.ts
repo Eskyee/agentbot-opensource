@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       
       // Valid MPP payment — store receipt and proceed
       mppReceipt = mppResult.receipt;
-      console.log(`[MPP] Payment verified for ${pluginName}: ${mppResult.txHash}`);
+      console.log(`[MPP] Payment verified for ${pluginName}: ${mppResult.receipt}`);
     }
     // If stripe or no payment method, existing flow continues unchanged
 
