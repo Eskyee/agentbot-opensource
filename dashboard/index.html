@@ -6,47 +6,61 @@
 <title>Agentbot Control Panel</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;padding:24px}
-.header{text-align:center;margin-bottom:32px}
-.header h1{font-size:2rem;font-weight:900;letter-spacing:-1px}
-.header h1 span{color:#8b5cf6}
-.header p{color:#666;font-size:14px;margin-top:4px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;max-width:1200px;margin:0 auto}
-.card{background:#111;border:1px solid #222;border-radius:12px;padding:20px;transition:all .2s}
-.card:hover{border-color:#8b5cf6;transform:translateY(-2px)}
-.card h3{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:#8b5cf6;margin-bottom:12px}
-.card .status{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+body{background:#000;color:#a1a1aa;font-family:'SF Mono',Monaco,monospace;min-height:100vh}
+/* Launch banner */
+.banner{background:#fff;color:#000;text-align:center;padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;position:relative;overflow:hidden}
+.banner-inner{display:inline-block;white-space:nowrap;animation:marquee 20s linear infinite}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+/* Header */
+.header{text-align:center;padding:32px 24px 0}
+.header h1{font-size:2rem;font-weight:900;letter-spacing:-1px;text-transform:uppercase}
+.header h1 span{color:#3b82f6}
+.header p{color:#52525b;font-size:10px;margin-top:8px;text-transform:uppercase;letter-spacing:2px}
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:#18181b;max-width:1200px;margin:24px auto 0}
+.card{background:#000;padding:20px}
+.card h3{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#3b82f6;margin-bottom:16px}
+.card .status{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
 .dot.off{background:#ef4444;animation:none}
 .dot.loading{background:#f59e0b}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.card .service-name{font-weight:600;font-size:15px}
-.card .service-port{color:#666;font-size:12px;font-family:monospace}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#e5e5e5;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none}
-.btn:hover{background:#8b5cf6;border-color:#8b5cf6;color:#000}
-.btn.green{border-color:#22c55e}.btn.green:hover{background:#22c55e}
-.btn.red{border-color:#ef4444}.btn.red:hover{background:#ef4444}
-.btn.blue{border-color:#3b82f6}.btn.blue:hover{background:#3b82f6}
-.btn.orange{border-color:#f59e0b}.btn.orange:hover{background:#f59e0b}
+.card .service-name{font-weight:700;font-size:13px;color:#fff;text-transform:uppercase;letter-spacing:1px}
+.card .service-port{color:#52525b;font-size:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border:1px solid #27272a;background:#000;color:#a1a1aa;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;text-decoration:none;text-transform:uppercase;letter-spacing:2px}
+.btn:hover{background:#fff;border-color:#fff;color:#000}
+.btn.green{border-color:#22c55e;color:#22c55e}.btn.green:hover{background:#22c55e;color:#000}
+.btn.red{border-color:#ef4444;color:#ef4444}.btn.red:hover{background:#ef4444;color:#000}
+.btn.blue{border-color:#3b82f6;color:#3b82f6}.btn.blue:hover{background:#3b82f6;color:#000}
+.btn.orange{border-color:#f59e0b;color:#f59e0b}.btn.orange:hover{background:#f59e0b;color:#000}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-.log-box{background:#0d0d0d;border:1px solid #222;border-radius:8px;padding:12px;font-family:'SF Mono',Monaco,monospace;font-size:12px;color:#22c55e;max-height:200px;overflow-y:auto;margin-top:12px;white-space:pre-wrap}
-.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.log-box{background:#09090b;border:1px solid #18181b;padding:12px;font-family:'SF Mono',Monaco,monospace;font-size:12px;color:#22c55e;max-height:200px;overflow-y:auto;margin-top:12px;white-space:pre-wrap}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
 .metric{text-align:center}
-.metric .value{font-size:1.5rem;font-weight:900;color:#8b5cf6}
-.metric .label{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px}
-.footer{text-align:center;margin-top:32px;color:#333;font-size:12px}
-.footer a{color:#8b5cf6;text-decoration:none}
-.warning{background:#f59e0b10;border:1px solid #f59e0b40;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#f59e0b;text-align:center}
+.metric .value{font-size:1.5rem;font-weight:900;color:#3b82f6}
+.metric .label{font-size:10px;color:#52525b;text-transform:uppercase;letter-spacing:2px}
+.footer{text-align:center;padding:32px 24px;border-top:1px solid #18181b;margin-top:24px}
+.footer span{color:#3f3f46;font-size:10px;text-transform:uppercase;letter-spacing:2px}
+.footer a{color:#3b82f6;text-decoration:none}
+.warning{background:#09090b;border:1px solid #18181b;padding:12px;margin:0 24px;font-size:12px;color:#f59e0b;text-align:center;text-transform:uppercase;letter-spacing:1px;display:none}
 </style>
 </head>
 <body>
-<div class="header">
-<h1>🦞 <span>AGENTBOT</span> Control Panel</h1>
-<p>Local Development Dashboard — Quick Start</p>
+
+<!-- Launch Banner -->
+<div class="banner">
+<div class="banner-inner">
+🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp;
+</div>
 </div>
 
-<div class="warning" id="file-warning" style="display:none">
-⚠️ Running from file:// — health checks blocked by browser CORS. Use terminal commands below or serve via: <code>python3 -m http.server 8080 dashboard/</code>
+<div class="header">
+<h1><span>AGENTBOT</span> Control Panel</h1>
+<p>Local Development — Quick Start</p>
+</div>
+
+<div class="warning" id="file-warning">
+⚠️ Running from file:// — health checks blocked by browser CORS. Use terminal: <code>python3 -m http.server 8080 dashboard/</code>
 </div>
 
 <div class="grid">
@@ -57,31 +71,31 @@ body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFo
 <div class="status"><div class="dot loading" id="db-dot"></div><span class="service-name">PostgreSQL</span><span class="service-port">:5432</span></div>
 <div class="status"><div class="dot loading" id="redis-dot"></div><span class="service-name">Redis</span><span class="service-port">:6379</span></div>
 <div class="actions">
-<button class="btn green" onclick="runCmd('make up')">⬆️ Start All</button>
-<button class="btn red" onclick="runCmd('make down')">⬇️ Stop All</button>
-<button class="btn blue" onclick="checkHealth()">🔍 Health Check</button>
+<button class="btn green" onclick="runCmd('make up')">Start All</button>
+<button class="btn red" onclick="runCmd('make down')">Stop All</button>
+<button class="btn blue" onclick="checkHealth()">Health Check</button>
 </div>
 </div>
 
 <div class="card">
 <h3>Quick Actions</h3>
 <div class="actions" style="flex-direction:column">
-<button class="btn" onclick="openUrl('http://localhost:3000')">🌐 Open Web App</button>
-<button class="btn" onclick="openUrl('http://localhost:3001/health')">📡 API Health</button>
-<button class="btn" onclick="runCmd('make logs')">📋 Tail Logs</button>
-<button class="btn orange" onclick="runCmd('make test')">🔥 Quick Load Test</button>
-<button class="btn orange" onclick="runCmd('autocannon -c 50 -d 10 http://localhost:3001/health')">💥 Stress Test (50 concurrent)</button>
+<button class="btn" onclick="openUrl('http://localhost:3000')">Open Web App</button>
+<button class="btn" onclick="openUrl('http://localhost:3001/health')">API Health</button>
+<button class="btn" onclick="runCmd('make logs')">Tail Logs</button>
+<button class="btn orange" onclick="runCmd('make test')">Quick Load Test</button>
+<button class="btn orange" onclick="runCmd('autocannon -c 50 -d 10 http://localhost:3001/health')">Stress Test (50c)</button>
 </div>
 </div>
 
 <div class="card">
 <h3>Links</h3>
 <div class="actions" style="flex-direction:column">
-<button class="btn" onclick="openUrl('https://agentbot.raveculture.xyz')">🌐 Production</button>
-<button class="btn" onclick="openUrl('https://raveculture.mintlify.app')">📚 Docs</button>
-<button class="btn" onclick="openUrl('https://github.com/Eskyee/agentbot-opensource')">🐙 GitHub</button>
-<button class="btn" onclick="openUrl('https://moltx.io/Atlas_baseFM')">📡 MoltX Profile</button>
-<button class="btn" onclick="openUrl('https://basefm.space')">🎧 baseFM</button>
+<button class="btn" onclick="openUrl('https://agentbot.raveculture.xyz')">Production</button>
+<button class="btn" onclick="openUrl('https://raveculture.mintlify.app')">Docs</button>
+<button class="btn" onclick="openUrl('https://github.com/Eskyee/agentbot-opensource')">GitHub</button>
+<button class="btn" onclick="openUrl('https://moltx.io/Atlas_baseFM')">MoltX Profile</button>
+<button class="btn" onclick="openUrl('https://basefm.space')">baseFM</button>
 </div>
 </div>
 
@@ -93,19 +107,19 @@ body{background:#0a0a0a;color:#e5e5e5;font-family:-apple-system,BlinkMacSystemFo
 <div class="metric"><div class="value" id="errors">—</div><div class="label">Errors</div></div>
 </div>
 <div class="actions" style="margin-top:12px">
-<button class="btn blue" onclick="runLoadTest()">📊 Browser Benchmark</button>
+<button class="btn blue" onclick="runLoadTest()">Browser Benchmark</button>
 </div>
 </div>
 
 <div class="card" style="grid-column:1/-1">
 <h3>Console Output</h3>
-<div class="log-box" id="console">🦞 Agentbot Control Panel ready.
+<div class="log-box" id="console">Agentbot Control Panel ready.
 </div>
 </div>
 </div>
 
 <div class="footer">
-🦞 Agentbot by <a href="https://raveculture.xyz">RaveCulture</a> — Zero Human Company — Launch March 31
+<span>Agentbot by <a href="https://raveculture.xyz">RaveCulture</a> — Zero Human Company — 🚀 Launch 31st March 2026</span>
 </div>
 
 <script>
