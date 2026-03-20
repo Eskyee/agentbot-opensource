@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { authenticate } from '../middleware/auth';
 
 /**
  * BASEFM Provision Endpoint
@@ -36,7 +37,7 @@ const generateMuxCredentials = () => ({
  * POST /api/provision
  * Provisions a new BASEFM agent with streaming capabilities
  */
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
     const {
       telegramToken,

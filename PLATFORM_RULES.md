@@ -45,6 +45,13 @@
 - Admin can set this to stop new instances immediately
 - Existing instances continue running
 
+### Rule 7: Data Isolation (RLS)
+- Every user's data is isolated via PostgreSQL Row-Level Security
+- Users can ONLY see their own agents, tasks, memories, files
+- Admin bypass: admin role sees all data
+- RLS enforced at database level (not just application)
+- Auth middleware sets user context before every query
+
 ---
 
 ## Admin Accounts (hardcoded for now)

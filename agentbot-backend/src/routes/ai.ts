@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import AIProviderService from '../services/ai-provider';
 import { requirePlan, canAccessModel } from '../middleware/plan';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -83,7 +84,7 @@ router.post('/models/select', async (req: Request, res: Response) => {
 });
 
 // Universal chat endpoint - works with any provider
-router.post('/chat', requirePlan, async (req: Request, res: Response) => {
+router.post('/chat', authenticate, requirePlan, async (req: Request, res: Response) => {
   const { messages, model, taskType, temperature, top_p, max_tokens } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
