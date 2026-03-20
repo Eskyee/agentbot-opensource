@@ -54,6 +54,11 @@ export async function POST(request: NextRequest) {
         const data = await res.json()
 
         if (data.success) {
+          // Fire-and-forget alert — don't block provisioning
+          import('@/app/lib/alerts').then(({ alertNewProvision }) => {
+            alertNewProvision(data.userId || userId, legacyPayload.plan || 'free').catch(() => {})
+          }).catch(() => {})
+
           return NextResponse.json({
             success: true,
             userId: data.userId || userId,
