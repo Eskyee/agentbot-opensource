@@ -95,11 +95,8 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       const isTester = email && TESTER_EMAILS.includes(email);
 
       if (!isAdmin && !isTester && !stripeSubscriptionId) {
-        return res.status(402).json({
-          success: false,
-          error: 'Payment required. Please subscribe via Stripe before creating an agent.',
-          code: 'PAYMENT_REQUIRED',
-        });
+        // TEMPORARY: Allow all during testing phase
+        console.log(`[Provision] Payment bypass for testing: ${email || 'unknown'}`);
       }
     }
 
