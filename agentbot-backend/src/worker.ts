@@ -1,9 +1,12 @@
 import { Worker, Queue } from 'bullmq';
 import IORedis from 'ioredis';
-import { config } from './lib/config';
-import { logger } from './lib/logger';
+import dotenv from 'dotenv';
 
-const connection = new IORedis(config.REDIS_URL, {
+dotenv.config();
+
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+
+const connection = new IORedis(REDIS_URL, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 });
@@ -15,20 +18,18 @@ export const provisionQueue = new Queue('provision', { connection });
 // Task processor
 const taskWorker = new Worker(
   'tasks',
-  async (job) => {
-    logger.info(`Processing task: ${job.name}`, { jobId: job.id, data: job.data });
+  async (job: { name: string; id: string | undefined; data: Record<string, unknown> }) => {
+    console.log(`[Worker] Processing task: ${job.name}`, { jobId: job.id, data: job.data });
 
     switch (job.name) {
       case 'scheduled-task':
-        // Execute scheduled agent task
-        logger.info(`Running scheduled task: ${job.data.taskId}`);
+        console.log(`[Worker] Running scheduled task: ${job.data.taskId}`);
         break;
       case 'skill-execution':
-        // Execute skill
-        logger.info(`Executing skill: ${job.data.skillName}`);
+        console.log(`[Worker] Executing skill: ${job.data.skillName}`);
         break;
       default:
-        logger.warn(`Unknown task type: ${job.name}`);
+        console.log(`[Worker] Unknown task type: ${job.name}`);
     }
 
     return { completed: true, timestamp: new Date().toISOString() };
@@ -39,15 +40,15 @@ const taskWorker = new Worker(
 // Provision processor
 const provisionWorker = new Worker(
   'provision',
-  async (job) => {
-    logger.info(`Processing provision: ${job.name}`, { jobId: job.id, data: job.data });
+  async (job: { name: string; id: string | undefined; data: Record<string, unknown> }) => {
+    console.log(`[Worker] Processing provision: ${job.name}`, { jobId: job.id, data: job.data });
 
     switch (job.name) {
       case 'new-agent':
-        logger.info(`Provisioning new agent for user: ${job.data.userId}`);
+        console.log(`[Worker] Provisioning new agent for user: ${job.data.userId}`);
         break;
       default:
-        logger.warn(`Unknown provision type: ${job.name}`);
+        console.log(`[Worker] Unknown provision type: ${job.name}`);
     }
 
     return { completed: true, timestamp: new Date().toISOString() };
@@ -56,26 +57,26 @@ const provisionWorker = new Worker(
 );
 
 taskWorker.on('completed', (job) => {
-  logger.info(`Task completed: ${job.name}`, { jobId: job.id });
+  console.log(`[Worker] Task completed: ${job.name}`, { jobId: job.id });
 });
 
-taskWorker.on('failed', (job, err) => {
-  logger.error(`Task failed: ${job?.name}`, { jobId: job?.id, error: err.message });
+taskWorker.on('failed', (job, err: Error) => {
+  console.error(`[Worker] Task failed: ${job?.name}`, { jobId: job?.id, error: err.message });
 });
 
 provisionWorker.on('completed', (job) => {
-  logger.info(`Provision completed: ${job.name}`, { jobId: job.id });
+  console.log(`[Worker] Provision completed: ${job.name}`, { jobId: job.id });
 });
 
-provisionWorker.on('failed', (job, err) => {
-  logger.error(`Provision failed: ${job?.name}`, { jobId: job?.id, error: err.message });
+provisionWorker.on('failed', (job, err: Error) => {
+  console.error(`[Worker] Provision failed: ${job?.name}`, { jobId: job?.id, error: err.message });
 });
 
-logger.info('Worker started. Listening for jobs...');
+console.log('[Worker] Started. Listening for jobs...');
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  logger.info('Shutting down worker...');
+  console.log('[Worker] Shutting down...');
   await taskWorker.close();
   await provisionWorker.close();
   await connection.quit();
