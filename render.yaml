@@ -2,7 +2,7 @@
 databases:
   - name: agentbot-db
     databaseName: agentbot
-    plan: starter
+    plan: free
     ipAllowList: []
 
 services:
