@@ -96,7 +96,7 @@ export function checkAgentLimit(currentAgentCount: number, plan: PlanName): bool
  */
 export function canAccessModel(model: string, plan: PlanName): boolean {
   const allowed = PLANS[plan].models;
-  return allowed.includes('*') || allowed.includes(model as any);
+  return (allowed as readonly string[]).includes('*') || (allowed as readonly string[]).includes(model);
 }
 
 /**
