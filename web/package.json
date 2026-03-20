@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",
-    "test:ui": "playwright test --ui"
+    "test:ui": "playwright test --ui",
+    "design:check": "grep -rn 'gray-\\|purple-' app/ --include=\"*.tsx\" | grep -v node_modules || echo 'Design check passed'",
+    "design:fix": "find app -name '*.tsx' -exec sed -i '' 's/bg-gray-/bg-zinc-/g; s/text-gray-/text-zinc-/g; s/border-gray-/border-zinc-/g; s/hover:bg-gray-/hover:bg-zinc-/g; s/bg-purple-/bg-blue-/g; s/text-purple-/text-blue-/g; s/border-purple-/border-blue-/g; s/hover:bg-purple-/hover:bg-blue-/g' {} +"
   },
   "dependencies": {
     "@account-abstraction/contracts": "^0.8.0",
