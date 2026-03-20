@@ -16,9 +16,8 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'djescaba@icloud.com,eskyjungl
 const TESTER_EMAILS = (process.env.TESTER_EMAILS || '').split(',').filter(Boolean);
 const KILL_SWITCH = process.env.KILL_SWITCH === 'true';
 
-// Plan limits
+// Plan limits — NO FREE TIER
 const PLAN_LIMITS: Record<string, { agents: number; stripeRequired: boolean }> = {
-  free: { agents: 0, stripeRequired: false },
   label: { agents: 1, stripeRequired: true },
   solo: { agents: 3, stripeRequired: true },
   collective: { agents: 10, stripeRequired: true },
@@ -100,12 +99,12 @@ router.post('/', async (req: Request, res: Response) => {
       }
     }
 
-    // Free plan: no instances allowed (dashboard only)
+    // Free plan: NO FREE TIER — everyone pays
     if (plan === 'free') {
       return res.status(402).json({
         success: false,
-        error: 'Free plan has no compute. Upgrade to create agents.',
-        code: 'UPGRADE_REQUIRED',
+        error: 'No free tier. Choose a paid plan to get started.',
+        code: 'PAYMENT_REQUIRED',
       });
     }
 

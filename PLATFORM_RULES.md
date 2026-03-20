@@ -16,11 +16,13 @@
 ### Rule 3: Plan Enforcement
 | Plan | Price | Agents | Stripe Required |
 |------|-------|--------|-----------------|
-| free | $0 | 0 (dashboard only) | No |
+| ~~free~~ | ~~$0~~ | ~~0~~ | ~~No~~ REMOVED |
 | label | $29/mo | 1 | Yes |
 | solo | $79/mo | 3 | Yes |
 | collective | $199/mo | 10 | Yes |
 | network | $499/mo | 100 | Yes |
+
+**NO FREE TIER.** Every user must pay before accessing the platform. Dashboard access requires at least a label plan.
 
 ### Rule 4: Provision Flow
 1. User signs up → gets dashboard access (no instance)
