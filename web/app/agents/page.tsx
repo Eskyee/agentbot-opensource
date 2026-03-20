@@ -1,71 +1,149 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 
-const navItems = [
-  { icon: '🤖', label: 'Agents', href: '/agents', active: true },
-  { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
-  { icon: '💳', label: 'Billing', href: '/billing', active: false },
-  { icon: '⚙️', label: 'Account', href: '/settings', active: false },
+const musicTemplates = [
+  {
+    id: 'dj-manager',
+    name: 'DJ Manager',
+    description: 'Full-stack DJ management agent. Handles bookings, set planning, and fan engagement across Telegram and WhatsApp.',
+    skills: ['Setlist Oracle', 'Booking Agent', 'Fan Engagement', 'Royalty Tracker'],
+    brain: 'DeepSeek R1',
+    tier: 'Collective',
+  },
+  {
+    id: 'producer-assistant',
+    name: 'Producer Assistant',
+    description: 'Your studio partner. Tracks samples, manages demo submissions, handles split sheets and collaborator coordination.',
+    skills: ['Track Archaeologist', 'Demo Submitter', 'Royalty Tracker', 'Visual Synthesizer'],
+    brain: 'Llama 3.3',
+    tier: 'Underground',
+  },
+  {
+    id: 'booking-agent',
+    name: 'Booking Agent',
+    description: 'Autonomous booking agent. Finds venues, negotiates rates, manages calendar, and handles rider requirements.',
+    skills: ['Venue Finder', 'Event Scheduler', 'Festival Finder', 'USDC Payments'],
+    brain: 'DeepSeek R1',
+    tier: 'Label',
+  },
+  {
+    id: 'ar-scout',
+    name: 'A&R Scout',
+    description: 'Discovers emerging talent via streaming data and social signals. Monitors SoundCloud, Bandcamp, and club playlists.',
+    skills: ['Track Archaeologist', 'Groupie Manager', 'Demo Submitter', 'Web Search'],
+    brain: 'Qwen 2.5',
+    tier: 'Collective',
+  },
+  {
+    id: 'promo-engine',
+    name: 'Promo Engine',
+    description: 'Handles release campaigns, social media scheduling, playlist pitching, and press kit distribution.',
+    skills: ['Visual Synthesizer', 'Groupie Manager', 'Event Scheduler', 'Web Search'],
+    brain: 'Mistral 7B',
+    tier: 'Underground',
+  },
+  {
+    id: 'label-ops',
+    name: 'Label Operations',
+    description: 'Complete label back-office. Manages roster, coordinates releases, tracks royalties, handles contracts.',
+    skills: ['Royalty Tracker', 'Demo Submitter', 'USDC Payments', 'Event Ticketing'],
+    brain: 'DeepSeek R1',
+    tier: 'Label',
+  },
 ]
-
-function AgentsSidebar({ userName, className = '' }: { userName: string; className?: string }) {
-  return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
-      <nav className="flex-1 p-4">
-        <div className="space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.label} href={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${item.active ? 'bg-white/20 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
-              <span>{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-        <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-          <div className="text-sm text-blue-400 mb-1">View Plans</div>
-        </Link>
-      </nav>
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">{userName.charAt(0).toUpperCase()}</div>
-          <div>
-            <div className="font-medium">{userName}</div>
-            <div className="text-sm text-blue-400">Sign up</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  )
-}
 
 export default function AgentsPage() {
   const { data: session } = useSession()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
+  const router = useRouter()
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
+  const [deploying, setDeploying] = useState(false)
+
+  const handleDeploy = async (templateId: string) => {
+    if (!session) {
+      router.push('/signup')
+      return
+    }
+    setDeploying(true)
+    setSelectedTemplate(templateId)
+    setTimeout(() => {
+      router.push(`/onboard?template=${templateId}`)
+    }, 500)
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Mobile Sidebar */}
-      <div className="md:hidden">
-        <AgentsSidebar userName={userName} className="mb-6" />
-      </div>
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+      <section className="max-w-7xl mx-auto px-6 py-32">
+        <div className="max-w-2xl mb-16">
+          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest mb-8">
+            Agent Templates
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+            Deploy<br />
+            <span className="text-zinc-700">In 60 Seconds</span>
+          </h1>
+          <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">
+            Pre-configured agents for the music industry. Skills, personality, and workflows ready to go.
+          </p>
+        </div>
 
-      <main className="px-4 sm:px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Agent Builder</h1>
-          <p className="text-lg sm:text-xl text-gray-400 mb-6">Create your own AI agent</p>
-          
-          <div className="bg-gray-900 rounded-2xl p-6 sm:p-8 border border-gray-800 text-center">
-            <div className="text-4xl sm:text-5xl mb-3">🤖</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Coming Soon</h2>
-            <p className="text-sm sm:text-base text-gray-400 mb-5">Agent builder is under development</p>
-            <Link href="/dashboard" className="w-full sm:w-auto inline-block bg-white text-black hover:bg-gray-200 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold">
-              Go to Dashboard
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
+          {musicTemplates.map((template) => (
+            <div key={template.id} className="bg-black p-8 flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-500">{template.name}</span>
+                <span className="text-[9px] uppercase tracking-widest text-zinc-600">{template.tier}</span>
+              </div>
+
+              <p className="text-xs text-zinc-500 leading-relaxed mb-6 flex-1">{template.description}</p>
+
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {template.skills.map((skill) => (
+                    <span key={skill} className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-900 px-2 py-1">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="text-[10px] text-zinc-700 uppercase tracking-widest">
+                  {template.brain}
+                </div>
+
+                <button
+                  onClick={() => handleDeploy(template.id)}
+                  disabled={deploying && selectedTemplate === template.id}
+                  className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                >
+                  {deploying && selectedTemplate === template.id ? 'Deploying...' : 'Deploy'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-20 border-t border-zinc-900 pt-16">
+          <div className="flex flex-col md:flex-row gap-16 items-start">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold tracking-tighter uppercase">
+                Build Custom<br /><span className="text-zinc-700">Agent</span>
+              </h2>
+              <p className="text-zinc-500 text-sm mt-4 max-w-md">
+                Need something specific? Build a custom agent with your own skills, personality, and workflows.
+              </p>
+            </div>
+            <Link
+              href="/music-wizard"
+              className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              Open Music Wizard
             </Link>
           </div>
         </div>
-      </main>
-    </div>
-  );
+      </section>
+    </main>
+  )
 }

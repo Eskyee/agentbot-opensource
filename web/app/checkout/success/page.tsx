@@ -8,7 +8,7 @@ function CheckoutSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
-  const [subscription, setSubscription] = useState<any>(null)
+  const [subscription, setSubscription] = useState<{ plan?: string; nextBilling?: string } | null>(null)
 
   useEffect(() => {
     if (!sessionId) {
@@ -20,7 +20,7 @@ function CheckoutSuccessContent() {
       try {
         const response = await fetch(`/api/checkout/verify?session_id=${sessionId}`)
         if (!response.ok) throw new Error('Verification failed')
-        
+
         const data = await response.json()
         setSubscription(data)
         setStatus('success')
@@ -35,100 +35,108 @@ function CheckoutSuccessContent() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-xl">Setting up your service...</p>
-          <p className="text-gray-400 mt-2">This may take 30-60 seconds</p>
+      <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono">
+        <div className="text-center space-y-4">
+          <div className="w-6 h-6 border border-zinc-600 border-t-white animate-spin mx-auto" />
+          <div className="text-sm font-bold uppercase tracking-widest">Deploying Service</div>
+          <p className="text-[10px] text-zinc-600 uppercase tracking-widest">This may take 30-60 seconds</p>
         </div>
-      </div>
+      </main>
     )
   }
 
   if (status === 'error') {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="text-5xl mb-4">❌</div>
-          <h1 className="text-3xl font-bold mb-4">Verification Failed</h1>
-          <p className="text-gray-400 mb-8">
-            We couldn't verify your subscription. Please contact support.
-          </p>
+      <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono p-6">
+        <div className="max-w-sm w-full space-y-8 text-center">
+          <div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Error</div>
+            <h1 className="text-2xl font-bold tracking-tighter uppercase">
+              Verification<br /><span className="text-zinc-700">Failed</span>
+            </h1>
+            <p className="text-zinc-500 text-xs mt-4">
+              We couldn&apos;t verify your subscription. Please contact support.
+            </p>
+          </div>
           <Link
             href="/pricing"
-            className="inline-block bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-gray-200"
+            className="block w-full py-3 text-center text-xs font-bold uppercase tracking-widest border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
           >
             Back to Pricing
           </Link>
         </div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center max-w-md">
-        <div className="text-5xl mb-4">✅</div>
-        <h1 className="text-3xl font-bold mb-4">Welcome to AgentBot!</h1>
-        
-        <div className="bg-gray-900 rounded-lg p-6 mb-8 text-left">
-          <h2 className="text-lg font-bold mb-4">Your Setup Details</h2>
-          <div className="space-y-2 text-sm">
-            <p>
-              <span className="text-gray-400">Plan:</span>{' '}
-              <span className="font-bold">{subscription?.plan || 'Loading...'}</span>
-            </p>
-            <p>
-              <span className="text-gray-400">Status:</span>{' '}
-              <span className="font-bold text-green-400">Active</span>
-            </p>
-            <p>
-              <span className="text-gray-400">Next Billing:</span>{' '}
-              <span className="font-bold">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono p-6">
+      <div className="max-w-sm w-full space-y-8">
+        <div className="text-center">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Confirmed</div>
+          <h1 className="text-2xl font-bold tracking-tighter uppercase">
+            Welcome to<br /><span className="text-zinc-700">Agentbot</span>
+          </h1>
+        </div>
+
+        <div className="border border-zinc-900 p-6 space-y-4">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Subscription Details</div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-1">Plan</span>
+              <span className="text-sm font-bold uppercase tracking-wider">{subscription?.plan || 'Loading...'}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-1">Status</span>
+              <span className="text-sm font-bold uppercase tracking-wider text-white">Active</span>
+            </div>
+            <div className="col-span-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-1">Next Billing</span>
+              <span className="text-sm font-bold uppercase tracking-wider">
                 {subscription?.nextBilling ? new Date(subscription.nextBilling).toLocaleDateString() : 'Loading...'}
               </span>
-            </p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-blue-900/20 border border-blue-500 rounded-lg p-4 mb-8">
-          <p className="text-sm text-blue-300">
-            Your service is being deployed. You'll receive an email with your dashboard link shortly.
+        <div className="border border-zinc-900 p-4">
+          <p className="text-xs text-zinc-500">
+            Your service is being deployed. You&apos;ll receive an email with your dashboard link shortly.
           </p>
         </div>
 
         <div className="space-y-3">
           <Link
             href="/dashboard"
-            className="block w-full bg-white text-black px-6 py-3 rounded-lg font-bold hover:bg-gray-200 transition"
+            className="block w-full py-3 text-center text-xs font-bold uppercase tracking-widest bg-white text-black hover:bg-zinc-200 transition-colors"
           >
             Go to Dashboard
           </Link>
           <Link
             href="/"
-            className="block w-full bg-gray-800 text-white px-6 py-3 rounded-lg font-bold hover:bg-gray-700 transition"
+            className="block w-full py-3 text-center text-xs font-bold uppercase tracking-widest border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
           >
             Back to Home
           </Link>
         </div>
 
-        <p className="text-gray-500 text-sm mt-8">
-          Need help? Contact support@agentbot.raveculture.xyz
+        <p className="text-center text-zinc-700 text-[10px] uppercase tracking-widest">
+          Need help? support@agentbot.raveculture.xyz
         </p>
       </div>
-    </div>
+    </main>
   )
 }
 
 function CheckoutSuccessFallback() {
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-        <p className="text-xl">Setting up your service...</p>
-        <p className="text-gray-400 mt-2">This may take 30-60 seconds</p>
+    <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono">
+      <div className="text-center space-y-4">
+        <div className="w-6 h-6 border border-zinc-600 border-t-white animate-spin mx-auto" />
+        <div className="text-sm font-bold uppercase tracking-widest">Deploying Service</div>
+        <p className="text-[10px] text-zinc-600 uppercase tracking-widest">This may take 30-60 seconds</p>
       </div>
-    </div>
+    </main>
   )
 }
 

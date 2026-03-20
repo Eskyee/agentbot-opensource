@@ -1,5 +1,6 @@
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import bcrypt from "bcryptjs";
@@ -12,11 +13,22 @@ const viemClient = createPublicClient({ chain: base, transport: http() });
 
 const providers: ReturnType<typeof CredentialsProvider>[] = [];
 
+if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  providers.push(
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }) as unknown as ReturnType<typeof CredentialsProvider>
+  );
+}
+
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   providers.push(
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }) as unknown as ReturnType<typeof CredentialsProvider>
   );
 }
@@ -63,24 +75,31 @@ providers.push(
       signature: { label: "Signature", type: "text" },
     },
     async authorize(credentials) {
+      console.log(`[Auth] Wallet authorize starting...`);
       if (!credentials?.message || !credentials?.signature) {
+        console.log(`[Auth] Missing credentials: message=${!!credentials?.message}, signature=${!!credentials?.signature}`);
         return null;
       }
 
       try {
         const siweMessage = new SiweMessage(credentials.message);
         const address = siweMessage.address as `0x${string}`;
+        console.log(`[Auth] SIWE address extracted: ${address}`);
 
         // Validate domain to prevent SIWE replay attacks from other sites
         const expectedDomain = process.env.NEXTAUTH_URL
           ? new URL(process.env.NEXTAUTH_URL).host
-          : 'agentbot.raveculture.xyz';
+          : (process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL).host : 'agentbot.raveculture.xyz');
+        
+        console.log(`[Auth] Domain check: received=${siweMessage.domain}, expected=${expectedDomain}`);
+        
         if (siweMessage.domain !== expectedDomain) {
           console.log(`[Auth] SIWE domain mismatch: ${siweMessage.domain} !== ${expectedDomain}`);
           return null;
         }
 
         // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
+        console.log(`[Auth] Verifying signature for ${address}...`);
         const valid = await viemClient.verifyMessage({
           address,
           message: credentials.message,
@@ -91,6 +110,7 @@ providers.push(
           console.log(`[Auth] SIWE verification failed for ${address}`);
           return null;
         }
+        console.log(`[Auth] SIWE signature valid for ${address}`);
 
         // Normalize wallet address to lowercase for consistent lookups
         const normalizedAddress = address.toLowerCase();
@@ -107,6 +127,7 @@ providers.push(
         });
 
         if (!user) {
+          console.log(`[Auth] User not found, creating new wallet user for ${address}`);
           user = await prisma.user.create({
             data: {
               name: `Wallet:${address.slice(0, 6)}...${address.slice(-4)}`,
@@ -117,12 +138,13 @@ providers.push(
           console.log(`[Auth] Created new wallet user: ${user.id}`);
         }
 
-        console.log(`[Auth] Successful wallet login: ${address}`);
+        console.log(`[Auth] Successful wallet login: ${address} (UserID: ${user.id})`);
         return {
           id: user.id,
           name: user.name,
           email: user.email,
-          walletAddress: address
+          walletAddress: address,
+          providerAccountId: normalizedAddress, // Pass this for the signIn callback to use
         };
       } catch (error) {
         console.error(`[Auth] SIWE error:`, error);
@@ -177,34 +199,51 @@ export const authOptions: AuthOptions = {
     },
   },
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === "google") {
+    async signIn({ user, account, profile }) {
+      console.log(`[Auth] signIn callback: provider=${account?.provider}, userEmail=${user.email}`);
+      
+      // Handle OAuth and Wallet providers
+      if (account?.provider === "google" || account?.provider === "github" || account?.provider === "wallet") {
         if (user.email) {
-          const existingUser = await prisma.user.findUnique({
-            where: { email: user.email },
-            include: { accounts: true },
-          });
-          if (existingUser) {
-            const existingAccount = existingUser.accounts.find(
-              (acc) => acc.provider === account.provider
-            );
-            if (!existingAccount && account.providerAccountId) {
-              await prisma.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  access_token: account.access_token,
-                  refresh_token: account.refresh_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state,
-                },
-              });
+          try {
+            const existingUser = await prisma.user.findUnique({
+              where: { email: user.email },
+              include: { accounts: true },
+            });
+            
+            if (existingUser) {
+              const existingAccount = existingUser.accounts.find(
+                (acc) => acc.provider === account.provider
+              );
+              
+              // For CredentialsProvider (wallet), we may need to get providerAccountId from user object
+              const providerAccountId = account.providerAccountId || (user as any).providerAccountId;
+              
+              if (!existingAccount && providerAccountId) {
+                await prisma.account.create({
+                  data: {
+                    userId: existingUser.id,
+                    type: account.type || (account.provider === "wallet" ? "credentials" : "oauth"),
+                    provider: account.provider,
+                    providerAccountId: providerAccountId,
+                    access_token: account.access_token ?? undefined,
+                    refresh_token: account.refresh_token ?? undefined,
+                    expires_at: account.expires_at ?? undefined,
+                    token_type: account.token_type ?? undefined,
+                    scope: account.scope ?? undefined,
+                    id_token: account.id_token ?? undefined,
+                    session_state: account.session_state as string | undefined,
+                  },
+                });
+                console.log(`[Auth] Linked ${account.provider} to existing user ${existingUser.email}`);
+              }
+              // Override the user id so JWT gets the existing user, not a new one
+              user.id = existingUser.id;
+              user.name = existingUser.name || user.name;
             }
+          } catch (error) {
+            console.error(`[Auth] Account linking error for ${account.provider}:`, error);
+            // Still allow sign-in even if linking fails
           }
         }
         return true;
