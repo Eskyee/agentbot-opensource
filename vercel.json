@@ -1,5 +1,7 @@
 {
-  "buildCommand": "cd web && npm run build",
+  "buildCommand": "cd web && NEXT_PUBLIC_DEMO_MODE=true npx next build",
   "outputDirectory": "web/.next",
-  "installCommand": "cd web && npm install"
+  "installCommand": "cd web && npm install",
+  "framework": "nextjs",
+  "regions": ["iad1"]
 }

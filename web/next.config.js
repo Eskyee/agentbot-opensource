@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  // Static export for demo/Vercel deployment (no API routes needed)
+  output: process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? 'export' : 'standalone',
+  images: {
+    unoptimized: true,
+  },
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
   async headers() {
     return [
