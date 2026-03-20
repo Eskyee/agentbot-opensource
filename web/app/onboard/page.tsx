@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useEffect } from 'react'
+import { useState, Suspense, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
@@ -29,6 +29,7 @@ function OnboardContent() {
   const [result, setResult] = useState<{ userId: string; subdomain: string; url: string; streamKey?: string; liveStreamId?: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
+  const [showConfetti, setShowConfetti] = useState(false)
 
   // Available models (Tiered for OpenClaw) - via OpenRouter
   const AVAILABLE_MODELS = [
@@ -143,6 +144,10 @@ function OnboardContent() {
       const data = await res.json()
       
       if (data.success) {
+        // 🎉 Confetti!
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 5000)
+
         // Save to localStorage for dashboard
         localStorage.setItem('agentbot_instance', JSON.stringify({
           userId: data.userId,
@@ -786,6 +791,26 @@ function OnboardContent() {
           </div>
         )}
         
+        {/* Confetti */}
+        {showConfetti && (
+          <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+            {[...Array(50)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-2 h-2 confetti-particle"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `-10px`,
+                  backgroundColor: ['#ff0', '#f0f', '#0ff', '#0f0', '#f00', '#00f', '#ff6b35'][Math.floor(Math.random() * 7)],
+                  borderRadius: Math.random() > 0.5 ? '50%' : '0',
+                  animation: `confettiFall ${2 + Math.random() * 3}s ease-in-out forwards`,
+                  animationDelay: `${Math.random() * 0.5}s`,
+                }}
+              />
+            ))}
+          </div>
+        )}
+        
         {/* Step 5: Done */}
         {step === 'done' && result && (
           <div className="text-center">
@@ -838,6 +863,21 @@ function OnboardContent() {
       </div>
     </div>
   )
+}
+
+// Confetti animation
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = `
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  `
+  if (!document.getElementById('confetti-styles')) {
+    style.id = 'confetti-styles'
+    document.head.appendChild(style)
+  }
 }
 
 export default function Onboard() {
