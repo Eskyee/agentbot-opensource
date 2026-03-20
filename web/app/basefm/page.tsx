@@ -136,7 +136,7 @@ export default function BasefmTokenPage() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-lg p-8 mb-8 border border-blue-500/30">
+        <div className="bg-gradient-to-r from-blue-900/30 to-blue-900/30 rounded-lg p-8 mb-8 border border-blue-500/30">
           <h2 className="text-2xl font-bold mb-6">🎧 Go Live on baseFM</h2>
           
           <div className="grid gap-6 md:grid-cols-2">

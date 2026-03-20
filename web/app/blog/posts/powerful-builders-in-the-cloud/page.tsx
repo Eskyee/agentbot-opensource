@@ -173,7 +173,7 @@ export default function PowerfulBuildersInTheCloudPost() {
           </p>
 
           <div className="mt-12 space-y-4">
-            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-800">
+            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-900/30 to-blue-900/30 border border-blue-800">
               <h3 className="text-lg font-semibold text-white mb-3">Start Building Now</h3>
               <p className="text-zinc-300 mb-4">Deploy your first agent in 60 seconds. No credit card required.</p>
               <div className="flex gap-3 flex-wrap">

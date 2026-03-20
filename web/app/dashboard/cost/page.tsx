@@ -172,7 +172,7 @@ export default function CostPage() {
                 <th className="px-5 py-3 text-right font-bold text-white">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-zinc-800">
               {AGENTS.map(a => (
                 <tr key={a.name} className="hover:bg-zinc-800/40 transition-colors">
                   <td className="px-5 py-3 font-medium">{a.name}</td>

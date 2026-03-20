@@ -211,7 +211,7 @@ export default function NewsPage() {
             {upcomingEvents.map((event) => (
               <div
                 key={event.title}
-                className="p-5 rounded-xl bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/20"
+                className="p-5 rounded-xl bg-gradient-to-r from-blue-900/20 to-blue-900/20 border border-blue-500/20"
               >
                 <p className="text-xs text-blue-400 mb-1">{event.date}</p>
                 <h3 className="font-bold text-white mb-1">{event.title}</h3>
@@ -278,7 +278,7 @@ export default function NewsPage() {
         </section>
 
         {/* CTA */}
-        <section className="mt-16 p-8 rounded-2xl bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-blue-500/20 text-center">
+        <section className="mt-16 p-8 rounded-2xl bg-gradient-to-r from-blue-900/20 to-blue-900/20 border border-blue-500/20 text-center">
           <h2 className="text-2xl font-bold mb-2">🇬🇧 London AI Community</h2>
           <p className="text-zinc-400 mb-4">
             We're building in London. Join the meetups, share what you're building, connect with fellow agent builders.

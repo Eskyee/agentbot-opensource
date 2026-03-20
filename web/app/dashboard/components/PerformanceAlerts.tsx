@@ -344,7 +344,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                     step="5"
                     value={thresholds.memory}
                     onChange={(e) => setThresholds(prev => ({ ...prev, memory: Number(e.target.value) }))}
-                    className="w-32 accent-purple-500"
+                    className="w-32 accent-blue-500"
                   />
                   <span className="text-sm font-mono">{thresholds.memory}%</span>
                 </div>

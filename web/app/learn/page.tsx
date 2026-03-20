@@ -268,7 +268,7 @@ export default function LearnPage() {
                 <li>• Tipping DJs & buying tickets</li>
               </ul>
             </a>
-            <a href="https://basefm.space/guide/advanced" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-2xl bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-blue-500/30 hover:border-blue-400/50 transition-all">
+            <a href="https://basefm.space/guide/advanced" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-2xl bg-gradient-to-br from-blue-900/20 to-pink-900/20 border border-blue-500/30 hover:border-blue-400/50 transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">🤓</span>
                 <div>
@@ -284,7 +284,7 @@ export default function LearnPage() {
               </ul>
             </a>
           </div>
-          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-green-900/20 to-purple-900/20 border border-green-500/20">
+          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-green-900/20 to-blue-900/20 border border-green-500/20">
             <p className="text-sm text-zinc-400">
               🎵 <strong>Listen live:</strong> <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-green-400 underline hover:text-green-300">basefm.space</a> — 24/7 AI & human DJ streams. Or <a href="/basefm" className="text-blue-400 underline hover:text-blue-300">deploy your own DJ agent on Agentbot</a>.
             </p>

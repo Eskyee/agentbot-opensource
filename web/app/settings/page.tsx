@@ -438,7 +438,7 @@ export default function SettingsPage() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Referrals</h2>
             
-            <div className="rounded-2xl border border-white/30 bg-gradient-to-r from-white/10 to-gray-200/10 p-6">
+            <div className="rounded-2xl border border-white/30 bg-gradient-to-r from-white/10 to-zinc-200/10 p-6">
               <div className="text-sm text-zinc-400 mb-2">Your referral link</div>
               <div className="flex gap-3">
                 <input

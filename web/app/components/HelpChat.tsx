@@ -135,7 +135,7 @@ export default function HelpChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask for help..."
-              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
               disabled={loading}
             />
             <button

@@ -91,7 +91,7 @@ export default function AdminInvitesPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
                 required
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-zinc-500"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-500"
                 disabled={loading}
               />
             </div>

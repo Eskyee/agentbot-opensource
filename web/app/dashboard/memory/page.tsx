@@ -103,7 +103,7 @@ export default function MemoryPage() {
             placeholder="Search memories…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="flex-1 min-w-48 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="flex-1 min-w-48 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
           />
           {(['all', 'fact', 'decision', 'note', 'alert'] as const).map(k => (
             <button
@@ -142,14 +142,14 @@ export default function MemoryPage() {
               value={newContent}
               onChange={e => setNewContent(e.target.value)}
               rows={3}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 resize-none"
             />
             <input
               type="text"
               placeholder="Tags (comma-separated)"
               value={newTags}
               onChange={e => setNewTags(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
             />
             <div className="flex gap-3">
               <button onClick={addEntry} className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 text-sm rounded-lg transition-colors">Save</button>

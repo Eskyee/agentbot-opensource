@@ -89,7 +89,7 @@ export default function TourManagementPage() {
             <div className="p-4 border-b border-zinc-800">
               <h2 className="font-semibold">Tour Schedule</h2>
             </div>
-            <div className="divide-y divide-gray-800">
+            <div className="divide-y divide-zinc-800">
               {tourDates.map(td => (
                 <div key={td.id} className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors">
                   <div className="flex items-center gap-4">

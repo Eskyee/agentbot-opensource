@@ -12,7 +12,7 @@ const musicRoles = [
     name: 'Touring DJ',
     description: 'Live performance specialist. Manages setlists, venue logistics, and crowd engagement during shows.',
     skills: ['setlist-oracle', 'track-archaeologist', 'visual-synthesizer', 'event-ticketing', 'booking-settlement'],
-    color: 'from-purple-600 to-purple-400'
+    color: 'from-blue-600 to-blue-400'
   },
   {
     id: 'producer',
@@ -162,7 +162,7 @@ export default function MusicWizardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black to-gray-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-blue-900 to-black to-zinc-900 text-white">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-8">
@@ -259,7 +259,7 @@ export default function MusicWizardPage() {
                   value={wizardData.artistName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, artistName: e.target.value }))}
                   placeholder="e.g. Bassline Beats"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -272,7 +272,7 @@ export default function MusicWizardPage() {
                   value={wizardData.agentName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, agentName: e.target.value }))}
                   placeholder={`@${selectedRole?.name.toLowerCase().replace(/\s+/g, '')}`}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
@@ -284,7 +284,7 @@ export default function MusicWizardPage() {
                   multiple
                   value={wizardData.genres}
                   onChange={(e) => setWizardData(prev => ({ ...prev, genres: Array.from(e.target.selectedOptions).map(o => o.value) }))}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
                 >
                   {genres.map((genre) => (
                     <option key={genre} value={genre}>
@@ -302,7 +302,7 @@ export default function MusicWizardPage() {
                   value={wizardData.musicStyle}
                   onChange={(e) => setWizardData(prev => ({ ...prev, musicStyle: e.target.value }))}
                   placeholder="e.g., Deep House with melodic basslines and rhythmic progressive elements..."
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
                 />
               </div>
             </div>
