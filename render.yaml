@@ -70,6 +70,32 @@ services:
       - key: BANKR_API_KEY
         sync: false
 
+  # Background Worker (BullMQ)
+  - type: worker
+    name: agentbot-worker
+    env: docker
+    dockerfilePath: Dockerfile.worker
+    rootDir: agentbot-backend
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agentbot-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: agentbot-redis
+          property: connectionString
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: INTERNAL_API_KEY
+        generateValue: true
+
   # Redis
   - type: redis
     name: agentbot-redis
