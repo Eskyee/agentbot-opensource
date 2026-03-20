@@ -71,7 +71,7 @@ services:
         sync: false
 
   # PostgreSQL Database
-  - type: pgsql
+  - type: pg
     name: agentbot-db
     databaseName: agentbot
     plan: starter
