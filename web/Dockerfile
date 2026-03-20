@@ -14,7 +14,7 @@ RUN npm install --ignore-scripts --legacy-peer-deps --force
 
 # Now copy the full app and generate Prisma client
 COPY . .
-RUN npx prisma generate
+RUN npx prisma@5.22.0 generate
 
 # Build Next.js for production
 RUN npx next build
