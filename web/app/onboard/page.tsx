@@ -116,6 +116,14 @@ function OnboardContent() {
     setError('')
     
     try {
+      // Get user email from session
+      let userEmail = ''
+      try {
+        const sessionRes = await fetch('/api/auth/session')
+        const sessionData = await sessionRes.json()
+        userEmail = sessionData?.user?.email || ''
+      } catch {}
+
       const res = await fetch('/api/provision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -127,7 +135,8 @@ function OnboardContent() {
           plan,
           model: selectedModel,
           skills: selectedSkills,
-          agentType
+          agentType,
+          email: userEmail
         })
       })
       
