@@ -52,7 +52,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Validate plan
-    const validPlans = ['free', 'pro', 'enterprise'];
+    const validPlans = ['free', 'solo', 'collective', 'label', 'network', 'pro', 'enterprise'];
     if (!validPlans.includes(plan)) {
       return res.status(400).json({
         success: false,
