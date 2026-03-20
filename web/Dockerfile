@@ -16,6 +16,9 @@ RUN npm install --ignore-scripts --legacy-peer-deps --force
 COPY . .
 RUN npm install -g prisma@5.22.0 && prisma generate
 
+# Build Next.js for production
+RUN npm run build
+
 EXPOSE 3000
 ENV PORT=3000
 CMD ["npm", "start"]
