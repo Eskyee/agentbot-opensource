@@ -18,18 +18,16 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Install backend dependencies
-        run: cd agentbot-backend && npm ci
-
-      - name: Install web dependencies
-        run: cd web && npm ci
-
-      - name: Lint
+      - name: Install and lint backend
         run: |
-          cd web && npm run lint
-          cd ../agentbot-backend && npm run lint
+          cd agentbot-backend
+          npm ci
+          npm run lint
+          npm run build
 
-      - name: Build
+      - name: Install and lint web
         run: |
-          cd web && npm run build
-          cd ../agentbot-backend && npm run build
+          cd web
+          npm ci
+          npm run lint
+          npm run build
