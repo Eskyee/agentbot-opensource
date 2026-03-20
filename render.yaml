@@ -3,7 +3,7 @@ services:
   # Backend API + MCP Gateway
   - type: web
     name: agentbot-api
-    runtime: docker
+    env: docker
     dockerfilePath: Dockerfile
     rootDir: agentbot-backend
     plan: starter
@@ -48,7 +48,7 @@ services:
   # Next.js Frontend
   - type: web
     name: agentbot-web
-    runtime: docker
+    env: docker
     dockerfilePath: Dockerfile
     rootDir: web
     plan: starter
