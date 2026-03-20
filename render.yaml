@@ -64,15 +64,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: BACKEND_API_URL
-        fromService:
-          type: web
-          name: agentbot-api
-          property: url
+        value: "https://agentbot-api.onrender.com"
       - key: NEXT_PUBLIC_BACKEND_URL
-        fromService:
-          type: web
-          name: agentbot-api
-          property: url
+        value: "https://agentbot-api.onrender.com"
       - key: BANKR_API_KEY
         sync: false
 
@@ -80,5 +74,5 @@ services:
   - type: redis
     name: agentbot-redis
     plan: starter
-    maxmemoryPolicy: allkeys_lru
+    maxmemoryPolicy: allkeys-lru
     ipAllowList: []
