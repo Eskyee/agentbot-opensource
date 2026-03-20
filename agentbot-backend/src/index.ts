@@ -1265,6 +1265,9 @@ function startAutoUpdater() {
   console.log('[Auto-Update] Auto-updater started');
 }
 
+// Parse JSON bodies
+app.use(require('express').json());
+
 // Mount API routes
 app.use('/api/ai', aiRouter);
 app.use('/api/provision', provisionRouter);
