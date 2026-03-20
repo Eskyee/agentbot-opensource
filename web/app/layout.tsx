@@ -127,7 +127,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-black text-white antialiased pt-[60px] flex flex-col min-h-screen font-sans">
+      <body className="bg-black text-white antialiased pt-[92px] flex flex-col min-h-screen font-sans">
         {/* Skip link for keyboard users */}
         <a
           href="#main-content"
@@ -137,6 +137,12 @@ export default function RootLayout({
         </a>
         <SpeedInsights />
         <Providers>
+          {/* Launch banner */}
+          <div className="w-full bg-white text-black text-center py-2 text-[11px] font-bold uppercase tracking-widest font-mono relative overflow-hidden">
+            <div className="animate-marquee whitespace-nowrap">
+              🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp;
+            </div>
+          </div>
           <Navbar />
           <main id="main-content" className="flex-1" tabIndex={-1}>
             {children}
