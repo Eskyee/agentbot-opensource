@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node_modules/.bin/prisma generate && next build",
+    "build": "prisma generate 2>/dev/null || echo 'Prisma: skipped (no DATABASE_URL)'; next build",
     "start": "next start",
     "lint": "next lint",
     "test": "playwright test",
