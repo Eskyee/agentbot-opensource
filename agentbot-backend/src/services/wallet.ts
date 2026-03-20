@@ -30,10 +30,10 @@ const pool = new Pool({
 });
 
 // Initialize CDP Client lazily (only if credentials provided)
-let cdp: CdpClient | null = null;
+let cdp: any = null;
 let cdpDisabled = false;
 
-function getCdpClient(): CdpClient {
+function getCdpClient(): any {
   if (cdpDisabled) {
     throw new Error('CDP is disabled — no credentials configured. This is an open source demo. Add CDP credentials to enable wallet features.');
   }
@@ -153,7 +153,7 @@ export class WalletService {
       });
       
       // Find USDC in the balances array
-      const usdcBalance = result.balances.find(b => b.token?.symbol?.toUpperCase() === 'USDC');
+      const usdcBalance = result.balances.find((b: any) => b.token?.symbol?.toUpperCase() === 'USDC');
       const balance = usdcBalance ? Number(usdcBalance.amount) : 0;
       
       await pool.query(
