@@ -1,10 +1,18 @@
 import CryptoJS from 'crypto-js';
-import { CdpClient } from '@coinbase/cdp-sdk';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import { parseUnits } from 'viem';
 
 dotenv.config();
+
+// Lazy-load CDP client to avoid import failures in CI/demo mode
+let CdpClient: any = null;
+try {
+  const cdp = require('@coinbase/cdp-sdk');
+  CdpClient = cdp.CdpClient;
+} catch (e) {
+  console.warn('[Wallet] CDP SDK not available. CDP features disabled.');
+}
 
 const ENCRYPTION_KEY = (() => {
   const key = process.env.WALLET_ENCRYPTION_KEY;
