@@ -79,3 +79,13 @@ service-account-key.json
 test-results/
 playwright-report/
 playwright-results/
+
+# AI tool directories (symlinks, not project content)
+.factory/
+.kiro/
+.mux/
+.trae/
+.claude/skills/
+.claude/worktrees/
+.agents/skills/
+skills-lock.json
