@@ -1,10 +1,6 @@
 import Link from 'next/link'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
 
 export default async function Home() {
-  const session = await getServerSession(authOptions)
-
   return (
     <main className="min-h-screen bg-black text-white selection:bg-blue-500 selection:text-white">
       {/* Hero Section */}
@@ -28,21 +24,12 @@ export default async function Home() {
           </p>
           
           <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-            {session ? (
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-sm font-bold text-black hover:bg-gray-200 transition-all transform hover:scale-105"
-              >
-                ENTER MISSION CONTROL →
-              </Link>
-            ) : (
-              <Link
-                href="/signup"
-                className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-sm font-bold text-black hover:bg-gray-200 transition-all transform hover:scale-105"
-              >
-                DEPLOY YOUR FLEET →
-              </Link>
-            )}
+            <Link
+              href="https://agentbot.raveculture.xyz/signup"
+              className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-sm font-bold text-black hover:bg-gray-200 transition-all transform hover:scale-105"
+            >
+              DEPLOY YOUR FLEET →
+            </Link>
             <Link
               href="/demo"
               className="inline-flex items-center justify-center rounded-xl bg-gray-900 border border-white/10 px-8 py-4 text-sm font-bold text-white hover:bg-gray-800 transition-all"

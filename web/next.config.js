@@ -6,6 +6,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Turbopack config for Next.js 16
+  turbopack: {
+    root: __dirname,
+  },
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
   async headers() {
     return [
