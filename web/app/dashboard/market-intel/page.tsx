@@ -63,8 +63,8 @@ const MARKET_SIGNALS: Signal[] = [
   { id: '5', text: 'VC investment in AI tooling down 18% QoQ as market consolidates', source: 'Crunchbase', date: '2026-03-05', sentiment: 'neg' },
 ]
 
-const SENTIMENT_COLOR = { up: 'text-green-400', down: 'text-red-400', neutral: 'text-gray-400' }
-const SIGNAL_COLOR = { pos: 'border-green-800/40 bg-green-900/10', neg: 'border-red-800/40 bg-red-900/10', neutral: 'border-gray-700 bg-gray-900/20' }
+const SENTIMENT_COLOR = { up: 'text-green-400', down: 'text-red-400', neutral: 'text-zinc-400' }
+const SIGNAL_COLOR = { pos: 'border-green-800/40 bg-green-900/10', neg: 'border-red-800/40 bg-red-900/10', neutral: 'border-zinc-700 bg-zinc-900/20' }
 
 export default function MarketIntelPage() {
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -72,31 +72,31 @@ export default function MarketIntelPage() {
   return (
     <div className="mt-[4rem] min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-800 flex items-center gap-3">
+      <div className="px-6 py-5 border-b border-zinc-800 flex items-center gap-3">
         <TrendingUp className="h-5 w-5 text-emerald-400" />
         <h1 className="text-xl font-bold tracking-tight">Market Intel</h1>
-        <span className="text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full px-3 py-0.5">Updated weekly</span>
+        <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5">Updated weekly</span>
       </div>
 
       <div className="px-6 py-6 space-y-8">
         {/* Competitor grid */}
         <section>
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Competitive Landscape</h2>
+          <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Competitive Landscape</h2>
           <div className="grid md:grid-cols-2 gap-4">
             {COMPETITORS.map(c => {
               const isOpen = expanded === c.name
               return (
-                <div key={c.name} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+                <div key={c.name} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
                   <button
-                    className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-gray-800/50 transition-colors"
+                    className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-zinc-800/50 transition-colors"
                     onClick={() => setExpanded(isOpen ? null : c.name)}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="font-semibold text-sm">{c.name}</span>
-                        <span className="text-[10px] text-gray-500 bg-gray-800 border border-gray-700 rounded px-2 py-0.5">{c.price}</span>
+                        <span className="text-[10px] text-zinc-500 bg-zinc-800 border border-zinc-700 rounded px-2 py-0.5">{c.price}</span>
                       </div>
-                      <div className="text-xs text-gray-400 truncate">{c.description}</div>
+                      <div className="text-xs text-zinc-400 truncate">{c.description}</div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       <div className={`flex items-center gap-1 text-sm font-mono font-bold ${SENTIMENT_COLOR[c.sentiment]}`}>
@@ -105,15 +105,15 @@ export default function MarketIntelPage() {
                          :                           <Minus className="h-4 w-4" />}
                         {c.change > 0 ? `+${c.change}%` : c.change === 0 ? '—' : `${c.change}%`}
                       </div>
-                      {isOpen ? <ChevronUp className="h-4 w-4 text-gray-500" /> : <ChevronDown className="h-4 w-4 text-gray-500" />}
+                      {isOpen ? <ChevronUp className="h-4 w-4 text-zinc-500" /> : <ChevronDown className="h-4 w-4 text-zinc-500" />}
                     </div>
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-4 border-t border-gray-800">
+                    <div className="px-5 pb-4 border-t border-zinc-800">
                       <div className="pt-3 space-y-1.5">
                         {c.signals.map((s, i) => (
-                          <div key={i} className="flex items-start gap-2 text-xs text-gray-300">
-                            <span className="text-gray-600 mt-0.5">›</span>
+                          <div key={i} className="flex items-start gap-2 text-xs text-zinc-300">
+                            <span className="text-zinc-600 mt-0.5">›</span>
                             {s}
                           </div>
                         ))}
@@ -128,14 +128,14 @@ export default function MarketIntelPage() {
 
         {/* Market signals */}
         <section>
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
             <Eye className="h-4 w-4" /> Market Signals
           </h2>
           <div className="space-y-2">
             {MARKET_SIGNALS.map(sig => (
               <div key={sig.id} className={`flex items-start gap-4 border rounded-xl px-5 py-3 ${SIGNAL_COLOR[sig.sentiment]}`}>
-                <p className="text-sm text-gray-200 flex-1 leading-relaxed">{sig.text}</p>
-                <div className="shrink-0 flex flex-col items-end gap-1 text-[10px] text-gray-500 font-mono">
+                <p className="text-sm text-zinc-200 flex-1 leading-relaxed">{sig.text}</p>
+                <div className="shrink-0 flex flex-col items-end gap-1 text-[10px] text-zinc-500 font-mono">
                   <span>{sig.date}</span>
                   <span>{sig.source}</span>
                 </div>
@@ -146,17 +146,17 @@ export default function MarketIntelPage() {
 
         {/* Opportunity map */}
         <section>
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">Opportunity Map</h2>
+          <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Opportunity Map</h2>
           <div className="grid md:grid-cols-3 gap-4">
             {[
-              { title: 'DJ / Creative AI', gap: 'No competitor owns the music-creator segment', action: 'Double down on DJ Stream + $BASEFM ecosystem', color: 'border-purple-800/40 bg-purple-900/10' },
+              { title: 'DJ / Creative AI', gap: 'No competitor owns the music-creator segment', action: 'Double down on DJ Stream + $BASEFM ecosystem', color: 'border-blue-800/40 bg-blue-900/10' },
               { title: 'Wallet-native Auth', gap: 'Competitors rely on email auth only', action: 'SIWE + Base smart wallet is a genuine moat', color: 'border-blue-800/40 bg-blue-900/10' },
               { title: 'UK Market Pricing', gap: 'Most competitors price USD only — GBP adoption friction', action: 'GBP pricing already live — lean into UK marketing', color: 'border-green-800/40 bg-green-900/10' },
             ].map(opp => (
               <div key={opp.title} className={`border rounded-xl p-5 ${opp.color}`}>
                 <div className="font-semibold text-sm mb-1.5">{opp.title}</div>
-                <div className="text-xs text-gray-400 mb-3">{opp.gap}</div>
-                <div className="text-xs text-gray-300 flex items-start gap-1.5">
+                <div className="text-xs text-zinc-400 mb-3">{opp.gap}</div>
+                <div className="text-xs text-zinc-300 flex items-start gap-1.5">
                   <ArrowUpRight className="h-3.5 w-3.5 text-green-400 mt-0.5 shrink-0" />
                   {opp.action}
                 </div>

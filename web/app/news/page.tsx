@@ -183,22 +183,22 @@ export default function NewsPage() {
             <span className="text-4xl">📰</span>
             <div>
               <h1 className="text-4xl font-bold tracking-tight">OpenClaw News</h1>
-              <p className="text-gray-400">From the community. Updated daily.</p>
+              <p className="text-zinc-400">From the community. Updated daily.</p>
             </div>
           </div>
         </div>
 
         {/* Trending Topics */}
         <section className="mb-12">
-          <h2 className="text-sm font-bold text-gray-500 tracking-widest uppercase mb-4">TRENDING NOW</h2>
+          <h2 className="text-sm font-bold text-zinc-500 tracking-widest uppercase mb-4">TRENDING NOW</h2>
           <div className="flex flex-wrap gap-2">
             {trendingTopics.map((topic) => (
               <span
                 key={topic.tag}
-                className="px-3 py-1.5 rounded-full bg-gray-900 border border-gray-800 text-sm text-gray-300 hover:border-blue-500/50 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-sm text-zinc-300 hover:border-blue-500/50 transition-colors cursor-pointer"
               >
                 #{topic.tag}
-                <span className="ml-1.5 text-xs text-gray-600">{topic.count}</span>
+                <span className="ml-1.5 text-xs text-zinc-600">{topic.count}</span>
               </span>
             ))}
           </div>
@@ -206,7 +206,7 @@ export default function NewsPage() {
 
         {/* Upcoming Events */}
         <section className="mb-12">
-          <h2 className="text-sm font-bold text-gray-500 tracking-widest uppercase mb-4">📅 COMING UP</h2>
+          <h2 className="text-sm font-bold text-zinc-500 tracking-widest uppercase mb-4">📅 COMING UP</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {upcomingEvents.map((event) => (
               <div
@@ -215,7 +215,7 @@ export default function NewsPage() {
               >
                 <p className="text-xs text-blue-400 mb-1">{event.date}</p>
                 <h3 className="font-bold text-white mb-1">{event.title}</h3>
-                <p className="text-sm text-gray-400">{event.location}</p>
+                <p className="text-sm text-zinc-400">{event.location}</p>
               </div>
             ))}
           </div>
@@ -223,30 +223,30 @@ export default function NewsPage() {
 
         {/* Community Updates */}
         <section>
-          <h2 className="text-sm font-bold text-gray-500 tracking-widest uppercase mb-6">🇬🇧 COMMUNITY</h2>
+          <h2 className="text-sm font-bold text-zinc-500 tracking-widest uppercase mb-6">🇬🇧 COMMUNITY</h2>
           <div className="space-y-4">
             {communityUpdates.map((update, i) => (
               <article
                 key={i}
-                className="group p-6 rounded-2xl bg-gray-900 border border-gray-800 hover:border-white/30 transition-colors"
+                className="group p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-white/30 transition-colors"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     update.type === 'release' ? 'bg-green-500/20 text-green-400' :
-                    update.type === 'community' ? 'bg-purple-500/20 text-purple-400' :
+                    update.type === 'community' ? 'bg-blue-500/20 text-blue-400' :
                     update.type === 'feature' ? 'bg-blue-500/20 text-blue-400' :
                     update.type === 'security' ? 'bg-red-500/20 text-red-400' :
                     update.type === 'blog' ? 'bg-orange-500/20 text-orange-400' :
                     update.type === 'ecosystem' ? 'bg-cyan-500/20 text-cyan-400' :
-                    'bg-gray-500/20 text-gray-400'
+                    'bg-zinc-500/20 text-zinc-400'
                   }`}>
                     {update.source}
                   </span>
-                  <p className="text-xs text-gray-500">{update.date}</p>
+                  <p className="text-xs text-zinc-500">{update.date}</p>
                 </div>
                 <h3 className="text-xl font-bold mb-2 group-hover:text-blue-400 transition-colors">{update.title}</h3>
-                <p className="text-gray-400 mb-4">{update.excerpt}</p>
-                <Link href={update.url} className="text-sm text-gray-500 hover:text-white transition-colors">
+                <p className="text-zinc-400 mb-4">{update.excerpt}</p>
+                <Link href={update.url} className="text-sm text-zinc-500 hover:text-white transition-colors">
                   Read more →
                 </Link>
               </article>
@@ -256,7 +256,7 @@ export default function NewsPage() {
 
         {/* Global News */}
         <section className="mt-16">
-          <h2 className="text-sm font-bold text-gray-500 tracking-widest uppercase mb-6">🌍 GLOBAL AI NEWS</h2>
+          <h2 className="text-sm font-bold text-zinc-500 tracking-widest uppercase mb-6">🌍 GLOBAL AI NEWS</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {globalNews.map((item, i) => (
               <a
@@ -264,23 +264,23 @@ export default function NewsPage() {
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-5 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-white/30 transition-colors"
+                className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-white/30 transition-colors"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">{item.source}</span>
-                  <span className="text-xs text-gray-600">{item.date}</span>
+                  <span className="text-xs text-zinc-600">{item.date}</span>
                 </div>
                 <h3 className="font-bold mb-1 group-hover:text-blue-400 transition-colors">{item.title}</h3>
-                <p className="text-sm text-gray-500">{item.excerpt}</p>
+                <p className="text-sm text-zinc-500">{item.excerpt}</p>
               </a>
             ))}
           </div>
         </section>
 
         {/* CTA */}
-        <section className="mt-16 p-8 rounded-2xl bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/20 text-center">
+        <section className="mt-16 p-8 rounded-2xl bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-blue-500/20 text-center">
           <h2 className="text-2xl font-bold mb-2">🇬🇧 London AI Community</h2>
-          <p className="text-gray-400 mb-4">
+          <p className="text-zinc-400 mb-4">
             We're building in London. Join the meetups, share what you're building, connect with fellow agent builders.
           </p>
           <div className="flex gap-4 justify-center">
@@ -294,7 +294,7 @@ export default function NewsPage() {
             </a>
             <Link
               href="/learn"
-              className="inline-block px-6 py-2 rounded-lg bg-gray-800 text-white font-semibold hover:bg-gray-700 transition-colors"
+              className="inline-block px-6 py-2 rounded-lg bg-zinc-800 text-white font-semibold hover:bg-zinc-700 transition-colors"
             >
               Start Building →
             </Link>

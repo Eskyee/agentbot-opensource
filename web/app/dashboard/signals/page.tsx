@@ -74,13 +74,13 @@ const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: st
   reddit:       { label: 'Reddit',       color: 'text-orange-400', bg: 'bg-orange-900/20 border-orange-800/40' },
   twitter:      { label: 'Twitter/X',    color: 'text-sky-400',    bg: 'bg-sky-900/20 border-sky-800/40' },
   'hacker-news': { label: 'HN',          color: 'text-yellow-400', bg: 'bg-yellow-900/20 border-yellow-800/40' },
-  discord:      { label: 'Discord',      color: 'text-purple-400', bg: 'bg-purple-900/20 border-purple-800/40' },
+  discord:      { label: 'Discord',      color: 'text-blue-400', bg: 'bg-blue-900/20 border-blue-800/40' },
 }
 
 const RELEVANCE_COLOR: Record<Exclude<Relevance, 'all'>, string> = {
   high:   'text-green-400 bg-green-900/20 border-green-800',
   medium: 'text-yellow-400 bg-yellow-900/20 border-yellow-800',
-  low:    'text-gray-400 bg-gray-800 border-gray-700',
+  low:    'text-zinc-400 bg-zinc-800 border-zinc-700',
 }
 
 export default function SignalsPage() {
@@ -95,18 +95,18 @@ export default function SignalsPage() {
   return (
     <div className="mt-[4rem] min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-800 flex items-center gap-3">
+      <div className="px-6 py-5 border-b border-zinc-800 flex items-center gap-3">
         <Radio className="h-5 w-5 text-pink-400" />
         <h1 className="text-xl font-bold tracking-tight">Practitioner Signals</h1>
-        <span className="text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full px-3 py-0.5">{filtered.length} signals</span>
+        <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5">{filtered.length} signals</span>
       </div>
 
       <div className="px-6 py-6 space-y-5">
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">
-            <Filter className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">Platform</span>
+            <Filter className="h-3.5 w-3.5 text-zinc-500" />
+            <span className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Platform</span>
           </div>
           {(['all', 'reddit', 'twitter', 'hacker-news', 'discord'] as Platform[]).map(p => (
             <button
@@ -115,14 +115,14 @@ export default function SignalsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
                 platform === p
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-700'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-700'
               }`}
             >
               {p === 'hacker-news' ? 'HN' : p}
             </button>
           ))}
           <div className="ml-4 flex items-center gap-2">
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">Relevance</span>
+            <span className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Relevance</span>
           </div>
           {(['all', 'high', 'medium', 'low'] as Relevance[]).map(r => (
             <button
@@ -131,7 +131,7 @@ export default function SignalsPage() {
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
                 relevance === r
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-700'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-700'
               }`}
             >
               {r}
@@ -144,26 +144,26 @@ export default function SignalsPage() {
           {filtered.map(signal => {
             const pmeta = PLATFORM_META[signal.platform]
             return (
-              <div key={signal.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+              <div key={signal.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
                 <div className="flex items-start gap-4">
                   <div className="flex-1 min-w-0">
                     {/* Meta row */}
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${pmeta.bg} ${pmeta.color}`}>{pmeta.label}</span>
-                      <span className="text-[10px] text-gray-500 font-mono">{signal.author}</span>
-                      <span className="text-[10px] text-gray-600 font-mono ml-auto">{signal.date}</span>
+                      <span className="text-[10px] text-zinc-500 font-mono">{signal.author}</span>
+                      <span className="text-[10px] text-zinc-600 font-mono ml-auto">{signal.date}</span>
                     </div>
                     {/* Content */}
-                    <p className="text-sm text-gray-200 leading-relaxed mb-3">&ldquo;{signal.content}&rdquo;</p>
+                    <p className="text-sm text-zinc-200 leading-relaxed mb-3">&ldquo;{signal.content}&rdquo;</p>
                     {/* Tags */}
                     <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <div className="flex items-center gap-3 text-xs text-zinc-500">
                         <span className="flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5" />{signal.upvotes.toLocaleString()}</span>
                         <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" />{signal.comments}</span>
                       </div>
                       <div className="flex gap-1.5 ml-2 flex-wrap">
                         {signal.tags.map(t => (
-                          <span key={t} className="text-[10px] text-gray-500 bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5">{t}</span>
+                          <span key={t} className="text-[10px] text-zinc-500 bg-zinc-800 border border-zinc-700 rounded px-1.5 py-0.5">{t}</span>
                         ))}
                       </div>
                       <span className={`ml-auto text-[10px] font-semibold border rounded px-2 py-0.5 ${RELEVANCE_COLOR[signal.relevance]}`}>{signal.relevance}</span>

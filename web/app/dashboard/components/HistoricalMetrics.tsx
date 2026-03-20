@@ -76,8 +76,8 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
 
   if (!userId) {
     return (
-      <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-        <div className="text-center text-gray-500">
+      <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
+        <div className="text-center text-zinc-500">
           No agent selected
         </div>
       </div>
@@ -85,7 +85,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+    <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <span>📈</span> Historical Metrics
@@ -98,7 +98,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
               className={`px-3 py-1 text-sm rounded-lg ${
                 timeRange === range
                   ? 'bg-white text-black'
-                  : 'bg-gray-800 text-gray-400 hover:text-white'
+                  : 'bg-zinc-800 text-zinc-400 hover:text-white'
               }`}
             >
               {range}
@@ -109,7 +109,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
 
       {loading ? (
         <div className="flex items-center justify-center h-40">
-          <div className="text-gray-400">Loading historical data...</div>
+          <div className="text-zinc-400">Loading historical data...</div>
         </div>
       ) : error ? (
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
@@ -119,7 +119,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
           </div>
         </div>
       ) : historicalData.length === 0 ? (
-        <div className="text-center py-8 text-gray-500 text-sm">
+        <div className="text-center py-8 text-zinc-500 text-sm">
           <div className="text-4xl mb-2">📊</div>
           No historical data available
         </div>
@@ -128,7 +128,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
           {/* CPU Chart */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-400">CPU Usage</span>
+              <span className="text-sm text-zinc-400">CPU Usage</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono text-white">{getAverage('cpu')}%</span>
                 {getTrend('cpu') === 'up' && (
@@ -154,7 +154,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
           {/* Memory Chart */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-400">Memory Usage</span>
+              <span className="text-sm text-zinc-400">Memory Usage</span>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-mono text-white">{getAverage('memory')}%</span>
                 {getTrend('memory') === 'up' && (
@@ -178,17 +178,17 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
           </div>
 
           {/* Analytics Summary */}
-          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-800">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-zinc-800">
             <div>
-              <div className="text-xs text-gray-500 mb-1">Avg CPU</div>
+              <div className="text-xs text-zinc-500 mb-1">Avg CPU</div>
               <div className="text-lg font-bold font-mono">{getAverage('cpu')}%</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500 mb-1">Avg Memory</div>
+              <div className="text-xs text-zinc-500 mb-1">Avg Memory</div>
               <div className="text-lg font-bold font-mono">{getAverage('memory')}%</div>
             </div>
             <div>
-              <div className="text-xs text-gray-500 mb-1">Total Errors</div>
+              <div className="text-xs text-zinc-500 mb-1">Total Errors</div>
               <div className="text-lg font-bold font-mono text-red-400">
                 {historicalData.reduce((acc, curr) => acc + curr.errors, 0)}
               </div>

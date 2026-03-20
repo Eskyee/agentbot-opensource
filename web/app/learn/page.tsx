@@ -141,7 +141,7 @@ export default function LearnPage() {
       <div className="mx-auto max-w-5xl">
         <div className="mb-12">
           <h1 className="text-4xl font-bold tracking-tight mb-4">📚 Learn Agentbot</h1>
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-zinc-400">
             From zero to production. Everything you need to deploy and scale AI agents.
           </p>
         </div>
@@ -152,7 +152,7 @@ export default function LearnPage() {
             <span className="text-2xl">🚀</span>
             <h2 className="text-2xl font-bold">Getting Started</h2>
           </div>
-          <p className="text-gray-400 mb-6">
+          <p className="text-zinc-400 mb-6">
             New to Agentbot? Start here. Deploy your first agent in under a minute.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
@@ -160,13 +160,13 @@ export default function LearnPage() {
               <Link
                 key={guide.title}
                 href={guide.href}
-                className="group p-6 rounded-2xl bg-gray-900 border border-gray-800 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10"
+                className="group p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 transition-all hover:shadow-lg hover:shadow-blue-500/10"
               >
                 <div className="flex items-start gap-4">
                   <span className="text-3xl">{guide.icon}</span>
                   <div>
                     <h3 className="font-bold text-lg mb-1 group-hover:text-blue-400 transition-colors">{guide.title}</h3>
-                    <p className="text-gray-400 text-sm">{guide.description}</p>
+                    <p className="text-zinc-400 text-sm">{guide.description}</p>
                   </div>
                 </div>
               </Link>
@@ -180,7 +180,7 @@ export default function LearnPage() {
             <span className="text-2xl">⚡</span>
             <h2 className="text-2xl font-bold">Advanced</h2>
           </div>
-          <p className="text-gray-400 mb-6">
+          <p className="text-zinc-400 mb-6">
             Power user? Go deep. Swarms, skills, workflows, payments, and production scale.
           </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -188,13 +188,13 @@ export default function LearnPage() {
               <Link
                 key={guide.title}
                 href={guide.href}
-                className="group p-5 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-purple-500/50 transition-all"
+                className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-blue-500/50 transition-all"
               >
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{guide.icon}</span>
                   <div>
-                    <h3 className="font-bold mb-1 group-hover:text-purple-400 transition-colors">{guide.title}</h3>
-                    <p className="text-gray-500 text-sm">{guide.description}</p>
+                    <h3 className="font-bold mb-1 group-hover:text-blue-400 transition-colors">{guide.title}</h3>
+                    <p className="text-zinc-500 text-sm">{guide.description}</p>
                   </div>
                 </div>
               </Link>
@@ -208,7 +208,7 @@ export default function LearnPage() {
             <span className="text-2xl">📖</span>
             <h2 className="text-2xl font-bold">OpenClaw Documentation</h2>
           </div>
-          <p className="text-gray-400 mb-6">
+          <p className="text-zinc-400 mb-6">
             Full OpenClaw framework docs. Updated daily with the latest features.
           </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -218,16 +218,16 @@ export default function LearnPage() {
                 href={doc.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-4 rounded-xl bg-gray-900/30 border border-gray-800 hover:border-green-500/50 transition-all"
+                className="group p-4 rounded-xl bg-zinc-900/30 border border-zinc-800 hover:border-green-500/50 transition-all"
               >
                 <div className="flex items-start gap-3">
                   <span className="text-xl">{doc.icon}</span>
                   <div>
                     <h3 className="font-bold text-sm mb-1 group-hover:text-green-400 transition-colors flex items-center gap-1">
                       {doc.title}
-                      <span className="text-gray-600">↗</span>
+                      <span className="text-zinc-600">↗</span>
                     </h3>
-                    <p className="text-gray-500 text-xs">{doc.description}</p>
+                    <p className="text-zinc-500 text-xs">{doc.description}</p>
                   </div>
                 </div>
               </a>
@@ -249,7 +249,7 @@ export default function LearnPage() {
             <span className="text-2xl">📻</span>
             <h2 className="text-2xl font-bold">baseFM Streaming</h2>
           </div>
-          <p className="text-gray-400 mb-6">
+          <p className="text-zinc-400 mb-6">
             Go live on baseFM - the onchain radio station. Stream as a human DJ or deploy an AI agent to DJ autonomously.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
@@ -258,25 +258,25 @@ export default function LearnPage() {
                 <span className="text-3xl">🌱</span>
                 <div>
                   <h3 className="font-bold text-lg group-hover:text-green-400 transition-colors">Beginner Guide</h3>
-                  <p className="text-xs text-gray-500">New to crypto</p>
+                  <p className="text-xs text-zinc-500">New to crypto</p>
                 </div>
               </div>
-              <ul className="text-sm text-gray-400 space-y-1">
+              <ul className="text-sm text-zinc-400 space-y-1">
                 <li>• What is baseFM?</li>
                 <li>• Setting up your wallet</li>
                 <li>• Getting RAVE tokens</li>
                 <li>• Tipping DJs & buying tickets</li>
               </ul>
             </a>
-            <a href="https://basefm.space/guide/advanced" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-2xl bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-purple-500/30 hover:border-purple-400/50 transition-all">
+            <a href="https://basefm.space/guide/advanced" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-2xl bg-gradient-to-br from-purple-900/20 to-pink-900/20 border border-blue-500/30 hover:border-blue-400/50 transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">🤓</span>
                 <div>
-                  <h3 className="font-bold text-lg group-hover:text-purple-400 transition-colors">Advanced Guide</h3>
-                  <p className="text-xs text-gray-500">For developers</p>
+                  <h3 className="font-bold text-lg group-hover:text-blue-400 transition-colors">Advanced Guide</h3>
+                  <p className="text-xs text-zinc-500">For developers</p>
                 </div>
               </div>
-              <ul className="text-sm text-gray-400 space-y-1">
+              <ul className="text-sm text-zinc-400 space-y-1">
                 <li>• Tech stack & architecture</li>
                 <li>• Smart contract details</li>
                 <li>• Streaming setup (OBS, Mux)</li>
@@ -285,8 +285,8 @@ export default function LearnPage() {
             </a>
           </div>
           <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-green-900/20 to-purple-900/20 border border-green-500/20">
-            <p className="text-sm text-gray-400">
-              🎵 <strong>Listen live:</strong> <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-green-400 underline hover:text-green-300">basefm.space</a> — 24/7 AI & human DJ streams. Or <a href="/basefm" className="text-purple-400 underline hover:text-purple-300">deploy your own DJ agent on Agentbot</a>.
+            <p className="text-sm text-zinc-400">
+              🎵 <strong>Listen live:</strong> <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-green-400 underline hover:text-green-300">basefm.space</a> — 24/7 AI & human DJ streams. Or <a href="/basefm" className="text-blue-400 underline hover:text-blue-300">deploy your own DJ agent on Agentbot</a>.
             </p>
           </div>
         </section>
@@ -297,7 +297,7 @@ export default function LearnPage() {
             <span className="text-2xl">🛒</span>
             <h2 className="text-2xl font-bold">ClawSkills Marketplace</h2>
           </div>
-          <p className="text-gray-400 mb-6">
+          <p className="text-zinc-400 mb-6">
             5,400+ community-built skills. Extend your agent with superpowers.
           </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -306,30 +306,30 @@ export default function LearnPage() {
                 <span className="text-2xl">🦞</span>
                 <div>
                   <h3 className="font-bold group-hover:text-orange-400 transition-colors">ClawHub</h3>
-                  <p className="text-xs text-gray-500">3,286 skills</p>
+                  <p className="text-xs text-zinc-500">3,286 skills</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-400">Official skill marketplace with vector search, ratings, and 1.5M+ downloads.</p>
+              <p className="text-sm text-zinc-400">Official skill marketplace with vector search, ratings, and 1.5M+ downloads.</p>
             </a>
-            <a href="https://github.com/VoltAgent/awesome-openclaw-skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-white/30 transition-all">
+            <a href="https://github.com/VoltAgent/awesome-openclaw-skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-white/30 transition-all">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">📦</span>
                 <div>
                   <h3 className="font-bold group-hover:text-white transition-colors">Awesome List</h3>
-                  <p className="text-xs text-gray-500">5,400+ skills</p>
+                  <p className="text-xs text-zinc-500">5,400+ skills</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-400">Curated collection of best skills from the community.</p>
+              <p className="text-sm text-zinc-400">Curated collection of best skills from the community.</p>
             </a>
-            <a href="https://learnopenclaw.com/core-concepts/skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-gray-900/50 border border-gray-800 hover:border-white/30 transition-all">
+            <a href="https://learnopenclaw.com/core-concepts/skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-white/30 transition-all">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">📚</span>
                 <div>
                   <h3 className="font-bold group-hover:text-white transition-colors">Learn OpenClaw</h3>
-                  <p className="text-xs text-gray-500">Docs & guides</p>
+                  <p className="text-xs text-zinc-500">Docs & guides</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-400">How skills work, how to build them, and best practices.</p>
+              <p className="text-sm text-zinc-400">How skills work, how to build them, and best practices.</p>
             </a>
           </div>
           <div className="mt-6 p-4 rounded-xl bg-orange-900/10 border border-orange-500/20">
@@ -346,18 +346,18 @@ export default function LearnPage() {
             <h2 className="text-2xl font-bold">Quick Reference</h2>
           </div>
           <div className="grid gap-6 md:grid-cols-2">
-            <div className="p-6 rounded-2xl bg-gray-900 border border-gray-800">
+            <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
               <h3 className="font-bold mb-4">Environment Variables</h3>
-              <pre className="text-sm text-gray-400 overflow-x-auto">
+              <pre className="text-sm text-zinc-400 overflow-x-auto">
 {`OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 TELEGRAM_BOT_TOKEN=...
 OPENROUTER_API_KEY=...`}
               </pre>
             </div>
-            <div className="p-6 rounded-2xl bg-gray-900 border border-gray-800">
+            <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
               <h3 className="font-bold mb-4">Default Models</h3>
-              <pre className="text-sm text-gray-400 overflow-x-auto">
+              <pre className="text-sm text-zinc-400 overflow-x-auto">
 {`Primary: Kimi K2.5 (fast)
 Fallback: GPT-4o Mini
 Reasoning: DeepSeek R1

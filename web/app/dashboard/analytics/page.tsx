@@ -76,56 +76,56 @@ export default function AnalyticsPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold">Analytics</h1>
-              <p className="text-gray-400 text-sm mt-1">Performance insights across all your agents</p>
+              <p className="text-zinc-400 text-sm mt-1">Performance insights across all your agents</p>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex bg-gray-900 rounded-lg border border-gray-700">
+              <div className="flex bg-zinc-900 rounded-lg border border-zinc-700">
                 {['1m', '3m', '6m', '1y'].map(range => (
                   <button
                     key={range}
                     onClick={() => setTimeRange(range)}
-                    className={`px-3 py-1.5 text-xs font-medium ${timeRange === range ? 'bg-white text-black rounded-lg' : 'text-gray-400'}`}
+                    className={`px-3 py-1.5 text-xs font-medium ${timeRange === range ? 'bg-white text-black rounded-lg' : 'text-zinc-400'}`}
                   >
                     {range}
                   </button>
                 ))}
               </div>
-              <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">Dashboard</Link>
+              <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white">Dashboard</Link>
             </div>
           </div>
 
           {/* Overview Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Total Revenue</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Total Revenue</div>
               <div className="text-2xl font-bold text-green-400">{data.overview.totalRevenue}</div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Total Bookings</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Total Bookings</div>
               <div className="text-2xl font-bold text-blue-400">{data.overview.totalBookings}</div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Total Fans</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Total Fans</div>
               <div className="text-2xl font-bold text-pink-400">{data.overview.totalFans.toLocaleString()}</div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Total Streams</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Total Streams</div>
               <div className="text-2xl font-bold text-orange-400">{data.overview.totalStreams.toLocaleString()}</div>
             </div>
           </div>
 
           {/* Revenue Chart */}
-          <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 mb-8">
+          <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800 mb-8">
             <h2 className="text-lg font-semibold mb-4">Revenue Trend</h2>
             <div className="h-48 flex items-end gap-2">
               {data.monthly.map((m, i) => (
                 <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
-                  <div className="text-xs text-gray-500 font-mono">${m.revenue}</div>
+                  <div className="text-xs text-zinc-500 font-mono">${m.revenue}</div>
                   <div
                     className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t-sm min-h-[4px]"
                     style={{ height: `${Math.max(2, (m.revenue / maxMonthlyValue) * 100)}%` }}
                   />
-                  <div className="text-xs text-gray-500">{m.month}</div>
+                  <div className="text-xs text-zinc-500">{m.month}</div>
                 </div>
               ))}
             </div>
@@ -133,18 +133,18 @@ export default function AnalyticsPage() {
 
           <div className="grid gap-6 md:grid-cols-2">
             {/* Top Skills */}
-            <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+            <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
               <h2 className="text-lg font-semibold mb-4">Top Skills</h2>
               <div className="space-y-3">
                 {data.topSkills.map(skill => (
                   <div key={skill.name} className="flex items-center justify-between">
-                    <span className="text-sm text-gray-300">{skill.name}</span>
+                    <span className="text-sm text-zinc-300">{skill.name}</span>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-500">{skill.usage} uses</span>
-                      <div className="w-20 h-2 bg-gray-800 rounded-full overflow-hidden">
-                        <div className="h-full bg-purple-500 rounded-full" style={{ width: `${skill.success}%` }} />
+                      <span className="text-xs text-zinc-500">{skill.usage} uses</span>
+                      <div className="w-20 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${skill.success}%` }} />
                       </div>
-                      <span className="text-xs text-gray-400 w-8">{skill.success}%</span>
+                      <span className="text-xs text-zinc-400 w-8">{skill.success}%</span>
                     </div>
                   </div>
                 ))}
@@ -152,14 +152,14 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Channel Performance */}
-            <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
+            <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
               <h2 className="text-lg font-semibold mb-4">Channel Performance</h2>
               <div className="space-y-3">
                 {data.channels.map(ch => (
-                  <div key={ch.name} className="flex items-center justify-between bg-gray-800 rounded-lg px-4 py-3">
+                  <div key={ch.name} className="flex items-center justify-between bg-zinc-800 rounded-lg px-4 py-3">
                     <span className="text-sm font-medium">{ch.name}</span>
                     <div className="flex items-center gap-4 text-sm">
-                      <span className="text-gray-400">{ch.messages} msgs</span>
+                      <span className="text-zinc-400">{ch.messages} msgs</span>
                       <span className="text-green-400">{ch.engagement}</span>
                     </div>
                   </div>

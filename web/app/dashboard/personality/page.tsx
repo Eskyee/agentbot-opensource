@@ -37,10 +37,10 @@ export default function PersonalityPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">Agent Personality</h1>
-          <p className="text-gray-400 mt-2">Customize how your agent communicates</p>
+          <p className="text-zinc-400 mt-2">Customize how your agent communicates</p>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Choose Personality Type</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {PERSONALITIES.map(p => (
@@ -49,43 +49,43 @@ export default function PersonalityPage() {
                 onClick={() => setSelected(p.id)}
                 className={`p-4 rounded-lg border-2 transition-all ${
                   selected === p.id
-                    ? 'border-white bg-gray-800'
-                    : 'border-gray-700 hover:border-gray-600'
+                    ? 'border-white bg-zinc-800'
+                    : 'border-zinc-700 hover:border-zinc-600'
                 }`}
               >
                 <div className="text-3xl mb-2">{p.emoji}</div>
                 <div className="font-medium">{p.name}</div>
-                <div className="text-xs text-gray-400">{p.tone}</div>
+                <div className="text-xs text-zinc-400">{p.tone}</div>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Custom Greeting</h2>
           <input
             type="text"
             value={customGreeting}
             onChange={(e) => setCustomGreeting(e.target.value)}
             placeholder="Hello! How can I assist you today?"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3"
           />
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Area of Expertise</h2>
           <input
             type="text"
             value={expertise}
             onChange={(e) => setExpertise(e.target.value)}
             placeholder="e.g., customer support, data analysis, content writing"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+            className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3"
           />
         </div>
 
         <button
           onClick={savePersonality}
-          className="w-full bg-white text-black py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+          className="w-full bg-white text-black py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors"
         >
           Save Personality
         </button>

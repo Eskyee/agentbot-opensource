@@ -38,7 +38,7 @@ export function MetricsCard({ userId }: { userId?: string }) {
 
   if (!userId) {
     return (
-      <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 text-center text-gray-500">
+      <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 text-center text-zinc-500">
         Deploy agent first to see metrics
       </div>
     )
@@ -46,15 +46,15 @@ export function MetricsCard({ userId }: { userId?: string }) {
 
   if (loading) {
     return (
-      <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 text-center">
-        <div className="animate-pulse text-gray-500">Loading metrics...</div>
+      <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 text-center">
+        <div className="animate-pulse text-zinc-500">Loading metrics...</div>
       </div>
     )
   }
 
   if (error || !metrics) {
     return (
-      <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 text-center text-red-400">
+      <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 text-center text-red-400">
         {error || 'No data available'}
       </div>
     )
@@ -88,14 +88,14 @@ export function MetricsCard({ userId }: { userId?: string }) {
   ] as const
 
   return (
-    <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-      <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto pb-2 border-b border-gray-700">
+    <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
+      <div className="flex flex-wrap gap-2 mb-6 overflow-x-auto pb-2 border-b border-zinc-700">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setCurrentTab(tab.id)}
             className={`px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-all ${
-              currentTab === tab.id ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
+              currentTab === tab.id ? 'bg-white text-black' : 'bg-zinc-800 text-zinc-400 hover:text-white'
             }`}
           >
             {tab.label}
@@ -106,16 +106,16 @@ export function MetricsCard({ userId }: { userId?: string }) {
       <div className="min-h-[120px]">
         {currentTab === 'revenue' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">This Month</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">This Month</div>
               <div className="text-2xl font-bold text-green-400">{metrics.revenue.month}</div>
             </div>
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">All Time</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">All Time</div>
               <div className="text-2xl font-bold text-white">{metrics.revenue.total}</div>
             </div>
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">Growth</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">Growth</div>
               <div className={`text-2xl font-bold ${metrics.revenue.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
                 {metrics.revenue.change}
               </div>
@@ -125,16 +125,16 @@ export function MetricsCard({ userId }: { userId?: string }) {
 
         {currentTab === 'bookings' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">Completed</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">Completed</div>
               <div className="text-2xl font-bold text-blue-400">{metrics.bookings.completed}</div>
             </div>
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">Pending</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">Pending</div>
               <div className="text-2xl font-bold text-yellow-400">{metrics.bookings.pending}</div>
             </div>
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">Conversion</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">Conversion</div>
               <div className="text-2xl font-bold text-white">{metrics.bookings.conversion}</div>
             </div>
           </div>
@@ -143,27 +143,27 @@ export function MetricsCard({ userId }: { userId?: string }) {
         {currentTab === 'fans' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-xs text-gray-500 mb-1">Total Fans</div>
+              <div className="bg-zinc-800 rounded-xl p-4">
+                <div className="text-xs text-zinc-500 mb-1">Total Fans</div>
                 <div className="text-3xl font-bold text-pink-400">{metrics.fans.total.toLocaleString()}</div>
-                <div className="text-xs text-gray-500 mt-1">{metrics.fans.growth} growth</div>
+                <div className="text-xs text-zinc-500 mt-1">{metrics.fans.growth} growth</div>
               </div>
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-xs text-gray-500 mb-1">Active</div>
-                <div className="text-3xl font-bold text-purple-400">{metrics.fans.active.toLocaleString()}</div>
+              <div className="bg-zinc-800 rounded-xl p-4">
+                <div className="text-xs text-zinc-500 mb-1">Active</div>
+                <div className="text-3xl font-bold text-blue-400">{metrics.fans.active.toLocaleString()}</div>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
-              <div className="bg-gray-800 rounded-xl p-3 text-center">
-                <div className="text-xs text-gray-500">Superfans</div>
-                <div className="text-lg font-bold text-purple-300">{metrics.fans.segmentation.superfans}</div>
+              <div className="bg-zinc-800 rounded-xl p-3 text-center">
+                <div className="text-xs text-zinc-500">Superfans</div>
+                <div className="text-lg font-bold text-blue-300">{metrics.fans.segmentation.superfans}</div>
               </div>
-              <div className="bg-gray-800 rounded-xl p-3 text-center">
-                <div className="text-xs text-gray-500">Casual</div>
+              <div className="bg-zinc-800 rounded-xl p-3 text-center">
+                <div className="text-xs text-zinc-500">Casual</div>
                 <div className="text-lg font-bold text-blue-300">{metrics.fans.segmentation.casual}</div>
               </div>
-              <div className="bg-gray-800 rounded-xl p-3 text-center">
-                <div className="text-xs text-gray-500">New</div>
+              <div className="bg-zinc-800 rounded-xl p-3 text-center">
+                <div className="text-xs text-zinc-500">New</div>
                 <div className="text-lg font-bold text-green-300">{metrics.fans.segmentation.new}</div>
               </div>
             </div>
@@ -172,16 +172,16 @@ export function MetricsCard({ userId }: { userId?: string }) {
 
         {currentTab === 'streams' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">Monthly Streams</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">Monthly Streams</div>
               <div className="text-2xl font-bold text-orange-400">{metrics.streams.monthlyStreams.toLocaleString()}</div>
             </div>
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">Listeners</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">Listeners</div>
               <div className="text-2xl font-bold text-blue-400">{metrics.streams.monthlyListeners.toLocaleString()}</div>
             </div>
-            <div className="bg-gray-800 rounded-xl p-4">
-              <div className="text-xs text-gray-500 mb-1">Growth</div>
+            <div className="bg-zinc-800 rounded-xl p-4">
+              <div className="text-xs text-zinc-500 mb-1">Growth</div>
               <div className={`text-2xl font-bold ${metrics.streams.growth.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
                 {metrics.streams.growth}
               </div>
@@ -192,22 +192,22 @@ export function MetricsCard({ userId }: { userId?: string }) {
         {currentTab === 'skills' && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-xs text-gray-500 mb-1">Active Skills</div>
-                <div className="text-3xl font-bold text-purple-400">{metrics.skills.active}</div>
+              <div className="bg-zinc-800 rounded-xl p-4">
+                <div className="text-xs text-zinc-500 mb-1">Active Skills</div>
+                <div className="text-3xl font-bold text-blue-400">{metrics.skills.active}</div>
               </div>
-              <div className="bg-gray-800 rounded-xl p-4">
-                <div className="text-xs text-gray-500 mb-1">Total Available</div>
+              <div className="bg-zinc-800 rounded-xl p-4">
+                <div className="text-xs text-zinc-500 mb-1">Total Available</div>
                 <div className="text-3xl font-bold text-white">{metrics.skills.total}</div>
                 <div className="text-xs text-green-400 mt-1">{metrics.skills.growth} this week</div>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {['Web Search', 'Setlist Oracle', 'Track Finder', 'Visual Synth'].map(skill => (
-                <div key={skill} className="bg-gray-800 rounded-lg p-3">
+                <div key={skill} className="bg-zinc-800 rounded-lg p-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-green-500 rounded-full" />
-                    <span className="text-sm text-gray-300">{skill}</span>
+                    <span className="text-sm text-zinc-300">{skill}</span>
                   </div>
                 </div>
               ))}
@@ -219,7 +219,7 @@ export function MetricsCard({ userId }: { userId?: string }) {
           <div className="space-y-4">
             <div className="text-center">
               <div className={`text-6xl font-bold font-mono ${healthColor}`}>{healthScore}</div>
-              <div className="text-sm text-gray-400 mt-1">{healthLabel}</div>
+              <div className="text-sm text-zinc-400 mt-1">{healthLabel}</div>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
@@ -229,12 +229,12 @@ export function MetricsCard({ userId }: { userId?: string }) {
                 { label: 'Streams', weight: '15%', active: parseFloat(metrics.streams.growth.replace(/[+%]/g, '')) > 0 },
                 { label: 'Skills', weight: '10%', active: metrics.skills.active > 0 },
               ].map(item => (
-                <div key={item.label} className="bg-gray-800 rounded-lg p-3 text-center">
-                  <div className={`text-lg font-bold ${item.active ? 'text-green-400' : 'text-gray-600'}`}>
+                <div key={item.label} className="bg-zinc-800 rounded-lg p-3 text-center">
+                  <div className={`text-lg font-bold ${item.active ? 'text-green-400' : 'text-zinc-600'}`}>
                     {item.active ? '✓' : '✗'}
                   </div>
-                  <div className="text-xs text-gray-400">{item.label}</div>
-                  <div className="text-xs text-gray-600">{item.weight}</div>
+                  <div className="text-xs text-zinc-400">{item.label}</div>
+                  <div className="text-xs text-zinc-600">{item.weight}</div>
                 </div>
               ))}
             </div>

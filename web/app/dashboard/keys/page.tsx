@@ -106,7 +106,7 @@ export default function KeysPage() {
     return (
       <div className="min-h-screen bg-black text-white p-8">
         <h1 className="text-3xl font-bold mb-8">API Keys</h1>
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-zinc-400">Loading...</div>
       </div>
     )
   }
@@ -117,11 +117,11 @@ export default function KeysPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">API Keys</h1>
-            <p className="text-gray-400">Manage your API keys for programmatic access</p>
+            <p className="text-zinc-400">Manage your API keys for programmatic access</p>
           </div>
           <button
             onClick={() => setShowNewKeyForm(!showNewKeyForm)}
-            className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition"
+            className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-100 transition"
           >
             + New Key
           </button>
@@ -134,23 +134,23 @@ export default function KeysPage() {
         )}
 
         {showNewKeyForm && (
-          <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50 mb-8">
+          <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50 mb-8">
             <h2 className="text-lg font-semibold mb-4">Create New API Key</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">Key Name</label>
+                <label className="block text-sm text-zinc-400 mb-2">Key Name</label>
                 <input
                   type="text"
                   value={newKeyName}
                   onChange={(e) => setNewKeyName(e.target.value)}
                   placeholder="e.g., Production API Key"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-gray-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-zinc-500"
                 />
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={handleCreateKey}
-                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition"
+                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-100 transition"
                 >
                   Create Key
                 </button>
@@ -159,7 +159,7 @@ export default function KeysPage() {
                     setShowNewKeyForm(false)
                     setNewKeyName('')
                   }}
-                  className="bg-gray-800 border border-gray-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 transition"
+                  className="bg-zinc-800 border border-zinc-700 text-white px-4 py-2 rounded-lg font-medium hover:bg-zinc-700 transition"
                 >
                   Cancel
                 </button>
@@ -170,19 +170,19 @@ export default function KeysPage() {
 
         {keys.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-400">No API keys yet. Create one to get started.</p>
+            <p className="text-zinc-400">No API keys yet. Create one to get started.</p>
           </div>
         ) : (
           <div className="space-y-4">
             {keys.map((key) => (
               <div
                 key={key.id}
-                className="border border-gray-700 rounded-lg p-4 bg-gray-900/50 hover:bg-gray-900 transition"
+                className="border border-zinc-700 rounded-lg p-4 bg-zinc-900/50 hover:bg-zinc-900 transition"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">{key.name}</h3>
-                    <p className="text-sm text-gray-500">ID: {key.id}</p>
+                    <p className="text-sm text-zinc-500">ID: {key.id}</p>
                   </div>
                   <div
                     className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -195,21 +195,21 @@ export default function KeysPage() {
                   </div>
                 </div>
 
-                <div className="mb-4 p-3 bg-gray-800/50 rounded-lg">
+                <div className="mb-4 p-3 bg-zinc-800/50 rounded-lg">
                   <div className="flex items-center justify-between">
-                    <code className="text-sm text-gray-300 font-mono">
+                    <code className="text-sm text-zinc-300 font-mono">
                       {visibleKeys.has(key.id) ? key.key : maskKey(key.key)}
                     </code>
                     <div className="flex gap-2">
                       <button
                         onClick={() => toggleKeyVisibility(key.id)}
-                        className="p-2 hover:bg-gray-700 rounded transition text-xs"
+                        className="p-2 hover:bg-zinc-700 rounded transition text-xs"
                       >
                         {visibleKeys.has(key.id) ? '👁️ Hide' : '🔒 Show'}
                       </button>
                       <button
                         onClick={() => copyToClipboard(key.key, key.id)}
-                        className="p-2 hover:bg-gray-700 rounded transition text-xs"
+                        className="p-2 hover:bg-zinc-700 rounded transition text-xs"
                       >
                         {copiedId === key.id ? '✓ Copied' : '📋 Copy'}
                       </button>
@@ -219,11 +219,11 @@ export default function KeysPage() {
 
                 <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                   <div>
-                    <p className="text-gray-500">Created</p>
+                    <p className="text-zinc-500">Created</p>
                     <p className="text-white">{new Date(key.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Last Used</p>
+                    <p className="text-zinc-500">Last Used</p>
                     <p className="text-white">{key.lastUsed ? new Date(key.lastUsed).toLocaleDateString() : 'Never'}</p>
                   </div>
                 </div>

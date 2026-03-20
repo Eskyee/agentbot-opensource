@@ -187,8 +187,8 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
 
   if (!userId) {
     return (
-      <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-        <div className="text-center text-gray-500">
+      <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
+        <div className="text-center text-zinc-500">
           No agent selected
         </div>
       </div>
@@ -196,13 +196,13 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
+    <div className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <span>🔔</span> Performance Alerts
         </h2>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-zinc-400">
             {alerts.filter(a => !a.acknowledged).length} active alerts
           </span>
         </div>
@@ -210,7 +210,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
 
       {loading ? (
         <div className="flex items-center justify-center h-40">
-          <div className="text-gray-400">Loading performance data...</div>
+          <div className="text-zinc-400">Loading performance data...</div>
         </div>
       ) : error ? (
         <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
@@ -231,9 +231,9 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'
               }`}>
-                <div className="text-xs text-gray-500 mb-1">CPU</div>
+                <div className="text-xs text-zinc-500 mb-1">CPU</div>
                 <div className="text-2xl font-bold font-mono">{currentMetrics.cpu.toFixed(1)}%</div>
-                <div className="text-xs text-gray-500 mt-1">Threshold: {thresholds.cpu}%</div>
+                <div className="text-xs text-zinc-500 mt-1">Threshold: {thresholds.cpu}%</div>
               </div>
 
               <div className={`rounded-lg p-3 border ${
@@ -243,9 +243,9 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'
               }`}>
-                <div className="text-xs text-gray-500 mb-1">Memory</div>
+                <div className="text-xs text-zinc-500 mb-1">Memory</div>
                 <div className="text-2xl font-bold font-mono">{currentMetrics.memory.toFixed(1)}%</div>
-                <div className="text-xs text-gray-500 mt-1">Threshold: {thresholds.memory}%</div>
+                <div className="text-xs text-zinc-500 mt-1">Threshold: {thresholds.memory}%</div>
               </div>
 
               <div className={`rounded-lg p-3 border ${
@@ -255,9 +255,9 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'
               }`}>
-                <div className="text-xs text-gray-500 mb-1">Error Rate</div>
+                <div className="text-xs text-zinc-500 mb-1">Error Rate</div>
                 <div className="text-2xl font-bold font-mono">{currentMetrics.errorRate.toFixed(1)}%</div>
-                <div className="text-xs text-gray-500 mt-1">Threshold: {thresholds.errorRate}%</div>
+                <div className="text-xs text-zinc-500 mt-1">Threshold: {thresholds.errorRate}%</div>
               </div>
 
               <div className={`rounded-lg p-3 border ${
@@ -267,18 +267,18 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'
               }`}>
-                <div className="text-xs text-gray-500 mb-1">Response Time</div>
+                <div className="text-xs text-zinc-500 mb-1">Response Time</div>
                 <div className="text-2xl font-bold font-mono">{currentMetrics.responseTime.toFixed(0)}ms</div>
-                <div className="text-xs text-gray-500 mt-1">Threshold: {thresholds.responseTime}ms</div>
+                <div className="text-xs text-zinc-500 mt-1">Threshold: {thresholds.responseTime}ms</div>
               </div>
             </div>
           )}
 
           {/* Alerts List */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">Recent Alerts</h3>
+            <h3 className="text-sm font-semibold text-zinc-400 mb-3">Recent Alerts</h3>
             {alerts.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
+              <div className="text-center py-8 text-zinc-500 text-sm">
                 <div className="text-4xl mb-2">✅</div>
                 No active alerts
               </div>
@@ -296,9 +296,9 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
                           <h4 className="font-semibold text-sm">{alert.title}</h4>
-                          <span className="text-xs text-gray-500">{formatTime(alert.timestamp)}</span>
+                          <span className="text-xs text-zinc-500">{formatTime(alert.timestamp)}</span>
                         </div>
-                        <p className="text-sm text-gray-400 mt-1">{alert.message}</p>
+                        <p className="text-sm text-zinc-400 mt-1">{alert.message}</p>
                       </div>
                     </div>
                     {!alert.acknowledged && (
@@ -316,11 +316,11 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
           </div>
 
           {/* Threshold Configuration */}
-          <div className="mt-6 pt-6 border-t border-gray-800">
-            <h3 className="text-sm font-semibold text-gray-400 mb-3">Alert Thresholds</h3>
+          <div className="mt-6 pt-6 border-t border-zinc-800">
+            <h3 className="text-sm font-semibold text-zinc-400 mb-3">Alert Thresholds</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">CPU Warning Level</span>
+                <span className="text-sm text-zinc-400">CPU Warning Level</span>
                 <div className="flex items-center gap-2">
                   <input
                     type="range"
@@ -335,7 +335,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Memory Warning Level</span>
+                <span className="text-sm text-zinc-400">Memory Warning Level</span>
                 <div className="flex items-center gap-2">
                   <input
                     type="range"

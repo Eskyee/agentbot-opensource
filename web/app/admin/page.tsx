@@ -81,7 +81,7 @@ export default function AdminPage() {
         <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tighter uppercase italic">Platform Ops Console</h1>
-            <p className="text-gray-500 text-xs mt-1">STATUS: {instances.length} ACTIVE_INSTANCES | USER_LOAD: {users.length}</p>
+            <p className="text-zinc-500 text-xs mt-1">STATUS: {instances.length} ACTIVE_INSTANCES | USER_LOAD: {users.length}</p>
           </div>
           <div className="flex gap-4">
              <button 

@@ -41,8 +41,8 @@ function VerifyContent() {
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 bg-gray-800 rounded w-1/3 mb-8"></div>
-        <div className="h-64 bg-gray-900 rounded-xl"></div>
+        <div className="h-8 bg-zinc-800 rounded w-1/3 mb-8"></div>
+        <div className="h-64 bg-zinc-900 rounded-xl"></div>
       </div>
     )
   }
@@ -58,8 +58,8 @@ function VerifyContent() {
           verificationType={instance?.verificationType}
         />
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
-          <p className="text-gray-400">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
+          <p className="text-zinc-400">
             No agent found. Deploy an agent first to verify it.
           </p>
         </div>
@@ -74,14 +74,14 @@ export default function VerifyPage() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Verify Your Agent</h1>
-          <p className="text-gray-400">
+          <p className="text-zinc-400">
             Link your agent to an onchain identity to prove a real human is behind it.
           </p>
         </div>
 
         <div className="mb-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
           <h2 className="text-lg font-semibold mb-2 text-blue-400">Why verify?</h2>
-          <ul className="space-y-2 text-sm text-gray-300">
+          <ul className="space-y-2 text-sm text-zinc-300">
             <li>• <strong>Trust</strong> - Users know a real person runs this agent</li>
             <li>• <strong>Reputation</strong> - Build onchain reputation that travels with you</li>
             <li>• <strong>Stand out</strong> - Verified agents get a special badge in chats</li>
@@ -90,8 +90,8 @@ export default function VerifyPage() {
 
         <Suspense fallback={
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-800 rounded w-1/3 mb-8"></div>
-            <div className="h-64 bg-gray-900 rounded-xl"></div>
+            <div className="h-8 bg-zinc-800 rounded w-1/3 mb-8"></div>
+            <div className="h-64 bg-zinc-900 rounded-xl"></div>
           </div>
         }>
           <VerifyContent />

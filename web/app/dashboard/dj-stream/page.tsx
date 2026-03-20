@@ -87,20 +87,20 @@ export default function DJStreamPage() {
   const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className="min-h-screen bg-zinc-900 text-white p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">🎛️ DJ Stream Dashboard</h1>
 
         <div className="grid gap-6">
           {/* Wallet Connection */}
-          <div className="bg-gray-800 p-6 rounded-xl">
+          <div className="bg-zinc-800 p-6 rounded-xl">
             <h2 className="text-xl font-semibold mb-4">1. Connect Wallet</h2>
             
             {!isConnected ? (
               <div>
                 <button
                   onClick={handleConnect}
-                  className="bg-white hover:bg-gray-100 text-black font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all"
+                  className="bg-white hover:bg-zinc-100 text-black font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
@@ -108,7 +108,7 @@ export default function DJStreamPage() {
                   Connect Wallet
                 </button>
                 
-                <p className="mt-4 text-sm text-gray-400">
+                <p className="mt-4 text-sm text-zinc-400">
                   Need a wallet?{' '}
                   <a href="https://metamask.io/download/" target="_blank" rel="noopener" className="text-blue-400 hover:underline">Install MetaMask</a>
                   {' '}-{' '}
@@ -118,12 +118,12 @@ export default function DJStreamPage() {
             ) : (
               <div className="flex items-center gap-4">
                 <div className="bg-green-600 px-4 py-2 rounded-lg">
-                  <span className="text-sm text-gray-300">Connected:</span>
+                  <span className="text-sm text-zinc-300">Connected:</span>
                   <span className="ml-2 font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
                 </div>
                 <button
                   onClick={() => disconnect()}
-                  className="text-gray-400 hover:text-white text-sm"
+                  className="text-zinc-400 hover:text-white text-sm"
                 >
                   Disconnect
                 </button>
@@ -139,7 +139,7 @@ export default function DJStreamPage() {
 
           {/* RAVE Balance Check */}
           {isConnected && (
-            <div className="bg-gray-800 p-6 rounded-xl">
+            <div className="bg-zinc-800 p-6 rounded-xl">
               <h2 className="text-xl font-semibold mb-4">2. Verify RAVE Balance</h2>
               
               {raveBalance ? (
@@ -150,7 +150,7 @@ export default function DJStreamPage() {
                       <div className="text-3xl font-bold">
                         {(Number(raveBalance) / 1e18).toLocaleString()} RAVE
                       </div>
-                      <div className="text-gray-400 text-sm">
+                      <div className="text-zinc-400 text-sm">
                         Required: 1,250,000 RAVE
                       </div>
                     </div>
@@ -166,42 +166,42 @@ export default function DJStreamPage() {
                   </div>
                   
                   {!hasAccess && (
-                    <div className="mt-4 p-4 bg-gray-700 rounded-lg">
-                      <p className="text-gray-300 mb-2">
+                    <div className="mt-4 p-4 bg-zinc-700 rounded-lg">
+                      <p className="text-zinc-300 mb-2">
                         Need 1,250,000 RAVE tokens to stream for free.
                       </p>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-zinc-400 text-sm">
                         Or pay £10/month via Stripe (coming soon).
                       </p>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-gray-400">Checking balance...</div>
+                <div className="text-zinc-400">Checking balance...</div>
               )}
             </div>
           )}
 
           {/* Create Stream */}
           {hasAccess && !stream && (
-            <div className="bg-gray-800 p-6 rounded-xl">
+            <div className="bg-zinc-800 p-6 rounded-xl">
               <h2 className="text-xl font-semibold mb-4">3. Create Stream</h2>
               
               <div className="mb-4">
-                <label className="block text-sm text-gray-400 mb-1">DJ Name</label>
+                <label className="block text-sm text-zinc-400 mb-1">DJ Name</label>
                 <input
                   type="text"
                   value={djName}
                   onChange={(e) => setDjName(e.target.value)}
                   placeholder="DJ YourName"
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
+                  className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-4 py-2 text-white"
                 />
               </div>
 
               <button
                 onClick={createStream}
                 disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 rounded-lg py-3 font-semibold"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
               >
                 {loading ? 'Creating Stream...' : 'Start Streaming'}
               </button>
@@ -210,19 +210,19 @@ export default function DJStreamPage() {
 
           {/* Stream Details */}
           {stream && (
-            <div className="bg-gray-800 p-6 rounded-xl">
+            <div className="bg-zinc-800 p-6 rounded-xl">
               <h2 className="text-xl font-semibold mb-4">🎉 Stream Ready!</h2>
               
               <div className="space-y-4">
                 <div className="p-4 bg-green-900/30 border border-green-500 rounded-lg">
                   <div className="text-green-400 font-semibold mb-2">✓ Stream created successfully</div>
-                  <div className="text-sm text-gray-300">
+                  <div className="text-sm text-zinc-300">
                     DJ: {stream.name || djName}
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-gray-400 text-sm mb-1">Full RTMP (for OBS/Larix)</div>
+                  <div className="text-zinc-400 text-sm mb-1">Full RTMP (for OBS/Larix)</div>
                   <code className="block bg-black p-3 rounded text-sm break-all">
                     {stream.fullRtmpUrl}
                   </code>
@@ -230,13 +230,13 @@ export default function DJStreamPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Playback ID</div>
+                    <div className="text-zinc-400 text-sm mb-1">Playback ID</div>
                     <code className="block bg-black p-2 rounded text-sm">
                       {stream.playbackId || 'Pending...'}
                     </code>
                   </div>
                   <div>
-                    <div className="text-gray-400 text-sm mb-1">Status</div>
+                    <div className="text-zinc-400 text-sm mb-1">Status</div>
                     <span className="inline-block bg-yellow-600 px-3 py-1 rounded text-sm">
                       {stream.status}
                     </span>
@@ -245,7 +245,7 @@ export default function DJStreamPage() {
 
                 <div className="p-4 bg-blue-900/30 border border-blue-500 rounded-lg">
                   <div className="font-semibold mb-2">📺 OBS Studio Settings</div>
-                  <div className="text-sm text-gray-300 space-y-1">
+                  <div className="text-sm text-zinc-300 space-y-1">
                     <div><strong>Service:</strong> Custom</div>
                     <div><strong>Server:</strong> {MUX_RTMP_URL}</div>
                     <div><strong>Stream Key:</strong> {stream.streamKey}</div>

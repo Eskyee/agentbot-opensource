@@ -19,19 +19,19 @@ export default function DashboardError({
       <div className="text-center max-w-md">
         <div className="text-6xl mb-4">⚠️</div>
         <h2 className="text-2xl font-bold text-white mb-2">Something went wrong</h2>
-        <p className="text-gray-400 mb-6">
+        <p className="text-zinc-400 mb-6">
           {error.message || 'An unexpected error occurred. Please try again.'}
         </p>
         <div className="flex flex-col gap-3">
           <button
             onClick={reset}
-            className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+            className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors"
           >
             Try again
           </button>
           <Link
             href="/dashboard"
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-zinc-400 hover:text-white transition-colors"
           >
             Go back to Dashboard
           </Link>

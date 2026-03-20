@@ -104,8 +104,8 @@ function CalendarPageContent() {
 
   return (
     <div className="flex h-screen bg-black text-white">
-      <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
-        <div className="p-4 border-b border-gray-800">
+      <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
+        <div className="p-4 border-b border-zinc-800">
           <h1 className="text-xl font-bold">Agentbot</h1>
         </div>
         <nav className="flex-1 p-4">
@@ -117,7 +117,7 @@ function CalendarPageContent() {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   item.href === '/dashboard/calendar' 
                     ? 'bg-white/20 text-white' 
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
                 <span>{item.icon}</span>
@@ -136,7 +136,7 @@ function CalendarPageContent() {
               <button
                 onClick={connectCalendar}
                 disabled={loading}
-                className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50"
+                className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-200 disabled:opacity-50"
               >
                 {loading ? 'Connecting...' : 'Connect Google Calendar'}
               </button>
@@ -144,7 +144,7 @@ function CalendarPageContent() {
               <button
                 onClick={fetchEvents}
                 disabled={loading}
-                className="bg-gray-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-700 disabled:opacity-50"
+                className="bg-zinc-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-zinc-700 disabled:opacity-50"
               >
                 {loading ? 'Loading...' : 'Refresh'}
               </button>
@@ -154,22 +154,22 @@ function CalendarPageContent() {
           {connected ? (
             <>
               <div className="flex items-center justify-between mb-4">
-                <button onClick={prevMonth} className="p-2 hover:bg-gray-800 rounded-lg">←</button>
+                <button onClick={prevMonth} className="p-2 hover:bg-zinc-800 rounded-lg">←</button>
                 <h2 className="text-xl font-semibold">
                   {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                 </h2>
-                <button onClick={nextMonth} className="p-2 hover:bg-gray-800 rounded-lg">→</button>
+                <button onClick={nextMonth} className="p-2 hover:bg-zinc-800 rounded-lg">→</button>
               </div>
 
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {dayNames.map(day => (
-                  <div key={day} className="text-center text-gray-400 py-2">{day}</div>
+                  <div key={day} className="text-center text-zinc-400 py-2">{day}</div>
                 ))}
               </div>
 
               <div className="grid grid-cols-7 gap-1">
                 {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-                  <div key={`empty-${i}`} className="h-24 bg-gray-900/50 rounded-lg" />
+                  <div key={`empty-${i}`} className="h-24 bg-zinc-900/50 rounded-lg" />
                 ))}
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day = i + 1
@@ -181,16 +181,16 @@ function CalendarPageContent() {
                   return (
                     <div 
                       key={day} 
-                      className={`h-24 bg-gray-900 rounded-lg p-2 ${isToday ? 'border border-white' : ''}`}
+                      className={`h-24 bg-zinc-900 rounded-lg p-2 ${isToday ? 'border border-white' : ''}`}
                     >
-                      <div className={`text-sm ${isToday ? 'text-white font-bold' : 'text-gray-400'}`}>{day}</div>
+                      <div className={`text-sm ${isToday ? 'text-white font-bold' : 'text-zinc-400'}`}>{day}</div>
                       {dayEvents.slice(0, 2).map((event: any, idx: number) => (
                         <div key={idx} className="text-xs bg-blue-900/50 text-blue-200 truncate rounded px-1 mt-1">
                           {event.summary}
                         </div>
                       ))}
                       {dayEvents.length > 2 && (
-                        <div className="text-xs text-gray-500 mt-1">+{dayEvents.length - 2} more</div>
+                        <div className="text-xs text-zinc-500 mt-1">+{dayEvents.length - 2} more</div>
                       )}
                     </div>
                   )
@@ -201,20 +201,20 @@ function CalendarPageContent() {
                 <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
                 <div className="space-y-2">
                   {events.slice(0, 5).map((event: any) => (
-                    <div key={event.id} className="bg-gray-900 rounded-lg p-4 flex justify-between items-center">
+                    <div key={event.id} className="bg-zinc-900 rounded-lg p-4 flex justify-between items-center">
                       <div>
                         <div className="font-medium">{event.summary}</div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-sm text-zinc-400">
                           {new Date(event.start?.dateTime || event.start?.date).toLocaleString()}
                         </div>
                       </div>
                       {event.location && (
-                        <div className="text-sm text-gray-500">{event.location}</div>
+                        <div className="text-sm text-zinc-500">{event.location}</div>
                       )}
                     </div>
                   ))}
                   {events.length === 0 && (
-                    <div className="text-gray-500 text-center py-8">No upcoming events</div>
+                    <div className="text-zinc-500 text-center py-8">No upcoming events</div>
                   )}
                 </div>
               </div>
@@ -223,12 +223,12 @@ function CalendarPageContent() {
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📆</div>
               <h2 className="text-2xl font-bold mb-2">Connect Your Calendar</h2>
-              <p className="text-gray-400 mb-8 max-w-md mx-auto">
+              <p className="text-zinc-400 mb-8 max-w-md mx-auto">
                 Sync with Google Calendar to schedule events, manage availability, and let your agent handle bookings automatically.
               </p>
               <button
                 onClick={connectCalendar}
-                className="bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-gray-200"
+                className="bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-zinc-200"
               >
                 Connect Google Calendar
               </button>

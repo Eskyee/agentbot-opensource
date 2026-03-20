@@ -82,20 +82,20 @@ export default function SystemPulsePage() {
     sub?: string
     color?: string
   }) => (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-2">
-      <div className="flex items-center gap-2 text-gray-400 text-xs uppercase font-semibold tracking-widest">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-2">
+      <div className="flex items-center gap-2 text-zinc-400 text-xs uppercase font-semibold tracking-widest">
         <Icon className={`h-4 w-4 ${color}`} />
         {label}
       </div>
       <div className={`text-3xl font-mono font-bold ${color}`}>{value}</div>
-      {sub && <div className="text-xs text-gray-500">{sub}</div>}
+      {sub && <div className="text-xs text-zinc-500">{sub}</div>}
     </div>
   )
 
   return (
     <div className="mt-[4rem] min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-800 flex items-center justify-between">
+      <div className="px-6 py-5 border-b border-zinc-800 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Activity className="h-5 w-5 text-blue-400" />
           <h1 className="text-xl font-bold tracking-tight">System Pulse</h1>
@@ -104,21 +104,21 @@ export default function SystemPulsePage() {
             OPERATIONAL
           </span>
         </div>
-        <span className="text-xs text-gray-500 font-mono">{latest?.time}</span>
+        <span className="text-xs text-zinc-500 font-mono">{latest?.time}</span>
       </div>
 
       <div className="px-6 py-6 space-y-6">
         {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={Cpu} label="CPU" value={`${latest?.cpu.toFixed(1)}%`} sub="live" color="text-purple-400" />
+          <StatCard icon={Cpu} label="CPU" value={`${latest?.cpu.toFixed(1)}%`} sub="live" color="text-blue-400" />
           <StatCard icon={HardDrive} label="Memory" value={`${latest?.memory.toFixed(1)}%`} sub="heap used" color="text-blue-400" />
           <StatCard icon={Zap} label="Uptime" value={`${platformUptime}%`} sub="30-day SLA" color="text-green-400" />
           <StatCard icon={Shield} label="Success Rate" value={`${successRate}%`} sub="p99 / 5min" color="text-emerald-400" />
         </div>
 
         {/* CPU + Memory chart */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">CPU & Memory — 10 min rolling</h2>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">CPU & Memory — 10 min rolling</h2>
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={history}>
               <defs>
@@ -145,8 +145,8 @@ export default function SystemPulsePage() {
         </div>
 
         {/* RPS chart */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">Requests / sec</h2>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Requests / sec</h2>
           <ResponsiveContainer width="100%" height={130}>
             <LineChart data={history}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
@@ -159,8 +159,8 @@ export default function SystemPulsePage() {
         </div>
 
         {/* Anomaly log */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-yellow-400" /> Anomaly Detection
           </h2>
           {ANOMALIES.length === 0 ? (
@@ -178,9 +178,9 @@ export default function SystemPulsePage() {
                   <AlertTriangle className={`h-4 w-4 mt-0.5 shrink-0 ${a.severity === 'error' ? 'text-red-400' : 'text-yellow-400'}`} />
                   <div>
                     <div className="text-sm font-medium">{a.type}</div>
-                    <div className="text-xs text-gray-400">{a.detail}</div>
+                    <div className="text-xs text-zinc-400">{a.detail}</div>
                   </div>
-                  <span className="ml-auto text-[10px] font-mono text-gray-500 shrink-0 pt-0.5">{a.time}</span>
+                  <span className="ml-auto text-[10px] font-mono text-zinc-500 shrink-0 pt-0.5">{a.time}</span>
                 </div>
               ))}
             </div>

@@ -37,7 +37,7 @@ export default function TourManagementPage() {
       case 'confirmed': return 'bg-green-900/50 text-green-400'
       case 'pending': return 'bg-yellow-900/50 text-yellow-400'
       case 'cancelled': return 'bg-red-900/50 text-red-400'
-      default: return 'bg-gray-800 text-gray-400'
+      default: return 'bg-zinc-800 text-zinc-400'
     }
   }
 
@@ -48,65 +48,65 @@ export default function TourManagementPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold">Tour Management</h1>
-              <p className="text-gray-400 text-sm mt-1">Manage your upcoming tour dates and bookings</p>
+              <p className="text-zinc-400 text-sm mt-1">Manage your upcoming tour dates and bookings</p>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200"
+                className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-zinc-200"
               >
                 + Add Date
               </button>
-              <Link href="/dashboard/venue-finder" className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm">
+              <Link href="/dashboard/venue-finder" className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg text-sm">
                 Find Venues
               </Link>
-              <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">Dashboard</Link>
+              <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white">Dashboard</Link>
             </div>
           </div>
 
           {/* Overview */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Confirmed Shows</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Confirmed Shows</div>
               <div className="text-2xl font-bold text-green-400">{confirmedDates.length}</div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Pending</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Pending</div>
               <div className="text-2xl font-bold text-yellow-400">{pendingDates.length}</div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Total Revenue</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Total Revenue</div>
               <div className="text-2xl font-bold text-green-400">${totalRevenue.toLocaleString()}</div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-              <div className="text-xs text-gray-500 mb-1">Tickets Sold</div>
+            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
+              <div className="text-xs text-zinc-500 mb-1">Tickets Sold</div>
               <div className="text-2xl font-bold text-blue-400">{totalTickets.toLocaleString()}</div>
             </div>
           </div>
 
           {/* Tour Dates */}
-          <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
-            <div className="p-4 border-b border-gray-800">
+          <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+            <div className="p-4 border-b border-zinc-800">
               <h2 className="font-semibold">Tour Schedule</h2>
             </div>
             <div className="divide-y divide-gray-800">
               {tourDates.map(td => (
-                <div key={td.id} className="flex items-center justify-between p-4 hover:bg-gray-800/50 transition-colors">
+                <div key={td.id} className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="text-center min-w-[60px]">
                       <div className="text-lg font-bold">{new Date(td.date).getDate()}</div>
-                      <div className="text-xs text-gray-500">{new Date(td.date).toLocaleDateString('en', { month: 'short' })}</div>
+                      <div className="text-xs text-zinc-500">{new Date(td.date).toLocaleDateString('en', { month: 'short' })}</div>
                     </div>
                     <div>
                       <div className="font-semibold">{td.venue}</div>
-                      <div className="text-sm text-gray-400">{td.city}, {td.country}</div>
+                      <div className="text-sm text-zinc-400">{td.city}, {td.country}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right hidden sm:block">
                       <div className="text-sm font-mono">{td.fee}</div>
                       {td.ticketsSold > 0 && (
-                        <div className="text-xs text-gray-500">{td.ticketsSold}/{td.capacity} tickets</div>
+                        <div className="text-xs text-zinc-500">{td.ticketsSold}/{td.capacity} tickets</div>
                       )}
                     </div>
                     <span className={`text-xs px-2.5 py-1 rounded-full ${getStatusColor(td.status)}`}>
@@ -119,10 +119,10 @@ export default function TourManagementPage() {
           </div>
 
           {/* Map Placeholder */}
-          <div className="mt-8 bg-gray-900 rounded-xl p-8 border border-gray-800 text-center">
+          <div className="mt-8 bg-zinc-900 rounded-xl p-8 border border-zinc-800 text-center">
             <div className="text-4xl mb-3">🗺️</div>
             <h3 className="text-lg font-bold mb-2">Tour Map</h3>
-            <p className="text-gray-400 text-sm">Interactive tour route visualization coming soon</p>
+            <p className="text-zinc-400 text-sm">Interactive tour route visualization coming soon</p>
           </div>
         </div>
       </main>

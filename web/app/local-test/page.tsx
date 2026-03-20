@@ -40,37 +40,37 @@ export default function LocalTestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 p-8">
+    <div className="min-h-screen bg-zinc-950 p-8">
       <div className="max-w-xl mx-auto">
         <h1 className="text-2xl font-bold mb-6 text-white">Local Deploy Test</h1>
         
-        <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-4">
+        <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800 space-y-4">
           <div>
-            <label className="block text-gray-300 mb-2">Telegram Bot Token</label>
+            <label className="block text-zinc-300 mb-2">Telegram Bot Token</label>
             <input
               type="text"
               value={telegramToken}
               onChange={(e) => setTelegramToken(e.target.value)}
               placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white"
             />
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2">OpenRouter API Key</label>
+            <label className="block text-zinc-300 mb-2">OpenRouter API Key</label>
             <input
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-or-v1-..."
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
+              className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white"
             />
           </div>
 
           <button
             onClick={deploy}
             disabled={loading || !telegramToken}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg"
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 text-white font-medium py-2 px-4 rounded-lg"
           >
             {loading ? 'Deploying...' : 'Deploy Agent'}
           </button>

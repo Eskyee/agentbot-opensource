@@ -102,16 +102,16 @@ export default function TradingPage() {
     <div className="p-8 bg-black min-h-screen text-white">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-          <Sparkles className="h-8 w-8 text-purple-400" />
+          <Sparkles className="h-8 w-8 text-blue-400" />
           Trading Agent
         </h1>
-        <p className="text-gray-400">AI-powered crypto trading with Bankr</p>
+        <p className="text-zinc-400">AI-powered crypto trading with Bankr</p>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3">
         {/* Portfolio Section */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
+          <div className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 <Wallet className="h-5 w-5 text-green-400" />
@@ -119,7 +119,7 @@ export default function TradingPage() {
               </h2>
               <button
                 onClick={() => refetchBalances()}
-                className="p-2 hover:bg-gray-800 rounded-lg transition"
+                className="p-2 hover:bg-zinc-800 rounded-lg transition"
                 disabled={balancesLoading}
               >
                 <RefreshCw className={`h-4 w-4 ${balancesLoading ? 'animate-spin' : ''}`} />
@@ -129,18 +129,18 @@ export default function TradingPage() {
             <div className="grid gap-4">
               {balancesLoading ? (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+                  <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
                 </div>
               ) : balances && balances.length > 0 ? (
                 balances.map((balance, i) => (
                   <div key={i} className="flex items-center justify-between p-4 bg-black/40 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
                         <span className="text-sm font-bold">{balance.symbol.slice(0, 2)}</span>
                       </div>
                       <div>
                         <div className="font-semibold">{balance.symbol}</div>
-                        <div className="text-xs text-gray-500 uppercase">{balance.chain}</div>
+                        <div className="text-xs text-zinc-500 uppercase">{balance.chain}</div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -152,22 +152,22 @@ export default function TradingPage() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-zinc-500">
                   No balances found. Make sure BANKR_API_KEY is configured.
                 </div>
               )}
             </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-800">
+            <div className="mt-6 pt-6 border-t border-zinc-800">
               <div className="flex items-center justify-between">
-                <span className="text-gray-400">Total Portfolio Value</span>
+                <span className="text-zinc-400">Total Portfolio Value</span>
                 <span className="text-2xl font-bold text-green-400">${totalValue.toFixed(2)}</span>
               </div>
             </div>
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
+          <div className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-blue-400" />
               Quick Actions
@@ -180,7 +180,7 @@ export default function TradingPage() {
                     setPrompt(action.prompt);
                     sendPrompt(action.prompt);
                   }}
-                  className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm transition"
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition"
                   disabled={isSending}
                 >
                   {action.label}
@@ -192,7 +192,7 @@ export default function TradingPage() {
 
         {/* Trading Interface */}
         <div className="space-y-6">
-          <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
+          <div className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <Send className="h-5 w-5 text-pink-400" />
               Command
@@ -203,14 +203,14 @@ export default function TradingPage() {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Ask the trading agent...&#10;Examples:&#10;- Buy $50 of ETH on Base&#10;- Swap 0.1 ETH for USDC&#10;- What tokens are trending?&#10;- Send 10 USDC to 0x..."
-                className="w-full h-40 bg-black border border-gray-700 rounded-xl p-4 text-sm focus:border-purple-500 focus:outline-none resize-none"
+                className="w-full h-40 bg-black border border-zinc-700 rounded-xl p-4 text-sm focus:border-blue-500 focus:outline-none resize-none"
                 disabled={isSending}
               />
               
               <button
                 type="submit"
                 disabled={isSending || !prompt.trim()}
-                className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-xl font-semibold transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-xl font-semibold transition flex items-center justify-center gap-2"
               >
                 {isSending ? (
                   <>
@@ -229,7 +229,7 @@ export default function TradingPage() {
 
           {/* Results */}
           {result && (
-            <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
+            <div className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800">
               <h2 className="text-lg font-semibold mb-4">Response</h2>
               <div className="p-4 bg-black/40 rounded-xl text-sm whitespace-pre-wrap">
                 {result}
@@ -238,10 +238,10 @@ export default function TradingPage() {
           )}
 
           {jobId && !result && (
-            <div className="bg-gray-900/50 rounded-2xl p-6 border border-gray-800">
+            <div className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800">
               <div className="flex items-center gap-3">
-                <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
-                <span className="text-gray-400">Processing job: {jobId}</span>
+                <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+                <span className="text-zinc-400">Processing job: {jobId}</span>
               </div>
             </div>
           )}

@@ -48,16 +48,16 @@ const StatCard = ({
 }: {
   icon: React.ElementType; label: string; value: string; sub?: string; trend?: 'up' | 'down'; color?: string
 }) => (
-  <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col gap-2">
+  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-2">
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-gray-400 text-xs uppercase font-semibold tracking-widest">
+      <div className="flex items-center gap-2 text-zinc-400 text-xs uppercase font-semibold tracking-widest">
         <Icon className={`h-4 w-4 ${color}`} />{label}
       </div>
       {trend === 'up'   && <TrendingUp   className="h-4 w-4 text-red-400" />}
       {trend === 'down' && <TrendingDown className="h-4 w-4 text-green-400" />}
     </div>
     <div className={`text-3xl font-mono font-bold ${color}`}>{value}</div>
-    {sub && <div className="text-xs text-gray-500">{sub}</div>}
+    {sub && <div className="text-xs text-zinc-500">{sub}</div>}
   </div>
 )
 
@@ -67,18 +67,18 @@ export default function CostPage() {
   return (
     <div className="mt-[4rem] min-h-screen bg-black text-white">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-800 flex items-center justify-between">
+      <div className="px-6 py-5 border-b border-zinc-800 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <DollarSign className="h-5 w-5 text-green-400" />
           <h1 className="text-xl font-bold tracking-tight">Cost Tracking</h1>
         </div>
-        <div className="flex gap-1 bg-gray-900 border border-gray-700 rounded-lg p-1">
+        <div className="flex gap-1 bg-zinc-900 border border-zinc-700 rounded-lg p-1">
           {(['7d', '30d', 'mtd'] as const).map(p => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                period === p ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-white'
+                period === p ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:text-white'
               }`}
             >
               {p === 'mtd' ? 'MTD' : p}
@@ -92,13 +92,13 @@ export default function CostPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard icon={DollarSign} label="7-Day Cost"    value={`$${totalCost.toFixed(2)}`}            sub="all agents"          color="text-green-400" trend="down" />
           <StatCard icon={Zap}        label="Tokens Used"   value={`${(totalTokens / 1_000_000).toFixed(1)}M`} sub="input + output" color="text-blue-400" />
-          <StatCard icon={Clock}      label="API Calls"     value={totalCalls.toLocaleString()}            sub="last 7 days"         color="text-purple-400" />
+          <StatCard icon={Clock}      label="API Calls"     value={totalCalls.toLocaleString()}            sub="last 7 days"         color="text-blue-400" />
           <StatCard icon={DollarSign} label="Avg / Call"    value={`$${(totalCost / totalCalls).toFixed(4)}`} sub="blended"          color="text-yellow-400" />
         </div>
 
         {/* Daily cost chart */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">Daily Spend ($)</h2>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Daily Spend ($)</h2>
           <ResponsiveContainer width="100%" height={160}>
             <AreaChart data={DAILY}>
               <defs>
@@ -120,8 +120,8 @@ export default function CostPage() {
         </div>
 
         {/* Per-agent breakdown */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">Cost by Agent</h2>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Cost by Agent</h2>
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={AGENTS} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" horizontal={false} />
@@ -137,16 +137,16 @@ export default function CostPage() {
         </div>
 
         {/* Model breakdown */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">Model Cost Split</h2>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Model Cost Split</h2>
           <div className="space-y-3">
             {MODEL_BREAKDOWN.map(m => (
               <div key={m.model} className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gray-300 font-mono">{m.model}</span>
-                  <span className="text-gray-400">${m.cost.toFixed(2)} · {m.percent}%</span>
+                  <span className="text-zinc-300 font-mono">{m.model}</span>
+                  <span className="text-zinc-400">${m.cost.toFixed(2)} · {m.percent}%</span>
                 </div>
-                <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-blue-500 rounded-full transition-all"
                     style={{ width: `${m.percent}%` }}
@@ -158,12 +158,12 @@ export default function CostPage() {
         </div>
 
         {/* Agent table */}
-        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-800">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest">Agent Breakdown</h2>
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-800">
+            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">Agent Breakdown</h2>
           </div>
           <table className="w-full text-sm">
-            <thead className="text-[10px] text-gray-500 uppercase tracking-widest border-b border-gray-800">
+            <thead className="text-[10px] text-zinc-500 uppercase tracking-widest border-b border-zinc-800">
               <tr>
                 <th className="px-5 py-3 text-left">Agent</th>
                 <th className="px-5 py-3 text-right">Tokens</th>
@@ -174,19 +174,19 @@ export default function CostPage() {
             </thead>
             <tbody className="divide-y divide-gray-800">
               {AGENTS.map(a => (
-                <tr key={a.name} className="hover:bg-gray-800/40 transition-colors">
+                <tr key={a.name} className="hover:bg-zinc-800/40 transition-colors">
                   <td className="px-5 py-3 font-medium">{a.name}</td>
-                  <td className="px-5 py-3 text-right text-gray-400 font-mono text-xs">{(a.tokens / 1_000).toFixed(0)}K</td>
-                  <td className="px-5 py-3 text-right text-gray-400 font-mono text-xs">{a.calls.toLocaleString()}</td>
-                  <td className="px-5 py-3 text-right text-gray-400 font-mono text-xs">${a.avgCostPerCall.toFixed(4)}</td>
+                  <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{(a.tokens / 1_000).toFixed(0)}K</td>
+                  <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{a.calls.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">${a.avgCostPerCall.toFixed(4)}</td>
                   <td className="px-5 py-3 text-right font-mono font-bold text-green-400">${a.cost.toFixed(2)}</td>
                 </tr>
               ))}
-              <tr className="border-t border-gray-700 bg-gray-800/30">
-                <td className="px-5 py-3 font-bold text-gray-300">Total</td>
-                <td className="px-5 py-3 text-right text-gray-400 font-mono text-xs">{(totalTokens / 1_000_000).toFixed(1)}M</td>
-                <td className="px-5 py-3 text-right text-gray-400 font-mono text-xs">{totalCalls.toLocaleString()}</td>
-                <td className="px-5 py-3 text-right text-gray-400 font-mono text-xs">—</td>
+              <tr className="border-t border-zinc-700 bg-zinc-800/30">
+                <td className="px-5 py-3 font-bold text-zinc-300">Total</td>
+                <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{(totalTokens / 1_000_000).toFixed(1)}M</td>
+                <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{totalCalls.toLocaleString()}</td>
+                <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">—</td>
                 <td className="px-5 py-3 text-right font-mono font-bold text-white">${totalCost.toFixed(2)}</td>
               </tr>
             </tbody>

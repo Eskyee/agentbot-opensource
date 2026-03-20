@@ -160,13 +160,13 @@ function OnboardContent() {
       {/* Mode Selector */}
       {step === 'telegram' && (
         <div className="mb-8">
-          <div className="grid grid-cols-3 gap-3 bg-gray-900 p-2 rounded-xl border border-gray-800">
+          <div className="grid grid-cols-3 gap-3 bg-zinc-900 p-2 rounded-xl border border-zinc-800">
             <button
               onClick={() => window.location.href = '/onboard?mode=link'}
               className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'link' 
                   ? 'bg-white text-black' 
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
               Link Existing
@@ -176,7 +176,7 @@ function OnboardContent() {
               className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'create' 
                   ? 'bg-white text-black' 
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
               Create New
@@ -186,7 +186,7 @@ function OnboardContent() {
               className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
                 mode === 'deploy' 
                   ? 'bg-white text-black' 
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
               One-Click Deploy
@@ -208,12 +208,12 @@ function OnboardContent() {
           {mode === 'create' && 'Create Agentbot'}
           {mode === 'deploy' && 'Deploy OpenClaw with One Click'}
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-zinc-400 mt-2">
           {mode === 'link' && 'Connect your existing OpenClaw instance'}
           {mode === 'create' && 'Build your custom AI agent from scratch'}
           {mode === 'deploy' && 'Launch a pre-configured OpenClaw agent instantly'}
         </p>
-        <p className="text-gray-500 text-sm mt-1">
+        <p className="text-zinc-500 text-sm mt-1">
           {plan === 'free' ? 'Starter plan' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
         </p>
       </div>
@@ -225,18 +225,18 @@ function OnboardContent() {
             <div key={s} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                 step === s ? 'bg-white text-black' : 
-                FLOW_STEPS.indexOf(step) > i ? 'bg-green-500 text-white' : 'bg-gray-3 text-gray-7'
+                FLOW_STEPS.indexOf(step) > i ? 'bg-green-500 text-white' : 'bg-zinc-3 text-zinc-7'
               }`}>
                 {FLOW_STEPS.indexOf(step) > i ? '✓' : i + 1}
               </div>
-              {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-gray-3" />}
+              {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-zinc-3" />}
             </div>
           ))}
         </div>
       </div>
 
       {/* Step Content */}
-      <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5 sm:p-8">
+      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5 sm:p-8">
         
         {/* Step 1: Create Telegram Bot */}
         {step === 'telegram' && (
@@ -244,16 +244,16 @@ function OnboardContent() {
             <h2 className="text-2xl font-bold mb-6">Step 1: Create Telegram Bot</h2>
             
             <div className="space-y-6">
-              <div className="bg-gray-800 rounded-xl p-6">
+              <div className="bg-zinc-800 rounded-xl p-6">
                 <h3 className="font-semibold mb-4">Follow these steps:</h3>
-                <ol className="space-y-4 text-gray-300">
+                <ol className="space-y-4 text-zinc-300">
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">1</span>
-                    <span>Open Telegram and search for <code className="bg-gray-700 px-2 py-0.5 rounded">@BotFather</code></span>
+                    <span>Open Telegram and search for <code className="bg-zinc-700 px-2 py-0.5 rounded">@BotFather</code></span>
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">2</span>
-                    <span>Send the command <code className="bg-gray-700 px-2 py-0.5 rounded">/newbot</code></span>
+                    <span>Send the command <code className="bg-zinc-700 px-2 py-0.5 rounded">/newbot</code></span>
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">3</span>
@@ -261,7 +261,7 @@ function OnboardContent() {
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">4</span>
-                    <span>Choose a username ending in <code className="bg-gray-700 px-2 py-0.5 rounded">_bot</code></span>
+                    <span>Choose a username ending in <code className="bg-zinc-700 px-2 py-0.5 rounded">_bot</code></span>
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">5</span>
@@ -281,7 +281,7 @@ function OnboardContent() {
               
               <button
                 onClick={() => setStep('token')}
-                className="block w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="block w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors"
               >
                 I have my token →
               </button>
@@ -296,7 +296,7 @@ function OnboardContent() {
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-zinc-400 mb-2">
                   Telegram Bot Token
                 </label>
                 <input
@@ -304,9 +304,9 @@ function OnboardContent() {
                   value={telegramToken}
                   onChange={(e) => setTelegramToken(e.target.value)}
                   placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-zinc-500 mt-2">
                   Paste the token you received from @BotFather
                 </p>
               </div>
@@ -320,14 +320,14 @@ function OnboardContent() {
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('telegram')}
-                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                  className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={validateToken}
                   disabled={!telegramToken || isValidating}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   {isValidating ? 'Validating...' : 'Validate Token →'}
                 </button>
@@ -345,16 +345,16 @@ function OnboardContent() {
             )}
             
             <div className="space-y-6">
-              <div className="bg-gray-800 rounded-xl p-6">
+              <div className="bg-zinc-800 rounded-xl p-6">
                 <h3 className="font-semibold mb-4">How to get your Telegram ID:</h3>
-                <ol className="space-y-4 text-gray-300">
+                <ol className="space-y-4 text-zinc-300">
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">1</span>
-                    <span>Open Telegram and message <code className="bg-gray-700 px-2 py-0.5 rounded">@userinfobot</code></span>
+                    <span>Open Telegram and message <code className="bg-zinc-700 px-2 py-0.5 rounded">@userinfobot</code></span>
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">2</span>
-                    <span>It will reply with your user ID (a number like <code className="bg-gray-700 px-2 py-0.5 rounded">123456789</code>)</span>
+                    <span>It will reply with your user ID (a number like <code className="bg-zinc-700 px-2 py-0.5 rounded">123456789</code>)</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">3</span>
@@ -373,7 +373,7 @@ function OnboardContent() {
               </a>
               
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-2">
+                <label className="block text-sm font-medium text-zinc-400 mb-2">
                   Your Telegram User ID
                 </label>
                 <input
@@ -381,9 +381,9 @@ function OnboardContent() {
                   value={telegramUserId}
                   onChange={(e) => setTelegramUserId(e.target.value.replace(/\D/g, ''))}
                   placeholder="123456789"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
                 />
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-sm text-zinc-500 mt-2">
                   This ensures only YOU can chat with your bot
                 </p>
               </div>
@@ -391,14 +391,14 @@ function OnboardContent() {
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('token')}
-                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                  className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={() => setStep('agenttype')}
                   disabled={!telegramUserId}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   Continue →
                 </button>
@@ -411,7 +411,7 @@ function OnboardContent() {
         {step === 'agenttype' && (
           <div>
             <h2 className="text-2xl font-bold mb-2">Choose Your Agent Type</h2>
-            <p className="text-gray-400 mb-6">Select the type of agent that best fits your needs. Each comes pre-configured with relevant skills.</p>
+            <p className="text-zinc-400 mb-6">Select the type of agent that best fits your needs. Each comes pre-configured with relevant skills.</p>
             
             <div className="grid gap-4 sm:grid-cols-2">
               {AGENT_TYPES.map((type) => (
@@ -421,14 +421,14 @@ function OnboardContent() {
                   className={`text-left p-4 rounded-xl border transition-all ${
                     agentType === type.id 
                       ? 'border-white bg-white/10' 
-                      : 'border-gray-700 hover:border-gray-600 hover:bg-gray-800'
+                      : 'border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="text-2xl">{type.icon}</div>
                     <div>
                       <div className="font-semibold">{type.name}</div>
-                      <div className="text-sm text-gray-400">{type.description}</div>
+                      <div className="text-sm text-zinc-400">{type.description}</div>
                     </div>
                   </div>
                 </button>
@@ -438,13 +438,13 @@ function OnboardContent() {
             <div className="flex gap-3 mt-8">
               <button
                 onClick={() => setStep('token')}
-                className="px-6 py-3 border border-gray-700 text-gray-300 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg font-medium hover:bg-zinc-800 transition-colors"
               >
                 ← Back
               </button>
               <button
                 onClick={() => setStep('agenttype')}
-                className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors"
               >
                 Continue →
               </button>
@@ -456,7 +456,7 @@ function OnboardContent() {
         {step === 'ai' && (
           <div>
             <h2 className="text-2xl font-bold mb-2">Step 4: Bring Your Own Key (BYOK)</h2>
-            <p className="text-gray-400 mb-6">Choose your AI provider and enter your own API key. You pay directly—no markup.</p>
+            <p className="text-zinc-400 mb-6">Choose your AI provider and enter your own API key. You pay directly—no markup.</p>
             
             <div className="space-y-6">
               <div className="space-y-3">
@@ -473,13 +473,13 @@ function OnboardContent() {
                     className={`w-full text-left p-4 rounded-xl border ${
                       aiProvider === provider.id 
                         ? 'border-white bg-white/10' 
-                        : 'border-gray-700 hover:border-gray-600'
+                        : 'border-zinc-700 hover:border-zinc-600'
                     } transition-colors`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-semibold">{provider.name}</div>
-                        <div className="text-sm text-gray-400">{provider.desc}</div>
+                        <div className="text-sm text-zinc-400">{provider.desc}</div>
                       </div>
                       {provider.recommended && (
                         <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full">
@@ -493,9 +493,9 @@ function OnboardContent() {
               
               {/* OpenRouter instructions */}
               {aiProvider === 'openrouter' && (
-                <div className="bg-gray-800 rounded-xl p-6">
+                <div className="bg-zinc-800 rounded-xl p-6">
                   <h3 className="font-semibold mb-4">Get your free OpenRouter API key:</h3>
-                  <ol className="space-y-3 text-gray-300 text-sm">
+                  <ol className="space-y-3 text-zinc-300 text-sm">
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
                       <span>Go to <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-white underline">openrouter.ai/keys</a></span>
@@ -509,7 +509,7 @@ function OnboardContent() {
                       <span>Click "Create Key" and copy it</span>
                     </li>
                   </ol>
-                  <p className="text-xs text-gray-500 mt-4">
+                  <p className="text-xs text-zinc-500 mt-4">
                     We default to a stable OpenRouter model for reliable deployment.
                   </p>
                 </div>
@@ -517,9 +517,9 @@ function OnboardContent() {
               
               {/* Gemini instructions */}
               {aiProvider === 'gemini' && (
-                <div className="bg-gray-800 rounded-xl p-6">
+                <div className="bg-zinc-800 rounded-xl p-6">
                   <h3 className="font-semibold mb-4">Get your Gemini API key:</h3>
-                  <ol className="space-y-3 text-gray-300 text-sm">
+                  <ol className="space-y-3 text-zinc-300 text-sm">
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
                       <span>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-white underline">aistudio.google.com/apikey</a></span>
@@ -539,7 +539,7 @@ function OnboardContent() {
               {/* API Key - optional for Groq, required for others */}
               {(aiProvider === 'openrouter' || aiProvider === 'gemini' || aiProvider === 'anthropic' || aiProvider === 'openai' || aiProvider === 'groq') && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">
                     {aiProvider === 'groq' ? 'Groq API Key (optional - free tier available)' : 
                      aiProvider === 'openrouter' ? 'OpenRouter API Key' : 
                      aiProvider === 'gemini' ? 'Gemini API Key' :
@@ -555,7 +555,7 @@ function OnboardContent() {
                       aiProvider === 'anthropic' ? 'sk-ant-...' : 
                       aiProvider === 'groq' ? 'gsk_...' : 'sk-...'
                     }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
                   />
                 </div>
               )}
@@ -563,14 +563,14 @@ function OnboardContent() {
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('token')}
-                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                  className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={() => setStep(aiProvider === 'openrouter' ? 'model' : 'skills')}
                   disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq') && !apiKey}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   {aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
                 </button>
@@ -596,13 +596,13 @@ function OnboardContent() {
                     className={`w-full text-left p-4 rounded-xl border ${
                       selectedModel === model.id 
                         ? 'border-white bg-white/10' 
-                        : 'border-gray-700 hover:border-gray-600'
+                        : 'border-zinc-700 hover:border-zinc-600'
                     } transition-colors`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-semibold">{model.name}</div>
-                        <div className="text-sm text-gray-400">{model.description}</div>
+                        <div className="text-sm text-zinc-400">{model.description}</div>
                       </div>
                       {model.recommended && (
                         <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full">
@@ -617,13 +617,13 @@ function OnboardContent() {
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('agenttype')}
-                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                  className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={() => setStep('skills')}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors sm:flex-1"
                 >
                   Continue →
                 </button>
@@ -641,7 +641,7 @@ function OnboardContent() {
             )}
             
             <div className="mb-6">
-              <p className="text-gray-400 text-sm">Select skills for your agent. You can always add more later from the dashboard.</p>
+              <p className="text-zinc-400 text-sm">Select skills for your agent. You can always add more later from the dashboard.</p>
             </div>
             
             <div className="space-y-6">
@@ -661,14 +661,14 @@ function OnboardContent() {
                       className={`text-left p-4 rounded-xl border transition-colors ${
                         isSelected 
                           ? 'border-white bg-white/10' 
-                          : 'border-gray-700 hover:border-gray-600'
+                          : 'border-zinc-700 hover:border-zinc-600'
                       }`}
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{skill.icon}</span>
                         <div>
                           <div className="font-semibold">{skill.name}</div>
-                          <div className="text-xs text-gray-400">{skill.description}</div>
+                          <div className="text-xs text-zinc-400">{skill.description}</div>
                         </div>
                         {isSelected && (
                           <span className="ml-auto text-green-400">✓</span>
@@ -679,8 +679,8 @@ function OnboardContent() {
                 })}
               </div>
               
-              <div className="bg-gray-800 rounded-xl p-4">
-                <p className="text-sm text-gray-400">
+              <div className="bg-zinc-800 rounded-xl p-4">
+                <p className="text-sm text-zinc-400">
                   Selected: <span className="text-white">{selectedSkills.length}</span> skills
                 </p>
               </div>
@@ -688,13 +688,13 @@ function OnboardContent() {
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('model')}
-                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                  className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={() => setStep('deploy')}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors sm:flex-1"
                 >
                   Continue to Deploy →
                 </button>
@@ -709,34 +709,34 @@ function OnboardContent() {
             <h2 className="text-2xl font-bold mb-6">Step 7: Deploy Your Assistant</h2>
             
             <div className="space-y-6">
-              <div className="bg-gray-800 rounded-xl p-6">
+              <div className="bg-zinc-800 rounded-xl p-6">
                 <h3 className="font-semibold mb-4">Summary</h3>
                 <dl className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">Telegram Bot</dt>
+                    <dt className="text-zinc-400">Telegram Bot</dt>
                     <dd>@{botInfo?.username}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">AI Provider</dt>
+                    <dt className="text-zinc-400">AI Provider</dt>
                     <dd>{aiProvider === 'openrouter' ? 'OpenRouter (Free)' : 
                          aiProvider === 'gemini' ? 'Google Gemini' :
                          aiProvider === 'groq' ? 'Groq' : 
                          aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1)}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">AI Model</dt>
+                    <dt className="text-zinc-400">AI Model</dt>
                     <dd>{AVAILABLE_MODELS.find(m => m.id === selectedModel)?.name || selectedModel}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">Skills</dt>
+                    <dt className="text-zinc-400">Skills</dt>
                     <dd>{selectedSkills.length} selected</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">Plan</dt>
+                    <dt className="text-zinc-400">Plan</dt>
                     <dd>{plan === 'free' ? 'Sign up for plan' : plan}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-gray-400">OpenClaw Version</dt>
+                    <dt className="text-zinc-400">OpenClaw Version</dt>
                     <dd className="font-mono">{openclawVersion}</dd>
                   </div>
                 </dl>
@@ -751,14 +751,14 @@ function OnboardContent() {
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
                   onClick={() => setStep('agenttype')}
-                  className="w-full rounded-lg border border-gray-700 px-6 py-3 hover:bg-gray-800 transition-colors sm:w-auto"
+                  className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={deploy}
                   disabled={isDeploying}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50 sm:flex-1"
+                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 sm:flex-1"
                 >
                   {isDeploying ? (
                     <span className="flex items-center justify-center gap-2">
@@ -782,29 +782,29 @@ function OnboardContent() {
           <div className="text-center">
             <div className="text-6xl mb-6">🎉</div>
             <h2 className="text-2xl font-bold mb-2">You're Live!</h2>
-            <p className="text-gray-400 mb-8">Your AI assistant is ready to chat.</p>
+            <p className="text-zinc-400 mb-8">Your AI assistant is ready to chat.</p>
             
-            <div className="bg-gray-800 rounded-xl p-6 mb-8 text-left">
-              <p className="text-sm font-semibold text-gray-400 mb-4 flex items-center gap-2">
+            <div className="bg-zinc-800 rounded-xl p-6 mb-8 text-left">
+              <p className="text-sm font-semibold text-zinc-400 mb-4 flex items-center gap-2">
                 <span className="text-lg">📡</span> Broadcast Credentials (OBS)
               </p>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs text-gray-500 uppercase font-bold mb-1">Server URL</label>
-                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-gray-700 break-all select-all">rtmps://global-live.mux.com:443/app</p>
+                  <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Server URL</label>
+                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">rtmps://global-live.mux.com:443/app</p>
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 uppercase font-bold mb-1">Stream Key</label>
-                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-gray-700 break-all select-all">{result.streamKey || 'Generating...'}</p>
+                  <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Stream Key</label>
+                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">{result.streamKey || 'Generating...'}</p>
                 </div>
               </div>
-              <p className="text-[10px] text-gray-500 mt-4">
+              <p className="text-[10px] text-zinc-500 mt-4">
                 Paste these into OBS to start your station. Do not share your Stream Key.
               </p>
             </div>
             
-            <div className="bg-gray-800 rounded-xl p-6 mb-8">
-              <p className="text-sm text-gray-400 mb-2">Open Telegram and message:</p>
+            <div className="bg-zinc-800 rounded-xl p-6 mb-8">
+              <p className="text-sm text-zinc-400 mb-2">Open Telegram and message:</p>
               <p className="text-xl font-mono">@{botInfo?.username}</p>
             </div>
             
@@ -819,7 +819,7 @@ function OnboardContent() {
               </a>
               <a
                 href={`/dashboard?id=${result.userId}`}
-                className="block w-full bg-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+                className="block w-full bg-zinc-800 py-3 rounded-lg font-semibold hover:bg-zinc-700 transition-colors"
               >
                 Go to Dashboard
               </a>
@@ -837,7 +837,7 @@ export default function Onboard() {
       <Suspense fallback={
         <div className="mx-auto max-w-2xl text-center">
           <div className="text-5xl mb-4">🦞</div>
-          <p className="text-gray-400">Loading...</p>
+          <p className="text-zinc-400">Loading...</p>
         </div>
       }>
         <OnboardContent />

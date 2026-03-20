@@ -97,22 +97,22 @@ export default function FilesPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">Agent Files</h1>
-            <p className="text-gray-400 mt-2">Upload files for your agent to access</p>
+            <p className="text-zinc-400 mt-2">Upload files for your agent to access</p>
           </div>
-          <label className="bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition-colors cursor-pointer">
+          <label className="bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-100 transition-colors cursor-pointer">
             {uploading ? 'Uploading...' : '+ Upload File'}
             <input type="file" onChange={uploadFile} className="hidden" disabled={uploading} />
           </label>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm text-gray-400">Storage Used</div>
+              <div className="text-sm text-zinc-400">Storage Used</div>
               <div className="text-2xl font-bold mt-1">{usedGB} GB / {storageLimit} GB</div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-gray-400">{storageLimit === 10 ? 'Free Tier' : 'Pro Plan'}</div>
+              <div className="text-sm text-zinc-400">{storageLimit === 10 ? 'Free Tier' : 'Pro Plan'}</div>
               {storageLimit === 10 && (
                 <button 
                   onClick={upgradeStorage}
@@ -123,7 +123,7 @@ export default function FilesPage() {
               )}
             </div>
           </div>
-          <div className="mt-4 bg-gray-800 rounded-full h-2">
+          <div className="mt-4 bg-zinc-800 rounded-full h-2">
             <div 
               className="bg-blue-500 h-2 rounded-full" 
               style={{ width: `${Math.min((totalSize / (storageLimit * 1024 * 1024 * 1024)) * 100, 100)}%` }}
@@ -132,18 +132,18 @@ export default function FilesPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-gray-400">Loading...</div>
+          <div className="text-center py-12 text-zinc-400">Loading...</div>
         ) : files.length === 0 ? (
-          <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-xl">
-            <p className="text-gray-400">No files uploaded yet</p>
+          <div className="text-center py-12 bg-zinc-900 border border-zinc-800 rounded-xl">
+            <p className="text-zinc-400">No files uploaded yet</p>
           </div>
         ) : (
           <div className="space-y-3">
             {files.map((file: any, i: number) => (
-              <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+              <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
                 <div>
                   <div className="font-medium">{file.name}</div>
-                  <div className="text-sm text-gray-400">{(file.size / 1024).toFixed(2)} KB</div>
+                  <div className="text-sm text-zinc-400">{(file.size / 1024).toFixed(2)} KB</div>
                 </div>
                 <button className="text-red-400 hover:text-red-300">Delete</button>
               </div>

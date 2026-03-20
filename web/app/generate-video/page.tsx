@@ -186,7 +186,7 @@ export default function VideoGenerator() {
       <button
         onClick={generateVideo}
         disabled={loading}
-        className="w-full bg-green-500 text-white p-3 rounded font-semibold disabled:bg-gray-400"
+        className="w-full bg-green-500 text-white p-3 rounded font-semibold disabled:bg-zinc-400"
       >
         {loading ? 'Generating...' : 'Generate Video'}
       </button>

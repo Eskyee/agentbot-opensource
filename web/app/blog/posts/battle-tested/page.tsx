@@ -12,12 +12,12 @@ export default function BattleTestedPost() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-xs font-bold text-green-400 tracking-widest">LIVE FROM THE FIELD</span>
-            <span className="text-xs text-gray-500">14 March 2026</span>
+            <span className="text-xs text-zinc-500">14 March 2026</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
             Battle Tested: How We Built Agentbot in the Trenches
           </h1>
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-zinc-400">
             No VC pitch decks. No marketing fluff. Just builders building.
           </p>
         </div>
@@ -98,8 +98,8 @@ export default function BattleTestedPost() {
           </p>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-gray-800">
-          <Link href="/blog" className="text-gray-400 hover:text-white">
+        <div className="mt-12 pt-8 border-t border-zinc-800">
+          <Link href="/blog" className="text-zinc-400 hover:text-white">
             ← Back to Blog
           </Link>
         </div>

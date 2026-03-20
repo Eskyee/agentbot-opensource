@@ -38,15 +38,15 @@ export default function FleetPage() {
     <div className="mt-[4rem] h-[calc(100vh-4rem)] flex bg-black text-white">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold tracking-tight">Mission Control: Fleet</h1>
-            <div className="flex items-center gap-1 rounded-lg bg-gray-900 p-1">
+            <div className="flex items-center gap-1 rounded-lg bg-zinc-900 p-1">
               <button
                 onClick={() => setActiveTab('organism')}
                 className={cn(
                   'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-                  activeTab === 'organism' ? 'bg-gray-800 text-white' : 'text-gray-500 hover:text-white'
+                  activeTab === 'organism' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white'
                 )}
               >
                 <Dna className="h-4 w-4" /> Constellation
@@ -55,7 +55,7 @@ export default function FleetPage() {
                 onClick={() => setActiveTab('hierarchy')}
                 className={cn(
                   'flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
-                  activeTab === 'hierarchy' ? 'bg-gray-800 text-white' : 'text-gray-500 hover:text-white'
+                  activeTab === 'hierarchy' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-white'
                 )}
               >
                 <LayoutGrid className="h-4 w-4" /> Hierarchy
@@ -65,12 +65,12 @@ export default function FleetPage() {
 
           <div className="flex items-center gap-6">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] text-gray-500 uppercase font-bold">Active Agents</span>
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">Active Agents</span>
               <span className="text-sm font-mono">{agents.length} / 10</span>
             </div>
-            <div className="h-8 w-px bg-gray-800" />
+            <div className="h-8 w-px bg-zinc-800" />
             <div className="flex flex-col items-end">
-              <span className="text-[10px] text-gray-500 uppercase font-bold">System Status</span>
+              <span className="text-[10px] text-zinc-500 uppercase font-bold">System Status</span>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span className="text-sm font-mono text-green-500">OPERATIONAL</span>
@@ -98,14 +98,14 @@ export default function FleetPage() {
           </div>
 
           {/* Right: Traces & Details (35% width) */}
-          <div className="w-[400px] border-l border-gray-800 flex flex-col bg-[#0a0a0a]">
+          <div className="w-[400px] border-l border-zinc-800 flex flex-col bg-[#0a0a0a]">
             {/* Trace Header */}
-            <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+            <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Radio className="h-4 w-4 text-purple-500" />
-                <span className="text-xs font-bold uppercase tracking-widest text-gray-400">Live Traces</span>
+                <Radio className="h-4 w-4 text-blue-500" />
+                <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Live Traces</span>
               </div>
-              <span className="text-[10px] font-mono text-gray-600">v2.1.0-alpha</span>
+              <span className="text-[10px] font-mono text-zinc-600">v2.1.0-alpha</span>
             </div>
 
             {/* Execution Trace Feed */}
@@ -115,23 +115,23 @@ export default function FleetPage() {
 
             {/* Selected Agent Quick View */}
             {selectedAgent && (
-              <div className="p-4 border-t border-gray-800 bg-gray-900/50">
+              <div className="p-4 border-t border-zinc-800 bg-zinc-900/50">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">
                     🤖
                   </div>
                   <div>
                     <div className="font-bold text-sm">{selectedAgent.name}</div>
-                    <div className="text-[10px] text-gray-500 font-mono uppercase">{selectedAgent.type}</div>
+                    <div className="text-[10px] text-zinc-500 font-mono uppercase">{selectedAgent.type}</div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-[10px]">
                   <div className="bg-black/30 p-2 rounded border border-white/5">
-                    <div className="text-gray-500 mb-1">HEALTH</div>
+                    <div className="text-zinc-500 mb-1">HEALTH</div>
                     <div className="text-green-400 font-bold">100%</div>
                   </div>
                   <div className="bg-black/30 p-2 rounded border border-white/5">
-                    <div className="text-gray-500 mb-1">LATENCY</div>
+                    <div className="text-zinc-500 mb-1">LATENCY</div>
                     <div className="text-white font-bold">42ms</div>
                   </div>
                 </div>

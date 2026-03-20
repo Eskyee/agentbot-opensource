@@ -140,7 +140,7 @@ export default function ViewDocsPage() {
     <main className="min-h-screen px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">Docs</h1>
-        <p className="text-lg text-gray-400 mb-10">
+        <p className="text-lg text-zinc-400 mb-10">
           Everything you need to deploy, operate, and grow your AI agents.
         </p>
 
@@ -151,7 +151,7 @@ export default function ViewDocsPage() {
               <div key={feature.title} className="rounded-xl border border-green-500/30 bg-green-500/5 p-5">
                 <div className="text-2xl mb-2">{feature.icon}</div>
                 <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-gray-400 mb-3">{feature.description}</p>
+                <p className="text-sm text-zinc-400 mb-3">{feature.description}</p>
                 <div className="flex flex-wrap gap-2">
                   {feature.links.map((link) => (
                     <Link 
@@ -170,10 +170,10 @@ export default function ViewDocsPage() {
 
         <div className="grid gap-6 md:grid-cols-3 mb-10">
           {docsSections.map((section) => (
-            <article key={section.title} className="rounded-2xl border border-gray-800 bg-gray-900 p-6">
+            <article key={section.title} className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
               <h2 className="text-2xl font-semibold mb-3">{section.title}</h2>
-              <p className="text-gray-400 text-sm mb-4">{section.description}</p>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <p className="text-zinc-400 text-sm mb-4">{section.description}</p>
+              <ul className="space-y-2 text-sm text-zinc-300">
                 {section.items.map((item) => (
                   <li key={item}>• {item}</li>
                 ))}
@@ -182,36 +182,36 @@ export default function ViewDocsPage() {
           ))}
         </div>
 
-        <div className="mt-10 rounded-2xl border border-gray-800 bg-gray-900/60 p-6">
+        <div className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
           <h3 className="text-xl font-semibold mb-3">Supported AI Models</h3>
-          <p className="text-gray-400 text-sm mb-4">All models available through OpenRouter with automatic fallback.</p>
+          <p className="text-zinc-400 text-sm mb-4">All models available through OpenRouter with automatic fallback.</p>
           <div className="flex flex-wrap gap-2">
             {supportedModels.map((model) => (
-              <span key={model} className="text-xs bg-gray-800 text-gray-300 px-3 py-1 rounded-full">
+              <span key={model} className="text-xs bg-zinc-800 text-zinc-300 px-3 py-1 rounded-full">
                 {model}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-gray-800 bg-gray-900/60 p-6">
+        <div className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
           <h3 className="text-xl font-semibold mb-3">Token Pricing (GBP)</h3>
-          <p className="text-gray-400 text-sm mb-4">AI model pricing per 1k tokens. Input = prompts, Output = responses.</p>
+          <p className="text-zinc-400 text-sm mb-4">AI model pricing per 1k tokens. Input = prompts, Output = responses.</p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left py-2 px-3 text-gray-400 font-medium">Model</th>
-                  <th className="text-right py-2 px-3 text-gray-400 font-medium">Input</th>
-                  <th className="text-right py-2 px-3 text-gray-400 font-medium">Output</th>
+                <tr className="border-b border-zinc-700">
+                  <th className="text-left py-2 px-3 text-zinc-400 font-medium">Model</th>
+                  <th className="text-right py-2 px-3 text-zinc-400 font-medium">Input</th>
+                  <th className="text-right py-2 px-3 text-zinc-400 font-medium">Output</th>
                 </tr>
               </thead>
               <tbody>
                 {tokenPricing.map((t) => (
-                  <tr key={t.model} className="border-b border-gray-800">
+                  <tr key={t.model} className="border-b border-zinc-800">
                     <td className="py-2 px-3 text-white font-medium">{t.model}</td>
-                    <td className="py-2 px-3 text-right text-gray-300">{t.input}</td>
-                    <td className="py-2 px-3 text-right text-gray-300">{t.output}</td>
+                    <td className="py-2 px-3 text-right text-zinc-300">{t.input}</td>
+                    <td className="py-2 px-3 text-right text-zinc-300">{t.output}</td>
                   </tr>
                 ))}
               </tbody>
@@ -219,31 +219,31 @@ export default function ViewDocsPage() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-2xl border border-gray-800 bg-gray-900/60 p-6">
+        <div className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6">
           <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
           <div className="flex flex-wrap gap-2">
-            <Link href="/signup" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
+            <Link href="/signup" className="px-4 py-2 text-sm text-zinc-300 bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 hover:text-white rounded-lg transition-all duration-200">
               Signup
             </Link>
-            <Link href="/pricing" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
+            <Link href="/pricing" className="px-4 py-2 text-sm text-zinc-300 bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 hover:text-white rounded-lg transition-all duration-200">
               Pricing
             </Link>
-            <Link href="/marketplace" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
+            <Link href="/marketplace" className="px-4 py-2 text-sm text-zinc-300 bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 hover:text-white rounded-lg transition-all duration-200">
               Marketplace
             </Link>
-            <Link href="/blog" className="px-4 py-2 text-sm text-gray-300 bg-gray-800/50 border border-gray-700 hover:bg-gray-700 hover:border-gray-500 hover:text-white rounded-lg transition-all duration-200">
+            <Link href="/blog" className="px-4 py-2 text-sm text-zinc-300 bg-zinc-800/50 border border-zinc-700 hover:bg-zinc-700 hover:border-zinc-500 hover:text-white rounded-lg transition-all duration-200">
               Blog
             </Link>
             <Link href="/token" className="px-4 py-2 text-sm text-blue-300 bg-blue-900/20 border border-blue-800 hover:bg-blue-800/40 hover:border-blue-600 hover:text-blue-200 rounded-lg transition-all duration-200">
               $AGENTBOT
             </Link>
-            <Link href="/basefm" className="px-4 py-2 text-sm text-purple-300 bg-purple-900/20 border border-purple-800 hover:bg-purple-800/40 hover:border-purple-600 hover:text-purple-200 rounded-lg transition-all duration-200">
+            <Link href="/basefm" className="px-4 py-2 text-sm text-blue-300 bg-blue-900/20 border border-blue-800 hover:bg-blue-800/40 hover:border-blue-600 hover:text-blue-200 rounded-lg transition-all duration-200">
               $BASEFM
             </Link>
-            <Link href="/terms" className="px-4 py-2 text-sm text-gray-400 bg-gray-800/30 border border-gray-800 hover:bg-gray-700 hover:border-gray-600 hover:text-gray-200 rounded-lg transition-all duration-200">
+            <Link href="/terms" className="px-4 py-2 text-sm text-zinc-400 bg-zinc-800/30 border border-zinc-800 hover:bg-zinc-700 hover:border-zinc-600 hover:text-zinc-200 rounded-lg transition-all duration-200">
               Terms
             </Link>
-            <Link href="/privacy" className="px-4 py-2 text-sm text-gray-400 bg-gray-800/30 border border-gray-800 hover:bg-gray-700 hover:border-gray-600 hover:text-gray-200 rounded-lg transition-all duration-200">
+            <Link href="/privacy" className="px-4 py-2 text-sm text-zinc-400 bg-zinc-800/30 border border-zinc-800 hover:bg-zinc-700 hover:border-zinc-600 hover:text-zinc-200 rounded-lg transition-all duration-200">
               Privacy
             </Link>
           </div>

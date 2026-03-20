@@ -56,7 +56,7 @@ export default function StatsPage() {
       case 'unhealthy':
         return 'bg-red-900/30 text-red-300 border-red-500'
       default:
-        return 'bg-gray-900/30 text-gray-300 border-gray-500'
+        return 'bg-zinc-900/30 text-zinc-300 border-zinc-500'
     }
   }
 
@@ -64,7 +64,7 @@ export default function StatsPage() {
     return (
       <div className="min-h-screen bg-black text-white p-8">
         <h1 className="text-3xl font-bold mb-8">System Stats & Health</h1>
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-zinc-400">Loading...</div>
       </div>
     )
   }
@@ -74,7 +74,7 @@ export default function StatsPage() {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">System Stats & Health</h1>
-          <p className="text-gray-400">Real-time monitoring of your agentbot infrastructure</p>
+          <p className="text-zinc-400">Real-time monitoring of your agentbot infrastructure</p>
         </div>
 
         {error && (
@@ -99,100 +99,100 @@ export default function StatsPage() {
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
               {/* CPU */}
-              <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
+              <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm text-gray-400 font-medium">CPU Usage</h3>
-                  <span className="text-xs text-gray-500">%</span>
+                  <h3 className="text-sm text-zinc-400 font-medium">CPU Usage</h3>
+                  <span className="text-xs text-zinc-500">%</span>
                 </div>
                 <div className="mb-3">
                   <div className="text-3xl font-bold">{stats.cpu.toFixed(1)}</div>
-                  <div className="w-full bg-gray-800 rounded-full h-2 mt-2">
+                  <div className="w-full bg-zinc-800 rounded-full h-2 mt-2">
                     <div
                       className="bg-blue-500 h-2 rounded-full transition-all"
                       style={{ width: `${Math.min(stats.cpu, 100)}%` }}
                     ></div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-zinc-500">
                   {stats.cpu < 50 ? '✓ Good' : stats.cpu < 80 ? '⚠ Moderate' : '✕ High'}
                 </p>
               </div>
 
               {/* Memory */}
-              <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
+              <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm text-gray-400 font-medium">Memory Usage</h3>
-                  <span className="text-xs text-gray-500">%</span>
+                  <h3 className="text-sm text-zinc-400 font-medium">Memory Usage</h3>
+                  <span className="text-xs text-zinc-500">%</span>
                 </div>
                 <div className="mb-3">
                   <div className="text-3xl font-bold">{stats.memory.toFixed(1)}</div>
-                  <div className="w-full bg-gray-800 rounded-full h-2 mt-2">
+                  <div className="w-full bg-zinc-800 rounded-full h-2 mt-2">
                     <div
-                      className="bg-purple-500 h-2 rounded-full transition-all"
+                      className="bg-blue-500 h-2 rounded-full transition-all"
                       style={{ width: `${Math.min(stats.memory, 100)}%` }}
                     ></div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-zinc-500">
                   {stats.memory < 50 ? '✓ Good' : stats.memory < 80 ? '⚠ Moderate' : '✕ High'}
                 </p>
               </div>
 
               {/* Uptime */}
-              <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
-                <h3 className="text-sm text-gray-400 font-medium mb-3">Uptime</h3>
+              <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
+                <h3 className="text-sm text-zinc-400 font-medium mb-3">Uptime</h3>
                 <div className="text-2xl font-bold">{formatUptime(stats.uptime)}</div>
-                <p className="text-xs text-gray-500 mt-2">System running</p>
+                <p className="text-xs text-zinc-500 mt-2">System running</p>
               </div>
 
               {/* Messages */}
-              <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
-                <h3 className="text-sm text-gray-400 font-medium mb-3">Messages</h3>
+              <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
+                <h3 className="text-sm text-zinc-400 font-medium mb-3">Messages</h3>
                 <div className="text-3xl font-bold text-green-400">{stats.messages.toLocaleString()}</div>
-                <p className="text-xs text-gray-500 mt-2">Processed total</p>
+                <p className="text-xs text-zinc-500 mt-2">Processed total</p>
               </div>
 
               {/* Errors */}
-              <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
-                <h3 className="text-sm text-gray-400 font-medium mb-3">Errors</h3>
+              <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
+                <h3 className="text-sm text-zinc-400 font-medium mb-3">Errors</h3>
                 <div className={`text-3xl font-bold ${stats.errors > 0 ? 'text-red-400' : 'text-green-400'}`}>
                   {stats.errors}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Recent errors</p>
+                <p className="text-xs text-zinc-500 mt-2">Recent errors</p>
               </div>
 
               {/* Last Updated */}
-              <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
-                <h3 className="text-sm text-gray-400 font-medium mb-3">Last Updated</h3>
+              <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
+                <h3 className="text-sm text-zinc-400 font-medium mb-3">Last Updated</h3>
                 <div className="text-sm font-mono">{new Date(stats.timestamp).toLocaleTimeString()}</div>
-                <p className="text-xs text-gray-500 mt-2">Refreshes every 5s</p>
+                <p className="text-xs text-zinc-500 mt-2">Refreshes every 5s</p>
               </div>
             </div>
 
             {/* Performance Summary */}
-            <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
+            <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
               <h2 className="text-lg font-semibold mb-4">Performance Summary</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">CPU Status</span>
+                  <span className="text-zinc-400">CPU Status</span>
                   <span className={stats.cpu < 80 ? 'text-green-400' : 'text-red-400'}>
                     {stats.cpu < 50 ? '✓ Optimal' : stats.cpu < 80 ? '⚠ Normal' : '✕ High Load'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">Memory Status</span>
+                  <span className="text-zinc-400">Memory Status</span>
                   <span className={stats.memory < 80 ? 'text-green-400' : 'text-red-400'}>
                     {stats.memory < 50 ? '✓ Optimal' : stats.memory < 80 ? '⚠ Normal' : '✕ High Usage'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">Error Rate</span>
+                  <span className="text-zinc-400">Error Rate</span>
                   <span className={stats.errors === 0 ? 'text-green-400' : 'text-red-400'}>
                     {stats.errors === 0 ? '✓ No Errors' : `⚠ ${stats.errors} Error(s)`}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">System Health</span>
+                  <span className="text-zinc-400">System Health</span>
                   <span className={`capitalize ${stats.health === 'healthy' ? 'text-green-400' : stats.health === 'degraded' ? 'text-yellow-400' : 'text-red-400'}`}>
                     {stats.health}
                   </span>
@@ -202,7 +202,7 @@ export default function StatsPage() {
           </>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-400">No stats available</p>
+            <p className="text-zinc-400">No stats available</p>
           </div>
         )}
       </div>

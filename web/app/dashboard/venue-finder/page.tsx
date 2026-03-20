@@ -53,9 +53,9 @@ export default function VenueFinderPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold">Venue Finder</h1>
-              <p className="text-gray-400 text-sm mt-1">Find and book venues worldwide</p>
+              <p className="text-zinc-400 text-sm mt-1">Find and book venues worldwide</p>
             </div>
-            <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white">Back to Dashboard</Link>
+            <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white">Back to Dashboard</Link>
           </div>
 
           {/* Filters */}
@@ -65,21 +65,21 @@ export default function VenueFinderPage() {
               placeholder="Search venues or cities..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm flex-1 min-w-[200px] focus:outline-none focus:border-white"
+              className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-sm flex-1 min-w-[200px] focus:outline-none focus:border-white"
             />
-            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm">
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-sm">
               <option value="all">All Types</option>
               <option value="Club">Club</option>
               <option value="Warehouse">Warehouse</option>
               <option value="Festival">Festival</option>
             </select>
-            <select value={capacityFilter} onChange={(e) => setCapacityFilter(e.target.value)} className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm">
+            <select value={capacityFilter} onChange={(e) => setCapacityFilter(e.target.value)} className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-sm">
               <option value="all">Any Capacity</option>
               <option value="small">Small (&lt;500)</option>
               <option value="medium">Medium (500-1500)</option>
               <option value="large">Large (1500+)</option>
             </select>
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-zinc-400 cursor-pointer">
               <input type="checkbox" checked={showAvailableOnly} onChange={(e) => setShowAvailableOnly(e.target.checked)} className="rounded" />
               Available only
             </label>
@@ -88,11 +88,11 @@ export default function VenueFinderPage() {
           {/* Results */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map(venue => (
-              <div key={venue.id} className="bg-gray-900 rounded-xl p-5 border border-gray-800 hover:border-gray-600 transition-colors">
+              <div key={venue.id} className="bg-zinc-900 rounded-xl p-5 border border-zinc-800 hover:border-zinc-600 transition-colors">
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <h3 className="font-bold text-lg">{venue.name}</h3>
-                    <p className="text-sm text-gray-400">{venue.city}, {venue.country}</p>
+                    <p className="text-sm text-zinc-400">{venue.city}, {venue.country}</p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${venue.available ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
                     {venue.available ? 'Available' : 'Booked'}
@@ -100,26 +100,26 @@ export default function VenueFinderPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-3 text-sm mb-4">
                   <div>
-                    <div className="text-xs text-gray-500">Capacity</div>
+                    <div className="text-xs text-zinc-500">Capacity</div>
                     <div className="font-mono">{venue.capacity.toLocaleString()}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500">Type</div>
+                    <div className="text-xs text-zinc-500">Type</div>
                     <div>{venue.type}</div>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500">Price</div>
+                    <div className="text-xs text-zinc-500">Price</div>
                     <div>{venue.priceRange}</div>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
                     <span className="text-yellow-400 text-sm">{'★'.repeat(Math.floor(venue.rating))}</span>
-                    <span className="text-xs text-gray-500">{venue.rating}</span>
+                    <span className="text-xs text-zinc-500">{venue.rating}</span>
                   </div>
                   <button
                     disabled={!venue.available}
-                    className="bg-white text-black px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="bg-white text-black px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-zinc-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     Request Booking
                   </button>
@@ -129,7 +129,7 @@ export default function VenueFinderPage() {
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-gray-500">No venues match your filters</div>
+            <div className="text-center py-12 text-zinc-500">No venues match your filters</div>
           )}
         </div>
       </main>

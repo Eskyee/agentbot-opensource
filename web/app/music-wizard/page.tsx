@@ -170,21 +170,21 @@ export default function MusicWizardPage() {
           <h1 className="text-4xl font-black tracking-tight mb-2">
             Music Agent Wizard
           </h1>
-          <p className="text-gray-400 text-lg max-w-md mx-auto">
+          <p className="text-zinc-400 text-lg max-w-md mx-auto">
             Set up an AI agent specialized for your music career in under 5 minutes
           </p>
         </div>
 
         {/* Progress Steps */}
         <div className="mb-8">
-          <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+          <div className="flex items-center justify-between text-sm text-zinc-500 mb-4">
             <span>Progress: {step}/5</span>
             <span className="flex gap-1">
               {[1, 2, 3, 4, 5].map((s) => (
                 <div
                   key={s}
                   className={`w-8 h-2 rounded-full ${
-                    s <= step ? 'bg-green-500' : 'bg-gray-700'
+                    s <= step ? 'bg-green-500' : 'bg-zinc-700'
                   }`}
                 />
               ))}
@@ -211,17 +211,17 @@ export default function MusicWizardPage() {
                   className={`p-4 rounded-xl border-2 transition-all ${
                     wizardData.selectedRole === role.id
                       ? 'border-blue-500 bg-blue-500/10 border-blue-500/50'
-                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                      : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                   }`}
                 >
                   <div className="text-4xl mb-2">{role.icon}</div>
                   <h3 className="text-lg font-bold">{role.name}</h3>
-                  <p className="text-sm text-gray-400 mt-2">{role.description}</p>
+                  <p className="text-sm text-zinc-400 mt-2">{role.description}</p>
                   <div className="mt-3 flex flex gap-2">
                     {role.skills.slice(0, 4).map((skill) => (
                       <span
                         key={skill}
-                        className="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+                        className="text-xs bg-zinc-700 hover:bg-zinc-600 px-2 py-1 rounded"
                       >
                         + {skill.replace('-', ' ')}
                       </span>
@@ -233,7 +233,7 @@ export default function MusicWizardPage() {
 
             <div className="flex justify-between mt-6">
               <Link href="/signup">
-                <button className="px-4 py-2 text-gray-400 hover:text-white transition-colors">
+                <button className="px-4 py-2 text-zinc-400 hover:text-white transition-colors">
                   ← Skip to regular signup
                 </button>
               </Link>
@@ -251,7 +251,7 @@ export default function MusicWizardPage() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">
+                <label className="block text-sm text-zinc-400 mb-2">
                   Artist Name
                 </label>
                 <input
@@ -259,12 +259,12 @@ export default function MusicWizardPage() {
                   value={wizardData.artistName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, artistName: e.target.value }))}
                   placeholder="e.g. Bassline Beats"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-2">
+                <label className="block text-sm text-zinc-400 mb-2">
                   Agent Name (for display)
                 </label>
                 <input
@@ -272,19 +272,19 @@ export default function MusicWizardPage() {
                   value={wizardData.agentName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, agentName: e.target.value }))}
                   placeholder={`@${selectedRole?.name.toLowerCase().replace(/\s+/g, '')}`}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-2">
+                <label className="block text-sm text-zinc-400 mb-2">
                   Your Primary Genre
                 </label>
                 <select
                   multiple
                   value={wizardData.genres}
                   onChange={(e) => setWizardData(prev => ({ ...prev, genres: Array.from(e.target.selectedOptions).map(o => o.value) }))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                 >
                   {genres.map((genre) => (
                     <option key={genre} value={genre}>
@@ -295,14 +295,14 @@ export default function MusicWizardPage() {
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-2">
+                <label className="block text-sm text-zinc-400 mb-2">
                   Music Style Description
                 </label>
                 <textarea
                   value={wizardData.musicStyle}
                   onChange={(e) => setWizardData(prev => ({ ...prev, musicStyle: e.target.value }))}
                   placeholder="e.g., Deep House with melodic basslines and rhythmic progressive elements..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
                 />
               </div>
             </div>
@@ -332,13 +332,13 @@ export default function MusicWizardPage() {
                   className={`w-full p-3 rounded-lg border mb-2 transition-all ${
                     wizardData.goals.includes(goal)
                       ? 'border-blue-500 bg-blue-500/10 border-blue-500/50'
-                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                      : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                   }`}
                 >
                   {wizardData.goals.includes(goal) ? (
                     <span className="text-green-400 mr-2">✓</span>
                   ) : (
-                    <span className="text-gray-500 mr-2">+</span>
+                    <span className="text-zinc-500 mr-2">+</span>
                   )}
                   {goal}
                 </button>
@@ -346,7 +346,7 @@ export default function MusicWizardPage() {
             </div>
 
             <div className="flex justify-center mt-6">
-              <button onClick={handleBack} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
+              <button onClick={handleBack} className="px-6 py-2 text-zinc-400 hover:text-white transition-colors">
                 ← Back
               </button>
             </div>
@@ -362,13 +362,13 @@ export default function MusicWizardPage() {
             </h2>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+              <div className="flex items-center justify-between p-4 bg-zinc-800 rounded-lg border border-zinc-700">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">📱</span>
                     <span className="font-semibold">Telegram</span>
                   </div>
-                  <p className="text-sm text-gray-400">Most essential for music</p>
+                  <p className="text-sm text-zinc-400">Most essential for music</p>
                 </div>
                 <div>
                   <input
@@ -383,17 +383,17 @@ export default function MusicWizardPage() {
                       }))
                     }}
                   />
-                  <label htmlFor="telegram" className="text-sm text-gray-300">Enable Telegram (Recommended)</label>
+                  <label htmlFor="telegram" className="text-sm text-zinc-300">Enable Telegram (Recommended)</label>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+              <div className="flex items-center justify-between p-4 bg-zinc-800 rounded-lg border border-zinc-700">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">🎮</span>
                     <span className="font-semibold">Discord</span>
                   </div>
-                  <p className="text-sm text-gray-400">Great for community</p>
+                  <p className="text-sm text-zinc-400">Great for community</p>
                 </div>
                 <div>
                   <input
@@ -408,17 +408,17 @@ export default function MusicWizardPage() {
                       }))
                     }}
                   />
-                  <label htmlFor="discord" className="text-sm text-gray-300">Enable Discord</label>
+                  <label htmlFor="discord" className="text-sm text-zinc-300">Enable Discord</label>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-800 rounded-lg border border-gray-700">
+              <div className="flex items-center justify-between p-4 bg-zinc-800 rounded-lg border border-zinc-700">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">💬</span>
                     <span className="font-semibold">WhatsApp</span>
                   </div>
-                  <p className="text-sm text-text-gray-400">Global reach</p>
+                  <p className="text-sm text-text-zinc-400">Global reach</p>
                 </div>
                 <div>
                   <input
@@ -433,12 +433,12 @@ export default function MusicWizardPage() {
                       }))
                     }}
                   />
-                  <label htmlFor="whatsapp" className="text-sm text-gray-300">Enable WhatsApp</label>
+                  <label htmlFor="whatsapp" className="text-sm text-zinc-300">Enable WhatsApp</label>
                 </div>
               </div>
 
               <div className="flex justify-center mt-6">
-                <button onClick={handleBack} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
+                <button onClick={handleBack} className="px-6 py-2 text-zinc-400 hover:text-white transition-colors">
                   ← Back
                 </button>
               </div>
@@ -454,27 +454,27 @@ export default function MusicWizardPage() {
               Review & Deploy
             </h2>
             
-            <div className="space-y-4 bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <div className="space-y-4 bg-zinc-800 rounded-xl p-6 border border-zinc-700">
               <div className="flex items-center gap-4 mb-4">
                 <div className="text-4xl">{selectedRole?.icon || '🎵'}</div>
                 <div>
                   <h3 className="text-xl font-bold">{wizardData.artistName || 'Your Artist'}</h3>
-                  <p className="text-sm text-gray-400">as {selectedRole?.name || 'Artist'} AI Assistant</p>
+                  <p className="text-sm text-zinc-400">as {selectedRole?.name || 'Artist'} AI Assistant</p>
                 </div>
               </div>
 
-              <div className="space-y-3 border-t border-gray-700 pt-4">
+              <div className="space-y-3 border-t border-zinc-700 pt-4">
                 <div>
-                  <div className="text-sm text-gray-500 mb-1">Agent Name</div>
+                  <div className="text-sm text-zinc-500 mb-1">Agent Name</div>
                   <div className="font-mono text-white">{wizardData.agentName || 'my-agent'}</div>
                 </div>
 
                 {wizardData.genres.length > 0 && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Genres</div>
+                    <div className="text-sm text-zinc-500 mb-1">Genres</div>
                     <div className="flex flex-wrap gap-2">
                       {wizardData.genres.map(genre => (
-                        <span key={genre} className="px-3 py-1 bg-gray-700 text-white text-sm rounded">
+                        <span key={genre} className="px-3 py-1 bg-zinc-700 text-white text-sm rounded">
                           {genre}
                         </span>
                       ))}
@@ -484,7 +484,7 @@ export default function MusicWizardPage() {
 
                 {wizardData.goals.length > 0 && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Primary Goals</div>
+                    <div className="text-sm text-zinc-500 mb-1">Primary Goals</div>
                     <div className="flex flex-wrap gap-2">
                       {wizardData.goals.map(goal => (
                         <span key={goal} className="px-3 py-1 bg-green-700 text-white text-sm rounded">
@@ -497,34 +497,34 @@ export default function MusicWizardPage() {
 
                 {wizardData.channels.telegram && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Telegram</div>
+                    <div className="text-sm text-zinc-500 mb-1">Telegram</div>
                     <div className="text-green-400">✓ Enabled</div>
                   </div>
                 )}
 
                 {wizardData.channels.discord && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">Discord</div>
-                    <div className="text-purple-400">✓ Enabled</div>
+                    <div className="text-sm text-zinc-500 mb-1">Discord</div>
+                    <div className="text-blue-400">✓ Enabled</div>
                   </div>
                 )}
 
                 {wizardData.channels.whatsapp && (
                   <div>
-                    <div className="text-sm text-gray-500 mb-1">WhatsApp</div>
+                    <div className="text-sm text-zinc-500 mb-1">WhatsApp</div>
                   <div className="text-pink-400">✓ Enabled</div>
                   </div>
                 )}
               </div>
 
               <div className="flex justify-between items-center mt-6">
-                <button onClick={handleBack} className="px-6 py-2 text-gray-400 hover:text-white transition-colors">
+                <button onClick={handleBack} className="px-6 py-2 text-zinc-400 hover:text-white transition-colors">
                   ← Back
                 </button>
                 <button
                   onClick={handleDeploy}
                   disabled={loading || !wizardData.agentName}
-                  className="bg-white text-black hover:bg-gray-200 px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
+                  className="bg-white text-black hover:bg-zinc-200 px-6 py-2 rounded-lg font-semibold flex items-center gap-2 transition-colors disabled:opacity-50"
                 >
                   {loading ? (
                     <span className="animate-spin">Loading...</span>
@@ -541,14 +541,14 @@ export default function MusicWizardPage() {
         )}
 
         {/* Benefits Summary */}
-        <div className="mt-8 pt-8 border-t border-gray-700">
+        <div className="mt-8 pt-8 border-t border-zinc-700">
           <h3 className="text-lg font-semibold mb-4 text-center">
             What Your AI Agent Will Do For You:
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="text-sm text-gray-500 mb-2">Industry Connections</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <h4 className="text-sm text-zinc-500 mb-2">Industry Connections</h4>
+              <ul className="space-y-2 text-sm text-zinc-300">
                 <li className="flex gap-2">
                   <span className="text-green-400">✓</span>
                   <span style={{ marginLeft: '12px' }}>Access 200+ venue databases</span>
@@ -564,8 +564,8 @@ export default function MusicWizardPage() {
               </ul>
             </div>
             <div>
-              <h4 className="text-sm text-gray-500 mb-2">Music Analytics</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <h4 className="text-sm text-zinc-500 mb-2">Music Analytics</h4>
+              <ul className="space-y-2 text-sm text-zinc-300">
                 <li className="flex gap-2">
                   <span className="text-green-400">✓</span>
                   <span style={{ marginLeft: '12px' }}>Consumer trend analysis</span>
