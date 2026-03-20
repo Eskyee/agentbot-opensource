@@ -25,6 +25,12 @@ export async function GET(request: NextRequest) {
   const userId = session?.user?.id || ''
   const userEmail = session?.user?.email || ''
 
+  // Admin bypass — skip Stripe, go straight to onboard
+  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+  if (userEmail && adminEmails.includes(userEmail.toLowerCase())) {
+    return NextResponse.redirect(new URL(`/onboard?plan=${plan}&paid=1&admin=1`, origin), 303)
+  }
+
   const stripeKey = process.env.STRIPE_SECRET_KEY
   if (!stripeKey) {
     console.error('Stripe secret key not configured')

@@ -40,7 +40,11 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden md:flex items-center gap-6">
-          {isLoggedIn ? (
+          {!mounted || status === "loading" ? (
+            <div className="flex gap-6">
+              {[1,2,3,4].map(i => <div key={i} className="w-14 h-3 bg-zinc-900 animate-pulse" />)}
+            </div>
+          ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>

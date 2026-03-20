@@ -68,12 +68,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Admin bypass helper
+    const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+    const isAdmin = adminEmails.includes((session.user.email || '').toLowerCase());
+
     // Check subscription tier
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
 
-    if (!user || user.subscriptionStatus !== 'active') {
+    if (!isAdmin && (!user || user.subscriptionStatus !== 'active')) {
       return NextResponse.json(
         { error: 'Active subscription required to provision agents' },
         { status: 402 }
@@ -91,11 +95,11 @@ export async function POST(request: NextRequest) {
       enterprise: 100
     };
 
-    const limit = tierLimits[user.plan] || 1;
+    const limit = isAdmin ? 999 : (tierLimits[user?.plan ?? ''] || 1);
     if (agentCount >= limit) {
       return NextResponse.json(
         { 
-          error: `Agent limit reached for ${user.plan} tier`,
+          error: `Agent limit reached for ${user?.plan ?? 'free'} tier`,
           current: agentCount,
           limit
         },
