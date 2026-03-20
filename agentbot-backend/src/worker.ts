@@ -1,15 +1,12 @@
-import { Worker, Queue } from 'bullmq';
-import IORedis from 'ioredis';
+import { Worker, Queue, Job } from 'bullmq';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
-const connection = new IORedis(REDIS_URL, {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-});
+// BullMQ accepts a connection options object directly
+const connection = { url: REDIS_URL };
 
 // Define queues
 export const taskQueue = new Queue('tasks', { connection });
@@ -18,7 +15,7 @@ export const provisionQueue = new Queue('provision', { connection });
 // Task processor
 const taskWorker = new Worker(
   'tasks',
-  async (job: { name: string; id: string | undefined; data: Record<string, unknown> }) => {
+  async (job: Job) => {
     console.log(`[Worker] Processing task: ${job.name}`, { jobId: job.id, data: job.data });
 
     switch (job.name) {
@@ -40,7 +37,7 @@ const taskWorker = new Worker(
 // Provision processor
 const provisionWorker = new Worker(
   'provision',
-  async (job: { name: string; id: string | undefined; data: Record<string, unknown> }) => {
+  async (job: Job) => {
     console.log(`[Worker] Processing provision: ${job.name}`, { jobId: job.id, data: job.data });
 
     switch (job.name) {
@@ -57,18 +54,18 @@ const provisionWorker = new Worker(
 );
 
 taskWorker.on('completed', (job) => {
-  console.log(`[Worker] Task completed: ${job.name}`, { jobId: job.id });
+  console.log(`[Worker] Task completed: ${job?.name}`, { jobId: job?.id });
 });
 
-taskWorker.on('failed', (job, err: Error) => {
+taskWorker.on('failed', (job, err) => {
   console.error(`[Worker] Task failed: ${job?.name}`, { jobId: job?.id, error: err.message });
 });
 
 provisionWorker.on('completed', (job) => {
-  console.log(`[Worker] Provision completed: ${job.name}`, { jobId: job.id });
+  console.log(`[Worker] Provision completed: ${job?.name}`, { jobId: job?.id });
 });
 
-provisionWorker.on('failed', (job, err: Error) => {
+provisionWorker.on('failed', (job, err) => {
   console.error(`[Worker] Provision failed: ${job?.name}`, { jobId: job?.id, error: err.message });
 });
 
@@ -79,6 +76,5 @@ process.on('SIGTERM', async () => {
   console.log('[Worker] Shutting down...');
   await taskWorker.close();
   await provisionWorker.close();
-  await connection.quit();
   process.exit(0);
 });
