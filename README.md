@@ -11,7 +11,7 @@ Deploy autonomous AI agents in 60 seconds.
 
 <img src="https://github.com/Eskyee/agentbot-opensource/raw/main/web/public/og-image.png" width="600" alt="Agentbot" />
 
-**[Website](https://agentbot.raveculture.xyz)** · **[Documentation](https://raveculture.mintlify.app)** · **[Discord](https://discord.gg/eskyee)** · **[GitHub](https://github.com/Eskyee/agentbot-opensource)**
+**[Website](https://agentbot.raveculture.xyz)** · **[Documentation](https://raveculture.mintlify.app)** · **[Talent App](https://talent.app/~/projects/26f977bb-d436-4e28-830e-184757f20f95)** · **[Discord](https://discord.gg/eskyee)** · **[GitHub](https://github.com/Eskyee/agentbot-opensource)**
 
 </div>
 
