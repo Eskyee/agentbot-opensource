@@ -9,7 +9,7 @@ const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'm
 
 function OnboardContent() {
   const searchParams = useSearchParams()
-  const plan = searchParams.get('plan') || 'free'
+  const plan = searchParams.get('plan') || 'solo'
   const mode = searchParams.get('mode') || 'create' // link, create, deploy
   const isPaid = searchParams.get('paid') === '1'
   const paymentError = searchParams.get('payment_error')
