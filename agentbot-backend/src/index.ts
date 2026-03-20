@@ -1265,6 +1265,12 @@ function startAutoUpdater() {
   console.log('[Auto-Update] Auto-updater started');
 }
 
+// Mount API routes
+app.use('/api/ai', aiRouter);
+app.use('/api/provision', provisionRouter);
+app.use('/api/metrics', metricsRouter);
+app.use('/api/render-mcp', renderMcpRouter);
+
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
