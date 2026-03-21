@@ -58,7 +58,7 @@ const generateMuxCredentials = async () => {
     throw new Error(`Mux API error: ${response.status}`);
   }
   
-  const data = await response.json();
+  const data = await response.json() as any;
   const stream = data.data;
   
   return {
@@ -147,7 +147,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
     // Generate unique IDs
     const userId = Math.random().toString(36).substring(2, 12);
-    const muxCreds = generateMuxCredentials();
+    const muxCreds = await generateMuxCredentials();
     const subdomain = `dj-${userId}.agentbot.raveculture.xyz`;
 
     // In production, you would:
