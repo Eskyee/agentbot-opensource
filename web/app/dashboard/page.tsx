@@ -106,7 +106,7 @@ function DashboardContent() {
     }
   }, [status, router])
 
-    useEffect(() => {
+    useEffect(() => { (async () => {
       // Clear localStorage instance data when no session (user logged out)
       if (!session) {
         localStorage.removeItem('agentbot_instance')
@@ -155,7 +155,7 @@ function DashboardContent() {
       
       fetchInstance(userId, botUsername)
       fetchCredits()
-    }, [searchParams, session])
+    })(); }, [searchParams, session])
 
   const fetchCredits = async () => {
     try {
