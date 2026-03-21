@@ -70,10 +70,50 @@ export class AgentBusService {
   }
 
   /**
+   * Validates a webhook URL to prevent SSRF attacks.
+   * Only allows HTTPS to public hostnames.
+   */
+  private static validateWebhookUrl(url: string): void {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new Error(`Invalid webhook URL: ${url}`);
+    }
+
+    if (parsed.protocol !== 'https:') {
+      throw new Error(`Webhook URL must use HTTPS: ${url}`);
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+    // Block private / loopback / link-local ranges
+    const blocked = [
+      /^localhost$/,
+      /^127\./,
+      /^10\./,
+      /^172\.(1[6-9]|2\d|3[01])\./,
+      /^192\.168\./,
+      /^169\.254\./,
+      /^::1$/,
+      /^fc00:/,
+      /^fe80:/,
+    ];
+    if (blocked.some((re) => re.test(hostname))) {
+      throw new Error(`Webhook URL targets a private/internal address: ${url}`);
+    }
+  }
+
+  /**
    * Delivers a message to a recipient agent via webhook.
-   * Includes retry logic and status tracking.
+   * Verifies sender signature and validates webhook URL before dispatch.
    */
   static async deliverMessage(message: AgentMessage): Promise<void> {
+    // 0. Verify message signature before doing anything
+    const isValid = await this.verifyMessage(message);
+    if (!isValid) {
+      throw new Error(`Message ${message.messageId} has an invalid signature — delivery refused`);
+    }
+
     // 1. Get recipient agent's metadata (webhook URL)
     const result = await pool.query(
       'SELECT config->\'webhookUrl\' as webhook_url FROM agents WHERE id = (SELECT agent_id FROM deployments WHERE subdomain = $1)',
@@ -85,7 +125,10 @@ export class AgentBusService {
       throw new Error(`Recipient agent ${message.to.agentId} has no webhook configured`);
     }
 
-    // 2. Dispatch via fetch (this could be offloaded to Bull queue for retries)
+    // 2. Validate webhook URL to prevent SSRF
+    this.validateWebhookUrl(webhookUrl);
+
+    // 3. Dispatch via fetch (this could be offloaded to Bull queue for retries)
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {

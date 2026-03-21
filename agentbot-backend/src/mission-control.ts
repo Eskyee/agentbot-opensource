@@ -1,15 +1,23 @@
 import express, { Request, Response } from 'express';
 import { MissionControlService } from './services/mission-control';
 import dotenv from 'dotenv';
+import { timingSafeEqual } from 'crypto';
 
 dotenv.config();
 
 const router = express.Router();
 
-// Middleware to verify internal API key (Atlas/Frontend only)
+// Middleware to verify internal API key — timing-safe to prevent enumeration
 const authenticate = (req: Request, res: Response, next: any) => {
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ') || auth.substring(7) !== process.env.INTERNAL_API_KEY) {
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const token = auth.substring(7);
+  const expected = process.env.INTERNAL_API_KEY || '';
+  const tokenBuf = Buffer.from(token);
+  const expectedBuf = Buffer.from(expected);
+  if (!expected || tokenBuf.length !== expectedBuf.length || !timingSafeEqual(tokenBuf, expectedBuf)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();

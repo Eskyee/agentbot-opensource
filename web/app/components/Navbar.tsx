@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
@@ -36,6 +37,14 @@ export default function Navbar() {
     <>
       <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-900 font-mono">
         <Link href="/" className="flex items-center gap-2" onClick={closeMenu}>
+          <Image
+            src="/image0.jpeg"
+            alt="Agentbot"
+            width={28}
+            height={28}
+            className="rounded-full"
+            priority
+          />
           <span className="text-sm font-bold tracking-tight">Agentbot</span>
         </Link>
 

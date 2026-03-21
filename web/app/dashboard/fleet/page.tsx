@@ -117,7 +117,7 @@ export default function FleetPage() {
             {selectedAgent && (
               <div className="p-4 border-t border-zinc-800 bg-zinc-900/50">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-xl">
                     🤖
                   </div>
                   <div>

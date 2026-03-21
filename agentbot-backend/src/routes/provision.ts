@@ -157,14 +157,12 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     // 4. Set up monitoring and alerting
     // 5. Return full agent metadata
 
+    // NOTE: Bot tokens are intentionally NOT returned — they are write-only secrets.
     const response = {
       success: true,
       userId,
       agentId: userId,
       id: userId,
-      telegramToken,
-      discordToken: discordBotToken,
-      whatsappToken,
       aiProvider,
       aiProviderConfig: getAiProviderConfig(aiProvider),
       plan,

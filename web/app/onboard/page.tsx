@@ -433,8 +433,8 @@ function OnboardContent() {
                   key={type.id}
                   onClick={() => setAgentType(type.id)}
                   className={`text-left p-4 rounded-xl border transition-all ${
-                    agentType === type.id 
-                      ? 'border-white bg-white/10' 
+                    agentType === type.id
+                      ? 'border-white bg-zinc-800'
                       : 'border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800'
                   }`}
                 >
@@ -486,7 +486,7 @@ function OnboardContent() {
                     onClick={() => setAiProvider(provider.id)}
                     className={`w-full text-left p-4 rounded-xl border ${
                       aiProvider === provider.id 
-                        ? 'border-white bg-white/10' 
+                        ? 'border-white bg-zinc-800'
                         : 'border-zinc-700 hover:border-zinc-600'
                     } transition-colors`}
                   >
@@ -609,7 +609,7 @@ function OnboardContent() {
                     onClick={() => setSelectedModel(model.id)}
                     className={`w-full text-left p-4 rounded-xl border ${
                       selectedModel === model.id 
-                        ? 'border-white bg-white/10' 
+                        ? 'border-white bg-zinc-800'
                         : 'border-zinc-700 hover:border-zinc-600'
                     } transition-colors`}
                   >
@@ -674,7 +674,7 @@ function OnboardContent() {
                       }}
                       className={`text-left p-4 rounded-xl border transition-colors ${
                         isSelected 
-                          ? 'border-white bg-white/10' 
+                          ? 'border-white bg-zinc-800'
                           : 'border-zinc-700 hover:border-zinc-600'
                       }`}
                     >

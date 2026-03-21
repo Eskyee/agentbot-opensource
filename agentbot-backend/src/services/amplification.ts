@@ -26,37 +26,48 @@ export class AmplificationService {
 
   /**
    * Triggers a global campaign across partner agents on the bus.
+   * Delivers in parallel batches of 20 to avoid overwhelming the host.
    */
   static async broadcastCampaign(campaignId: number, userId: number): Promise<void> {
     const campaign = await pool.query('SELECT * FROM social_campaigns WHERE id = $1', [campaignId]);
     if (campaign.rows.length === 0) throw new Error('Campaign not found');
 
     // Fetch all active "Amplifier" agents on the platform
-    const partners = await pool.query('SELECT id, config->\'subdomain\' as subdomain FROM agents WHERE user_id != $1', [userId]);
+    const partners = await pool.query(
+      "SELECT id, config->>'subdomain' as subdomain FROM agents WHERE user_id != $1",
+      [userId]
+    );
 
-    for (const partner of partners.rows) {
-      const message: AgentMessage = {
-        version: '1.0',
-        messageId: `amp-${Date.now()}-${partner.id}`,
-        timestamp: new Date().toISOString(),
-        from: {
-          agentId: campaign.rows[0].agent_id.toString(),
-          agentType: 'promoter',
-          walletAddress: '', // To be filled by signer
-          signature: ''
-        },
-        to: {
-          agentId: partner.subdomain,
-          agentType: 'amplifier'
-        },
-        action: 'AMPLIFY_REQUEST',
-        payload: {
-          content: campaign.rows[0].content,
-          reward: 5.00 // Fixed reward for sharing
-        }
-      };
+    const CONCURRENCY = 20;
+    const rows = partners.rows;
 
-      await AgentBusService.deliverMessage(message);
+    for (let i = 0; i < rows.length; i += CONCURRENCY) {
+      const batch = rows.slice(i, i + CONCURRENCY);
+      await Promise.allSettled(batch.map((partner) => {
+        const message: AgentMessage = {
+          version: '1.0',
+          messageId: `amp-${Date.now()}-${partner.id}`,
+          timestamp: new Date().toISOString(),
+          from: {
+            agentId: campaign.rows[0].agent_id.toString(),
+            agentType: 'promoter',
+            walletAddress: '', // To be filled by signer
+            signature: ''
+          },
+          to: {
+            agentId: partner.subdomain,
+            agentType: 'amplifier'
+          },
+          action: 'AMPLIFY_REQUEST',
+          payload: {
+            content: campaign.rows[0].content,
+            reward: 5.00 // Fixed reward for sharing
+          }
+        };
+        return AgentBusService.deliverMessage(message).catch((err) => {
+          console.error(`[Amplification] Failed to deliver to agent ${partner.id}:`, err);
+        });
+      }));
     }
   }
 }

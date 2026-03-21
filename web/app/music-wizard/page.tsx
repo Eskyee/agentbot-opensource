@@ -162,7 +162,7 @@ export default function MusicWizardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-blue-900 to-black to-zinc-900 text-white">
+    <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-8">

@@ -21,7 +21,7 @@ export default function PartnerLogos() {
             key={partner.name} 
             className="flex flex-col items-center gap-2 group cursor-default"
           >
-            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-zinc-900 flex items-center justify-center group-hover:bg-zinc-800 transition-colors">
               <partner.icon className="w-6 h-6 text-zinc-500 group-hover:text-white transition-colors" />
             </div>
             <span className="text-xs font-medium text-zinc-500 group-hover:text-white transition-colors">{partner.name}</span>

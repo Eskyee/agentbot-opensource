@@ -11,6 +11,8 @@ import dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { timingSafeEqual, randomBytes } from 'crypto';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -33,10 +35,44 @@ const getPlanResources = (plan: string) => {
 };
 
 const app = express();
+app.use(express.json({ limit: '1mb' }));
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+  credentials: true,
+}));
+
+// Rate limiting — applied globally, with tighter limits on expensive endpoints
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,       // 1 minute window
+  max: 120,                   // 120 req/min per IP on general routes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please slow down.' },
+});
+const deployLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,                     // 5 deploys/min per IP — prevents container spam
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Deployment rate limit exceeded.' },
+});
+const aiChatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,                    // 30 AI chat req/min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'AI rate limit exceeded.' },
+});
+app.use('/api/', generalLimiter);
+
 const PORT = process.env.PORT || 3001;
 
-// API key - use env var or fallback (Render will set it via generateValue)
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only'
+// API key — refuse to start in production without it
+if (!process.env.INTERNAL_API_KEY && process.env.NODE_ENV === 'production') {
+  console.error('FATAL: INTERNAL_API_KEY must be set in production. Refusing to start.');
+  process.exit(1);
+}
+const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only';
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
@@ -47,8 +83,6 @@ const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
 const OPENCLAW_RUNTIME_VERSION = '2026.3.13'
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-
-dotenv.config();
 
 type AgentMetadata = {
   agentId: string;
@@ -466,18 +500,29 @@ const createOpenClawConfig = (
   return config;
 };
 
-// Auth middleware
+// Auth middleware — timing-safe to prevent key-enumeration attacks
 const authenticate = (req: Request, res: Response, next: any) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const token = auth.substring(7);
-  if (token !== API_KEY) {
+  const tokenBuf = Buffer.from(token);
+  const keyBuf = Buffer.from(API_KEY);
+  if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
 };
+
+// Mount sub-routers
+app.use('/api/invite', inviteRouter);
+app.use('/api/underground', undergroundRouter);
+app.use('/api/mission-control', missionControlRouter);
+app.use('/api/ai', authenticate, aiChatLimiter, aiRouter);
+app.use('/api/render-mcp', authenticate, renderMcpRouter);
+app.use('/api/provision', authenticate, provisionRouter);
+app.use('/api/metrics', authenticate, metricsRouter);
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
@@ -485,7 +530,7 @@ app.get('/health', (req: Request, res: Response) => {
 });
 
 // Metrics endpoints for dashboard
-app.get('/api/metrics/:userId/historical', async (req: Request, res: Response) => {
+app.get('/api/metrics/:userId/historical', authenticate, async (req: Request, res: Response) => {
   const { userId } = req.params;
   const timeRange = req.query.range as string || '24h';
 
@@ -505,7 +550,7 @@ app.get('/api/metrics/:userId/historical', async (req: Request, res: Response) =
   }
 });
 
-app.get('/api/metrics/:userId/performance', async (req: Request, res: Response) => {
+app.get('/api/metrics/:userId/performance', authenticate, async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   try {
@@ -891,7 +936,7 @@ app.delete('/api/agents/:id/verify', authenticate, async (req: Request, res: Res
 });
 
 // Deployments endpoint
-app.post('/api/deployments', authenticate, async (req: Request, res: Response) => {
+app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, res: Response) => {
   const { agentId, config } = req.body as {
     agentId?: string;
     config?: {
@@ -1115,7 +1160,7 @@ app.get('/api/agents/:id/token', authenticate, async (req: Request, res: Respons
       return;
     }
     if (!metadata.gatewayToken) {
-      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const token = randomBytes(32).toString('hex');
       metadata.gatewayToken = token;
       await writeAgentMetadata(metadata);
     }
@@ -1138,13 +1183,7 @@ app.post('/api/agents/:id/repair', authenticate, async (req: Request, res: Respo
     await runCommand('docker', ['stop', containerName]);
     await runCommand('docker', ['rm', containerName]);
     
-    try {
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-    } catch (e) {
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-      throw e;
-    }
-    
+    await recreateContainerWithImage(containerName, inspect, oldImage);
     res.json({ success: true, message: 'Agent repaired successfully' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Repair failed';
@@ -1209,33 +1248,42 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
   const ports = JSON.parse(portsFileContent) as Record<string, number>;
   const results = { success: 0, failed: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
-  
-  for (const agentId of Object.keys(ports)) {
-    const containerName = getContainerName(agentId);
-    try {
+  const agentIds = Object.keys(ports);
+
+  // Pull the image once before touching any containers
+  console.log(`[Auto-Update] Pulling image ${newImage}...`);
+  await runCommand('docker', ['pull', newImage]);
+
+  // Update in parallel batches of 5 so we don't overwhelm the host
+  const CONCURRENCY = 5;
+  for (let i = 0; i < agentIds.length; i += CONCURRENCY) {
+    const batch = agentIds.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.allSettled(batch.map(async (agentId) => {
+      const containerName = getContainerName(agentId);
       console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
-      await runCommand('docker', ['pull', newImage]);
       await runCommand('docker', ['stop', containerName]);
       await runCommand('docker', ['rm', containerName]);
-      
       const port = await getNextPortAndAssign(agentId);
-      
       await runCommand('docker', [
         'run', '-d',
         '--name', containerName,
         '--restart', 'unless-stopped',
-        '-v', `agentbot-${agentId}:/home/node/.openclaw`,
+        '-v', `openclaw-data-${agentId}:/home/node/.openclaw`,
         '-p', `${port}:18789`,
         newImage,
       ]);
-      
-      results.success++;
-    } catch (error) {
-      console.error(`[Auto-Update] Failed to update ${agentId}:`, error);
-      results.failed++;
+    }));
+
+    for (const result of batchResults) {
+      if (result.status === 'fulfilled') {
+        results.success++;
+      } else {
+        console.error(`[Auto-Update] Batch failure:`, result.reason);
+        results.failed++;
+      }
     }
   }
-  
+
   return results;
 }
 
