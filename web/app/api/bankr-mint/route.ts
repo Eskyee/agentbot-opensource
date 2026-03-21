@@ -16,9 +16,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Bankr SDK temporarily disabled — broken dep in @bankr/sdk@0.1.0-alpha.9
+    // Bankr SDK temporarily disabled — @bankr/sdk@0.1.0-alpha.9 has a broken
+    // dependency on x402-fetch. Re-enable once the upstream SDK is fixed.
     return NextResponse.json(
-      { error: 'Bankr minting is temporarily unavailable.' },
+      {
+        error: 'Bankr minting is coming soon.',
+        code: 'FEATURE_UNAVAILABLE',
+        details: 'The Bankr minting feature is temporarily offline while we upgrade dependencies. Check back shortly.',
+      },
       { status: 503 }
     );
   } catch (err: unknown) {

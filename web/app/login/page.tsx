@@ -3,6 +3,7 @@ import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { signIn, useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
   ssr: false,
@@ -105,13 +106,20 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
-          />
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
+            />
+            <div className="mt-2 text-right">
+              <Link href="/forgot-password" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">
+                Forgot password?
+              </Link>
+            </div>
+          </div>
           <button
             type="submit"
             className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"

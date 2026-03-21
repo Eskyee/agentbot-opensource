@@ -19,6 +19,7 @@ export default function Footer() {
               { href: '/marketplace', label: 'Marketplace' },
               { href: '/partner', label: 'Partner' },
               { href: '/token', label: '$AGENTBOT' },
+              { href: 'https://github.com/Eskyee/agentbot-opensource', label: 'GitHub' },
               { href: '/terms', label: 'Terms' },
               { href: '/privacy', label: 'Privacy' },
             ].map((link) => (

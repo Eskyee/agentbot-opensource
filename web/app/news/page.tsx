@@ -211,7 +211,7 @@ export default function NewsPage() {
             {upcomingEvents.map((event) => (
               <div
                 key={event.title}
-                className="p-5 rounded-xl bg-gradient-to-r from-blue-900/20 to-blue-900/20 border border-blue-500/20"
+                className="p-5 rounded-lg bg-zinc-900 border border-zinc-800"
               >
                 <p className="text-xs text-blue-400 mb-1">{event.date}</p>
                 <h3 className="font-bold text-white mb-1">{event.title}</h3>
@@ -228,7 +228,7 @@ export default function NewsPage() {
             {communityUpdates.map((update, i) => (
               <article
                 key={i}
-                className="group p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-white/30 transition-colors"
+                className="group p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition-colors"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -264,7 +264,7 @@ export default function NewsPage() {
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-white/30 transition-colors"
+                className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-600 transition-colors"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400">{item.source}</span>
@@ -278,7 +278,7 @@ export default function NewsPage() {
         </section>
 
         {/* CTA */}
-        <section className="mt-16 p-8 rounded-2xl bg-gradient-to-r from-blue-900/20 to-blue-900/20 border border-blue-500/20 text-center">
+        <section className="mt-16 p-8 rounded-lg bg-zinc-900 border border-zinc-800 text-center">
           <h2 className="text-2xl font-bold mb-2">🇬🇧 London AI Community</h2>
           <p className="text-zinc-400 mb-4">
             We're building in London. Join the meetups, share what you're building, connect with fellow agent builders.

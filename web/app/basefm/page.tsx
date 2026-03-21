@@ -15,7 +15,7 @@ export default function BasefmTokenPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center">
             <span className="text-3xl">🎵</span>
           </div>
           <div>
@@ -136,7 +136,7 @@ export default function BasefmTokenPage() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-r from-blue-900/30 to-blue-900/30 rounded-lg p-8 mb-8 border border-blue-500/30">
+        <div className="bg-zinc-900 rounded-lg p-8 mb-8 border border-zinc-800">
           <h2 className="text-2xl font-bold mb-6">🎧 Go Live on baseFM</h2>
           
           <div className="grid gap-6 md:grid-cols-2">

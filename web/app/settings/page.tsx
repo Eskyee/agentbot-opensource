@@ -22,8 +22,8 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
               key={item.label}
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                item.active 
-                  ? 'bg-white/20 text-white' 
+                item.active
+                  ? 'bg-zinc-700 text-white'
                   : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
               }`}
             >
@@ -241,7 +241,7 @@ export default function SettingsPage() {
     const newKey = {
       id: Date.now().toString(),
       name,
-      key: `sk_live_${Math.random().toString(36).substring(2, 15)}`,
+      key: `ab_key_${Math.random().toString(36).substring(2, 15)}`,
       created: new Date().toISOString().split('T')[0]
     }
     
@@ -438,7 +438,7 @@ export default function SettingsPage() {
           <div className="space-y-6">
             <h2 className="text-xl font-semibold">Referrals</h2>
             
-            <div className="rounded-2xl border border-white/30 bg-gradient-to-r from-white/10 to-zinc-200/10 p-6">
+            <div className="rounded-lg border border-zinc-700 bg-zinc-900 p-6">
               <div className="text-sm text-zinc-400 mb-2">Your referral link</div>
               <div className="flex gap-3">
                 <input

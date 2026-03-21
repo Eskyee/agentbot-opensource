@@ -3,15 +3,64 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-
-# Vercel deploys automatically via GitHub integration on every push to main.
-# No manual deploy step needed.
+  pull_request:
+    branches: [main]
 
 jobs:
-  verify:
-    name: Verify
+  backend:
+    name: Backend (TypeScript Build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Push to main — Vercel GitHub integration handles deployment."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: agentbot-backend/package-lock.json
+
+      - name: Install
+        run: cd agentbot-backend && npm ci
+
+      - name: Lint (Type Check)
+        run: cd agentbot-backend && npm run lint
+
+      - name: Build
+        run: cd agentbot-backend && npm run build
+
+      - name: Test
+        run: cd agentbot-backend && npm test --passWithNoTests
+
+  frontend:
+    name: Frontend (Next.js Build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: cd web && npm ci
+
+      - name: Build
+        run: cd web && npx next build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+          # Build should succeed without DATABASE_URL (graceful fallback)
+          # Real env vars are set in Vercel dashboard
+
+  deploy:
+    name: Deploy
+    needs: [backend, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "✅ Both builds passed."
+          echo "Vercel: auto-deploys via GitHub integration"
+          echo "Render: auto-deploys via render.yaml blueprint"
+          echo "No manual steps needed."

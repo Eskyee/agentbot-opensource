@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { authenticate } from '../middleware/auth';
 
 /**
  * BASEFM Provision Endpoint
@@ -11,19 +12,68 @@ import { Router, Request, Response } from 'express';
 
 const router = Router();
 
+// Admin/tester emails (bypass Stripe)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+const TESTER_EMAILS = (process.env.TESTER_EMAILS || '').split(',').filter(Boolean);
+const KILL_SWITCH = process.env.KILL_SWITCH === 'true';
+
+// Plan limits — NO FREE TIER
+const PLAN_LIMITS: Record<string, { agents: number; stripeRequired: boolean }> = {
+  label: { agents: 1, stripeRequired: true },
+  solo: { agents: 3, stripeRequired: true },
+  collective: { agents: 10, stripeRequired: true },
+  network: { agents: 100, stripeRequired: true },
+};
+
 // Simple in-memory Mux mock (in production, would use real Mux API)
-const generateMuxCredentials = () => ({
-  streamKey: `sk-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`,
-  liveStreamId: Math.random().toString(36).substring(2, 12),
-  rtmpServer: 'rtmps://live.mux.com/app',
-  playbackUrl: `https://image.mux.com/${Math.random().toString(36).substring(2, 12)}/playlist.m3u8`,
-});
+const generateMuxCredentials = async () => {
+  const MUX_TOKEN_ID = process.env.MUX_TOKEN_ID;
+  const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
+  
+  if (!MUX_TOKEN_ID || !MUX_TOKEN_SECRET) {
+    // Fallback to placeholder if Mux not configured
+    return {
+      streamKey: `sk-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`,
+      liveStreamId: Math.random().toString(36).substring(2, 12),
+      rtmpServer: 'rtmps://live.mux.com/app',
+      playbackUrl: `https://image.mux.com/${Math.random().toString(36).substring(2, 12)}/playlist.m3u8`,
+    };
+  }
+  
+  const auth = Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString('base64');
+  const response = await fetch('https://api.mux.com/video/v1/live-streams', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      playback_policy: ['public'],
+      new_asset_settings: { playback_policy: ['public'] },
+      metadata: { platform: 'agentbot' },
+    }),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Mux API error: ${response.status}`);
+  }
+  
+  const data = await response.json() as any;
+  const stream = data.data;
+  
+  return {
+    streamKey: stream.stream_key,
+    liveStreamId: stream.id,
+    rtmpServer: 'rtmps://live.mux.com/app',
+    playbackUrl: `https://image.mux.com/${stream.playback_ids[0].id}/playlist.m3u8`,
+  };
+};
 
 /**
  * POST /api/provision
  * Provisions a new BASEFM agent with streaming capabilities
  */
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   try {
     const {
       telegramToken,
@@ -32,7 +82,20 @@ router.post('/', async (req: Request, res: Response) => {
       whatsappToken,
       aiProvider = 'openrouter',
       plan = 'free',
+      email: bodyEmail, // user email from body
+      stripeSubscriptionId, // from Stripe checkout
     } = req.body;
+
+    // Also check header for email (set by auth middleware)
+    const email = bodyEmail || (req.headers['x-user-email'] as string);
+
+    // Kill switch check
+    if (KILL_SWITCH) {
+      return res.status(503).json({
+        success: false,
+        error: 'Provisioning is temporarily disabled. Contact support.',
+      });
+    }
 
     // Validation
     if (!telegramToken && !discordBotToken && !whatsappToken) {
@@ -52,7 +115,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Validate plan
-    const validPlans = ['free', 'pro', 'enterprise'];
+    const validPlans = Object.keys(PLAN_LIMITS);
     if (!validPlans.includes(plan)) {
       return res.status(400).json({
         success: false,
@@ -60,9 +123,34 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
+    const planConfig = PLAN_LIMITS[plan];
+
+    // Payment enforcement: non-free plans require Stripe or admin/tester status
+    if (planConfig.stripeRequired) {
+      const isAdmin = email && ADMIN_EMAILS.includes(email);
+      const isTester = email && TESTER_EMAILS.includes(email);
+
+      if (!isAdmin && !isTester && !stripeSubscriptionId) {
+        return res.status(402).json({
+          success: false,
+          error: 'Active subscription required. Subscribe at /pricing',
+          code: 'PAYMENT_REQUIRED',
+        });
+      }
+    }
+
+    // Free plan: NO FREE TIER — everyone pays
+    if (plan === 'free') {
+      return res.status(402).json({
+        success: false,
+        error: 'No free tier. Choose a paid plan to get started.',
+        code: 'PAYMENT_REQUIRED',
+      });
+    }
+
     // Generate unique IDs
     const userId = Math.random().toString(36).substring(2, 12);
-    const muxCreds = generateMuxCredentials();
+    const muxCreds = await generateMuxCredentials();
     const subdomain = `dj-${userId}.agentbot.raveculture.xyz`;
 
     // In production, you would:

@@ -798,13 +798,47 @@ app.get('/api/agents', authenticate, (req: Request, res: Response) => {
     });
 });
 
-app.post('/api/agents', authenticate, (req: Request, res: Response) => {
-  const { name, config } = req.body;
-  if (!name) {
-    return res.status(400).json({ error: 'Name required' });
+app.post('/api/agents', authenticate, async (req: Request, res: Response) => {
+  const { name, config } = req.body as { name?: string; config?: Record<string, unknown> };
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    res.status(400).json({ error: 'Name required' });
+    return;
   }
-  // TODO: Create agent in database and deploy
-  res.status(201).json({ id: 'new-agent-id', name, status: 'deploying' });
+
+  try {
+    await ensureDataDirs();
+
+    // Generate a URL-safe agent ID from the name + random suffix
+    const safeBase = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').substring(0, 20);
+    const suffix = randomBytes(4).toString('hex');
+    const agentId = `${safeBase}-${suffix}`;
+    const containerName = getContainerName(agentId);
+    const subdomain = `${agentId}.${AGENTS_DOMAIN}`;
+
+    const metadata: AgentMetadata = {
+      agentId,
+      createdAt: new Date().toISOString(),
+      plan: (config?.plan as string) || 'free',
+      aiProvider: (config?.aiProvider as string) || 'openrouter',
+      subdomain,
+      status: 'pending',
+      config: config || {},
+    };
+    await writeAgentMetadata(metadata);
+
+    res.status(201).json({
+      id: agentId,
+      name,
+      agentId,
+      status: 'pending',
+      subdomain,
+      url: `https://${subdomain}`,
+      createdAt: metadata.createdAt,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to create agent';
+    res.status(500).json({ error: message });
+  }
 });
 
 app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
@@ -839,16 +873,81 @@ app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
     });
 });
 
-app.put('/api/agents/:id', authenticate, (req: Request, res: Response) => {
+app.put('/api/agents/:id', authenticate, async (req: Request, res: Response) => {
   const { id } = req.params;
-  // TODO: Update agent
-  res.json({ id, message: 'Agent updated' });
+  const safeId = sanitizeAgentId(id);
+
+  try {
+    const metadata = await readAgentMetadata(safeId);
+    if (!metadata) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+
+    // Apply allowed updates
+    const { plan, aiProvider, config } = req.body as {
+      plan?: string;
+      aiProvider?: string;
+      config?: Record<string, unknown>;
+    };
+
+    if (plan) metadata.plan = plan;
+    if (aiProvider) metadata.aiProvider = aiProvider;
+    if (config) metadata.config = { ...(metadata.config || {}), ...config };
+
+    await writeAgentMetadata(metadata);
+
+    res.json({
+      id: safeId,
+      plan: metadata.plan,
+      aiProvider: metadata.aiProvider,
+      subdomain: metadata.subdomain,
+      status: metadata.status || 'unknown',
+      message: 'Agent updated',
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Update failed';
+    res.status(500).json({ error: message });
+  }
 });
 
-app.delete('/api/agents/:id', authenticate, (req: Request, res: Response) => {
+app.delete('/api/agents/:id', authenticate, async (req: Request, res: Response) => {
   const { id } = req.params;
-  // TODO: Delete agent
-  res.json({ id, message: 'Agent deleted' });
+  const safeId = sanitizeAgentId(id);
+  const containerName = getContainerName(safeId);
+
+  try {
+    // 1. Stop and remove the Docker container (best-effort — may not exist)
+    try {
+      await runCommand('docker', ['stop', containerName]);
+    } catch {
+      // Container may already be stopped
+    }
+    try {
+      await runCommand('docker', ['rm', containerName]);
+    } catch {
+      // Container may not exist
+    }
+
+    // 2. Release port assignment from ports.json
+    await withLock(async () => {
+      const ports = await readPorts();
+      delete ports[safeId];
+      await writePorts(ports);
+    });
+
+    // 3. Delete metadata file
+    try {
+      await fs.unlink(agentFilePath(safeId));
+    } catch {
+      // File may not exist
+    }
+
+    res.json({ id: safeId, deleted: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Delete failed';
+    res.status(500).json({ error: message });
+  }
 });
 
 // Agent verification endpoints for Verified Human Badge
@@ -1312,6 +1411,76 @@ function startAutoUpdater() {
   
   console.log('[Auto-Update] Auto-updater started');
 }
+
+/**
+ * POST /api/subscriptions/deploy
+ * Called by the Stripe webhook (via frontend) when a checkout completes.
+ * Records the subscription → plan mapping so the next agent deployment
+ * picks up the correct resource tier.
+ */
+app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Response) => {
+  const { tier, customerId, subscriptionId, stripeCustomerId } = req.body as {
+    tier?: string;
+    customerId?: string;
+    subscriptionId?: string;
+    stripeCustomerId?: string;
+  };
+
+  if (!customerId && !stripeCustomerId) {
+    res.status(400).json({ error: 'customerId is required' });
+    return;
+  }
+  if (!tier) {
+    res.status(400).json({ error: 'tier is required' });
+    return;
+  }
+
+  const validTiers = Object.keys(PLAN_RESOURCES);
+  if (!validTiers.includes(tier)) {
+    res.status(400).json({ error: `Invalid tier. Valid tiers: ${validTiers.join(', ')}` });
+    return;
+  }
+
+  try {
+    await ensureDataDirs();
+
+    // Persist subscription metadata so provisioning endpoints can read it
+    const id = (stripeCustomerId || customerId) as string;
+    const subscriptionFile = path.join(DATA_DIR, 'subscriptions', `${id.replace(/[^a-zA-Z0-9_-]/g, '_')}.json`);
+    await fs.mkdir(path.join(DATA_DIR, 'subscriptions'), { recursive: true });
+    await fs.writeFile(subscriptionFile, JSON.stringify({
+      customerId: id,
+      subscriptionId: subscriptionId || null,
+      tier,
+      plan: tier,
+      resources: PLAN_RESOURCES[tier],
+      activatedAt: new Date().toISOString(),
+    }, null, 2));
+
+    console.log(`[Subscriptions] Activated tier "${tier}" for customer ${id} (sub: ${subscriptionId})`);
+
+    res.json({
+      success: true,
+      customerId: id,
+      subscriptionId,
+      tier,
+      resources: PLAN_RESOURCES[tier],
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Subscription activation failed';
+    console.error('[Subscriptions] Deploy error:', message);
+    res.status(500).json({ error: message });
+  }
+});
+
+// Parse JSON bodies
+app.use(require('express').json());
+
+// Mount API routes
+app.use('/api/ai', aiRouter);
+app.use('/api/provision', provisionRouter);
+app.use('/api/metrics', metricsRouter);
+app.use('/api/render-mcp', renderMcpRouter);
 
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);

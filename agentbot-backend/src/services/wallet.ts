@@ -144,7 +144,7 @@ export class WalletService {
       });
       
       // Find USDC in the balances array
-      const usdcBalance = result.balances.find(b => b.token?.symbol?.toUpperCase() === 'USDC');
+      const usdcBalance = result.balances.find((b: any) => b.token?.symbol?.toUpperCase() === 'USDC');
       const balance = usdcBalance ? Number(usdcBalance.amount) : 0;
       
       await pool.query(

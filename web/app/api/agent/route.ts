@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
+import { getBackendApiUrl } from '@/app/api/lib/api-keys';
 
 const API_VERSION = '1.0.0';
 const AGENTBOT_VERSION = '2026.3.1';
@@ -175,7 +176,7 @@ export async function POST(request: NextRequest) {
         timestamp: Date.now()
       });
 
-      const response = await fetch(`${process.env.BACKEND_API_URL || 'http://localhost:3001'}/chat`, {
+      const response = await fetch(`${getBackendApiUrl()}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, userId, sessionId: session.id })

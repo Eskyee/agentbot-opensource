@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import AIProviderService from '../services/ai-provider';
+import { requirePlan, canAccessModel } from '../middleware/plan';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -82,7 +84,7 @@ router.post('/models/select', async (req: Request, res: Response) => {
 });
 
 // Universal chat endpoint - works with any provider
-router.post('/chat', async (req: Request, res: Response) => {
+router.post('/chat', authenticate, requirePlan, async (req: Request, res: Response) => {
   const { messages, model, taskType, temperature, top_p, max_tokens } = req.body;
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -98,6 +100,15 @@ router.post('/chat', async (req: Request, res: Response) => {
         return res.status(404).json({ error: 'No models available' });
       }
       selectedModel = bestModel.id;
+    }
+
+    // Check model access based on plan
+    if (!canAccessModel(selectedModel, req.userPlan!)) {
+      return res.status(403).json({
+        error: `Model ${selectedModel} not available on your plan. Upgrade for more models.`,
+        code: 'MODEL_RESTRICTED',
+        allowedModels: req.userPlanConfig?.models,
+      });
     }
 
     // Send to appropriate provider - cast messages to correct type

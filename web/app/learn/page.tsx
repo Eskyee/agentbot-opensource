@@ -253,7 +253,7 @@ export default function LearnPage() {
             Go live on baseFM - the onchain radio station. Stream as a human DJ or deploy an AI agent to DJ autonomously.
           </p>
           <div className="grid gap-4 md:grid-cols-2">
-            <a href="https://basefm.space/guide/beginner" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-2xl bg-gradient-to-br from-green-900/20 to-emerald-900/20 border border-green-500/30 hover:border-green-400/50 transition-all">
+            <a href="https://basefm.space/guide/beginner" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">🌱</span>
                 <div>
@@ -268,7 +268,7 @@ export default function LearnPage() {
                 <li>• Tipping DJs & buying tickets</li>
               </ul>
             </a>
-            <a href="https://basefm.space/guide/advanced" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-2xl bg-gradient-to-br from-blue-900/20 to-pink-900/20 border border-blue-500/30 hover:border-blue-400/50 transition-all">
+            <a href="https://basefm.space/guide/advanced" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">🤓</span>
                 <div>
@@ -284,7 +284,7 @@ export default function LearnPage() {
               </ul>
             </a>
           </div>
-          <div className="mt-6 p-4 rounded-xl bg-gradient-to-r from-green-900/20 to-blue-900/20 border border-green-500/20">
+          <div className="mt-6 p-4 rounded-lg bg-zinc-900 border border-zinc-800">
             <p className="text-sm text-zinc-400">
               🎵 <strong>Listen live:</strong> <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-green-400 underline hover:text-green-300">basefm.space</a> — 24/7 AI & human DJ streams. Or <a href="/basefm" className="text-blue-400 underline hover:text-blue-300">deploy your own DJ agent on Agentbot</a>.
             </p>
@@ -301,7 +301,7 @@ export default function LearnPage() {
             5,400+ community-built skills. Extend your agent with superpowers.
           </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <a href="https://clawhub.net" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-gradient-to-br from-orange-900/20 to-red-900/20 border border-orange-500/30 hover:border-orange-400/50 transition-all">
+            <a href="https://clawhub.net" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">🦞</span>
                 <div>
@@ -311,7 +311,7 @@ export default function LearnPage() {
               </div>
               <p className="text-sm text-zinc-400">Official skill marketplace with vector search, ratings, and 1.5M+ downloads.</p>
             </a>
-            <a href="https://github.com/VoltAgent/awesome-openclaw-skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-white/30 transition-all">
+            <a href="https://github.com/VoltAgent/awesome-openclaw-skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-600 transition-all">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">📦</span>
                 <div>
@@ -321,7 +321,7 @@ export default function LearnPage() {
               </div>
               <p className="text-sm text-zinc-400">Curated collection of best skills from the community.</p>
             </a>
-            <a href="https://learnopenclaw.com/core-concepts/skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-white/30 transition-all">
+            <a href="https://learnopenclaw.com/core-concepts/skills" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:border-zinc-600 transition-all">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">📚</span>
                 <div>

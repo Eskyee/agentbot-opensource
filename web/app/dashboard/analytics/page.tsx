@@ -122,7 +122,7 @@ export default function AnalyticsPage() {
                 <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
                   <div className="text-xs text-zinc-500 font-mono">${m.revenue}</div>
                   <div
-                    className="w-full bg-gradient-to-t from-green-600 to-green-400 rounded-t-sm min-h-[4px]"
+                    className="w-full bg-green-500 rounded-t-sm min-h-[4px]"
                     style={{ height: `${Math.max(2, (m.revenue / maxMonthlyValue) * 100)}%` }}
                   />
                   <div className="text-xs text-zinc-500">{m.month}</div>

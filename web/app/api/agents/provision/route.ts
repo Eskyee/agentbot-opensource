@@ -235,36 +235,52 @@ async function provisionAgentOnGateway(
     config: Record<string, any>;
   }
 ): Promise<{ gatewayId: string; token: string; status: string }> {
-  const GATEWAY_URL = 'ws://openclaw-gateway-lqma:10000';
+  const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://openclaw-gateway-lqma:10000';
 
-  return new Promise((resolve, reject) => {
-    try {
-      // In production, use fetch or axios to call gateway HTTP API
-      // This is a placeholder for the actual provisioning logic
-      
-      const gatewayPayload = {
-        type: 'provision_agent',
-        agentId,
-        userId: config.userId,
-        name: config.name,
-        model: config.model,
-        config: config.config,
-        timestamp: new Date().toISOString()
-      };
+  const gatewayPayload = {
+    type: 'provision_agent',
+    agentId,
+    userId: config.userId,
+    name: config.name,
+    model: config.model,
+    config: config.config,
+    timestamp: new Date().toISOString(),
+  };
 
-      // TODO: Call OpenClaw Gateway provisioning endpoint
-      // For now, simulate successful provisioning
-      
-      resolve({
-        gatewayId: `gw-${agentId}`,
-        token: generateAuthToken(),
-        status: 'provisioned'
-      });
+  try {
+    const response = await fetch(`${GATEWAY_HTTP_URL}/api/provision`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.INTERNAL_API_KEY ? { 'X-Internal-Key': process.env.INTERNAL_API_KEY } : {}),
+      },
+      body: JSON.stringify(gatewayPayload),
+      signal: AbortSignal.timeout(15000), // 15s timeout
+    });
 
-    } catch (error) {
-      reject(error);
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Gateway responded ${response.status}: ${errorBody}`);
     }
-  });
+
+    const data = await response.json() as { gatewayId?: string; token?: string; status?: string };
+
+    return {
+      gatewayId: data.gatewayId || `gw-${agentId}`,
+      token: data.token || generateAuthToken(),
+      status: data.status || 'provisioned',
+    };
+  } catch (error) {
+    // If gateway is unreachable (e.g. local dev), provision with a local token
+    // so the agent record is still created — gateway sync happens on next heartbeat
+    console.warn(`[Provision] Gateway unreachable, provisioning locally: ${error instanceof Error ? error.message : error}`);
+
+    return {
+      gatewayId: `local-${agentId}`,
+      token: generateAuthToken(),
+      status: 'pending_gateway_sync',
+    };
+  }
 }
 
 /**
