@@ -26,12 +26,48 @@ const PLAN_LIMITS: Record<string, { agents: number; stripeRequired: boolean }> =
 };
 
 // Simple in-memory Mux mock (in production, would use real Mux API)
-const generateMuxCredentials = () => ({
-  streamKey: `sk-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`,
-  liveStreamId: Math.random().toString(36).substring(2, 12),
-  rtmpServer: 'rtmps://live.mux.com/app',
-  playbackUrl: `https://image.mux.com/${Math.random().toString(36).substring(2, 12)}/playlist.m3u8`,
-});
+const generateMuxCredentials = async () => {
+  const MUX_TOKEN_ID = process.env.MUX_TOKEN_ID;
+  const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
+  
+  if (!MUX_TOKEN_ID || !MUX_TOKEN_SECRET) {
+    // Fallback to placeholder if Mux not configured
+    return {
+      streamKey: `sk-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`,
+      liveStreamId: Math.random().toString(36).substring(2, 12),
+      rtmpServer: 'rtmps://live.mux.com/app',
+      playbackUrl: `https://image.mux.com/${Math.random().toString(36).substring(2, 12)}/playlist.m3u8`,
+    };
+  }
+  
+  const auth = Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString('base64');
+  const response = await fetch('https://api.mux.com/video/v1/live-streams', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      playback_policy: ['public'],
+      new_asset_settings: { playback_policy: ['public'] },
+      metadata: { platform: 'agentbot' },
+    }),
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Mux API error: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  const stream = data.data;
+  
+  return {
+    streamKey: stream.stream_key,
+    liveStreamId: stream.id,
+    rtmpServer: 'rtmps://live.mux.com/app',
+    playbackUrl: `https://image.mux.com/${stream.playback_ids[0].id}/playlist.m3u8`,
+  };
+};
 
 /**
  * POST /api/provision

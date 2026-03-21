@@ -48,6 +48,10 @@ services:
         sync: false
       - key: BANKR_API_KEY
         sync: false
+      - key: MUX_TOKEN_ID
+        value: "69db8085-949e-4387-8e3e-cfa7d98d98f0"
+      - key: MUX_TOKEN_SECRET
+        value: "ITiEk7BVjPfZzEGa9Z3DkFV7z4pwffeTQ/OqmbK01gsrOeDcgRsQOBqd9dIWLkL3jbBlbM0Tkci"
       - key: INTERNAL_API_KEY
         generateValue: true
 
@@ -69,6 +73,10 @@ services:
         value: "https://agentbot-api.onrender.com"
       - key: BANKR_API_KEY
         sync: false
+      - key: MUX_TOKEN_ID
+        value: "69db8085-949e-4387-8e3e-cfa7d98d98f0"
+      - key: MUX_TOKEN_SECRET
+        value: "ITiEk7BVjPfZzEGa9Z3DkFV7z4pwffeTQ/OqmbK01gsrOeDcgRsQOBqd9dIWLkL3jbBlbM0Tkci"
 
   # Background Worker (BullMQ)
   - type: worker
