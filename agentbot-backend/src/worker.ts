@@ -1,7 +1,7 @@
 import { Worker, Queue, Job } from 'bullmq';
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 
-dotenv.config();
+config();
 
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
