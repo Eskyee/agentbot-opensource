@@ -7,7 +7,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Eskyee/agentbot-opensource)
 
-Deploy autonomous AI agents in 60 seconds.
+Deploy autonomous AI agents in 60 seconds. 🦞
 
 <img src="https://github.com/Eskyee/agentbot-opensource/raw/main/web/public/og-image.png" width="600" alt="Agentbot" />
 
