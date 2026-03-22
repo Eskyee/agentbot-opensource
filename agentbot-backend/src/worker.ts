@@ -13,42 +13,45 @@ export const taskQueue = new Queue('tasks', { connection });
 export const provisionQueue = new Queue('provision', { connection });
 
 // Task processor
+// TODO: These handlers are STUBS — they log and return success without doing real work.
+// Jobs queued here will silently "succeed" without executing any business logic.
+// Each case must be implemented before this worker is used in production.
 const taskWorker = new Worker(
   'tasks',
   async (job: Job) => {
-    console.log(`[Worker] Processing task: ${job.name}`, { jobId: job.id, data: job.data });
+    console.warn(`[Worker] STUB handler invoked for task: ${job.name} (jobId: ${job.id}) — no business logic implemented`);
 
     switch (job.name) {
       case 'scheduled-task':
-        console.log(`[Worker] Running scheduled task: ${job.data.taskId}`);
-        break;
+        // TODO: Implement scheduled task execution using job.data.taskId
+        console.warn(`[Worker] STUB: scheduled-task ${job.data.taskId} — not implemented`);
+        throw new Error(`scheduled-task handler not yet implemented (taskId: ${job.data.taskId})`);
       case 'skill-execution':
-        console.log(`[Worker] Executing skill: ${job.data.skillName}`);
-        break;
+        // TODO: Implement skill execution using job.data.skillName
+        console.warn(`[Worker] STUB: skill-execution ${job.data.skillName} — not implemented`);
+        throw new Error(`skill-execution handler not yet implemented (skill: ${job.data.skillName})`);
       default:
-        console.log(`[Worker] Unknown task type: ${job.name}`);
+        throw new Error(`Unknown task type: ${job.name}`);
     }
-
-    return { completed: true, timestamp: new Date().toISOString() };
   },
   { connection, concurrency: 5 }
 );
 
 // Provision processor
+// TODO: These handlers are STUBS — they log and return success without doing real work.
 const provisionWorker = new Worker(
   'provision',
   async (job: Job) => {
-    console.log(`[Worker] Processing provision: ${job.name}`, { jobId: job.id, data: job.data });
+    console.warn(`[Worker] STUB handler invoked for provision: ${job.name} (jobId: ${job.id}) — no business logic implemented`);
 
     switch (job.name) {
       case 'new-agent':
-        console.log(`[Worker] Provisioning new agent for user: ${job.data.userId}`);
-        break;
+        // TODO: Implement agent provisioning logic using job.data.userId
+        console.warn(`[Worker] STUB: new-agent for user ${job.data.userId} — not implemented`);
+        throw new Error(`new-agent handler not yet implemented (userId: ${job.data.userId})`);
       default:
-        console.log(`[Worker] Unknown provision type: ${job.name}`);
+        throw new Error(`Unknown provision type: ${job.name}`);
     }
-
-    return { completed: true, timestamp: new Date().toISOString() };
   },
   { connection, concurrency: 2 }
 );

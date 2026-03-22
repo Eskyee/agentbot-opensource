@@ -1,9 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 
 /**
- * Auth Middleware (simplified for backend)
- * Uses API key auth (matches existing pattern in index.ts)
- * For JWT auth, use the web app's NextAuth
+ * Auth Middleware (user-context extraction for internal routes)
+ *
+ * SECURITY MODEL: This middleware does NOT verify identity by itself.
+ * It reads user context from headers that are TRUSTED to be set by the Next.js
+ * frontend AFTER it has authenticated the user via NextAuth.
+ *
+ * The outer security boundary is the Bearer token check in index.ts, which
+ * prevents direct external access to the API.  Within that boundary, the
+ * frontend is responsible for setting correct x-user-* headers.
+ *
+ * RISK: If the INTERNAL_API_KEY is ever exposed to a browser/client, an
+ * attacker could forge these headers to impersonate any user or admin.
+ * Mitigation: rotate INTERNAL_API_KEY immediately if exposed; never embed
+ * it in client-side code.
  */
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
@@ -20,11 +31,12 @@ declare global {
 }
 
 /**
- * Auth middleware - matches existing API key pattern
- * Adds user context from headers (set by frontend)
+ * Extracts and attaches user context from trusted frontend headers.
+ * NOTE: This does NOT perform cryptographic verification — it relies on the
+ * outer Bearer-token middleware (index.ts authenticate) to gate API access.
  */
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
-  // Get user info from headers (set by authenticated frontend)
+  // Get user info from headers (set by authenticated frontend after NextAuth verification)
   const userEmail = req.headers['x-user-email'] as string;
   const userId = req.headers['x-user-id'] as string;
   const userRole = req.headers['x-user-role'] as string;

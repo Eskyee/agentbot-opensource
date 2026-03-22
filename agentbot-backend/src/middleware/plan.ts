@@ -46,7 +46,15 @@ declare global {
 
 /**
  * Middleware: Require valid plan
- * Checks Stripe subscription status and attaches plan to request
+ * Reads Stripe subscription status from trusted frontend headers.
+ *
+ * SECURITY NOTE: x-user-plan and x-stripe-subscription-id are trusted headers
+ * set by the Next.js frontend after verifying the user's Stripe subscription.
+ * These values are NOT cryptographically verified here — trust depends on the
+ * outer Bearer-token gate (index.ts) preventing direct external access.
+ *
+ * TODO: For stronger guarantees, validate stripeSubscriptionId directly against
+ * the Stripe API or a local DB cache rather than trusting the header value.
  */
 export function requirePlan(req: Request, res: Response, next: NextFunction) {
   const plan = req.headers['x-user-plan'] as PlanName;
@@ -61,7 +69,7 @@ export function requirePlan(req: Request, res: Response, next: NextFunction) {
     return next();
   }
 
-  // Must have a plan
+  // Must have a valid plan name
   if (!plan || !PLANS[plan]) {
     return res.status(402).json({
       success: false,
@@ -70,8 +78,8 @@ export function requirePlan(req: Request, res: Response, next: NextFunction) {
     });
   }
 
-  // Must have Stripe subscription
-  if (!stripeSubscriptionId) {
+  // Must have Stripe subscription — validate basic format (sub_xxx)
+  if (!stripeSubscriptionId || !/^sub_[a-zA-Z0-9]+$/.test(stripeSubscriptionId)) {
     return res.status(402).json({
       success: false,
       error: 'Active subscription required. Subscribe at /pricing',

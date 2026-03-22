@@ -113,9 +113,13 @@ function OnboardContent() {
   }
 
   const deploy = async () => {
+    if (!isPaid) {
+      window.location.href = `/api/stripe/checkout?plan=${plan}`
+      return
+    }
     setIsDeploying(true)
     setError('')
-    
+
     try {
       // Get user email from session
       let userEmail = ''
@@ -750,6 +754,12 @@ function OnboardContent() {
                     <dd>{plan === 'free' ? 'Sign up for plan' : plan}</dd>
                   </div>
                   <div className="flex justify-between">
+                    <dt className="text-zinc-400">Payment</dt>
+                    <dd className={isPaid ? 'text-green-400' : 'text-yellow-400'}>
+                      {isPaid ? '✓ Confirmed' : '⚠ Required before deploy'}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
                     <dt className="text-zinc-400">OpenClaw Version</dt>
                     <dd className="font-mono">{openclawVersion}</dd>
                   </div>
@@ -769,23 +779,32 @@ function OnboardContent() {
                 >
                   ← Back
                 </button>
-                <button
-                  onClick={deploy}
-                  disabled={isDeploying}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 sm:flex-1"
-                >
-                  {isDeploying ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Deploying...
-                    </span>
-                  ) : (
-                    '🚀 Deploy Now'
-                  )}
-                </button>
+                {!isPaid ? (
+                  <a
+                    href={`/api/stripe/checkout?plan=${plan}`}
+                    className="w-full block text-center bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors sm:flex-1"
+                  >
+                    💳 Pay to Deploy
+                  </a>
+                ) : (
+                  <button
+                    onClick={deploy}
+                    disabled={isDeploying}
+                    className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 sm:flex-1"
+                  >
+                    {isDeploying ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Deploying...
+                      </span>
+                    ) : (
+                      '🚀 Deploy Now'
+                    )}
+                  </button>
+                )}
               </div>
             </div>
           </div>

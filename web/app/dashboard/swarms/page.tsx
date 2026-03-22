@@ -1,70 +1,97 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Users, Plus, Bot } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import { AgentCard } from '@/app/components/shared/AgentCard'
+import { EmptyState } from '@/app/components/shared/EmptyState'
 
 export default function SwarmsPage() {
-  const [swarms, setSwarms] = useState([])
+  const [swarms, setSwarms] = useState<any[]>([])
   const [showCreate, setShowCreate] = useState(false)
 
   useEffect(() => {
     fetch('/api/swarms')
-      .then(r => r.json())
-      .then(d => setSwarms(d.swarms || []))
+      .then((r) => r.json())
+      .then((d) => setSwarms(d.swarms || []))
   }, [])
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Agent Swarms</h1>
-            <p className="text-zinc-400 mt-2">Deploy multiple agents that work together</p>
-          </div>
-          <button
+    <DashboardShell>
+      <DashboardHeader
+        title="Agent Swarms"
+        icon={<Users className="h-5 w-5 text-blue-400" />}
+        count={swarms.length}
+        action={
+          <Button
+            className="bg-white text-black hover:bg-zinc-200 text-xs font-bold uppercase tracking-widest"
             onClick={() => setShowCreate(true)}
-            className="bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-100 transition-colors"
           >
-            + Create Swarm
-          </button>
-        </div>
+            <Plus className="h-4 w-4 mr-1" /> Create Swarm
+          </Button>
+        }
+      />
 
-        <div className="grid grid-cols-1 gap-6">
-          {swarms.map((swarm: any) => (
-            <div key={swarm.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold">{swarm.name}</h3>
-                  <p className="text-sm text-zinc-400 mt-1">{swarm.description}</p>
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs bg-green-500/20 text-green-400">
-                  {swarm.agents.length} agents
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                {swarm.agents.map((agent: any, i: number) => (
-                  <div key={i} className="bg-zinc-800 rounded-lg p-4">
-                    <div className="text-sm font-medium mb-1">{agent.role}</div>
-                    <div className="text-xs text-zinc-400">{agent.model}</div>
-                    <div className="text-xs text-zinc-500 mt-2">{agent.prompt}</div>
+      <DashboardContent className="max-w-6xl">
+        {swarms.length === 0 ? (
+          <EmptyState
+            icon={<Users className="h-8 w-8 text-zinc-600" />}
+            title="No swarms created yet"
+            description="Deploy multiple agents that work together"
+            action={
+              <Button
+                variant="outline"
+                className="border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest"
+                onClick={() => setShowCreate(true)}
+              >
+                Create your first swarm →
+              </Button>
+            }
+          />
+        ) : (
+          <div className="space-y-6">
+            {swarms.map((swarm: any) => (
+              <AgentCard key={swarm.id}>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-lg font-bold">{swarm.name}</h3>
+                    <p className="text-sm text-zinc-400 mt-1">{swarm.description}</p>
                   </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {swarms.length === 0 && (
-          <div className="text-center py-12 bg-zinc-900 border border-zinc-800 rounded-xl">
-            <p className="text-zinc-400">No swarms created yet</p>
-            <button
-              onClick={() => setShowCreate(true)}
-              className="mt-4 text-white hover:underline"
-            >
-              Create your first swarm →
-            </button>
+                  <Badge
+                    variant="outline"
+                    className="border-green-500/30 text-green-400"
+                  >
+                    {swarm.agents.length} agents
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {swarm.agents.map((agent: any, i: number) => (
+                    <div
+                      key={i}
+                      className="bg-black/30 border border-zinc-800 rounded-lg p-4"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Bot className="h-4 w-4 text-zinc-500" />
+                        <span className="text-sm font-medium">{agent.role}</span>
+                      </div>
+                      <div className="text-xs text-zinc-400">{agent.model}</div>
+                      <div className="text-xs text-zinc-500 mt-2 font-mono">
+                        {agent.prompt}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </AgentCard>
+            ))}
           </div>
         )}
-      </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

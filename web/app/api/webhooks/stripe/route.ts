@@ -4,7 +4,13 @@ import { stripe } from '@/app/lib/stripe'
 import { PRICING_TIERS } from '@/app/lib/pricing'
 import { alertStripeFailure, sendAlert } from '@/app/lib/alerts'
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
+// Fail closed: guard at module load — mirrors the pattern in /api/stripe/webhook/route.ts
+// An empty string here would cause constructEvent() to accept any signature.
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+if (!webhookSecret) {
+  console.error('[SECURITY] STRIPE_WEBHOOK_SECRET not configured — Stripe webhooks will be rejected')
+}
 
 async function deployAgentService(tier: string, customerId: string, subscriptionId: string) {
   try {
@@ -42,6 +48,12 @@ export async function POST(request: Request) {
     const body = await request.text()
     const headersList = await headers()
     const sig = headersList.get('stripe-signature') || ''
+
+    // Reject immediately if the webhook secret is not configured
+    if (!webhookSecret) {
+      console.error('[SECURITY] Stripe webhook received but STRIPE_WEBHOOK_SECRET is not set')
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
+    }
 
     // Verify webhook signature
     let event

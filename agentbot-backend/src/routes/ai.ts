@@ -9,9 +9,15 @@ const router = Router();
  * Universal AI Provider Routes
  * Supports: OpenRouter (cloud)
  * Users can choose which provider/model they want
+ *
+ * Authentication policy:
+ *  - All routes that select, use, or reveal cost information require authenticate + requirePlan.
+ *  - /health is intentionally public (status page use-case).
+ *  - /models and /models/:provider are intentionally public (pricing/discovery use-case)
+ *    but return no sensitive data — just model names and capabilities.
  */
 
-// Health check - show which providers are available
+// Health check — intentionally public for status monitoring
 router.get('/health', async (_req: Request, res: Response) => {
   try {
     const providers = await AIProviderService.checkProviders();
@@ -27,7 +33,7 @@ router.get('/health', async (_req: Request, res: Response) => {
   }
 });
 
-// Get all available models from all providers
+// Model catalogue — intentionally public (used on pricing / discovery pages)
 router.get('/models', async (_req: Request, res: Response) => {
   try {
     const models = await AIProviderService.getAllModels();
@@ -43,7 +49,7 @@ router.get('/models', async (_req: Request, res: Response) => {
   }
 });
 
-// Get models from specific provider
+// Models by provider — intentionally public
 router.get('/models/:provider', async (req: Request, res: Response) => {
   const { provider } = req.params;
 
@@ -62,8 +68,8 @@ router.get('/models/:provider', async (req: Request, res: Response) => {
   }
 });
 
-// Smart model selection
-router.post('/models/select', async (req: Request, res: Response) => {
+// Smart model selection — requires auth (reveals platform routing strategy)
+router.post('/models/select', authenticate, requirePlan, async (req: Request, res: Response) => {
   const { taskType } = req.body as { taskType?: string };
 
   try {
@@ -126,8 +132,8 @@ router.post('/chat', authenticate, requirePlan, async (req: Request, res: Respon
   }
 });
 
-// Cost estimation
-router.post('/estimate-cost', async (req: Request, res: Response) => {
+// Cost estimation — requires auth (prevents free enumeration of pricing data)
+router.post('/estimate-cost', authenticate, requirePlan, async (req: Request, res: Response) => {
   const { model, inputTokens, outputTokens } = req.body as {
     model?: string;
     inputTokens?: number;

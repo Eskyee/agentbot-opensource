@@ -1,17 +1,21 @@
 /**
  * Shared utilities for agentbot-backend
- * 
+ *
  * Includes:
  * - Command execution with retry logic
- * - Shell argument escaping
+ * - Shell argument escaping (kept for callers that still need it)
  * - Container cleanup helpers
- * 
+ *
  * NOTE: This module provides utilities for the planned Docker/Caddy integration.
  * See plans/BACKEND_CONSOLIDATION_PLAN.md for implementation roadmap.
  * Used by: lib/health.ts, lib/port-manager.ts, services/caddy.ts
+ *
+ * MED-06 FIX: Replaced exec() (shell-based, injection-prone) with spawn()
+ * (arg-array, no shell). runCommand now takes (cmd, args[]) instead of a
+ * single shell string. All internal helpers updated accordingly.
  */
 
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 
 export interface RunCommandOptions {
   maxBuffer?: number;
@@ -21,10 +25,12 @@ export interface RunCommandOptions {
 }
 
 /**
- * Execute a shell command with optional retry logic
+ * Execute a command via spawn (no shell, no injection risk).
+ * Arguments are passed as an array — never interpolated into a shell string.
  */
 export const runCommand = (
-  command: string,
+  cmd: string,
+  args: string[] = [],
   options: RunCommandOptions = {}
 ): Promise<{ stdout: string; stderr: string }> => {
   const {
@@ -36,61 +42,114 @@ export const runCommand = (
 
   return new Promise((resolve, reject) => {
     const attempt = (attemptNumber: number) => {
-      exec(
-        command,
-        { maxBuffer, timeout },
-        (error, stdout, stderr) => {
-          if (error) {
-            if (attemptNumber < retries) {
-              console.log(`Command failed (attempt ${attemptNumber + 1}/${retries + 1}), retrying...`);
-              setTimeout(() => attempt(attemptNumber + 1), retryDelay);
-              return;
-            }
-            reject(new Error(stderr || error.message));
-            return;
+      const stdoutChunks: Buffer[] = [];
+      const stderrChunks: Buffer[] = [];
+      let stdoutBytes = 0;
+      let stderrBytes = 0;
+      let timedOut = false;
+
+      const child = spawn(cmd, args, { shell: false });
+
+      const timer = timeout
+        ? setTimeout(() => {
+            timedOut = true;
+            child.kill('SIGKILL');
+          }, timeout)
+        : null;
+
+      child.stdout.on('data', (chunk: Buffer) => {
+        stdoutBytes += chunk.length;
+        if (stdoutBytes <= maxBuffer) stdoutChunks.push(chunk);
+      });
+
+      child.stderr.on('data', (chunk: Buffer) => {
+        stderrBytes += chunk.length;
+        if (stderrBytes <= maxBuffer) stderrChunks.push(chunk);
+      });
+
+      child.on('close', (code) => {
+        if (timer) clearTimeout(timer);
+
+        const stdout = Buffer.concat(stdoutChunks).toString('utf8').trim();
+        const stderr = Buffer.concat(stderrChunks).toString('utf8').trim();
+
+        if (timedOut) {
+          const err = new Error(`Command timed out after ${timeout}ms: ${cmd} ${args.join(' ')}`);
+          if (attemptNumber < retries) {
+            console.log(`Command timed out (attempt ${attemptNumber + 1}/${retries + 1}), retrying...`);
+            setTimeout(() => attempt(attemptNumber + 1), retryDelay);
+          } else {
+            reject(err);
           }
-          resolve({ stdout: stdout.trim(), stderr: stderr.trim() });
+          return;
         }
-      );
+
+        if (code !== 0) {
+          const err = new Error(stderr || `Command exited with code ${code}: ${cmd} ${args.join(' ')}`);
+          if (attemptNumber < retries) {
+            console.log(`Command failed (attempt ${attemptNumber + 1}/${retries + 1}), retrying...`);
+            setTimeout(() => attempt(attemptNumber + 1), retryDelay);
+          } else {
+            reject(err);
+          }
+          return;
+        }
+
+        resolve({ stdout, stderr });
+      });
+
+      child.on('error', (err) => {
+        if (timer) clearTimeout(timer);
+        if (attemptNumber < retries) {
+          console.log(`Command error (attempt ${attemptNumber + 1}/${retries + 1}), retrying...`);
+          setTimeout(() => attempt(attemptNumber + 1), retryDelay);
+        } else {
+          reject(err);
+        }
+      });
     };
+
     attempt(0);
   });
 };
 
 /**
- * Escape a value for safe use in shell commands
+ * Escape a value for safe use in shell commands.
+ * Kept for any callers that build shell strings externally, but prefer
+ * passing args as arrays to runCommand() to avoid the shell entirely.
  */
 export const escapeShellArg = (value: string): string =>
   `'${value.replace(/'/g, `'\\''`)}'`;
 
 /**
- * Clean up a container and optionally its volume
+ * Clean up a container and optionally its volume.
+ * Uses spawn arg-array — no shell injection possible.
  */
 export const cleanupContainer = async (
   containerName: string,
   volumeName?: string
 ): Promise<void> => {
   try {
-    await runCommand(`docker rm -f ${escapeShellArg(containerName)}`);
+    await runCommand('docker', ['rm', '-f', containerName]);
   } catch {
-    // Container might not exist
+    // Container might not exist — ignore
   }
 
   if (volumeName) {
     try {
-      await runCommand(`docker volume rm ${escapeShellArg(volumeName)}`);
+      await runCommand('docker', ['volume', 'rm', volumeName]);
     } catch {
-      // Volume might not exist or be in use
+      // Volume might not exist or may be in use — ignore
     }
   }
 };
 
 /**
- * Check if a container exists
+ * Check if a container exists.
  */
 export const containerExists = async (containerName: string): Promise<boolean> => {
   try {
-    await runCommand(`docker inspect ${escapeShellArg(containerName)}`);
+    await runCommand('docker', ['inspect', containerName]);
     return true;
   } catch {
     return false;
@@ -98,15 +157,18 @@ export const containerExists = async (containerName: string): Promise<boolean> =
 };
 
 /**
- * Get container status
+ * Get container status.
  */
 export const getContainerStatus = async (
   containerName: string
 ): Promise<{ status: string; startedAt?: string } | null> => {
   try {
-    const { stdout } = await runCommand(
-      `docker inspect ${escapeShellArg(containerName)} --format '{{.State.Status}}|{{.State.StartedAt}}'`
-    );
+    const { stdout } = await runCommand('docker', [
+      'inspect',
+      containerName,
+      '--format',
+      '{{.State.Status}}|{{.State.StartedAt}}',
+    ]);
     const [rawStatus, startedAt] = stdout.split('|');
     let status = rawStatus;
     if (rawStatus === 'running') {

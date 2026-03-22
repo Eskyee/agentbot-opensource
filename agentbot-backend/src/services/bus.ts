@@ -71,7 +71,19 @@ export class AgentBusService {
 
   /**
    * Validates a webhook URL to prevent SSRF attacks.
-   * Only allows HTTPS to public hostnames.
+   * Only allows HTTPS to public, routable hostnames.
+   *
+   * LOW-04 FIX: extended blocklist to cover:
+   *  - 0.0.0.0 (wildcard bind address)
+   *  - 100.64–127.x (IANA shared / carrier-grade NAT space)
+   *  - Full IPv6 unique-local /7 range (fc00:: – fdff::, not just fc00::)
+   *  - IPv6-mapped IPv4 (::ffff:...) which can bypass simple IPv4 checks
+   *  - IPv4-in-IPv6 compatible addresses (::x.x.x.x)
+   *  - Zone IDs in IPv6 addresses (fe80::1%eth0 → hostname contains %)
+   *
+   * DNS rebinding (attacker controls DNS to return a private IP after the
+   * check passes) cannot be prevented here. Mitigate with network-level
+   * egress filtering on the host.
    */
   private static validateWebhookUrl(url: string): void {
     let parsed: URL;
@@ -85,19 +97,45 @@ export class AgentBusService {
       throw new Error(`Webhook URL must use HTTPS: ${url}`);
     }
 
-    const hostname = parsed.hostname.toLowerCase();
-    // Block private / loopback / link-local ranges
-    const blocked = [
+    // NOTE: In Node.js 18+, URL.hostname preserves IPv6 brackets (e.g. [::1] stays as [::1]).
+    // We strip them before regex matching so patterns work correctly.
+    const rawHostname = parsed.hostname.toLowerCase();
+    const hostname    = rawHostname.replace(/^\[|\]$/g, '');
+
+    // Reject any hostname containing a zone ID (e.g. fe80::1%eth0 → fe80::1%25eth0)
+    // URL() percent-encodes the '%' as '%25', so we check after stripping brackets.
+    if (hostname.includes('%')) {
+      throw new Error(`Webhook URL contains an IPv6 zone ID (disallowed): ${url}`);
+    }
+
+    const blocked: RegExp[] = [
+      // IPv4 loopback
       /^localhost$/,
       /^127\./,
+      // IPv4 wildcard
+      /^0\.0\.0\.0$/,
+      // RFC 1918 private
       /^10\./,
       /^172\.(1[6-9]|2\d|3[01])\./,
       /^192\.168\./,
+      // IPv4 link-local (also covers AWS/GCP metadata 169.254.169.254)
       /^169\.254\./,
+      // IANA shared address space / carrier-grade NAT (RFC 6598): 100.64.0.0/10
+      /^100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./,
+      // IPv6 loopback
       /^::1$/,
-      /^fc00:/,
-      /^fe80:/,
+      // IPv6 unique local (fc00::/7 covers fc00:: – fdff::)
+      /^f[cd][0-9a-f]{0,2}:/i,
+      // IPv6 link-local
+      /^fe[89ab][0-9a-f]:/i, // fe80:: – febf::
+      // IPv6-mapped IPv4 (::ffff:...) and IPv4-compatible (::x.x.x.x).
+      // Node.js URL normalises dotted-decimal to hex (e.g. ::ffff:192.168.1.1
+      // becomes ::ffff:c0a8:101), so we match the ::ffff: prefix and also catch
+      // all other :: addresses (loopback, IPv4-compatible etc.) via /^::/.
+      /^::ffff:/i,
+      /^::/,   // catches ::1, ::7f00:1 (::127.0.0.1 in hex), ::a00:1 (::10.0.0.1), etc.
     ];
+
     if (blocked.some((re) => re.test(hostname))) {
       throw new Error(`Webhook URL targets a private/internal address: ${url}`);
     }

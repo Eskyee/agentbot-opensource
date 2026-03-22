@@ -29,8 +29,13 @@ export class AmplificationService {
    * Delivers in parallel batches of 20 to avoid overwhelming the host.
    */
   static async broadcastCampaign(campaignId: number, userId: number): Promise<void> {
-    const campaign = await pool.query('SELECT * FROM social_campaigns WHERE id = $1', [campaignId]);
-    if (campaign.rows.length === 0) throw new Error('Campaign not found');
+    // SECURITY: Verify the campaign belongs to the calling user before broadcasting.
+    // Without this check any authenticated user could broadcast another user's campaign.
+    const campaign = await pool.query(
+      'SELECT * FROM social_campaigns WHERE id = $1 AND user_id = $2',
+      [campaignId, userId]
+    );
+    if (campaign.rows.length === 0) throw new Error('Campaign not found or not owned by caller');
 
     // Fetch all active "Amplifier" agents on the platform
     const partners = await pool.query(

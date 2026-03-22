@@ -6,11 +6,12 @@ import { parseUnits } from 'viem';
 
 dotenv.config();
 
-if (!process.env.WALLET_ENCRYPTION_KEY && process.env.NODE_ENV === 'production') {
-  console.error('FATAL: WALLET_ENCRYPTION_KEY must be set in production. Refusing to start.');
+// Refuse to start without encryption key in ALL environments — wallet data is always sensitive
+if (!process.env.WALLET_ENCRYPTION_KEY) {
+  console.error('FATAL: WALLET_ENCRYPTION_KEY environment variable must be set. Generate with: openssl rand -hex 32');
   process.exit(1);
 }
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || 'dev-insecure-key-change-before-prod';
+const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY;
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });

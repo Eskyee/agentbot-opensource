@@ -224,7 +224,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Helper: Provision agent on OpenClaw Gateway
+ * Helper: Provision agent on OpenClaw backend via /api/deployments
  */
 async function provisionAgentOnGateway(
   agentId: string,
@@ -236,6 +236,7 @@ async function provisionAgentOnGateway(
   }
 ): Promise<{ gatewayId: string; token: string; status: string }> {
   const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://openclaw-gateway-lqma:10000';
+  const apiSecret = (process.env.BACKEND_API_SECRET || process.env.INTERNAL_API_KEY)?.trim();
 
   const gatewayPayload = {
     type: 'provision_agent',
@@ -243,7 +244,14 @@ async function provisionAgentOnGateway(
     userId: config.userId,
     name: config.name,
     model: config.model,
-    config: config.config,
+    config: {
+      ...config.config,
+      telegramToken: config.config.telegramToken,
+      aiProvider: config.model === 'claude-opus-4-6' ? 'anthropic' : (config.config.aiProvider || 'openrouter'),
+      apiKey: config.config.apiKey,
+      plan: config.config.tier || 'label',
+      ownerIds: config.config.ownerIds,
+    },
     timestamp: new Date().toISOString(),
   };
 
@@ -252,10 +260,10 @@ async function provisionAgentOnGateway(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(process.env.INTERNAL_API_KEY ? { 'X-Internal-Key': process.env.INTERNAL_API_KEY } : {}),
+        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
       },
       body: JSON.stringify(gatewayPayload),
-      signal: AbortSignal.timeout(15000), // 15s timeout
+      signal: AbortSignal.timeout(15000),
     });
 
     if (!response.ok) {
@@ -263,10 +271,10 @@ async function provisionAgentOnGateway(
       throw new Error(`Gateway responded ${response.status}: ${errorBody}`);
     }
 
-    const data = await response.json() as { gatewayId?: string; token?: string; status?: string };
+    const data = await response.json() as { gatewayId?: string; id?: string; token?: string; status?: string };
 
     return {
-      gatewayId: data.gatewayId || `gw-${agentId}`,
+      gatewayId: data.gatewayId || data.id || `gw-${agentId}`,
       token: data.token || generateAuthToken(),
       status: data.status || 'provisioned',
     };

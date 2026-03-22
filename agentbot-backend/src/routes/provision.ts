@@ -1,5 +1,9 @@
 import { Router, Request, Response } from 'express';
+import { randomBytes } from 'crypto';
 import { authenticate } from '../middleware/auth';
+import { createContainer, getContainerStatus } from '../lib/container-manager';
+import type { PlanType } from '../lib/container-manager';
+import { Pool } from 'pg';
 
 /**
  * BASEFM Provision Endpoint
@@ -17,13 +21,30 @@ const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim
 const TESTER_EMAILS = (process.env.TESTER_EMAILS || '').split(',').filter(Boolean);
 const KILL_SWITCH = process.env.KILL_SWITCH === 'true';
 
-// Plan limits — NO FREE TIER
+// Plan limits — matches pricing page (Solo £29, Collective £69, Label £149, Network £499)
 const PLAN_LIMITS: Record<string, { agents: number; stripeRequired: boolean }> = {
-  label: { agents: 1, stripeRequired: true },
-  solo: { agents: 3, stripeRequired: true },
-  collective: { agents: 10, stripeRequired: true },
-  network: { agents: 100, stripeRequired: true },
+  solo: { agents: 1, stripeRequired: true },
+  collective: { agents: 3, stripeRequired: true },
+  label: { agents: 10, stripeRequired: true },
+  network: { agents: 999999, stripeRequired: true }, // unlimited
 };
+
+// DB-backed agent count — survives restarts and horizontal scaling
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+/** Returns the number of active agents for this email+plan combination from the DB. */
+async function getAgentCount(email: string, plan: string): Promise<number> {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT(*) AS cnt FROM agent_registrations
+       WHERE user_id = $1 AND status = 'active'`,
+      [email]
+    );
+    return parseInt(result.rows[0]?.cnt ?? '0', 10);
+  } catch {
+    return 0; // fail open — let provisioning proceed if DB is unreachable
+  }
+}
 
 // Simple in-memory Mux mock (in production, would use real Mux API)
 const generateMuxCredentials = async () => {
@@ -148,8 +169,22 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       });
     }
 
-    // Generate unique IDs
-    const userId = Math.random().toString(36).substring(2, 12);
+    // Enforce agent limits per plan — backed by DB so restarts don't reset counts
+    if (email) {
+      const currentCount = await getAgentCount(email, plan);
+      if (currentCount >= planConfig.agents) {
+        return res.status(402).json({
+          success: false,
+          error: `Agent limit reached. Your ${plan} plan allows ${planConfig.agents} agent${planConfig.agents > 1 ? 's' : ''}. Upgrade to add more.`,
+          code: 'AGENT_LIMIT_REACHED',
+          current: currentCount,
+          limit: planConfig.agents,
+        });
+      }
+    }
+
+    // Generate cryptographically secure unique IDs (Math.random is NOT secure)
+    const userId = randomBytes(6).toString('hex');
     const muxCreds = await generateMuxCredentials();
     const subdomain = `dj-${userId}.agentbot.raveculture.xyz`;
 
@@ -198,6 +233,26 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
         },
       },
     };
+
+    // Create Docker container for the agent
+    let containerInfo = null;
+    try {
+      containerInfo = await createContainer(userId, plan as PlanType);
+      console.log(`[Provision] Container created: ${JSON.stringify(containerInfo)}`);
+    } catch (containerError: any) {
+      console.error(`[Provision] Container creation failed: ${containerError.message}`);
+      // Don't fail provisioning — agent can still use API-side processing
+    }
+
+    // Add container info to response
+    if (containerInfo) {
+      (response as any).container = {
+        name: containerInfo.container,
+        status: containerInfo.status,
+        port: containerInfo.port,
+        gatewayUrl: `http://127.0.0.1:${containerInfo.port}`,
+      };
+    }
 
     res.status(200).json(response);
   } catch (error: unknown) {
