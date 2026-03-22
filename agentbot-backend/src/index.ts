@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import { initDatabase } from './services/db-init';
 import inviteRouter from './invite';
 import undergroundRouter from './underground';
 import missionControlRouter from './mission-control';
@@ -6,21 +7,32 @@ import aiRouter from './routes/ai';
 import renderMcpRouter from './routes/render-mcp';
 import metricsRouter from './routes/metrics';
 import provisionRouter from './routes/provision';
+import registrationRouter from './routes/registration';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { timingSafeEqual, randomBytes } from 'crypto';
+import rateLimit from 'express-rate-limit';
+import { Pool } from 'pg';
 
 dotenv.config();
+
+// Shared DB pool for metrics time-series storage
+const metricsPool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Deployment version: track app changes for cache busting
 const DEPLOYMENT_VERSION = '2026.03.14.002';
 
+// Plan resources — matches pricing tiers (Solo £29, Collective £69, Label £149, Network £499)
 const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
-  underground: { memory: '2g', cpus: '1' },
+  solo: { memory: '2g', cpus: '1' },
   collective: { memory: '4g', cpus: '2' },
   label: { memory: '8g', cpus: '4' },
+  network: { memory: '16g', cpus: '4' },
+  // Legacy aliases
+  underground: { memory: '2g', cpus: '1' },
   starter: { memory: '2g', cpus: '1' },
   pro: { memory: '4g', cpus: '2' },
   scale: { memory: '8g', cpus: '4' },
@@ -33,10 +45,61 @@ const getPlanResources = (plan: string) => {
 };
 
 const app = express();
+app.disable('x-powered-by');
+
+// Security: strip IIS/Express bypass headers
+app.use((req, res, next) => {
+  delete req.headers['x-original-url'];
+  delete req.headers['x-rewrite-url'];
+  delete req.headers['x-forwarded-host'];
+  next();
+});
+
+app.use(express.json({ limit: '1mb' }));
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.raveculture.xyz,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',');
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, mobile apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
+// Rate limiting — applied globally, with tighter limits on expensive endpoints
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,       // 1 minute window
+  max: 120,                   // 120 req/min per IP on general routes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please slow down.' },
+});
+const deployLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,                     // 5 deploys/min per IP — prevents container spam
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Deployment rate limit exceeded.' },
+});
+const aiChatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,                    // 30 AI chat req/min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'AI rate limit exceeded.' },
+});
+app.use('/api/', generalLimiter);
+
 const PORT = process.env.PORT || 3001;
 
-// API key - use env var or fallback (Render will set it via generateValue)
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only'
+// API key — refuse to start in production without it
+if (!process.env.INTERNAL_API_KEY && process.env.NODE_ENV === 'production') {
+  console.error('FATAL: INTERNAL_API_KEY must be set in production. Refusing to start.');
+  process.exit(1);
+}
+const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only';
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
@@ -47,8 +110,6 @@ const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
 const OPENCLAW_RUNTIME_VERSION = '2026.3.13'
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-
-dotenv.config();
 
 type AgentMetadata = {
   agentId: string;
@@ -412,80 +473,231 @@ const createOpenClawConfig = (
   telegramToken: string,
   aiProvider: string,
   ownerIds?: string[],
+  discordToken?: string,
+  whatsappEnabled?: boolean,
+  userTimezone?: string,
+  plan?: string,
 ): Record<string, unknown> => {
   let model = DEFAULT_MODEL;
+  let fallbacks = ['openai/gpt-4o-mini'];
   const provider = aiProvider || 'openrouter';
 
   if (provider === 'gemini' || provider === 'google') {
     model = 'google/gemini-2.0-flash';
+    fallbacks = ['openrouter/anthropic/claude-sonnet-4-5'];
   } else if (provider === 'groq') {
     model = 'groq/gemma2-9b-it';
+    fallbacks = ['openai/gpt-4o-mini'];
   } else if (provider === 'anthropic') {
     model = 'anthropic/claude-sonnet-4-5';
+    fallbacks = ['openai/gpt-4o'];
   } else if (provider === 'openai') {
     model = 'openai/gpt-4o';
+    fallbacks = ['openai/gpt-4o-mini'];
   } else if (provider === 'openrouter') {
     model = 'moonshotai/kimi-k2.5';
+    fallbacks = ['openrouter/openai/gpt-4o-mini'];
   } else {
     throw new Error(`Unsupported aiProvider: ${provider}`);
   }
 
-  const config: Record<string, unknown> = {
-    // Note: Secrets are now passed via Docker environment variables at runtime
-    agents: {
-      defaults: {
-        model: { primary: model },
-      },
-    },
-    channels: {
-      telegram: {
-        enabled: true,
-        botToken: telegramToken,
-        dmPolicy: 'pairing',
-        allowFrom: [],
-      },
-    },
-    gateway: {
-      mode: 'local',
-      port: 18789,
-    },
-    plugins: {
-      entries: {
-        telegram: {
-          enabled: true,
-        },
-      },
+  // Generate unique gateway auth token per agent
+  const gatewayToken = randomBytes(24).toString('hex');
+
+  // Tool profile per plan — solo gets messaging, others get coding
+  const toolProfile = (plan === 'solo') ? 'messaging' : 'coding';
+
+  const channels: Record<string, unknown> = {
+    defaults: {
+      groupPolicy: 'allowlist',
+      heartbeat: { showOk: false, showAlerts: true, useIndicator: true },
     },
   };
 
-  if (ownerIds && ownerIds.length > 0) {
-    (config.channels as { telegram: Record<string, unknown> }).telegram.allowFrom = ownerIds;
-    (config.channels as { telegram: Record<string, unknown> }).telegram.dmPolicy = 'allowlist';
+  // Telegram channel
+  if (telegramToken) {
+    channels.telegram = {
+      enabled: true,
+      botToken: telegramToken,
+      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
+      allowFrom: ownerIds || [],
+      groups: { '*': { requireMention: true } },
+      historyLimit: 50,
+      replyToMode: 'first',
+      streaming: 'partial',
+      retry: { attempts: 3, minDelayMs: 400, maxDelayMs: 30000, jitter: 0.1 },
+    };
+  }
+
+  // Discord channel
+  if (discordToken) {
+    channels.discord = {
+      enabled: true,
+      token: discordToken,
+      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
+      allowFrom: ownerIds || [],
+      dm: { enabled: true, groupEnabled: false },
+      guilds: {},
+      historyLimit: 20,
+      streaming: 'partial',
+      retry: { attempts: 3, minDelayMs: 500, maxDelayMs: 30000, jitter: 0.1 },
+    };
+  }
+
+  // WhatsApp channel
+  if (whatsappEnabled) {
+    channels.whatsapp = {
+      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
+      allowFrom: ownerIds || [],
+      groups: { '*': { requireMention: true } },
+      sendReadReceipts: true,
+    };
+  }
+
+  const config: Record<string, unknown> = {
+    agents: {
+      defaults: {
+        workspace: '~/.openclaw/workspace',
+        model: { primary: model, fallbacks },
+        imageMaxDimensionPx: 1200,
+        userTimezone: userTimezone || 'Europe/London',
+        timeFormat: '24h',
+        groupChat: {
+          mentionPatterns: ['@agent', 'agent'],
+        },
+        compaction: {
+          maxMessages: 200,
+          keepLastN: 20,
+        },
+        heartbeat: {
+          every: '30m',
+        },
+        skipBootstrap: false,
+        bootstrapMaxChars: 4000,
+      },
+    },
+    channels,
+    gateway: {
+      mode: 'local',
+      port: 18789,
+      bind: 'lan', // Required for Docker — listen on all interfaces, not just loopback
+      auth: {
+        mode: 'token',
+        token: gatewayToken,
+        allowTailscale: true,
+        rateLimit: {
+          maxAttempts: 10,
+          windowMs: 60000,
+          lockoutMs: 300000,
+          exemptLoopback: true,
+        },
+      },
+      channelHealthCheckMinutes: 5,
+      channelStaleEventThresholdMinutes: 30,
+      channelMaxRestartsPerHour: 10,
+      controlUi: {
+        enabled: true,
+      },
+    },
+    tools: {
+      profile: toolProfile,
+      deny: ['browser', 'canvas'], // No browser/canvas in containers
+      exec: {
+        allowedCommands: [
+          'ls', 'cat', 'grep', 'find', 'curl', 'wget', 'git', 'npm', 'node',
+          'python3', 'pip', 'mkdir', 'cp', 'mv', 'rm', 'echo', 'date', 'whoami',
+          'chmod', 'chown', 'touch', 'head', 'tail', 'wc', 'sort', 'uniq',
+          'awk', 'sed', 'tar', 'zip', 'unzip', 'docker', 'ps', 'df', 'du',
+        ],
+        allowedPaths: [
+          '~/.openclaw/workspace',
+          '/tmp',
+          '/home/node',
+        ],
+        denyPaths: [
+          '/etc/shadow',
+          '/etc/passwd',
+          '/proc',
+          '/sys',
+        ],
+      },
+      web: {
+        maxChars: 50000,
+      },
+      loopDetection: {
+        maxIterations: 20,
+        windowMinutes: 5,
+      },
+    },
+    session: {
+      maxTokens: 100000,
+      compaction: {
+        strategy: 'auto',
+        triggerAtPercent: 80,
+      },
+    },
+    plugins: {
+      entries: {},
+    },
+  };
+
+  // Enable plugins based on channels
+  if (telegramToken) {
+    (config.plugins as { entries: Record<string, unknown> }).entries.telegram = { enabled: true };
+  }
+  if (discordToken) {
+    (config.plugins as { entries: Record<string, unknown> }).entries.discord = { enabled: true };
   }
 
   return config;
 };
 
-// Auth middleware
+// Auth middleware — timing-safe to prevent key-enumeration attacks
 const authenticate = (req: Request, res: Response, next: any) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const token = auth.substring(7);
-  if (token !== API_KEY) {
+  const tokenBuf = Buffer.from(token);
+  const keyBuf = Buffer.from(API_KEY);
+  if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
 };
+
+// Mount sub-routers
+app.use('/api/invite', inviteRouter);
+app.use('/api/underground', undergroundRouter);
+app.use('/api/mission-control', missionControlRouter);
+app.use('/api/ai', authenticate, aiChatLimiter, aiRouter);
+app.use('/api/render-mcp', authenticate, renderMcpRouter);
+app.use('/api/provision', authenticate, provisionRouter);
+app.use('/api/metrics', authenticate, metricsRouter);
+app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
 
 // Health check
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Install script endpoints
+app.get('/install', (req: Request, res: Response) => {
+  res.type('text/plain');
+  res.sendFile('install.sh', { root: path.join(__dirname, '../public') });
+});
+
+app.get('/link', (req: Request, res: Response) => {
+  res.type('text/plain');
+  res.sendFile('link.sh', { root: path.join(__dirname, '../public') });
+});
+
 // Metrics endpoints for dashboard
-app.get('/api/metrics/:userId/historical', async (req: Request, res: Response) => {
+app.get('/api/metrics/:userId/historical', authenticate, async (req: Request, res: Response) => {
+  // SECURITY: Only allow callers to query their own container metrics
+  // (The authenticate middleware here is the Bearer-token version in index.ts,
+  //  so userId in params is from the path; ensure it matches the requested container)
   const { userId } = req.params;
   const timeRange = req.query.range as string || '24h';
 
@@ -505,7 +717,7 @@ app.get('/api/metrics/:userId/historical', async (req: Request, res: Response) =
   }
 });
 
-app.get('/api/metrics/:userId/performance', async (req: Request, res: Response) => {
+app.get('/api/metrics/:userId/performance', authenticate, async (req: Request, res: Response) => {
   const { userId } = req.params;
 
   try {
@@ -517,52 +729,96 @@ app.get('/api/metrics/:userId/performance', async (req: Request, res: Response) 
   }
 });
 
-// Helper functions for metrics
-async function generateRealMetrics(userId: string, timeRange: string) {
-  const now = new Date();
-  const metrics: any[] = [];
-  const hours = timeRange === '24h' ? 24 : timeRange === '7d' ? 168 : 720;
-
+/**
+ * Records a real Docker stats sample for a user's container into the DB.
+ * Called on every metrics request so the DB accumulates a true time-series.
+ */
+async function recordMetricSample(userId: string): Promise<{ cpu: number; mem: number } | null> {
+  const containerName = getContainerName(userId);
   try {
-    const containerName = getContainerName(userId);
-    const { stdout: statsOutput } = await runCommand('docker', [
-      'stats',
-      containerName,
+    const { stdout } = await runCommand('docker', [
+      'stats', containerName,
       '--format', '{{.CPUPerc}}|{{.MemUsage}}',
-      '--no-stream'
+      '--no-stream',
     ]);
+    const parts = stdout.trim().split('|');
+    if (parts.length < 2) return null;
 
-    const stats = statsOutput.trim().split('|');
-    if (stats.length >= 2) {
-      const cpuPercent = parseFloat(stats[0].replace('%', '')) || 0;
-      const memUsage = stats[1];
-      
-      let memPercent = 0;
-      const memMatch = memUsage.match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
-      if (memMatch) {
-        const used = parseFloat(memMatch[1]) * (memMatch[2] === 'GiB' || memMatch[2] === 'GB' ? 1024 : 1);
-        const total = parseFloat(memMatch[3]) * (memMatch[4] === 'GiB' || memMatch[4] === 'GB' ? 1024 : 1);
-        memPercent = (used / total) * 100;
-      }
-
-      for (let i = 0; i < 24; i++) {
-        const timestamp = new Date(now.getTime() - (i * 3600000)).toISOString();
-        const variance = Math.random() * 0.2 - 0.1;
-        
-        metrics.push({
-          timestamp,
-          cpu: Math.min(100, Math.max(0, cpuPercent * (1 + variance))),
-          memory: Math.min(100, Math.max(0, memPercent * (1 + variance))),
-          messages: Math.floor(Math.random() * 100),
-          errors: Math.floor(Math.random() * 10),
-        });
-      }
+    const cpu = parseFloat(parts[0].replace('%', '')) || 0;
+    let mem = 0;
+    const memMatch = parts[1].match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
+    if (memMatch) {
+      const used = parseFloat(memMatch[1]) * (memMatch[2].startsWith('G') ? 1024 : 1);
+      const total = parseFloat(memMatch[3]) * (memMatch[4].startsWith('G') ? 1024 : 1);
+      mem = total > 0 ? (used / total) * 100 : 0;
     }
-  } catch (error) {
-    console.error(`Failed to get metrics for ${userId}:`, error);
+
+    // Persist to DB (fire-and-forget — never block the response)
+    if (process.env.DATABASE_URL) {
+      metricsPool.query(
+        `INSERT INTO container_metrics (user_id, container_name, cpu_percent, mem_percent, sampled_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
+        [userId, containerName, cpu, mem]
+      ).catch((err: Error) => console.error('[Metrics] Failed to write sample:', err.message));
+    }
+
+    return { cpu, mem };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Returns real stored time-series samples from the DB.
+ * Falls back to a single live sample if no history exists yet.
+ */
+async function generateRealMetrics(userId: string, timeRange: string) {
+  const hours = timeRange === '7d' ? 168 : timeRange === '30d' ? 720 : 24;
+
+  // Always record a fresh sample so the DB grows over time
+  await recordMetricSample(userId);
+
+  // Query actual stored samples
+  if (process.env.DATABASE_URL) {
+    try {
+      const result = await metricsPool.query(
+        `SELECT
+           date_trunc('hour', sampled_at) AS timestamp,
+           AVG(cpu_percent)::numeric(5,2) AS cpu,
+           AVG(mem_percent)::numeric(5,2) AS memory,
+           SUM(message_count) AS messages,
+           SUM(error_count) AS errors
+         FROM container_metrics
+         WHERE user_id = $1
+           AND sampled_at >= NOW() - ($2 || ' hours')::interval
+         GROUP BY date_trunc('hour', sampled_at)
+         ORDER BY timestamp ASC`,
+        [userId, hours]
+      );
+      if (result.rows.length > 0) {
+        return result.rows.map((r: any) => ({
+          timestamp: r.timestamp,
+          cpu: parseFloat(r.cpu) || 0,
+          memory: parseFloat(r.memory) || 0,
+          messages: parseInt(r.messages) || 0,
+          errors: parseInt(r.errors) || 0,
+        }));
+      }
+    } catch (err: any) {
+      console.error('[Metrics] DB query failed, falling back to live sample:', err.message);
+    }
   }
 
-  return metrics.reverse();
+  // Fallback: single live sample with no synthetic variance
+  const live = await recordMetricSample(userId);
+  if (!live) return [];
+  return [{
+    timestamp: new Date().toISOString(),
+    cpu: live.cpu,
+    memory: live.mem,
+    messages: 0,
+    errors: 0,
+  }];
 }
 
 function calculateAverages(metrics: any[]) {
@@ -608,9 +864,9 @@ async function getPerformanceData(userId: string) {
       }
     }
 
-    performanceData.responseTime = performanceData.cpu > 80 ? 5000 + Math.random() * 1000 :
-                                    performanceData.cpu > 60 ? 2000 + Math.random() * 500 :
-                                    100 + Math.random() * 200;
+    // responseTime is not measurable from Docker stats alone; omit synthetic estimation.
+    // TODO: instrument real latency via /metrics endpoint on the container itself.
+    performanceData.responseTime = 0;
 
     return performanceData;
   } catch (error) {
@@ -624,7 +880,8 @@ async function getPerformanceData(userId: string) {
   }
 }
 
-app.get('/api/openclaw/version', (_req: Request, res: Response) => {
+// SECURITY: Version/image info is internal — require auth to prevent fingerprinting
+app.get('/api/openclaw/version', authenticate, (_req: Request, res: Response) => {
   res.json({
     openclawVersion: OPENCLAW_RUNTIME_VERSION,
     image: OPENCLAW_IMAGE,
@@ -753,13 +1010,47 @@ app.get('/api/agents', authenticate, (req: Request, res: Response) => {
     });
 });
 
-app.post('/api/agents', authenticate, (req: Request, res: Response) => {
-  const { name, config } = req.body;
-  if (!name) {
-    return res.status(400).json({ error: 'Name required' });
+app.post('/api/agents', authenticate, async (req: Request, res: Response) => {
+  const { name, config } = req.body as { name?: string; config?: Record<string, unknown> };
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    res.status(400).json({ error: 'Name required' });
+    return;
   }
-  // TODO: Create agent in database and deploy
-  res.status(201).json({ id: 'new-agent-id', name, status: 'deploying' });
+
+  try {
+    await ensureDataDirs();
+
+    // Generate a URL-safe agent ID from the name + random suffix
+    const safeBase = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').substring(0, 20);
+    const suffix = randomBytes(4).toString('hex');
+    const agentId = `${safeBase}-${suffix}`;
+    const containerName = getContainerName(agentId);
+    const subdomain = `${agentId}.${AGENTS_DOMAIN}`;
+
+    const metadata: AgentMetadata = {
+      agentId,
+      createdAt: new Date().toISOString(),
+      plan: (config?.plan as string) || 'free',
+      aiProvider: (config?.aiProvider as string) || 'openrouter',
+      subdomain,
+      status: 'pending',
+      config: config || {},
+    };
+    await writeAgentMetadata(metadata);
+
+    res.status(201).json({
+      id: agentId,
+      name,
+      agentId,
+      status: 'pending',
+      subdomain,
+      url: `https://${subdomain}`,
+      createdAt: metadata.createdAt,
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to create agent';
+    res.status(500).json({ error: message });
+  }
 });
 
 app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
@@ -794,16 +1085,81 @@ app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
     });
 });
 
-app.put('/api/agents/:id', authenticate, (req: Request, res: Response) => {
+app.put('/api/agents/:id', authenticate, async (req: Request, res: Response) => {
   const { id } = req.params;
-  // TODO: Update agent
-  res.json({ id, message: 'Agent updated' });
+  const safeId = sanitizeAgentId(id);
+
+  try {
+    const metadata = await readAgentMetadata(safeId);
+    if (!metadata) {
+      res.status(404).json({ error: 'Agent not found' });
+      return;
+    }
+
+    // Apply allowed updates
+    const { plan, aiProvider, config } = req.body as {
+      plan?: string;
+      aiProvider?: string;
+      config?: Record<string, unknown>;
+    };
+
+    if (plan) metadata.plan = plan;
+    if (aiProvider) metadata.aiProvider = aiProvider;
+    if (config) metadata.config = { ...(metadata.config || {}), ...config };
+
+    await writeAgentMetadata(metadata);
+
+    res.json({
+      id: safeId,
+      plan: metadata.plan,
+      aiProvider: metadata.aiProvider,
+      subdomain: metadata.subdomain,
+      status: metadata.status || 'unknown',
+      message: 'Agent updated',
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Update failed';
+    res.status(500).json({ error: message });
+  }
 });
 
-app.delete('/api/agents/:id', authenticate, (req: Request, res: Response) => {
+app.delete('/api/agents/:id', authenticate, async (req: Request, res: Response) => {
   const { id } = req.params;
-  // TODO: Delete agent
-  res.json({ id, message: 'Agent deleted' });
+  const safeId = sanitizeAgentId(id);
+  const containerName = getContainerName(safeId);
+
+  try {
+    // 1. Stop and remove the Docker container (best-effort — may not exist)
+    try {
+      await runCommand('docker', ['stop', containerName]);
+    } catch {
+      // Container may already be stopped
+    }
+    try {
+      await runCommand('docker', ['rm', containerName]);
+    } catch {
+      // Container may not exist
+    }
+
+    // 2. Release port assignment from ports.json
+    await withLock(async () => {
+      const ports = await readPorts();
+      delete ports[safeId];
+      await writePorts(ports);
+    });
+
+    // 3. Delete metadata file
+    try {
+      await fs.unlink(agentFilePath(safeId));
+    } catch {
+      // File may not exist
+    }
+
+    res.json({ id: safeId, deleted: true });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Delete failed';
+    res.status(500).json({ error: message });
+  }
 });
 
 // Agent verification endpoints for Verified Human Badge
@@ -891,7 +1247,7 @@ app.delete('/api/agents/:id/verify', authenticate, async (req: Request, res: Res
 });
 
 // Deployments endpoint
-app.post('/api/deployments', authenticate, async (req: Request, res: Response) => {
+app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, res: Response) => {
   const { agentId, config } = req.body as {
     agentId?: string;
     config?: {
@@ -1115,7 +1471,7 @@ app.get('/api/agents/:id/token', authenticate, async (req: Request, res: Respons
       return;
     }
     if (!metadata.gatewayToken) {
-      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const token = randomBytes(32).toString('hex');
       metadata.gatewayToken = token;
       await writeAgentMetadata(metadata);
     }
@@ -1138,13 +1494,7 @@ app.post('/api/agents/:id/repair', authenticate, async (req: Request, res: Respo
     await runCommand('docker', ['stop', containerName]);
     await runCommand('docker', ['rm', containerName]);
     
-    try {
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-    } catch (e) {
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-      throw e;
-    }
-    
+    await recreateContainerWithImage(containerName, inspect, oldImage);
     res.json({ success: true, message: 'Agent repaired successfully' });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Repair failed';
@@ -1209,33 +1559,52 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
   const ports = JSON.parse(portsFileContent) as Record<string, number>;
   const results = { success: 0, failed: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
-  
-  for (const agentId of Object.keys(ports)) {
-    const containerName = getContainerName(agentId);
-    try {
+  const agentIds = Object.keys(ports);
+
+  // Pull the image once before touching any containers
+  console.log(`[Auto-Update] Pulling image ${newImage}...`);
+  await runCommand('docker', ['pull', newImage]);
+
+  // Update in parallel batches of 5 so we don't overwhelm the host
+  const CONCURRENCY = 5;
+  for (let i = 0; i < agentIds.length; i += CONCURRENCY) {
+    const batch = agentIds.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.allSettled(batch.map(async (agentId) => {
+      const containerName = getContainerName(agentId);
       console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
-      await runCommand('docker', ['pull', newImage]);
+
+      // MED-04 FIX: Read agent metadata so we can restore plan-specific resource
+      // limits when the container is recreated. Without this, every container
+      // would restart without --memory / --cpus constraints, effectively giving
+      // every agent unlimited host resources after an auto-update.
+      const metadata = await readAgentMetadata(agentId);
+      const resources = getPlanResources(metadata?.plan || 'starter');
+
       await runCommand('docker', ['stop', containerName]);
       await runCommand('docker', ['rm', containerName]);
-      
       const port = await getNextPortAndAssign(agentId);
-      
       await runCommand('docker', [
         'run', '-d',
         '--name', containerName,
         '--restart', 'unless-stopped',
-        '-v', `agentbot-${agentId}:/home/node/.openclaw`,
+        '--memory', resources.memory,
+        '--cpus', resources.cpus,
+        '-v', `openclaw-data-${agentId}:/home/node/.openclaw`,
         '-p', `${port}:18789`,
         newImage,
       ]);
-      
-      results.success++;
-    } catch (error) {
-      console.error(`[Auto-Update] Failed to update ${agentId}:`, error);
-      results.failed++;
+    }));
+
+    for (const result of batchResults) {
+      if (result.status === 'fulfilled') {
+        results.success++;
+      } else {
+        console.error(`[Auto-Update] Batch failure:`, result.reason);
+        results.failed++;
+      }
     }
   }
-  
+
   return results;
 }
 
@@ -1264,6 +1633,84 @@ function startAutoUpdater() {
   
   console.log('[Auto-Update] Auto-updater started');
 }
+
+/**
+ * POST /api/subscriptions/deploy
+ * Called by the Stripe webhook (via frontend) when a checkout completes.
+ * Records the subscription → plan mapping so the next agent deployment
+ * picks up the correct resource tier.
+ */
+app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Response) => {
+  const { tier, customerId, subscriptionId, stripeCustomerId } = req.body as {
+    tier?: string;
+    customerId?: string;
+    subscriptionId?: string;
+    stripeCustomerId?: string;
+  };
+
+  if (!customerId && !stripeCustomerId) {
+    res.status(400).json({ error: 'customerId is required' });
+    return;
+  }
+  if (!tier) {
+    res.status(400).json({ error: 'tier is required' });
+    return;
+  }
+
+  const validTiers = Object.keys(PLAN_RESOURCES);
+  if (!validTiers.includes(tier)) {
+    res.status(400).json({ error: `Invalid tier. Valid tiers: ${validTiers.join(', ')}` });
+    return;
+  }
+
+  try {
+    await ensureDataDirs();
+
+    // Persist subscription metadata so provisioning endpoints can read it
+    const id = (stripeCustomerId || customerId) as string;
+    const subscriptionFile = path.join(DATA_DIR, 'subscriptions', `${id.replace(/[^a-zA-Z0-9_-]/g, '_')}.json`);
+    await fs.mkdir(path.join(DATA_DIR, 'subscriptions'), { recursive: true });
+    await fs.writeFile(subscriptionFile, JSON.stringify({
+      customerId: id,
+      subscriptionId: subscriptionId || null,
+      tier,
+      plan: tier,
+      resources: PLAN_RESOURCES[tier],
+      activatedAt: new Date().toISOString(),
+    }, null, 2));
+
+    console.log(`[Subscriptions] Activated tier "${tier}" for customer ${id} (sub: ${subscriptionId})`);
+
+    res.json({
+      success: true,
+      customerId: id,
+      subscriptionId,
+      tier,
+      resources: PLAN_RESOURCES[tier],
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Subscription activation failed';
+    console.error('[Subscriptions] Deploy error:', message);
+    res.status(500).json({ error: message });
+  }
+});
+
+// NOTE: Routes for /api/ai, /api/provision, /api/metrics, and /api/render-mcp are
+// already mounted above (lines ~670-673) with Bearer token authentication.
+// Do NOT re-mount them here without auth — duplicate registrations create
+// confusing security models and potential for unauthenticated fallthrough.
+
+// Initialize database schema on startup.
+// In production, a DB failure is fatal — don't serve traffic with a broken schema.
+initDatabase().then(() => {
+  console.log('[DB] Ready');
+}).catch(err => {
+  console.error('[DB] Init error:', err.message);
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[DB] Refusing to serve in production with failed schema. Exiting.');
+    process.exit(1);
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);

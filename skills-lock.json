@@ -55,6 +55,11 @@
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    },
+    "moltx": {
+      "source": "./skills/moltx.md",
+      "sourceType": "local",
+      "version": "0.23.1"
     }
   }
 }

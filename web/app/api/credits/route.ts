@@ -5,7 +5,7 @@ import { prisma } from '@/app/lib/prisma'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -15,17 +15,29 @@ export async function GET() {
       where: { email: session.user.email },
       select: {
         id: true,
+        referralCredits: true,
+        plan: true,
+        referralCode: true,
+        _count: {
+          select: {
+            referrals: true,
+          }
+        }
       }
     })
 
     if (!user) {
-      return NextResponse.json({ credits: 0 })
+      return NextResponse.json({ credits: 0, referralCode: null, referralCount: 0 })
     }
 
-    // TODO: Add credits field to User model or create separate Credits table
-    return NextResponse.json({ credits: 0 })
+    return NextResponse.json({
+      credits: user.referralCredits,
+      referralCode: user.referralCode,
+      referralCount: user._count.referrals,
+      plan: user.plan,
+    })
   } catch (error) {
     console.error('Credits fetch error:', error)
-    return NextResponse.json({ credits: 0 })
+    return NextResponse.json({ credits: 0 }, { status: 500 })
   }
 }

@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'launch-week-2026-3-21',
+    date: '21 March 2026',
+    title: '10 Days Out: What We Shipped This Week',
+    excerpt: '313 commits. Security hardening, RLS, real agent provisioning end-to-end, BullMQ worker service, design system locked, build clean. March 31 is on.',
+    tags: ["Build Log", "Security", "Platform", "Launch"]
+  },
+  {
     slug: 'openclaw-2026-3-13-release',
     date: '16 March 2026',
     title: 'OpenClaw 2026.3.13 Released + Agentbot Progress Update',

@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
   output: 'standalone',
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
   async headers() {

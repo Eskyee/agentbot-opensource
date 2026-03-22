@@ -1,0 +1,59 @@
+# render.yaml — Agentbot Soul Service (x402-node)
+# Deploy as a background worker or web service on Render.com
+#
+# Usage: render blueprint launch --file soul/render.yaml
+# Or create manually in Render dashboard with these env vars.
+
+services:
+  # ── Soul Service (Cognitive Backend) ──
+  - type: web
+    name: agentbot-soul
+    runtime: image
+    image:
+      url: ghcr.io/eskyee/agentbot-soul:latest
+    plan: standard
+    region: oregon
+    numInstances: 1
+    disk:
+      name: soul-data
+      mountPath: /home/agent/data
+      sizeGB: 5
+    envVars:
+      # Tempo Chain
+      - key: TEMPO_RPC_URL
+        value: https://rpc.moderato.tempo.xyz
+      - key: TEMPO_CHAIN_ID
+        value: "42431"
+      - key: SOUL_SERVICE_URL
+        value: "https://borg-0-3-production.up.railway.app"
+      # Soul Wallet (generated for this instance)
+      - key: EVM_PRIVATE_KEY
+        sync: false  # Set manually in Render dashboard
+      # LLM (Gemini for thinking loop)
+      - key: GEMINI_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: GEMINI_MODEL_FAST
+        value: gemini-2.0-flash
+      - key: GEMINI_MODEL_THINK
+        value: gemini-2.5-pro-preview
+      # Soul Config
+      - key: SOUL_TOOLS_ENABLED
+        value: "true"
+      - key: SOUL_CODING_ENABLED
+        value: "false"
+      - key: SOUL_PERSONALITY
+        value: "Agentbot cognitive node. Think in plans. Execute step by step. Share knowledge with the colony."
+      # GitHub (for code evolution, PRs)
+      - key: GH_TOKEN
+        sync: false  # Set manually in Render dashboard
+      # Instance
+      - key: INSTANCE_DESIGNATION
+        value: atlas-prime
+      - key: PORT
+        value: "4023"
+      - key: RUST_LOG
+        value: info
+      - key: RUST_BACKTRACE
+        value: "1"
+    healthCheckPath: /health
+    autoDeploy: true

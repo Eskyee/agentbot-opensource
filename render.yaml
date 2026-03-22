@@ -1,10 +1,16 @@
 # Agentbot Render Blueprint
+databases:
+  - name: agentbot-db
+    databaseName: agentbot
+    plan: free
+    ipAllowList: []
+
 services:
-  # Backend API + MCP Gateway + Skills Marketplace
+  # Backend API + MCP Gateway
   - type: web
     name: agentbot-api
     env: docker
-    dockerfilePath: agentbot-backend/Dockerfile
+    dockerfilePath: Dockerfile
     rootDir: agentbot-backend
     plan: starter
     region: oregon
@@ -15,17 +21,128 @@ services:
         value: "3001"
       - key: NODE_ENV
         value: production
-      - key: RENDER_API_KEY
-        sync: false
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: agentbot-db
+          property: connectionString
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: redis
+          name: agentbot-redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MCP_API_KEY
+        generateValue: true
       - key: OPENROUTER_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      - key: CDP_API_KEY_NAME
+        sync: false
+      - key: CDP_API_KEY_PRIVATE_KEY
+        sync: false
+      - key: CDP_WALLET_SECRET
+        sync: false
+      - key: BANKR_API_KEY
+        sync: false
+      - key: MUX_TOKEN_ID
+        sync: false
+      - key: MUX_TOKEN_SECRET
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: WALLET_ENCRYPTION_KEY
+        generateValue: true
       - key: INTERNAL_API_KEY
         generateValue: true
+      - key: OPENCLAW_GATEWAY_URL
+        sync: false
+      - key: AGENTS_DOMAIN
+        value: "agents.raveculture.xyz"
+
+  # Next.js Frontend
+  - type: web
+    name: agentbot-web
+    env: docker
+    dockerfilePath: Dockerfile
+    rootDir: web
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_API_URL
+        value: "https://agentbot-api.onrender.com"
+      - key: NEXT_PUBLIC_BACKEND_URL
+        value: "https://agentbot-api.onrender.com"
+      - key: BANKR_API_KEY
+        sync: false
+      - key: MUX_TOKEN_ID
+        sync: false
+      - key: MUX_TOKEN_SECRET
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        value: "https://agentbot.raveculture.xyz"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: INTERNAL_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agentbot-db
+          property: connectionString
+
+  # Background Worker (BullMQ)
+  - type: worker
+    name: agentbot-worker
+    env: docker
+    dockerfilePath: Dockerfile.worker
+    rootDir: agentbot-backend
+    plan: starter
+    region: oregon
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agentbot-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: agentbot-redis
+          property: connectionString
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: INTERNAL_API_KEY
+        generateValue: true
+
+  # Redis
+  - type: redis
+    name: agentbot-redis
+    plan: starter
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []

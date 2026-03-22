@@ -6,6 +6,7 @@ import { Radio, DollarSign, Hash, Bot, LayoutGrid, Dna, Users } from 'lucide-rea
 import { cn } from '@/lib/utils';
 import { OrganismCanvas } from '@/components/dashboard/constellation/OrganismCanvas';
 import { ExecutionTrace } from '@/components/dashboard/fleet/ExecutionTrace';
+import { CloneButton } from '@/app/components/shared/CloneButton';
 
 export default function FleetPage() {
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'organism'>('organism');
@@ -117,7 +118,7 @@ export default function FleetPage() {
             {selectedAgent && (
               <div className="p-4 border-t border-zinc-800 bg-zinc-900/50">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-xl">
                     🤖
                   </div>
                   <div>
@@ -134,6 +135,23 @@ export default function FleetPage() {
                     <div className="text-zinc-500 mb-1">LATENCY</div>
                     <div className="text-white font-bold">42ms</div>
                   </div>
+                </div>
+                <div className="mt-4">
+                  <CloneButton
+                    agent={{
+                      id: selectedAgent.id,
+                      name: selectedAgent.name,
+                      specialization: selectedAgent.type || 'general',
+                      generation: selectedAgent.generation || 1,
+                      fitness: selectedAgent.fitness || 0,
+                      children: selectedAgent.children || 0,
+                      walletAddress: selectedAgent.walletAddress || '0x0000000000000000000000000000000000000000',
+                    }}
+                    onSuccess={(newAgent) => {
+                      console.log('Clone created:', newAgent);
+                      // Refetch fleet graph
+                    }}
+                  />
                 </div>
               </div>
             )}

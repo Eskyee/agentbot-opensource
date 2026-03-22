@@ -6,7 +6,12 @@ import { parseUnits } from 'viem';
 
 dotenv.config();
 
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || 'default-secret-key-change-me';
+// Refuse to start without encryption key in ALL environments — wallet data is always sensitive
+if (!process.env.WALLET_ENCRYPTION_KEY) {
+  console.error('FATAL: WALLET_ENCRYPTION_KEY environment variable must be set. Generate with: openssl rand -hex 32');
+  process.exit(1);
+}
+const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY;
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -85,12 +90,22 @@ export class WalletService {
     toAddress: string,
     amount: number
   ): Promise<string> {
+    // Validate amount before touching any on-chain resources
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error(`Invalid transfer amount: ${amount}. Must be a positive number.`);
+    }
+    // USDC has 6 decimal places — cap precision to avoid parseUnits throwing
+    const roundedAmount = Math.round(amount * 1_000_000) / 1_000_000;
+    if (roundedAmount <= 0) {
+      throw new Error(`Transfer amount rounds to zero after USDC precision (6 decimals).`);
+    }
+
     try {
       // 1. Build USDC transfer transaction (ERC20 transfer)
       // USDC on Base: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
       const client = getCdpClient();
       const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as Hex;
-      const amountUnits = parseUnits(amount.toString(), 6);
+      const amountUnits = parseUnits(roundedAmount.toString(), 6);
       
       // Data: selector (transfer) + to (padded) + amount (padded)
       const data = `0xa9059cbb${toAddress.replace('0x', '').toLowerCase().padStart(64, '0')}${amountUnits.toString(16).padStart(64, '0')}` as Hex;

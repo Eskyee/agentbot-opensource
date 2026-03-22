@@ -36,11 +36,18 @@ function verifyMuxSignature(body: string, signature: string): boolean {
     .update(payload)
     .digest('hex');
 
-  // Timing-safe comparison
-  return crypto.timingSafeEqual(
-    Buffer.from(sig),
-    Buffer.from(expectedSignature)
-  );
+  const sigBuf = Buffer.from(sig);
+  const expectedBuf = Buffer.from(expectedSignature);
+
+  // crypto.timingSafeEqual() THROWS if buffers have different lengths.
+  // An attacker sending a truncated or padded sig header would get a 500 instead
+  // of a 401, leaking server state. Guard the length before calling.
+  if (sigBuf.length !== expectedBuf.length) {
+    return false;
+  }
+
+  // Timing-safe comparison (prevents enumeration via response timing)
+  return crypto.timingSafeEqual(sigBuf, expectedBuf);
 }
 
 export async function POST(request: NextRequest) {

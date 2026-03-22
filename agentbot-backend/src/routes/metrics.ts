@@ -1,8 +1,23 @@
+/**
+ * Metrics routes
+ *
+ * FIXES APPLIED:
+ *  - Replaced exec() with spawn() via runCommand() from utils/index.ts
+ *  - Historical metrics now query the container_metrics DB table instead of
+ *    fabricating variance from a single live sample (Math.random() removed)
+ *  - responseTime no longer uses Math.random()
+ *  - authenticate middleware added to all three endpoints — previously any
+ *    caller could query any userId's metrics without credentials
+ */
 import express, { Request, Response } from 'express';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { Pool } from 'pg';
+import { authenticate } from '../middleware/auth';
+import { runCommand } from '../utils';
 
 const router = express.Router();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 interface MetricPoint {
   timestamp: string;
@@ -28,75 +43,50 @@ interface PerformanceData {
   cpu: number;
   memory: number;
   errorRate: number;
+  /** 0 = unknown; real instrumentation requires request-level timing middleware */
   responseTime: number;
 }
 
-const METRICS_DIR = process.env.DATA_DIR ? path.join(process.env.DATA_DIR, 'metrics') : '/opt/agentbot/data/metrics';
+interface DockerStats {
+  cpu: number;
+  memory: number;
+}
 
-// Helper to generate real metrics from available data sources
-const generateRealMetrics = async (userId: string, timeRange: string): Promise<MetricPoint[]> => {
-  const now = new Date();
-  const metrics: MetricPoint[] = [];
-  const hours = timeRange === '24h' ? 24 : timeRange === '7d' ? 168 : 720;
+/**
+ * Sanitize userId to prevent path traversal and container name injection.
+ * Mirrors sanitizeAgentId() in index.ts.
+ */
+const sanitizeUserId = (value: string): string => value.replace(/[^a-zA-Z0-9_-]/g, '');
 
-  // Try to read from stored metrics files
+/**
+ * Fetch CPU% and memory% from a running Docker container via spawn (no shell).
+ */
+const getDockerStats = async (containerId: string): Promise<DockerStats | null> => {
   try {
-    const metricsFile = path.join(METRICS_DIR, `${userId}_metrics.json`);
-    const storedData = await fs.readFile(metricsFile, 'utf8').catch(() => null);
-    
-    if (storedData) {
-      const parsedData: MetricPoint[] = JSON.parse(storedData);
-      // Filter and return appropriate time range
-      const cutoffTime = now.getTime() - (timeRange === '24h' ? 86400000 : timeRange === '7d' ? 604800000 : 2592000000);
-      return parsedData.filter(p => new Date(p.timestamp).getTime() > cutoffTime);
-    }
-  } catch (error) {
-    console.error(`Failed to read metrics for ${userId}:`, error);
+    const { stdout } = await runCommand('docker', [
+      'stats', containerId,
+      '--format', '{{.CPUPerc}}|{{.MemUsage}}',
+      '--no-stream',
+    ], { timeout: 10000 });
+
+    const parts = stdout.trim().split('|');
+    if (parts.length < 2) return null;
+
+    const cpu = parseFloat(parts[0].replace('%', '')) || 0;
+    const memUsage = parts[1];
+    const memMatch = memUsage.match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
+    if (!memMatch) return { cpu, memory: 0 };
+
+    const toMiB = (val: number, unit: string) =>
+      val * (unit === 'GiB' || unit === 'GB' ? 1024 : 1);
+    const used = toMiB(parseFloat(memMatch[1]), memMatch[2]);
+    const total = toMiB(parseFloat(memMatch[3]), memMatch[4]);
+    const memory = total > 0 ? (used / total) * 100 : 0;
+
+    return { cpu, memory };
+  } catch {
+    return null;
   }
-
-  // Fallback: Generate metrics based on Docker container stats if available
-  try {
-    const { stdout: statsOutput } = await (await import('child_process')).spawn('docker', [
-      'stats',
-      `openclaw-${userId}`,
-      '--format', '{{.CPUPerc}}|{{.MemUsage}}|{{.NetIO}}|{{.BlockIO}}',
-      '--no-stream'
-    ]);
-
-    const stats = (statsOutput as any).toString().trim().split('|');
-    if (stats.length >= 2) {
-      const cpuPercent = parseFloat(stats[0].replace('%', '')) || 0;
-      const memUsage = stats[1]; // Format: "100MiB / 1GiB" - need to parse
-      
-      // Parse memory usage to percentage
-      let memPercent = 0;
-      const memMatch = memUsage.match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
-      if (memMatch) {
-        const used = parseFloat(memMatch[1]) * (memMatch[2] === 'GiB' || memMatch[2] === 'GB' ? 1024 : 1);
-        const total = parseFloat(memMatch[3]) * (memMatch[4] === 'GiB' || memMatch[4] === 'GB' ? 1024 : 1);
-        memPercent = (used / total) * 100;
-      }
-
-      // Generate data points based on current stats with some variation
-      for (let i = 0; i < 24; i++) { // Last 24 hours
-        const timestamp = new Date(now.getTime() - (i * 3600000)).toISOString();
-        const variance = Math.random() * 0.2 - 0.1; // ±10% variation
-        
-        metrics.push({
-          timestamp,
-          cpu: Math.min(100, Math.max(0, cpuPercent * (1 + variance))),
-          memory: Math.min(100, Math.max(0, memPercent * (1 + variance))),
-          messages: Math.floor(Math.random() * 100),
-          errors: Math.floor(Math.random() * 10),
-        });
-      }
-    }
-  } catch (error) {
-    console.error(`Failed to get Docker stats for ${userId}:`, error);
-  }
-
-  // If no data available, return empty array
-  return metrics.reverse();
 };
 
 // Helper to calculate averages
@@ -104,7 +94,6 @@ const calculateAverages = (metrics: MetricPoint[]) => {
   if (metrics.length === 0) {
     return { cpu: 0, memory: 0, messages: 0, errors: 0 };
   }
-
   return {
     cpu: Math.round(metrics.reduce((sum, m) => sum + m.cpu, 0) / metrics.length),
     memory: Math.round(metrics.reduce((sum, m) => sum + m.memory, 0) / metrics.length),
@@ -113,78 +102,123 @@ const calculateAverages = (metrics: MetricPoint[]) => {
   };
 };
 
-router.get('/:userId/historical', async (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const timeRange = req.query.range as string || '24h';
+/**
+ * Build historical metrics from the container_metrics DB table (real time-series).
+ *
+ * Falls back to a single live Docker sample if no DB history exists yet.
+ * Math.random() fabrication has been removed entirely.
+ */
+const generateRealMetrics = async (userId: string, timeRange: string): Promise<MetricPoint[]> => {
+  const cutoffMs =
+    timeRange === '7d' ? 7 * 86400000 : timeRange === '30d' ? 30 * 86400000 : 86400000; // default 24h
+
+  // 1. Query real time-series from DB (written by recordMetricSample in index.ts)
+  if (process.env.DATABASE_URL) {
+    try {
+      const result = await pool.query<{
+        bucket: string;
+        cpu: string;
+        mem: string;
+        messages: string;
+        errors: string;
+      }>(
+        `SELECT
+           date_trunc('hour', sampled_at) AS bucket,
+           AVG(cpu_percent)              AS cpu,
+           AVG(mem_percent)              AS mem,
+           SUM(message_count)            AS messages,
+           SUM(error_count)              AS errors
+         FROM container_metrics
+         WHERE user_id = $1
+           AND sampled_at >= NOW() - $2::interval
+         GROUP BY bucket
+         ORDER BY bucket ASC`,
+        [userId, `${cutoffMs / 1000} seconds`]
+      );
+
+      if (result.rows.length > 0) {
+        return result.rows.map((row) => ({
+          timestamp: row.bucket,
+          cpu: parseFloat(row.cpu) || 0,
+          memory: parseFloat(row.mem) || 0,
+          messages: parseInt(row.messages, 10) || 0,
+          errors: parseInt(row.errors, 10) || 0,
+        }));
+      }
+    } catch (err: any) {
+      console.error(`[Metrics] DB query failed for ${userId}:`, err.message);
+    }
+  }
+
+  // 2. Fallback: single live Docker sample (no fabricated history — just one point)
+  const stats = await getDockerStats(`openclaw-${userId}`);
+  if (stats) {
+    return [{
+      timestamp: new Date().toISOString(),
+      cpu: stats.cpu,
+      memory: stats.memory,
+      messages: 0,
+      errors: 0,
+    }];
+  }
+
+  return [];
+};
+
+/**
+ * GET /api/metrics/:userId/historical
+ * Returns real time-series metrics from the DB.
+ * Requires authentication.
+ */
+router.get('/:userId/historical', authenticate, async (req: Request, res: Response) => {
+  const userId = sanitizeUserId(req.params.userId);
+  const timeRange = (req.query.range as string) || '24h';
 
   try {
     const metrics = await generateRealMetrics(userId, timeRange);
     const averages = calculateAverages(metrics);
-
-    res.json({
-      userId,
-      timeRange,
-      metrics,
-      averages,
-    } as HistoricalMetricsResponse);
+    res.json({ userId, timeRange, metrics, averages } as HistoricalMetricsResponse);
   } catch (error) {
     console.error('Error fetching historical metrics:', error);
     res.status(500).json({ error: 'Failed to fetch historical metrics' });
   }
 });
 
-// Current performance metrics endpoint
-router.get('/:userId/performance', async (req: Request, res: Response) => {
-  const { userId } = req.params;
+/**
+ * GET /api/metrics/:userId/performance
+ * Returns live performance snapshot from Docker stats.
+ * Requires authentication.
+ */
+router.get('/:userId/performance', authenticate, async (req: Request, res: Response) => {
+  const userId = sanitizeUserId(req.params.userId);
 
   try {
-    // Get current performance data from Docker
-    let performanceData: PerformanceData = {
-      cpu: 0,
-      memory: 0,
-      errorRate: 0,
-      responseTime: 0,
-    };
+    const performanceData: PerformanceData = { cpu: 0, memory: 0, errorRate: 0, responseTime: 0 };
 
-    try {
-      const { stdout: stats } = await (await import('child_process')).spawn('docker', [
-        'stats',
-        `openclaw-${userId}`,
-        '--format', '{{.CPUPerc}}|{{.MemUsage}}',
-        '--no-stream'
-      ]);
-
-      const statsData = (stats as any).toString().trim().split('|');
-      if (statsData.length >= 2) {
-        performanceData.cpu = parseFloat(statsData[0].replace('%', '')) || 0;
-        
-        const memUsage = statsData[1];
-        const memMatch = memUsage.match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
-        if (memMatch) {
-          const used = parseFloat(memMatch[1]) * (memMatch[2] === 'GiB' || memMatch[2] === 'GB' ? 1024 : 1);
-          const total = parseFloat(memMatch[3]) * (memMatch[4] === 'GiB' || memMatch[4] === 'GB' ? 1024 : 1);
-          performanceData.memory = (used / total) * 100;
-        }
-      }
-    } catch (error) {
-      console.error('Failed to get performance data:', error);
+    const stats = await getDockerStats(`openclaw-${userId}`);
+    if (stats) {
+      performanceData.cpu = stats.cpu;
+      performanceData.memory = stats.memory;
     }
 
-    // Get error rate from logs if available
+    // Error rate from log file (best-effort)
     try {
-      const logFile = path.join(process.env.DATA_DIR || '/opt/agentbot/data', 'logs', `${userId}.log`);
+      const logFile = path.join(
+        process.env.DATA_DIR || '/opt/agentbot/data',
+        'logs',
+        `${userId}.log`
+      );
       const logContent = await fs.readFile(logFile, 'utf8').catch(() => '');
-      const errorLines = logContent.match(/\[error\]/g) || [];
+      const errorLines = (logContent.match(/\[error\]/g) || []).length;
       const totalLines = logContent.split('\n').length;
-      performanceData.errorRate = totalLines > 0 ? (errorLines.length / totalLines) * 100 : 0;
-    } catch (error) {
-      console.error('Failed to calculate error rate:', error);
+      performanceData.errorRate = totalLines > 0 ? (errorLines / totalLines) * 100 : 0;
+    } catch {
+      // non-critical — leave at 0
     }
 
-    // Estimate response time based on CPU
-    performanceData.responseTime = performanceData.cpu > 80 ? 5000 + Math.random() * 1000 :
-                                    performanceData.cpu > 60 ? 2000 + Math.random() * 500 :
-                                    100 + Math.random() * 200;
+    // responseTime: 0 = unknown until request-level instrumentation is added.
+    // Math.random() fabrication removed.
+    performanceData.responseTime = 0;
 
     res.json(performanceData);
   } catch (error) {
@@ -193,75 +227,29 @@ router.get('/:userId/performance', async (req: Request, res: Response) => {
   }
 });
 
-// Music industry metrics summary endpoint
-router.get('/:userId/summary', async (req: Request, res: Response) => {
-  const { userId } = req.params;
+/**
+ * GET /api/metrics/:userId/summary
+ * Returns high-level business metrics summary.
+ * Requires authentication.
+ */
+router.get('/:userId/summary', authenticate, async (req: Request, res: Response) => {
+  const userId = sanitizeUserId(req.params.userId);
 
   try {
-    // Get current performance data
-    const performanceData: PerformanceData = {
-      cpu: 0,
-      memory: 0,
-      errorRate: 0,
-      responseTime: 0,
-    };
+    // Live container health check (fire-and-forget — used for logging/future enrichment)
+    getDockerStats(`openclaw-${userId}`).catch(() => undefined);
 
-    try {
-      const { stdout: stats } = await (await import('child_process')).spawn('docker', [
-        'stats',
-        `openclaw-${userId}`,
-        '--format', '{{.CPUPerc}}|{{.MemUsage}}',
-        '--no-stream'
-      ]);
-
-      const statsData = (stats as any).toString().trim().split('|');
-      if (statsData.length >= 2) {
-        performanceData.cpu = parseFloat(statsData[0].replace('%', '')) || 0;
-        
-        const memUsage = statsData[1];
-        const memMatch = memUsage.match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
-        if (memMatch) {
-          const used = parseFloat(memMatch[1]) * (memMatch[2] === 'GiB' || memMatch[2] === 'GB' ? 1024 : 1);
-          const total = parseFloat(memMatch[3]) * (memMatch[4] === 'GiB' || memMatch[4] === 'GB' ? 1024 : 1);
-          performanceData.memory = (used / total) * 100;
-        }
-      }
-    } catch (error) {
-      console.error('Failed to get performance data:', error);
-    }
-
-    // Generate music industry metrics
     const summary = {
-      revenue: {
-        month: '$0.00',
-        total: '$0.00',
-        change: '+0%'
-      },
-      bookings: {
-        completed: 0,
-        pending: 0,
-        conversion: '0%'
-      },
+      revenue: { month: '$0.00', total: '$0.00', change: '+0%' },
+      bookings: { completed: 0, pending: 0, conversion: '0%' },
       fans: {
         total: 0,
         active: 0,
         growth: '+0%',
-        segmentation: {
-          superfans: 0,
-          casual: 0,
-          new: 0
-        }
+        segmentation: { superfans: 0, casual: 0, new: 0 },
       },
-      streams: {
-        monthlyListeners: 0,
-        monthlyStreams: 0,
-        growth: '+0%'
-      },
-      skills: {
-        active: 0,
-        total: 0,
-        growth: '+0%'
-      }
+      streams: { monthlyListeners: 0, monthlyStreams: 0, growth: '+0%' },
+      skills: { active: 0, total: 0, growth: '+0%' },
     };
 
     res.json(summary);

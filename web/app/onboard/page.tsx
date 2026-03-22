@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useEffect } from 'react'
+import { useState, Suspense, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
@@ -9,7 +9,7 @@ const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'm
 
 function OnboardContent() {
   const searchParams = useSearchParams()
-  const plan = searchParams.get('plan') || 'free'
+  const plan = searchParams.get('plan') || 'solo'
   const mode = searchParams.get('mode') || 'create' // link, create, deploy
   const isPaid = searchParams.get('paid') === '1'
   const paymentError = searchParams.get('payment_error')
@@ -29,6 +29,7 @@ function OnboardContent() {
   const [result, setResult] = useState<{ userId: string; subdomain: string; url: string; streamKey?: string; liveStreamId?: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
+  const [showConfetti, setShowConfetti] = useState(false)
 
   // Available models (Tiered for OpenClaw) - via OpenRouter
   const AVAILABLE_MODELS = [
@@ -112,10 +113,22 @@ function OnboardContent() {
   }
 
   const deploy = async () => {
+    if (!isPaid) {
+      window.location.href = `/api/stripe/checkout?plan=${plan}`
+      return
+    }
     setIsDeploying(true)
     setError('')
-    
+
     try {
+      // Get user email from session
+      let userEmail = ''
+      try {
+        const sessionRes = await fetch('/api/auth/session')
+        const sessionData = await sessionRes.json()
+        userEmail = sessionData?.user?.email || ''
+      } catch {}
+
       const res = await fetch('/api/provision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -127,13 +140,18 @@ function OnboardContent() {
           plan,
           model: selectedModel,
           skills: selectedSkills,
-          agentType
+          agentType,
+          email: userEmail
         })
       })
       
       const data = await res.json()
       
       if (data.success) {
+        // 🎉 Confetti!
+        setShowConfetti(true)
+        setTimeout(() => setShowConfetti(false), 5000)
+
         // Save to localStorage for dashboard
         localStorage.setItem('agentbot_instance', JSON.stringify({
           userId: data.userId,
@@ -419,8 +437,8 @@ function OnboardContent() {
                   key={type.id}
                   onClick={() => setAgentType(type.id)}
                   className={`text-left p-4 rounded-xl border transition-all ${
-                    agentType === type.id 
-                      ? 'border-white bg-white/10' 
+                    agentType === type.id
+                      ? 'border-white bg-zinc-800'
                       : 'border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800'
                   }`}
                 >
@@ -472,7 +490,7 @@ function OnboardContent() {
                     onClick={() => setAiProvider(provider.id)}
                     className={`w-full text-left p-4 rounded-xl border ${
                       aiProvider === provider.id 
-                        ? 'border-white bg-white/10' 
+                        ? 'border-white bg-zinc-800'
                         : 'border-zinc-700 hover:border-zinc-600'
                     } transition-colors`}
                   >
@@ -595,7 +613,7 @@ function OnboardContent() {
                     onClick={() => setSelectedModel(model.id)}
                     className={`w-full text-left p-4 rounded-xl border ${
                       selectedModel === model.id 
-                        ? 'border-white bg-white/10' 
+                        ? 'border-white bg-zinc-800'
                         : 'border-zinc-700 hover:border-zinc-600'
                     } transition-colors`}
                   >
@@ -660,7 +678,7 @@ function OnboardContent() {
                       }}
                       className={`text-left p-4 rounded-xl border transition-colors ${
                         isSelected 
-                          ? 'border-white bg-white/10' 
+                          ? 'border-white bg-zinc-800'
                           : 'border-zinc-700 hover:border-zinc-600'
                       }`}
                     >
@@ -736,6 +754,12 @@ function OnboardContent() {
                     <dd>{plan === 'free' ? 'Sign up for plan' : plan}</dd>
                   </div>
                   <div className="flex justify-between">
+                    <dt className="text-zinc-400">Payment</dt>
+                    <dd className={isPaid ? 'text-green-400' : 'text-yellow-400'}>
+                      {isPaid ? '✓ Confirmed' : '⚠ Required before deploy'}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
                     <dt className="text-zinc-400">OpenClaw Version</dt>
                     <dd className="font-mono">{openclawVersion}</dd>
                   </div>
@@ -755,25 +779,54 @@ function OnboardContent() {
                 >
                   ← Back
                 </button>
-                <button
-                  onClick={deploy}
-                  disabled={isDeploying}
-                  className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 sm:flex-1"
-                >
-                  {isDeploying ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Deploying...
-                    </span>
-                  ) : (
-                    '🚀 Deploy Now'
-                  )}
-                </button>
+                {!isPaid ? (
+                  <a
+                    href={`/api/stripe/checkout?plan=${plan}`}
+                    className="w-full block text-center bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors sm:flex-1"
+                  >
+                    💳 Pay to Deploy
+                  </a>
+                ) : (
+                  <button
+                    onClick={deploy}
+                    disabled={isDeploying}
+                    className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 sm:flex-1"
+                  >
+                    {isDeploying ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Deploying...
+                      </span>
+                    ) : (
+                      '🚀 Deploy Now'
+                    )}
+                  </button>
+                )}
               </div>
             </div>
+          </div>
+        )}
+        
+        {/* Confetti */}
+        {showConfetti && (
+          <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+            {[...Array(50)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-2 h-2 confetti-particle"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `-10px`,
+                  backgroundColor: ['#ff0', '#f0f', '#0ff', '#0f0', '#f00', '#00f', '#ff6b35'][Math.floor(Math.random() * 7)],
+                  borderRadius: Math.random() > 0.5 ? '50%' : '0',
+                  animation: `confettiFall ${2 + Math.random() * 3}s ease-in-out forwards`,
+                  animationDelay: `${Math.random() * 0.5}s`,
+                }}
+              />
+            ))}
           </div>
         )}
         
@@ -829,6 +882,21 @@ function OnboardContent() {
       </div>
     </div>
   )
+}
+
+// Confetti animation
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = `
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  `
+  if (!document.getElementById('confetti-styles')) {
+    style.id = 'confetti-styles'
+    document.head.appendChild(style)
+  }
 }
 
 export default function Onboard() {

@@ -304,7 +304,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                     {!alert.acknowledged && (
                       <button
                         onClick={() => acknowledgeAlert(alert.id)}
-                        className="mt-3 text-sm text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded transition-colors"
+                        className="mt-3 text-sm text-white bg-zinc-800 hover:bg-zinc-700 px-3 py-1 rounded transition-colors"
                       >
                         Acknowledge
                       </button>

@@ -13,9 +13,44 @@ module.exports = {
       },
       colors: {
         background: {
+          DEFAULT: 'var(--background)',
           1: 'var(--background-1)',
           2: 'var(--background-2)',
         },
+        foreground: {
+          DEFAULT: 'var(--foreground)',
+          subtle: 'var(--foreground-subtle)',
+        },
+        card: {
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
+        },
+        popover: {
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
+        },
+        primary: {
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
+        },
+        secondary: {
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
+        },
+        muted: {
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
+        },
+        accent: {
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
+        },
+        destructive: {
+          DEFAULT: 'var(--destructive)',
+        },
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
         gray: {
           1: 'var(--gray-1)',
           2: 'var(--gray-2)',
@@ -27,10 +62,6 @@ module.exports = {
           8: 'var(--gray-8)',
           9: 'var(--gray-9)',
           10: 'var(--gray-10)',
-        },
-        foreground: {
-          DEFAULT: 'var(--foreground)',
-          subtle: 'var(--foreground-subtle)',
         },
       },
       borderRadius: {

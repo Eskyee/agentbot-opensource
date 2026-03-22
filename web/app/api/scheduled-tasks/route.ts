@@ -1,105 +1,187 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
+import { prisma } from '@/app/lib/prisma'
 
 /**
- * Task Persistence API - STUBBED
- * 
- * TODO: Implement database layer
- * - Store tasks in database
- * - Persist task state
- * - Track task history
- * - Task completion tracking
- * - Recurring task support
+ * GET /api/scheduled-tasks?agentId=xxx
+ * List scheduled tasks for a user (optionally filtered by agent)
  */
-
-// In-memory storage for demo (NOT for production)
-const userTasks = new Map<string, any[]>()
-
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.email) {
+
+  if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // STUBBED: Return empty or demo data
-  const tasks = userTasks.get(session.user.email) || []
+  const { searchParams } = new URL(req.url)
+  const agentId = searchParams.get('agentId')
 
-  return NextResponse.json({
-    tasks,
-    count: tasks.length,
-    message: 'Task persistence database integration pending'
-  })
+  try {
+    const where: Record<string, any> = { userId: session.user.id }
+    if (agentId) where.agentId = agentId
+
+    const tasks = await prisma.scheduledTask.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        cronSchedule: true,
+        prompt: true,
+        enabled: true,
+        lastRun: true,
+        nextRun: true,
+        agentId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })
+
+    return NextResponse.json({
+      tasks,
+      count: tasks.length,
+    })
+  } catch (error) {
+    console.error('Scheduled tasks list error:', error)
+    return NextResponse.json({ error: 'Failed to list tasks' }, { status: 500 })
+  }
 }
 
+/**
+ * POST /api/scheduled-tasks
+ * Create a new scheduled task
+ */
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.email) {
+
+  if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { title, description, dueDate, priority } = await req.json()
+    const { name, description, cronSchedule, prompt, agentId, enabled } = await req.json()
 
-    if (!title) {
-      return NextResponse.json({ error: 'title required' }, { status: 400 })
+    if (!name || !cronSchedule || !prompt || !agentId) {
+      return NextResponse.json(
+        { error: 'name, cronSchedule, prompt, and agentId are required' },
+        { status: 400 }
+      )
     }
 
-    const task = {
-      id: 'task_' + Date.now(),
-      title,
-      description,
-      dueDate,
-      priority: priority || 'medium',
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    // Validate cron format (basic check)
+    const cronParts = cronSchedule.trim().split(/\s+/)
+    if (cronParts.length < 5 || cronParts.length > 6) {
+      return NextResponse.json(
+        { error: 'Invalid cron schedule. Expected 5-6 fields (e.g., "0 9 * * *")' },
+        { status: 400 }
+      )
     }
 
-    // STUBBED: Store in memory for demo
-    const tasks = userTasks.get(session.user.email) || []
-    tasks.push(task)
-    userTasks.set(session.user.email, tasks)
+    // Verify agent belongs to user
+    const agent = await prisma.agent.findFirst({
+      where: { id: agentId, userId: session.user.id },
+    })
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
+    const task = await prisma.scheduledTask.create({
+      data: {
+        userId: session.user.id,
+        agentId,
+        name: name.trim(),
+        description: description || null,
+        cronSchedule: cronSchedule.trim(),
+        prompt,
+        enabled: enabled !== false,
+      },
+    })
 
     return NextResponse.json(task, { status: 201 })
   } catch (error) {
+    console.error('Scheduled task create error:', error)
     return NextResponse.json({ error: 'Task creation failed' }, { status: 500 })
   }
 }
 
+/**
+ * PUT /api/scheduled-tasks
+ * Update a scheduled task
+ */
 export async function PUT(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.email) {
+
+  if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { taskId, status, title } = await req.json()
+    const { taskId, name, description, cronSchedule, prompt, enabled } = await req.json()
 
     if (!taskId) {
       return NextResponse.json({ error: 'taskId required' }, { status: 400 })
     }
 
-    // STUBBED: Update in memory for demo
-    const tasks = userTasks.get(session.user.email) || []
-    const task = tasks.find(t => t.id === taskId)
-    
-    if (!task) {
+    // Verify task belongs to user
+    const existing = await prisma.scheduledTask.findFirst({
+      where: { id: taskId, userId: session.user.id },
+    })
+    if (!existing) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
     }
 
-    if (status) task.status = status
-    if (title) task.title = title
-    task.updatedAt = new Date().toISOString()
+    const data: Record<string, any> = {}
+    if (name !== undefined) data.name = name.trim()
+    if (description !== undefined) data.description = description
+    if (cronSchedule !== undefined) data.cronSchedule = cronSchedule.trim()
+    if (prompt !== undefined) data.prompt = prompt
+    if (enabled !== undefined) data.enabled = enabled
 
-    return NextResponse.json({
-      ...task,
-      message: 'Task updates will persist to database once integration is complete'
+    const task = await prisma.scheduledTask.update({
+      where: { id: taskId },
+      data,
     })
+
+    return NextResponse.json(task)
   } catch (error) {
+    console.error('Scheduled task update error:', error)
     return NextResponse.json({ error: 'Task update failed' }, { status: 500 })
+  }
+}
+
+/**
+ * DELETE /api/scheduled-tasks
+ * Delete a scheduled task
+ */
+export async function DELETE(req: NextRequest) {
+  const session = await getServerSession(authOptions)
+
+  if (!session?.user?.email || !session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  try {
+    const { taskId } = await req.json()
+
+    if (!taskId) {
+      return NextResponse.json({ error: 'taskId required' }, { status: 400 })
+    }
+
+    // Verify task belongs to user
+    const existing = await prisma.scheduledTask.findFirst({
+      where: { id: taskId, userId: session.user.id },
+    })
+    if (!existing) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    }
+
+    await prisma.scheduledTask.delete({ where: { id: taskId } })
+
+    return NextResponse.json({ success: true, taskId })
+  } catch (error) {
+    console.error('Scheduled task delete error:', error)
+    return NextResponse.json({ error: 'Task deletion failed' }, { status: 500 })
   }
 }

@@ -23,8 +23,8 @@ function BillingSidebar({ userName, className = '' }: { userName: string; classN
               key={item.label}
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                item.active 
-                  ? 'bg-white/20 text-white' 
+                item.active
+                  ? 'bg-zinc-700 text-white'
                   : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
               }`}
             >
@@ -207,7 +207,7 @@ export default function BillingPage() {
                  <h2 className="text-lg font-semibold mb-3">AI API Keys</h2>
                  <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
                    <div className="flex items-center gap-3 mb-3">
-                     <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                     <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
                        <span className="text-xl">🔑</span>
                      </div>
                      <div>
@@ -228,10 +228,10 @@ export default function BillingPage() {
                {/* USDC on Base */}
                <div className="mb-4">
                  <h2 className="text-lg font-semibold mb-3">Pay with USDC</h2>
-                 <div className="rounded-xl border border-zinc-800 bg-gradient-to-r from-blue-900/30 to-blue-900/30 p-4">
+                 <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-4">
                    <div className="flex items-center justify-between mb-3">
                      <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
+                       <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
                          <span className="text-xl">💵</span>
                        </div>
                        <div>
@@ -251,7 +251,7 @@ export default function BillingPage() {
                    <div className="flex gap-2">
                      <button 
                        onClick={connectWallet}
-                       className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-sm font-medium hover:from-blue-600 hover:to-blue-700"
+                       className="w-full rounded-lg bg-blue-500 text-sm font-medium hover:bg-blue-600"
                      >
                        Connect Wallet
                      </button>
@@ -279,8 +279,8 @@ export default function BillingPage() {
                      <div
                        key={plan.id}
                        className={`relative rounded-lg border p-3 ${
-                         plan.popular 
-                           ? 'border-white bg-white/5' 
+                         plan.popular
+                           ? 'border-white bg-zinc-800'
                            : 'border-zinc-800 bg-zinc-900/50'
                        }`}
                      >

@@ -6,6 +6,10 @@ import Providers from "./providers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://agentbot.raveculture.xyz'),
@@ -13,8 +17,8 @@ export const metadata: Metadata = {
     default: 'Agentbot — Deploy AI Agents in 60 Seconds',
     template: '%s | Agentbot',
   },
-  description: 'Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol. Built for the underground.',
-  keywords: ['AI agent deployment', 'autonomous AI agents', 'BYOK AI', 'agent hosting', 'deploy AI agent', 'Telegram AI bot', 'crypto AI agent', 'Base blockchain', 'agent orchestration', 'AI infrastructure'],
+  description: 'Deploy autonomous AI agents for your creative practice in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol.',
+  keywords: ['AI agent deployment', 'autonomous AI agents', 'BYOK AI', 'agent hosting', 'deploy AI agent', 'creative industry AI', 'AI for creators', 'Base blockchain', 'agent orchestration', 'AI infrastructure'],
   authors: [{ name: 'Agentbot', url: 'https://agentbot.raveculture.xyz' }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
@@ -120,7 +124,7 @@ export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={cn(GeistSans.variable, GeistMono.variable, "font-sans", geist.variable)}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <script
@@ -138,12 +142,6 @@ export default function RootLayout({
         </a>
         <SpeedInsights />
         <Providers>
-          {/* Launch banner */}
-          <div className="w-full bg-white text-black text-center py-2 text-[11px] font-bold uppercase tracking-widest font-mono relative overflow-hidden">
-            <div className="animate-marquee whitespace-nowrap">
-              🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp; 🚀 Launching 31st March 2026 &nbsp;&nbsp;&nbsp;
-            </div>
-          </div>
           <Navbar />
           <main id="main-content" className="flex-1" tabIndex={-1}>
             {children}

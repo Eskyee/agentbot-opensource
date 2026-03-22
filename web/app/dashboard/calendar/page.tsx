@@ -115,8 +115,8 @@ function CalendarPageContent() {
                 key={item.label}
                 href={item.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  item.href === '/dashboard/calendar' 
-                    ? 'bg-white/20 text-white' 
+                  item.href === '/dashboard/calendar'
+                    ? 'bg-zinc-700 text-white'
                     : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                 }`}
               >

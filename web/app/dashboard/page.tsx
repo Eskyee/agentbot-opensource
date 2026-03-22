@@ -48,6 +48,7 @@ interface InstanceData {
 const navItems = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Agent Fleet', href: '/dashboard/fleet' },
+  { label: '🧬 Colony', href: '/dashboard/colony' },
   { label: 'Cost Tracking', href: '/dashboard/cost' },
   { label: 'System Pulse', href: '/dashboard/system-pulse' },
   { label: 'Memory Log', href: '/dashboard/memory' },
@@ -106,7 +107,7 @@ function DashboardContent() {
     }
   }, [status, router])
 
-    useEffect(() => {
+    useEffect(() => { (async () => {
       // Clear localStorage instance data when no session (user logged out)
       if (!session) {
         localStorage.removeItem('agentbot_instance')
@@ -135,6 +136,18 @@ function DashboardContent() {
         botUsername = parsed.botUsername || ''
       }
       
+      // Fallback: fetch from API if no localStorage data
+      if (!userId) {
+        try {
+          const agentsRes = await fetch('/api/agents')
+          const agentsData = await agentsRes.json()
+          if (agentsData.agents && agentsData.agents.length > 0) {
+            userId = agentsData.agents[0].userId
+            botUsername = agentsData.agents[0].botUsername || ''
+          }
+        } catch {}
+      }
+      
       if (!userId) {
         setError('No instance found. Please deploy first.')
         setLoading(false)
@@ -143,7 +156,7 @@ function DashboardContent() {
       
       fetchInstance(userId, botUsername)
       fetchCredits()
-    }, [searchParams, session])
+    })(); }, [searchParams, session])
 
   const fetchCredits = async () => {
     try {

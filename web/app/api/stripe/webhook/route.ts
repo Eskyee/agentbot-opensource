@@ -29,11 +29,13 @@ export async function POST(request: NextRequest) {
       const userId = session.metadata?.userId;
       const stripeCustomerId = session.customer as string | null || null;
 
-      // Only map current active plans — deprecated plan names fall back to 'free'
+      // Map all current plan names — unknown plans fall back to 'free'
       const planMap: Record<string, string> = {
         underground: 'underground',
+        solo:        'solo',
         collective:  'collective',
         label:       'label',
+        network:     'network',
       };
       const mappedPlan = planMap[plan] || 'free';
 
