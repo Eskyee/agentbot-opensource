@@ -48,6 +48,7 @@ interface InstanceData {
 const navItems = [
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Agent Fleet', href: '/dashboard/fleet' },
+  { label: '🧬 Colony', href: '/dashboard/colony' },
   { label: 'Cost Tracking', href: '/dashboard/cost' },
   { label: 'System Pulse', href: '/dashboard/system-pulse' },
   { label: 'Memory Log', href: '/dashboard/memory' },
