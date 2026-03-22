@@ -27,24 +27,6 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-<<<<<<< HEAD
-  const nodes = [
-    { id: 'atlas',      name: 'Atlas',      role: 'orchestrator', status: 'active',  x: 400, y: 300, load: 72, memory: 58 },
-    { id: 'watchtower', name: 'Watchtower', role: 'monitor',     status: 'active',  x: 200, y: 150, load: 18, memory: 22 },
-    { id: 'djbot',      name: 'DJ Bot',     role: 'specialist',  status: 'active',  x: 600, y: 150, load: 44, memory: 61 },
-    { id: 'swarm1',     name: 'Swarm-1',   role: 'worker',      status: 'idle',    x: 200, y: 450, load:  3, memory: 12 },
-    { id: 'swarm2',     name: 'Swarm-2',   role: 'worker',      status: 'active',  x: 600, y: 450, load: 55, memory: 38 },
-  ]
-
-  const edges = [
-    { id: 'e1', from: 'atlas',      to: 'watchtower', strength: 0.8 },
-    { id: 'e2', from: 'atlas',      to: 'djbot',      strength: 0.7 },
-    { id: 'e3', from: 'atlas',      to: 'swarm1',     strength: 0.5 },
-    { id: 'e4', from: 'atlas',      to: 'swarm2',     strength: 0.6 },
-    { id: 'e5', from: 'watchtower', to: 'swarm1',     strength: 0.4 },
-    { id: 'e6', from: 'watchtower', to: 'swarm2',     strength: 0.5 },
-  ]
-=======
   // Fetch all known soul nodes in parallel
   const soulNodes = await Promise.all(SOUL_URLS.map(fetchSoulNode));
   const live = soulNodes.filter(Boolean) as Array<{ url: string; info: any; status: any }>;
@@ -53,7 +35,7 @@ export async function GET() {
     // Fallback: no soul nodes reachable
     return NextResponse.json({
       nodes: [
-        { id: 'atlas', name: 'Atlas', type: 'coordinator', status: 'offline', x: 400, y: 300, load: 0, memory: 0 },
+        { id: 'atlas', name: 'Atlas', role: 'orchestrator', status: 'offline', x: 400, y: 300, load: 0, memory: 0 },
       ],
       edges: [],
       timestamp: new Date().toISOString(),
@@ -80,7 +62,7 @@ export async function GET() {
     nodes.push({
       id: designation,
       name: designation,
-      type: isRoot ? 'coordinator' : info.children_count > 0 ? 'specialist' : 'worker',
+      role: isRoot ? 'orchestrator' : info.children_count > 0 ? 'specialist' : 'worker',
       status: status.dormant ? 'idle' : status.active ? 'active' : 'stale',
       x: isRoot ? 400 : 200 + (i * 200),
       y: isRoot ? 300 : 150 + (i * 100),
@@ -102,7 +84,7 @@ export async function GET() {
       nodes.push({
         id: childId,
         name: `Clone-${childId}`,
-        type: 'worker',
+        role: 'worker',
         status: child.status === 'running' ? 'active' : 'stale',
         x: isRoot ? 200 + (ci * 200) : 400,
         y: isRoot ? 450 : 300,
@@ -113,9 +95,9 @@ export async function GET() {
       });
       edges.push({
         id: `e-${designation}-${childId}`,
-        source: designation,
-        target: childId,
-        type: 'spawns',
+        from: designation,
+        to: childId,
+        strength: 0.6,
       });
     });
 
@@ -125,30 +107,29 @@ export async function GET() {
         ?.info.designation ?? 'parent';
       edges.push({
         id: `e-${parentId}-${designation}`,
-        source: parentId,
-        target: designation,
-        type: 'spawns',
+        from: parentId,
+        to: designation,
+        strength: 0.5,
       });
     }
   });
 
   // Add edges between parent and child nodes (monitoring/delegation)
   if (nodes.length > 1) {
-    const root = nodes.find(n => n.type === 'coordinator');
+    const root = nodes.find(n => n.role === 'orchestrator');
     if (root) {
-      nodes.filter(n => n.id !== root.id && n.type !== 'worker').forEach(n => {
-        if (!edges.find(e => e.source === root.id && e.target === n.id)) {
+      nodes.filter(n => n.id !== root.id && n.role !== 'worker').forEach(n => {
+        if (!edges.find(e => e.from === root.id && e.to === n.id)) {
           edges.push({
             id: `e-${root.id}-${n.id}`,
-            source: root.id,
-            target: n.id,
-            type: 'delegates',
+            from: root.id,
+            to: n.id,
+            strength: 0.7,
           });
         }
       });
     }
   }
->>>>>>> e6f87ab763da088d2c178af5f2b12e09e4194141
 
   return NextResponse.json({
     nodes,
