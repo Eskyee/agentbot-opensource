@@ -24,6 +24,8 @@ services:
         value: https://rpc.moderato.tempo.xyz
       - key: TEMPO_CHAIN_ID
         value: "42431"
+      - key: SOUL_SERVICE_URL
+        value: "https://borg-0-3-production.up.railway.app"
       # Soul Wallet (generated for this instance)
       - key: EVM_PRIVATE_KEY
         sync: false  # Set manually in Render dashboard
