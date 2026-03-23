@@ -89,3 +89,8 @@ playwright-results/
 .claude/worktrees/
 .agents/skills/
 skills-lock.json
+
+# Local env files (never commit)
+.env.local
+web/.env.local
+agentbot-backend/.env.local
