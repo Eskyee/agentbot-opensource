@@ -19,10 +19,10 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">Today we're making a major leap. Agentbot is now open source under the MIT license. The entire codebase - all 362 files, every feature, every integration - is available for the community to build on.</p>
+          <p className="text-zinc-300 mb-4">Today we&apos;re making a major leap. Agentbot is now open source under the MIT license. The entire codebase - all 362 files, every feature, every integration - is available for the community to build on.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Why Open Source?</h2>
-          <p className="text-zinc-300 mb-4">We've always believed in the power of community-driven development. By opening up Agentbot, we're enabling:</p>
+          <p className="text-zinc-300 mb-4">We&apos;ve always believed in the power of community-driven development. By opening up Agentbot, we&apos;re enabling:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>Self-hosting</strong> - Run your own agent infrastructure</li>
             <li><strong>Customization</strong> - Modify every feature for your needs</li>
@@ -31,7 +31,7 @@ export default function Post() {
             <li><strong>Innovation</strong> - Community-driven feature development</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's Included</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Included</h2>
           <p className="text-zinc-300 mb-4">The open source release includes everything you need to deploy AI agents:</p>
           
           <h3 className="text-xl font-bold mt-6 mb-3">Core Platform</h3>
@@ -70,7 +70,7 @@ export default function Post() {
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Claude Code Skills</h2>
-          <p className="text-zinc-300 mb-4">We've included 16 Claude Code skills for self-hosting and development:</p>
+          <p className="text-zinc-300 mb-4">We&apos;ve included 16 Claude Code skills for self-hosting and development:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>setup-agentbot - Local development setup</li>
             <li>add-telegram - Telegram bot integration</li>
@@ -106,7 +106,7 @@ cd agentbot-backend && npm install && npm run dev`}
           </pre>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Join the Community</h2>
-          <p className="text-zinc-300 mb-4">This is just the beginning. The community will shape Agentbot's future:</p>
+          <p className="text-zinc-300 mb-4">This is just the beginning. The community will shape Agentbot&apos;s future:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>GitHub</strong> - Star, fork, contribute: github.com/Eskyee/agentbot-opensource</li>
             <li><strong>Discord</strong> - Join the community: discord.gg/eskyee</li>

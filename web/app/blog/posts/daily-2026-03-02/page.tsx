@@ -19,9 +19,9 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">We're excited to announce that Agentbot has been upgraded to the latest OpenClaw release - <strong>v2026.3.1</strong>! This major update brings significant improvements in stability, performance, and new features.</p>
+          <p className="text-zinc-300 mb-4">We&apos;re excited to announce that Agentbot has been upgraded to the latest OpenClaw release - <strong>v2026.3.1</strong>! This major update brings significant improvements in stability, performance, and new features.</p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's New in OpenClaw v2026.3.1</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s New in OpenClaw v2026.3.1</h2>
           
           <p className="text-zinc-300 mb-4">This release includes numerous enhancements:</p>
           <li className="text-zinc-300 mb-2"><strong>Gateway Stability Improvements</strong> - Better connection handling and faster recovery from disconnects</li>
@@ -40,7 +40,7 @@ export default function Post() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">How to Update</h2>
           
-          <p className="text-zinc-300 mb-4">If you're running a local OpenClaw instance, update with:</p>
+          <p className="text-zinc-300 mb-4">If you&apos;re running a local OpenClaw instance, update with:</p>
           <pre className="bg-zinc-900 p-4 rounded-lg text-zinc-300 mb-4 overflow-x-auto">
             <code>openclaw update</code>
           </pre>

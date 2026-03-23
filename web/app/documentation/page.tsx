@@ -145,7 +145,7 @@ export default function ViewDocsPage() {
         </p>
 
         <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-6">What's New</h2>
+          <h2 className="text-2xl font-bold mb-6">What&apos;s New</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {newFeatures.map((feature) => (
               <div key={feature.title} className="rounded-xl border border-green-500/30 bg-green-500/5 p-5">

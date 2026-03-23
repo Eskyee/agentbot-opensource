@@ -19,7 +19,7 @@ export default function Post() {
           </div>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Introduction</h2>
-          <p className="text-zinc-300 mb-4">In a rapidly evolving digital landscape, staying updated with the latest advancements in AI deployment is crucial. In our latest release, OpenClaw 2026.2.26, we've introduced several impactful changes that enhance the overall experience for Agentbot users. Let’s delve into what’s new and how it can benefit your AI agent deployments.</p>
+          <p className="text-zinc-300 mb-4">In a rapidly evolving digital landscape, staying updated with the latest advancements in AI deployment is crucial. In our latest release, OpenClaw 2026.2.26, we&apos;ve introduced several impactful changes that enhance the overall experience for Agentbot users. Let’s delve into what’s new and how it can benefit your AI agent deployments.</p>
           
           <h2 className="text-2xl font-bold mt-8 mb-4">Key Updates from OpenClaw</h2>
           <p className="text-zinc-300 mb-4">The recent commits have brought several fixes and improvements that streamline the functionality of AI agents within Agentbot. Here are some highlights:</p>

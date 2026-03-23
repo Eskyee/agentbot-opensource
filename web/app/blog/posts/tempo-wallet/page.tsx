@@ -19,7 +19,7 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">We're excited to announce <strong>Tempo Wallet</strong> support in Agentbot. Now your AI agents can pay for services autonomously using USDC on Base — no human intervention required.</p>
+          <p className="text-zinc-300 mb-4">We&apos;re excited to announce <strong>Tempo Wallet</strong> support in Agentbot. Now your AI agents can pay for services autonomously using USDC on Base — no human intervention required.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">What is Tempo Wallet?</h2>
           <p className="text-zinc-300 mb-4">Tempo is a wallet infrastructure designed specifically for AI agents. Unlike traditional wallets that require human signatures, Tempo wallets can:</p>
@@ -80,7 +80,7 @@ const result = await agent.callPaidService('https://mpp.dev/api/ai', {
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Get Started</h2>
-          <p className="text-zinc-300 mb-4">Tempo Wallet is now available in Agentbot. Configure your agent's wallet via the API or dashboard.</p>
+          <p className="text-zinc-300 mb-4">Tempo Wallet is now available in Agentbot. Configure your agent&apos;s wallet via the API or dashboard.</p>
           <p className="text-zinc-300 mb-4">Built on <strong>x402 protocol</strong> for standardized machine-to-machine payments.</p>
 
           <div className="mt-12 pt-8 border-t border-zinc-800">

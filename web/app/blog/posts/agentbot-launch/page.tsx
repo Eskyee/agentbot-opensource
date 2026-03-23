@@ -19,7 +19,7 @@ export default function AgentbotLaunchPost() {
           </div>
 
           <p className="text-lg text-zinc-300 mb-6">
-            After 3 months of building, security hardening, and infrastructure work—Agentbot is live. Here's the story behind it and why it exists.
+            After 3 months of building, security hardening, and infrastructure work—Agentbot is live. Here&apos;s the story behind it and why it exists.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">The Problem</h2>
@@ -50,7 +50,7 @@ export default function AgentbotLaunchPost() {
             One-click deploy. Your API key. No markup. No credit system. Just conversation.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's Included</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Included</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li><strong>One-click deploy</strong> — From signup to chatting with your agent in under 60 seconds</li>
             <li><strong>24/7 availability</strong> — Cloud-hosted, always online, zero maintenance</li>
@@ -98,9 +98,9 @@ export default function AgentbotLaunchPost() {
             <li><strong>AI:</strong> OpenRouter (Kimi K2.5 default)</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's Next</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Next</h2>
           <p className="text-zinc-300 mb-4">
-            We're just getting started. Here's what's on the roadmap:
+            We&apos;re just getting started. Here&apos;s what&apos;s on the roadmap:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>Usage analytics dashboard</li>

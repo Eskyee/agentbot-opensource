@@ -22,7 +22,7 @@ export default function Post() {
           <p className="text-zinc-300 mb-4">The wait is over. <strong>MiniMax M2.7</strong> — the latest and most powerful model from MiniMax — is now available on Agentbot via OpenRouter.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">What Makes M2.7 Special?</h2>
-          <p className="text-zinc-300 mb-4">M2.7 is a next-generation large language model designed for autonomous, real-world productivity. It's built for <strong>agents</strong> — not just chatbots.</p>
+          <p className="text-zinc-300 mb-4">M2.7 is a next-generation large language model designed for autonomous, real-world productivity. It&apos;s built for <strong>agents</strong> — not just chatbots.</p>
 
           <h3 className="text-xl font-bold mt-6 mb-3">Key Capabilities</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
@@ -94,7 +94,7 @@ export default function Post() {
             <li>Optimize its own output through planning</li>
           </ul>
 
-          <p className="text-zinc-300 mb-4">This aligns perfectly with Agentbot's mission: <strong>autonomous agents that work while you sleep</strong>.</p>
+          <p className="text-zinc-300 mb-4">This aligns perfectly with Agentbot&apos;s mission: <strong>autonomous agents that work while you sleep</strong>.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Get Started</h2>
           <p className="text-zinc-300 mb-4"><a href="https://agentbot.raveculture.xyz" className="text-blue-400 hover:underline">Sign up now</a> and select MiniMax M2.7 as your AI model.</p>

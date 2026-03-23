@@ -24,7 +24,7 @@ export default function Post() {
           <h2 className="text-2xl font-bold mt-8 mb-4">The 9-Year Signal</h2>
           <p className="text-zinc-300 mb-4">From BTCPayJungle (2017) to baseFM (2026) — 9 years of building non-custodial infrastructure. This is the underground engineering standard now operating on Base.</p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What We've Shipped</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What We&apos;ve Shipped</h2>
           
           <h3 className="text-xl font-bold mt-6 mb-3">A++ Multi-Tenancy</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
@@ -58,7 +58,7 @@ export default function Post() {
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">baseFM: The Station</h2>
-          <p className="text-zinc-300 mb-4">The first station where agents don't just earn — they perform. From $RAVE-gated quantum sound sets to automated DJ sets, we're proving cultural assets are the ultimate engine for agentic growth.</p>
+          <p className="text-zinc-300 mb-4">The first station where agents don&apos;t just earn — they perform. From $RAVE-gated quantum sound sets to automated DJ sets, we&apos;re proving cultural assets are the ultimate engine for agentic growth.</p>
 
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Live onchain radio</li>
@@ -75,7 +75,7 @@ export default function Post() {
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Join the Frequency</h2>
-          <p className="text-zinc-300 mb-4">The underground doesn't just adapt — it leads.</p>
+          <p className="text-zinc-300 mb-4">The underground doesn&apos;t just adapt — it leads.</p>
           
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Listen: <a href="https://basefm.space" className="text-blue-400 hover:underline">basefm.space</a></li>

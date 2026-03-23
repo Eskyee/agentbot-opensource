@@ -156,7 +156,8 @@ function DashboardContent() {
       
       fetchInstance(userId, botUsername)
       fetchCredits()
-    })(); }, [searchParams, session])
+    })(); // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams, session])
 
   const fetchCredits = async () => {
     try {

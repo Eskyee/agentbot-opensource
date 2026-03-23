@@ -19,19 +19,19 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">Today marks a major milestone. The Agentbot platform is now fully production-ready with autonomous trading, x402 payment protocol support, and a completely redesigned finance dashboard. Here's what's live.</p>
+          <p className="text-zinc-300 mb-4">Today marks a major milestone. The Agentbot platform is now fully production-ready with autonomous trading, x402 payment protocol support, and a completely redesigned finance dashboard. Here&apos;s what&apos;s live.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Bankr Trading Integration</h2>
           <p className="text-zinc-300 mb-4">Your agents can now trade crypto autonomously via Bankr. The integration includes:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Real-time portfolio balances across Base, Polygon, Ethereum, Solana, Unichain</li>
-            <li>Natural language trading commands ("Buy $50 ETH on Base")</li>
+            <li>Natural language trading commands (&quot;Buy $50 ETH on Base&quot;)</li>
             <li>Admin-only access protecting platform funds</li>
             <li>Job polling for async trade execution</li>
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">x402 Payment Protocol</h2>
-          <p className="text-zinc-300 mb-4">We've integrated the x402 protocol for micro-payments in USDC on Base. Agent APIs can now monetize access:</p>
+          <p className="text-zinc-300 mb-4">We&apos;ve integrated the x402 protocol for micro-payments in USDC on Base. Agent APIs can now monetize access:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Payment endpoint configuration at /lib/x402.ts</li>
             <li>USDC on Base (eip155:8453)</li>

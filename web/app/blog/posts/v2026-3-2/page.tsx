@@ -28,9 +28,9 @@ export default function Post() {
           <li className="text-zinc-300 mb-2"><strong>Security Improvements</strong> - Patched vulnerabilities</li>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Agentbot Platform: Almost Live!</h2>
-          <p className="text-zinc-300 mb-4">Big news: we're this close to going live with Agentbot for everyone. Here's where we are:</p>
+          <p className="text-zinc-300 mb-4">Big news: we&apos;re this close to going live with Agentbot for everyone. Here&apos;s where we are:</p>
           
-          <h3 className="text-xl font-bold mt-6 mb-3">✅ What's Ready</h3>
+          <h3 className="text-xl font-bold mt-6 mb-3">✅ What&apos;s Ready</h3>
           <li className="text-zinc-300 mb-2"><strong>User Auth</strong> - Login/signup working with credentials, GitHub, Google</li>
           <li className="text-zinc-300 mb-2"><strong>Database</strong> - Neon PostgreSQL with full schema</li>
           <li className="text-zinc-300 mb-2"><strong>Dashboard</strong> - User dashboard with agent management</li>
@@ -51,7 +51,7 @@ export default function Post() {
           <li className="text-zinc-300 mb-2">Go live 🚀</li>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Pricing Plans</h2>
-          <p className="text-zinc-300 mb-4">We're launching with 5 plans:</p>
+          <p className="text-zinc-300 mb-4">We&apos;re launching with 5 plans:</p>
           <li className="text-zinc-300 mb-2"><strong>Starter</strong> - £19/mo - 2GB RAM, 1 CPU</li>
           <li className="text-zinc-300 mb-2"><strong>Pro</strong> - £39/mo - 4GB RAM, 2 CPU</li>
           <li className="text-zinc-300 mb-2"><strong>Scale</strong> - £79/mo - 8GB RAM, 4 CPU</li>

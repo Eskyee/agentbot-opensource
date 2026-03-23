@@ -19,7 +19,7 @@ export default function WeeklyImprovementsPost() {
           </div>
 
           <p className="text-lg text-zinc-300 mb-6">
-            This week's improvements: dark mode UI, Stripe checkout, OAuth, and email integration.
+            This week&apos;s improvements: dark mode UI, Stripe checkout, OAuth, and email integration.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Dark Mode UI Refresh</h2>

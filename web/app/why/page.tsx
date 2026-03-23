@@ -82,7 +82,7 @@ export default function WhyAgentbotPage() {
             Why Agentbot?
           </h1>
           <p className="text-xl text-zinc-400">
-            Local OpenClaw agents are powerful, but they come with real friction. You need to install dependencies, configure API keys, and keep your machine running constantly. Your agent stops when you close your laptop. Adding new skills means searching ClawHub, downloading files, and troubleshooting errors. If you want 24/7 uptime, you'll need to buy a VPS or leave a Mac Mini running at home.
+            Local OpenClaw agents are powerful, but they come with real friction. You need to install dependencies, configure API keys, and keep your machine running constantly. Your agent stops when you close your laptop. Adding new skills means searching ClawHub, downloading files, and troubleshooting errors. If you want 24/7 uptime, you&apos;ll need to buy a VPS or leave a Mac Mini running at home.
           </p>
           <p className="text-xl text-zinc-400 mt-4">
             <strong>Agentbot removes all of this.</strong> It deploys OpenClaw to the cloud in one click, runs 24/7 without hardware, and gives you instant access to ready-to-use skills through Telegram, Discord, and WhatsApp. No terminal commands, no server costs, no installation headaches.
@@ -165,14 +165,14 @@ export default function WhyAgentbotPage() {
         <section id="features" className="mb-16">
           <h2 className="text-3xl font-bold mb-6">Features that actually matter</h2>
           <p className="text-zinc-400 mb-8">
-            Agentbot combines OpenClaw's intelligent agent capabilities with cloud infrastructure and instant skill access. Here's what you can do with it:
+            Agentbot combines OpenClaw&apos;s intelligent agent capabilities with cloud infrastructure and instant skill access. Here&apos;s what you can do with it:
           </p>
 
           <div className="space-y-8">
             <div className="bg-zinc-900 border border-zinc-800  p-6">
               <h3 className="text-xl font-bold mb-3">Persistent memory & custom personality</h3>
               <p className="text-zinc-400">
-                Agentbot remembers your preferences, work style, and past conversations across sessions. You can also customize its persona—give it a name, set its tone, and define how it responds. Tell it once to "always format reports with three bullet points and one risk note," and it applies that rule automatically. This transforms a generic chatbot into a personalized assistant that adapts to how you work.
+                Agentbot remembers your preferences, work style, and past conversations across sessions. You can also customize its persona—give it a name, set its tone, and define how it responds. Tell it once to &quot;always format reports with three bullet points and one risk note,&quot; and it applies that rule automatically. This transforms a generic chatbot into a personalized assistant that adapts to how you work.
               </p>
             </div>
 
@@ -186,7 +186,7 @@ export default function WhyAgentbotPage() {
             <div className="bg-zinc-900 border border-zinc-800  p-6">
               <h3 className="text-xl font-bold mb-3">Ready-to-use skills at your fingertips</h3>
               <p className="text-zinc-400">
-                Agentbot includes pre-built skills for web search, data analysis, image processing, coding assistance, and more. You don't need to install skills one by one. You can call and chain them instantly within the chat interface. Need to analyze a CSV file, generate charts, and export a PDF? Just describe the workflow, and Agentbot calls the right skills automatically.
+                Agentbot includes pre-built skills for web search, data analysis, image processing, coding assistance, and more. You don&apos;t need to install skills one by one. You can call and chain them instantly within the chat interface. Need to analyze a CSV file, generate charts, and export a PDF? Just describe the workflow, and Agentbot calls the right skills automatically.
               </p>
             </div>
 
@@ -200,7 +200,7 @@ export default function WhyAgentbotPage() {
             <div className="bg-zinc-900 border border-zinc-800  p-6">
               <h3 className="text-xl font-bold mb-3">Kimi K2.5 Thinking model</h3>
               <p className="text-zinc-400">
-                Agentbot uses Kimi's advanced K2.5 Thinking model with 128K context window. It provides advanced reasoning capabilities for complex tasks, financial analysis, competitive research, and real-time data tracking with higher accuracy than generic models.
+                Agentbot uses Kimi&apos;s advanced K2.5 Thinking model with 128K context window. It provides advanced reasoning capabilities for complex tasks, financial analysis, competitive research, and real-time data tracking with higher accuracy than generic models.
               </p>
             </div>
 
@@ -224,7 +224,7 @@ export default function WhyAgentbotPage() {
             <div className="bg-zinc-900 border border-zinc-800  p-6">
               <h3 className="text-xl font-bold mb-3">Deploy from Marketplace</h3>
               <p className="text-zinc-400 mb-3">
-                Don't want to build from scratch? Browse our <Link href="/marketplace" className="text-blue-500 hover:underline">marketplace</Link> of pre-configured agents. Each template comes with personality, skills, and use-case-specific configurations ready to go.
+                Don&apos;t want to build from scratch? Browse our <Link href="/marketplace" className="text-blue-500 hover:underline">marketplace</Link> of pre-configured agents. Each template comes with personality, skills, and use-case-specific configurations ready to go.
               </p>
               <p className="text-zinc-400 mb-3">
                 <strong>Popular templates:</strong>
@@ -261,7 +261,7 @@ export default function WhyAgentbotPage() {
               </p>
               <ul className="list-disc list-inside text-zinc-400 mb-4 space-y-2">
                 <li><strong>Create from scratch:</strong> Deploy a fresh OpenClaw instance with custom configuration</li>
-                <li><strong>Link existing:</strong> Connect your local OpenClaw to Agentbot's cloud infrastructure</li>
+                <li><strong>Link existing:</strong> Connect your local OpenClaw to Agentbot&apos;s cloud infrastructure</li>
                 <li><strong>Deploy from marketplace:</strong> Choose a pre-configured agent template and deploy instantly</li>
               </ul>
               <p className="text-zinc-400 mb-4">
@@ -283,13 +283,13 @@ export default function WhyAgentbotPage() {
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold mb-4">Step 2: Customize your AI assistant's personality</h3>
+              <h3 className="text-2xl font-bold mb-4">Step 2: Customize your AI assistant&apos;s personality</h3>
               <p className="text-zinc-400 mb-4">
-                Agentbot's behavior isn't fixed. You can set its name, role, speaking style, and output format with a single instruction. Adjust its tone from formal to casual, make responses shorter or more detailed, or add standard opening and closing phrases.
+                Agentbot&apos;s behavior isn&apos;t fixed. You can set its name, role, speaking style, and output format with a single instruction. Adjust its tone from formal to casual, make responses shorter or more detailed, or add standard opening and closing phrases.
               </p>
               <div className="bg-zinc-900 border border-zinc-800  p-6">
                 <p className="text-sm text-zinc-500 mb-2">Example customization:</p>
-                <p className="text-zinc-400 italic">"You are a professional business analyst. Always format reports with three bullet points and one risk note. Use a formal tone and end messages with 'Best regards, Your AI Assistant.'"</p>
+                <p className="text-zinc-400 italic">&quot;You are a professional business analyst. Always format reports with three bullet points and one risk note. Use a formal tone and end messages with &apos;Best regards, Your AI Assistant.&apos;&quot;</p>
               </div>
             </div>
 
@@ -301,9 +301,9 @@ export default function WhyAgentbotPage() {
               <div className="bg-zinc-900 border border-zinc-800  p-6">
                 <p className="text-sm text-zinc-500 mb-3">Example prompts:</p>
                 <ul className="space-y-2 text-zinc-400">
-                  <li>• "Analyze current stock market opportunities and generate insights."</li>
-                  <li>• "Conduct a competitor analysis and ask me for required information step by step."</li>
-                  <li>• "Parse this CSV file, create visualizations, and export a PDF report."</li>
+                  <li>• &quot;Analyze current stock market opportunities and generate insights.&quot;</li>
+                  <li>• &quot;Conduct a competitor analysis and ask me for required information step by step.&quot;</li>
+                  <li>• &quot;Parse this CSV file, create visualizations, and export a PDF report.&quot;</li>
                 </ul>
               </div>
             </div>
@@ -318,9 +318,9 @@ export default function WhyAgentbotPage() {
                 <p className="text-zinc-400 mb-4 italic">At [time], do [task], output [format], and follow [constraints].</p>
                 <p className="text-sm text-zinc-500 mb-3">Example prompts:</p>
                 <ul className="space-y-2 text-zinc-400">
-                  <li>• "Every Friday at 5 PM, generate a weekly report using the template I shared earlier."</li>
-                  <li>• "Every morning at 8:30, find the top 5 AI news stories and summarize them."</li>
-                  <li>• "Remind me in one hour to shut down my computer. Use a gentle tone."</li>
+                  <li>• &quot;Every Friday at 5 PM, generate a weekly report using the template I shared earlier.&quot;</li>
+                  <li>• &quot;Every morning at 8:30, find the top 5 AI news stories and summarize them.&quot;</li>
+                  <li>• &quot;Remind me in one hour to shut down my computer. Use a gentle tone.&quot;</li>
                 </ul>
               </div>
             </div>
@@ -342,7 +342,7 @@ export default function WhyAgentbotPage() {
               <div className="bg-zinc-800  p-4">
                 <p className="text-sm text-zinc-500 mb-2">Example prompt:</p>
                 <p className="text-zinc-400 italic text-sm">
-                  "Every morning at 8:30, use Web Search to find the top 5 most significant news stories about AI Agent developments. Summarize each into 2 concise bullets, and save these daily briefs into my cloud folder 'AI Trends.' At the end of each week, compile all briefs into a one-page executive summary PDF."
+                  &quot;Every morning at 8:30, use Web Search to find the top 5 most significant news stories about AI Agent developments. Summarize each into 2 concise bullets, and save these daily briefs into my cloud folder &apos;AI Trends.&apos; At the end of each week, compile all briefs into a one-page executive summary PDF.&quot;
                 </p>
               </div>
             </div>
@@ -355,7 +355,7 @@ export default function WhyAgentbotPage() {
               <div className="bg-zinc-800  p-4">
                 <p className="text-sm text-zinc-500 mb-2">Example prompt:</p>
                 <p className="text-zinc-400 italic text-sm">
-                  "Draft a comprehensive whitepaper on 'The Future of Remote Work in 2026.' Once finished, proofread it for clarity, add a risk analysis section, and save the final Markdown file to my 'Professional Reports' folder."
+                  &quot;Draft a comprehensive whitepaper on &apos;The Future of Remote Work in 2026.&apos; Once finished, proofread it for clarity, add a risk analysis section, and save the final Markdown file to my &apos;Professional Reports&apos; folder.&quot;
                 </p>
               </div>
             </div>
@@ -368,7 +368,7 @@ export default function WhyAgentbotPage() {
               <div className="bg-zinc-800  p-4">
                 <p className="text-sm text-zinc-500 mb-2">Example prompt:</p>
                 <p className="text-zinc-400 italic text-sm">
-                  "Examine my 'marketing_performance.csv' file to identify the highest-performing channels. Generate a pie chart for budget distribution and a line graph for ROI trends, then compile everything into a PDF report and save it to cloud storage."
+                  &quot;Examine my &apos;marketing_performance.csv&apos; file to identify the highest-performing channels. Generate a pie chart for budget distribution and a line graph for ROI trends, then compile everything into a PDF report and save it to cloud storage.&quot;
                 </p>
               </div>
             </div>
@@ -376,7 +376,7 @@ export default function WhyAgentbotPage() {
             <div className="bg-zinc-900 border border-zinc-800  p-6">
               <h3 className="text-xl font-bold mb-3">5. Onchain community management</h3>
               <p className="text-zinc-400 mb-3">
-                <strong>Scenario:</strong> You're building an underground music community and need an agent that understands the culture, grows engagement organically, and bridges humans with AI agents onchain.
+                <strong>Scenario:</strong> You&apos;re building an underground music community and need an agent that understands the culture, grows engagement organically, and bridges humans with AI agents onchain.
               </p>
               <div className="bg-zinc-800  p-4">
                 <p className="text-sm text-zinc-500 mb-2">Example: Deploy basefmbot template</p>
@@ -435,9 +435,9 @@ export default function WhyAgentbotPage() {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800  p-6">
-              <h3 className="font-bold mb-2">What if Agentbot doesn't respond to messages?</h3>
+              <h3 className="font-bold mb-2">What if Agentbot doesn&apos;t respond to messages?</h3>
               <p className="text-zinc-400">
-                First, try refreshing your chat or reconnecting. If that doesn't work, go to your <Link href="/dashboard" className="text-blue-500 hover:underline">Dashboard</Link> and click "Restart Agent." Wait for it to restart, then message again. If neither solution works, contact support from the dashboard.
+                First, try refreshing your chat or reconnecting. If that doesn&apos;t work, go to your <Link href="/dashboard" className="text-blue-500 hover:underline">Dashboard</Link> and click &quot;Restart Agent.&quot; Wait for it to restart, then message again. If neither solution works, contact support from the dashboard.
               </p>
             </div>
 

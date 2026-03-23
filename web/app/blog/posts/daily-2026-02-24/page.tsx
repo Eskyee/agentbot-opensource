@@ -19,7 +19,7 @@ export default function Post() {
           </div>
 
           <p className="text-lg text-zinc-300 mb-6">
-            We've just launched our automated blog system that publishes fresh content daily at 9am UK time.
+            We&apos;ve just launched our automated blog system that publishes fresh content daily at 9am UK time.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">How It Works</h2>
@@ -33,7 +33,7 @@ export default function Post() {
             <li>Publishes to the blog automatically</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What You'll Get</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What You&apos;ll Get</h2>
           <p className="text-zinc-300 mb-4">
             Daily posts covering:
           </p>
@@ -46,7 +46,7 @@ export default function Post() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Stay Updated</h2>
           <p className="text-zinc-300 mb-4">
-            Check back daily for fresh content. We're committed to keeping you informed about everything happening with Agentbot and OpenClaw.
+            Check back daily for fresh content. We&apos;re committed to keeping you informed about everything happening with Agentbot and OpenClaw.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Powered by AI</h2>

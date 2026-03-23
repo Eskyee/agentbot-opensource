@@ -19,7 +19,7 @@ export default function PlatformV2Post() {
           </div>
 
           <p className="text-lg text-zinc-300 mb-6">
-            We've shipped major performance improvements and expanded AI model support. Here's what's new.
+            We&apos;ve shipped major performance improvements and expanded AI model support. Here&apos;s what&apos;s new.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">3× Faster Container Startup</h2>
@@ -32,9 +32,9 @@ export default function PlatformV2Post() {
             You can now deploy agents with:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
-            <li><strong>GPT-4o</strong> - OpenAI's latest multimodal model</li>
-            <li><strong>Claude 3.5 Sonnet</strong> - Anthropic's most capable model</li>
-            <li><strong>Gemini 1.5 Pro</strong> - Google's 1M token context window</li>
+            <li><strong>GPT-4o</strong> - OpenAI&apos;s latest multimodal model</li>
+            <li><strong>Claude 3.5 Sonnet</strong> - Anthropic&apos;s most capable model</li>
+            <li><strong>Gemini 1.5 Pro</strong> - Google&apos;s 1M token context window</li>
             <li><strong>Groq Llama 3</strong> - Ultra-fast inference</li>
           </ul>
 
@@ -43,9 +43,9 @@ export default function PlatformV2Post() {
             The dashboard now shows real-time CPU & memory usage, message counts, and uptime metrics. You can restart, stop, or update your agent with one click.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's Next</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Next</h2>
           <p className="text-zinc-300 mb-4">
-            We're working on custom domains, WhatsApp integration, and a visual agent builder. Stay tuned.
+            We&apos;re working on custom domains, WhatsApp integration, and a visual agent builder. Stay tuned.
           </p>
 
           <div className="mt-12 p-6 rounded-xl bg-zinc-900 border border-zinc-800">

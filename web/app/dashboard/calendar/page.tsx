@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 
 const navItems = [
@@ -59,7 +59,7 @@ function CalendarPageContent() {
     setLoading(false)
   }
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     if (!userId) return
     setLoading(true)
     try {
@@ -72,13 +72,13 @@ function CalendarPageContent() {
       console.error(err)
     }
     setLoading(false)
-  }
+  }, [userId, currentDate])
 
   useEffect(() => {
     if (connected && userId) {
       fetchEvents()
     }
-  }, [connected, userId, currentDate])
+  }, [connected, userId, currentDate, fetchEvents])
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()

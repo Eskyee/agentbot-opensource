@@ -18,7 +18,7 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">Just like you bring your own OpenRouter API key for AI, you can now bring your own Bankr wallet for your agents to trade with. Here's how to set it up.</p>
+          <p className="text-zinc-300 mb-4">Just like you bring your own OpenRouter API key for AI, you can now bring your own Bankr wallet for your agents to trade with. Here&apos;s how to set it up.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">What is Bankr?</h2>
           <p className="text-zinc-300 mb-4">Bankr is an AI-powered crypto trading platform. Your agents can execute trades, check balances, and manage portfolios using natural language. You control your own funds - Agentbot never touches your money.</p>
@@ -47,15 +47,15 @@ export default function Post() {
           <h2 className="text-2xl font-bold mt-8 mb-4">Trading Commands</h2>
           <p className="text-zinc-300 mb-4">Once connected, your agents can:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
-            <li>"Buy $50 of ETH on Base"</li>
-            <li>"Swap 0.1 ETH for USDC"</li>
-            <li>"What's my ETH balance?"</li>
-            <li>"Show my portfolio"</li>
-            <li>"Set stop loss for ETH at $2,000"</li>
+            <li>&quot;Buy $50 of ETH on Base&quot;</li>
+            <li>&quot;Swap 0.1 ETH for USDC&quot;</li>
+            <li>&quot;What&apos;s my ETH balance?&quot;</li>
+            <li>&quot;Show my portfolio&quot;</li>
+            <li>&quot;Set stop loss for ETH at $2,000&quot;</li>
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Security</h2>
-          <p className="text-zinc-300 mb-4">Your API key stays local. Agents only access YOUR wallet - not the platform's. Start with read-only keys for research agents, then upgrade to read-write when ready.</p>
+          <p className="text-zinc-300 mb-4">Your API key stays local. Agents only access YOUR wallet - not the platform&apos;s. Start with read-only keys for research agents, then upgrade to read-write when ready.</p>
 
           <p className="text-xl font-bold text-green-400 mt-8">Bring your own wallet. Control your own funds. 🤖🔐</p>
         </article>

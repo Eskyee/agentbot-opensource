@@ -22,7 +22,7 @@ export default function Post() {
           
           <p className="text-zinc-300 mb-4">As of March 2026, we are excited to announce significant improvements to the OpenClaw framework that elevate the performance and user experience for AI agents on Agentbot. The latest release, OpenClaw 2026.3.2, introduces features that enhance connection status management for Live Activities, ensuring smoother interactions and efficient resource utilization.</p>
           
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's New in OpenClaw 2026.3.2</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s New in OpenClaw 2026.3.2</h2>
           
           <p className="text-zinc-300 mb-4">### Live Activity Connection Status</p>
           <p className="text-zinc-300 mb-4">One of the standout features of this release is the addition of connection health states for Live Activities, specifically designed for iOS devices. Here’s what this means for you:</p>

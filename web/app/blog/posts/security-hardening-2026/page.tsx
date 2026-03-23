@@ -21,7 +21,7 @@ export default function SecurityHardeningPost() {
 
         <div className="prose prose-invert max-w-none">
           <p className="text-xl text-zinc-300 mb-8">
-            We're shipping massive security upgrades and 9 new enterprise APIs today. Agentbot is now hardened 
+            We&apos;re shipping massive security upgrades and 9 new enterprise APIs today. Agentbot is now hardened 
             against DDoS, SQL injection, XSS, bot attacks, and more. Plus new endpoints for memory management, 
             API keys, swarms, tasks, and more—all production-ready.
           </p>
@@ -29,7 +29,7 @@ export default function SecurityHardeningPost() {
           <div className="bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-800 rounded-xl p-6 mb-8">
             <p className="text-red-300 font-bold mb-2">🚨 Security Notice</p>
             <p className="text-zinc-300">
-              All users are now protected by enterprise-grade security. Your data is safe. Learn what we've implemented below.
+              All users are now protected by enterprise-grade security. Your data is safe. Learn what we&apos;ve implemented below.
             </p>
           </div>
 
@@ -247,10 +247,10 @@ export default function SecurityHardeningPost() {
             <li>Zero breaking changes (fully backward compatible)</li>
           </ul>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">What's Coming Next</h2>
+          <h2 className="text-3xl font-bold mt-12 mb-6">What&apos;s Coming Next</h2>
 
           <p className="text-zinc-300 mb-4">
-            We're already working on:
+            We&apos;re already working on:
           </p>
 
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">

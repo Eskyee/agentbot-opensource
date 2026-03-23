@@ -21,24 +21,24 @@ export default function MajorUpdatePost() {
 
         <div className="prose prose-invert max-w-none">
           <p className="text-xl text-zinc-300 mb-8">
-            Today we're launching the biggest update in Agentbot's history. After analyzing Kimi Claw's feature set, 
-            we've implemented everything they offer—while keeping our core advantages: multi-channel support, 
+            Today we&apos;re launching the biggest update in Agentbot&apos;s history. After analyzing Kimi Claw&apos;s feature set, 
+            we&apos;ve implemented everything they offer—while keeping our core advantages: multi-channel support, 
             model flexibility, and open-source foundation.
           </p>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">What's New</h2>
+          <h2 className="text-3xl font-bold mt-12 mb-6">What&apos;s New</h2>
 
           <h3 className="text-2xl font-bold mt-8 mb-4">🤖 Kimi K2.5 Thinking Model</h3>
           <p className="text-zinc-300 mb-4">
-            We've added support for Moonshot AI's advanced K2.5 Thinking model with 128K context window. 
+            We&apos;ve added support for Moonshot AI&apos;s advanced K2.5 Thinking model with 128K context window. 
             This model excels at complex reasoning tasks and is now available alongside GPT-4, Claude, 
             Gemini, and Groq models.
           </p>
 
           <h3 className="text-2xl font-bold mt-8 mb-4">📋 Scheduled Tasks</h3>
           <p className="text-zinc-300 mb-4">
-            Automate your agents with scheduled tasks. Use natural language like "every day at 9am" or 
-            "every Monday at 2pm" and we'll convert it to cron format automatically. Perfect for:
+            Automate your agents with scheduled tasks. Use natural language like &quot;every day at 9am&quot; or 
+            &quot;every Monday at 2pm&quot; and we&apos;ll convert it to cron format automatically. Perfect for:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>Daily reports and summaries</li>

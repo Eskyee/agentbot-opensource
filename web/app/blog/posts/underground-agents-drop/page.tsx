@@ -39,10 +39,10 @@ export default function Post() {
           </p>
 
           <div className="bg-zinc-900 p-4 rounded-lg mb-6">
-            <p className="text-sm text-zinc-400 mb-2">User: "Add Sarah to Friday's guest list"</p>
-            <p className="text-sm text-green-400 mb-4">Agent: "✓ Added Sarah to Warehouse Party guest list. 47 confirmed."</p>
-            <p className="text-sm text-zinc-400 mb-2">User: "How many tickets sold?"</p>
-            <p className="text-sm text-green-400">Agent: "23 tickets sold. 575 USDC collected. 12 spots left."</p>
+            <p className="text-sm text-zinc-400 mb-2">User: &quot;Add Sarah to Friday&apos;s guest list&quot;</p>
+            <p className="text-sm text-green-400 mb-4">Agent: &quot;✓ Added Sarah to Warehouse Party guest list. 47 confirmed.&quot;</p>
+            <p className="text-sm text-zinc-400 mb-2">User: &quot;How many tickets sold?&quot;</p>
+            <p className="text-sm text-green-400">Agent: &quot;23 tickets sold. 575 USDC collected. 12 spots left.&quot;</p>
           </div>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">💰 New: Community Treasury Agent</h2>
@@ -59,7 +59,7 @@ export default function Post() {
           </ul>
 
           <p className="text-zinc-300 mb-4">
-            <strong>Use case:</strong> A soundsystem collective manages £15K of shared funds. The treasury agent tracks spending transparently, processes reimbursements onchain, and alerts when budgets run low. No more "who spent what?"
+            <strong>Use case:</strong> A soundsystem collective manages £15K of shared funds. The treasury agent tracks spending transparently, processes reimbursements onchain, and alerts when budgets run low. No more &quot;who spent what?&quot;
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">🔐 New: Crypto Wallet Integration</h2>
@@ -100,13 +100,13 @@ export default function Post() {
             We updated how we talk about Kimi K2.5:
           </p>
           <p className="text-zinc-300 mb-2">
-            <strong>Before:</strong> "Advanced reasoning with 128K context"
+            <strong>Before:</strong> &quot;Advanced reasoning with 128K context&quot;
           </p>
           <p className="text-zinc-300 mb-4">
-            <strong>After:</strong> "128K context remembers your whole vibe. Thinks like a selector—analyzes patterns and suggests what's next."
+            <strong>After:</strong> &quot;128K context remembers your whole vibe. Thinks like a selector—analyzes patterns and suggests what&apos;s next.&quot;
           </p>
           <p className="text-zinc-300 mb-4">
-            <strong>Why:</strong> Features need positioning. "We use Kimi K2.5" means nothing. "Your agent remembers every set you've ever played" is a flex.
+            <strong>Why:</strong> Features need positioning. &quot;We use Kimi K2.5&quot; means nothing. &quot;Your agent remembers every set you&apos;ve ever played&quot; is a flex.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">🔐 Verified Human Badge</h2>
@@ -115,14 +115,14 @@ export default function Post() {
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li><strong>Onchain attestation</strong> - Link to Coinbase Verify, ENS, etc.</li>
-            <li><strong>"Verified by [human]" badge</strong> - Shows in every chat</li>
+            <li><strong>&quot;Verified by [human]&quot; badge</strong> - Shows in every chat</li>
             <li><strong>Reputation tied to human</strong> - Not just the bot</li>
           </ul>
           <p className="text-zinc-300 mb-4">
-            <strong>Why:</strong> Crypto is full of scams. "This agent is run by a real person in the scene" is huge for trust.
+            <strong>Why:</strong> Crypto is full of scams. &quot;This agent is run by a real person in the scene&quot; is huge for trust.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">🚀 What's Next</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">🚀 What&apos;s Next</h2>
           
           <h3 className="text-xl font-semibold mt-6 mb-3">Phase 1 (This Week)</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
@@ -149,7 +149,7 @@ export default function Post() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">💡 Why This Matters</h2>
           <p className="text-zinc-300 mb-4">
-            <strong>Not "AI for business" — AI for culture.</strong>
+            <strong>Not &quot;AI for business&quot; — AI for culture.</strong>
           </p>
           <p className="text-zinc-300 mb-4">
             Underground collectives need tools for:
@@ -172,7 +172,7 @@ export default function Post() {
           </ul>
 
           <p className="text-zinc-300 mb-6">
-            We're building for a real community with real needs. Not generic AI. Not forced crypto. Purpose-built for the underground.
+            We&apos;re building for a real community with real needs. Not generic AI. Not forced crypto. Purpose-built for the underground.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">🎧 Try It Now</h2>

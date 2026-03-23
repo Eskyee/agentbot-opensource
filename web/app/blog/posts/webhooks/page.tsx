@@ -37,7 +37,7 @@ export default function WebhooksPost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Setting Up Webhooks</h2>
           <p className="text-zinc-300 mb-4">
-            Add webhook URLs in your agent settings. We'll POST JSON data to your endpoint on each message.
+            Add webhook URLs in your agent settings. We&apos;ll POST JSON data to your endpoint on each message.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">API Integrations</h2>

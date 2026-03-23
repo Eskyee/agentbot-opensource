@@ -23,7 +23,7 @@ export default function WelcomePost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Why We Built This</h2>
           <p className="text-zinc-300 mb-4">
-            Deploying AI agents shouldn't require DevOps expertise. We wanted a platform where anyone could launch a production-ready agent with just a Telegram token and API key.
+            Deploying AI agents shouldn&apos;t require DevOps expertise. We wanted a platform where anyone could launch a production-ready agent with just a Telegram token and API key.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">What Makes Us Different</h2>
@@ -37,17 +37,17 @@ export default function WelcomePost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Built on OpenClaw</h2>
           <p className="text-zinc-300 mb-4">
-            We use OpenClaw as our agent framework. It's open source, extensible, and supports multiple AI models.
+            We use OpenClaw as our agent framework. It&apos;s open source, extensible, and supports multiple AI models.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's Next</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Next</h2>
           <p className="text-zinc-300 mb-4">
-            We're shipping fast. Custom domains, WhatsApp integration, and a visual agent builder are coming soon.
+            We&apos;re shipping fast. Custom domains, WhatsApp integration, and a visual agent builder are coming soon.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Join Us</h2>
           <p className="text-zinc-300 mb-4">
-            We're building in public. Follow our progress on Twitter and join our Discord community.
+            We&apos;re building in public. Follow our progress on Twitter and join our Discord community.
           </p>
 
           <div className="mt-12 p-6 rounded-xl bg-zinc-900 border border-zinc-800">

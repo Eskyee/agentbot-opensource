@@ -132,7 +132,7 @@ export default async function Home() {
               { num: '04', label: 'Mission', title: 'Industrial Control', desc: 'High-fidelity visualization of agent swarms and execution traces in real-time.' },
             ].map((f) => (
               <div key={f.num}>
-                <div className="text-blue-500 text-[10px] uppercase tracking-widest mb-4">{f.num} // {f.label}</div>
+                <div className="text-blue-500 text-[10px] uppercase tracking-widest mb-4">{f.num} {"//"} {f.label}</div>
                 <h3 className="text-sm font-bold uppercase tracking-wider mb-2">{f.title}</h3>
                 <p className="text-zinc-500 text-xs leading-relaxed">{f.desc}</p>
               </div>

@@ -20,9 +20,9 @@ export default function Post() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Introduction</h2>
           
-          <p className="text-zinc-300 mb-4">As we move into 2026, we’re excited to announce several improvements in the OpenClaw framework that are set to enhance your experience with Agentbot. These updates not only improve the platform's functionality but also ensure that deploying AI agents is more seamless than ever.</p>
+          <p className="text-zinc-300 mb-4">As we move into 2026, we’re excited to announce several improvements in the OpenClaw framework that are set to enhance your experience with Agentbot. These updates not only improve the platform&apos;s functionality but also ensure that deploying AI agents is more seamless than ever.</p>
           
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's New in OpenClaw</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s New in OpenClaw</h2>
           
           <p className="text-zinc-300 mb-4">Recent commits and releases have introduced important features and bug fixes:</p>
           

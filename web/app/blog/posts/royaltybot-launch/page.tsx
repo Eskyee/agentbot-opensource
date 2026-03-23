@@ -34,8 +34,8 @@ export default function RoyaltyBotLaunch() {
 
         <h2 className="text-2xl font-bold text-white mt-12 mb-4">The Problem: Royalty Payments Are Broken</h2>
         <p className="text-zinc-400 leading-relaxed mb-6">
-          Here's how royalty payments work today: DSPs calculate your streaming revenue → send to distributor → 
-          distributor calculates your split → 60-90 days later, it hits your bank account. And that's if you're lucky.
+          Here&apos;s how royalty payments work today: DSPs calculate your streaming revenue → send to distributor → 
+          distributor calculates your split → 60-90 days later, it hits your bank account. And that&apos;s if you&apos;re lucky.
         </p>
         <p className="text-zinc-400 leading-relaxed mb-6">
           For independent artists working with producers, labels, or collectives? The math gets messy, 
@@ -44,7 +44,7 @@ export default function RoyaltyBotLaunch() {
 
         <h2 className="text-2xl font-bold text-white mt-12 mb-4">Our Solution: RoyaltyBot</h2>
         <p className="text-zinc-400 leading-relaxed mb-6">
-          We've built the missing layer between royalty calculation and artist wallets. 
+          We&apos;ve built the missing layer between royalty calculation and artist wallets. 
           RoyaltyBot is an autonomous payment agent that:
         </p>
         <ul className="list-disc list-inside text-zinc-400 space-y-2 mb-6">
@@ -70,7 +70,7 @@ export default function RoyaltyBotLaunch() {
 
         <h2 className="text-2xl font-bold text-white mt-12 mb-4">Not Just Streaming: Booking Payments Too</h2>
         <p className="text-zinc-400 leading-relaxed mb-6">
-          We've also launched the <span className="text-blue-400 font-bold">Booking Settlement Agent</span>. 
+          We&apos;ve also launched the <span className="text-blue-400 font-bold">Booking Settlement Agent</span>. 
           It handles:
         </p>
         <ul className="list-disc list-inside text-zinc-400 space-y-2 mb-6">
@@ -82,8 +82,8 @@ export default function RoyaltyBotLaunch() {
 
         <h2 className="text-2xl font-bold text-white mt-12 mb-4">Why USDC on Base?</h2>
         <p className="text-zinc-400 leading-relaxed mb-6">
-          Because it's the only way to do instant, verifiable, self-custody payments. No bank delays. 
-          No middlemen. No "approaching real-time" promises. Artists own their wallets, agents execute 
+          Because it&apos;s the only way to do instant, verifiable, self-custody payments. No bank delays. 
+          No middlemen. No &quot;approaching real-time&quot; promises. Artists own their wallets, agents execute 
           the splits, and money moves in seconds.
         </p>
 
@@ -117,8 +117,8 @@ export default function RoyaltyBotLaunch() {
 
         <h2 className="text-2xl font-bold text-white mt-12 mb-4">The Bigger Picture</h2>
         <p className="text-zinc-400 leading-relaxed mb-6">
-          We're not replacing the accounting tools like Reprtoir. We're becoming the payment layer 
-          that makes their output actually reach artists' wallets. They do calculation. We do execution.
+          We&apos;re not replacing the accounting tools like Reprtoir. We&apos;re becoming the payment layer 
+          that makes their output actually reach artists&apos; wallets. They do calculation. We do execution.
         </p>
         <p className="text-zinc-400 leading-relaxed mb-6">
           This is where our Base + CDP + A2A stack creates a moat nobody else has. 

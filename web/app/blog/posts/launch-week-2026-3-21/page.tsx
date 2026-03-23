@@ -45,7 +45,7 @@ export default function Post() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Real Agent Provisioning — Wired End to End</h2>
           <p className="text-zinc-300 mb-4">
-            The provisioning path was previously simulated with a <code className="text-zinc-300">// TODO</code> placeholder. That&apos;s gone. The full flow now:
+            The provisioning path was previously simulated with a <code className="text-zinc-300">{"// TODO"}</code> placeholder. That&apos;s gone. The full flow now:
           </p>
           <ol className="list-decimal list-inside text-zinc-300 mb-4 space-y-2">
             <li>User completes onboard wizard</li>

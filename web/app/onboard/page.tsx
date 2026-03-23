@@ -275,7 +275,7 @@ function OnboardContent() {
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">3</span>
-                    <span>Choose a name for your bot (e.g., "My AI Assistant")</span>
+                    <span>Choose a name for your bot (e.g., &quot;My AI Assistant&quot;)</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="bg-white text-black w-6 h-6 rounded-full flex items-center justify-center text-sm flex-shrink-0">4</span>
@@ -524,7 +524,7 @@ function OnboardContent() {
                     </li>
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
-                      <span>Click "Create Key" and copy it</span>
+                      <span>Click &quot;Create Key&quot; and copy it</span>
                     </li>
                   </ol>
                   <p className="text-xs text-zinc-500 mt-4">
@@ -544,7 +544,7 @@ function OnboardContent() {
                     </li>
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
-                      <span>Sign in with Google and click "Create API key"</span>
+                      <span>Sign in with Google and click &quot;Create API key&quot;</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
@@ -834,7 +834,7 @@ function OnboardContent() {
         {step === 'done' && result && (
           <div className="text-center">
             <div className="text-6xl mb-6">🎉</div>
-            <h2 className="text-2xl font-bold mb-2">You're Live!</h2>
+            <h2 className="text-2xl font-bold mb-2">You&apos;re Live!</h2>
             <p className="text-zinc-400 mb-8">Your AI assistant is ready to chat.</p>
             
             <div className="bg-zinc-800 rounded-xl p-6 mb-8 text-left">

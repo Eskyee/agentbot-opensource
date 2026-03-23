@@ -22,8 +22,8 @@ export default function KimiDropPost() {
         <div className="prose prose-invert max-w-none">
           <p className="text-xl text-zinc-300 mb-8">
             Last week, we analyzed Kimi Claw—a competitor with impressive features like scheduled tasks, 
-            skill libraries, and advanced AI models. Today, we're shipping everything they have, plus more. 
-            Here's how we did it.
+            skill libraries, and advanced AI models. Today, we&apos;re shipping everything they have, plus more. 
+            Here&apos;s how we did it.
           </p>
 
           <h2 className="text-3xl font-bold mt-12 mb-6">The Challenge</h2>
@@ -31,21 +31,21 @@ export default function KimiDropPost() {
             Kimi Claw launched with a compelling feature set:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-6 space-y-2">
-            <li>Moonshot AI's K2.5 Thinking model (128K context)</li>
+            <li>Moonshot AI&apos;s K2.5 Thinking model (128K context)</li>
             <li>5,000+ ClawHub skills library</li>
             <li>Scheduled automation tasks</li>
             <li>40GB cloud storage</li>
             <li>Persistent agent memory</li>
           </ul>
           <p className="text-zinc-300 mb-4">
-            They positioned themselves as the "all-in-one AI agent platform." But they had one weakness: 
+            They positioned themselves as the &quot;all-in-one AI agent platform.&quot; But they had one weakness: 
             web-only deployment. No Telegram, no Discord, no WhatsApp.
           </p>
 
           <h2 className="text-3xl font-bold mt-12 mb-6">Our Response: The Kimi Drop</h2>
           <p className="text-zinc-300 mb-4">
             We decided to match their features while keeping our core advantages. The goal: ship everything 
-            in one massive update. We called it "The Kimi Drop."
+            in one massive update. We called it &quot;The Kimi Drop.&quot;
           </p>
 
           <h3 className="text-2xl font-bold mt-8 mb-4">Phase 1: Foundation (6 hours)</h3>
@@ -53,7 +53,7 @@ export default function KimiDropPost() {
             First, we added the K2.5 Thinking model and built the scheduled tasks system:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-6 space-y-2">
-            <li>Integrated Moonshot AI's K2.5 model via OpenRouter</li>
+            <li>Integrated Moonshot AI&apos;s K2.5 model via OpenRouter</li>
             <li>Created ScheduledTask database model with cron scheduling</li>
             <li>Built task management UI with create/edit/delete</li>
             <li>Added AgentMemory and AgentFile schemas</li>
@@ -89,10 +89,10 @@ export default function KimiDropPost() {
 
           <h3 className="text-2xl font-bold mt-8 mb-4">Phase 3: Advanced Features (6 hours)</h3>
           <p className="text-zinc-300 mb-4">
-            Finally, we added features Kimi Claw doesn't even have:
+            Finally, we added features Kimi Claw doesn&apos;t even have:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-6 space-y-2">
-            <li>Natural language scheduling: "every day at 9am" → cron</li>
+            <li>Natural language scheduling: &quot;every day at 9am&quot; → cron</li>
             <li>Agent swarms: multi-agent coordination</li>
             <li>Visual workflow builder: drag-drop automation</li>
           </ul>
@@ -104,9 +104,9 @@ export default function KimiDropPost() {
               language to cron:
             </p>
             <ul className="list-disc list-inside text-zinc-300 space-y-2">
-              <li>"every day at 9am" → "0 9 * * *"</li>
-              <li>"every monday at 2pm" → "0 14 * * 1"</li>
-              <li>"every 6 hours" → "0 */6 * * *"</li>
+              <li>&quot;every day at 9am&quot; → &quot;0 9 * * *&quot;</li>
+              <li>&quot;every monday at 2pm&quot; → &quot;0 14 * * 1&quot;</li>
+              <li>&quot;every 6 hours&quot; → &quot;0 */6 * * *&quot;</li>
             </ul>
           </div>
 
@@ -201,7 +201,7 @@ export default function KimiDropPost() {
 
           <h3 className="text-2xl font-bold mt-8 mb-4">1. MVP Everything</h3>
           <p className="text-zinc-300 mb-4">
-            We didn't build perfect features. We built working MVPs that users can try today. 
+            We didn&apos;t build perfect features. We built working MVPs that users can try today. 
             The skill marketplace has 10 skills, not 5,000. But it works, and we can grow it.
           </p>
 
@@ -224,7 +224,7 @@ export default function KimiDropPost() {
           <ul className="list-disc list-inside text-zinc-300 mb-8 space-y-2">
             <li>📋 <strong>Tasks</strong> - Schedule your first automation</li>
             <li>🔧 <strong>Skills</strong> - Install pre-built capabilities</li>
-            <li>🎨 <strong>Personality</strong> - Customize your agent's tone</li>
+            <li>🎨 <strong>Personality</strong> - Customize your agent&apos;s tone</li>
             <li>🤖 <strong>Swarms</strong> - Deploy multi-agent teams</li>
             <li>⚡ <strong>Workflows</strong> - Build visual automations</li>
           </ul>

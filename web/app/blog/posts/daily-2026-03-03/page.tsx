@@ -29,7 +29,7 @@ export default function Post() {
           <li>**Account Management Improvement:** A warning mechanism has been added for multi-account setups where `accounts.default` is missing. This will help users avoid potential configuration issues that could hinder agent performance.</li>
           <li>**Embedded Skill Configuration:** The config propagation for embedded skill loading has been improved. This means that when you deploy skills, they will load more efficiently and reliably, ensuring a smoother experience for users interacting with your agents.</li>
           <li>**Native Slash Command Support for Mattermost:** The addition of native slash command support in Mattermost greatly enhances user interaction, allowing for quick and context-sensitive commands that streamline conversations.</li>
-          <li>**Migration of Tool Usage Guidance:** We've moved tool usage guidance from the previous `before_prompt_build` structure to a plugin skill, making it easier for developers to understand and implement these tools effectively.</li>
+          <li>**Migration of Tool Usage Guidance:** We&apos;ve moved tool usage guidance from the previous `before_prompt_build` structure to a plugin skill, making it easier for developers to understand and implement these tools effectively.</li>
           
           <h2 className="text-2xl font-bold mt-8 mb-4">Benefits for Agentbot Users</h2>
           

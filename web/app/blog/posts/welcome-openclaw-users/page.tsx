@@ -20,12 +20,12 @@ export default function WelcomeOpenClawUsersPost() {
           </div>
 
           <p className="text-lg text-zinc-300 mb-6">
-            We're excited to welcome the entire OpenClaw community to Agentbot. Whether you're a long-time OpenClaw user or new to agentic development, this is your place to build, deploy, and scale AI agents at speed.
+            We&apos;re excited to welcome the entire OpenClaw community to Agentbot. Whether you&apos;re a long-time OpenClaw user or new to agentic development, this is your place to build, deploy, and scale AI agents at speed.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">For OpenClaw Veterans</h2>
           <p className="text-zinc-300 mb-4">
-            You know the power of OpenClaw's architecture. Now bring that same power to production without the DevOps headache. Deploy agents in 60 seconds, auto-scaling included.
+            You know the power of OpenClaw&apos;s architecture. Now bring that same power to production without the DevOps headache. Deploy agents in 60 seconds, auto-scaling included.
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-6 space-y-2">
             <li>Full OpenClaw framework support</li>
@@ -49,7 +49,7 @@ export default function WelcomeOpenClawUsersPost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">🚀 Agentic Meetups Coming Soon</h2>
           <p className="text-zinc-300 mb-4">
-            We're organizing agentic meetups around the world. Connect with fellow builders, share your agents, and shape the future of agentic development together.
+            We&apos;re organizing agentic meetups around the world. Connect with fellow builders, share your agents, and shape the future of agentic development together.
           </p>
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 my-6">
             <h3 className="text-xl font-semibold text-white mb-3">Meetup Highlights:</h3>
@@ -64,7 +64,7 @@ export default function WelcomeOpenClawUsersPost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Build In Progress</h2>
           <p className="text-zinc-300 mb-4">
-            We're shipping fast. Here's what's coming next:
+            We&apos;re shipping fast. Here&apos;s what&apos;s coming next:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
@@ -95,7 +95,7 @@ export default function WelcomeOpenClawUsersPost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Security & Reliability</h2>
           <p className="text-zinc-300 mb-4">
-            We've shipped with 10 enterprise-grade protection layers:
+            We&apos;ve shipped with 10 enterprise-grade protection layers:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-6 space-y-2">
             <li>Rate limiting (60 req/min per IP)</li>
@@ -112,7 +112,7 @@ export default function WelcomeOpenClawUsersPost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Join the Movement</h2>
           <p className="text-zinc-300 mb-4">
-            We're building the future of agentic software. Whether you're migrating from OpenClaw or starting fresh, now's the time to join.
+            We&apos;re building the future of agentic software. Whether you&apos;re migrating from OpenClaw or starting fresh, now&apos;s the time to join.
           </p>
 
           <div className="mt-12 space-y-4">

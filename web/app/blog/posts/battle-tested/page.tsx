@@ -24,13 +24,13 @@ export default function BattleTestedPost() {
 
         <div className="prose prose-invert prose-lg max-w-none">
           <p>
-            We didn't build Agentbot in a nice office. We built it <strong>living in the field</strong> - 
+            We didn&apos;t build Agentbot in a nice office. We built it <strong>living in the field</strong> - 
             deployed on servers, running in production, breaking in real-time.
           </p>
 
           <h2>The Problem</h2>
           <p>
-            Every "AI agent platform" we tried was the same: beautiful landing pages, 
+            Every &quot;AI agent platform&quot; we tried was the same: beautiful landing pages, 
             broken deployments, and support tickets that never got answered. 
             They were built to <em>look</em> like they worked. Not actually work.
           </p>
@@ -46,7 +46,7 @@ export default function BattleTestedPost() {
             <li><strong>60-second deployments</strong> - not because it sounds good, but because we were tired of waiting</li>
             <li><strong>OpenClaw</strong> - we needed something that actually worked, not a wrapper around a wrapper</li>
             <li><strong>Kimi K2.5</strong> - the best model we found after testing dozens</li>
-            <li><strong>No credit system</strong> - users bring their own keys, we don't hold your money</li>
+            <li><strong>No credit system</strong> - users bring their own keys, we don&apos;t hold your money</li>
           </ul>
 
           <h2>What We Learned</h2>
@@ -54,26 +54,26 @@ export default function BattleTestedPost() {
             The hard way:
           </p>
           <ul>
-            <li>Docker doesn't care about your feelings</li>
+            <li>Docker doesn&apos;t care about your feelings</li>
             <li>AI APIs go down at 3am</li>
             <li>Telegram has rate limits (who knew?)</li>
             <li>Users will find bugs you never imagined</li>
-            <li>Security isn't optional</li>
+            <li>Security isn&apos;t optional</li>
           </ul>
 
-          <h2>What's Different</h2>
+          <h2>What&apos;s Different</h2>
           <p>
             Agentbot runs <Link href="/dashboard" className="text-green-400 hover:underline">in production right now</Link>. 
-            Our own agents use it daily. When you deploy, you're using the same infrastructure we trust with our own projects.
+            Our own agents use it daily. When you deploy, you&apos;re using the same infrastructure we trust with our own projects.
           </p>
           <p>
-            No sales team. No demo environments that don't match production. 
+            No sales team. No demo environments that don&apos;t match production. 
             Just the real thing.
           </p>
 
-          <h2>What's Coming</h2>
+          <h2>What&apos;s Coming</h2>
           <p>
-            We're just getting started. The platform now handles:
+            We&apos;re just getting started. The platform now handles:
           </p>
           <ul>
             <li>Multi-channel deployment (Telegram, etc)</li>
@@ -83,12 +83,12 @@ export default function BattleTestedPost() {
             <li>Scheduled tasks</li>
           </ul>
           <p>
-            And we're adding more <Link href="https://raveculture.mintlify.app" className="text-green-400 hover:underline">every day</Link>.
+            And we&apos;re adding more <Link href="https://raveculture.mintlify.app" className="text-green-400 hover:underline">every day</Link>.
           </p>
 
           <h2>Join Us</h2>
           <p>
-            If you're a builder who wants an agent platform that actually works - 
+            If you&apos;re a builder who wants an agent platform that actually works - 
             not one built for pitch decks - try Agentbot.
           </p>
           <p>

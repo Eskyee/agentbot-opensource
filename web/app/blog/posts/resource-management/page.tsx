@@ -40,7 +40,7 @@ export default function ResourceManagementPost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Memory Management</h2>
           <p className="text-zinc-300 mb-4">
-            Agents store conversation history in memory. Long conversations can consume significant RAM. Use the "Reset Memory" button to clear history.
+            Agents store conversation history in memory. Long conversations can consume significant RAM. Use the &quot;Reset Memory&quot; button to clear history.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Monitoring</h2>

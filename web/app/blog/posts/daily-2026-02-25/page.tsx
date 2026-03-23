@@ -22,7 +22,7 @@ export default function Post() {
             As of February 2026, the OpenClaw framework has rolled out several key updates that are designed to enhance the performance and usability of the Agentbot platform. These improvements not only streamline the development process but also provide a more robust environment for deploying AI agents.
           </p>
           
-          <h2 className="text-2xl font-bold mt-8 mb-4">What's New in OpenClaw?</h2>
+          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s New in OpenClaw?</h2>
           
           <h3 className="text-xl font-semibold mt-6 mb-3">Recent Commits</h3>
           <p className="text-zinc-300 mb-4">

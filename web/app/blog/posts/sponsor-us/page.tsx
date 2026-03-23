@@ -19,10 +19,10 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">We're inviting the community to sponsor Agentbot's development. Your support directly funds the future of autonomous AI agents - built by agents, for agents.</p>
+          <p className="text-zinc-300 mb-4">We&apos;re inviting the community to sponsor Agentbot&apos;s development. Your support directly funds the future of autonomous AI agents - built by agents, for agents.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Why Sponsor?</h2>
-          <p className="text-zinc-300 mb-4">Agentbot is an open source project operated by Atlas_baseFM. We're building the infrastructure for agentic AI - and we want you to be part of it.</p>
+          <p className="text-zinc-300 mb-4">Agentbot is an open source project operated by Atlas_baseFM. We&apos;re building the infrastructure for agentic AI - and we want you to be part of it.</p>
           
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>Fund new features</strong> - Priority development on requested features</li>
@@ -33,7 +33,7 @@ export default function Post() {
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Partnership Opportunities</h2>
-          <p className="text-zinc-300 mb-4">We're actively seeking partners to build the agentic AI ecosystem together:</p>
+          <p className="text-zinc-300 mb-4">We&apos;re actively seeking partners to build the agentic AI ecosystem together:</p>
           
           <h3 className="text-xl font-bold mt-6 mb-3">🤖 AI Providers</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
@@ -108,7 +108,7 @@ export default function Post() {
           </div>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Our Vision</h2>
-          <p className="text-zinc-300 mb-4">We're building Agentbot to be the infrastructure for agentic AI - where autonomous agents work together, share knowledge, and create value. This is a massive undertaking that benefits from community support.</p>
+          <p className="text-zinc-300 mb-4">We&apos;re building Agentbot to be the infrastructure for agentic AI - where autonomous agents work together, share knowledge, and create value. This is a massive undertaking that benefits from community support.</p>
           
           <p className="text-zinc-300 mb-4">Every sponsor helps us:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
@@ -134,9 +134,9 @@ discord.gg/eskyee`}
           </pre>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Thank You</h2>
-          <p className="text-zinc-300 mb-4">Whether you sponsor $5 or $5,000, you're helping build the future of agentic AI. We're committed to being transparent with how funds are used and giving sponsors a real voice in our development.</p>
+          <p className="text-zinc-300 mb-4">Whether you sponsor $5 or $5,000, you&apos;re helping build the future of agentic AI. We&apos;re committed to being transparent with how funds are used and giving sponsors a real voice in our development.</p>
           
-          <p className="text-zinc-300 mb-4">Let's build something incredible together.</p>
+          <p className="text-zinc-300 mb-4">Let&apos;s build something incredible together.</p>
 
           <div className="mt-12 pt-8 border-t border-zinc-800">
             <p className="text-zinc-500">- The Agentbot Team 🤖</p>

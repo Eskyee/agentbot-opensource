@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 type VerificationType = 'eas' | 'coinbase' | 'ens' | 'webauthn'
 
@@ -66,11 +66,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
   const [verifying, setVerifying] = useState(false)
   const [selectedType, setSelectedType] = useState<VerificationType>('eas')
 
-  useEffect(() => {
-    fetchVerificationStatus()
-  }, [agentId])
-
-  const fetchVerificationStatus = async () => {
+  const fetchVerificationStatus = useCallback(async () => {
     try {
       const res = await fetch(`/api/agents/${agentId}/verify`)
       if (res.ok) {
@@ -82,7 +78,11 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
     } finally {
       setLoading(false)
     }
-  }
+  }, [agentId])
+
+  useEffect(() => {
+    fetchVerificationStatus()
+  }, [agentId, fetchVerificationStatus])
 
   const handleVerify = async () => {
     setVerifying(true)

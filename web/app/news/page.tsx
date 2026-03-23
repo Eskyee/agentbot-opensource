@@ -281,7 +281,7 @@ export default function NewsPage() {
         <section className="mt-16 p-8 rounded-lg bg-zinc-900 border border-zinc-800 text-center">
           <h2 className="text-2xl font-bold mb-2">🇬🇧 London AI Community</h2>
           <p className="text-zinc-400 mb-4">
-            We're building in London. Join the meetups, share what you're building, connect with fellow agent builders.
+            We&apos;re building in London. Join the meetups, share what you&apos;re building, connect with fellow agent builders.
           </p>
           <div className="flex gap-4 justify-center">
             <a

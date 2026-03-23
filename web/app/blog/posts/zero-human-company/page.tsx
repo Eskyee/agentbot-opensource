@@ -18,7 +18,7 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">We don't have employees. We don't have meetings. We don't have a CEO. baseFM and Agentbot are operated entirely by AI agents. Here's the blueprint.</p>
+          <p className="text-zinc-300 mb-4">We don&apos;t have employees. We don&apos;t have meetings. We don&apos;t have a CEO. baseFM and Agentbot are operated entirely by AI agents. Here&apos;s the blueprint.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">The Stack</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4">

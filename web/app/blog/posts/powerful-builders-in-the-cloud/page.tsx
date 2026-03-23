@@ -20,12 +20,12 @@ export default function PowerfulBuildersInTheCloudPost() {
           </div>
 
           <p className="text-lg text-zinc-300 mb-6">
-            We're building for the builders. For those who refuse to be constrained by infrastructure limits. For teams that want to ship fast, think big, and scale without friction.
+            We&apos;re building for the builders. For those who refuse to be constrained by infrastructure limits. For teams that want to ship fast, think big, and scale without friction.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">The Cloud Advantage</h2>
           <p className="text-zinc-300 mb-4">
-            The best builders are already in the cloud. They've abandoned the complexity of managing servers. They're focused on what matters: shipping features, solving problems, and delighting users.
+            The best builders are already in the cloud. They&apos;ve abandoned the complexity of managing servers. They&apos;re focused on what matters: shipping features, solving problems, and delighting users.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
@@ -57,7 +57,7 @@ export default function PowerfulBuildersInTheCloudPost() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Why Agentbot?</h2>
           <p className="text-zinc-300 mb-4">
-            We've stripped away the complexity. No infrastructure work. No DevOps. Just pure building.
+            We&apos;ve stripped away the complexity. No infrastructure work. No DevOps. Just pure building.
           </p>
 
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 my-6">

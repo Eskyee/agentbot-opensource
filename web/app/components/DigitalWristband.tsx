@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 
 export default function DigitalWristband() {
@@ -7,13 +7,7 @@ export default function DigitalWristband() {
   const [hasWristband, setHasWristband] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (address) {
-      checkWristband();
-    }
-  }, [address]);
-
-  const checkWristband = async () => {
+  const checkWristband = useCallback(async () => {
     if (!address) return;
     setLoading(true);
     try {
@@ -24,7 +18,13 @@ export default function DigitalWristband() {
       console.error(e);
     }
     setLoading(false);
-  };
+  }, [address]);
+
+  useEffect(() => {
+    if (address) {
+      checkWristband();
+    }
+  }, [address, checkWristband]);
 
   if (!isConnected) {
     return (

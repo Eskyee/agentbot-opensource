@@ -19,10 +19,10 @@ export default function Post() {
             </div>
           </div>
 
-          <p className="text-zinc-300 mb-4">We've added Vercel BotID to protect our platform from automated attacks. Here's why it matters for AI agents.</p>
+          <p className="text-zinc-300 mb-4">We&apos;ve added Vercel BotID to protect our platform from automated attacks. Here&apos;s why it matters for AI agents.</p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">The Bot Problem</h2>
-          <p className="text-zinc-300 mb-4">Modern bots aren't the slow, obvious crawlers of the past. They:</p>
+          <p className="text-zinc-300 mb-4">Modern bots aren&apos;t the slow, obvious crawlers of the past. They:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Execute JavaScript like real browsers</li>
             <li>Solve CAPTCHAs automatically</li>
@@ -31,7 +31,7 @@ export default function Post() {
           </ul>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">What BotID Protects</h2>
-          <p className="text-zinc-300 mb-4">We've enabled BotID on critical endpoints:</p>
+          <p className="text-zinc-300 mb-4">We&apos;ve enabled BotID on critical endpoints:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>/api/register</strong> — Prevents fake account creation</li>
             <li><strong>/api/auth/*</strong> — Blocks brute force attacks</li>
@@ -43,7 +43,7 @@ export default function Post() {
           <p className="text-zinc-300 mb-4">Unlike traditional CAPTCHAs, BotID is invisible:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>No challenges for real users</li>
-            <li>No "I'm not a robot" checkboxes</li>
+            <li>No &quot;I&apos;m not a robot&quot; checkboxes</li>
             <li>Seamless protection</li>
           </ul>
 
@@ -67,7 +67,7 @@ export default function Post() {
             <li>Enterprise-grade reliability</li>
           </ul>
 
-          <p className="text-zinc-300 mb-4">We've always prioritized security. BotID is just another layer in our defense-in-depth approach.</p>
+          <p className="text-zinc-300 mb-4">We&apos;ve always prioritized security. BotID is just another layer in our defense-in-depth approach.</p>
 
           <div className="mt-12 pt-8 border-t border-zinc-800">
             <p className="text-zinc-500">- The Agentbot Team 🤖</p>
