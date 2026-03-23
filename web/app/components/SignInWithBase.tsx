@@ -5,6 +5,7 @@ import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { SiweMessage } from 'siwe';
 import { base } from 'viem/chains';
+import { checksumAddress } from 'viem';
 
 interface SignInWithBaseProps {
   callbackUrl?: string;
@@ -36,10 +37,10 @@ export function SignInWithBase({ callbackUrl = '/dashboard' }: SignInWithBasePro
       const nonceRes = await fetch('/api/auth/nonce');
       const { nonce } = await nonceRes.json();
 
-      // 2. Create SIWE message
+      // 2. Create SIWE message (address must be EIP-55 checksummed)
       const siweMessage = new SiweMessage({
         domain: window.location.host,
-        address,
+        address: checksumAddress(address as `0x${string}`),
         statement: 'Sign in with Base to Agentbot',
         uri: window.location.origin,
         version: '1',
