@@ -100,7 +100,8 @@ providers.push(
           return null;
         }
         
-        console.log(`[Auth] SIWE address extracted: ${address}`);
+        const typedAddress = address as `0x${string}`;
+        console.log(`[Auth] SIWE address extracted: ${typedAddress}`);
 
         // Validate domain
         const expectedDomain = process.env.NEXTAUTH_URL
@@ -121,11 +122,11 @@ providers.push(
         }
 
         // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
-        console.log(`[Auth] Verifying signature for ${address}...`);
+        console.log(`[Auth] Verifying signature for ${typedAddress}...`);
         let valid = false;
         try {
           valid = await viemClient.verifyMessage({
-            address,
+            address: typedAddress,
             message: credentials.message,
             signature: credentials.signature as `0x${string}`,
           });
@@ -136,7 +137,7 @@ providers.push(
           try {
             const fallbackClient = createPublicClient({ chain: base, transport: http('https://mainnet.base.org') });
             valid = await fallbackClient.verifyMessage({
-              address,
+              address: typedAddress,
               message: credentials.message,
               signature: credentials.signature as `0x${string}`,
             });
