@@ -18,6 +18,25 @@ import { runCommand } from '../utils';
 const PROVISION_SCRIPT = path.join(__dirname, '../../docker/provision.sh');
 const DATA_DIR = process.env.AGENTBOT_DATA_DIR || '/opt/agentbot/data';
 
+// Docker availability cache — checked once on first use
+let dockerChecked = false;
+let dockerAvailable = false;
+
+async function ensureDockerAvailable(): Promise<void> {
+  if (!dockerChecked) {
+    try {
+      await runCommand('docker', ['version', '--format', '{{.Server.Version}}'], { timeout: 5000 });
+      dockerAvailable = true;
+    } catch {
+      dockerAvailable = false;
+    }
+    dockerChecked = true;
+  }
+  if (!dockerAvailable) {
+    throw new Error('Docker is not available on this server. Container provisioning requires Docker-in-Docker. Contact support.');
+  }
+}
+
 export interface ContainerResult {
   container: string;
   status: string;
@@ -28,6 +47,14 @@ export interface ContainerResult {
 export type PlanType = 'solo' | 'collective' | 'label' | 'network';
 
 /**
+ * Check if Docker is available (non-throwing).
+ */
+export async function isDockerReady(): Promise<boolean> {
+  await ensureDockerAvailable().catch(() => {});
+  return dockerAvailable;
+}
+
+/**
  * Create and start a new agent container for a user.
  * argv: bash <script> create <userId> <plan>  — no shell interpolation.
  */
@@ -35,6 +62,7 @@ export async function createContainer(
   userId: string,
   plan: PlanType = 'solo'
 ): Promise<ContainerResult> {
+  await ensureDockerAvailable();
   const { stdout } = await runCommand('bash', [PROVISION_SCRIPT, 'create', userId, plan]);
   return JSON.parse(stdout.trim()) as ContainerResult;
 }
@@ -43,6 +71,7 @@ export async function createContainer(
  * Start or resume a container.
  */
 export async function startContainer(userId: string): Promise<ContainerResult> {
+  await ensureDockerAvailable();
   const { stdout } = await runCommand('bash', [PROVISION_SCRIPT, 'start', userId]);
   return JSON.parse(stdout.trim()) as ContainerResult;
 }
@@ -51,6 +80,7 @@ export async function startContainer(userId: string): Promise<ContainerResult> {
  * Pause a running container (frees memory, keeps data).
  */
 export async function pauseContainer(userId: string): Promise<ContainerResult> {
+  await ensureDockerAvailable();
   const { stdout } = await runCommand('bash', [PROVISION_SCRIPT, 'pause', userId]);
   return JSON.parse(stdout.trim()) as ContainerResult;
 }
@@ -62,6 +92,7 @@ export async function destroyContainer(
   userId: string,
   backup: boolean = true
 ): Promise<ContainerResult> {
+  await ensureDockerAvailable();
   const { stdout } = await runCommand('bash', [PROVISION_SCRIPT, 'destroy', userId, String(backup)]);
   return JSON.parse(stdout.trim()) as ContainerResult;
 }
@@ -70,6 +101,7 @@ export async function destroyContainer(
  * Get container status for a user.
  */
 export async function getContainerStatus(userId: string): Promise<ContainerResult> {
+  await ensureDockerAvailable();
   const { stdout } = await runCommand('bash', [PROVISION_SCRIPT, 'status', userId]);
   return JSON.parse(stdout.trim()) as ContainerResult;
 }
@@ -78,6 +110,7 @@ export async function getContainerStatus(userId: string): Promise<ContainerResul
  * List all agent containers (returns raw script output).
  */
 export async function listContainers(): Promise<string> {
+  await ensureDockerAvailable();
   const { stdout } = await runCommand('bash', [PROVISION_SCRIPT, 'list']);
   return stdout;
 }
@@ -86,6 +119,7 @@ export async function listContainers(): Promise<string> {
  * Build the agent Docker image.
  */
 export async function buildImage(): Promise<string> {
+  await ensureDockerAvailable();
   const { stdout } = await runCommand('bash', [PROVISION_SCRIPT, 'build']);
   return stdout;
 }

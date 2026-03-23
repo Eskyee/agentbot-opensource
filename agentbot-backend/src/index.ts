@@ -677,9 +677,14 @@ app.use('/api/provision', authenticate, provisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
 app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
 
-// Health check
-app.get('/health', (req: Request, res: Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check — includes Docker status for observability
+app.get('/health', async (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    docker: dockerAvailable ? 'available' : 'unavailable',
+    provisioning: dockerAvailable ? 'enabled' : 'disabled',
+  });
 });
 
 // Install script endpoints
@@ -1711,6 +1716,22 @@ initDatabase().then(() => {
     process.exit(1);
   }
 });
+
+// Check Docker availability at startup (non-fatal — container provisioning degrades gracefully)
+const checkDocker = async () => {
+  try {
+    const { runCommand } = require('./utils');
+    await runCommand('docker', ['version', '--format', '{{.Server.Version}}'], { timeout: 5000 });
+    console.log('[Docker] Available — container provisioning enabled');
+    return true;
+  } catch (err: any) {
+    console.warn('[Docker] Not available — container provisioning disabled. Error:', err.code || err.message);
+    return false;
+  }
+};
+
+let dockerAvailable = false;
+checkDocker().then(available => { dockerAvailable = available; });
 
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
