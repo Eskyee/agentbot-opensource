@@ -68,14 +68,9 @@ export async function POST(req: NextRequest) {
 async function handleAccountCompromised(sub: string, eventData: any) {
   console.log('[RISC] Account compromised:', sub);
   
-  // Find user by Google ID or email
+  // Find user by email (sub is usually the email for Google RISC events)
   const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { googleId: sub },
-        { email: sub },
-      ],
-    },
+    where: { email: sub },
   });
   
   if (user) {
@@ -92,12 +87,7 @@ async function handleAccountDisabled(sub: string) {
   console.log('[RISC] Account disabled:', sub);
   
   const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { googleId: sub },
-        { email: sub },
-      ],
-    },
+    where: { email: sub },
   });
   
   if (user) {
@@ -117,12 +107,7 @@ async function handleAccountEnabled(sub: string) {
   console.log('[RISC] Account enabled:', sub);
   
   const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { googleId: sub },
-        { email: sub },
-      ],
-    },
+    where: { email: sub },
   });
   
   if (user) {
@@ -137,12 +122,7 @@ async function handleSessionsRevoked(sub: string) {
   console.log('[RISC] Sessions revoked:', sub);
   
   const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { googleId: sub },
-        { email: sub },
-      ],
-    },
+    where: { email: sub },
   });
   
   if (user) {
@@ -157,12 +137,7 @@ async function handleIdentifierChanged(sub: string, eventData: any) {
   
   // Invalidate old sessions when email changes
   const user = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { googleId: sub },
-        { email: sub },
-      ],
-    },
+    where: { email: sub },
   });
   
   if (user) {
