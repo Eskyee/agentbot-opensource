@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, AreaChart, Area,
 } from 'recharts'
-import { DollarSign, TrendingDown, TrendingUp, Zap, Clock } from 'lucide-react'
+import { DollarSign, TrendingDown, TrendingUp, Zap, Clock, Loader2 } from 'lucide-react'
 
 interface AgentCost {
   name: string
@@ -14,34 +14,42 @@ interface AgentCost {
   cost: number
   calls: number
   avgCostPerCall: number
+  model?: string
 }
 
-const AGENTS: AgentCost[] = [
-  { name: 'Atlas',      tokens: 2_840_000, cost: 8.52,  calls: 1247, avgCostPerCall: 0.0068 },
-  { name: 'Watchtower', tokens: 920_000,  cost: 2.76,  calls:  412, avgCostPerCall: 0.0067 },
-  { name: 'DJ Bot',     tokens: 480_000,  cost: 1.44,  calls:  189, avgCostPerCall: 0.0076 },
-  { name: 'Swarm-1',   tokens: 320_000,  cost: 0.96,  calls:   98, avgCostPerCall: 0.0098 },
-]
+interface DailyCost {
+  date: string
+  cost: number
+  tokens: number
+}
 
-const DAILY: { date: string; cost: number; tokens: number }[] = [
-  { date: 'Mar 8',  cost: 1.12, tokens: 374_000 },
-  { date: 'Mar 9',  cost: 0.87, tokens: 290_000 },
-  { date: 'Mar 10', cost: 1.43, tokens: 477_000 },
-  { date: 'Mar 11', cost: 1.89, tokens: 630_000 },
-  { date: 'Mar 12', cost: 1.24, tokens: 413_000 },
-  { date: 'Mar 13', cost: 1.67, tokens: 557_000 },
-  { date: 'Mar 14', cost: 1.46, tokens: 487_000 },
-]
+interface ModelBreakdown {
+  model: string
+  percent: number
+  cost: number
+}
 
-const MODEL_BREAKDOWN = [
-  { model: 'claude-3-7-sonnet', percent: 68, cost: 9.18 },
-  { model: 'claude-3-5-haiku',  percent: 24, cost: 3.24 },
-  { model: 'gpt-4o-mini',       percent:  8, cost: 1.08 },
-]
+interface CostData {
+  period: string
+  summary: {
+    totalCost: number
+    totalTokens: number
+    totalCalls: number
+    avgCostPerCall: number
+  }
+  agents: AgentCost[]
+  daily: DailyCost[]
+  modelBreakdown: ModelBreakdown[]
+  isMockData: boolean
+  message?: string
+}
 
-const totalCost = AGENTS.reduce((s, a) => s + a.cost, 0)
-const totalTokens = AGENTS.reduce((s, a) => s + a.tokens, 0)
-const totalCalls = AGENTS.reduce((s, a) => s + a.calls, 0)
+// Fetch cost data from API
+async function fetchCostData(period: string): Promise<CostData> {
+  const res = await fetch(`/api/dashboard/cost?period=${period}`)
+  if (!res.ok) throw new Error('Failed to fetch cost data')
+  return res.json()
+}
 
 const StatCard = ({
   icon: Icon, label, value, sub, trend, color = 'text-blue-400',
@@ -64,6 +72,30 @@ const StatCard = ({
 export default function CostPage() {
   const [period, setPeriod] = useState<'7d' | '30d' | 'mtd'>('7d')
 
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['cost', period],
+    queryFn: () => fetchCostData(period),
+    refetchInterval: 60000, // Refresh every minute
+  })
+
+  if (isLoading) {
+    return (
+      <div className="mt-[4rem] min-h-screen bg-black text-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="mt-[4rem] min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-zinc-500">Failed to load cost data</div>
+      </div>
+    )
+  }
+
+  const { summary, agents, daily, modelBreakdown, isMockData, message } = data
+
   return (
     <div className="mt-[4rem] min-h-screen bg-black text-white">
       {/* Header */}
@@ -71,6 +103,11 @@ export default function CostPage() {
         <div className="flex items-center gap-3">
           <DollarSign className="h-5 w-5 text-green-400" />
           <h1 className="text-xl font-bold tracking-tight">Cost Tracking</h1>
+          {isMockData && (
+            <span className="text-[10px] uppercase tracking-widest text-yellow-500 bg-yellow-500/10 px-2 py-0.5 rounded">
+              Sample Data
+            </span>
+          )}
         </div>
         <div className="flex gap-1 bg-zinc-900 border border-zinc-700 rounded-lg p-1">
           {(['7d', '30d', 'mtd'] as const).map(p => (
@@ -88,109 +125,141 @@ export default function CostPage() {
       </div>
 
       <div className="px-6 py-6 space-y-6">
+        {/* Mock data banner */}
+        {isMockData && message && (
+          <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 text-xs text-yellow-400">
+            {message}
+          </div>
+        )}
+
         {/* Stat cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard icon={DollarSign} label="7-Day Cost"    value={`$${totalCost.toFixed(2)}`}            sub="all agents"          color="text-green-400" trend="down" />
-          <StatCard icon={Zap}        label="Tokens Used"   value={`${(totalTokens / 1_000_000).toFixed(1)}M`} sub="input + output" color="text-blue-400" />
-          <StatCard icon={Clock}      label="API Calls"     value={totalCalls.toLocaleString()}            sub="last 7 days"         color="text-blue-400" />
-          <StatCard icon={DollarSign} label="Avg / Call"    value={`$${(totalCost / totalCalls).toFixed(4)}`} sub="blended"          color="text-yellow-400" />
+          <StatCard
+            icon={DollarSign}
+            label={`${period === 'mtd' ? 'MTD' : period} Cost`}
+            value={`$${summary.totalCost.toFixed(2)}`}
+            sub="all agents"
+            color="text-green-400"
+            trend={summary.totalCost > 10 ? 'up' : 'down'}
+          />
+          <StatCard
+            icon={Zap}
+            label="Tokens Used"
+            value={`${(summary.totalTokens / 1_000_000).toFixed(1)}M`}
+            sub="input + output"
+            color="text-blue-400"
+          />
+          <StatCard
+            icon={Clock}
+            label="API Calls"
+            value={summary.totalCalls.toLocaleString()}
+            sub={`last ${period}`}
+            color="text-blue-400"
+          />
+          <StatCard
+            icon={DollarSign}
+            label="Avg / Call"
+            value={`$${summary.avgCostPerCall.toFixed(4)}`}
+            sub="blended"
+            color="text-yellow-400"
+          />
         </div>
 
         {/* Daily cost chart */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Daily Spend ($)</h2>
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={DAILY}>
-              <defs>
-                <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-              <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 10 }} />
-              <YAxis tick={{ fill: '#6b7280', fontSize: 10 }} tickFormatter={v => `$${v}`} />
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Daily Cost</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={daily}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+              <XAxis dataKey="date" tick={{ fill: '#71717a', fontSize: 12 }} />
+              <YAxis tick={{ fill: '#71717a', fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
               <Tooltip
-                formatter={(v) => [`$${Number(v).toFixed(2)}`, 'Cost']}
-                contentStyle={{ background: '#111', border: '1px solid #374151', fontSize: 12 }}
+                contentStyle={{ background: '#18181b', border: '1px solid #3f3f46', borderRadius: '8px' }}
+                labelStyle={{ color: '#a1a1aa' }}
+                formatter={(value: any) => [`$${Number(value).toFixed(2)}`, 'Cost']}
               />
-              <Area type="monotone" dataKey="cost" stroke="#10b981" fill="url(#costGrad)" strokeWidth={1.5} dot={false} />
+              <Area type="monotone" dataKey="cost" stroke="#4ade80" fill="#4ade80" fillOpacity={0.1} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Per-agent breakdown */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Cost by Agent</h2>
-          <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={AGENTS} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" horizontal={false} />
-              <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 10 }} tickFormatter={v => `$${v}`} />
-              <YAxis type="category" dataKey="name" tick={{ fill: '#9ca3af', fontSize: 11 }} width={80} />
-              <Tooltip
-                formatter={(v) => [`$${Number(v).toFixed(2)}`, 'Cost']}
-                contentStyle={{ background: '#111', border: '1px solid #374151', fontSize: 12 }}
-              />
-              <Bar dataKey="cost" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Agent breakdown table */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-zinc-800">
+            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">Agent Breakdown</h2>
+          </div>
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-zinc-800 text-xs text-zinc-500 uppercase tracking-wider">
+                <th className="px-5 py-3 text-left">Agent</th>
+                <th className="px-5 py-3 text-right">Tokens</th>
+                <th className="px-5 py-3 text-right">Calls</th>
+                <th className="px-5 py-3 text-right">Cost</th>
+                <th className="px-5 py-3 text-right">Avg/Call</th>
+              </tr>
+            </thead>
+            <tbody>
+              {agents.map((agent) => (
+                <tr key={agent.name} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                  <td className="px-5 py-3">
+                    <div className="font-medium">{agent.name}</div>
+                    {agent.model && <div className="text-xs text-zinc-500">{agent.model}</div>}
+                  </td>
+                  <td className="px-5 py-3 text-right font-mono text-sm">{(agent.tokens / 1000).toFixed(0)}K</td>
+                  <td className="px-5 py-3 text-right font-mono text-sm">{agent.calls.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-right font-mono text-sm text-green-400">${agent.cost.toFixed(2)}</td>
+                  <td className="px-5 py-3 text-right font-mono text-sm text-zinc-400">${agent.avgCostPerCall.toFixed(4)}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="text-sm font-semibold">
+                <td className="px-5 py-3">Total</td>
+                <td className="px-5 py-3 text-right font-mono">{(summary.totalTokens / 1_000_000).toFixed(1)}M</td>
+                <td className="px-5 py-3 text-right font-mono">{summary.totalCalls.toLocaleString()}</td>
+                <td className="px-5 py-3 text-right font-mono text-green-400">${summary.totalCost.toFixed(2)}</td>
+                <td className="px-5 py-3 text-right font-mono text-zinc-400">${summary.avgCostPerCall.toFixed(4)}</td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
 
         {/* Model breakdown */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Model Cost Split</h2>
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Model Breakdown</h2>
           <div className="space-y-3">
-            {MODEL_BREAKDOWN.map(m => (
-              <div key={m.model} className="space-y-1">
-                <div className="flex justify-between text-xs">
-                  <span className="text-zinc-300 font-mono">{m.model}</span>
-                  <span className="text-zinc-400">${m.cost.toFixed(2)} · {m.percent}%</span>
-                </div>
-                <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            {modelBreakdown.map((m) => (
+              <div key={m.model} className="flex items-center gap-4">
+                <div className="w-40 text-sm font-mono text-zinc-300 truncate">{m.model}</div>
+                <div className="flex-1 bg-zinc-800 rounded-full h-2 overflow-hidden">
                   <div
                     className="h-full bg-blue-500 rounded-full transition-all"
                     style={{ width: `${m.percent}%` }}
                   />
                 </div>
+                <div className="w-12 text-right text-xs text-zinc-400">{m.percent}%</div>
+                <div className="w-20 text-right text-sm font-mono text-green-400">${m.cost.toFixed(2)}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Agent table */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-800">
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">Agent Breakdown</h2>
-          </div>
-          <table className="w-full text-sm">
-            <thead className="text-[10px] text-zinc-500 uppercase tracking-widest border-b border-zinc-800">
-              <tr>
-                <th className="px-5 py-3 text-left">Agent</th>
-                <th className="px-5 py-3 text-right">Tokens</th>
-                <th className="px-5 py-3 text-right">Calls</th>
-                <th className="px-5 py-3 text-right">$/Call</th>
-                <th className="px-5 py-3 text-right font-bold text-white">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-800">
-              {AGENTS.map(a => (
-                <tr key={a.name} className="hover:bg-zinc-800/40 transition-colors">
-                  <td className="px-5 py-3 font-medium">{a.name}</td>
-                  <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{(a.tokens / 1_000).toFixed(0)}K</td>
-                  <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{a.calls.toLocaleString()}</td>
-                  <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">${a.avgCostPerCall.toFixed(4)}</td>
-                  <td className="px-5 py-3 text-right font-mono font-bold text-green-400">${a.cost.toFixed(2)}</td>
-                </tr>
-              ))}
-              <tr className="border-t border-zinc-700 bg-zinc-800/30">
-                <td className="px-5 py-3 font-bold text-zinc-300">Total</td>
-                <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{(totalTokens / 1_000_000).toFixed(1)}M</td>
-                <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">{totalCalls.toLocaleString()}</td>
-                <td className="px-5 py-3 text-right text-zinc-400 font-mono text-xs">—</td>
-                <td className="px-5 py-3 text-right font-mono font-bold text-white">${totalCost.toFixed(2)}</td>
-              </tr>
-            </tbody>
-          </table>
+        {/* Token usage chart */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">Token Usage</h2>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={daily}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+              <XAxis dataKey="date" tick={{ fill: '#71717a', fontSize: 12 }} />
+              <YAxis tick={{ fill: '#71717a', fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
+              <Tooltip
+                contentStyle={{ background: '#18181b', border: '1px solid #3f3f46', borderRadius: '8px' }}
+                labelStyle={{ color: '#a1a1aa' }}
+                formatter={(value: any) => [`${(value / 1000).toFixed(0)}K`, 'Tokens']}
+              />
+              <Bar dataKey="tokens" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
