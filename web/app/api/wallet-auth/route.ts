@@ -42,11 +42,15 @@ export async function POST(req: NextRequest) {
       secret: process.env.NEXTAUTH_SECRET!,
     });
 
-    // Set session cookie
+    // Set session cookie (matches NextAuth production cookie name)
+    const cookieName = process.env.NODE_ENV === 'production' 
+      ? '__Secure-next-auth.session-token' 
+      : 'next-auth.session-token';
+    
     const response = NextResponse.json({ ok: true, user: { id: user.id, name: user.name } });
-    response.cookies.set('next-auth.session-token', token, {
+    response.cookies.set(cookieName, token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
       maxAge: 30 * 24 * 60 * 60, // 30 days
