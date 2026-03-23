@@ -54,10 +54,14 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
         redirect: false,
       });
 
-      if (result?.ok) {
+      console.log('[SignIn] Result:', result);
+
+      if (result?.ok && !result?.error) {
         window.location.href = callbackUrl;
       } else {
-        setError(result?.error || 'Sign-in failed');
+        const errMsg = result?.error || 'Sign-in failed';
+        console.error('[SignIn] Error:', errMsg);
+        setError(errMsg);
         hasSignedRef.current = false;
       }
     } catch (err) {
