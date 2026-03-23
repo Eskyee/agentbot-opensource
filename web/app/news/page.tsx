@@ -3,6 +3,14 @@ import Link from 'next/link';
 const communityUpdates = [
   {
     source: 'Agentbot',
+    date: '23 March 2026',
+    title: 'MiMo-V2-Pro Now Default Model',
+    excerpt: 'Xiaomi\'s flagship 1T+ parameter model with 1M context is now the default on Agentbot. #1 in programming benchmarks, 100% uptime.',
+    url: '/blog/posts/mimo-v2-pro',
+    type: 'release'
+  },
+  {
+    source: 'Agentbot',
     date: 'March 2026',
     title: 'Agentbot V2 Launch — Run AI Agents. Not Servers.',
     excerpt: 'Zero human company now live. Deploy autonomous agents in seconds. No infrastructure headaches.',

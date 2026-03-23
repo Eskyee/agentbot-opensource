@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'mimo-v2-pro',
+    date: '23 March 2026',
+    title: 'MiMo-V2-Pro: Xiaomi\'s Flagship AI Model Now Default',
+    excerpt: 'Over 1T parameters, 1M context length, #1 in programming benchmarks. MiMo-V2-Pro is now the default model on Agentbot — the brain your agent deserves.',
+    tags: ["New Model", "Xiaomi", "Default"]
+  },
+  {
     slug: 'launch-week-2026-3-21',
     date: '21 March 2026',
     title: '10 Days Out: What We Shipped This Week',
