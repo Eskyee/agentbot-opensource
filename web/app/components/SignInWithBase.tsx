@@ -59,30 +59,19 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
         primaryType: 'SignIn',
       });
 
-      // 4. Verify via NextAuth credentials callback (with CSRF)
-      const verifyRes = await fetch('/api/auth/callback/credentials', {
+      // 4. Verify via custom wallet auth (bypasses NextAuth CSRF)
+      const verifyRes = await fetch('/api/auth/wallet', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          csrfToken,
-          message: JSON.stringify({ wallet: address, nonce, time: timestamp }),
-          signature,
-          address,
-          redirect: 'false',
-          json: 'true',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, signature }),
       });
 
       const result = await verifyRes.json();
-      if (result?.url) {
-        // NextAuth returns redirect URL on success
-        window.location.href = result.url || callbackUrl;
-      } else if (result?.error) {
-        setError(result.error);
-        hasSignedRef.current = false;
-      } else {
-        // Fallback: check if we got redirected (success)
+      if (result?.ok) {
         window.location.href = callbackUrl;
+      } else {
+        setError(result?.error || 'Sign-in failed');
+        hasSignedRef.current = false;
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Sign-in failed';
