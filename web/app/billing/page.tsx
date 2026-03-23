@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import CoinbaseWalletButton from '../components/CoinbaseWallet'
 
@@ -55,7 +55,7 @@ function BillingSidebar({ userName, className = '' }: { userName: string; classN
 }
 
 export default function BillingPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useCustomSession()
   const router = useRouter()
   const [currentPlan, setCurrentPlan] = useState('underground')
   const [subscriptionStatus, setSubscriptionStatus] = useState('inactive')

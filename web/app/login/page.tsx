@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
-import { signIn, useSession } from "next-auth/react";
+import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -11,7 +11,7 @@ const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), 
 });
 
 function LoginForm() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useCustomSession()
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
   const [email, setEmail] = useState("");

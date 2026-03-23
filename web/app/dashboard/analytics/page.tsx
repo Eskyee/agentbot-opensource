@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 
 interface AnalyticsData {
   overview: { totalRevenue: string; totalBookings: number; totalFans: number; totalStreams: number }
@@ -36,7 +36,7 @@ const mockAnalytics: AnalyticsData = {
 }
 
 export default function AnalyticsPage() {
-  const { data: session } = useSession()
+  const { data: session } = useCustomSession()
   const [data, setData] = useState<AnalyticsData>(mockAnalytics)
   const [timeRange, setTimeRange] = useState('6m')
 

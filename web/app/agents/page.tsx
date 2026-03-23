@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 
 export default function AgentsPage() {
-  const { data: session } = useSession()
+  const { data: session } = useCustomSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (

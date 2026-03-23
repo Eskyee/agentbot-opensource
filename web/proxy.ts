@@ -9,6 +9,8 @@ const PUBLIC_API_ROUTES = [
   '/api/auth/reset-password',
   '/api/auth/farcaster/verify',
   '/api/auth/farcaster/refresh',
+  '/api/auth/session',
+  '/api/auth/signout',
 ]
 
 // Debug routes - only allow in development

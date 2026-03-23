@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useCustomSession, customSignOut } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
@@ -75,7 +75,7 @@ const navItems = [
 
 function DashboardContent() {
   const pathname = usePathname()
-  const { data: session, status } = useSession()
+  const { data: session, status } = useCustomSession()
   const router = useRouter()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const searchParams = useSearchParams()
@@ -992,7 +992,7 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
             </div>
           </div>
           <button
-            onClick={() => signOut({ callbackUrl: '/' })}
+            onClick={() => customSignOut()}
             className="w-full flex items-center justify-center gap-2 border border-zinc-800 px-4 py-2 text-sm text-zinc-500 hover:text-white hover:border-zinc-600 transition-colors"
           >
             Sign Out

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession } from 'next-auth/react'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 
 interface WalletData {
   address: string | null
@@ -10,7 +10,7 @@ interface WalletData {
 }
 
 export default function WalletCard() {
-  const { data: session } = useSession()
+  const { data: session } = useCustomSession()
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(false)
 

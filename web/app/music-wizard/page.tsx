@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 
 const musicRoles = [
   {
@@ -73,7 +73,7 @@ interface MusicWizardData {
 
 export default function MusicWizardPage() {
   const router = useRouter()
-  const { data: session } = useSession()
+  const { data: session } = useCustomSession()
   const [step, setStep] = useState(1)
   const [wizardData, setWizardData] = useState<MusicWizardData>({
     selectedRole: 'dj',

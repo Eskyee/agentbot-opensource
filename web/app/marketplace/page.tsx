@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useCustomSession } from '@/app/lib/useCustomSession';
 
 // THE PURGE: Gordon-Approved Official Fleet
 const templates = [
@@ -47,7 +47,7 @@ const templates = [
 const channels = ['Telegram', 'Discord', 'WhatsApp'];
 
 export default function MarketplacePage() {
-  const { data: session } = useSession()
+  const { data: session } = useCustomSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (

@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useSession, signOut } from "next-auth/react";
+import { useCustomSession, customSignOut } from "@/app/lib/useCustomSession";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 
 export default function Navbar() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useCustomSession();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -82,7 +82,7 @@ export default function Navbar() {
               {isAdmin && <NavLink href="/admin" current={pathname}>Admin</NavLink>}
               <span className="text-[11px] text-zinc-500 truncate max-w-[120px] uppercase tracking-wider">{displayName}</span>
               <button
-                onClick={() => signOut()}
+                onClick={() => customSignOut()}
                 className="text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
               >
                 Log out
@@ -135,7 +135,7 @@ export default function Navbar() {
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                   {isAdmin && <MobileLink href="/admin" onClick={closeMenu}>Admin</MobileLink>}
                   <button
-                    onClick={() => { closeMenu(); signOut(); }}
+                    onClick={() => { closeMenu(); customSignOut(); }}
                     className="text-left text-xs py-2.5 px-3 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
                   >
                     Log out

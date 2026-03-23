@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { useSession, signIn } from 'next-auth/react'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 
 export default function CoinbaseWalletButton() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useCustomSession()
   const [showWallet, setShowWallet] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
 
@@ -30,7 +30,7 @@ export default function CoinbaseWalletButton() {
   if (!session) {
     return (
       <button
-        onClick={() => signIn('google')}
+        onClick={() => window.location.href = '/login'}
         className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-zinc-200"
       >
         Sign In

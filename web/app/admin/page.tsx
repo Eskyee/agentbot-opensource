@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useCustomSession } from '@/app/lib/useCustomSession';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -25,7 +25,7 @@ interface AgentInstance {
 }
 
 export default function AdminPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useCustomSession();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [instances, setInstances] = useState<AgentInstance[]>([]);

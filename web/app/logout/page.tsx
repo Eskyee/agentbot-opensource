@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { signOut } from "next-auth/react";
+import { customSignOut } from '@/app/lib/useCustomSession';
 
 export default function LogoutPage() {
   useEffect(() => {
-    // Perform sign out on page load
-    signOut({ callbackUrl: "/" });
+    customSignOut();
   }, []);
 
   return (

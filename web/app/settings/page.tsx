@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useBasename, getWalletAddress } from '@/app/hooks/useBasename'
 
 const navItems = [
@@ -56,7 +56,7 @@ function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?
 }
 
 export default function SettingsPage() {
-  const { data: session } = useSession()
+  const { data: session } = useCustomSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const walletAddress = getWalletAddress(session?.user?.email)
   const { basename } = useBasename(walletAddress)
