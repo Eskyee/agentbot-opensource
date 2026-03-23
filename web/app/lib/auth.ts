@@ -101,29 +101,46 @@ providers.push(
           return null;
         }
 
-        // Use viem verifyMessage - handles ERC-6492 (pre-deployed Base smart wallets)
-        console.log(`[Auth] Verifying signature for ${typedAddress}...`);
+        // Use viem verifyTypedData — works with smart wallets (EIP-712)
+        console.log(`[Auth] Verifying EIP-712 signature for ${typedAddress}...`);
         let valid = false;
         try {
-          valid = await viemClient.verifyMessage({
+          const parsed = JSON.parse(credentials.message);
+          valid = await viemClient.verifyTypedData({
             address: typedAddress,
-            message: credentials.message,
+            domain: {
+              name: 'Agentbot',
+              version: '1',
+              chainId: 8453,
+            },
+            types: {
+              SignIn: [
+                { name: 'wallet', type: 'address' },
+                { name: 'nonce', type: 'string' },
+                { name: 'time', type: 'uint256' },
+              ],
+            },
+            primaryType: 'SignIn',
+            message: {
+              wallet: typedAddress,
+              nonce: parsed.nonce,
+              time: BigInt(parsed.time),
+            },
             signature: credentials.signature as `0x${string}`,
           });
           console.log(`[Auth] Signature verification result: ${valid}`);
         } catch (verifyError) {
-          console.error(`[Auth] Signature verification threw:`, verifyError);
-          // Try with a different RPC if default fails
+          console.error(`[Auth] Verification threw:`, verifyError);
+          // Fallback: try plain message verification
           try {
-            const fallbackClient = createPublicClient({ chain: base, transport: http('https://mainnet.base.org') });
-            valid = await fallbackClient.verifyMessage({
+            valid = await viemClient.verifyMessage({
               address: typedAddress,
               message: credentials.message,
               signature: credentials.signature as `0x${string}`,
             });
-            console.log(`[Auth] Fallback verification result: ${valid}`);
+            console.log(`[Auth] Fallback message verification: ${valid}`);
           } catch (fallbackError) {
-            console.error(`[Auth] Fallback verification also failed:`, fallbackError);
+            console.error(`[Auth] Fallback also failed:`, fallbackError);
           }
         }
 

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useSignTypedData } from 'wagmi';
 import { useRouter } from 'next/navigation';
+import { base } from 'viem/chains';
 
 interface SignInWithBaseProps {
   callbackUrl?: string;
@@ -14,7 +15,7 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending: isConnecting } = useConnect();
   const { disconnect } = useDisconnect();
-  const { signMessageAsync } = useSignMessage();
+  const { signTypedDataAsync } = useSignTypedData();
 
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,17 +32,37 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
       const nonceRes = await fetch('/api/auth/nonce');
       const { nonce } = await nonceRes.json();
 
-      // 2. Simple message (no SIWE parser — works with smart wallets)
-      const message = `Sign in to Agentbot\n\nWallet: ${address}\nNonce: ${nonce}\nTime: ${Date.now()}`;
+      // 2. Sign with EIP-712 typed data (works with smart wallets)
+      const signature = await signTypedDataAsync({
+        domain: {
+          name: 'Agentbot',
+          version: '1',
+          chainId: base.id,
+        },
+        types: {
+          SignIn: [
+            { name: 'wallet', type: 'address' },
+            { name: 'nonce', type: 'string' },
+            { name: 'time', type: 'uint256' },
+          ],
+        },
+        message: {
+          wallet: address,
+          nonce,
+          time: BigInt(Date.now()),
+        },
+        primaryType: 'SignIn',
+      });
 
-      // 3. Sign
-      const signature = await signMessageAsync({ message });
-
-      // 4. Verify
+      // 3. Verify
       const verifyRes = await fetch('/api/auth/callback/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, signature, address }),
+        body: JSON.stringify({ 
+          message: JSON.stringify({ wallet: address, nonce, time: Date.now() }),
+          signature, 
+          address 
+        }),
       });
 
       const result = await verifyRes.json();
@@ -59,7 +80,7 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
     } finally {
       setIsSigningIn(false);
     }
-  }, [address, signMessageAsync, router, callbackUrl, onError]);
+  }, [address, signTypedDataAsync, router, callbackUrl, onError]);
 
   useEffect(() => {
     if (isConnected && address && !hasSignedRef.current && !isSigningIn) {
