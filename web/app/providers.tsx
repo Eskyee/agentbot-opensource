@@ -1,6 +1,5 @@
 'use client'
 
-import { SessionProvider } from 'next-auth/react'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { base, baseSepolia } from 'viem/chains'
 import { coinbaseWallet } from 'wagmi/connectors'
@@ -27,9 +26,7 @@ export default function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <SessionProvider>
-          {children}
-        </SessionProvider>
+        {children}
       </QueryClientProvider>
     </WagmiProvider>
   )

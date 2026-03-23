@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 
 const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
   ssr: false,
@@ -44,17 +43,9 @@ export default function SignupPage() {
       return;
     }
     
-    const loginRes = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    // Registration succeeded — redirect to login
     setLoading(false);
-    if (loginRes?.error) {
-      setError("Signup succeeded, but login failed");
-    } else if (loginRes?.ok) {
-      window.location.href = "/dashboard";
-    }
+    window.location.href = "/login?registered=1";
   };
 
   return (
@@ -127,11 +118,11 @@ export default function SignupPage() {
           </div>
           <button
             className="w-full border border-zinc-800 text-white text-xs font-bold uppercase tracking-widest py-3 px-4 flex items-center justify-center gap-2 transition-colors hover:border-zinc-600"
-            onClick={() => signIn("google", { callbackUrl: "/onboard" })}
+            onClick={() => window.location.href = "/login"}
             disabled={loading}
           >
             <svg width="20" height="20" fill="currentColor" className="mr-2" viewBox="0 0 48 48"><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#4285F4"/><path d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z" fill="#34A853"/><path d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z" fill="#FBBC05"/><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#EA4335"/></svg>
-            Continue with Google
+            Sign in with Base Wallet
           </button>
         </div>
         <p className="mt-8 text-center text-zinc-500 text-xs">
