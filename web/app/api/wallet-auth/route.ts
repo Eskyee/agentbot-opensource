@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { encode } from 'next-auth/jwt';
 import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
+import crypto from 'crypto';
 
 const viemClient = createPublicClient({ chain: base, transport: http() });
 
@@ -33,12 +33,7 @@ export async function POST(req: NextRequest) {
     // Find or create user
     const walletEmail = `${address.toLowerCase()}@wallet.agentbot`;
     let user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: walletEmail },
-          { name: address },
-        ]
-      }
+      where: { OR: [{ email: walletEmail }, { name: address }] }
     });
 
     if (!user) {
@@ -51,32 +46,27 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create NextAuth JWT with ALL required fields
-    const secret = process.env.NEXTAUTH_SECRET || 'dev-secret-do-not-use-in-production-12345';
-    const token = await encode({
-      token: {
-        sub: user.id,
-        name: user.name,
-        email: user.email,
-        walletAddress: address,
-        iat: Math.floor(Date.now() / 1000),
-        exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-        jti: crypto.randomUUID(),
+    // Create simple session token (not JWT — just a lookup key)
+    const sessionToken = crypto.randomBytes(32).toString('hex');
+    
+    // Store session in DB
+    await prisma.session.create({
+      data: {
+        sessionToken,
+        userId: user.id,
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       },
-      secret,
-      maxAge: 30 * 24 * 60 * 60,
     });
 
-    // Set session cookie (matches NextAuth production cookie name)
-    const cookieName = process.env.NODE_ENV === 'production' 
-      ? '__Secure-next-auth.session-token' 
-      : 'next-auth.session-token';
-    
+    // Set cookie
     const response = NextResponse.json({ ok: true, user: { id: user.id, name: user.name } });
-    
-    // Set cookie with explicit domain for Vercel
-    const cookieValue = `${cookieName}=${token}; Path=/; Max-Age=${30 * 24 * 60 * 60}; HttpOnly; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`;
-    response.headers.set('Set-Cookie', cookieValue);
+    response.cookies.set('agentbot-session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 30 * 24 * 60 * 60,
+    });
 
     return response;
   } catch (error) {

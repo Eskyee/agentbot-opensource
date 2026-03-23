@@ -34,11 +34,25 @@ export function proxy(request: NextRequest) {
   if (PUBLIC_API_ROUTES.some(route => pathname.startsWith(route))) {
     return NextResponse.next()
   }
+
+  // Allow wallet auth endpoint
+  if (pathname === '/api/wallet-auth') {
+    return NextResponse.next()
+  }
   
   // Block debug routes in production
   if (process.env.NODE_ENV === 'production') {
     if (DEBUG_ROUTES.some(route => pathname.startsWith(route))) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+  }
+
+  // Protected routes — check custom session cookie
+  const protectedPaths = ['/dashboard', '/onboard', '/settings'];
+  if (protectedPaths.some(p => pathname.startsWith(p))) {
+    const sessionToken = request.cookies.get('agentbot-session')?.value;
+    if (!sessionToken) {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
   }
   
