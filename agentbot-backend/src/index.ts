@@ -1560,15 +1560,33 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
 }
 
 async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number }> {
+  // Check Docker availability first
+  try {
+    await runCommand('docker', ['version', '--format', '{{.Server.Version}}'], { timeout: 5000 });
+  } catch (err: any) {
+    console.warn('[Auto-Update] Docker not available — skipping container updates');
+    return { success: 0, failed: 0 };
+  }
+
   const portsFileContent = await fs.readFile(portsFilePath(), 'utf8').catch(() => '{}');
   const ports = JSON.parse(portsFileContent) as Record<string, number>;
   const results = { success: 0, failed: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
   const agentIds = Object.keys(ports);
 
+  if (agentIds.length === 0) {
+    console.log('[Auto-Update] No containers to update');
+    return results;
+  }
+
   // Pull the image once before touching any containers
   console.log(`[Auto-Update] Pulling image ${newImage}...`);
-  await runCommand('docker', ['pull', newImage]);
+  try {
+    await runCommand('docker', ['pull', newImage]);
+  } catch (err: any) {
+    console.error('[Auto-Update] Failed to pull image:', err.message);
+    return { success: 0, failed: 0 };
+  }
 
   // Update in parallel batches of 5 so we don't overwhelm the host
   const CONCURRENCY = 5;
