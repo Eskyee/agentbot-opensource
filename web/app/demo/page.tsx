@@ -307,14 +307,14 @@ export default function DemoPage() {
                   <div className="w-full max-w-lg mb-4 border-t border-zinc-900 pt-4">
                     <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold mb-3 text-left">Subscription Plans</p>
                     <div className="flex flex-wrap gap-2">
-                      <button onClick={() => setInput('What\'s included in Underground £29/mo?')} className="text-xs bg-zinc-800 border border-zinc-700 px-3 py-1.5 hover:bg-zinc-700 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
-                        Underground £29/mo
+                      <button onClick={() => setInput('What\'s included in Solo £29/mo?')} className="text-xs bg-zinc-800 border border-zinc-700 px-3 py-1.5 hover:bg-zinc-700 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Solo £29/mo
                       </button>
-                      <button onClick={() => setInput('What\'s included in Collective £79/mo?')} className="text-xs bg-zinc-800 border border-zinc-700 px-3 py-1.5 hover:bg-zinc-700 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
-                        Collective £79/mo
+                      <button onClick={() => setInput('What\'s included in Collective £69/mo?')} className="text-xs bg-zinc-800 border border-zinc-700 px-3 py-1.5 hover:bg-zinc-700 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Collective £69/mo
                       </button>
-                      <button onClick={() => setInput('What\'s included in Label £199/mo?')} className="text-xs bg-zinc-800 border border-zinc-700 px-3 py-1.5 hover:bg-zinc-700 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
-                        Label £199/mo
+                      <button onClick={() => setInput('What\'s included in Label £149/mo?')} className="text-xs bg-zinc-800 border border-zinc-700 px-3 py-1.5 hover:bg-zinc-700 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Label £149/mo
                       </button>
                     </div>
                   </div>
