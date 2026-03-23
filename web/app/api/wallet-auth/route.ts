@@ -51,15 +51,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Create NextAuth JWT session token
+    // Create NextAuth JWT with ALL required fields
+    const secret = process.env.NEXTAUTH_SECRET || 'dev-secret-do-not-use-in-production-12345';
     const token = await encode({
       token: {
         sub: user.id,
         name: user.name,
         email: user.email,
         walletAddress: address,
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+        jti: crypto.randomUUID(),
       },
-      secret: process.env.NEXTAUTH_SECRET!,
+      secret,
+      maxAge: 30 * 24 * 60 * 60,
     });
 
     // Set session cookie (matches NextAuth production cookie name)
@@ -73,7 +78,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: 30 * 24 * 60 * 60,
     });
 
     return response;
