@@ -28,11 +28,16 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
     setError(null);
 
     try {
-      // 1. Get nonce
+      // 1. Get CSRF token (required by NextAuth)
+      const csrfRes = await fetch('/api/auth/csrf');
+      const { csrfToken } = await csrfRes.json();
+
+      // 2. Get nonce
       const nonceRes = await fetch('/api/auth/nonce');
       const { nonce } = await nonceRes.json();
 
-      // 2. Sign with EIP-712 typed data (works with smart wallets)
+      // 3. Sign with EIP-712 typed data (works with smart wallets)
+      const timestamp = Date.now();
       const signature = await signTypedDataAsync({
         domain: {
           name: 'Agentbot',
@@ -49,28 +54,35 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
         message: {
           wallet: address,
           nonce,
-          time: BigInt(Date.now()),
+          time: BigInt(timestamp),
         },
         primaryType: 'SignIn',
       });
 
-      // 3. Verify
+      // 4. Verify via NextAuth credentials callback (with CSRF)
       const verifyRes = await fetch('/api/auth/callback/credentials', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: JSON.stringify({ wallet: address, nonce, time: Date.now() }),
-          signature, 
-          address 
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          csrfToken,
+          message: JSON.stringify({ wallet: address, nonce, time: timestamp }),
+          signature,
+          address,
+          redirect: 'false',
+          json: 'true',
         }),
       });
 
       const result = await verifyRes.json();
-      if (result?.ok) {
-        router.push(callbackUrl);
-      } else {
-        setError(result?.error || 'Sign-in failed');
+      if (result?.url) {
+        // NextAuth returns redirect URL on success
+        window.location.href = result.url || callbackUrl;
+      } else if (result?.error) {
+        setError(result.error);
         hasSignedRef.current = false;
+      } else {
+        // Fallback: check if we got redirected (success)
+        window.location.href = callbackUrl;
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Sign-in failed';
