@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
+        isAdmin: (session.user as any).isAdmin ?? false,
       },
     });
   } catch (error) {
