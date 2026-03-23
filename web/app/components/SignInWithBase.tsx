@@ -3,7 +3,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAccount, useConnect, useDisconnect, useSignTypedData } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
 import { base } from 'viem/chains';
 
 interface SignInWithBaseProps {
@@ -46,22 +45,20 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
         primaryType: 'SignIn',
       });
 
-      // NextAuth signIn handles CSRF automatically
-      const result = await signIn('wallet', {
-        message: JSON.stringify({ wallet: address, nonce, time: timestamp }),
-        signature,
-        address,
-        redirect: false,
+      // 3. POST to custom wallet auth (no NextAuth, no CSRF, no second signing)
+      const verifyRes = await fetch('/api/wallet-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, signature }),
       });
 
+      const result = await verifyRes.json();
       console.log('[SignIn] Result:', result);
 
-      if (result?.ok && !result?.error) {
+      if (result?.ok) {
         window.location.href = callbackUrl;
       } else {
-        const errMsg = result?.error || 'Sign-in failed';
-        console.error('[SignIn] Error:', errMsg);
-        setError(errMsg);
+        setError(result?.error || 'Sign-in failed');
         hasSignedRef.current = false;
       }
     } catch (err) {
