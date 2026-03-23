@@ -6,6 +6,7 @@ import Providers from "./providers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Analytics } from '@vercel/analytics/next'
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 
@@ -141,6 +142,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <SpeedInsights />
+        <Analytics />
         <Providers>
           <Navbar />
           <main id="main-content" className="flex-1" tabIndex={-1}>
