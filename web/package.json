@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node_modules/.bin/prisma generate && next build",
+    "build": "node_modules/.bin/prisma generate && node_modules/.bin/prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 100",
     "test": "playwright test",
