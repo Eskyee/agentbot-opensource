@@ -1,0 +1,31 @@
+# Agentbot Render Blueprint
+services:
+  # Backend API + MCP Gateway + Skills Marketplace
+  - type: web
+    name: agentbot-api
+    env: docker
+    dockerfilePath: agentbot-backend/Dockerfile
+    rootDir: agentbot-backend
+    plan: starter
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "3001"
+      - key: NODE_ENV
+        value: production
+      - key: RENDER_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: INTERNAL_API_KEY
+        generateValue: true

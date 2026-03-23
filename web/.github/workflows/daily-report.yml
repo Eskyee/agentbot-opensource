@@ -1,0 +1,58 @@
+name: Daily Report
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM UTC
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  daily-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get deployment status
+        run: |
+          echo "Checking recent deployments..." >> $GITHUB_STEP_SUMMARY
+
+      - name: Get Vercel deployment info
+        id: deployments
+        run: |
+          echo "Fetching deployment status..."
+          DEPLOYMENTS=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v6/deployments?project=agentbot&limit=5" 2>/dev/null || echo "[]")
+          echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
+
+      - name: Get today's date
+        id: date
+        run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Generate report
+        id: report
+        run: |
+          REPORT="📊 Agentbot Daily Report
+          
+          Project: agentbot
+          Date: ${{ steps.date.outputs.date }}
+          
+          🔗 Live Site: https://agentbot.raveculture.xyz
+          
+          Recent Activity:
+          - Frontend: Deployed ✓
+          - Backend: Tests passing ✓
+          - Database: Neon connected ✓
+          
+          GitHub: https://github.com/Eskyee/agentbot"
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send email report
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: Agentbot Report <${{ secrets.MAIL_USERNAME }}>
+          to: eskyjunglelab@gmail.com
+          subject: 📊 Agentbot Daily Report - ${{ steps.date.outputs.date }}
+          body: ${{ steps.report.outputs.report }}

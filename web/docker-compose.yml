@@ -1,0 +1,88 @@
+version: '3.8'
+
+# ╭──────────────────────────────────────────────────╮
+# │  Agentbot Open Source — Local Demo Stack         │
+# │  This is a DEMO setup. Add your own keys in a   │
+# │  .env file (see .env.example). Never commit     │
+# │  real secrets to this repo.                     │
+# │                                                  │
+# │  Production runs on Render + Vercel with real   │
+# │  keys via environment variables.                │
+# ╰──────────────────────────────────────────────────╯
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: agentbot
+      POSTGRES_USER: agentbot
+      POSTGRES_PASSWORD: agentbot_local_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./agentbot-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./agentbot-backend/.env
+    environment:
+      NODE_ENV: development
+      PORT: "3001"
+      DATABASE_URL: postgresql://agentbot:agentbot_local_dev@postgres:5432/agentbot
+      REDIS_URL: redis://redis:6379
+      # Add your own keys in .env — these are demo defaults only
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-demo-key-for-local-dev}
+      JWT_SECRET: ${JWT_SECRET:-demo-jwt-secret-not-for-production}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./agentbot-backend/src:/app/src
+    command: npm run dev
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./web/.env.local
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://agentbot:agentbot_local_dev@postgres:5432/agentbot
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-demo-nextauth-secret}
+      AGENTBOT_API_URL: http://backend:3001
+    depends_on:
+      - backend
+    volumes:
+      - ./web/app:/app/app
+      - ./web/components:/app/components
+      - ./web/lib:/app/lib
+    command: sh -c "npx prisma generate && PORT=3000 npx next dev -p 3000"
+
+volumes:
+  pgdata:
