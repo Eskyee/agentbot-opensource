@@ -82,46 +82,26 @@ providers.push(
       }
 
       try {
-        // Parse SIWE message manually (avoids siwe parser issues with smart wallets)
+        // Parse simple message: "Sign in to Agentbot\n\nWallet: 0x...\nNonce: ...\nTime: ..."
         const message = credentials.message;
-        const lines = message.split('\n');
-        
-        // Extract address from line 2 (format: "wants you to sign in with your Ethereum account:\n0x...")
-        let address = '';
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].startsWith('0x') && lines[i].length === 42) {
-            address = lines[i].trim();
-            break;
-          }
-        }
-        
-        if (!address) {
+        const addressMatch = message.match(/Wallet: (0x[a-fA-F0-9]{40})/);
+
+        if (!addressMatch) {
           console.log(`[Auth] Could not extract address from message`);
           return null;
         }
-        
-        const typedAddress = address as `0x${string}`;
-        console.log(`[Auth] SIWE address extracted: ${typedAddress}`);
 
-        // Validate domain
-        const expectedDomain = process.env.NEXTAUTH_URL
-          ? new URL(process.env.NEXTAUTH_URL).host
-          : (process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL).host : 'agentbot.raveculture.xyz');
-        
-        const messageDomain = lines[0].split(' wants you')[0];
-        console.log(`[Auth] Domain check: received=${messageDomain}, expected=${expectedDomain}`);
-        
-        if (messageDomain !== expectedDomain) {
-          console.log(`[Auth] SIWE domain mismatch: ${messageDomain} !== ${expectedDomain}`);
-          return null;
-        }
-        
-        if (messageDomain !== expectedDomain) {
-          console.log(`[Auth] SIWE domain mismatch: ${messageDomain} !== ${expectedDomain}`);
+        const typedAddress = addressMatch[1] as `0x${string}`;
+        console.log(`[Auth] Address extracted: ${typedAddress}`);
+
+        // Verify nonce exists
+        const nonceMatch = message.match(/Nonce: (\S+)/);
+        if (!nonceMatch) {
+          console.log(`[Auth] No nonce in message`);
           return null;
         }
 
-        // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
+        // Use viem verifyMessage - handles ERC-6492 (pre-deployed Base smart wallets)
         console.log(`[Auth] Verifying signature for ${typedAddress}...`);
         let valid = false;
         try {
@@ -148,13 +128,13 @@ providers.push(
         }
 
         if (!valid) {
-          console.log(`[Auth] SIWE verification failed for ${address}`);
+          console.log(`[Auth] SIWE verification failed for ${typedAddress}`);
           return null;
         }
-        console.log(`[Auth] SIWE signature valid for ${address}`);
+        console.log(`[Auth] SIWE signature valid for ${typedAddress}`);
 
         // Normalize wallet address to lowercase for consistent lookups
-        const normalizedAddress = address.toLowerCase();
+        const normalizedAddress = typedAddress.toLowerCase();
         const walletEmail = `${normalizedAddress}@wallet.base.org`;
 
         // Find or create user by wallet address
@@ -162,16 +142,16 @@ providers.push(
           where: {
             OR: [
               { email: walletEmail },
-              { name: address },
+              { name: typedAddress },
             ]
           }
         });
 
         if (!user) {
-          console.log(`[Auth] User not found, creating new wallet user for ${address}`);
+          console.log(`[Auth] User not found, creating new wallet user for ${typedAddress}`);
           user = await prisma.user.create({
             data: {
-              name: `Wallet:${address.slice(0, 6)}...${address.slice(-4)}`,
+              name: `Wallet:${typedAddress.slice(0, 6)}...${typedAddress.slice(-4)}`,
               email: walletEmail,
               emailVerified: new Date(),
             },
@@ -179,12 +159,12 @@ providers.push(
           console.log(`[Auth] Created new wallet user: ${user.id}`);
         }
 
-        console.log(`[Auth] Successful wallet login: ${address} (UserID: ${user.id})`);
+        console.log(`[Auth] Successful wallet login: ${typedAddress} (UserID: ${user.id})`);
         return {
           id: user.id,
           name: user.name,
           email: user.email,
-          walletAddress: address,
+          walletAddress: typedAddress,
           providerAccountId: normalizedAddress, // Pass this for the signIn callback to use
         };
       } catch (error) {
@@ -242,7 +222,7 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user, account, profile }) {
       console.log(`[Auth] signIn callback: provider=${account?.provider}, userEmail=${user.email}`);
-      
+
       // Handle OAuth and Wallet providers
       if (account?.provider === "google" || account?.provider === "github" || account?.provider === "wallet") {
         if (user.email) {
@@ -251,15 +231,15 @@ export const authOptions: AuthOptions = {
               where: { email: user.email },
               include: { accounts: true },
             });
-            
+
             if (existingUser) {
               const existingAccount = existingUser.accounts.find(
                 (acc) => acc.provider === account.provider
               );
-              
+
               // For CredentialsProvider (wallet), we may need to get providerAccountId from user object
               const providerAccountId = account.providerAccountId || (user as any).providerAccountId;
-              
+
               if (!existingAccount && providerAccountId) {
                 await prisma.account.create({
                   data: {
@@ -295,7 +275,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.sub = user.id;
         token.email = user.email;
-        // Set admin flag from ADMIN_EMAILS env var — re-evaluated on every sign-in
+        // Set admin flag from ADMIN_EMAILS env var - re-evaluated on every sign-in
         const adminEmails = (process.env.ADMIN_EMAILS || '')
           .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
         token.isAdmin = adminEmails.includes((user.email || '').toLowerCase());

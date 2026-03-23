@@ -3,7 +3,6 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { base } from 'viem/chains';
 
 interface SignInWithBaseProps {
   callbackUrl?: string;
@@ -28,29 +27,17 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
     setError(null);
 
     try {
-      // 1. Get nonce from server
+      // 1. Get nonce
       const nonceRes = await fetch('/api/auth/nonce');
       const { nonce } = await nonceRes.json();
 
-      // 2. Create a simple SIWE-style message (no SiweMessage class — avoids parser issues)
-      const issuedAt = new Date().toISOString();
-      const expirationTime = new Date(Date.now() + 1000 * 60 * 5).toISOString();
-      const message = `agentbot.raveculture.xyz wants you to sign in with your Ethereum account:
-${address}
+      // 2. Simple message (no SIWE parser — works with smart wallets)
+      const message = `Sign in to Agentbot\n\nWallet: ${address}\nNonce: ${nonce}\nTime: ${Date.now()}`;
 
-Sign in with Base to Agentbot
-
-URI: https://agentbot.raveculture.xyz
-Version: 1
-Chain ID: ${base.id}
-Nonce: ${nonce}
-Issued At: ${issuedAt}
-Expiration Time: ${expirationTime}`;
-
-      // 3. Sign with wallet
+      // 3. Sign
       const signature = await signMessageAsync({ message });
 
-      // 4. Verify on server
+      // 4. Verify
       const verifyRes = await fetch('/api/auth/callback/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,7 +45,6 @@ Expiration Time: ${expirationTime}`;
       });
 
       const result = await verifyRes.json();
-
       if (result?.ok) {
         router.push(callbackUrl);
       } else {
@@ -75,14 +61,13 @@ Expiration Time: ${expirationTime}`;
     }
   }, [address, signMessageAsync, router, callbackUrl, onError]);
 
-  // Auto-trigger SIWE when wallet connects
   useEffect(() => {
     if (isConnected && address && !hasSignedRef.current && !isSigningIn) {
       handleSignIn();
     }
   }, [isConnected, address, isSigningIn, handleSignIn]);
 
-  const connector = connectors[0]; // coinbaseWallet
+  const connector = connectors[0];
 
   if (isConnected && address) {
     return (
