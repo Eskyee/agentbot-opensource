@@ -3,19 +3,14 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { SiweMessage } from 'siwe';
 import { base } from 'viem/chains';
-import { checksumAddress } from 'viem';
 
 interface SignInWithBaseProps {
   callbackUrl?: string;
+  onError?: (error: string) => void;
 }
 
-/**
- * Sign In with Base — uses wagmi's coinbaseWallet connector
- * Matches baseFM's proven pattern: wagmi + OnchainKit + smartWalletOnly
- */
-export function SignInWithBase({ callbackUrl = '/dashboard' }: SignInWithBaseProps) {
+export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: SignInWithBaseProps) {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending: isConnecting } = useConnect();
@@ -37,21 +32,22 @@ export function SignInWithBase({ callbackUrl = '/dashboard' }: SignInWithBasePro
       const nonceRes = await fetch('/api/auth/nonce');
       const { nonce } = await nonceRes.json();
 
-      // 2. Create SIWE message (address must be EIP-55 checksummed)
-      const siweMessage = new SiweMessage({
-        domain: window.location.host,
-        address: checksumAddress(address as `0x${string}`),
-        statement: 'Sign in with Base to Agentbot',
-        uri: window.location.origin,
-        version: '1',
-        chainId: base.id,
-        nonce,
-        issuedAt: new Date().toISOString(),
-        expirationTime: new Date(Date.now() + 1000 * 60 * 5).toISOString(), // 5 min
-      });
-      const message = siweMessage.prepareMessage();
+      // 2. Create a simple SIWE-style message (no SiweMessage class — avoids parser issues)
+      const issuedAt = new Date().toISOString();
+      const expirationTime = new Date(Date.now() + 1000 * 60 * 5).toISOString();
+      const message = `agentbot.raveculture.xyz wants you to sign in with your Ethereum account:
+${address}
 
-      // 3. Sign with wallet (wagmi handles the connector)
+Sign in with Base to Agentbot
+
+URI: https://agentbot.raveculture.xyz
+Version: 1
+Chain ID: ${base.id}
+Nonce: ${nonce}
+Issued At: ${issuedAt}
+Expiration Time: ${expirationTime}`;
+
+      // 3. Sign with wallet
       const signature = await signMessageAsync({ message });
 
       // 4. Verify on server
@@ -72,47 +68,45 @@ export function SignInWithBase({ callbackUrl = '/dashboard' }: SignInWithBasePro
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Sign-in failed';
       setError(msg);
+      onError?.(msg);
       hasSignedRef.current = false;
     } finally {
       setIsSigningIn(false);
     }
-  }, [address, signMessageAsync, router, callbackUrl]);
+  }, [address, signMessageAsync, router, callbackUrl, onError]);
 
   // Auto-trigger SIWE when wallet connects
   useEffect(() => {
-    if (isConnected && address && !hasSignedRef.current) {
+    if (isConnected && address && !hasSignedRef.current && !isSigningIn) {
       handleSignIn();
     }
-  }, [isConnected, address, handleSignIn]);
+  }, [isConnected, address, isSigningIn, handleSignIn]);
 
-  // Reset when disconnected
-  useEffect(() => {
-    if (!isConnected) {
-      hasSignedRef.current = false;
-    }
-  }, [isConnected]);
-
-  const isLoading = isConnecting || isSigningIn;
+  const connector = connectors[0]; // coinbaseWallet
 
   if (isConnected && address) {
     return (
-      <div className="space-y-3">
-        <div className="flex items-center gap-2 text-sm text-zinc-400">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          {address.slice(0, 6)}...{address.slice(-4)}
-        </div>
+      <div className="space-y-4">
         {isSigningIn && (
-          <p className="text-xs text-zinc-500">Sign the message in your wallet...</p>
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent mb-2" />
+            <p className="text-zinc-400 text-sm">Check your wallet to sign in...</p>
+          </div>
         )}
         {error && (
-          <p className="text-xs text-red-400">{error}</p>
+          <div className="text-red-400 text-sm text-center p-3 bg-red-900/20 rounded-lg border border-red-800">
+            {error}
+            <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-blue-400 hover:text-blue-300">
+              Try again
+            </button>
+          </div>
         )}
-        <button
-          onClick={() => { disconnect(); hasSignedRef.current = false; }}
-          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          Disconnect
-        </button>
+        <div className="flex items-center justify-between p-3 bg-zinc-800 rounded-lg border border-zinc-700">
+          <span className="text-sm font-mono text-zinc-300">{address.slice(0, 6)}...{address.slice(-4)}</span>
+          <button onClick={() => { disconnect(); hasSignedRef.current = false; setError(null); }} className="text-xs text-zinc-500 hover:text-red-400 transition-colors">
+            Disconnect
+          </button>
+        </div>
       </div>
     );
   }
@@ -120,26 +114,12 @@ export function SignInWithBase({ callbackUrl = '/dashboard' }: SignInWithBasePro
   return (
     <div className="space-y-3">
       <button
-        onClick={() => connect({ connector: connectors[0] })}
-        disabled={isLoading}
-        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#0052FF] hover:bg-[#0045d9] text-white font-medium rounded-xl transition-colors disabled:opacity-50"
+        onClick={() => connect({ connector })}
+        disabled={isConnecting}
+        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isLoading ? (
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-        ) : (
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-          </svg>
-        )}
-        {isLoading ? 'Connecting...' : 'Sign in with Base'}
+        {isConnecting ? 'Connecting...' : 'Sign in with Base'}
       </button>
-      {error && (
-        <p className="text-xs text-red-400 text-center">{error}</p>
-      )}
     </div>
   );
 }
-export default SignInWithBase;

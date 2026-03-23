@@ -82,19 +82,41 @@ providers.push(
       }
 
       try {
-        const siweMessage = new SiweMessage(credentials.message);
-        const address = siweMessage.address as `0x${string}`;
+        // Parse SIWE message manually (avoids siwe parser issues with smart wallets)
+        const message = credentials.message;
+        const lines = message.split('\n');
+        
+        // Extract address from line 2 (format: "wants you to sign in with your Ethereum account:\n0x...")
+        let address = '';
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].startsWith('0x') && lines[i].length === 42) {
+            address = lines[i].trim();
+            break;
+          }
+        }
+        
+        if (!address) {
+          console.log(`[Auth] Could not extract address from message`);
+          return null;
+        }
+        
         console.log(`[Auth] SIWE address extracted: ${address}`);
 
-        // Validate domain to prevent SIWE replay attacks from other sites
+        // Validate domain
         const expectedDomain = process.env.NEXTAUTH_URL
           ? new URL(process.env.NEXTAUTH_URL).host
           : (process.env.NEXT_PUBLIC_APP_URL ? new URL(process.env.NEXT_PUBLIC_APP_URL).host : 'agentbot.raveculture.xyz');
         
-        console.log(`[Auth] Domain check: received=${siweMessage.domain}, expected=${expectedDomain}`);
+        const messageDomain = lines[0].split(' wants you')[0];
+        console.log(`[Auth] Domain check: received=${messageDomain}, expected=${expectedDomain}`);
         
-        if (siweMessage.domain !== expectedDomain) {
-          console.log(`[Auth] SIWE domain mismatch: ${siweMessage.domain} !== ${expectedDomain}`);
+        if (messageDomain !== expectedDomain) {
+          console.log(`[Auth] SIWE domain mismatch: ${messageDomain} !== ${expectedDomain}`);
+          return null;
+        }
+        
+        if (messageDomain !== expectedDomain) {
+          console.log(`[Auth] SIWE domain mismatch: ${messageDomain} !== ${expectedDomain}`);
           return null;
         }
 
