@@ -60,7 +60,7 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
       });
 
       // 4. Verify via custom wallet auth (bypasses NextAuth CSRF)
-      const verifyRes = await fetch('/api/auth/wallet', {
+      const verifyRes = await fetch('/api/wallet-auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ address, signature }),
