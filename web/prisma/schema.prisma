@@ -295,17 +295,17 @@ model ApiKey {
 // Usage tracking for cost dashboard
 model UsageLog {
   id            Int      @id @default(autoincrement())
-  userId        String
-  agentId       String
+  userId        String   @map("user_id")
+  agentId       String   @map("agent_id")
   model         String
-  inputTokens   Int      @default(0)
-  outputTokens  Int      @default(0)
-  costUsd       Decimal  @default(0) @db.Decimal(10, 6)
+  inputTokens   Int      @default(0) @map("input_tokens")
+  outputTokens  Int      @default(0) @map("output_tokens")
+  costUsd       Decimal  @default(0) @db.Decimal(10, 6) @map("cost_usd")
   endpoint      String?
-  latencyMs     Int?
+  latencyMs     Int?     @map("latency_ms")
   success       Boolean  @default(true)
-  errorMessage  String?  @db.Text
-  createdAt     DateTime @default(now())
+  errorMessage  String?  @db.Text @map("error_message")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -314,4 +314,5 @@ model UsageLog {
   @@index([createdAt])
   @@index([userId, createdAt])
   @@index([agentId, createdAt])
+  @@map("usage_logs")
 }
