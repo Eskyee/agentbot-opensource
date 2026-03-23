@@ -5,7 +5,7 @@
  * Uses Prisma for database writes.
  */
 
-import { prisma } from '@/app/lib/prisma';
+import { prisma } from '../app/lib/prisma';
 
 // Model pricing per 1M tokens (input, output) in USD
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
