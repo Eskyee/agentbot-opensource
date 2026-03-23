@@ -1562,7 +1562,7 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
 async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number }> {
   // Check Docker availability first
   try {
-    await runCommand('docker', ['version', '--format', '{{.Server.Version}}'], { timeout: 5000 });
+    await runCommand('docker', ['version', '--format', '{{.Server.Version}}']);
   } catch (err: any) {
     console.warn('[Auto-Update] Docker not available — skipping container updates');
     return { success: 0, failed: 0 };
