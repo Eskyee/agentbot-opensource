@@ -5,21 +5,21 @@ export const PLANS = {
   label: {
     price: 29,
     agents: 1,
-    models: ['openai/gpt-4o-mini', 'google/gemini-2.0-flash'],
+    models: ['openai/gpt-4o-mini', 'google/gemini-2.0-flash', 'xiaomi/mimo-v2-pro'],
     skills: 3,
     a2aMessages: 100, // per day
   },
   solo: {
     price: 79,
     agents: 3,
-    models: ['openai/gpt-4o-mini', 'openai/gpt-4o', 'google/gemini-2.0-flash', 'anthropic/claude-3.5-sonnet'],
+    models: ['openai/gpt-4o-mini', 'openai/gpt-4o', 'google/gemini-2.0-flash', 'anthropic/claude-3.5-sonnet', 'xiaomi/mimo-v2-pro'],
     skills: 10,
     a2aMessages: 500,
   },
   collective: {
     price: 199,
     agents: 10,
-    models: ['openai/gpt-4o-mini', 'openai/gpt-4o', 'openai/gpt-4-turbo', 'google/gemini-2.0-flash', 'anthropic/claude-3.5-sonnet', 'anthropic/claude-3-opus'],
+    models: ['openai/gpt-4o-mini', 'openai/gpt-4o', 'openai/gpt-4-turbo', 'google/gemini-2.0-flash', 'anthropic/claude-3.5-sonnet', 'anthropic/claude-3-opus', 'xiaomi/mimo-v2-pro'],
     skills: 25,
     a2aMessages: 2000,
   },

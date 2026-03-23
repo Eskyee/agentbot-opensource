@@ -34,7 +34,7 @@ const docsSections = [
   {
     title: 'AI Models',
     description: 'Bring your own API key. Pay AI providers directly - no markup.',
-    items: ['Use OpenRouter, Anthropic, OpenAI, or local Ollama', 'We default to Kimi K2.5 via OpenRouter', 'Free models to try', 'You pay only for what you use']
+    items: ['Use OpenRouter, Anthropic, OpenAI, or local Ollama', 'We default to MiMo-V2-Pro via OpenRouter', 'Free models to try', 'You pay only for what you use']
   }
 ];
 
@@ -108,7 +108,7 @@ const planResources = [
 
 const supportedModels = [
   // Best Models
-  'Kimi K2.5', 'GPT-4o', 'Claude 3.5 Sonnet',
+  'MiMo-V2-Pro', 'Claude Sonnet 4', 'GPT-4o', 'Gemini 2.5 Flash', 'DeepSeek R1',
   // Good Models
   'GPT-4o Mini', 'Claude 3 Haiku', 'Gemini 1.5 Pro', 'Mistral Large',
   // Free/Low Cost Models
@@ -125,14 +125,16 @@ const tokenPricing = [
   { model: 'Gemini 1.5 Flash', input: '£0.0001/1k', output: '£0.0005/1k' },
   { model: 'Llama 3.1 70B', input: '£0.0004/1k', output: '£0.0004/1k' },
   // Mid-Range
-  { model: 'Kimi K2.5', input: '£0.0005/1k', output: '£0.0015/1k', note: 'Recommended' },
+  { model: 'MiMo-V2-Pro', input: '$1/M', output: '$3/M', note: 'Default • #1 Programming' },
+  { model: 'Kimi K2.5', input: '£0.0005/1k', output: '£0.0015/1k' },
   { model: 'GPT-4o Mini', input: '£0.0003/1k', output: '£0.0012/1k' },
   { model: 'Claude 3 Haiku', input: '£0.0002/1k', output: '£0.0010/1k' },
   // Premium
   { model: 'GPT-4o', input: '£0.0022/1k', output: '£0.0088/1k' },
   { model: 'Claude 3.5 Sonnet', input: '£0.0020/1k', output: '£0.0080/1k' },
+  { model: 'Claude Sonnet 4', input: '$3/M', output: '$15/M' },
   { model: 'Gemini 1.5 Pro', input: '£0.0013/1k', output: '£0.0050/1k' },
-  { model: 'Mistral Large', input: '£0.0015/1k', output: '£0.0060/1k' },
+  { model: 'DeepSeek R1', input: '$0.55/M', output: '$2.19/M' },
 ];
 
 export default function ViewDocsPage() {

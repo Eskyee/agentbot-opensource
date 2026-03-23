@@ -16,16 +16,17 @@ interface Model {
 }
 
 const DEFAULT_MODELS: Model[] = [
-  { id: 'microsoft/phi-4', name: 'Phi-4' },
-  { id: 'google/gemini-flash-1.5', name: 'Gemini Flash 1.5' },
-  { id: 'mistralai/mistral-small-24b-instruct-2501', name: 'Mistral Small' },
-  { id: 'google/gemma-3n-e4b-it:free', name: 'Gemma 3N' },
+  { id: 'xiaomi/mimo-v2-pro', name: 'MiMo-V2-Pro' },
+  { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4' },
+  { id: 'openai/gpt-4o', name: 'GPT-4o' },
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1' },
 ]
 
 export default function DemoPage() {
   const [mode, setMode] = useState<'single' | 'compare'>('single')
-  const [selectedModel, setSelectedModel] = useState('microsoft/phi-4')
-  const [compareModels, setCompareModels] = useState(['microsoft/phi-4', 'google/gemini-flash-1.5'])
+  const [selectedModel, setSelectedModel] = useState('xiaomi/mimo-v2-pro')
+  const [compareModels, setCompareModels] = useState(['xiaomi/mimo-v2-pro', 'anthropic/claude-sonnet-4'])
   const [messages, setMessages] = useState<Message[]>([])
   const [compareMessages, setCompareMessages] = useState<{ [model: string]: Message[] }>({})
   const [input, setInput] = useState('')

@@ -6,11 +6,11 @@ const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 const DEMO_MODELS = [
+  { id: 'xiaomi/mimo-v2-pro', name: 'MiMo-V2-Pro', provider: 'Xiaomi' },
   { id: 'anthropic/claude-sonnet-4.5', name: 'Claude Sonnet 4.5', provider: 'Anthropic' },
   { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-  { id: 'google/gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', provider: 'Google' },
-  { id: 'moonshot/kimi-k2.5-thinking', name: 'Kimi K2.5 Thinking', provider: 'Moonshot' },
-  { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', provider: 'Meta' },
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'Google' },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1', provider: 'DeepSeek' },
   { id: 'minimax/minimax-chat', name: 'MiniMax M2.7', provider: 'MiniMax' },
 ]
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Demo unavailable — service not configured.' }, { status: 503 })
     }
 
-    const modelId = model || 'anthropic/claude-sonnet-4.5'
+    const modelId = model || 'xiaomi/mimo-v2-pro'
 
     // Only allow user-role messages from client conversation history (prevent role injection)
     const safeHistory = (Array.isArray(conversation) ? conversation : [])
@@ -90,7 +90,7 @@ Agentbot deploys OpenClaw (300K+ GitHub stars) to the cloud. Users sign up, choo
 - BYOK: Connect your own OpenRouter/Anthropic/OpenAI keys (no markup)
 - Managed: We manage keys at cost + 20%
 - Actor-model: Thread = conversation (~50MB RAM), Agent = persona config (stored), Crew = 3-10 coordinating
-- Default model: Kimi K2.5 (balanced quality/cost for music)
+- Default model: MiMo-V2-Pro (Xiaomi's flagship, 1T+ params, 1M context, #1 in programming benchmarks)
 - Tempo node: We run our own RPC node for direct network access
 
 ## Skills Available
