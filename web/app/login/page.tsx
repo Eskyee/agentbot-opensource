@@ -70,7 +70,7 @@ function LoginForm() {
       </div>
 
       <div className="mb-4 flex justify-center">
-        <SignInWithBase onError={(msg: string) => setLoginError(msg)} />
+        <SignInWithBase callbackUrl="/dashboard" />
       </div>
 
       <div className="relative mb-6">

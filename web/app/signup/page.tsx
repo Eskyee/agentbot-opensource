@@ -123,7 +123,7 @@ export default function SignupPage() {
         </div>
         <div className="flex flex-col gap-3">
           <div className="flex justify-center">
-            <SignInWithBase redirectTo="/onboard" onError={(msg: string) => setError(msg)} />
+            <SignInWithBase callbackUrl="/onboard" />
           </div>
           <button
             className="w-full border border-zinc-800 text-white text-xs font-bold uppercase tracking-widest py-3 px-4 flex items-center justify-center gap-2 transition-colors hover:border-zinc-600"

@@ -56,6 +56,8 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
+              <NavLink href="/dashboard/x402" current={pathname}>x402</NavLink>
+              <NavLink href="/dashboard/stream/live" current={pathname}>DJ Stream</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
               <NavLink href="https://raveculture.mintlify.app" current={pathname}>Docs</NavLink>
@@ -121,6 +123,8 @@ export default function Navbar() {
               <>
                 <MobileSection label="Navigate">
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                  <MobileLink href="/dashboard/x402" onClick={closeMenu}>x402 Payments</MobileLink>
+                  <MobileLink href="/dashboard/stream/live" onClick={closeMenu}>DJ Stream</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="https://raveculture.mintlify.app" onClick={closeMenu}>Docs</MobileLink>

@@ -9,7 +9,7 @@ import { SiweMessage } from "siwe";
 import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 
-const viemClient = createPublicClient({ chain: base, transport: http() });
+const viemClient = createPublicClient({ chain: base, transport: http('https://api.developer.coinbase.com/rpc/v1/base/e729d6f2-8b2c-4f78-8c20-49c281e377ed') });
 
 const providers: ReturnType<typeof CredentialsProvider>[] = [];
 
@@ -100,11 +100,29 @@ providers.push(
 
         // Use viem verifyMessage — handles ERC-6492 (pre-deployed Base smart wallets)
         console.log(`[Auth] Verifying signature for ${address}...`);
-        const valid = await viemClient.verifyMessage({
-          address,
-          message: credentials.message,
-          signature: credentials.signature as `0x${string}`,
-        });
+        let valid = false;
+        try {
+          valid = await viemClient.verifyMessage({
+            address,
+            message: credentials.message,
+            signature: credentials.signature as `0x${string}`,
+          });
+          console.log(`[Auth] Signature verification result: ${valid}`);
+        } catch (verifyError) {
+          console.error(`[Auth] Signature verification threw:`, verifyError);
+          // Try with a different RPC if default fails
+          try {
+            const fallbackClient = createPublicClient({ chain: base, transport: http('https://mainnet.base.org') });
+            valid = await fallbackClient.verifyMessage({
+              address,
+              message: credentials.message,
+              signature: credentials.signature as `0x${string}`,
+            });
+            console.log(`[Auth] Fallback verification result: ${valid}`);
+          } catch (fallbackError) {
+            console.error(`[Auth] Fallback verification also failed:`, fallbackError);
+          }
+        }
 
         if (!valid) {
           console.log(`[Auth] SIWE verification failed for ${address}`);

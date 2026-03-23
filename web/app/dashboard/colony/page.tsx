@@ -116,8 +116,8 @@ function SoulIndicators({ soul }: { soul: ColonyData['root']['soul'] }) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4 mb-8">
       <div className="flex items-center gap-2 mb-3">
-        <Zap className="w-3 h-3 text-purple-400" />
-        <span className="text-[10px] font-mono text-purple-400 uppercase">Soul State</span>
+        <Zap className="w-3 h-3 text-blue-400" />
+        <span className="text-[10px] font-mono text-blue-400 uppercase">Soul State</span>
         <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${soul.dormant ? 'bg-yellow-900/30 text-yellow-400' : 'bg-emerald-900/30 text-emerald-400'}`}>
           {soul.dormant ? 'dormant' : soul.mode}
         </span>

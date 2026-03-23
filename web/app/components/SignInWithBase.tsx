@@ -1,118 +1,144 @@
-'use client'
+'use client';
 
-import { useState, useEffect, useRef } from 'react'
-import dynamic from 'next/dynamic'
-import { signIn } from 'next-auth/react'
+import { useEffect, useRef, useCallback, useState } from 'react';
+import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
+import { useRouter } from 'next/navigation';
+import { SiweMessage } from 'siwe';
+import { base } from 'viem/chains';
 
-// Disable SSR — @base-org/account-ui uses Preact internals that crash during prerender
-const SignInWithBaseButton = dynamic(
-  () => import('@base-org/account-ui/react').then((m) => m.SignInWithBaseButton),
-  { ssr: false }
-)
-
-// Allowed redirect destinations — prevents open redirect
-const ALLOWED_REDIRECTS = ['/dashboard', '/onboard']
-
-interface Props {
-  onError?: (msg: string) => void
-  redirectTo?: string
+interface SignInWithBaseProps {
+  callbackUrl?: string;
 }
 
-export default function SignInWithBase({ onError, redirectTo = '/dashboard' }: Props) {
-  const [loading, setLoading] = useState(false)
-  // Pre-generate nonce on mount so it's ready before the button click.
-  // This avoids popup blockers — any async work between click and wallet_connect
-  // popup causes browsers to classify the popup as unsolicited.
-  const nonceRef = useRef<string>('')
+/**
+ * Sign In with Base — uses wagmi's coinbaseWallet connector
+ * Matches baseFM's proven pattern: wagmi + OnchainKit + smartWalletOnly
+ */
+export function SignInWithBase({ callbackUrl = '/dashboard' }: SignInWithBaseProps) {
+  const router = useRouter();
+  const { address, isConnected } = useAccount();
+  const { connect, connectors, isPending: isConnecting } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { signMessageAsync } = useSignMessage();
 
-  const generateNonce = () => {
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 16; i++) {
-      result += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return result;
-  }
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const hasSignedRef = useRef(false);
 
-  useEffect(() => {
-    nonceRef.current = generateNonce();
-  }, [])
+  const handleSignIn = useCallback(async () => {
+    if (!address || hasSignedRef.current) return;
+    hasSignedRef.current = true;
+    setIsSigningIn(true);
+    setError(null);
 
-  const safeRedirect = ALLOWED_REDIRECTS.includes(redirectTo) ? redirectTo : '/dashboard'
-
-  const handleSignIn = async () => {
-    setLoading(true)
     try {
-      // Lazy-init SDK — still inside handler to avoid SSR issues,
-      // but SDK init is synchronous so it doesn't delay the popup
-      const { createBaseAccountSDK } = await import('@base-org/account')
-      const provider = createBaseAccountSDK({
-        appName: 'Agentbot',
-        appLogoUrl: 'https://agentbot.raveculture.xyz/logo.png',
-      }).getProvider()
+      // 1. Get nonce from server
+      const nonceRes = await fetch('/api/auth/nonce');
+      const { nonce } = await nonceRes.json();
 
-      const nonce = nonceRef.current
-      if (!nonce) throw new Error('Nonce not ready — please try again')
-      console.log('[Auth] Starting wallet_connect with nonce:', nonce)
+      // 2. Create SIWE message
+      const siweMessage = new SiweMessage({
+        domain: window.location.host,
+        address,
+        statement: 'Sign in with Base to Agentbot',
+        uri: window.location.origin,
+        version: '1',
+        chainId: base.id,
+        nonce,
+        issuedAt: new Date().toISOString(),
+        expirationTime: new Date(Date.now() + 1000 * 60 * 5).toISOString(), // 5 min
+      });
+      const message = siweMessage.prepareMessage();
 
-      // wallet_connect opens the Base Account popup immediately after click.
-      // Chain switching is handled by the SDK via the chainId capability param.
-      // Do NOT do any async work (network calls, wallet_switchEthereumChain) here
-      // — browsers block popups opened after async gaps in user gesture handlers.
-      const response = await provider.request({
-        method: 'wallet_connect',
-        params: [{
-          version: '1',
-          capabilities: {
-            signInWithEthereum: {
-              nonce,
-              chainId: '0x2105', // Base Mainnet
-            },
-          },
-        }],
-      }) as any
+      // 3. Sign with wallet (wagmi handles the connector)
+      const signature = await signMessageAsync({ message });
 
-      console.log('[Auth] wallet_connect response received')
+      // 4. Verify on server
+      const verifyRes = await fetch('/api/auth/callback/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, signature, address }),
+      });
 
-      // Validate response structure before destructuring
-      const siwe = response?.accounts?.[0]?.capabilities?.signInWithEthereum
-      if (!siwe?.message || !siwe?.signature) {
-        console.error('[Auth] Invalid SIWE response structure:', response)
-        throw new Error('Invalid response from Base Account SDK')
+      const result = await verifyRes.json();
+
+      if (result?.ok) {
+        router.push(callbackUrl);
+      } else {
+        setError(result?.error || 'Sign-in failed');
+        hasSignedRef.current = false;
       }
-
-      const { message, signature } = siwe
-      console.log('[Auth] Handing off to NextAuth wallet provider...')
-
-      // Hand off to the 'wallet' NextAuth credentials provider
-      // Use redirect: true to ensure NextAuth handles the navigation flow correctly
-      await signIn('wallet', {
-        message,
-        signature,
-        callbackUrl: safeRedirect,
-        redirect: true,
-      })
-
-    } catch (err: unknown) {
-      // Rotate nonce so the next attempt uses a fresh one
-      nonceRef.current = generateNonce();
-      const e = err as { code?: number; message?: string }
-      if (e?.code !== 4001) {
-        // 4001 = user rejected — don't surface an error for that
-        console.error('Base Account sign in error:', err)
-        onError?.(e.message || 'Failed to sign in with Base')
-      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Sign-in failed';
+      setError(msg);
+      hasSignedRef.current = false;
     } finally {
-      setLoading(false)
+      setIsSigningIn(false);
     }
+  }, [address, signMessageAsync, router, callbackUrl]);
+
+  // Auto-trigger SIWE when wallet connects
+  useEffect(() => {
+    if (isConnected && address && !hasSignedRef.current) {
+      handleSignIn();
+    }
+  }, [isConnected, address, handleSignIn]);
+
+  // Reset when disconnected
+  useEffect(() => {
+    if (!isConnected) {
+      hasSignedRef.current = false;
+    }
+  }, [isConnected]);
+
+  const isLoading = isConnecting || isSigningIn;
+
+  if (isConnected && address) {
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-sm text-zinc-400">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          {address.slice(0, 6)}...{address.slice(-4)}
+        </div>
+        {isSigningIn && (
+          <p className="text-xs text-zinc-500">Sign the message in your wallet...</p>
+        )}
+        {error && (
+          <p className="text-xs text-red-400">{error}</p>
+        )}
+        <button
+          onClick={() => { disconnect(); hasSignedRef.current = false; }}
+          className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+        >
+          Disconnect
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className={loading ? 'opacity-70 pointer-events-none' : ''}>
-      <SignInWithBaseButton
-        colorScheme="light"
-        onClick={handleSignIn}
-      />
+    <div className="space-y-3">
+      <button
+        onClick={() => connect({ connector: connectors[0] })}
+        disabled={isLoading}
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#0052FF] hover:bg-[#0045d9] text-white font-medium rounded-xl transition-colors disabled:opacity-50"
+      >
+        {isLoading ? (
+          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        ) : (
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+          </svg>
+        )}
+        {isLoading ? 'Connecting...' : 'Sign in with Base'}
+      </button>
+      {error && (
+        <p className="text-xs text-red-400 text-center">{error}</p>
+      )}
     </div>
-  )
+  );
 }
+export default SignInWithBase;

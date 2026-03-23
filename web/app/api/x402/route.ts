@@ -9,7 +9,7 @@ import { authOptions } from '@/app/lib/auth'
  * Provides colony membership, fitness scoring, and dynamic pricing.
  */
 
-const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://x402-gateway-production-005f.up.railway.app'
+const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://x402-gw-v2-production.up.railway.app'
 
 export async function POST(request: NextRequest) {
   try {

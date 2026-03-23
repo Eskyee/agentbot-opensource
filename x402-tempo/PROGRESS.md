@@ -1,59 +1,52 @@
 # x402-Tempo Integration — COMPLETE ✅
 
-## Architecture
+## v3.0.0 Release (2026-03-22)
+
+### Live Stack
 ```
-Agentbot Dashboard
+Agentbot Dashboard (/dashboard/x402)
     ↓ /api/x402
-x402-gateway (Railway)
+x402-gateway (Railway) v3.0.0
     ↓ HTTP
-borg-0's x402-node (Railway)
+borg-0's x402-node v3.0.0 (Railway)
     ↓
 Tempo Network (pathUSD)
 ```
 
-## Live Services
+### Services
+| Service | URL | Status |
+|---------|-----|--------|
+| Agentbot API | agentbot.raveculture.xyz/api/x402 | ✅ healthy |
+| x402-gateway | x402-gateway-production-005f.up.railway.app | ✅ healthy |
+| Dashboard | agentbot.raveculture.xyz/dashboard/x402 | ✅ live |
 
-### 1. x402-gateway (Railway)
-- **URL**: https://x402-gateway-production-005f.up.railway.app
-- **Status**: Healthy
-- **Endpoints**:
-  - `/health` — service status
-  - `/gateway/endpoints` — borg-0's x402 endpoints + fitness
-  - `/gateway/fitness/:id` — agent fitness scoring
-  - `/gateway/pricing/:id` — dynamic pricing by fitness
-  - `/gateway/colony/join` — colony membership
-  - `/gateway/pay` — x402 payment flow
+### Endpoints (all working)
+| Endpoint | Description |
+|----------|-------------|
+| `/health` | Service status + agent/colony counts |
+| `/gateway/endpoints` | borg-0's x402 endpoints + fitness |
+| `/gateway/fitness/:id` | Agent fitness (in-memory) |
+| `/gateway/pricing/:id` | Dynamic pricing by fitness |
+| `/gateway/colony/join` | Join borg-0's colony |
+| `/gateway/pay` | x402 payment flow |
 
-### 2. Agentbot API (Vercel)
-- **URL**: https://agentbot.raveculture.xyz/api/x402
-- **Status**: Live
-- **Methods**:
-  - `GET` — gateway health check
-  - `POST` with `action`:
-    - `join-colony` — join borg-0's colony
-    - `fitness` — get agent fitness
-    - `pricing` — get dynamic pricing
-    - `endpoints` — list borg-0's x402 endpoints
-    - `pay` — make x402 payment
+### Storage
+- In-memory with file persistence (`/tmp/x402-gateway-data.json`)
+- No Redis/Postgres required
+- Survives restarts
 
-### 3. Borg-0 (Railway)
-- **URL**: https://borg-0-production.up.railway.app
-- **Colony**: 3 agents, avg 47% fitness
-- **Wallet**: 999,999 pathUSD
-- **Endpoints**:
-  - `script-x402-belief` — $0.001
-  - `clone` — $1.00
+### Borg-0 Integration
+- Connected to https://borg-0-production.up.railway.app
+- Designation: borg-0
+- Fitness: 32.6%
+- Wallet: 999,998 pathUSD
+- Endpoints: `script-x402-belief` ($0.001), `clone` ($1.00)
 
-## Key Decisions Implemented
+### Key Decisions
 1. ✅ Separate service (Railway)
 2. ✅ HTTP to x402-node (borg-0)
 3. ✅ Colony fitness integration
 4. ✅ Dynamic pricing by fitness
-5. ✅ Graceful fallbacks (no Redis/Postgres)
+5. ✅ In-memory storage (no external deps)
 6. ✅ Agent authentication required
-
-## Next Steps
-1. Add Redis/Postgres for persistent fitness tracking
-2. Wire into Agentbot provisioning flow
-3. Test real Tempo payments with Atlas wallet
-4. Add agent dashboard UI for x402 features
+7. ✅ Dashboard UI at /dashboard/x402

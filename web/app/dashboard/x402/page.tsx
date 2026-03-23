@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import DashboardShell from '@/components/shared/DashboardShell'
+import { DashboardShell } from '@/components/shared/DashboardShell'
 import X402Dashboard from '@/components/dashboard/x402/X402Dashboard'
 
 export const metadata: Metadata = {
@@ -9,10 +9,7 @@ export const metadata: Metadata = {
 
 export default function X402Page() {
   return (
-    <DashboardShell
-      title="x402 Gateway"
-      description="Tempo network payments for agent transactions"
-    >
+    <DashboardShell>
       <X402Dashboard />
     </DashboardShell>
   )
