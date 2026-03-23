@@ -91,31 +91,17 @@ async function handleAccountDisabled(sub: string) {
   });
   
   if (user) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { status: 'disabled' },
-    });
-    
-    // Revoke all sessions
+    // Revoke all sessions (can't disable user without status field)
     await prisma.session.deleteMany({
       where: { userId: user.id },
     });
+    console.log('[RISC] Sessions revoked for disabled account:', user.id);
   }
 }
 
 async function handleAccountEnabled(sub: string) {
   console.log('[RISC] Account enabled:', sub);
-  
-  const user = await prisma.user.findFirst({
-    where: { email: sub },
-  });
-  
-  if (user) {
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { status: 'active' },
-    });
-  }
+  // No action needed — sessions will be recreated on next login
 }
 
 async function handleSessionsRevoked(sub: string) {
