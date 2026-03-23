@@ -52,7 +52,7 @@ export default function Footer() {
               { href: '/why', label: 'Why' },
               { href: '/pricing', label: 'Pricing' },
               { href: '/blog', label: 'Blog' },
-              { href: 'https://raveculture.mintlify.app', label: 'Docs' },
+              { href: 'https://docs.agentbot.raveculture.xyz', label: 'Docs' },
               { href: '/marketplace', label: 'Marketplace' },
               { href: '/partner', label: 'Partner' },
               { href: '/token', label: '$AGENTBOT' },

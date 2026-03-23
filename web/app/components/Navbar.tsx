@@ -60,7 +60,7 @@ export default function Navbar() {
               <NavLink href="/dashboard/stream/live" current={pathname}>DJ Stream</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
-              <NavLink href="https://raveculture.mintlify.app" current={pathname}>Docs</NavLink>
+              <NavLink href="https://docs.agentbot.raveculture.xyz" current={pathname}>Docs</NavLink>
             </>
           ) : (
             <>
@@ -69,7 +69,7 @@ export default function Navbar() {
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
               <NavLink href="/demo" current={pathname}>Demo</NavLink>
-              <NavLink href="https://raveculture.mintlify.app" current={pathname}>Docs</NavLink>
+              <NavLink href="https://docs.agentbot.raveculture.xyz" current={pathname}>Docs</NavLink>
             </>
           )}
         </div>
@@ -127,7 +127,7 @@ export default function Navbar() {
                   <MobileLink href="/dashboard/stream/live" onClick={closeMenu}>DJ Stream</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="https://raveculture.mintlify.app" onClick={closeMenu}>Docs</MobileLink>
+                  <MobileLink href="https://docs.agentbot.raveculture.xyz" onClick={closeMenu}>Docs</MobileLink>
                 </MobileSection>
                 <MobileSection label="Account">
                   {displayName && <div className="text-[10px] text-zinc-600 px-3 py-2 uppercase tracking-widest">{displayName}</div>}
@@ -150,7 +150,7 @@ export default function Navbar() {
                   <MobileLink href="/agents" onClick={closeMenu}>Agent Templates</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/demo" onClick={closeMenu}>Try Demo</MobileLink>
-                  <MobileLink href="https://raveculture.mintlify.app" onClick={closeMenu}>Docs</MobileLink>
+                  <MobileLink href="https://docs.agentbot.raveculture.xyz" onClick={closeMenu}>Docs</MobileLink>
                 </MobileSection>
                 <MobileSection label="Community">
                   <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>

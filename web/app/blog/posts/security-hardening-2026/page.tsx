@@ -279,7 +279,7 @@ export default function SecurityHardeningPost() {
 
           <p className="text-zinc-400 text-sm">
             Questions? Check our{' '}
-            <a href="https://raveculture.mintlify.app" className="text-blue-400 hover:underline">documentation</a>
+            <a href="https://docs.agentbot.raveculture.xyz" className="text-blue-400 hover:underline">documentation</a>
             {' '}or reach out on{' '}
             <a href="https://discord.gg/clawd" className="text-blue-400 hover:underline">Discord</a>.
           </p>

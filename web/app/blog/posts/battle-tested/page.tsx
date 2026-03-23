@@ -83,7 +83,7 @@ export default function BattleTestedPost() {
             <li>Scheduled tasks</li>
           </ul>
           <p>
-            And we&apos;re adding more <Link href="https://raveculture.mintlify.app" className="text-green-400 hover:underline">every day</Link>.
+            And we&apos;re adding more <Link href="https://docs.agentbot.raveculture.xyz" className="text-green-400 hover:underline">every day</Link>.
           </p>
 
           <h2>Join Us</h2>
