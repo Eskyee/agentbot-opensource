@@ -45,6 +45,9 @@ const getPlanResources = (plan: string) => {
 };
 
 const app = express();
+
+// Trust proxy for accurate client IPs behind Render/Vercel load balancers
+app.set('trust proxy', true);
 app.disable('x-powered-by');
 
 // Security: strip IIS/Express bypass headers
