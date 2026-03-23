@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
@@ -19,10 +20,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Check password (using bcrypt from Prisma)
-    // Note: This assumes users were registered with bcrypt-hashed passwords
-    // If using wallet auth, this endpoint is not used
-    const isValidPassword = await verifyPassword(password, user.password || '');
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password || '');
     if (!isValidPassword) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
@@ -51,22 +50,5 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json({ error: 'Login failed' }, { status: 500 });
-  }
-}
-
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  // Simple bcrypt-like comparison
-  // In production, use bcrypt or argon2
-  try {
-    // If hash is empty or null, password is not set
-    if (!hash) return false;
-    
-    // For now, we'll do a simple comparison
-    // In production, you should use bcrypt.compare()
-    const { compare } = await import('bcryptjs');
-    return await compare(password, hash);
-  } catch (error) {
-    console.error('Password verification error:', error);
-    return false;
   }
 }

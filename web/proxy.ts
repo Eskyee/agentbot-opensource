@@ -11,6 +11,8 @@ const PUBLIC_API_ROUTES = [
   '/api/auth/farcaster/refresh',
   '/api/auth/session',
   '/api/auth/signout',
+  '/api/auth/google',
+  '/api/auth/login',
 ]
 
 // Debug routes - only allow in development
