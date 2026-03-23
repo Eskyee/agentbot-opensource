@@ -1,13 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { encode } from 'next-auth/jwt';
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+
+const viemClient = createPublicClient({ chain: base, transport: http() });
 
 export async function POST(req: NextRequest) {
   try {
-    const { address, signature } = await req.json();
+    const { address, message, signature } = await req.json();
     
-    if (!address || !signature) {
-      return NextResponse.json({ error: 'Missing address or signature' }, { status: 400 });
+    if (!address || !message || !signature) {
+      return NextResponse.json({ error: 'Missing: address, message, signature' }, { status: 400 });
+    }
+
+    // Verify SIWE signature (viem handles ERC-6492 for smart wallets)
+    let valid = false;
+    try {
+      valid = await viemClient.verifyMessage({
+        address: address as `0x${string}`,
+        message,
+        signature: signature as `0x${string}`,
+      });
+    } catch (e) {
+      console.error('[WalletAuth] Signature verification failed:', e);
+    }
+
+    if (!valid) {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     // Find or create user
