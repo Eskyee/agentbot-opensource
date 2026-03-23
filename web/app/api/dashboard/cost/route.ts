@@ -53,7 +53,12 @@ export async function GET(req: NextRequest) {
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
-    }).catch(() => []);
+    }).catch((err) => {
+      console.error('[Cost API] Prisma error:', err);
+      return [];
+    });
+
+    console.log(`[Cost API] Found ${logs.length} usage logs`);
 
     // If no real data, return mock data with a flag
     if (logs.length === 0) {
