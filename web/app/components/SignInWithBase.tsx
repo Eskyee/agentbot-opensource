@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAccount, useConnect, useDisconnect, useSignTypedData } from 'wagmi';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { base } from 'viem/chains';
 
 interface SignInWithBaseProps {
@@ -28,22 +29,12 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
     setError(null);
 
     try {
-      // 1. Get CSRF token (required by NextAuth)
-      const csrfRes = await fetch('/api/auth/csrf');
-      const { csrfToken } = await csrfRes.json();
-
-      // 2. Get nonce
       const nonceRes = await fetch('/api/auth/nonce');
       const { nonce } = await nonceRes.json();
 
-      // 3. Sign with EIP-712 typed data (works with smart wallets)
       const timestamp = Date.now();
       const signature = await signTypedDataAsync({
-        domain: {
-          name: 'Agentbot',
-          version: '1',
-          chainId: base.id,
-        },
+        domain: { name: 'Agentbot', version: '1', chainId: base.id },
         types: {
           SignIn: [
             { name: 'wallet', type: 'address' },
@@ -51,22 +42,18 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
             { name: 'time', type: 'uint256' },
           ],
         },
-        message: {
-          wallet: address,
-          nonce,
-          time: BigInt(timestamp),
-        },
+        message: { wallet: address, nonce, time: BigInt(timestamp) },
         primaryType: 'SignIn',
       });
 
-      // 4. Verify via custom wallet auth (bypasses NextAuth CSRF)
-      const verifyRes = await fetch('/api/wallet-auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, signature }),
+      // NextAuth signIn handles CSRF automatically
+      const result = await signIn('wallet', {
+        message: JSON.stringify({ wallet: address, nonce, time: timestamp }),
+        signature,
+        address,
+        redirect: false,
       });
 
-      const result = await verifyRes.json();
       if (result?.ok) {
         window.location.href = callbackUrl;
       } else {
@@ -81,7 +68,7 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
     } finally {
       setIsSigningIn(false);
     }
-  }, [address, signTypedDataAsync, router, callbackUrl, onError]);
+  }, [address, signTypedDataAsync, callbackUrl, onError]);
 
   useEffect(() => {
     if (isConnected && address && !hasSignedRef.current && !isSigningIn) {
