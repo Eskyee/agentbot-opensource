@@ -53,6 +53,8 @@ export function calculateCost(model: string, inputTokens: number, outputTokens: 
 export function logUsage(data: UsageData): void {
   const costUsd = calculateCost(data.model, data.inputTokens, data.outputTokens);
 
+  console.log(`[UsageLogger] Logging: ${data.agentId} | ${data.model} | ${data.inputTokens}+${data.outputTokens} tokens | $${costUsd.toFixed(6)}`);
+
   // Fire and forget — don't await
   prisma.usageLog.create({
     data: {
