@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
+import { logUsage } from '@/lib/usage-logger'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
@@ -144,6 +145,18 @@ Be helpful, concise, and demonstrate agent capabilities.`
     }
 
     const data = await response.json()
+    
+    // Log usage for cost tracking (fire-and-forget)
+    const usage = data.usage || {};
+    logUsage({
+      userId: 'demo', // Demo endpoint — no authenticated user
+      agentId: 'demo-chat',
+      model: modelId,
+      inputTokens: usage.prompt_tokens || 0,
+      outputTokens: usage.completion_tokens || 0,
+      endpoint: '/api/demo/chat',
+      success: true,
+    });
     
     return NextResponse.json({
       id: data.id,
