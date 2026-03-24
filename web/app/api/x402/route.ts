@@ -16,26 +16,56 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { agentId, walletAddress, action } = body
 
-    // List endpoints (public - no auth required)
-    if (action === 'endpoints') {
-      try {
-        const res = await fetch(`${X402_GATEWAY_URL}/gateway/endpoints`, {
-          signal: AbortSignal.timeout(10000)
-        })
+    // Public actions (no auth required)
+    if (action === 'endpoints' || action === 'fitness' || action === 'pricing') {
+      if (action === 'endpoints') {
+        try {
+          const res = await fetch(`${X402_GATEWAY_URL}/gateway/endpoints`, {
+            signal: AbortSignal.timeout(10000)
+          })
+          const data = await res.json() as any
+          return NextResponse.json(data)
+        } catch (error) {
+          return NextResponse.json({
+            success: true,
+            endpoints: [
+              { slug: '/gateway/colony/join', description: 'Join agent colony', price: 'Free' },
+              { slug: '/gateway/fitness/:agentId', description: 'Get agent fitness score', price: 'Free' },
+              { slug: '/gateway/pricing/:agentId', description: 'Get dynamic pricing', price: 'Free' },
+              { slug: '/gateway/pay', description: 'Make payment', price: 'Variable' },
+            ]
+          })
+        }
+      }
 
-        const data = await res.json() as any
-        return NextResponse.json(data)
-      } catch (error) {
-        // Return default endpoints if gateway doesn't have them
-        return NextResponse.json({
-          success: true,
-          endpoints: [
-            { slug: '/gateway/colony/join', description: 'Join agent colony', price: 'Free' },
-            { slug: '/gateway/fitness/:agentId', description: 'Get agent fitness score', price: 'Free' },
-            { slug: '/gateway/pricing/:agentId', description: 'Get dynamic pricing', price: 'Free' },
-            { slug: '/gateway/pay', description: 'Make payment', price: 'Variable' },
-          ]
-        })
+      if (action === 'fitness') {
+        const id = agentId || 'atlas'
+        try {
+          const res = await fetch(`${X402_GATEWAY_URL}/gateway/fitness/${id}`, {
+            signal: AbortSignal.timeout(10000)
+          })
+          const data = await res.json() as any
+          return NextResponse.json(data)
+        } catch (error) {
+          return NextResponse.json({ success: true, score: 50, tier: 'new', details: null })
+        }
+      }
+
+      if (action === 'pricing') {
+        const id = agentId || 'atlas'
+        try {
+          const res = await fetch(`${X402_GATEWAY_URL}/gateway/pricing/${id}`, {
+            signal: AbortSignal.timeout(10000)
+          })
+          const data = await res.json() as any
+          return NextResponse.json(data)
+        } catch (error) {
+          return NextResponse.json({
+            success: true, agentId: id, tier: 'basic',
+            pricing: { rate: 0.01, discount: 0 },
+            fitness: { score: 50, tier: 'new' }
+          })
+        }
       }
     }
 
@@ -61,57 +91,6 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentId, walletAddress }),
-        signal: AbortSignal.timeout(10000)
-      })
-
-      const data = await res.json() as any
-      return NextResponse.json(data)
-    }
-
-    // Get fitness
-    if (action === 'fitness') {
-      try {
-        const res = await fetch(`${X402_GATEWAY_URL}/gateway/fitness/${agentId}`, {
-          signal: AbortSignal.timeout(10000)
-        })
-
-        const data = await res.json() as any
-        return NextResponse.json(data)
-      } catch (error) {
-        // Return default fitness if gateway doesn't have endpoint
-        return NextResponse.json({
-          success: true,
-          score: 50,
-          tier: 'new',
-          details: null
-        })
-      }
-    }
-
-    // Get pricing
-    if (action === 'pricing') {
-      try {
-        const res = await fetch(`${X402_GATEWAY_URL}/gateway/pricing/${agentId}`, {
-          signal: AbortSignal.timeout(10000)
-        })
-
-        const data = await res.json() as any
-        return NextResponse.json(data)
-      } catch (error) {
-        // Return default pricing if gateway doesn't have endpoint
-        return NextResponse.json({
-          success: true,
-          agentId,
-          tier: 'basic',
-          pricing: { rate: 0.01, discount: 0 },
-          fitness: { score: 50, tier: 'new' }
-        })
-      }
-    }
-
-    // List endpoints
-    if (action === 'endpoints') {
-      const res = await fetch(`${X402_GATEWAY_URL}/gateway/endpoints`, {
         signal: AbortSignal.timeout(10000)
       })
 

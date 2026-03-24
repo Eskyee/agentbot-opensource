@@ -124,15 +124,6 @@ export default function X402Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Auth warning */}
-      {!authenticated && (
-        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4">
-          <p className="text-yellow-400 text-sm font-mono">
-            ⚠️ Sign in to see your personal fitness score and pricing tier
-          </p>
-        </div>
-      )}
-      
       {/* Status */}
       <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
         <h2 className="text-lg font-mono font-bold text-white mb-4">x402 GATEWAY</h2>
