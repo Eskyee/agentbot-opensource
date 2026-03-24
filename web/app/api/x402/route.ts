@@ -98,9 +98,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(data)
     }
 
-    // Make payment
+    // Make payment (REQUIRES AUTH + AMOUNT LIMITS)
     if (action === 'pay') {
       const { amount, currency, recipient, endpoint, method } = body
+
+      // Security: amount limits
+      if (!amount || amount <= 0) {
+        return NextResponse.json({ success: false, error: 'Invalid amount' }, { status: 400 })
+      }
+      if (amount > 100) {
+        return NextResponse.json({ success: false, error: 'Amount exceeds $100 limit. Contact support for higher limits.' }, { status: 400 })
+      }
+
+      // Security: recipient required
+      if (!recipient) {
+        return NextResponse.json({ success: false, error: 'Recipient required' }, { status: 400 })
+      }
+
+      // Security: validate recipient address format (EVM or Solana)
+      const isEVM = /^0x[a-fA-F0-9]{40}$/.test(recipient)
+      const isSolana = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(recipient)
+      if (!isEVM && !isSolana) {
+        return NextResponse.json({ success: false, error: 'Invalid recipient address' }, { status: 400 })
+      }
+
+      // Security: log the payment for audit
+      console.log(`[x402-pay] User ${session.user.email} sending $${amount} ${currency || 'USDC'} to ${recipient} via ${method || 'default'}`)
 
       const res = await fetch(`${X402_GATEWAY_URL}/gateway/pay`, {
         method: 'POST',
