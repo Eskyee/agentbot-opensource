@@ -60,23 +60,48 @@ export class WalletService {
    * Creates a new CDP EVM Server Account on Base Mainnet.
    */
   static async createAgentWallet(userId: number, agentId: number): Promise<{ address: string }> {
+    let cdpAccountName: string | null = null;
+    let cdpAddress: string | null = null;
+
     try {
       // 1. Create Server Account
       const client = getCdpClient();
       const account = await client.evm.createAccount({ name: `agent-${agentId}` });
-      const address = account.address;
-      
+      cdpAccountName = account.name;
+      cdpAddress = account.address;
+
       // 2. Encrypt and store metadata
-      const encryptedMetadata = this.encrypt(JSON.stringify({ address, name: account.name }));
-      
+      const encryptedMetadata = this.encrypt(JSON.stringify({ address: cdpAddress, name: cdpAccountName }));
+
       await pool.query(
         'INSERT INTO wallets (user_id, address, wallet_seed_encrypted, network, wallet_type) VALUES ($1, $2, $3, $4, $5)',
-        [userId, address, encryptedMetadata, 'base', 'cdp']
+        [userId, cdpAddress, encryptedMetadata, 'base', 'cdp']
       );
 
-      return { address };
+      return { address: cdpAddress };
     } catch (error) {
       console.error('Account creation failed:', error);
+
+      // Compensation: if we created a CDP account but the DB insert failed,
+      // log the orphan so it can be reconciled. CDP accounts cannot be deleted
+      // programmatically, so we record the failure for manual cleanup.
+      if (cdpAddress && cdpAccountName) {
+        console.error(
+          `[WalletService] ORPHAN CDP ACCOUNT — address=${cdpAddress} name=${cdpAccountName} userId=${userId} agentId=${agentId}. ` +
+          `DB insert failed after on-chain account creation. Record for manual reconciliation.`
+        );
+        try {
+          await pool.query(
+            `INSERT INTO treasury_transactions (user_id, type, description, status)
+             VALUES ($1, 'orphan_wallet', $2, 'needs_reconciliation')`,
+            [userId, JSON.stringify({ address: cdpAddress, name: cdpAccountName, agentId })]
+          );
+        } catch (logErr) {
+          // If even the audit log fails, we've done what we can — the console.error above is the fallback
+          console.error('[WalletService] Failed to log orphan wallet:', logErr);
+        }
+      }
+
       throw new Error('Failed to create agent account');
     }
   }
@@ -145,6 +170,8 @@ export class WalletService {
       });
       
       // Find USDC in the balances array
+      // CDP SDK types don't expose token symbol on EvmTokenBalance directly
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const usdcBalance = result.balances.find((b: any) => b.token?.symbol?.toUpperCase() === 'USDC');
       const balance = usdcBalance ? Number(usdcBalance.amount) : 0;
       

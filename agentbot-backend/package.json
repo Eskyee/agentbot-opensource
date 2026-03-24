@@ -42,7 +42,7 @@
     "typescript": "^5.2.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
   },
   "overrides": {
     "elliptic": "6.6.1",

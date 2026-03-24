@@ -27,7 +27,7 @@ export class NegotiationService {
         break;
 
       case 'BOOKING_DECLINE':
-        await this.updateStatus(message, payload.bookingId, 'declined');
+        await this.updateStatus(message, payload.bookingId as number, 'declined');
         break;
     }
   }

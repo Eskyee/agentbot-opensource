@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { initDatabase } from './services/db-init';
 import inviteRouter from './invite';
 import undergroundRouter from './underground';
@@ -8,6 +8,9 @@ import renderMcpRouter from './routes/render-mcp';
 import metricsRouter from './routes/metrics';
 import provisionRouter from './routes/provision';
 import registrationRouter from './routes/registration';
+import agentsRouter from './routes/agents';
+import openclawRouter from './routes/openclaw';
+import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -18,9 +21,6 @@ import rateLimit from 'express-rate-limit';
 import { Pool } from 'pg';
 
 dotenv.config();
-
-// Shared DB pool for metrics time-series storage
-const metricsPool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Deployment version: track app changes for cache busting
 const DEPLOYMENT_VERSION = '2026.03.14.002';
@@ -59,6 +59,35 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '1mb' }));
+
+// Structured request logging middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  const requestId = randomBytes(8).toString('hex');
+
+  // Attach request ID for downstream use
+  (req as Request & { requestId: string }).requestId = requestId;
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const log = {
+      timestamp: new Date().toISOString(),
+      requestId,
+      method: req.method,
+      path: req.originalUrl || req.url,
+      status: res.statusCode,
+      durationMs: duration,
+      ip: req.ip || req.socket.remoteAddress,
+      userAgent: req.headers['user-agent']?.substring(0, 100),
+    };
+    // Use console.info for successful requests, console.warn for 4xx, console.error for 5xx
+    if (res.statusCode >= 500) console.error(JSON.stringify(log));
+    else if (res.statusCode >= 400) console.warn(JSON.stringify(log));
+    else console.info(JSON.stringify(log));
+  });
+
+  next();
+});
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.raveculture.xyz,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',');
 app.use(cors({
@@ -125,9 +154,9 @@ type AgentMetadata = {
   status?: string;
   openclawVersion?: string;
   botUsername?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   gatewayToken?: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   // Verification fields for Verified Human Badge
   verified?: boolean;
   verificationType?: string;
@@ -365,8 +394,8 @@ const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
       const handle = await fs.open(lockFile, 'wx');
       await handle.close();
       break;
-    } catch (err: any) {
-      if (err.code === 'EEXIST') {
+    } catch (err: unknown) {
+      if ((err as NodeJS.ErrnoException).code === 'EEXIST') {
         retries--;
         await new Promise(resolve => setTimeout(resolve, 100));
         continue;
@@ -656,7 +685,7 @@ const createOpenClawConfig = (
 };
 
 // Auth middleware — timing-safe to prevent key-enumeration attacks
-const authenticate = (req: Request, res: Response, next: any) => {
+const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -678,6 +707,8 @@ app.use('/api/ai', authenticate, aiChatLimiter, aiRouter);
 app.use('/api/render-mcp', authenticate, renderMcpRouter);
 app.use('/api/provision', authenticate, provisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
+app.use('/api/agents', authenticate, agentsRouter);
+app.use('/api/openclaw', authenticate, openclawRouter);
 app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
 
 // Health check — includes Docker status for observability
@@ -699,559 +730,6 @@ app.get('/install', (req: Request, res: Response) => {
 app.get('/link', (req: Request, res: Response) => {
   res.type('text/plain');
   res.sendFile('link.sh', { root: path.join(__dirname, '../public') });
-});
-
-// Metrics endpoints for dashboard
-app.get('/api/metrics/:userId/historical', authenticate, async (req: Request, res: Response) => {
-  // SECURITY: Only allow callers to query their own container metrics
-  // (The authenticate middleware here is the Bearer-token version in index.ts,
-  //  so userId in params is from the path; ensure it matches the requested container)
-  const { userId } = req.params;
-  const timeRange = req.query.range as string || '24h';
-
-  try {
-    const metrics = await generateRealMetrics(userId, timeRange);
-    const averages = calculateAverages(metrics);
-
-    res.json({
-      userId,
-      timeRange,
-      metrics,
-      averages,
-    });
-  } catch (error) {
-    console.error('Error fetching historical metrics:', error);
-    res.status(500).json({ error: 'Failed to fetch historical metrics' });
-  }
-});
-
-app.get('/api/metrics/:userId/performance', authenticate, async (req: Request, res: Response) => {
-  const { userId } = req.params;
-
-  try {
-    const performanceData = await getPerformanceData(userId);
-    res.json(performanceData);
-  } catch (error) {
-    console.error('Error fetching performance data:', error);
-    res.status(500).json({ error: 'Failed to fetch performance data' });
-  }
-});
-
-/**
- * Records a real Docker stats sample for a user's container into the DB.
- * Called on every metrics request so the DB accumulates a true time-series.
- */
-async function recordMetricSample(userId: string): Promise<{ cpu: number; mem: number } | null> {
-  const containerName = getContainerName(userId);
-  try {
-    const { stdout } = await runCommand('docker', [
-      'stats', containerName,
-      '--format', '{{.CPUPerc}}|{{.MemUsage}}',
-      '--no-stream',
-    ]);
-    const parts = stdout.trim().split('|');
-    if (parts.length < 2) return null;
-
-    const cpu = parseFloat(parts[0].replace('%', '')) || 0;
-    let mem = 0;
-    const memMatch = parts[1].match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
-    if (memMatch) {
-      const used = parseFloat(memMatch[1]) * (memMatch[2].startsWith('G') ? 1024 : 1);
-      const total = parseFloat(memMatch[3]) * (memMatch[4].startsWith('G') ? 1024 : 1);
-      mem = total > 0 ? (used / total) * 100 : 0;
-    }
-
-    // Persist to DB (fire-and-forget — never block the response)
-    if (process.env.DATABASE_URL) {
-      metricsPool.query(
-        `INSERT INTO container_metrics (user_id, container_name, cpu_percent, mem_percent, sampled_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
-        [userId, containerName, cpu, mem]
-      ).catch((err: Error) => console.error('[Metrics] Failed to write sample:', err.message));
-    }
-
-    return { cpu, mem };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Returns real stored time-series samples from the DB.
- * Falls back to a single live sample if no history exists yet.
- */
-async function generateRealMetrics(userId: string, timeRange: string) {
-  const hours = timeRange === '7d' ? 168 : timeRange === '30d' ? 720 : 24;
-
-  // Always record a fresh sample so the DB grows over time
-  await recordMetricSample(userId);
-
-  // Query actual stored samples
-  if (process.env.DATABASE_URL) {
-    try {
-      const result = await metricsPool.query(
-        `SELECT
-           date_trunc('hour', sampled_at) AS timestamp,
-           AVG(cpu_percent)::numeric(5,2) AS cpu,
-           AVG(mem_percent)::numeric(5,2) AS memory,
-           SUM(message_count) AS messages,
-           SUM(error_count) AS errors
-         FROM container_metrics
-         WHERE user_id = $1
-           AND sampled_at >= NOW() - ($2 || ' hours')::interval
-         GROUP BY date_trunc('hour', sampled_at)
-         ORDER BY timestamp ASC`,
-        [userId, hours]
-      );
-      if (result.rows.length > 0) {
-        return result.rows.map((r: any) => ({
-          timestamp: r.timestamp,
-          cpu: parseFloat(r.cpu) || 0,
-          memory: parseFloat(r.memory) || 0,
-          messages: parseInt(r.messages) || 0,
-          errors: parseInt(r.errors) || 0,
-        }));
-      }
-    } catch (err: any) {
-      console.error('[Metrics] DB query failed, falling back to live sample:', err.message);
-    }
-  }
-
-  // Fallback: single live sample with no synthetic variance
-  const live = await recordMetricSample(userId);
-  if (!live) return [];
-  return [{
-    timestamp: new Date().toISOString(),
-    cpu: live.cpu,
-    memory: live.mem,
-    messages: 0,
-    errors: 0,
-  }];
-}
-
-function calculateAverages(metrics: any[]) {
-  if (metrics.length === 0) {
-    return { cpu: 0, memory: 0, messages: 0, errors: 0 };
-  }
-
-  return {
-    cpu: Math.round(metrics.reduce((sum, m) => sum + m.cpu, 0) / metrics.length),
-    memory: Math.round(metrics.reduce((sum, m) => sum + m.memory, 0) / metrics.length),
-    messages: Math.round(metrics.reduce((sum, m) => sum + m.messages, 0) / metrics.length),
-    errors: Math.round(metrics.reduce((sum, m) => sum + m.errors, 0) / metrics.length),
-  };
-}
-
-async function getPerformanceData(userId: string) {
-  try {
-    let performanceData = {
-      cpu: 0,
-      memory: 0,
-      errorRate: 0,
-      responseTime: 0,
-    };
-
-    const containerName = getContainerName(userId);
-    const { stdout: stats } = await runCommand('docker', [
-      'stats',
-      containerName,
-      '--format', '{{.CPUPerc}}|{{.MemUsage}}',
-      '--no-stream'
-    ]);
-
-    const statsData = stats.trim().split('|');
-    if (statsData.length >= 2) {
-      performanceData.cpu = parseFloat(statsData[0].replace('%', '')) || 0;
-      
-      const memUsage = statsData[1];
-      const memMatch = memUsage.match(/(\d+\.?\d*)([A-Za-z]+) \/ (\d+\.?\d*)([A-Za-z]+)/);
-      if (memMatch) {
-        const used = parseFloat(memMatch[1]) * (memMatch[2] === 'GiB' || memMatch[2] === 'GB' ? 1024 : 1);
-        const total = parseFloat(memMatch[3]) * (memMatch[4] === 'GiB' || memMatch[4] === 'GB' ? 1024 : 1);
-        performanceData.memory = (used / total) * 100;
-      }
-    }
-
-    // responseTime is not measurable from Docker stats alone; omit synthetic estimation.
-    // TODO: instrument real latency via /metrics endpoint on the container itself.
-    performanceData.responseTime = 0;
-
-    return performanceData;
-  } catch (error) {
-    console.error('Failed to get performance data:', error);
-    return {
-      cpu: 0,
-      memory: 0,
-      errorRate: 0,
-      responseTime: 0,
-    };
-  }
-}
-
-// SECURITY: Version/image info is internal — require auth to prevent fingerprinting
-app.get('/api/openclaw/version', authenticate, (_req: Request, res: Response) => {
-  res.json({
-    openclawVersion: OPENCLAW_RUNTIME_VERSION,
-    image: OPENCLAW_IMAGE,
-    deployedAt: new Date().toISOString(),
-  });
-});
-
-app.get('/api/openclaw/instances', authenticate, async (_req: Request, res: Response) => {
-  try {
-    const { stdout } = await runCommand('docker', [
-      'ps', 
-      '--filter', 'name=openclaw-', 
-      '--format', '{{.Names}}|{{.Image}}|{{.Status}}|{{.CreatedAt}}'
-    ]);
-    const lines = stdout ? stdout.split('\n').filter(Boolean) : [];
-    const instances = await Promise.all(lines.map(async (line) => {
-      const [name, image, status, createdAt] = line.split('|');
-      const agentId = name.replace('openclaw-', '');
-      const metadata = await readAgentMetadata(agentId);
-      
-      let containerVersion = 'unknown';
-      try {
-        const { stdout: versionOutput } = await runCommand('docker', [
-          'exec', name, 'openclaw', '--version'
-        ]);
-        containerVersion = versionOutput.trim() || 'unknown';
-      } catch {
-        containerVersion = 'unknown';
-      }
-      
-      return {
-        agentId,
-        name,
-        image,
-        status,
-        createdAt,
-        version: containerVersion,
-        metadata,
-      };
-    }));
-    res.json({ instances, count: instances.length });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to list instances' });
-  }
-});
-
-app.get('/api/openclaw/instances/:id/stats', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  
-  try {
-    const { stdout: stats } = await runCommand('docker', [
-      'stats', 
-      containerName, 
-      '--no-stream', 
-      '--format', '{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}|{{.BlockIO}}|{{.PIDs}}'
-    ]);
-    
-    const { stdout: inspect } = await runCommand('docker', [
-      'inspect', 
-      containerName, 
-      '--format', '{{.State.StartedAt}}|{{.State.Status}}'
-    ]);
-    
-    const [cpu, memUsage, memPerc, netIO, blockIO, pids] = stats.trim().split('|');
-    const [startedAt, status] = inspect.trim().split('|');
-    
-    const startTime = new Date(startedAt);
-    const uptime = Date.now() - startTime.getTime();
-    
-    res.json({
-      agentId: id,
-      cpu: cpu || '0%',
-      memory: memUsage || '0MiB / 0MiB',
-      memoryPercent: memPerc || '0%',
-      network: netIO || '0B / 0B',
-      blockIO: blockIO || '0B / 0B',
-      pids: pids || '0',
-      status: status || 'unknown',
-      uptime: uptime,
-      uptimeFormatted: formatUptime(uptime),
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get container stats' });
-  }
-});
-
-function formatUptime(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  
-  if (days > 0) return `${days}d ${hours % 24}h`;
-  if (hours > 0) return `${hours}h ${minutes % 60}m`;
-  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-  return `${seconds}s`;
-}
-
-// Agents endpoints
-app.get('/api/agents', authenticate, (req: Request, res: Response) => {
-  runCommand('docker', [
-    'ps', '-a', 
-    '--filter', 'name=openclaw-', 
-    '--format', '{{.Names}}|{{.Status}}'
-  ])
-    .then(async ({ stdout }) => {
-      const lines = stdout ? stdout.split('\n') : [];
-      const agents = await Promise.all(lines.filter(Boolean).map(async (line) => {
-        const [name, statusRaw] = line.split('|');
-        const agentId = name.replace('openclaw-', '');
-        const metadata = await readAgentMetadata(agentId);
-        return {
-          id: agentId,
-          status: statusRaw.toLowerCase().includes('up') ? 'active' : 'stopped',
-          created: metadata?.createdAt || new Date().toISOString(),
-          subdomain: metadata?.subdomain || `${agentId}.${AGENTS_DOMAIN}`,
-          url: `https://${metadata?.subdomain || `${agentId}.${AGENTS_DOMAIN}`}`,
-        };
-      }));
-      res.json(agents);
-    })
-    .catch(() => {
-      res.json([]);
-    });
-});
-
-app.post('/api/agents', authenticate, async (req: Request, res: Response) => {
-  const { name, config } = req.body as { name?: string; config?: Record<string, unknown> };
-  if (!name || typeof name !== 'string' || !name.trim()) {
-    res.status(400).json({ error: 'Name required' });
-    return;
-  }
-
-  try {
-    await ensureDataDirs();
-
-    // Generate a URL-safe agent ID from the name + random suffix
-    const safeBase = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').substring(0, 20);
-    const suffix = randomBytes(4).toString('hex');
-    const agentId = `${safeBase}-${suffix}`;
-    const containerName = getContainerName(agentId);
-    const subdomain = `${agentId}.${AGENTS_DOMAIN}`;
-
-    const metadata: AgentMetadata = {
-      agentId,
-      createdAt: new Date().toISOString(),
-      plan: (config?.plan as string) || 'free',
-      aiProvider: (config?.aiProvider as string) || 'openrouter',
-      subdomain,
-      status: 'pending',
-      config: config || {},
-    };
-    await writeAgentMetadata(metadata);
-
-    res.status(201).json({
-      id: agentId,
-      name,
-      agentId,
-      status: 'pending',
-      subdomain,
-      url: `https://${subdomain}`,
-      createdAt: metadata.createdAt,
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to create agent';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  Promise.all([containerStatus(containerName), readAgentMetadata(id), getContainerRuntimeVersion(containerName)])
-    .then(([runtime, metadata, openclawVersion]) => {
-      if (!runtime && !metadata) {
-        res.status(404).json({ error: 'Agent not found' });
-        return;
-      }
-
-      const subdomain = metadata?.subdomain || `${id}.${AGENTS_DOMAIN}`;
-      res.json({
-        id,
-        status: runtime?.status || 'stopped',
-        startedAt: runtime?.startedAt || metadata?.createdAt || new Date().toISOString(),
-        plan: metadata?.plan || 'free',
-        subdomain,
-        url: `https://${subdomain}`,
-        openclawVersion,
-        // Include verification status in response
-        verified: metadata?.verified || false,
-        verificationType: metadata?.verificationType || null,
-        attestationUid: metadata?.attestationUid || null,
-        verifiedAt: metadata?.verifiedAt || null,
-      });
-    })
-    .catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to fetch agent';
-      res.status(500).json({ error: message });
-    });
-});
-
-app.put('/api/agents/:id', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const safeId = sanitizeAgentId(id);
-
-  try {
-    const metadata = await readAgentMetadata(safeId);
-    if (!metadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-
-    // Apply allowed updates
-    const { plan, aiProvider, config } = req.body as {
-      plan?: string;
-      aiProvider?: string;
-      config?: Record<string, unknown>;
-    };
-
-    if (plan) metadata.plan = plan;
-    if (aiProvider) metadata.aiProvider = aiProvider;
-    if (config) metadata.config = { ...(metadata.config || {}), ...config };
-
-    await writeAgentMetadata(metadata);
-
-    res.json({
-      id: safeId,
-      plan: metadata.plan,
-      aiProvider: metadata.aiProvider,
-      subdomain: metadata.subdomain,
-      status: metadata.status || 'unknown',
-      message: 'Agent updated',
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Update failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.delete('/api/agents/:id', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const safeId = sanitizeAgentId(id);
-  const containerName = getContainerName(safeId);
-
-  try {
-    // 1. Stop and remove the Docker container (best-effort — may not exist)
-    try {
-      await runCommand('docker', ['stop', containerName]);
-    } catch {
-      // Container may already be stopped
-    }
-    try {
-      await runCommand('docker', ['rm', containerName]);
-    } catch {
-      // Container may not exist
-    }
-
-    // 2. Release port assignment from ports.json
-    await withLock(async () => {
-      const ports = await readPorts();
-      delete ports[safeId];
-      await writePorts(ports);
-    });
-
-    // 3. Delete metadata file
-    try {
-      await fs.unlink(agentFilePath(safeId));
-    } catch {
-      // File may not exist
-    }
-
-    res.json({ id: safeId, deleted: true });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Delete failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-// Agent verification endpoints for Verified Human Badge
-app.get('/api/agents/:id/verification', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const metadata = await readAgentMetadata(id);
-    if (!metadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-    res.json({
-      verified: metadata.verified || false,
-      verificationType: metadata.verificationType || null,
-      attestationUid: metadata.attestationUid || null,
-      verifierAddress: metadata.verifierAddress || null,
-      verifiedAt: metadata.verifiedAt || null,
-      metadata: metadata.verificationMetadata || null,
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch verification status';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/verify', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { verificationType, verified, attestationUid, verifierAddress, metadata } = req.body;
-
-  try {
-    const existingMetadata = await readAgentMetadata(id);
-    if (!existingMetadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-
-    // Update verification fields
-    existingMetadata.verified = verified;
-    existingMetadata.verificationType = verificationType;
-    existingMetadata.attestationUid = attestationUid;
-    existingMetadata.verifierAddress = verifierAddress;
-    existingMetadata.verifiedAt = verified ? new Date().toISOString() : undefined;
-    existingMetadata.verificationMetadata = metadata;
-
-    await writeAgentMetadata(existingMetadata);
-
-    res.json({
-      success: true,
-      verified: existingMetadata.verified,
-      verificationType: existingMetadata.verificationType,
-      attestationUid: existingMetadata.attestationUid,
-      verifiedAt: existingMetadata.verifiedAt,
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to update verification';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.delete('/api/agents/:id/verify', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  try {
-    const existingMetadata = await readAgentMetadata(id);
-    if (!existingMetadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-
-    // Remove verification fields
-    existingMetadata.verified = false;
-    existingMetadata.verificationType = undefined;
-    existingMetadata.attestationUid = undefined;
-    existingMetadata.verifierAddress = undefined;
-    existingMetadata.verifiedAt = undefined;
-    existingMetadata.verificationMetadata = undefined;
-
-    await writeAgentMetadata(existingMetadata);
-
-    res.json({ success: true });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to remove verification';
-    res.status(500).json({ error: message });
-  }
 });
 
 // Deployments endpoint
@@ -1384,155 +862,6 @@ app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, r
     });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Deployment failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/start', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    await runCommand('docker', ['start', containerName]);
-    res.json({ success: true, status: 'active' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Start failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/stop', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    await runCommand('docker', ['stop', containerName]);
-    res.json({ success: true, status: 'stopped' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Stop failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/restart', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    const healResult = await healLegacyModelInContainer(containerName);
-    await runCommand('docker', ['restart', containerName]);
-    const openclawVersion = await getContainerRuntimeVersion(containerName);
-    res.json({ success: true, status: 'active', healedLegacyModel: healResult.healed, healMessage: healResult.message, openclawVersion });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Restart failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/update', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  const requestedImage = typeof req.body?.image === 'string' ? req.body.image.trim() : '';
-  const targetImage = requestedImage || OPENCLAW_IMAGE;
-
-  if (!isValidDockerImage(targetImage)) {
-    res.status(400).json({ error: 'Invalid docker image value' });
-    return;
-  }
-
-  try {
-    const inspect = await getContainerInspect(containerName);
-    const backupPath = await backupContainerData(containerName, inspect);
-    const oldImage = inspect.Config.Image;
-
-    await healLegacyModelInContainer(containerName);
-    await runCommand('docker', ['pull', targetImage]);
-    await runCommand('docker', ['stop', containerName]);
-    await runCommand('docker', ['rm', containerName]);
-
-    try {
-      await recreateContainerWithImage(containerName, inspect, targetImage);
-    } catch (e) {
-      await runCommand('docker', ['rm', '-f', containerName]).catch(() => Promise.resolve());
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-      throw e;
-    }
-
-    res.json({
-      success: true,
-      status: 'active',
-      image: targetImage,
-      previousImage: oldImage,
-      backupPath,
-      openclawVersion: OPENCLAW_RUNTIME_VERSION,
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Update failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-// Get agent gateway token
-app.get('/api/agents/:id/token', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const metadata = await readAgentMetadata(id);
-    if (!metadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-    if (!metadata.gatewayToken) {
-      const token = randomBytes(32).toString('hex');
-      metadata.gatewayToken = token;
-      await writeAgentMetadata(metadata);
-    }
-    res.json({ token: metadata.gatewayToken });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to get token';
-    res.status(500).json({ error: message });
-  }
-});
-
-// Repair agent - full reconfigure
-app.post('/api/agents/:id/repair', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    const inspect = await getContainerInspect(containerName);
-    const oldImage = inspect.Config.Image;
-    
-    await healLegacyModelInContainer(containerName);
-    await runCommand('docker', ['stop', containerName]);
-    await runCommand('docker', ['rm', containerName]);
-    
-    await recreateContainerWithImage(containerName, inspect, oldImage);
-    res.json({ success: true, message: 'Agent repaired successfully' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Repair failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-// Reset agent memory
-app.post('/api/agents/:id/reset-memory', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    const mount = (await getContainerInspect(containerName)).Mounts.find((m) => m.Destination === '/home/node/.openclaw');
-    if (!mount) {
-      res.status(500).json({ error: 'Could not find data mount' });
-      return;
-    }
-    
-    if (mount.Type === 'volume' && mount.Name) {
-      // This command uses shell expansion (*)
-      await runShellCommand(`docker exec ${containerName} sh -lc "rm -rf /home/node/.openclaw/agents/*/memory /home/node/.openclaw/agents/*/identity 2>/dev/null || true"`);
-    } else if (mount.Type === 'bind' && mount.Source) {
-      // This command uses shell expansion (*)
-      await runShellCommand(`rm -rf "${mount.Source}"/agents/*/memory "${mount.Source}"/agents/*/identity 2>/dev/null || true`);
-    }
-    
-    await runCommand('docker', ['restart', containerName]);
-    res.json({ success: true, message: 'Memory reset successfully' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Reset failed';
     res.status(500).json({ error: message });
   }
 });
@@ -1721,10 +1050,9 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
   }
 });
 
-// NOTE: Routes for /api/ai, /api/provision, /api/metrics, and /api/render-mcp are
-// already mounted above (lines ~670-673) with Bearer token authentication.
-// Do NOT re-mount them here without auth — duplicate registrations create
-// confusing security models and potential for unauthenticated fallthrough.
+// NOTE: Routes for /api/ai, /api/provision, /api/metrics, /api/render-mcp,
+// /api/agents, and /api/openclaw are already mounted above with Bearer token
+// authentication. Do NOT re-mount them here without auth.
 
 // Initialize database schema on startup.
 // In production, a DB failure is fatal — don't serve traffic with a broken schema.

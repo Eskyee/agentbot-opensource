@@ -23,7 +23,7 @@ export interface AgentMessage {
     agentType: string;
   };
   action: string;
-  payload: any;
+  payload: Record<string, unknown>;
   metadata?: {
     replyTo?: string;
     expiresAt?: string;
