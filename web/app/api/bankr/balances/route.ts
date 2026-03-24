@@ -4,7 +4,7 @@ import { authOptions } from '@/app/lib/auth';
 
 const BANKR_API_URL = process.env.BANKR_API_URL || 'https://api.bankr.bot';
 const BANKR_API_KEY = process.env.BANKR_API_KEY;
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'raveculture@icloud.com').split(',');
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'raveculture@icloud.com').split(',').map(e => e.trim().toLowerCase());
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!ADMIN_EMAILS.includes(session.user.email)) {
+  if (!ADMIN_EMAILS.includes(session.user.email.toLowerCase())) {
     return NextResponse.json({ error: 'Admin only' }, { status: 403 });
   }
 
