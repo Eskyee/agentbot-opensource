@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useCustomSession } from '@/app/lib/useCustomSession'
+import { usePathname } from 'next/navigation'
+import { useCustomSession, customSignOut } from '@/app/lib/useCustomSession'
 import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch'
 
 interface WalletData {
@@ -37,8 +38,25 @@ interface Session {
   createdAt: number
 }
 
+const navItems = [
+  { label: 'Dashboard', href: '/dashboard' },
+  { label: '💰 Wallet', href: '/dashboard/wallet' },
+  { label: 'Agent Fleet', href: '/dashboard/fleet' },
+  { label: '🧬 Colony', href: '/dashboard/colony' },
+  { label: 'Cost Tracking', href: '/dashboard/cost' },
+  { label: 'System Pulse', href: '/dashboard/system-pulse' },
+  { label: 'Memory Log', href: '/dashboard/memory' },
+  { label: 'Daily Brief', href: '/dashboard/daily-brief' },
+  { label: 'Market Intel', href: '/dashboard/market-intel' },
+  { label: 'Signals', href: '/dashboard/signals' },
+  { label: 'Tasks', href: '/dashboard/tasks' },
+  { label: 'Skills', href: '/dashboard/skills' },
+  { label: 'Calendar', href: '/dashboard/calendar' },
+]
+
 export default function WalletPage() {
   const { data: session, status } = useCustomSession()
+  const pathname = usePathname()
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [connected, setConnected] = useState(false)
@@ -180,8 +198,31 @@ export default function WalletPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-2xl mx-auto">
+    <div className="flex min-h-screen bg-black">
+      {/* Sidebar */}
+      <aside className="hidden md:flex w-64 bg-zinc-950 border-r border-zinc-900 flex-col font-mono flex-shrink-0">
+        <nav className="flex-1 p-4 overflow-y-auto">
+          <div className="space-y-0.5">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`flex items-center px-4 py-2.5 text-sm transition-colors ${
+                  pathname === item.href || pathname.startsWith(item.href + '/')
+                    ? 'bg-zinc-900 text-white'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                }`}
+              >
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 text-white p-6 overflow-y-auto">
+        <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600">Tempo Network</span>
@@ -441,6 +482,7 @@ export default function WalletPage() {
           <Link href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400">
             ← Back to Dashboard
           </Link>
+        </div>
         </div>
       </div>
     </div>
