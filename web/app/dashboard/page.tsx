@@ -45,33 +45,68 @@ interface InstanceData {
   verifiedAt?: string | null
 }
 
-const navItems = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: '💰 Wallet', href: '/dashboard/wallet' },
-  { label: 'Agent Fleet', href: '/dashboard/fleet' },
-  { label: '🧬 Colony', href: '/dashboard/colony' },
-  { label: 'Cost Tracking', href: '/dashboard/cost' },
-  { label: 'System Pulse', href: '/dashboard/system-pulse' },
-  { label: 'Memory Log', href: '/dashboard/memory' },
-  { label: 'Daily Brief', href: '/dashboard/daily-brief' },
-  { label: 'Tech Updates', href: '/dashboard/tech-updates' },
-  { label: 'Market Intel', href: '/dashboard/market-intel' },
-  { label: 'Signals', href: '/dashboard/signals' },
-  { label: 'Tasks', href: '/dashboard/tasks' },
-  { label: 'Personality', href: '/dashboard/personality' },
-  { label: 'Skills', href: '/dashboard/skills' },
-  { label: 'Swarms', href: '/dashboard/swarms' },
-  { label: 'Workflows', href: '/dashboard/workflows' },
-  { label: 'Files', href: '/dashboard/files' },
-  { label: 'Calendar', href: '/dashboard/calendar' },
-  { label: 'Heartbeat', href: '/dashboard/heartbeat' },
-  { label: 'Verify', href: '/dashboard/verify' },
-  { label: 'DJ Stream', href: '/dashboard/dj-stream' },
-  { label: 'Trading', href: '/dashboard/trading' },
-  { label: 'Marketplace', href: '/marketplace' },
-  { label: 'Billing', href: '/billing' },
-  { label: 'API Keys', href: '/dashboard/keys' },
-  { label: 'Settings', href: '/settings' },
+const navSections = [
+  {
+    label: 'Overview',
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: '◈' },
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
+    ]
+  },
+  {
+    label: 'Agents',
+    items: [
+      { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
+      { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
+      { label: 'Swarms', href: '/dashboard/swarms', icon: '◇' },
+      { label: 'Workflows', href: '/dashboard/workflows', icon: '▹' },
+    ]
+  },
+  {
+    label: 'Intelligence',
+    items: [
+      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '☉' },
+      { label: 'Market Intel', href: '/dashboard/market-intel', icon: '◉' },
+      { label: 'Signals', href: '/dashboard/signals', icon: '⚡' },
+      { label: 'Memory', href: '/dashboard/memory', icon: '◐' },
+      { label: 'Tasks', href: '/dashboard/tasks', icon: '☑' },
+    ]
+  },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'Calendar', href: '/dashboard/calendar', icon: '◌' },
+      { label: 'Files', href: '/dashboard/files', icon: '▣' },
+      { label: 'Skills', href: '/dashboard/skills', icon: '✦' },
+      { label: 'Personality', href: '/dashboard/personality', icon: '◐' },
+      { label: 'Tech Updates', href: '/dashboard/tech-updates', icon: '↻' },
+    ]
+  },
+  {
+    label: 'Platform',
+    items: [
+      { label: 'Cost Tracking', href: '/dashboard/cost', icon: '$' },
+      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '♥' },
+      { label: 'Heartbeat', href: '/dashboard/heartbeat', icon: '♡' },
+      { label: 'API Keys', href: '/dashboard/keys', icon: '⚿' },
+    ]
+  },
+  {
+    label: 'Media',
+    items: [
+      { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '♫' },
+      { label: 'Trading', href: '/dashboard/trading', icon: '↕' },
+      { label: 'Verify', href: '/dashboard/verify', icon: '✓' },
+    ]
+  },
+  {
+    label: 'Account',
+    items: [
+      { label: 'Billing', href: '/billing', icon: '☆' },
+      { label: 'Settings', href: '/settings', icon: '⚙' },
+      { label: 'Marketplace', href: '/marketplace', icon: '⬡' },
+    ]
+  },
 ]
 
 function DashboardContent() {
@@ -382,6 +417,12 @@ function DashboardContent() {
                 className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
               >
                 <span>+</span> New Agent
+              </a>
+              <a
+                href="/dashboard/wallet"
+                className="border border-zinc-800 px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors flex items-center gap-2"
+              >
+                💰 Wallet
               </a>
               {instance?.verified && (
                 <AgentVerifiedBadge verified={instance.verified} verificationType={instance.verificationType} />
@@ -959,22 +1000,30 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
         </button>
 
         <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
-          <div className="space-y-0.5">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={onToggle}
-                className={`flex items-center px-4 py-2.5 text-sm transition-colors ${
-                  pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'bg-zinc-900 text-white' 
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
-                }`}
-              >
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
+          {navSections.map((section, i) => (
+            <div key={section.label} className={i > 0 ? 'mt-4' : ''}>
+              <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 px-4 mb-1.5">
+                {section.label}
+              </div>
+              <div className="space-y-0.5">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={onToggle}
+                    className={`flex items-center gap-2.5 px-4 py-2 text-xs transition-colors ${
+                      pathname === item.href || pathname.startsWith(item.href + '/')
+                        ? 'bg-zinc-900 text-white'
+                        : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                    }`}
+                  >
+                    <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
 
           <Link href="/billing" onClick={onToggle} className="block mt-8 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
