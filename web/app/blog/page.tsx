@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'openclaw-2026-3-23',
+    date: '24 March 2026',
+    title: 'OpenClaw v2026.3.23 — Stability & Auth Fixes',
+    excerpt: '30+ fixes for browser attach, ClawHub auth, gateway reliability, and security hardening. Now live on Agentbot.',
+    tags: ["Release", "OpenClaw", "Stability"]
+  },
+  {
     slug: 'mimo-v2-pro',
     date: '23 March 2026',
     title: 'MiMo-V2-Pro: Xiaomi\'s Flagship AI Model Now Default',
