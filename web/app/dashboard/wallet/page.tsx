@@ -322,14 +322,40 @@ export default function WalletPage() {
 
             {/* Actions */}
             <div className="grid grid-cols-2 gap-4 mb-8">
-              <button className="border border-zinc-800 p-4 hover:border-zinc-600 transition-colors">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-1">Action</span>
-                <span className="text-sm font-bold uppercase tracking-tighter">Top Up</span>
-              </button>
-              <button className="border border-zinc-800 p-4 hover:border-zinc-600 transition-colors">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-1">Action</span>
-                <span className="text-sm font-bold uppercase tracking-tighter">Send</span>
-              </button>
+              <div className="border border-zinc-800 p-4">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Top Up via Stripe</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {[5, 10, 25, 50].map((amt) => (
+                    <button
+                      key={amt}
+                      onClick={async () => {
+                        try {
+                          const res = await fetch(`/api/wallet/top-up?amount=${amt * 100}`)
+                          const data = await res.json()
+                          if (data.url) window.location.href = data.url
+                        } catch (err) {
+                          console.error('Top-up error:', err)
+                        }
+                      }}
+                      className="border border-zinc-700 p-2 text-sm font-mono hover:border-zinc-500 transition-colors"
+                    >
+                      ${amt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="border border-zinc-800 p-4">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Direct Transfer</span>
+                <p className="text-zinc-500 text-xs mb-3">
+                  Send pathUSD directly to your wallet address.
+                </p>
+                <button
+                  onClick={() => wallet && navigator.clipboard.writeText(wallet.address)}
+                  className="w-full border border-zinc-700 p-2 text-[10px] uppercase tracking-widest hover:border-zinc-500 transition-colors"
+                >
+                  Copy Address
+                </button>
+              </div>
             </div>
 
             {/* Recent Activity */}
