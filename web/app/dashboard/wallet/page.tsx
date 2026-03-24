@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useCustomSession } from '@/app/lib/useCustomSession'
+import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch'
 
 interface WalletData {
   address: string
@@ -72,7 +73,7 @@ export default function WalletPage() {
     fetchWallet()
   }, [walletAddress])
 
-  // Fetch active session
+  // Fetch active session and restore from localStorage
   useEffect(() => {
     if (!walletAddress) return
 
@@ -82,7 +83,10 @@ export default function WalletPage() {
         const data = await res.json()
         if (data.sessions?.length > 0) {
           const active = data.sessions.find((s: Session) => s.status === 'active')
-          setMppSession(active || null)
+          if (active) {
+            setMppSession(active)
+            setSessionId(active.id) // Restore for auto-billing
+          }
         }
       } catch (err) {
         console.error('Session fetch error:', err)
@@ -102,7 +106,10 @@ export default function WalletPage() {
         body: JSON.stringify({ address: walletAddress, deposit: '10.00' }),
       })
       const data = await res.json()
-      if (data.session) setMppSession(data.session)
+      if (data.session) {
+        setMppSession(data.session)
+        setSessionId(data.session.id) // Store for auto-billing
+      }
     } catch (err) {
       console.error('Open session error:', err)
     } finally {
@@ -121,6 +128,7 @@ export default function WalletPage() {
       const data = await res.json()
       if (data.success) {
         setMppSession(null)
+        clearSessionId() // Remove from auto-billing
       }
     } catch (err) {
       console.error('Close session error:', err)
