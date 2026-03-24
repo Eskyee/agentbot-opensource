@@ -65,6 +65,7 @@ export default function WalletPage() {
   const [sessionLoading, setSessionLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [topUpLoading, setTopUpLoading] = useState<number | null>(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Check for stored wallet address on mount
   useEffect(() => {
@@ -199,9 +200,28 @@ export default function WalletPage() {
 
   return (
     <div className="flex min-h-screen bg-black">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="hidden md:flex w-64 bg-zinc-950 border-r border-zinc-900 flex-col font-mono flex-shrink-0">
-        <nav className="flex-1 p-4 overflow-y-auto">
+      <aside className={`
+        fixed md:static inset-y-0 left-0 z-50
+        w-64 bg-zinc-950 border-r border-zinc-900 flex flex-col font-mono
+        transform transition-transform duration-200 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="md:hidden absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+          aria-label="Close sidebar"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
           <div className="space-y-0.5">
             {navItems.map((item) => (
               <Link
@@ -221,7 +241,27 @@ export default function WalletPage() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 text-white p-6 overflow-y-auto">
+      <div className="flex-1 flex flex-col">
+        {/* Top Navbar */}
+        <header className="md:hidden sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+            aria-label="Open menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <Link href="/dashboard/wallet" className="text-sm font-bold uppercase tracking-tighter">
+            💰 Wallet
+          </Link>
+          <Link href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600">
+            Dashboard
+          </Link>
+        </header>
+
+        <div className="flex-1 text-white p-6 overflow-y-auto">
         <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -482,6 +522,7 @@ export default function WalletPage() {
           <Link href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400">
             ← Back to Dashboard
           </Link>
+        </div>
         </div>
         </div>
       </div>
