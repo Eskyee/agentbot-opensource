@@ -194,22 +194,24 @@ export default function WalletPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Navbar */}
-        <header className="md:hidden sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
-            aria-label="Open menu"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <Link href="/dashboard/wallet" className="text-sm font-bold uppercase tracking-tighter">
-            💰 Wallet
-          </Link>
-          <Link href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600">
-            Dashboard
-          </Link>
+        <header className="sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold uppercase tracking-tighter">◎ Wallet</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors">
+              Dashboard
+            </Link>
+          </div>
         </header>
 
         <div className="flex-1 text-white p-6 overflow-y-auto">
