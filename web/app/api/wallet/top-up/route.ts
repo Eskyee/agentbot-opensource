@@ -28,19 +28,12 @@ const TOP_UP_OPTIONS = [
 
 /**
  * GET — Create Stripe checkout session for wallet top-up
+ * 
+ * Accepts wallet address as identifier (user is already logged into Agentbot)
  */
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.email) {
-    // Return a URL to login first, then redirect back
-    const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
-    return NextResponse.json(
-      { error: 'Please sign in to top up your wallet', loginUrl: `${origin}/signup` },
-      { status: 401 }
-    )
-  }
-
   const amountParam = request.nextUrl.searchParams.get('amount')
+  const walletAddress = request.nextUrl.searchParams.get('address')
   const amount = parseInt(amountParam || '1000') // Default $10
   const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
 
@@ -49,6 +42,14 @@ export async function GET(request: NextRequest) {
   if (!validAmounts.includes(amount)) {
     return NextResponse.json(
       { error: 'Invalid amount. Choose: 500, 1000, 2500, 5000 (cents)' },
+      { status: 400 }
+    )
+  }
+
+  // Validate wallet address
+  if (!walletAddress || !walletAddress.startsWith('0x') || walletAddress.length !== 42) {
+    return NextResponse.json(
+      { error: 'Valid wallet address required' },
       { status: 400 }
     )
   }
@@ -65,11 +66,9 @@ export async function GET(request: NextRequest) {
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      customer_email: session.user.email,
       metadata: {
         type: 'wallet_top_up',
-        userId: session.user.id || '',
-        userEmail: session.user.email,
+        walletAddress,
         amountCents: amount.toString(),
       },
       line_items: [
@@ -78,7 +77,7 @@ export async function GET(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: `Agentbot Wallet Top-Up — $${(amount / 100).toFixed(0)}`,
-              description: 'Add funds to your Agentbot wallet for agent payments',
+              description: `Add funds to wallet ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`,
             },
             unit_amount: amount,
           },

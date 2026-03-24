@@ -351,7 +351,7 @@ export default function WalletPage() {
                         if (topUpLoading) return
                         setTopUpLoading(amt)
                         try {
-                          const res = await fetch(`/api/wallet/top-up?amount=${amt * 100}`)
+                          const res = await fetch(`/api/wallet/top-up?amount=${amt * 100}&address=${walletAddress}`)
                           const data = await res.json()
                           if (data.url) {
                             window.location.href = data.url
