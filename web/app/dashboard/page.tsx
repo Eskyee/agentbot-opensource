@@ -379,7 +379,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="flex h-screen bg-black font-mono">
+    <div className="flex min-h-screen bg-black font-mono">
       <DashboardSidebar
         userName={userName}
         credits={credits}
@@ -388,48 +388,39 @@ function DashboardContent() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-4 lg:p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
-                aria-label="Open menu"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold uppercase tracking-tighter">Mission Control</h1>
-                <p className="text-zinc-400 text-sm">Agent monitoring & control center</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 border border-zinc-800 px-3 py-1 text-[10px] uppercase tracking-widest">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-zinc-400">System Online</span>
-              </div>
-              <a
-                href="/agents"
-                className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
-              >
-                <span>+</span> New Agent
-              </a>
-              <a
-                href="/dashboard/wallet"
-                className="border border-zinc-800 px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors flex items-center gap-2"
-              >
-                💰 Wallet
-              </a>
-              {instance?.verified && (
-                <AgentVerifiedBadge verified={instance.verified} verificationType={instance.verificationType} />
-              )}
-            </div>
+      <div className="flex-1 flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold uppercase tracking-tighter">◈ Mission Control</span>
           </div>
+          <div className="flex items-center gap-3">
+            <a
+              href="/dashboard/wallet"
+              className="border border-zinc-800 px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              ◎ Wallet
+            </a>
+            <a
+              href="/agents"
+              className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            >
+              + New Agent
+            </a>
+          </div>
+        </header>
 
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 lg:p-8">
           {/* Stats Cards */}
           <div className="grid gap-4 md:grid-cols-4 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
@@ -966,7 +957,8 @@ function DashboardContent() {
             </div>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
