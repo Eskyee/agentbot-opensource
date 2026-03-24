@@ -13,7 +13,20 @@ const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://x402-gw-v2-pro
 
 export async function POST(request: NextRequest) {
   try {
-    // Require authenticated session
+    const body = await request.json()
+    const { agentId, walletAddress, action } = body
+
+    // List endpoints (public - no auth required)
+    if (action === 'endpoints') {
+      const res = await fetch(`${X402_GATEWAY_URL}/gateway/endpoints`, {
+        signal: AbortSignal.timeout(10000)
+      })
+
+      const data = await res.json() as any
+      return NextResponse.json(data)
+    }
+
+    // Require authenticated session for all other actions
     const session = await getServerSession(authOptions)
     if (!session?.user?.id || !session.user.email) {
       return NextResponse.json({
@@ -21,9 +34,6 @@ export async function POST(request: NextRequest) {
         error: 'Authentication required',
       }, { status: 401 })
     }
-
-    const body = await request.json()
-    const { agentId, walletAddress, action } = body
 
     if (!agentId) {
       return NextResponse.json({

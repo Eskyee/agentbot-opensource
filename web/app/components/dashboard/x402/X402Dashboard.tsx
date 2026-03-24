@@ -37,18 +37,19 @@ export default function X402Dashboard() {
   const [pricing, setPricing] = useState<PricingData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [authenticated, setAuthenticated] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
       try {
         setLoading(true)
         
-        // Fetch status
+        // Fetch status (always available)
         const statusRes = await fetch('/api/x402')
         const statusData = await statusRes.json()
         setStatus(statusData)
         
-        // Fetch endpoints
+        // Fetch endpoints (public)
         const endpointsRes = await fetch('/api/x402', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -57,23 +58,35 @@ export default function X402Dashboard() {
         const endpointsData = await endpointsRes.json()
         setEndpoints(endpointsData.endpoints || [])
         
-        // Fetch fitness
+        // Fetch fitness (requires auth)
         const fitnessRes = await fetch('/api/x402', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'fitness', agentId: 'atlas' })
         })
-        const fitnessData = await fitnessRes.json()
-        setFitness(fitnessData)
         
-        // Fetch pricing
+        if (fitnessRes.status === 401) {
+          setAuthenticated(false)
+          setFitness({ score: 50, tier: 'new', details: null })
+        } else {
+          const fitnessData = await fitnessRes.json()
+          setFitness(fitnessData)
+        }
+        
+        // Fetch pricing (requires auth)
         const pricingRes = await fetch('/api/x402', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: 'pricing', agentId: 'atlas' })
         })
-        const pricingData = await pricingRes.json()
-        setPricing(pricingData)
+        
+        if (pricingRes.status === 401) {
+          setAuthenticated(false)
+          setPricing({ agentId: 'atlas', tier: 'basic', pricing: { rate: 0.01, discount: 0 }, fitness: { score: 50, tier: 'new' } })
+        } else {
+          const pricingData = await pricingRes.json()
+          setPricing(pricingData)
+        }
         
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch data')
@@ -111,6 +124,15 @@ export default function X402Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Auth warning */}
+      {!authenticated && (
+        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4">
+          <p className="text-yellow-400 text-sm font-mono">
+            ⚠️ Sign in to see your personal fitness score and pricing tier
+          </p>
+        </div>
+      )}
+      
       {/* Status */}
       <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
         <h2 className="text-lg font-mono font-bold text-white mb-4">x402 GATEWAY</h2>
