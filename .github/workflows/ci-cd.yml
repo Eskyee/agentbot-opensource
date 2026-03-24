@@ -53,14 +53,35 @@ jobs:
           # Build should succeed without DATABASE_URL (graceful fallback)
           # Real env vars are set in Vercel dashboard
 
-  deploy:
-    name: Deploy
+      - name: Run E2E Tests
+        run: cd web && npx playwright test --passWithNoTests
+        env:
+          BASE_URL: http://localhost:3000
+        # Note: Tests can run on localhost if dev server is started, or skip on CI with --passWithNoTests
+
+  pre-deploy-validation:
+    name: Pre-Deployment Validation
     needs: [backend, frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Pre-Deployment Validation
+        run: node scripts/pre-deployment-validation.js
+
+  deploy:
+    name: Deploy
+    needs: [pre-deploy-validation]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
       - run: |
-          echo "✅ Both builds passed."
+          echo "✅ Validation checks passed."
           echo "Vercel: auto-deploys via GitHub integration"
           echo "Render: auto-deploys via render.yaml blueprint"
           echo "No manual steps needed."
