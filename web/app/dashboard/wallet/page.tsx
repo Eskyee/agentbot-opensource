@@ -21,12 +21,25 @@ interface WalletData {
   }
 }
 
+interface Session {
+  id: string
+  userAddress: string
+  deposit: string
+  spent: string
+  remaining: string
+  vouchers: unknown[]
+  status: 'active' | 'settling' | 'closed'
+  createdAt: number
+}
+
 export default function WalletPage() {
   const { data: session, status } = useCustomSession()
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(true)
   const [connected, setConnected] = useState(false)
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
+  const [mppSession, setMppSession] = useState<Session | null>(null)
+  const [sessionLoading, setSessionLoading] = useState(false)
 
   // Check for stored wallet address on mount
   useEffect(() => {
@@ -58,6 +71,63 @@ export default function WalletPage() {
     }
     fetchWallet()
   }, [walletAddress])
+
+  // Fetch active session
+  useEffect(() => {
+    if (!walletAddress) return
+
+    async function fetchSession() {
+      try {
+        const res = await fetch(`/api/wallet/sessions?address=${walletAddress}`)
+        const data = await res.json()
+        if (data.sessions?.length > 0) {
+          const active = data.sessions.find((s: Session) => s.status === 'active')
+          setMppSession(active || null)
+        }
+      } catch (err) {
+        console.error('Session fetch error:', err)
+      }
+    }
+    fetchSession()
+  }, [walletAddress])
+
+  // Open session
+  async function openSession() {
+    if (!walletAddress) return
+    setSessionLoading(true)
+    try {
+      const res = await fetch('/api/wallet/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: walletAddress, deposit: '10.00' }),
+      })
+      const data = await res.json()
+      if (data.session) setMppSession(data.session)
+    } catch (err) {
+      console.error('Open session error:', err)
+    } finally {
+      setSessionLoading(false)
+    }
+  }
+
+  // Close session
+  async function closeMppSession() {
+    if (!mppSession) return
+    setSessionLoading(true)
+    try {
+      const res = await fetch(`/api/wallet/sessions?sessionId=${mppSession.id}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+      if (data.success) {
+        setMppSession(null)
+      }
+    } catch (err) {
+      console.error('Close session error:', err)
+    } finally {
+      setSessionLoading(false)
+    }
+  }
 
   // Connect wallet — for now, prompt for address
   // Post-launch: integrate passkey flow
@@ -197,6 +267,57 @@ export default function WalletPage() {
                   </div>
                 </>
               ) : null}
+            </div>
+
+            {/* Payment Session */}
+            <div className="border border-zinc-800 p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Payment Session</span>
+                {mppSession && (
+                  <span className="text-[10px] uppercase tracking-widest text-emerald-500">ACTIVE</span>
+                )}
+              </div>
+              {mppSession ? (
+                <>
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Deposited</span>
+                      <span className="text-lg font-bold tracking-tighter">${mppSession.deposit}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Spent</span>
+                      <span className="text-lg font-bold tracking-tighter text-red-400">${mppSession.spent}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Remaining</span>
+                      <span className="text-lg font-bold tracking-tighter text-emerald-400">${mppSession.remaining}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-sm border-t border-zinc-800 pt-4">
+                    <span className="text-zinc-500">Pending vouchers: {mppSession.vouchers.length}</span>
+                    <button
+                      onClick={closeMppSession}
+                      disabled={sessionLoading}
+                      className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-red-400 transition-colors disabled:opacity-50"
+                    >
+                      {sessionLoading ? 'Closing...' : 'Close Session'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-zinc-500 text-sm mb-4">
+                    Open a payment session for off-chain agent billing. Sub-100ms per call, no gas fees.
+                  </p>
+                  <button
+                    onClick={openSession}
+                    disabled={sessionLoading}
+                    className="w-full border border-zinc-800 p-3 text-[10px] uppercase tracking-widest hover:border-zinc-600 transition-colors disabled:opacity-50"
+                  >
+                    {sessionLoading ? 'Opening...' : 'Open Session ($10.00)'}
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Actions */}
