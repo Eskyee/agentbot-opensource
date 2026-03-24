@@ -32,7 +32,12 @@ const TOP_UP_OPTIONS = [
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Return a URL to login first, then redirect back
+    const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
+    return NextResponse.json(
+      { error: 'Please sign in to top up your wallet', loginUrl: `${origin}/signup` },
+      { status: 401 }
+    )
   }
 
   const amountParam = request.nextUrl.searchParams.get('amount')

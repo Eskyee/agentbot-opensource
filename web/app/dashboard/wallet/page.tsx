@@ -45,6 +45,8 @@ export default function WalletPage() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null)
   const [mppSession, setMppSession] = useState<Session | null>(null)
   const [sessionLoading, setSessionLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [topUpLoading, setTopUpLoading] = useState<number | null>(null)
 
   // Check for stored wallet address on mount
   useEffect(() => {
@@ -346,17 +348,26 @@ export default function WalletPage() {
                     <button
                       key={amt}
                       onClick={async () => {
+                        if (topUpLoading) return
+                        setTopUpLoading(amt)
                         try {
                           const res = await fetch(`/api/wallet/top-up?amount=${amt * 100}`)
                           const data = await res.json()
-                          if (data.url) window.location.href = data.url
+                          if (data.url) {
+                            window.location.href = data.url
+                          } else if (data.error) {
+                            alert(`Top-up error: ${data.error}`)
+                            setTopUpLoading(null)
+                          }
                         } catch (err) {
                           console.error('Top-up error:', err)
+                          setTopUpLoading(null)
                         }
                       }}
-                      className="border border-zinc-700 p-2 text-sm font-mono hover:border-zinc-500 transition-colors"
+                      disabled={topUpLoading === amt}
+                      className="border border-zinc-700 p-2 text-sm font-mono hover:border-zinc-500 transition-colors disabled:opacity-50"
                     >
-                      ${amt}
+                      {topUpLoading === amt ? '...' : `$${amt}`}
                     </button>
                   ))}
                 </div>
@@ -364,13 +375,18 @@ export default function WalletPage() {
               <div className="border border-zinc-800 p-4">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Direct Transfer</span>
                 <p className="text-zinc-500 text-xs mb-3">
-                  Send pathUSD directly to your wallet address.
+                  Send USDC directly to your Tempo wallet address.
                 </p>
                 <button
-                  onClick={() => wallet && navigator.clipboard.writeText(wallet.address)}
+                  onClick={() => {
+                    if (!wallet) return
+                    navigator.clipboard.writeText(wallet.address)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  }}
                   className="w-full border border-zinc-700 p-2 text-[10px] uppercase tracking-widest hover:border-zinc-500 transition-colors"
                 >
-                  Copy Address
+                  {copied ? '✓ COPIED' : 'Copy Address'}
                 </button>
               </div>
             </div>
@@ -378,39 +394,39 @@ export default function WalletPage() {
             {/* Recent Activity */}
             <div>
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">Recent Activity</span>
-              <div className="border border-zinc-800 divide-y divide-zinc-800 mt-2">
-                <div className="p-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-zinc-300">Agent call (generate-text)</div>
-                    <div className="text-[10px] text-zinc-600 mt-1">2 hours ago</div>
-                  </div>
-                  <span className="text-sm font-mono text-red-400">-$0.01</span>
-                </div>
-                <div className="p-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-zinc-300">Top-up (card → pathUSD)</div>
-                    <div className="text-[10px] text-zinc-600 mt-1">Yesterday</div>
-                  </div>
-                  <span className="text-sm font-mono text-emerald-400">+$10.00</span>
-                </div>
-                <div className="p-4 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-zinc-300">Agent call (tts)</div>
-                    <div className="text-[10px] text-zinc-600 mt-1">Yesterday</div>
-                  </div>
-                  <span className="text-sm font-mono text-red-400">-$0.03</span>
+              <div className="border border-zinc-800 p-6 mt-2">
+                <div className="text-center">
+                  <p className="text-zinc-500 text-sm mb-3">
+                    Transaction history is available on Tempo Explorer.
+                  </p>
+                  {wallet && (
+                    <a
+                      href={`https://explore${wallet.testnet ? '.testnet' : ''}.tempo.xyz/address/${wallet.address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block border border-zinc-800 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
+                    >
+                      View Transactions on Explorer →
+                    </a>
+                  )}
                 </div>
               </div>
-              {wallet && (
-                <div className="mt-2 text-center">
-                  <a
-                    href={`https://explore${wallet.testnet ? '.testnet' : ''}.tempo.xyz/address/${wallet.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400"
-                  >
-                    View on Tempo Explorer →
-                  </a>
+              {mppSession && mppSession.vouchers.length > 0 && (
+                <div className="mt-4">
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Session Activity</span>
+                  <div className="border border-zinc-800 divide-y divide-zinc-800 mt-2">
+                    {mppSession.vouchers.map((v: any, i: number) => (
+                      <div key={i} className="p-4 flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-zinc-300">Agent call ({v.plugin})</div>
+                          <div className="text-[10px] text-zinc-600 mt-1">
+                            {new Date(v.timestamp).toLocaleString()}
+                          </div>
+                        </div>
+                        <span className="text-sm font-mono text-red-400">-${v.amount}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
