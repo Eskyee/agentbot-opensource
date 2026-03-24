@@ -2,24 +2,8 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-
-const navItems = [
-  { icon: '📊', label: 'Dashboard', href: '/dashboard' },
-  { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
-  { icon: '🎨', label: 'Personality', href: '/dashboard/personality' },
-  { icon: '🔧', label: 'Skills', href: '/dashboard/skills' },
-  { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
-  { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
-  { icon: '📁', label: 'Files', href: '/dashboard/files' },
-  { icon: '📆', label: 'Calendar', href: '/dashboard/calendar' },
-  { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
-  { icon: '✅', label: 'Verify', href: '/dashboard/verify' },
-  { icon: '🎛️', label: 'DJ Stream', href: '/dashboard/dj-stream' },
-  { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
-  { icon: '💳', label: 'Billing', href: '/billing' },
-  { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },
-  { icon: '⚙️', label: 'Settings', href: '/settings' },
-]
+import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 
 function CalendarPageContent() {
   const searchParams = useSearchParams()
@@ -102,41 +86,52 @@ function CalendarPageContent() {
     })
   }
 
-  return (
-    <div className="flex h-screen bg-black text-white">
-      <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
-        <div className="p-4 border-b border-zinc-800">
-          <h1 className="text-xl font-bold">Agentbot</h1>
-        </div>
-        <nav className="flex-1 p-4">
-          <div className="space-y-1">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  item.href === '/dashboard/calendar'
-                    ? 'bg-zinc-700 text-white'
-                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                }`}
-              >
-                <span>{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </a>
-            ))}
-          </div>
-        </nav>
-      </aside>
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-      <main className="flex-1 overflow-y-auto p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold">Calendar</h1>
+  return (
+    <div className="flex min-h-screen bg-black">
+      <DashboardSidebar
+        userName="User"
+        plan="Underground"
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
+
+      <div className="flex-1 flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold uppercase tracking-tighter">◌ Calendar</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <a href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors">
+              Dashboard
+            </a>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-4xl mx-auto">
+            <Breadcrumbs />
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Google Calendar</span>
+                <h1 className="text-3xl font-bold tracking-tighter uppercase mt-1">Calendar</h1>
+              </div>
             {!connected ? (
               <button
                 onClick={connectCalendar}
                 disabled={loading}
-                className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-zinc-200 disabled:opacity-50"
+                className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:opacity-50 transition-colors"
               >
                 {loading ? 'Connecting...' : 'Connect Google Calendar'}
               </button>
@@ -144,7 +139,7 @@ function CalendarPageContent() {
               <button
                 onClick={fetchEvents}
                 disabled={loading}
-                className="bg-zinc-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-zinc-700 disabled:opacity-50"
+                className="border border-zinc-800 px-4 py-2 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 disabled:opacity-50 transition-colors"
               >
                 {loading ? 'Loading...' : 'Refresh'}
               </button>
@@ -235,7 +230,8 @@ function CalendarPageContent() {
             </div>
           )}
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
