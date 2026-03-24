@@ -10,16 +10,20 @@ interface WalletData {
   chain: string
   chainId: number
   testnet: boolean
-  feeToken: {
+  totalUsd: string
+  primaryToken: {
     address: string
+    name: string
+    symbol: string
+    decimals: number
     balance: string
-    balanceRaw: string
-  }
-  pathUsd: {
+  } | null
+  allTokens: {
     address: string
+    name: string
+    symbol: string
     balance: string
-    balanceRaw: string
-  }
+  }[]
 }
 
 interface Session {
@@ -245,10 +249,10 @@ export default function WalletPage() {
                     </div>
                   </div>
                   <div className="text-5xl font-bold tracking-tighter mb-1">
-                    ${parseFloat(wallet.pathUsd.balance).toFixed(2)}
+                    ${parseFloat(wallet.totalUsd).toFixed(2)}
                   </div>
                   <div className="text-zinc-500 text-sm font-mono mb-6">
-                    pathUSD
+                    {wallet.primaryToken?.symbol || 'USD'} {wallet.allTokens.length > 1 ? `(+${wallet.allTokens.length - 1} more)` : ''}
                   </div>
                   <div className="border-t border-zinc-800 pt-4">
                     <div className="flex items-center justify-between text-sm">
@@ -263,15 +267,20 @@ export default function WalletPage() {
                       </a>
                     </div>
                     <div className="flex items-center justify-between text-sm mt-2">
-                      <span className="text-zinc-500">Fee Token</span>
-                      <span className="font-mono text-zinc-300">
-                        {parseFloat(wallet.feeToken.balance).toFixed(2)} USD
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm mt-2">
                       <span className="text-zinc-500">Network</span>
                       <span className="font-mono text-zinc-300">{wallet.chain}</span>
                     </div>
+                    {wallet.allTokens.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-zinc-800">
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Tokens</span>
+                        {wallet.allTokens.map((token) => (
+                          <div key={token.address} className="flex items-center justify-between text-sm mt-1">
+                            <span className="text-zinc-500">{token.symbol}</span>
+                            <span className="font-mono text-zinc-300">{parseFloat(token.balance).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </>
               ) : null}
