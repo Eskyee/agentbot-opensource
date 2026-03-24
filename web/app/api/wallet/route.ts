@@ -21,12 +21,19 @@ const client = createPublicClient({
   transport: http(rpcUrl),
 })
 
-// Known stablecoin addresses on Tempo
+// All known tokens on Tempo (from official tokenlist)
 const KNOWN_TOKENS = {
   pathUSD: '0x20c0000000000000000000000000000000000000' as Address,
   alphaUSD: '0x20c0000000000000000000000000000000000001' as Address,
   betaUSD: '0x20c0000000000000000000000000000000000002' as Address,
   thetaUSD: '0x20c0000000000000000000000000000000000003' as Address,
+  'USDC.e': '0x20c000000000000000000000b9537d11c60e8b50' as Address,
+  'EURC.e': '0x20c0000000000000000000001621e21f71cf12fb' as Address,
+  USDT0: '0x20c00000000000000000000014f22ca97301eb73' as Address,
+  frxUSD: '0x20c0000000000000000000003554d28269e0f3c2' as Address,
+  cUSD: '0x20c0000000000000000000000520792dcccccccc' as Address,
+  stcUSD: '0x20c0000000000000000000008ee4fcff88888888' as Address,
+  GUSD: '0x20c0000000000000000000005c0bac7cef389a11' as Address,
 }
 
 // ERC20 ABI for balance and metadata
