@@ -62,6 +62,7 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.svg',
   },
   other: {
+    'google-site-verification': 'zCtxfWmpS5bIT2JSGipE04GN85VYLaUEb4Xkkcb-ZCQ',
     'talentapp:project_verification': '02b6e4586b25009b3b24cd6f9e0d35e036960b2f0c037ccfefe8cc9e83e6c5c88a85efdeb3f7f4e97f7003d6b4e103e8858f0e5fe03c8c6a2207514f1b6449ff',
     'base:app_id': '6951feb4c63ad876c90817aa',
   },
