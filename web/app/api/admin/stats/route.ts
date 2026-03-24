@@ -3,8 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys';
 
-const BACKEND_API_URL = getBackendApiUrl();
-
 function getAdminEmails(): string[] {
   const adminEmails = process.env.ADMIN_EMAILS;
   if (!adminEmails) return [];
@@ -25,6 +23,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const BACKEND_API_URL = getBackendApiUrl();
     const INTERNAL_API_KEY = getInternalApiKey();
 
     const response = await fetch(`${BACKEND_API_URL}/api/openclaw/instances`, {

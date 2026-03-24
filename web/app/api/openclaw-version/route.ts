@@ -4,9 +4,9 @@ import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-const BACKEND_API_URL = getBackendApiUrl()
 
 export async function GET() {
+  const BACKEND_API_URL = getBackendApiUrl()
   try {
     const INTERNAL_API_KEY = getInternalApiKey()
     const response = await fetch(`${BACKEND_API_URL}/api/openclaw/version`, {

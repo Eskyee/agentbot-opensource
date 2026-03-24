@@ -3,12 +3,12 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { getInternalApiKey, getBackendApiUrl } from '../../lib/api-keys'
 
-const BACKEND_API_URL = getBackendApiUrl()
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
+  const BACKEND_API_URL = getBackendApiUrl()
   const INTERNAL_API_KEY = getInternalApiKey()
   const { userId } = await params
   

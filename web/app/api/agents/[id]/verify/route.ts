@@ -4,8 +4,6 @@ import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const API_URL = getBackendApiUrl()
-
 // Supported verification types
 type VerificationType = 'eas' | 'coinbase' | 'ens' | 'webauthn'
 
@@ -31,6 +29,7 @@ export async function GET(
     }
 
     const { id: agentId } = await params
+    const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
 
     // Fetch current verification status from backend
@@ -71,6 +70,7 @@ export async function POST(
     }
 
     const { id: agentId } = await params
+    const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
     const body: VerifyRequestBody = await request.json()
     const { verificationType, attestationUid, walletAddress, signature } = body
@@ -230,6 +230,7 @@ export async function DELETE(
     }
 
     const { id: agentId } = await params
+    const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
 
     // Remove verification from agent

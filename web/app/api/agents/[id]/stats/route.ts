@@ -4,8 +4,6 @@ import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const BACKEND_API_URL = getBackendApiUrl()
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -26,6 +24,7 @@ export async function GET(
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
+    const BACKEND_API_URL = getBackendApiUrl()
     const INTERNAL_API_KEY = getInternalApiKey()
 
     const response = await fetch(`${BACKEND_API_URL}/api/openclaw/instances/${agentId}/stats`, {

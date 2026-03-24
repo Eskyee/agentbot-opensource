@@ -4,12 +4,12 @@ import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const API_URL = getBackendApiUrl()
-
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const API_URL = getBackendApiUrl()
+  const API_KEY = getInternalApiKey()
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {

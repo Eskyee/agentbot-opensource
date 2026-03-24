@@ -3,12 +3,11 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const BACKEND_API_URL = getBackendApiUrl()
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
+  const BACKEND_API_URL = getBackendApiUrl()
   const { userId } = await params
   const session = await getServerSession(authOptions)
   if (!session?.user?.id || session.user.id !== userId) {

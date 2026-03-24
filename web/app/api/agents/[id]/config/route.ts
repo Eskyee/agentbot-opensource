@@ -4,8 +4,6 @@ import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
-const API_URL = getBackendApiUrl()
-
 /**
  * Verify the authenticated user owns the agent. Returns null if unauthorized.
  */
@@ -30,6 +28,7 @@ export async function GET(
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
+    const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
     const response = await fetch(`${API_URL}/api/agents/${agentId}/config`, {
       headers: {
@@ -75,6 +74,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
+    const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
     const body = await request.json()
 
