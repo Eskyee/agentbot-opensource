@@ -355,6 +355,9 @@ export default function WalletPage() {
                           const data = await res.json()
                           if (data.url) {
                             window.location.href = data.url
+                          } else if (res.status === 401) {
+                            // Not logged in — redirect to signup
+                            window.location.href = data.loginUrl || '/signup'
                           } else if (data.error) {
                             alert(`Top-up error: ${data.error}`)
                             setTopUpLoading(null)
