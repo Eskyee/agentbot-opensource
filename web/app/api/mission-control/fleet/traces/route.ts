@@ -20,9 +20,11 @@ async function fetchSoulThoughts(url: string) {
 }
 
 export async function GET() {
+  // Require authentication
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Return empty traces for unauthenticated users instead of error
+    return NextResponse.json([])
   }
 
   const souls = await Promise.all(SOUL_URLS.map(fetchSoulThoughts));

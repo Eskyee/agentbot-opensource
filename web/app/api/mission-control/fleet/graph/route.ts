@@ -22,9 +22,18 @@ async function fetchSoulNode(url: string) {
 }
 
 export async function GET() {
+  // Require authentication
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Return empty data for unauthenticated users instead of error
+    return NextResponse.json({
+      nodes: [
+        { id: 'atlas', name: 'Atlas', role: 'orchestrator', status: 'offline', x: 400, y: 300, load: 0, memory: 0 },
+      ],
+      edges: [],
+      timestamp: new Date().toISOString(),
+      source: 'unauthenticated',
+    })
   }
 
   // Fetch all known soul nodes in parallel
