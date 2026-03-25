@@ -24,6 +24,19 @@ import { prisma } from '@/app/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
+    // Read body once at the top
+    const body = await request.json()
+    const {
+      telegramToken,
+      telegramUserId,
+      whatsappToken,
+      discordBotToken,
+      aiProvider,
+      apiKey,
+      plan,
+      email: bodyEmail,
+    } = body
+
     // 1. Require an authenticated session
     let session = await getServerSession(authOptions)
     const adminEmails = (process.env.ADMIN_EMAILS || '')
@@ -31,36 +44,30 @@ export async function POST(request: NextRequest) {
       .map(e => e.trim().toLowerCase())
       .filter(Boolean)
 
-    // Fallback: if session is missing, check request body email for admin bypass
-    if (!session?.user?.id || !session.user.email) {
-      const bodyClone = await request.clone().json().catch(() => ({}))
-      const bodyEmail = (bodyClone.email || '').toLowerCase()
-      if (bodyEmail && adminEmails.includes(bodyEmail)) {
-        // Admin user with missing session — allow with synthetic session
-        session = { user: { id: 'admin', email: bodyEmail, isAdmin: true } } as any
-        console.log(`[Provision] Admin fallback for ${bodyEmail} — session was missing`)
-      } else {
-        return NextResponse.json({
-          success: false,
-          error: 'Authentication required',
-        }, { status: 401 })
-      }
+    // Admin check — use body email if session is missing or email differs
+    let isAdmin = false
+    const sessionEmail = (session?.user?.email || '').toLowerCase()
+    const emailToCheck = sessionEmail || (bodyEmail || '').toLowerCase()
+    if (emailToCheck && adminEmails.includes(emailToCheck)) {
+      isAdmin = true
     }
 
-    const userEmail = session!.user!.email as string
-    const userId = session!.user!.id as string
-    let isAdmin = adminEmails.includes(userEmail.toLowerCase())
-
-    // Also check body email as fallback (in case session email differs from body)
-    if (!isAdmin) {
-      try {
-        const bodyEmail = (await request.clone().json().catch(() => ({}))).email?.toLowerCase()
-        if (bodyEmail && adminEmails.includes(bodyEmail)) {
-          isAdmin = true
-          console.log(`[Provision] Admin detected via body email: ${bodyEmail}`)
-        }
-      } catch {}
+    // If no session AND not admin, reject
+    if (!session?.user?.id && !isAdmin) {
+      return NextResponse.json({
+        success: false,
+        error: 'Authentication required',
+      }, { status: 401 })
     }
+
+    // Synthetic session for admin without session
+    if (!session?.user?.id && isAdmin) {
+      session = { user: { id: 'admin', email: emailToCheck, isAdmin: true } } as any
+      console.log(`[Provision] Admin fallback for ${emailToCheck}`)
+    }
+
+    const userEmail = (session!.user!.email || emailToCheck) as string
+    const userId = (session!.user!.id || 'admin') as string
 
     // 3. DB subscription check (mirrors /api/agents/provision pattern)
     if (!isAdmin) {
@@ -73,17 +80,6 @@ export async function POST(request: NextRequest) {
         }, { status: 402 })
       }
     }
-
-    const body = await request.json()
-    const {
-      telegramToken,
-      telegramUserId,
-      whatsappToken,
-      discordBotToken,
-      aiProvider,
-      apiKey,
-      plan,
-    } = body
 
     if (!telegramToken && !whatsappToken && !discordBotToken) {
       return NextResponse.json({
