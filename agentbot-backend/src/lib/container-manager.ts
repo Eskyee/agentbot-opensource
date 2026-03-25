@@ -46,8 +46,9 @@ export type PlanType = 'solo' | 'collective' | 'label' | 'network';
 function getHeaders(): Record<string, string> {
   const apiKey = process.env.RENDER_API_KEY;
   if (!apiKey) throw new Error('RENDER_API_KEY not configured');
+  console.log(`[ContainerManager/Render] API key: ${apiKey.slice(0,4)}...${apiKey.slice(-4)} (${apiKey.length} chars)`);
   return {
-    'Authorization': `Bearer ${apiKey}`,
+    'Authorization': `Bearer ${apiKey.trim()}`,
     'Content-Type': 'application/json',
   };
 }
@@ -110,17 +111,20 @@ export async function createContainer(
     envVars,
   };
 
+  const requestBody = JSON.stringify(body);
+  console.log(`[ContainerManager/Render] Creating service for ${userId}, body: ${requestBody}`);
+
   const res = await fetch(`${RENDER_API}/services`, {
     method: 'POST',
     headers: getHeaders(),
-    body: JSON.stringify(body),
+    body: requestBody,
     signal: AbortSignal.timeout(30000),
   });
 
   if (!res.ok) {
     const err = await res.text();
     console.error(`[ContainerManager/Render] FAILED: ${res.status} — ${err}`);
-    console.error(`[ContainerManager/Render] Request body:`, JSON.stringify(body, null, 2));
+    console.error(`[ContainerManager/Render] Request body that failed:`, requestBody);
     throw new Error(`Render API error ${res.status}: ${err}`);
   }
 
