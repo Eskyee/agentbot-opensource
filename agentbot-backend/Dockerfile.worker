@@ -1,13 +1,18 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 RUN apk add --no-cache dumb-init curl
 
 COPY package*.json ./
-RUN npm install --include=dev
+# Production only — exclude devDependencies
+RUN npm ci --omit=dev --ignore-scripts || npm install --omit=dev --ignore-scripts
 
 COPY . .
 RUN npm run build
 
+USER node
+
+# Use dumb-init as PID 1 for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/worker.js"]
