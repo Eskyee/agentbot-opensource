@@ -379,7 +379,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black font-mono">
+    <div className="flex min-h-screen bg-black font-mono pt-14">
       <DashboardSidebar
         userName={userName}
         credits={credits}
@@ -390,7 +390,7 @@ function DashboardContent() {
 
       <div className="flex-1 flex flex-col">
         {/* Top Navbar */}
-        <header className="sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+        <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
