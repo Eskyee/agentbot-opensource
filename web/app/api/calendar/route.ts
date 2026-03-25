@@ -1,31 +1,54 @@
+/**
+ * Google Calendar API — SECURED
+ *
+ * All routes require NextAuth session. userId is derived from session,
+ * NEVER from client input. OAuth state is HMAC-signed to prevent forgery.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/lib/auth';
+import crypto from 'crypto';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://agentbot.raveculture.xyz/api/calendar/callback';
+const OAUTH_STATE_SECRET = process.env.CALENDAR_OAUTH_SECRET || process.env.NEXTAUTH_SECRET || 'calendar-state-fallback';
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  description?: string;
-  start: string;
-  end: string;
-  location?: string;
-  attendees?: string[];
-  reminders?: { method: string; minutes: number }[];
-  recurring?: string;
-  colorId?: string;
-}
-
-interface UserCalendar {
+// In-memory token store — keyed by authenticated user ID from session
+// In production: persist to DB with encryption
+const userCalendars = new Map<string, {
   userId: string;
   accessToken: string;
   refreshToken: string;
   calendarId: string;
   timezone: string;
+}>();
+
+// Export for callback route to access
+export { userCalendars };
+
+// --- Helpers ---
+
+function signOAuthState(userId: string): string {
+  const payload = Buffer.from(JSON.stringify({ userId, ts: Date.now() })).toString('base64url');
+  const sig = crypto.createHmac('sha256', OAUTH_STATE_SECRET).update(payload).digest('base64url');
+  return `${payload}.${sig}`;
 }
 
-const userCalendars = new Map<string, UserCalendar>();
+export function verifyOAuthState(state: string): { userId: string; ts: number } | null {
+  try {
+    const [payload, sig] = state.split('.');
+    const expected = crypto.createHmac('sha256', OAUTH_STATE_SECRET).update(payload).digest('base64url');
+    if (sig !== expected) return null;
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
+    // State expires after 10 minutes
+    if (Date.now() - data.ts > 10 * 60 * 1000) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 async function callGoogleCalendarApi(accessToken: string, endpoint: string, method = 'GET', body?: object) {
   const response = await fetch(`https://www.googleapis.com/calendar/v3${endpoint}`, {
@@ -39,53 +62,44 @@ async function callGoogleCalendarApi(accessToken: string, endpoint: string, meth
   return response.json();
 }
 
+function generateAvailableSlots(date: string, busySlots: { start: string; end: string }[]) {
+  const slots = [];
+  for (let hour = 9; hour < 23; hour++) {
+    const slotStart = `${date}T${hour.toString().padStart(2, '0')}:00:00`;
+    const slotEnd = `${date}T${(hour + 1).toString().padStart(2, '0')}:00:00`;
+    const isBusy = busySlots.some(busy => slotStart < busy.end && slotEnd > busy.start);
+    if (!isBusy) slots.push({ start: slotStart, end: slotEnd });
+  }
+  return slots;
+}
+
+// --- Routes ---
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
-  const userId = searchParams.get('userId');
-  const code = searchParams.get('code');
 
+  // AUTH: Start OAuth flow — requires session
   if (action === 'auth') {
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events')}&access_type=offline&prompt=consent`;
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // HMAC-signed state binds OAuth callback to this user
+    const state = signOAuthState(session.user.id);
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events')}&access_type=offline&prompt=consent&state=${encodeURIComponent(state)}`;
     return NextResponse.redirect(authUrl);
   }
 
-  if (action === 'callback' && code && userId) {
-    try {
-      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: GOOGLE_CLIENT_ID || '',
-          client_secret: GOOGLE_CLIENT_SECRET || '',
-          code,
-          grant_type: 'authorization_code',
-          redirect_uri: GOOGLE_REDIRECT_URI
-        })
-      });
-
-      const tokens = await tokenResponse.json();
-
-      const calendarData = await callGoogleCalendarApi(tokens.access_token, '/users/me/calendarList/primary');
-      const settings = await callGoogleCalendarApi(tokens.access_token, '/users/me/settings/timezone');
-
-      userCalendars.set(userId, {
-        userId,
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
-        calendarId: calendarData.id || 'primary',
-        timezone: settings.value || 'UTC'
-      });
-
-      return NextResponse.redirect(`/dashboard/calendar?connected=true`);
-    } catch (error) {
-      console.error('Calendar auth error:', error);
-      return NextResponse.redirect('/dashboard/calendar?error=auth_failed');
+  // LIST events — requires session, uses session userId
+  if (action === 'list') {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-  }
 
-  if (action === 'list' && userId) {
-    const calendar = userCalendars.get(userId);
+    const calendar = userCalendars.get(session.user.id);
     if (!calendar) {
       return NextResponse.json({ error: 'Calendar not connected' }, { status: 401 });
     }
@@ -98,14 +112,17 @@ export async function GET(request: NextRequest) {
       `/calendars/${calendar.calendarId}/events?timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`
     );
 
-    return NextResponse.json({
-      events: events.items || [],
-      timezone: calendar.timezone
-    });
+    return NextResponse.json({ events: events.items || [], timezone: calendar.timezone });
   }
 
-  if (action === 'availability' && userId) {
-    const calendar = userCalendars.get(userId);
+  // AVAILABILITY — requires session
+  if (action === 'availability') {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const calendar = userCalendars.get(session.user.id);
     if (!calendar) {
       return NextResponse.json({ error: 'Calendar not connected' }, { status: 401 });
     }
@@ -125,46 +142,30 @@ export async function GET(request: NextRequest) {
     }));
 
     const availableSlots = generateAvailableSlots(date, busySlots);
-
     return NextResponse.json({ availableSlots, busySlots, date });
   }
 
-  return NextResponse.json({ 
+  return NextResponse.json({
     message: 'Calendar API',
-    actions: ['auth', 'callback', 'list', 'availability']
+    actions: ['auth', 'list', 'availability']
   });
 }
 
-function generateAvailableSlots(date: string, busySlots: { start: string; end: string }[]) {
-  const slots = [];
-  const startHour = 9;
-  const endHour = 23;
-  const slotDuration = 60;
-
-  for (let hour = startHour; hour < endHour; hour++) {
-    const slotStart = `${date}T${hour.toString().padStart(2, '0')}:00:00`;
-    const slotEnd = `${date}T${(hour + 1).toString().padStart(2, '0')}:00:00`;
-
-    const isBusy = busySlots.some(busy => {
-      return slotStart < busy.end && slotEnd > busy.start;
-    });
-
-    if (!isBusy) {
-      slots.push({ start: slotStart, end: slotEnd });
-    }
+export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  return slots;
-}
-
-export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, userId, ...data } = body;
+    const { action, ...data } = body;
+    const userId = session.user.id; // ALWAYS from session, never from body
     const calendar = userCalendars.get(userId);
 
-    if (action === 'connect' && !calendar) {
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events')}&access_type=offline&prompt=consent&state=${userId}`;
+    if (action === 'connect') {
+      const state = signOAuthState(userId);
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events')}&access_type=offline&prompt=consent&state=${encodeURIComponent(state)}`;
       return NextResponse.json({ authUrl });
     }
 
@@ -173,32 +174,20 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'create-event') {
-      const event: CalendarEvent = {
-        id: '',
-        title: data.title,
-        description: data.description,
-        start: data.start,
-        end: data.end,
-        location: data.location,
-        attendees: data.attendees,
-        reminders: [{ method: 'email', minutes: 60 }, { method: 'popup', minutes: 15 }]
-      };
-
       const created = await callGoogleCalendarApi(
         calendar.accessToken,
         `/calendars/${calendar.calendarId}/events`,
         'POST',
         {
-          summary: event.title,
-          description: event.description,
-          start: { dateTime: event.start, timeZone: calendar.timezone },
-          end: { dateTime: event.end, timeZone: calendar.timezone },
-          location: event.location,
-          attendees: event.attendees?.map(email => ({ email })),
-          reminders: event.reminders
+          summary: data.title,
+          description: data.description,
+          start: { dateTime: data.start, timeZone: calendar.timezone },
+          end: { dateTime: data.end, timeZone: calendar.timezone },
+          location: data.location,
+          attendees: data.attendees?.map((email: string) => ({ email })),
+          reminders: [{ method: 'email', minutes: 60 }, { method: 'popup', minutes: 15 }]
         }
       );
-
       return NextResponse.json({ success: true, eventId: created.id, event: created });
     }
 
@@ -215,7 +204,6 @@ export async function POST(request: NextRequest) {
           location: data.location
         }
       );
-
       return NextResponse.json({ success: true, event: updated });
     }
 
@@ -225,7 +213,6 @@ export async function POST(request: NextRequest) {
         `/calendars/${calendar.calendarId}/events/${data.eventId}`,
         'DELETE'
       );
-
       return NextResponse.json({ success: true });
     }
 
@@ -236,7 +223,6 @@ export async function POST(request: NextRequest) {
         'POST',
         { text: data.text }
       );
-
       return NextResponse.json({ success: true, eventId: created.id });
     }
 

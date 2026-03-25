@@ -1,24 +1,21 @@
 /**
- * Google Calendar OAuth Callback
- * 
- * Google redirects here after user authorizes.
- * Exchanges the auth code for tokens and stores them.
+ * Google Calendar OAuth Callback — SECURED
+ *
+ * Verifies HMAC-signed state parameter to bind callback to authenticated user.
+ * Uses shared token store from main calendar route.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { userCalendars, verifyOAuthState } from '../route'
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://agentbot.raveculture.xyz/api/calendar/callback'
 
-// In-memory store (shared with main calendar route)
-// In production: use Redis/Postgres
-const userCalendars = new Map<string, any>()
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
-  const state = searchParams.get('state') // userId
+  const state = searchParams.get('state')
   const error = searchParams.get('error')
 
   if (error) {
@@ -29,6 +26,20 @@ export async function GET(request: NextRequest) {
   if (!code) {
     return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=no_code')
   }
+
+  // Verify HMAC-signed state — rejects forged callbacks
+  if (!state) {
+    console.error('[Calendar Callback] Missing state parameter')
+    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=missing_state')
+  }
+
+  const stateData = verifyOAuthState(state)
+  if (!stateData) {
+    console.error('[Calendar Callback] Invalid or expired state — rejecting')
+    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=invalid_state')
+  }
+
+  const userId = stateData.userId
 
   try {
     // Exchange code for tokens
@@ -63,8 +74,7 @@ export async function GET(request: NextRequest) {
     })
     const timezoneData = await timezoneResponse.json()
 
-    // Store tokens (in production: persist to DB linked to userId)
-    const userId = state || 'default'
+    // Store tokens in shared map (keyed by verified userId from signed state)
     userCalendars.set(userId, {
       userId,
       accessToken: tokens.access_token,
@@ -75,10 +85,9 @@ export async function GET(request: NextRequest) {
 
     console.log(`[Calendar] Connected for user ${userId}: ${calendarData.summary} (${timezoneData.value})`)
 
-    // Redirect to calendar page with success
     return NextResponse.redirect(`https://agentbot.raveculture.xyz/dashboard/calendar?connected=true`)
   } catch (err) {
     console.error('[Calendar Callback] Error:', err)
-    return NextResponse.redirect(`https://agentbot.raveculture.xyz/dashboard/calendar?error=unknown`)
+    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=unknown')
   }
 }

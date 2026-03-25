@@ -10,15 +10,8 @@ function CalendarPageContent() {
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
-  const [userId, setUserId] = useState('')
 
   useEffect(() => {
-    const stored = localStorage.getItem('agentbot_instance')
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      setUserId(parsed.userId || '')
-    }
-    
     if (searchParams.get('connected') === 'true') {
       setConnected(true)
     }
@@ -27,10 +20,11 @@ function CalendarPageContent() {
   const connectCalendar = async () => {
     setLoading(true)
     try {
+      // No userId needed — API uses session auth
       const res = await fetch('/api/calendar?action=connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'connect', userId })
+        body: JSON.stringify({ action: 'connect' })
       })
       const data = await res.json()
       if (data.authUrl) {
@@ -43,25 +37,25 @@ function CalendarPageContent() {
   }
 
   const fetchEvents = useCallback(async () => {
-    if (!userId) return
     setLoading(true)
     try {
       const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString()
       const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString()
-      const res = await fetch(`/api/calendar?action=list&userId=${userId}&start=${start}&end=${end}`)
+      // No userId in URL — API derives from session
+      const res = await fetch(`/api/calendar?action=list&start=${start}&end=${end}`)
       const data = await res.json()
       setEvents(data.events || [])
     } catch (err) {
       console.error(err)
     }
     setLoading(false)
-  }, [userId, currentDate])
+  }, [currentDate])
 
   useEffect(() => {
-    if (connected && userId) {
+    if (connected) {
       fetchEvents()
     }
-  }, [connected, userId, currentDate, fetchEvents])
+  }, [connected, currentDate, fetchEvents])
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
