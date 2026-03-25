@@ -120,7 +120,7 @@ export default function MemoryPage() {
   const { data: apiMemory } = useQuery({
     queryKey: ['agent-memory'],
     queryFn: async () => {
-      const res = await fetch('/api/memory')
+      const res = await fetch('/api/memory?agentId=default')
       return res.json()
     },
     staleTime: 30_000,

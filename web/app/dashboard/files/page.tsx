@@ -142,7 +142,7 @@ export default function FilesPage() {
             {files.map((file: any, i: number) => (
               <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between">
                 <div>
-                  <div className="font-medium">{file.name}</div>
+                  <div className="font-medium">{file.filename || file.name}</div>
                   <div className="text-sm text-zinc-400">{(file.size / 1024).toFixed(2)} KB</div>
                 </div>
                 <button className="text-red-400 hover:text-red-300">Delete</button>

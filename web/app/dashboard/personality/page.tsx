@@ -31,7 +31,7 @@ export default function PersonalityPage() {
       body: JSON.stringify({
         agentId: 'default',
         key: 'personality',
-        value: JSON.stringify({ type: selected, greeting: customGreeting, expertise }),
+        memory: JSON.stringify({ type: selected, greeting: customGreeting, expertise }),
       }),
     })
     alert('Personality saved!')
