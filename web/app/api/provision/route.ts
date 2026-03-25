@@ -44,12 +44,16 @@ export async function POST(request: NextRequest) {
       .map(e => e.trim().toLowerCase())
       .filter(Boolean)
 
+    // Hardcoded admin fallback — env var encoding can break on Vercel
+    const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+    const allAdmins = [...new Set([...adminEmails, ...HARDCODED_ADMINS])]
+
     // Admin check — use body email if session is missing or email differs
     let isAdmin = false
     const sessionEmail = (session?.user?.email || '').toLowerCase()
     const emailToCheck = sessionEmail || (bodyEmail || '').toLowerCase()
-    console.log(`[Provision] sessionEmail=${sessionEmail}, bodyEmail=${bodyEmail}, adminEmails=${JSON.stringify(adminEmails)}`)
-    if (emailToCheck && adminEmails.includes(emailToCheck)) {
+    console.log(`[Provision] emailToCheck=${emailToCheck}, allAdmins=${JSON.stringify(allAdmins)}`)
+    if (emailToCheck && allAdmins.includes(emailToCheck)) {
       isAdmin = true
       console.log(`[Provision] Admin detected: ${emailToCheck}`)
     }
