@@ -718,6 +718,7 @@ app.get('/health', async (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     docker: dockerAvailable ? 'available' : 'unavailable',
     provisioning: dockerAvailable ? 'enabled' : 'disabled',
+    provider: 'render',
   });
 });
 
@@ -1067,20 +1068,32 @@ initDatabase().then(() => {
 });
 
 // Check Docker availability at startup (non-fatal — container provisioning degrades gracefully)
-const checkDocker = async () => {
+const checkProvisioning = async () => {
+  // Check Render API availability (replaces Docker check)
+  const apiKey = process.env.RENDER_API_KEY;
+  if (!apiKey) {
+    console.warn('[Provisioning] RENDER_API_KEY not set — provisioning disabled');
+    return false;
+  }
   try {
-    const { runCommand } = require('./utils');
-    await runCommand('docker', ['version', '--format', '{{.Server.Version}}'], { timeout: 5000 });
-    console.log('[Docker] Available — container provisioning enabled');
-    return true;
+    const res = await fetch('https://api.render.com/v1/services?limit=1', {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      console.log('[Provisioning] Render API available — container provisioning enabled');
+      return true;
+    }
+    console.warn(`[Provisioning] Render API returned ${res.status} — provisioning disabled`);
+    return false;
   } catch (err: any) {
-    console.warn('[Docker] Not available — container provisioning disabled. Error:', err.code || err.message);
+    console.warn('[Provisioning] Render API unreachable — provisioning disabled. Error:', err.code || err.message);
     return false;
   }
 };
 
 let dockerAvailable = false;
-checkDocker().then(available => { dockerAvailable = available; });
+checkProvisioning().then(available => { dockerAvailable = available; });
 
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
