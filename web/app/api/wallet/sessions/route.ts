@@ -9,6 +9,8 @@
  */
 
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
 import type { Address } from 'viem'
 import {
   createSession,
@@ -23,16 +25,21 @@ import {
  * GET — List sessions or get specific session
  */
 export async function GET(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(request.url)
   const address = searchParams.get('address') as Address | null
   const sessionId = searchParams.get('sessionId')
 
   if (sessionId) {
-    const session = getSession(sessionId)
-    if (!session) {
+    const sess = getSession(sessionId)
+    if (!sess) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
-    return NextResponse.json({ session })
+    return NextResponse.json({ session: sess })
   }
 
   if (!address) {
@@ -47,6 +54,11 @@ export async function GET(request: Request) {
  * POST — Create new session
  */
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { address, deposit } = body as { address: Address; deposit: string }
@@ -67,8 +79,8 @@ export async function POST(request: Request) {
       })
     }
 
-    const session = createSession(address, deposit)
-    return NextResponse.json({ session }, { status: 201 })
+    const newSession = createSession(address, deposit)
+    return NextResponse.json({ session: newSession }, { status: 201 })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to create session' },
@@ -81,6 +93,11 @@ export async function POST(request: Request) {
  * DELETE — Close session
  */
 export async function DELETE(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(request.url)
   const sessionId = searchParams.get('sessionId')
 

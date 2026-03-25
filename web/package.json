@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@account-abstraction/contracts": "^0.8.0",
-    "@account-abstraction/sdk": "^0.6.0",
     "@base-org/account": "^2.5.2",
     "@base-org/account-ui": "^1.0.1",
     "@base-ui/react": "^1.3.0",

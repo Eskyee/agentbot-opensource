@@ -13,6 +13,8 @@ import { http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { tempo, tempoTestnet } from 'viem/chains'
 import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/lib/auth'
 
 // Select chain based on env
 const chain = process.env.TEMPO_TESTNET === 'true' ? tempoTestnet : tempo
@@ -43,6 +45,12 @@ const handler = feePayerKey
 
 // Next.js App Router handler
 export async function POST(request: Request) {
+  // Require authenticated session for fee sponsorship
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   if (!handler) {
     return NextResponse.json(
       { error: 'Fee payer not configured' },
@@ -53,8 +61,13 @@ export async function POST(request: Request) {
   return handler.fetch(request)
 }
 
-// Health check
+// Health check — require auth since it reveals chain details
 export async function GET() {
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   return NextResponse.json({
     status: handler ? 'ready' : 'disabled',
     chain: chain.name,
