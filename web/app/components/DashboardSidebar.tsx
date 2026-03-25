@@ -20,6 +20,7 @@ export const navSections = [
   {
     label: 'Agents',
     items: [
+      { label: 'Team', href: '/dashboard/team', icon: '⬢' },
       { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
       { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
       { label: 'Swarms', href: '/dashboard/swarms', icon: '◇' },
