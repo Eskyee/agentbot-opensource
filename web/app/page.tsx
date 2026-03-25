@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
+import HeroSphere from '@/app/components/HeroSphere'
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -8,8 +9,13 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 py-32 md:py-44">
-        <div className="max-w-3xl">
+      <section className="relative max-w-7xl mx-auto px-6 py-32 md:py-44 overflow-hidden">
+        {/* Particle sphere — positioned on the right */}
+        <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
+          <HeroSphere />
+        </div>
+
+        <div className="relative z-10 max-w-3xl">
           <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest mb-8">
             Built for the Creative Industry
           </div>
