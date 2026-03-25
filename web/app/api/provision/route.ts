@@ -49,7 +49,18 @@ export async function POST(request: NextRequest) {
 
     const userEmail = session!.user!.email as string
     const userId = session!.user!.id as string
-    const isAdmin = adminEmails.includes(userEmail.toLowerCase())
+    let isAdmin = adminEmails.includes(userEmail.toLowerCase())
+
+    // Also check body email as fallback (in case session email differs from body)
+    if (!isAdmin) {
+      try {
+        const bodyEmail = (await request.clone().json().catch(() => ({}))).email?.toLowerCase()
+        if (bodyEmail && adminEmails.includes(bodyEmail)) {
+          isAdmin = true
+          console.log(`[Provision] Admin detected via body email: ${bodyEmail}`)
+        }
+      } catch {}
+    }
 
     // 3. DB subscription check (mirrors /api/agents/provision pattern)
     if (!isAdmin) {
