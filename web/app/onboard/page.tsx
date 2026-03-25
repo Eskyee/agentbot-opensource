@@ -34,7 +34,11 @@ function OnboardContent() {
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
   const [showConfetti, setShowConfetti] = useState(false)
 
-  // Available models (Tiered for OpenClaw) - via OpenRouter
+  // Team mode (for Collective/Label plans)
+  const [teamMode, setTeamMode] = useState<'single' | 'team'>('single')
+  const [teamTemplate, setTeamTemplate] = useState('dev_team')
+
+  // Available models
   const AVAILABLE_MODELS = [
     { id: 'openrouter/xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (Recommended)', provider: 'openrouter', description: 'Xiaomi latest model. Fast, capable, great value.', recommended: true, tier: 'free' },
     { id: 'openrouter/mistralai/mistral-7b-instruct', name: 'Mistral 7B (Free Tier)', provider: 'openrouter', description: 'Lightweight & fast. Free for all users.', tier: 'free' },
@@ -785,6 +789,73 @@ function OnboardContent() {
               {error && (
                 <div className="bg-red-500/10 border border-red-500/50 rounded-lg px-4 py-3 text-red-400">
                   {error}
+                </div>
+              )}
+              
+              {/* Team mode selector for Collective/Label */}
+              {(plan === 'collective' || plan === 'label') && (
+                <div className="border border-zinc-800 rounded-lg p-4">
+                  <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-3">
+                    Deployment Mode
+                  </label>
+                  <div className="flex gap-3 mb-4">
+                    <button
+                      onClick={() => setTeamMode('single')}
+                      className={`flex-1 py-3 text-xs uppercase tracking-widest font-bold border transition-colors ${
+                        teamMode === 'single'
+                          ? 'border-white text-white bg-white/10'
+                          : 'border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-600'
+                      }`}
+                    >
+                      Single Agent
+                    </button>
+                    <button
+                      onClick={() => setTeamMode('team')}
+                      className={`flex-1 py-3 text-xs uppercase tracking-widest font-bold border transition-colors ${
+                        teamMode === 'team'
+                          ? 'border-white text-white bg-white/10'
+                          : 'border-zinc-800 text-zinc-500 hover:text-white hover:border-zinc-600'
+                      }`}
+                    >
+                      ⬢ Team Mode
+                    </button>
+                  </div>
+                  {teamMode === 'team' && (
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
+                        Team Template
+                      </label>
+                      <select
+                        value={teamTemplate}
+                        onChange={e => setTeamTemplate(e.target.value)}
+                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-zinc-600"
+                      >
+                        <optgroup label="Developer">
+                          <option value="dev_team">Dev Team (PM + Engineer + QA)</option>
+                          <option value="devops_team">DevOps Team (SRE + Infra + Security)</option>
+                          <option value="api_team">API Team (Architect + Backend + Docs)</option>
+                        </optgroup>
+                        <optgroup label="Creator">
+                          <option value="content_team">Content Team (Manager + Writer + Editor)</option>
+                          <option value="social_media_team">Social Media Team (Strategy + Content + Engagement)</option>
+                          <option value="research_team">Research Team (Lead + Analyst + Writer)</option>
+                        </optgroup>
+                        <optgroup label="Business">
+                          <option value="legal_team">Legal Team (Advisor + Drafter + Compliance)</option>
+                          <option value="finance_team">Finance Team (Analyst + Accountant + Budget)</option>
+                          <option value="marketing_team">Marketing Team (Strategist + Copywriter + Growth)</option>
+                          <option value="sales_team">Sales Team (Manager + Qualifier + AE)</option>
+                        </optgroup>
+                        <optgroup label="Personal">
+                          <option value="personal_assistant">Personal Assistant (Scheduler + Researcher + Writer)</option>
+                          <option value="solopreneur">Solopreneur (Ops + Marketer + Support)</option>
+                        </optgroup>
+                      </select>
+                      <p className="text-xs text-zinc-600 mt-2">
+                        Each agent runs independently with shared memory. You can customize after deployment.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
               
