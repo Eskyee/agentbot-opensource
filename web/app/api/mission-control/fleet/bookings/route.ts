@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
+import { prisma } from '@/app/lib/prisma'
 
 /**
  * GET /api/mission-control/fleet/bookings
@@ -12,6 +13,34 @@ export async function GET() {
     return NextResponse.json({ bookings: [] })
   }
 
-  // TODO: Wire to real bookings DB table
-  return NextResponse.json({ bookings: [] })
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        agents: {
+          where: { status: 'pending' },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+      },
+    })
+
+    if (!user) {
+      return NextResponse.json({ bookings: [] })
+    }
+
+    // Pending agents = booking requests (agent was provisioned but container not ready yet)
+    const bookings = user.agents.map((agent) => ({
+      id: agent.id,
+      agentName: agent.name,
+      status: agent.status,
+      tier: agent.tier,
+      createdAt: agent.createdAt,
+    }))
+
+    return NextResponse.json({ bookings })
+  } catch (error) {
+    console.error('[Bookings API] Error:', error)
+    return NextResponse.json({ bookings: [] })
+  }
 }
