@@ -4,7 +4,6 @@ import { authOptions } from '@/app/lib/auth'
 
 const SOUL_URLS = [
   'https://borg-0-production.up.railway.app',
-  'https://borg-0-3-production.up.railway.app',
 ];
 
 async function fetchSoulNode(url: string) {

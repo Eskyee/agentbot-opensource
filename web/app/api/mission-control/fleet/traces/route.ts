@@ -4,7 +4,6 @@ import { authOptions } from '@/app/lib/auth'
 
 const SOUL_URLS = [
   'https://borg-0-production.up.railway.app',
-  'https://borg-0-3-production.up.railway.app',
 ];
 
 async function fetchSoulThoughts(url: string) {
@@ -12,7 +11,7 @@ async function fetchSoulThoughts(url: string) {
     const res = await fetch(`${url}/soul/status`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const status = await res.json();
-    const designation = url.includes('borg-0-3') ? 'borg-0-3' : 'borg-0';
+    const designation = 'borg-0';
     return { designation, status };
   } catch {
     return null;
