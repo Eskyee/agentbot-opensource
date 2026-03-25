@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
-import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 
 interface WalletData {
   address: string
@@ -49,7 +47,6 @@ export default function WalletPage() {
   const [sessionLoading, setSessionLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [topUpLoading, setTopUpLoading] = useState<number | null>(null)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Check for stored wallet address on mount
   useEffect(() => {
