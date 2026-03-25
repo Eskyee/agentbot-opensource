@@ -71,6 +71,12 @@ function decodeJwtHeader(token: string): any {
  */
 async function validateSecurityEventToken(token: string): Promise<any | null> {
   try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      console.warn('[RISC] Invalid JWT format');
+      return null;
+    }
+    
     const header = decodeJwtHeader(token);
     const payload = decodeJwtPayload(token);
     
@@ -86,7 +92,7 @@ async function validateSecurityEventToken(token: string): Promise<any | null> {
       return null;
     }
     
-    // Get signing keys and verify signature
+    // Get signing keys and find matching key
     const keys = await getGoogleSigningKeys();
     const key = keys.find((k: any) => k.kid === header.kid);
     
@@ -95,14 +101,64 @@ async function validateSecurityEventToken(token: string): Promise<any | null> {
       return null;
     }
     
-    // For production, verify the signature using Web Crypto API
-    // For now, we trust the token if issuer and audience are valid
-    // TODO: Full RSA signature verification
+    // Verify RS256 signature using Web Crypto API
+    if (header.alg !== 'RS256') {
+      console.warn('[RISC] Unsupported algorithm:', header.alg);
+      return null;
+    }
+    
+    const isValid = await verifyRs256Signature(parts[0] + '.' + parts[1], parts[2], key);
+    if (!isValid) {
+      console.warn('[RISC] Invalid JWT signature');
+      return null;
+    }
     
     return payload;
   } catch (error) {
     console.error('[RISC] Token validation error:', error);
     return null;
+  }
+}
+
+/**
+ * Verify RS256 JWT signature using Web Crypto API
+ */
+async function verifyRs256Signature(
+  signedContent: string,
+  signatureB64: string,
+  jwk: any
+): Promise<boolean> {
+  try {
+    // Import the RSA public key
+    const key = await crypto.subtle.importKey(
+      'jwk',
+      {
+        kty: jwk.kty,
+        n: jwk.n,
+        e: jwk.e,
+        alg: jwk.alg || 'RS256',
+        use: jwk.use || 'sig',
+      },
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+
+    // Decode the signature
+    const signature = Uint8Array.from(
+      atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')),
+      (c) => c.charCodeAt(0)
+    );
+
+    // Encode the signed content
+    const encoder = new TextEncoder();
+    const data = encoder.encode(signedContent);
+
+    // Verify
+    return await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, data);
+  } catch (error) {
+    console.error('[RISC] Signature verification error:', error);
+    return false;
   }
 }
 

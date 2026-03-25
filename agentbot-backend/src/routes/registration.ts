@@ -163,7 +163,7 @@ router.get('/installations', authenticate, async (req: Request, res: Response) =
  * POST /api/heartbeat
  * User agent pings to report status (upsert last_seen)
  */
-router.post('/heartbeat', async (req: Request, res: Response) => {
+router.post('/heartbeat', authenticate, async (req: Request, res: Response) => {
   const { userId } = req.body;
 
   if (userId && typeof userId === 'string') {
