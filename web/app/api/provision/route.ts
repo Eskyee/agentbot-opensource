@@ -47,12 +47,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const userEmail = session.user.email
+    const userEmail = session!.user!.email as string
+    const userId = session!.user!.id as string
     const isAdmin = adminEmails.includes(userEmail.toLowerCase())
 
     // 3. DB subscription check (mirrors /api/agents/provision pattern)
     if (!isAdmin) {
-      const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+      const user = await prisma.user.findUnique({ where: { id: userId } })
       if (!user || user.subscriptionStatus !== 'active') {
         return NextResponse.json({
           success: false,
@@ -80,10 +81,10 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const userId = crypto.randomBytes(8).toString('hex')
+    const agentId = crypto.randomBytes(8).toString('hex')
 
     const legacyPayload = {
-      userId,
+      userId: agentId,
       telegramToken,
       telegramUserId,
       whatsappToken,
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
             'Authorization': `Bearer ${internalKey}`,
             // Trusted user context headers (read by authenticate() middleware)
             'X-User-Email': userEmail,
-            'X-User-Id': session.user.id,
+            'X-User-Id': userId,
           },
           body: JSON.stringify(legacyPayload),
           signal: AbortSignal.timeout(15000),
@@ -139,12 +140,12 @@ export async function POST(request: NextRequest) {
         if (data.success) {
           // Fire-and-forget alert — don't block provisioning response
           import('@/app/lib/alerts').then(({ alertNewProvision }) => {
-            alertNewProvision(data.userId || userId, legacyPayload.plan || 'solo').catch(() => {})
+            alertNewProvision(data.userId || agentId, legacyPayload.plan || 'solo').catch(() => {})
           }).catch(() => {})
 
           return NextResponse.json({
             success: true,
-            userId: data.userId || userId,
+            userId: data.userId || agentId,
             subdomain: data.subdomain,
             url: data.url,
             streamKey: data.streamKey,

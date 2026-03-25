@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
-import HeroSphere from '@/app/components/HeroSphere'
+import HeroSphere from '@/app/components/MorphingHero'
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
