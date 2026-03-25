@@ -48,8 +48,10 @@ export async function POST(request: NextRequest) {
     let isAdmin = false
     const sessionEmail = (session?.user?.email || '').toLowerCase()
     const emailToCheck = sessionEmail || (bodyEmail || '').toLowerCase()
+    console.log(`[Provision] sessionEmail=${sessionEmail}, bodyEmail=${bodyEmail}, adminEmails=${JSON.stringify(adminEmails)}`)
     if (emailToCheck && adminEmails.includes(emailToCheck)) {
       isAdmin = true
+      console.log(`[Provision] Admin detected: ${emailToCheck}`)
     }
 
     // If no session AND not admin, reject
