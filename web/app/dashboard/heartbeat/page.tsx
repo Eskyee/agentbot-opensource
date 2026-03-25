@@ -35,10 +35,51 @@ export default function HeartbeatPage() {
     const fetchHeartbeat = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/heartbeat')
-        if (!response.ok) throw new Error('Failed to fetch heartbeat')
-        const data = await response.json()
-        setAgents(data.agents || [])
+        // Fetch user's agents
+        const agentsRes = await fetch('/api/agents')
+        if (!agentsRes.ok) throw new Error('Failed to fetch agents')
+        const agentsData = await agentsRes.json()
+        const agentList = agentsData.agents || []
+
+        if (agentList.length === 0) {
+          setAgents([])
+          setError(null)
+          return
+        }
+
+        // Fetch heartbeat settings for each agent
+        const agentsWithHeartbeat = await Promise.all(
+          agentList.map(async (agent: any) => {
+            try {
+              const hbRes = await fetch(`/api/heartbeat?agentId=${agent.id}`)
+              const hbData = hbRes.ok ? await hbRes.json() : null
+              const hb = hbData?.heartbeat || {}
+              return {
+                id: agent.id,
+                name: agent.name || agent.id,
+                status: (agent.status === 'running' || agent.status === 'active') ? 'active' as const
+                  : agent.status === 'stopped' ? 'stopped' as const
+                  : 'error' as const,
+                port: agent.websocketUrl ? parseInt(new URL(agent.websocketUrl).port) || 443 : 0,
+                lastHeartbeat: hb.lastHeartbeat
+                  ? new Date(hb.lastHeartbeat).toLocaleString()
+                  : 'Never',
+                uptime: hb.enabled ? `Every ${hb.frequency}` : 'Disabled',
+              }
+            } catch {
+              return {
+                id: agent.id,
+                name: agent.name || agent.id,
+                status: 'error' as const,
+                port: 0,
+                lastHeartbeat: 'Error',
+                uptime: 'Unknown',
+              }
+            }
+          })
+        )
+
+        setAgents(agentsWithHeartbeat)
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')
@@ -49,7 +90,7 @@ export default function HeartbeatPage() {
     }
 
     fetchHeartbeat()
-    const interval = setInterval(fetchHeartbeat, 5000)
+    const interval = setInterval(fetchHeartbeat, 10000)
     return () => clearInterval(interval)
   }, [])
 
