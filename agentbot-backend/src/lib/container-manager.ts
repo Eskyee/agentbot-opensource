@@ -119,6 +119,8 @@ export async function createContainer(
 
   if (!res.ok) {
     const err = await res.text();
+    console.error(`[ContainerManager/Render] FAILED: ${res.status} — ${err}`);
+    console.error(`[ContainerManager/Render] Request body:`, JSON.stringify(body, null, 2));
     throw new Error(`Render API error ${res.status}: ${err}`);
   }
 
