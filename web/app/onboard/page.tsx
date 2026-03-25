@@ -147,6 +147,7 @@ function OnboardContent() {
       const res = await fetch('/api/provision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({
           telegramToken,
           telegramUserId,
