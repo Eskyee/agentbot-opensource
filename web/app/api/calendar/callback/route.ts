@@ -1,12 +1,13 @@
 /**
- * Google Calendar OAuth Callback — SECURED
+ * Google Calendar OAuth Callback — SECURED + PERSISTENT
  *
- * Verifies HMAC-signed state parameter to bind callback to authenticated user.
- * Uses shared token store from main calendar route.
+ * Verifies HMAC-signed state parameter. Stores tokens encrypted in Prisma.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { userCalendars, verifyOAuthState } from '../route'
+import { verifyOAuthState } from '../route'
+import { prisma } from '@/app/lib/prisma'
+import { encryptToken } from '@/app/lib/token-encryption'
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
@@ -27,7 +28,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=no_code')
   }
 
-  // Verify HMAC-signed state — rejects forged callbacks
   if (!state) {
     console.error('[Calendar Callback] Missing state parameter')
     return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=missing_state')
@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
   const userId = stateData.userId
 
   try {
-    // Exchange code for tokens
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -59,33 +58,40 @@ export async function GET(request: NextRequest) {
 
     if (tokens.error) {
       console.error('[Calendar Callback] Token exchange error:', tokens.error)
-      return NextResponse.redirect(`https://agentbot.raveculture.xyz/dashboard/calendar?error=token_failed`)
+      return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=token_failed')
     }
 
-    // Get calendar info
     const calendarResponse = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList/primary', {
       headers: { 'Authorization': `Bearer ${tokens.access_token}` },
     })
     const calendarData = await calendarResponse.json()
 
-    // Get timezone
     const timezoneResponse = await fetch('https://www.googleapis.com/calendar/v3/users/me/settings/timezone', {
       headers: { 'Authorization': `Bearer ${tokens.access_token}` },
     })
     const timezoneData = await timezoneResponse.json()
 
-    // Store tokens in shared map (keyed by verified userId from signed state)
-    userCalendars.set(userId, {
-      userId,
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token,
-      calendarId: calendarData.id || 'primary',
-      timezone: timezoneData.value || 'UTC',
+    // Persist tokens encrypted to database
+    await prisma.calendarToken.upsert({
+      where: { userId },
+      create: {
+        userId,
+        accessToken: encryptToken(tokens.access_token),
+        refreshToken: encryptToken(tokens.refresh_token),
+        calendarId: calendarData.id || 'primary',
+        timezone: timezoneData.value || 'UTC',
+      },
+      update: {
+        accessToken: encryptToken(tokens.access_token),
+        refreshToken: encryptToken(tokens.refresh_token || ''),
+        calendarId: calendarData.id || 'primary',
+        timezone: timezoneData.value || 'UTC',
+        updatedAt: new Date(),
+      },
     })
 
     console.log(`[Calendar] Connected for user ${userId}: ${calendarData.summary} (${timezoneData.value})`)
-
-    return NextResponse.redirect(`https://agentbot.raveculture.xyz/dashboard/calendar?connected=true`)
+    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?connected=true')
   } catch (err) {
     console.error('[Calendar Callback] Error:', err)
     return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=unknown')

@@ -31,6 +31,7 @@ model User {
   agentMemories         AgentMemory[]
   agentSwarms           AgentSwarm[]
   apiKeys               ApiKey[]
+  calendarToken         CalendarToken?
   installedSkills       InstalledSkill[]
   referredByUser        Referral?        @relation("Referred")
   referrals             Referral[]       @relation("Referrer")
@@ -263,6 +264,21 @@ model ApiKey {
   lastUsed  DateTime?
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CalendarToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String   // AES-256-GCM encrypted
+  refreshToken String   // AES-256-GCM encrypted
+  calendarId   String   @default("primary")
+  timezone     String   @default("UTC")
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }

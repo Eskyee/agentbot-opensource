@@ -1,32 +1,22 @@
 /**
- * Google Calendar API — SECURED
+ * Google Calendar API — SECURED + PERSISTENT
  *
  * All routes require NextAuth session. userId is derived from session,
  * NEVER from client input. OAuth state is HMAC-signed to prevent forgery.
+ * Tokens stored encrypted in Prisma (AES-256-GCM).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
+import { prisma } from '@/app/lib/prisma';
+import { encryptToken, decryptToken } from '@/app/lib/token-encryption';
 import crypto from 'crypto';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://agentbot.raveculture.xyz/api/calendar/callback';
 const OAUTH_STATE_SECRET = process.env.CALENDAR_OAUTH_SECRET || process.env.NEXTAUTH_SECRET || 'calendar-state-fallback';
-
-// In-memory token store — keyed by authenticated user ID from session
-// In production: persist to DB with encryption
-const userCalendars = new Map<string, {
-  userId: string;
-  accessToken: string;
-  refreshToken: string;
-  calendarId: string;
-  timezone: string;
-}>();
-
-// Export for callback route to access
-export { userCalendars };
 
 // --- Helpers ---
 
@@ -42,11 +32,51 @@ export function verifyOAuthState(state: string): { userId: string; ts: number } 
     const expected = crypto.createHmac('sha256', OAUTH_STATE_SECRET).update(payload).digest('base64url');
     if (sig !== expected) return null;
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
-    // State expires after 10 minutes
     if (Date.now() - data.ts > 10 * 60 * 1000) return null;
     return data;
   } catch {
     return null;
+  }
+}
+
+// Token storage — Prisma + encryption
+
+async function saveTokens(userId: string, accessToken: string, refreshToken: string, calendarId: string, timezone: string) {
+  await prisma.calendarToken.upsert({
+    where: { userId },
+    create: {
+      userId,
+      accessToken: encryptToken(accessToken),
+      refreshToken: encryptToken(refreshToken),
+      calendarId,
+      timezone,
+    },
+    update: {
+      accessToken: encryptToken(accessToken),
+      refreshToken: encryptToken(refreshToken),
+      calendarId,
+      timezone,
+      updatedAt: new Date(),
+    },
+  })
+}
+
+export async function getTokens(userId: string): Promise<{ accessToken: string; refreshToken: string; calendarId: string; timezone: string } | null> {
+  const record = await prisma.calendarToken.findUnique({
+    where: { userId },
+  })
+  if (!record) return null
+
+  try {
+    return {
+      accessToken: decryptToken(record.accessToken),
+      refreshToken: decryptToken(record.refreshToken),
+      calendarId: record.calendarId,
+      timezone: record.timezone,
+    }
+  } catch (err) {
+    console.error('[Calendar] Failed to decrypt tokens:', err)
+    return null
   }
 }
 
@@ -79,68 +109,54 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
 
-  // AUTH: Start OAuth flow — requires session
   if (action === 'auth') {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-
-    // HMAC-signed state binds OAuth callback to this user
     const state = signOAuthState(session.user.id);
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent('https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events')}&access_type=offline&prompt=consent&state=${encodeURIComponent(state)}`;
     return NextResponse.redirect(authUrl);
   }
 
-  // LIST events — requires session, uses session userId
   if (action === 'list') {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const calendar = userCalendars.get(session.user.id);
-    if (!calendar) {
+    const tokens = await getTokens(session.user.id);
+    if (!tokens) {
       return NextResponse.json({ error: 'Calendar not connected' }, { status: 401 });
     }
-
     const start = searchParams.get('start') || new Date().toISOString();
     const end = searchParams.get('end') || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-
     const events = await callGoogleCalendarApi(
-      calendar.accessToken,
-      `/calendars/${calendar.calendarId}/events?timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`
+      tokens.accessToken,
+      `/calendars/${tokens.calendarId}/events?timeMin=${start}&timeMax=${end}&singleEvents=true&orderBy=startTime`
     );
-
-    return NextResponse.json({ events: events.items || [], timezone: calendar.timezone });
+    return NextResponse.json({ events: events.items || [], timezone: tokens.timezone });
   }
 
-  // AVAILABILITY — requires session
   if (action === 'availability') {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const calendar = userCalendars.get(session.user.id);
-    if (!calendar) {
+    const tokens = await getTokens(session.user.id);
+    if (!tokens) {
       return NextResponse.json({ error: 'Calendar not connected' }, { status: 401 });
     }
-
     const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
     const startOfDay = `${date}T09:00:00`;
     const endOfDay = `${date}T23:00:00`;
-
     const events = await callGoogleCalendarApi(
-      calendar.accessToken,
-      `/calendars/${calendar.calendarId}/events?timeMin=${startOfDay}&timeMax=${endOfDay}&singleEvents=true`
+      tokens.accessToken,
+      `/calendars/${tokens.calendarId}/events?timeMin=${startOfDay}&timeMax=${endOfDay}&singleEvents=true`
     );
-
     const busySlots = (events.items || []).map((e: any) => ({
       start: e.start.dateTime || e.start.date,
       end: e.end.dateTime || e.end.date
     }));
-
     const availableSlots = generateAvailableSlots(date, busySlots);
     return NextResponse.json({ availableSlots, busySlots, date });
   }
@@ -160,8 +176,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { action, ...data } = body;
-    const userId = session.user.id; // ALWAYS from session, never from body
-    const calendar = userCalendars.get(userId);
+    const userId = session.user.id;
+    const tokens = await getTokens(userId);
 
     if (action === 'connect') {
       const state = signOAuthState(userId);
@@ -169,20 +185,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ authUrl });
     }
 
-    if (!calendar) {
+    if (!tokens) {
       return NextResponse.json({ error: 'Calendar not connected' }, { status: 401 });
     }
 
     if (action === 'create-event') {
       const created = await callGoogleCalendarApi(
-        calendar.accessToken,
-        `/calendars/${calendar.calendarId}/events`,
+        tokens.accessToken,
+        `/calendars/${tokens.calendarId}/events`,
         'POST',
         {
           summary: data.title,
           description: data.description,
-          start: { dateTime: data.start, timeZone: calendar.timezone },
-          end: { dateTime: data.end, timeZone: calendar.timezone },
+          start: { dateTime: data.start, timeZone: tokens.timezone },
+          end: { dateTime: data.end, timeZone: tokens.timezone },
           location: data.location,
           attendees: data.attendees?.map((email: string) => ({ email })),
           reminders: [{ method: 'email', minutes: 60 }, { method: 'popup', minutes: 15 }]
@@ -193,14 +209,14 @@ export async function POST(request: NextRequest) {
 
     if (action === 'update-event') {
       const updated = await callGoogleCalendarApi(
-        calendar.accessToken,
-        `/calendars/${calendar.calendarId}/events/${data.eventId}`,
+        tokens.accessToken,
+        `/calendars/${tokens.calendarId}/events/${data.eventId}`,
         'PATCH',
         {
           summary: data.title,
           description: data.description,
-          start: data.start ? { dateTime: data.start, timeZone: calendar.timezone } : undefined,
-          end: data.end ? { dateTime: data.end, timeZone: calendar.timezone } : undefined,
+          start: data.start ? { dateTime: data.start, timeZone: tokens.timezone } : undefined,
+          end: data.end ? { dateTime: data.end, timeZone: tokens.timezone } : undefined,
           location: data.location
         }
       );
@@ -209,8 +225,8 @@ export async function POST(request: NextRequest) {
 
     if (action === 'delete-event') {
       await callGoogleCalendarApi(
-        calendar.accessToken,
-        `/calendars/${calendar.calendarId}/events/${data.eventId}`,
+        tokens.accessToken,
+        `/calendars/${tokens.calendarId}/events/${data.eventId}`,
         'DELETE'
       );
       return NextResponse.json({ success: true });
@@ -218,8 +234,8 @@ export async function POST(request: NextRequest) {
 
     if (action === 'quick-add') {
       const created = await callGoogleCalendarApi(
-        calendar.accessToken,
-        `/calendars/${calendar.calendarId}/events/quickAdd`,
+        tokens.accessToken,
+        `/calendars/${tokens.calendarId}/events/quickAdd`,
         'POST',
         { text: data.text }
       );
