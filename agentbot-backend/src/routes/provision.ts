@@ -250,8 +250,8 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       (response as any).container = {
         name: containerInfo.container,
         status: containerInfo.status,
-        port: containerInfo.port,
-        gatewayUrl: `http://127.0.0.1:${containerInfo.port}`,
+        serviceId: containerInfo.serviceId,
+        renderUrl: containerInfo.url,
       };
     }
 
