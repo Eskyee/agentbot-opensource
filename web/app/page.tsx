@@ -40,7 +40,7 @@ export default async function Home() {
               </Link>
             ) : (
               <Link
-                href="/signup"
+                href="/onboard?plan=solo"
                 className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
                 Deploy Your Crew
@@ -82,7 +82,7 @@ export default async function Home() {
             </div>
 
             <Link
-              href="/signup"
+              href="/onboard?plan=solo"
               className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
             >
               Get Agentbot
