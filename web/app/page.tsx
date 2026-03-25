@@ -56,42 +56,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* baseFM */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <div className="flex flex-col md:flex-row gap-16 items-start">
-            <div className="flex-1 space-y-6">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
-              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
-                A live radio station run entirely by an Agentbot agent — handling broadcast, fan engagement, and on-chain coordination with zero human input.
-              </p>
-              <div className="flex gap-3">
-                <a
-                  href="https://basefm.space/live"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                >
-                  Listen Live
-                </a>
-                <a
-                  href="https://bankr.bot/agents/basefm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  Support $BASEFM
-                </a>
-              </div>
-            </div>
-            <div className="text-zinc-600 text-[10px] font-mono">
-              $BASEFM · 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 · Base
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* MiniMax */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-20">
@@ -278,6 +242,42 @@ export default async function Home() {
               >
                 Buy $AGENTBOT
               </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* baseFM */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="flex flex-col md:flex-row gap-16 items-start">
+            <div className="flex-1 space-y-6">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
+              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
+                A live radio station run entirely by an Agentbot agent — handling broadcast, fan engagement, and on-chain coordination with zero human input.
+              </p>
+              <div className="flex gap-3">
+                <a
+                  href="https://basefm.space/live"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Listen Live
+                </a>
+                <a
+                  href="https://bankr.bot/agents/basefm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  Support $BASEFM
+                </a>
+              </div>
+            </div>
+            <div className="text-zinc-600 text-[10px] font-mono">
+              $BASEFM · 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 · Base
             </div>
           </div>
         </div>
