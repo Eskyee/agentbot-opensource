@@ -10,116 +10,123 @@ export default function AgentbotLaunchPost() {
         
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
-            <p className="text-sm text-zinc-500 mb-2">March 2026</p>
-            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Introducing Agentbot: Your AI Agent. Hosted. Always Online.</h1>
+            <p className="text-sm text-zinc-500 mb-2">March 31, 2026</p>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Agentbot: The Managed Platform for Self-Hosted AI Agents</h1>
             <div className="flex gap-2">
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Launch</span>
-              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">v0.1.0-beta.1</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Self-Hosted</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Base</span>
             </div>
           </div>
 
+          <p className="text-lg text-zinc-300 mb-6 font-bold">
+            Your AI agent. Your hardware. Your rules.
+          </p>
+
           <p className="text-lg text-zinc-300 mb-6">
-            After 3 months of building, security hardening, and infrastructure work—Agentbot is live. Here&apos;s the story behind it and why it exists.
+            Today we&apos;re launching Agentbot — a managed platform for deploying autonomous AI agents on your own hardware. One command. Your API key. Your channels. Your data.
           </p>
 
           <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Problem</h2>
           <p className="text-zinc-300 mb-4">
-            Building AI agents is easy. Deploying them is hard.
+            Cloud AI tools log your data, mark up your API costs, and lock you in. You&apos;re renting intelligence you don&apos;t control.
           </p>
           <p className="text-zinc-300 mb-4">
-            OpenClaw is an incredible framework—an AI assistant with personality, memory, and skills. But running it 24/7? That requires:
+            ChatGPT, Claude, and every &quot;AI assistant&quot; SaaS share the same model: your data goes to their servers, they charge you a premium on top of the LLM provider&apos;s cost, and switching providers means losing everything.
           </p>
-          <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
-            <li>Server infrastructure</li>
-            <li>Docker orchestration</li>
-            <li>SSL certificates</li>
-            <li>Reverse proxies</li>
-            <li>Payment integration</li>
-            <li>Security hardening</li>
-            <li>24/7 monitoring</li>
-          </ul>
-          <p className="text-zinc-300 mb-4">
-            Most developers just want to <em>talk</em> to their AI agent. Not manage a server farm.
+          <p className="text-zinc-300 mb-4 font-bold">
+            That&apos;s not a product. That&apos;s a trap.
           </p>
 
           <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Solution</h2>
           <p className="text-zinc-300 mb-4">
-            Agentbot = OpenClaw as a Service.
+            Agentbot puts the agent on <strong>your</strong> hardware.
+          </p>
+          <p className="text-zinc-300 mb-4 font-mono text-sm bg-zinc-900 p-4 rounded-lg border border-zinc-800">
+            curl agentbot.raveculture.xyz/install | bash
           </p>
           <p className="text-zinc-300 mb-4">
-            One-click deploy. Your API key. No markup. No credit system. Just conversation.
+            That&apos;s it. One command. Your agent is running on your machine — connected to Telegram, Discord, or WhatsApp. Your API key talks directly to your LLM provider. We don&apos;t touch the costs.
           </p>
 
-          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What&apos;s Included</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What You Get</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
-            <li><strong>One-click deploy</strong> — From signup to chatting with your agent in under 60 seconds</li>
-            <li><strong>24/7 availability</strong> — Cloud-hosted, always online, zero maintenance</li>
-            <li><strong>Multi-channel</strong> — Telegram, Discord, WhatsApp support</li>
-            <li><strong>Custom domains</strong> — White-label ready for agencies</li>
-            <li><strong>Your API key</strong> — We never touch it. You pay your AI provider directly.</li>
-            <li><strong>A+ Security</strong> — Rate limiting, CSRF protection, session auth everywhere</li>
+            <li><strong>Self-hosted by design.</strong> Your data never leaves your machine. No cloud dependency. No vendor lock-in. Run it on a Raspberry Pi, a Mac Mini, or a VPS — wherever you have Docker.</li>
+            <li><strong>Multi-channel out of the box.</strong> Connect your agent to Telegram, Discord, and WhatsApp simultaneously. One agent, multiple channels, unified memory.</li>
+            <li><strong>BYOK — Bring Your Own Key.</strong> Use OpenAI, Anthropic, Google, or any OpenRouter-compatible provider. You pay them directly. Zero markup from us.</li>
+            <li><strong>Autonomous agents, not chatbots.</strong> Memory that persists across conversations. Skills that compound. Scheduled tasks that run while you sleep. This isn&apos;t a decision tree — it&apos;s a thinking machine.</li>
+            <li><strong>Onchain-native payments.</strong> x402 settlement on Base. Agent-to-agent marketplace. $AGENTBOT token for governance. The agent economy isn&apos;t coming — it&apos;s here.</li>
+            <li><strong>Open source core.</strong> The architecture is MIT-licensed on GitHub. Inspect the code. Fork it. Build with us.</li>
           </ul>
+
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">How It Works</h2>
+          <ol className="list-decimal list-inside text-zinc-300 mb-4 space-y-2">
+            <li><strong>Install</strong> — Run one command on your machine</li>
+            <li><strong>Configure</strong> — Set your API key and connect your channels</li>
+            <li><strong>Deploy</strong> — Your agent is live in 60 seconds</li>
+            <li><strong>Customize</strong> — Add skills, set memory, schedule tasks</li>
+          </ol>
+          <p className="text-zinc-300 mb-4">
+            No YAML. No config files. No DevOps degree required.
+          </p>
 
           <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Pricing</h2>
           <p className="text-zinc-300 mb-4">
-            Simple. Transparent. Scale as you grow.
+            We don&apos;t do free tiers. Everyone pays. This is a feature — it filters out noise and signals quality.
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
-            <li><strong>Starter:</strong> £19/mo — 1 agent, 2GB RAM, Telegram</li>
-            <li><strong>Pro:</strong> £39/mo — Custom domain, WhatsApp, 4GB RAM</li>
-            <li><strong>Scale:</strong> £79/mo — 3 agents, 8GB RAM, white-label</li>
-            <li><strong>Enterprise:</strong> £149/mo — Unlimited agents, 24/7 support</li>
-            <li><strong>White Glove:</strong> £199/mo — 32GB RAM, dedicated account manager</li>
-          </ul>
-          <p className="text-zinc-300 mb-4">
-            First 14 days free. Cancel anytime.
-          </p>
-
-          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Security First</h2>
-          <p className="text-zinc-300 mb-4">
-            AI agents handle sensitive data. We took security seriously from day one:
-          </p>
-          <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
-            <li>A+ security grade (verified)</li>
-            <li>Rate limiting (Redis-backed)</li>
-            <li>CSRF protection on all state-changing operations</li>
-            <li>Session authentication on every protected route</li>
-            <li>Debug routes blocked in production</li>
-            <li>No hardcoded secrets—centralized API key management</li>
+            <li><strong>Solo:</strong> £29/mo — 1 agent, personal use</li>
+            <li><strong>Collective:</strong> £69/mo — 3 agents, small team</li>
+            <li><strong>Label:</strong> £149/mo — 10 agents, white-label for clients</li>
+            <li><strong>Network:</strong> £499/mo — Unlimited agents, enterprise</li>
           </ul>
 
           <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Stack</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li><strong>Frontend:</strong> Next.js 16 (Vercel)</li>
             <li><strong>Backend:</strong> Node.js + Docker (Render)</li>
-            <li><strong>Database:</strong> Neon (PostgreSQL)</li>
-            <li><strong>Payments:</strong> Stripe</li>
-            <li><strong>Auth:</strong> NextAuth (GitHub, Google, Email)</li>
-            <li><strong>AI:</strong> OpenRouter (Kimi K2.5 default)</li>
+            <li><strong>Database:</strong> PostgreSQL + Redis</li>
+            <li><strong>Payments:</strong> Stripe + x402 on Base</li>
+            <li><strong>Auth:</strong> NextAuth (GitHub, Google, Wallet/SIWE)</li>
+            <li><strong>Agent Runtime:</strong> OpenClaw (Docker)</li>
           </ul>
 
-          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What&apos;s Next</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Security</h2>
           <p className="text-zinc-300 mb-4">
-            We&apos;re just getting started. Here&apos;s what&apos;s on the roadmap:
+            AI agents handle sensitive data. We took security seriously from day one:
           </p>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
-            <li>Usage analytics dashboard</li>
-            <li>Agent templates (pre-configured for common use cases)</li>
-            <li>Multi-agent support</li>
-            <li>API access & webhooks</li>
-            <li>More messaging channels</li>
+            <li>Edge auth middleware (NextAuth session gate)</li>
+            <li>Rate limiting on all auth endpoints</li>
+            <li>AES-256-GCM token encryption at rest</li>
+            <li>HMAC-signed OAuth state parameters</li>
+            <li>0 npm vulnerabilities</li>
+            <li>Webhook signature verification (Stripe, Resend, Mux)</li>
+            <li>SSRF protection on all external API calls</li>
           </ul>
+
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Vision</h2>
+          <p className="text-zinc-300 mb-4">
+            The agent economy is here. Agents that run on your hardware. Pay with x402 on Base. Memory that persists. Skills that compound.
+          </p>
+          <p className="text-zinc-300 mb-4 font-bold">
+            We&apos;re not building a chatbot wrapper. We&apos;re building the infrastructure layer for autonomous AI agents.
+          </p>
 
           <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Get Started</h2>
           <p className="text-zinc-300 mb-4">
-            → <Link href="/signup" className="text-blue-400 hover:text-blue-300">agentbot.raveculture.xyz</Link>
+            → <Link href="/onboard" className="text-blue-400 hover:text-blue-300">agentbot.raveculture.xyz</Link>
           </p>
           <p className="text-zinc-300 mb-4">
-            Questions? DM me or email hello@agentbot.raveculture.xyz
+            → <a href="https://github.com/Eskyee/agentbot-opensource" className="text-blue-400 hover:text-blue-300">GitHub (MIT)</a>
+          </p>
+          <p className="text-zinc-300 mb-4">
+            → <a href="https://raveculture.mintlify.app" className="text-blue-400 hover:text-blue-300">Docs</a>
           </p>
 
           <p className="text-xl text-zinc-300 mt-12 mb-4">
-            🦞
+            🦞 Your AI agent. Your hardware. Your rules.
           </p>
         </article>
       </div>
