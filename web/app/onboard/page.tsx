@@ -2,16 +2,21 @@
 
 import { useState, Suspense, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
 
 const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'model', 'skills', 'deploy', 'done']
 
+const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+
 function OnboardContent() {
+  const { data: session } = useSession()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') || 'solo'
   const mode = searchParams.get('mode') || 'create' // link, create, deploy
-  const isPaid = searchParams.get('paid') === '1'
+  const isAdmin = ADMIN_EMAILS.includes(session?.user?.email?.toLowerCase() || '')
+  const isPaid = searchParams.get('paid') === '1' || isAdmin
   const paymentError = searchParams.get('payment_error')
   const paymentCancelled = searchParams.get('payment_cancelled') === '1'
   
