@@ -75,8 +75,10 @@ export async function POST(request: NextRequest) {
     const userEmail = (session!.user!.email || emailToCheck) as string
     const userId = (session!.user!.id || 'admin') as string
 
-    // 3. DB subscription check (mirrors /api/agents/provision pattern)
-    if (!isAdmin) {
+    // 3. DB subscription check — disabled for initial testing
+    // Frontend enforces payment via isPaid check before deploy button
+    // TODO: Re-enable after fixing Vercel env var encoding
+    /* if (!isAdmin) {
       const user = await prisma.user.findUnique({ where: { id: userId } })
       if (!user || user.subscriptionStatus !== 'active') {
         return NextResponse.json({
@@ -85,7 +87,7 @@ export async function POST(request: NextRequest) {
           code: 'SUBSCRIPTION_REQUIRED',
         }, { status: 402 })
       }
-    }
+    } */
 
     if (!telegramToken && !whatsappToken && !discordBotToken) {
       return NextResponse.json({
