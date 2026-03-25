@@ -8,14 +8,13 @@
  */
 
 const RENDER_API = 'https://api.render.com/v1';
-const OPENCLAW_IMAGE = 'ghcr.io/openclaw/openclaw:2026.3.22';
 
-// Render instance type per plan
+// Plan → Render instance type
 const PLAN_TO_INSTANCE: Record<string, string> = {
-  solo: 'starter',       // 512MB RAM, 0.5 CPU
-  collective: 'standard', // 2GB RAM, 1 CPU
-  label: 'pro',          // 4GB RAM, 2 CPU
-  network: 'pro_plus',   // 8GB RAM, 4 CPU
+  solo: 'starter',
+  collective: 'standard',
+  label: 'pro',
+  network: 'pro_plus',
 };
 
 // Env vars to inject into each agent container
@@ -70,7 +69,7 @@ export async function isDockerReady(): Promise<boolean> {
 }
 
 /**
- * Create a new agent service on Render
+ * Create a new agent service on Render (Docker-backed)
  */
 export async function createContainer(
   userId: string,
@@ -81,10 +80,14 @@ export async function createContainer(
 
   if (!ownerId) throw new Error('RENDER_OWNER_ID not configured');
 
-  const envVars = Object.entries(getAgentEnvVars(userId, plan)).map(([key, value]) => ({
-    key,
-    value,
-  }));
+  const envVars = [
+    { key: 'NODE_ENV', value: 'production' },
+    { key: 'PORT', value: '3001' },
+    ...Object.entries(getAgentEnvVars(userId, plan)).map(([key, value]) => ({
+      key,
+      value,
+    })),
+  ];
 
   const body = {
     type: 'web_service',
@@ -95,15 +98,14 @@ export async function createContainer(
     rootDir: 'agentbot-backend',
     autoDeploy: 'no',
     serviceDetails: {
-      env: 'image',
+      env: 'docker',
       envSpecificDetails: {
-        imagePath: OPENCLAW_IMAGE,
+        dockerfilePath: 'Dockerfile',
+        dockerContext: '.',
       },
       plan: PLAN_TO_INSTANCE[plan] || 'starter',
       region: 'oregon',
       numInstances: 1,
-      pullRequestPreviewsEnabled: 'no',
-      preDeployCommand: '',
     },
     envVars,
   };
@@ -129,7 +131,7 @@ export async function createContainer(
     container: service.name,
     status: service.suspended === 'not_suspended' ? 'running' : 'stopped',
     serviceId: service.id,
-    url: service.serviceDetails?.url || `https://${service.name}.onrender.com`,
+    url: `https://${service.name}.onrender.com`,
     startedAt: service.createdAt,
   };
 }
