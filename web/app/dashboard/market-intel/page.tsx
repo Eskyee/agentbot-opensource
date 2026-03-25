@@ -70,19 +70,19 @@ export default function MarketIntelPage() {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   return (
-    <div className="mt-[4rem] min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       {/* Header */}
       <div className="px-6 py-5 border-b border-zinc-800 flex items-center gap-3">
         <TrendingUp className="h-5 w-5 text-emerald-400" />
-        <h1 className="text-xl font-bold tracking-tight">Market Intel</h1>
+        <h1 className="text-xl font-bold uppercase tracking-tighter">Market Intel</h1>
         <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5">Updated weekly</span>
       </div>
 
-      <div className="px-6 py-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-6 py-16 space-y-8">
         {/* Competitor grid */}
         <section>
           <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Competitive Landscape</h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-1 sm:grid-cols-2 gap-4">
             {COMPETITORS.map(c => {
               const isOpen = expanded === c.name
               return (
@@ -147,7 +147,7 @@ export default function MarketIntelPage() {
         {/* Opportunity map */}
         <section>
           <h2 className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-4">Opportunity Map</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
               { title: 'DJ / Creative AI', gap: 'No competitor owns the music-creator segment', action: 'Double down on DJ Stream + $BASEFM ecosystem', color: 'border-blue-800/40 bg-blue-900/10' },
               { title: 'Wallet-native Auth', gap: 'Competitors rely on email auth only', action: 'SIWE + Base smart wallet is a genuine moat', color: 'border-blue-800/40 bg-blue-900/10' },

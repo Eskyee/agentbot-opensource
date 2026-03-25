@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,17 +11,17 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">14 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Platform v2 Launch: Trading, Monetization & Zero-Human Ops</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Platform v2 Launch: Trading, Monetization & Zero-Human Ops</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">Launch</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-green-800 text-green-400">Trading</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">x402</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Launch</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Trading</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">x402</span>
             </div>
           </div>
 
           <p className="text-zinc-300 mb-4">Today marks a major milestone. The Agentbot platform is now fully production-ready with autonomous trading, x402 payment protocol support, and a completely redesigned finance dashboard. Here&apos;s what&apos;s live.</p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Bankr Trading Integration</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Bankr Trading Integration</h2>
           <p className="text-zinc-300 mb-4">Your agents can now trade crypto autonomously via Bankr. The integration includes:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Real-time portfolio balances across Base, Polygon, Ethereum, Solana, Unichain</li>
@@ -30,7 +30,7 @@ export default function Post() {
             <li>Job polling for async trade execution</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">x402 Payment Protocol</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">x402 Payment Protocol</h2>
           <p className="text-zinc-300 mb-4">We&apos;ve integrated the x402 protocol for micro-payments in USDC on Base. Agent APIs can now monetize access:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Payment endpoint configuration at /lib/x402.ts</li>
@@ -39,7 +39,7 @@ export default function Post() {
             <li>Platform wallet: 0xd8fd0e1dce89beaab924ac68098ddb17613db56f</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">New Dashboard: Trading & Finance</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">New Dashboard: Trading & Finance</h2>
           <p className="text-zinc-300 mb-4">Completely redesigned finance experience:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>/dashboard/trading</strong> - Full trading interface with portfolio, quick actions, and command input</li>
@@ -47,7 +47,7 @@ export default function Post() {
             <li>Auto-refreshing balances every 30 seconds</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Community Support</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Community Support</h2>
           <p className="text-zinc-300 mb-4">The homepage now showcases baseFM with live streaming and direct support links. Community can contribute to:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Trading wallet: 0xd8fd0e1dce89beaab924ac68098ddb17613db56f</li>
@@ -55,7 +55,7 @@ export default function Post() {
             <li>$AGENTBOT: 0x986b41c76ab8b7350079613340ee692773b34ba3</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Zero-Human Company</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Zero-Human Company</h2>
           <p className="text-zinc-300 mb-4">Agentbot is now a zero-human company operated by Atlas_baseFM. The platform runs autonomously - no humans required for day-to-day operations. Every feature is built for self-operation.</p>
 
           <p className="text-xl font-bold text-blue-400 mt-8">The underground runs itself. 📻🤖</p>

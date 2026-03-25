@@ -2,14 +2,14 @@ import Link from 'next/link'
 
 export default function KimiDropPost() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <article className="max-w-4xl mx-auto px-6 py-16">
-        <Link href="/blog" className="text-blue-400 hover:underline mb-8 inline-block">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+      <article className="max-w-3xl mx-auto px-6 py-16">
+        <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
         </Link>
 
         <header className="mb-12">
-          <h1 className="text-5xl font-bold mb-4">
+          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-4">
             The Kimi Drop: How We Built Feature Parity in 18 Hours
           </h1>
           <div className="flex items-center gap-4 text-zinc-400">
@@ -26,7 +26,7 @@ export default function KimiDropPost() {
             Here&apos;s how we did it.
           </p>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">The Challenge</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">The Challenge</h2>
           <p className="text-zinc-300 mb-4">
             Kimi Claw launched with a compelling feature set:
           </p>
@@ -42,13 +42,13 @@ export default function KimiDropPost() {
             web-only deployment. No Telegram, no Discord, no WhatsApp.
           </p>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">Our Response: The Kimi Drop</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">Our Response: The Kimi Drop</h2>
           <p className="text-zinc-300 mb-4">
             We decided to match their features while keeping our core advantages. The goal: ship everything 
             in one massive update. We called it &quot;The Kimi Drop.&quot;
           </p>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Phase 1: Foundation (6 hours)</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Phase 1: Foundation (6 hours)</h3>
           <p className="text-zinc-300 mb-4">
             First, we added the K2.5 Thinking model and built the scheduled tasks system:
           </p>
@@ -76,7 +76,7 @@ export default function KimiDropPost() {
             </pre>
           </div>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Phase 2: Core Features (6 hours)</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Phase 2: Core Features (6 hours)</h3>
           <p className="text-zinc-300 mb-4">
             Next, we built the skill marketplace and personality system:
           </p>
@@ -87,7 +87,7 @@ export default function KimiDropPost() {
             <li>Implemented memory persistence API</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Phase 3: Advanced Features (6 hours)</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Phase 3: Advanced Features (6 hours)</h3>
           <p className="text-zinc-300 mb-4">
             Finally, we added features Kimi Claw doesn&apos;t even have:
           </p>
@@ -110,9 +110,9 @@ export default function KimiDropPost() {
             </ul>
           </div>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">The Results</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">The Results</h2>
           
-          <div className="grid grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <div className="text-4xl font-bold text-blue-400 mb-2">18 hours</div>
               <div className="text-zinc-400">Total development time</div>
@@ -131,7 +131,7 @@ export default function KimiDropPost() {
             </div>
           </div>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">Feature Comparison</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">Feature Comparison</h2>
 
           <div className="overflow-x-auto mb-8">
             <table className="w-full text-left border-collapse">
@@ -197,27 +197,27 @@ export default function KimiDropPost() {
             </table>
           </div>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">What We Learned</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">What We Learned</h2>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">1. MVP Everything</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">1. MVP Everything</h3>
           <p className="text-zinc-300 mb-4">
             We didn&apos;t build perfect features. We built working MVPs that users can try today. 
             The skill marketplace has 10 skills, not 5,000. But it works, and we can grow it.
           </p>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">2. Database-First Design</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">2. Database-First Design</h3>
           <p className="text-zinc-300 mb-4">
             By designing the database schema first, we could rapidly build APIs and UIs. 
             The schema became our contract.
           </p>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">3. Competitive Analysis Works</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">3. Competitive Analysis Works</h3>
           <p className="text-zinc-300 mb-4">
             Studying Kimi Claw gave us a clear roadmap. We knew exactly what to build and 
             could prioritize ruthlessly.
           </p>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">Try It Now</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">Try It Now</h2>
           <p className="text-zinc-300 mb-6">
             All features are live. Log in and explore:
           </p>
@@ -229,14 +229,14 @@ export default function KimiDropPost() {
             <li>⚡ <strong>Workflows</strong> - Build visual automations</li>
           </ul>
 
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center mt-12">
-            <h3 className="text-2xl font-bold mb-4">Ready to experience the Kimi Drop?</h3>
+          <div className="bg-zinc-900/50 border border-zinc-800 p-8 mt-12">
+            <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">Ready to experience the Kimi Drop?</h3>
             <p className="text-zinc-400 mb-6">
               Deploy AI agents anywhere, with any model, in 60 seconds.
             </p>
             <Link 
               href="/dashboard"
-              className="inline-block bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors"
+              className="inline-block border border-zinc-800 px-8 py-3 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors"
             >
               Go to Dashboard →
             </Link>
@@ -246,9 +246,9 @@ export default function KimiDropPost() {
 
           <p className="text-zinc-400 text-sm">
             Want to see the code? Check out our{' '}
-            <a href="https://github.com/Eskyee/agentbot" className="text-blue-400 hover:underline">GitHub repo</a>
+            <a href="https://github.com/Eskyee/agentbot" className="text-zinc-400 hover:text-white">GitHub repo</a>
             {' '}or read the{' '}
-            <Link href="/blog/posts/major-update-2026" className="text-blue-400 hover:underline">full feature announcement</Link>.
+            <Link href="/blog/posts/major-update-2026" className="text-zinc-400 hover:text-white">full feature announcement</Link>.
           </p>
         </div>
       </article>

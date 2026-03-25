@@ -105,7 +105,7 @@ export default function TasksPage() {
             />
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-zinc-400">
+                <label className="text-[10px] uppercase tracking-widest text-zinc-500">
                   Schedule
                 </label>
                 <button
@@ -184,7 +184,7 @@ export default function TasksPage() {
               <AgentCard key={task.id}>
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-bold">{task.name}</h3>
+                    <h3 className="text-lg font-bold uppercase tracking-tighter">{task.name}</h3>
                     {task.description && (
                       <p className="text-sm text-zinc-400 mt-1">
                         {task.description}

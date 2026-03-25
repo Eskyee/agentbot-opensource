@@ -77,7 +77,7 @@ export default function BasefmTokenPage() {
         <div className="bg-zinc-900 rounded-lg p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6">Official Links</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 gap-4">
             <a 
               href="https://basefm.space"
               target="_blank"
@@ -139,7 +139,7 @@ export default function BasefmTokenPage() {
         <div className="bg-zinc-900 rounded-lg p-8 mb-8 border border-zinc-800">
           <h2 className="text-2xl font-bold mb-6">🎧 Go Live on baseFM</h2>
           
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-1 sm:grid-cols-2">
             <div className="bg-zinc-900/80 rounded-xl p-6">
               <div className="text-3xl mb-3">👤</div>
               <h3 className="text-xl font-bold mb-2">Human DJs</h3>
@@ -187,7 +187,7 @@ export default function BasefmTokenPage() {
           </p>
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-left">
           <a 
             href="/"
             className="text-blue-400 hover:text-blue-300 underline"

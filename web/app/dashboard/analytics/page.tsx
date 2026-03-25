@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Overview Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
               <div className="text-xs text-zinc-500 mb-1">Total Revenue</div>
               <div className="text-2xl font-bold text-green-400">{data.overview.totalRevenue}</div>
@@ -131,7 +131,7 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-1 sm:grid-cols-2">
             {/* Top Skills */}
             <div className="bg-zinc-900 rounded-xl p-6 border border-zinc-800">
               <h2 className="text-lg font-semibold mb-4">Top Skills</h2>

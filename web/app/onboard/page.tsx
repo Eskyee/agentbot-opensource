@@ -178,7 +178,7 @@ function OnboardContent() {
       {/* Mode Selector */}
       {step === 'telegram' && (
         <div className="mb-8">
-          <div className="grid grid-cols-3 gap-3 bg-zinc-900 p-2 rounded-xl border border-zinc-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-zinc-900 p-2 rounded-xl border border-zinc-800">
             <button
               onClick={() => window.location.href = '/onboard?mode=link'}
               className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
@@ -214,31 +214,31 @@ function OnboardContent() {
       )}
 
       {/* Header */}
-      <div className="text-center mb-12">
+      <div className="mb-12">
         <div className="text-5xl mb-4">🦞</div>
         {isPaid && (
-          <div className="mb-4 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-2 rounded-lg inline-block">
+          <div className="mb-4 bg-green-500/20 border border-green-500/50 text-green-400 px-4 py-2 inline-block">
             ✓ Payment successful! Your {plan.charAt(0).toUpperCase() + plan.slice(1)} plan is activated.
           </div>
         )}
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-3xl font-bold tracking-tighter uppercase">
           {mode === 'link' && 'Link Existing OpenClaw'}
           {mode === 'create' && 'Create Agentbot'}
           {mode === 'deploy' && 'Deploy OpenClaw with One Click'}
         </h1>
-        <p className="text-zinc-400 mt-2">
+        <p className="text-sm text-zinc-400 mt-2">
           {mode === 'link' && 'Connect your existing OpenClaw instance'}
           {mode === 'create' && 'Build your custom AI agent from scratch'}
           {mode === 'deploy' && 'Launch a pre-configured OpenClaw agent instantly'}
         </p>
-        <p className="text-zinc-500 text-sm mt-1">
+        <p className="text-xs text-zinc-500 mt-1">
           {plan === 'free' ? 'Starter plan' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
         </p>
       </div>
       
       {/* Progress */}
       <div className="mb-12 overflow-x-auto pb-2">
-        <div className="flex min-w-max items-center justify-center gap-2 px-2">
+        <div className="flex min-w-max items-center gap-2 px-2">
           {FLOW_STEPS.map((s, i) => (
             <div key={s} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
@@ -254,12 +254,12 @@ function OnboardContent() {
       </div>
 
       {/* Step Content */}
-      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5 sm:p-8">
+      <div className="bg-zinc-900 border border-zinc-800 p-5 sm:p-8">
         
         {/* Step 1: Create Telegram Bot */}
         {step === 'telegram' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Step 1: Create Telegram Bot</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-6">Step 1: Create Telegram Bot</h2>
             
             <div className="space-y-6">
               <div className="bg-zinc-800 rounded-xl p-6">
@@ -292,7 +292,7 @@ function OnboardContent() {
                 href="https://t.me/BotFather" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-center font-semibold hover:bg-blue-400 transition-colors"
+                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-blue-400 transition-colors"
               >
                 Open @BotFather →
               </a>
@@ -310,11 +310,11 @@ function OnboardContent() {
         {/* Step 2: Enter Token */}
         {step === 'token' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Step 2: Enter Your Bot Token</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-6">Step 2: Enter Your Bot Token</h2>
             
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
                   Telegram Bot Token
                 </label>
                 <input
@@ -322,7 +322,7 @@ function OnboardContent() {
                   value={telegramToken}
                   onChange={(e) => setTelegramToken(e.target.value)}
                   placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
                 />
                 <p className="text-sm text-zinc-500 mt-2">
                   Paste the token you received from @BotFather
@@ -357,7 +357,7 @@ function OnboardContent() {
         {/* Step 3: Your Telegram ID */}
         {step === 'userid' && (
           <div>
-            <h2 className="text-2xl font-bold mb-2">Step 3: Your Telegram ID</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">Step 3: Your Telegram ID</h2>
             {botInfo && (
               <p className="text-green-400 mb-6">✓ Bot validated: @{botInfo.username}</p>
             )}
@@ -385,13 +385,13 @@ function OnboardContent() {
                 href="https://t.me/userinfobot" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-center font-semibold hover:bg-blue-400 transition-colors"
+                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-blue-400 transition-colors"
               >
                 Open @userinfobot →
               </a>
               
               <div>
-                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
                   Your Telegram User ID
                 </label>
                 <input
@@ -399,7 +399,7 @@ function OnboardContent() {
                   value={telegramUserId}
                   onChange={(e) => setTelegramUserId(e.target.value.replace(/\D/g, ''))}
                   placeholder="123456789"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
                 />
                 <p className="text-sm text-zinc-500 mt-2">
                   This ensures only YOU can chat with your bot
@@ -428,7 +428,7 @@ function OnboardContent() {
         {/* Step 4: Choose Agent Type */}
         {step === 'agenttype' && (
           <div>
-            <h2 className="text-2xl font-bold mb-2">Choose Your Agent Type</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">Choose Your Agent Type</h2>
             <p className="text-zinc-400 mb-6">Select the type of agent that best fits your needs. Each comes pre-configured with relevant skills.</p>
             
             <div className="grid gap-4 sm:grid-cols-2">
@@ -473,7 +473,7 @@ function OnboardContent() {
         {/* Step 4: Choose AI - BYOK */}
         {step === 'ai' && (
           <div>
-            <h2 className="text-2xl font-bold mb-2">Step 4: Bring Your Own Key (BYOK)</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">Step 4: Bring Your Own Key (BYOK)</h2>
             <p className="text-zinc-400 mb-6">Choose your AI provider and enter your own API key. You pay directly—no markup.</p>
             
             <div className="space-y-6">
@@ -557,7 +557,7 @@ function OnboardContent() {
               {/* API Key - optional for Groq, required for others */}
               {(aiProvider === 'openrouter' || aiProvider === 'gemini' || aiProvider === 'anthropic' || aiProvider === 'openai' || aiProvider === 'groq') && (
                 <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">
+                  <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">
                     {aiProvider === 'groq' ? 'Groq API Key (optional - free tier available)' : 
                      aiProvider === 'openrouter' ? 'OpenRouter API Key' : 
                      aiProvider === 'gemini' ? 'Gemini API Key' :
@@ -573,7 +573,7 @@ function OnboardContent() {
                       aiProvider === 'anthropic' ? 'sk-ant-...' : 
                       aiProvider === 'groq' ? 'gsk_...' : 'sk-...'
                     }
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 focus:outline-none focus:border-white"
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
                   />
                 </div>
               )}
@@ -600,7 +600,7 @@ function OnboardContent() {
         {/* Step 5: Choose Model */}
         {step === 'model' && (
           <div>
-            <h2 className="text-2xl font-bold mb-2">Step 5: Choose Your AI Model</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">Step 5: Choose Your AI Model</h2>
             {botInfo && (
               <p className="text-green-400 mb-6">✓ Bot validated: @{botInfo.username}</p>
             )}
@@ -653,7 +653,7 @@ function OnboardContent() {
         {/* Step 6: Choose Skills */}
         {step === 'skills' && (
           <div>
-            <h2 className="text-2xl font-bold mb-2">Step 6: Ready-to-Use Skills</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">Step 6: Ready-to-Use Skills</h2>
             {botInfo && (
               <p className="text-green-400 mb-6">✓ Bot validated: @{botInfo.username}</p>
             )}
@@ -724,7 +724,7 @@ function OnboardContent() {
         {/* Step 7: Deploy */}
         {step === 'deploy' && (
           <div>
-            <h2 className="text-2xl font-bold mb-6">Step 7: Deploy Your Assistant</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-6">Step 7: Deploy Your Assistant</h2>
             
             <div className="space-y-6">
               <div className="bg-zinc-800 rounded-xl p-6">
@@ -782,7 +782,7 @@ function OnboardContent() {
                 {!isPaid ? (
                   <a
                     href={`/api/stripe/checkout?plan=${plan}`}
-                    className="w-full block text-center bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors sm:flex-1"
+                    className="w-full block text-left bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors sm:flex-1"
                   >
                     💳 Pay to Deploy
                   </a>
@@ -832,10 +832,10 @@ function OnboardContent() {
         
         {/* Step 5: Done */}
         {step === 'done' && result && (
-          <div className="text-center">
+          <div>
             <div className="text-6xl mb-6">🎉</div>
-            <h2 className="text-2xl font-bold mb-2">You&apos;re Live!</h2>
-            <p className="text-zinc-400 mb-8">Your AI assistant is ready to chat.</p>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">You&apos;re Live!</h2>
+            <p className="text-sm text-zinc-400 mb-8">Your AI assistant is ready to chat.</p>
             
             <div className="bg-zinc-800 rounded-xl p-6 mb-8 text-left">
               <p className="text-sm font-semibold text-zinc-400 mb-4 flex items-center gap-2">
@@ -901,11 +901,11 @@ if (typeof document !== 'undefined') {
 
 export default function Onboard() {
   return (
-    <main className="min-h-screen py-12 px-6">
+    <main className="min-h-screen py-16 px-6 bg-black text-white selection:bg-blue-500/30 font-mono">
       <Suspense fallback={
-        <div className="mx-auto max-w-2xl text-center">
+        <div className="mx-auto max-w-2xl">
           <div className="text-5xl mb-4">🦞</div>
-          <p className="text-zinc-400">Loading...</p>
+          <p className="text-sm text-zinc-400">Loading...</p>
         </div>
       }>
         <OnboardContent />

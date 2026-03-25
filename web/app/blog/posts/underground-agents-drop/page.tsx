@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,10 +11,10 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">24 February 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Underground Agents Drop: Built by Ravers, for Ravers</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Underground Agents Drop: Built by Ravers, for Ravers</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Release</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Underground</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Release</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Underground</span>
             </div>
           </div>
 
@@ -22,7 +22,7 @@ export default function Post() {
             New agent templates for underground collectives, crypto wallet integration, and major UI improvements. Built for the culture.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">🎉 New: Rave Event Agent</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">🎉 New: Rave Event Agent</h2>
           <p className="text-zinc-300 mb-4">
             Manage underground events end-to-end:
           </p>
@@ -45,7 +45,7 @@ export default function Post() {
             <p className="text-sm text-green-400">Agent: &quot;23 tickets sold. 575 USDC collected. 12 spots left.&quot;</p>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">💰 New: Community Treasury Agent</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">💰 New: Community Treasury Agent</h2>
           <p className="text-zinc-300 mb-4">
             Transparent fund management for collectives:
           </p>
@@ -62,7 +62,7 @@ export default function Post() {
             <strong>Use case:</strong> A soundsystem collective manages £15K of shared funds. The treasury agent tracks spending transparently, processes reimbursements onchain, and alerts when budgets run low. No more &quot;who spent what?&quot;
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">🔐 New: Crypto Wallet Integration</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">🔐 New: Crypto Wallet Integration</h2>
           <p className="text-zinc-300 mb-4">
             Every agent can now have its own crypto wallet:
           </p>
@@ -78,9 +78,9 @@ export default function Post() {
             <strong>Why this matters:</strong> Agents can now accept payments, manage funds, and coordinate treasuries autonomously. Borderless, transparent, onchain.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">✨ UI/UX Improvements</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">✨ UI/UX Improvements</h2>
           
-          <h3 className="text-xl font-semibold mt-6 mb-3">Mobile Menu</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Mobile Menu</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>Larger and more visible - 320px width, text-lg, better contrast</li>
             <li>Gray-900 background - No more see-through overlay</li>
@@ -88,14 +88,14 @@ export default function Post() {
             <li>Touch-friendly - Bigger tap targets, smooth animations</li>
           </ul>
 
-          <h3 className="text-xl font-semibold mt-6 mb-3">Dashboard Sidebar</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Dashboard Sidebar</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>Collapsible on mobile - Hamburger menu + close button</li>
             <li>Always visible on desktop - No need to toggle</li>
             <li>Smooth transitions - 200ms ease-in-out animations</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">🎯 Kimi K2.5 Positioning</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">🎯 Kimi K2.5 Positioning</h2>
           <p className="text-zinc-300 mb-4">
             We updated how we talk about Kimi K2.5:
           </p>
@@ -109,7 +109,7 @@ export default function Post() {
             <strong>Why:</strong> Features need positioning. &quot;We use Kimi K2.5&quot; means nothing. &quot;Your agent remembers every set you&apos;ve ever played&quot; is a flex.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">🔐 Verified Human Badge</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">🔐 Verified Human Badge</h2>
           <p className="text-zinc-300 mb-4">
             New trust feature for crypto/underground scenes:
           </p>
@@ -122,16 +122,16 @@ export default function Post() {
             <strong>Why:</strong> Crypto is full of scams. &quot;This agent is run by a real person in the scene&quot; is huge for trust.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">🚀 What&apos;s Next</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">🚀 What&apos;s Next</h2>
           
-          <h3 className="text-xl font-semibold mt-6 mb-3">Phase 1 (This Week)</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Phase 1 (This Week)</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>Complete CDP SDK integration</li>
             <li>Database schema for wallet storage</li>
             <li>Telegram bot for event reminders</li>
           </ul>
 
-          <h3 className="text-xl font-semibold mt-6 mb-3">Phase 2 (Next Month)</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Phase 2 (Next Month)</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>Beta testing with 5 collectives</li>
             <li>Soundsystem Agent template</li>
@@ -139,7 +139,7 @@ export default function Post() {
             <li>Marketplace for custom agents</li>
           </ul>
 
-          <h3 className="text-xl font-semibold mt-6 mb-3">Phase 3 (3 Months)</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Phase 3 (3 Months)</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>Public launch</li>
             <li>100+ collectives</li>
@@ -147,7 +147,7 @@ export default function Post() {
             <li>Cross-agent coordination</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">💡 Why This Matters</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">💡 Why This Matters</h2>
           <p className="text-zinc-300 mb-4">
             <strong>Not &quot;AI for business&quot; — AI for culture.</strong>
           </p>
@@ -175,11 +175,11 @@ export default function Post() {
             We&apos;re building for a real community with real needs. Not generic AI. Not forced crypto. Purpose-built for the underground.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">🎧 Try It Now</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">🎧 Try It Now</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
-            <li><strong>Marketplace:</strong> Browse new agent templates at <Link href="/marketplace" className="text-blue-400 hover:underline">agentbot.raveculture.xyz/marketplace</Link></li>
-            <li><strong>Dashboard:</strong> Create a wallet for your agent at <Link href="/dashboard" className="text-blue-400 hover:underline">agentbot.raveculture.xyz/dashboard</Link></li>
-            <li><strong>Docs:</strong> Read the full guide at <a href="https://github.com/Eskyee/agentbot" className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">github.com/Eskyee/agentbot</a></li>
+            <li><strong>Marketplace:</strong> Browse new agent templates at <Link href="/marketplace" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz/marketplace</Link></li>
+            <li><strong>Dashboard:</strong> Create a wallet for your agent at <Link href="/dashboard" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz/dashboard</Link></li>
+            <li><strong>Docs:</strong> Read the full guide at <a href="https://github.com/Eskyee/agentbot" className="text-zinc-400 hover:text-white" target="_blank" rel="noopener noreferrer">github.com/Eskyee/agentbot</a></li>
           </ul>
 
           <div className="mt-12 p-6 bg-zinc-900 rounded-lg border border-zinc-800">

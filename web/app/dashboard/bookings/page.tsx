@@ -15,14 +15,16 @@ export default function BookingInboxPage() {
   });
 
   return (
-    <div className="p-8 bg-black min-h-screen text-white">
-      <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+      <main className="px-6 py-16">
+      <div className="max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Talent Booking Inbox</h1>
+          <h1 className="text-3xl font-bold mb-2 uppercase tracking-tighter">Talent Booking Inbox</h1>
           <p className="text-zinc-400">Manage autonomous booking offers and contracts for your talent agents.</p>
         </div>
         <div className="bg-blue-500/10 border border-blue-500/30 px-4 py-2 rounded-lg">
-          <span className="text-blue-400 text-sm font-mono font-bold tracking-tighter">A2A NEGOTIATOR ACTIVE</span>
+          <span className="text-blue-400 text-xs font-mono font-bold uppercase tracking-widest">A2A NEGOTIATOR ACTIVE</span>
         </div>
       </div>
 
@@ -32,14 +34,14 @@ export default function BookingInboxPage() {
             {[1, 2, 3].map(i => <div key={i} className="h-24 bg-zinc-900 rounded-xl border border-zinc-800" />)}
           </div>
         ) : bookings?.length === 0 ? (
-          <div className="text-center py-20 bg-zinc-900/30 rounded-2xl border border-dashed border-zinc-800">
+          <div className="py-20 bg-zinc-900/30 rounded-xl border border-dashed border-zinc-800">
             <Mail className="h-12 w-12 text-zinc-600 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-zinc-400">No active booking requests</h3>
+            <h3 className="text-lg font-bold text-zinc-400 uppercase tracking-tighter">No active booking requests</h3>
             <p className="text-sm text-zinc-500 mt-1">Your agent will notify you when an offer is received via the A2A bus.</p>
           </div>
         ) : (
           bookings?.map((booking: any) => (
-            <div key={booking.id} className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800 flex items-center justify-between hover:border-zinc-700 transition-colors">
+            <div key={booking.id} className="bg-zinc-900/50 rounded-xl p-6 border border-zinc-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-6">
                 <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
                   <User className="h-6 w-6" />
@@ -66,10 +68,10 @@ export default function BookingInboxPage() {
               <div className="flex items-center gap-3">
                 {booking.status === 'offered' && (
                   <>
-                    <button className="px-4 py-2 bg-white text-black rounded-lg font-bold text-sm hover:bg-zinc-200 transition-colors flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4" /> Accept Offer
+                    <button className="px-4 py-2 bg-white text-black rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4" /> Accept
                     </button>
-                    <button className="px-4 py-2 bg-zinc-800 text-white rounded-lg font-bold text-sm hover:bg-zinc-700 transition-colors flex items-center gap-2">
+                    <button className="px-4 py-2 bg-zinc-800 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-zinc-700 transition-colors flex items-center gap-2">
                       <XCircle className="h-4 w-4" /> Decline
                     </button>
                   </>
@@ -85,6 +87,8 @@ export default function BookingInboxPage() {
           ))
         )}
       </div>
+      </div>
+      </main>
     </div>
   );
 }

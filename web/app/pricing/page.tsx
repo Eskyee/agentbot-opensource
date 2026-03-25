@@ -60,7 +60,7 @@ const faqs = [
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 py-32">
         <div className="max-w-2xl">
@@ -80,7 +80,7 @@ export default function PricingPage() {
       {/* What's included */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid sm:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
             <div>
               <Badge variant="secondary" className="mb-3 text-[10px] uppercase tracking-widest">Agentbot</Badge>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-4">Creative Crew</h4>
@@ -118,7 +118,7 @@ export default function PricingPage() {
       {/* Plan Cards — Vercel-style borderless grid */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
             {plans.map((plan) => (
               <div key={plan.id} className="bg-black p-8 flex flex-col">
                 <div className="flex items-center gap-2 mb-6">
@@ -189,7 +189,7 @@ export default function PricingPage() {
                   {i > 0 && <Separator className="bg-zinc-900" />}
                   <div className="py-6">
                     <dt className="text-sm font-bold text-white uppercase tracking-wider">{faq.q}</dt>
-                    <dd className="mt-2 text-xs text-zinc-500 leading-relaxed">{faq.a}</dd>
+                    <dd className="mt-2 text-sm text-zinc-400 leading-relaxed">{faq.a}</dd>
                   </div>
                 </div>
               ))}

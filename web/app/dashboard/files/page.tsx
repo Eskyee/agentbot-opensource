@@ -92,7 +92,7 @@ export default function FilesPage() {
   const usedGB = (totalSize / (1024 * 1024 * 1024)).toFixed(2)
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -132,9 +132,9 @@ export default function FilesPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-zinc-400">Loading...</div>
+          <div className="text-left py-12 text-zinc-400">Loading...</div>
         ) : files.length === 0 ? (
-          <div className="text-center py-12 bg-zinc-900 border border-zinc-800 rounded-xl">
+          <div className="text-left py-12 bg-zinc-900 border border-zinc-800 rounded-xl">
             <p className="text-zinc-400">No files uploaded yet</p>
           </div>
         ) : (

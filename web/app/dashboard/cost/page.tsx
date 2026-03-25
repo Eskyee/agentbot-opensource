@@ -133,7 +133,7 @@ export default function CostPage() {
         )}
 
         {/* Stat cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             icon={DollarSign}
             label={`${period === 'mtd' ? 'MTD' : period} Cost`}
@@ -188,7 +188,7 @@ export default function CostPage() {
           <div className="px-5 py-4 border-b border-zinc-800">
             <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest">Agent Breakdown</h2>
           </div>
-          <table className="w-full">
+          <div className="overflow-x-auto"><table className="w-full">
             <thead>
               <tr className="border-b border-zinc-800 text-xs text-zinc-500 uppercase tracking-wider">
                 <th className="px-5 py-3 text-left">Agent</th>
@@ -221,7 +221,7 @@ export default function CostPage() {
                 <td className="px-5 py-3 text-right font-mono text-zinc-400">${summary.avgCostPerCall.toFixed(4)}</td>
               </tr>
             </tfoot>
-          </table>
+          </table></div>
         </div>
 
         {/* Model breakdown */}

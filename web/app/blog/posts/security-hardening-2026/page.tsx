@@ -2,14 +2,14 @@ import Link from 'next/link'
 
 export default function SecurityHardeningPost() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <article className="max-w-4xl mx-auto px-6 py-16">
-        <Link href="/blog" className="text-blue-400 hover:underline mb-8 inline-block">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+      <article className="max-w-3xl mx-auto px-6 py-16">
+        <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
         </Link>
 
         <header className="mb-12">
-          <h1 className="text-5xl font-bold mb-4">
+          <h1 className="text-5xl font-bold uppercase tracking-tighter mb-4">
             🛡️ Security Hardening & Enterprise APIs - March 2026
           </h1>
           <div className="flex items-center gap-4 text-zinc-400">
@@ -26,16 +26,16 @@ export default function SecurityHardeningPost() {
             API keys, swarms, tasks, and more—all production-ready.
           </p>
 
-          <div className="bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-800 rounded-xl p-6 mb-8">
-            <p className="text-red-300 font-bold mb-2">🚨 Security Notice</p>
+          <div className="bg-zinc-900/50 border border-zinc-800 p-6 mb-8">
+            <p className="text-zinc-300 font-bold mb-2">🚨 Security Notice</p>
             <p className="text-zinc-300">
               All users are now protected by enterprise-grade security. Your data is safe. Learn what we&apos;ve implemented below.
             </p>
           </div>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">🛡️ Enterprise Security Suite</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">🛡️ Enterprise Security Suite</h2>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Advanced Rate Limiting</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Advanced Rate Limiting</h3>
           <p className="text-zinc-300 mb-4">
             Built-in DDoS protection with adaptive rate limiting:
           </p>
@@ -46,7 +46,7 @@ export default function SecurityHardeningPost() {
             <li>Automatic IP blocking after threshold</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">SQL Injection Prevention</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">SQL Injection Prevention</h3>
           <p className="text-zinc-300 mb-4">
             Real-time pattern detection on all inputs:
           </p>
@@ -57,7 +57,7 @@ export default function SecurityHardeningPost() {
             <li>Returns 400 Bad Request on detection</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">XSS & CSRF Protection</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">XSS & CSRF Protection</h3>
           <p className="text-zinc-300 mb-4">
             Multi-layered defense against web attacks:
           </p>
@@ -69,7 +69,7 @@ export default function SecurityHardeningPost() {
             <li>X-Content-Type-Options: nosniff</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Bot Detection & Blocking</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Bot Detection & Blocking</h3>
           <p className="text-zinc-300 mb-4">
             Automatic detection of malicious bots and scrapers:
           </p>
@@ -80,7 +80,7 @@ export default function SecurityHardeningPost() {
             <li>Real-time logging to security dashboard</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Request Validation</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Request Validation</h3>
           <p className="text-zinc-300 mb-4">
             Strict input validation and limits:
           </p>
@@ -91,7 +91,7 @@ export default function SecurityHardeningPost() {
             <li>Content-Type enforcement</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">Security Monitoring Dashboard</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Security Monitoring Dashboard</h3>
           <p className="text-zinc-300 mb-4">
             Real-time security monitoring for admins:
           </p>
@@ -102,7 +102,7 @@ export default function SecurityHardeningPost() {
             <li>JSON logs to disk for compliance</li>
           </ul>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">🚀 9 New Enterprise APIs</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">🚀 9 New Enterprise APIs</h2>
 
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-8">
             <h3 className="text-xl font-bold mb-4">Memory Management API</h3>
@@ -176,37 +176,37 @@ export default function SecurityHardeningPost() {
             </p>
           </div>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">Security Stats</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">Security Stats</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <p className="text-zinc-400 text-sm">Rate Limit Protection</p>
-              <p className="text-3xl font-bold text-green-400">60 req/min</p>
+              <p className="text-3xl font-bold">60 req/min</p>
               <p className="text-zinc-400 text-sm mt-2">Per IP address</p>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <p className="text-zinc-400 text-sm">SQL Injection Detection</p>
-              <p className="text-3xl font-bold text-green-400">100%</p>
+              <p className="text-3xl font-bold">100%</p>
               <p className="text-zinc-400 text-sm mt-2">Pattern-based detection</p>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <p className="text-zinc-400 text-sm">Bot Detection</p>
-              <p className="text-3xl font-bold text-green-400">Real-time</p>
+              <p className="text-3xl font-bold">Real-time</p>
               <p className="text-zinc-400 text-sm mt-2">User agent analysis</p>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <p className="text-zinc-400 text-sm">Security Headers</p>
-              <p className="text-3xl font-bold text-green-400">8/8</p>
+              <p className="text-3xl font-bold">8/8</p>
               <p className="text-zinc-400 text-sm mt-2">All headers present</p>
             </div>
           </div>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">What This Means for You</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">What This Means for You</h2>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">For Users</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">For Users</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>✅ Your data is protected from DDoS attacks</li>
             <li>✅ Your accounts are protected from brute force</li>
@@ -215,7 +215,7 @@ export default function SecurityHardeningPost() {
             <li>✅ Zero downtime during attacks</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">For Developers</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">For Developers</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>✅ 9 new endpoints for building advanced features</li>
             <li>✅ API keys for programmatic access</li>
@@ -224,7 +224,7 @@ export default function SecurityHardeningPost() {
             <li>✅ Full documentation included</li>
           </ul>
 
-          <h3 className="text-2xl font-bold mt-8 mb-4">For Enterprises</h3>
+          <h3 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">For Enterprises</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li>✅ Enterprise-grade security monitoring</li>
             <li>✅ Real-time threat detection</li>
@@ -233,7 +233,7 @@ export default function SecurityHardeningPost() {
             <li>✅ 99.99% uptime SLA ready</li>
           </ul>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">Behind the Scenes</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">Behind the Scenes</h2>
 
           <p className="text-zinc-300 mb-4">
             This release includes:
@@ -247,7 +247,7 @@ export default function SecurityHardeningPost() {
             <li>Zero breaking changes (fully backward compatible)</li>
           </ul>
 
-          <h2 className="text-3xl font-bold mt-12 mb-6">What&apos;s Coming Next</h2>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mt-12 mb-6">What&apos;s Coming Next</h2>
 
           <p className="text-zinc-300 mb-4">
             We&apos;re already working on:
@@ -262,14 +262,14 @@ export default function SecurityHardeningPost() {
             <li>💾 Encryption at rest</li>
           </ul>
 
-          <div className="bg-gradient-to-r from-blue-900/20 to-blue-900/20 border border-blue-800 rounded-xl p-8 text-center mt-12">
-            <h3 className="text-2xl font-bold mb-4">Ready to upgrade?</h3>
-            <p className="text-zinc-300 mb-6">
+          <div className="bg-zinc-900/50 border border-zinc-800 p-8 mt-12">
+            <h3 className="text-2xl font-bold uppercase tracking-tighter mb-4">Ready to upgrade?</h3>
+            <p className="text-zinc-400 text-sm mb-6">
               All new features are live now. Start using the new APIs today.
             </p>
             <Link 
               href="/dashboard"
-              className="inline-block bg-white text-black px-8 py-3 rounded-lg font-medium hover:bg-zinc-100 transition-colors"
+              className="inline-block border border-zinc-800 px-8 py-3 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors"
             >
               Go to Dashboard →
             </Link>
@@ -279,9 +279,9 @@ export default function SecurityHardeningPost() {
 
           <p className="text-zinc-400 text-sm">
             Questions? Check our{' '}
-            <a href="https://docs.agentbot.raveculture.xyz" className="text-blue-400 hover:underline">documentation</a>
+            <a href="https://docs.agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white">documentation</a>
             {' '}or reach out on{' '}
-            <a href="https://discord.gg/clawd" className="text-blue-400 hover:underline">Discord</a>.
+            <a href="https://discord.gg/clawd" className="text-zinc-400 hover:text-white">Discord</a>.
           </p>
         </div>
       </article>

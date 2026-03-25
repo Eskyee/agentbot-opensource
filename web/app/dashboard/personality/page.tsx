@@ -50,7 +50,7 @@ export default function PersonalityPage() {
           <h2 className="text-sm font-bold uppercase tracking-widest mb-4">
             Choose Personality Type
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             {PERSONALITIES.map((p) => (
               <button
                 key={p.id}

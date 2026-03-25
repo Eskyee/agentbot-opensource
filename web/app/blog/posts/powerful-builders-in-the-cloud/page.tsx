@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function PowerfulBuildersInTheCloudPost() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,11 +11,11 @@ export default function PowerfulBuildersInTheCloudPost() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">March 7, 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Powerful Builders, In The Cloud</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Powerful Builders, In The Cloud</h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-900 text-blue-300">Vision</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-900 text-blue-300">Platform</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-green-900 text-green-300">Infrastructure</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Vision</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Platform</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Infrastructure</span>
             </div>
           </div>
 
@@ -23,7 +23,7 @@ export default function PowerfulBuildersInTheCloudPost() {
             We&apos;re building for the builders. For those who refuse to be constrained by infrastructure limits. For teams that want to ship fast, think big, and scale without friction.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Cloud Advantage</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Cloud Advantage</h2>
           <p className="text-zinc-300 mb-4">
             The best builders are already in the cloud. They&apos;ve abandoned the complexity of managing servers. They&apos;re focused on what matters: shipping features, solving problems, and delighting users.
           </p>
@@ -55,7 +55,7 @@ export default function PowerfulBuildersInTheCloudPost() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Why Agentbot?</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Why Agentbot?</h2>
           <p className="text-zinc-300 mb-4">
             We&apos;ve stripped away the complexity. No infrastructure work. No DevOps. Just pure building.
           </p>
@@ -90,7 +90,7 @@ export default function PowerfulBuildersInTheCloudPost() {
             </ul>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Power of Agentic Software</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Power of Agentic Software</h2>
           <p className="text-zinc-300 mb-4">
             AI agents are the future. They think, plan, and act. They automate entire workflows. They work 24/7 without fatigue.
           </p>
@@ -109,7 +109,7 @@ export default function PowerfulBuildersInTheCloudPost() {
             <li>Multi-agent swarms that collaborate to solve complex problems</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Cloud-Native Architecture</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Cloud-Native Architecture</h2>
           <p className="text-zinc-300 mb-4">
             Every feature is built for the cloud. Serverless compute, managed databases, edge caching, global redundancy. You get enterprise infrastructure for startup pricing.
           </p>
@@ -144,7 +144,7 @@ export default function PowerfulBuildersInTheCloudPost() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">For Teams That Move Fast</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">For Teams That Move Fast</h2>
           <p className="text-zinc-300 mb-4">
             Startups, agencies, enterprises—they all use Agentbot because it lets them focus on what matters. Not infrastructure. Not DevOps. Just building incredible agents.
           </p>
@@ -164,7 +164,7 @@ export default function PowerfulBuildersInTheCloudPost() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Future Is Agentic</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Future Is Agentic</h2>
           <p className="text-zinc-300 mb-4">
             Software that thinks. Systems that act. Agents that work 24/7.
           </p>
@@ -173,11 +173,11 @@ export default function PowerfulBuildersInTheCloudPost() {
           </p>
 
           <div className="mt-12 space-y-4">
-            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-900/30 to-blue-900/30 border border-blue-800">
+            <div className="p-6 bg-zinc-900/50 border border-zinc-800">
               <h3 className="text-lg font-semibold text-white mb-3">Start Building Now</h3>
               <p className="text-zinc-300 mb-4">Deploy your first agent in 60 seconds. No credit card required.</p>
               <div className="flex gap-3 flex-wrap">
-                <Link href="/signup" className="inline-block bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-100 transition-colors">
+                <Link href="/signup" className="inline-block border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors">
                   Get Started Free
                 </Link>
                 <Link href="https://docs.agentbot.raveculture.xyz" className="inline-block border border-zinc-500 text-zinc-300 px-6 py-2.5 rounded-lg font-medium hover:border-zinc-300 transition-colors">

@@ -124,7 +124,7 @@ export default async function Home() {
       {/* Features */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-20">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
             {[
               { num: '01', label: 'Intelligence', title: 'Tiered Sovereignty', desc: 'OpenRouter-powered inference with DeepSeek R1 and Llama 3.3. BYOK with zero markup.' },
               { num: '02', label: 'Economy', title: 'Autonomous Payments', desc: 'Self-executing contracts and invoicing via CDP wallets on Base. Get paid without chasing.' },
@@ -144,7 +144,7 @@ export default async function Home() {
       {/* Powered By */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 text-center mb-6">Powered By</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 text-left mb-6">Powered By</div>
           <div className="flex items-center justify-center gap-8 flex-wrap">
             {['Vercel', 'Render', 'Base', 'Coinbase', 'OpenRouter', 'Mux'].map((name) => (
               <span key={name} className="text-zinc-600 text-xs uppercase tracking-widest hover:text-white transition-colors cursor-default">
@@ -170,7 +170,7 @@ export default async function Home() {
           </div>
 
           {/* What's included */}
-          <div className="grid sm:grid-cols-3 gap-8 mb-16 pb-16 border-b border-zinc-900">
+          <div className="grid sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 pb-16 border-b border-zinc-900">
             <div>
               <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Agentbot</div>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-3">Creative Crew</h4>
@@ -204,7 +204,7 @@ export default async function Home() {
           </div>
 
           {/* Plan Cards */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+          <div className="grid sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
             {[
               { id: 'solo', name: 'Solo', price: '29', features: ['1 Creative Agent thread', 'Audience engagement (Telegram)', 'Opportunity discovery'] },
               { id: 'collective', name: 'Collective', price: '69', popular: true, features: ['3 Creative Agent threads', '1 OpenClaw Business seat', 'Email Triage (50/day)', 'x402 USDC Invoicing'] },
@@ -231,7 +231,7 @@ export default async function Home() {
                 </ul>
                 <Link
                   href={`/api/stripe/checkout?plan=${plan.id}`}
-                  className={`block w-full py-3 text-center text-xs font-bold uppercase tracking-widest transition-colors ${
+                  className={`block w-full py-3 text-left text-xs font-bold uppercase tracking-widest transition-colors ${
                     plan.popular
                       ? 'bg-white text-black hover:bg-zinc-200'
                       : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'

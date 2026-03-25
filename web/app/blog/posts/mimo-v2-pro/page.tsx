@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function MiMoV2ProPost() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -23,11 +23,11 @@ export default function MiMoV2ProPost() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">MiMo-V2-Pro: Xiaomi&apos;s Flagship AI Model</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">MiMo-V2-Pro: Xiaomi&apos;s Flagship AI Model</h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-900/30 text-blue-400 border border-blue-800/50">New Model</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Xiaomi</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Agent-Optimized</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400 border border-blue-800/50">New Model</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Xiaomi</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Agent-Optimized</span>
             </div>
           </div>
 
@@ -36,13 +36,13 @@ export default function MiMoV2ProPost() {
             is now available as the default model on Agentbot.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Why MiMo-V2-Pro?</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Why MiMo-V2-Pro?</h2>
           
           <div className="grid gap-4 mb-6">
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">🧠</span>
-                <h3 className="text-lg font-bold m-0">1T+ Parameters</h3>
+                <h3 className="text-lg font-bold uppercase tracking-tighter m-0">1T+ Parameters</h3>
               </div>
               <p className="text-zinc-400 text-sm m-0">
                 Over 1 trillion total parameters deliver exceptional reasoning and generation quality.
@@ -52,7 +52,7 @@ export default function MiMoV2ProPost() {
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">📚</span>
-                <h3 className="text-lg font-bold m-0">1M Context Length</h3>
+                <h3 className="text-lg font-bold uppercase tracking-tighter m-0">1M Context Length</h3>
               </div>
               <p className="text-zinc-400 text-sm m-0">
                 Process entire codebases, long documents, and complex multi-step workflows without chunking.
@@ -62,7 +62,7 @@ export default function MiMoV2ProPost() {
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">🏆</span>
-                <h3 className="text-lg font-bold m-0">#1 in Programming</h3>
+                <h3 className="text-lg font-bold uppercase tracking-tighter m-0">#1 in Programming</h3>
               </div>
               <p className="text-zinc-400 text-sm m-0">
                 Ranks #1 in programming benchmarks, approaching Opus 4.6 performance in standard evaluations.
@@ -72,7 +72,7 @@ export default function MiMoV2ProPost() {
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">🤖</span>
-                <h3 className="text-lg font-bold m-0">Built for Agents</h3>
+                <h3 className="text-lg font-bold uppercase tracking-tighter m-0">Built for Agents</h3>
               </div>
               <p className="text-zinc-400 text-sm m-0">
                 Deeply optimized for agentic scenarios — orchestrating workflows, driving production tasks, and reliable execution.
@@ -80,7 +80,7 @@ export default function MiMoV2ProPost() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Benchmark Performance</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Benchmark Performance</h2>
           
           <div className="overflow-x-auto mb-6">
             <table className="w-full text-sm">
@@ -115,7 +115,7 @@ export default function MiMoV2ProPost() {
             </table>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Pricing</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Pricing</h2>
           
           <p className="text-zinc-300 mb-4">
             MiMo-V2-Pro is available via OpenRouter with competitive pricing:
@@ -154,24 +154,24 @@ export default function MiMoV2ProPost() {
             </p>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Performance Stats</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Performance Stats</h2>
           
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="p-4 bg-zinc-900/50 border border-zinc-800">
               <div className="text-2xl font-mono font-bold text-blue-400">2.8s</div>
               <div className="text-xs text-zinc-500 mt-1">Latency</div>
             </div>
-            <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-center">
+            <div className="p-4 bg-zinc-900/50 border border-zinc-800">
               <div className="text-2xl font-mono font-bold text-emerald-400">34 tps</div>
               <div className="text-xs text-zinc-500 mt-1">Throughput</div>
             </div>
-            <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800 text-center">
+            <div className="p-4 bg-zinc-900/50 border border-zinc-800">
               <div className="text-2xl font-mono font-bold text-green-400">100%</div>
               <div className="text-xs text-zinc-500 mt-1">Uptime</div>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Why We Chose MiMo-V2-Pro</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Why We Chose MiMo-V2-Pro</h2>
           
           <p className="text-zinc-300 mb-4">
             At Agentbot, we need models that can handle complex agentic workflows — multi-step reasoning, 
@@ -186,7 +186,7 @@ export default function MiMoV2ProPost() {
             <li><strong>Cost-effective:</strong> Competitive pricing vs Claude/GPT for similar quality</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Getting Started</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Getting Started</h2>
           
           <p className="text-zinc-300 mb-4">
             MiMo-V2-Pro is now the default model for all new Agentbot deployments. Existing users can 
@@ -204,7 +204,7 @@ export default function MiMoV2ProPost() {
             Or try it right now in our <Link href="/demo" className="text-blue-400 hover:text-blue-300">live demo</Link>.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Context Specs</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Context Specs</h2>
           
           <div className="overflow-x-auto mb-6">
             <table className="w-full text-sm">
@@ -236,7 +236,7 @@ export default function MiMoV2ProPost() {
           <div className="mt-12 p-6 rounded-xl bg-zinc-900 border border-zinc-800">
             <p className="text-zinc-300 mb-4">Try MiMo-V2-Pro now — no signup required</p>
             <div className="flex gap-3">
-              <Link href="/demo" className="inline-block bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-100 transition-colors">
+              <Link href="/demo" className="inline-block border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors">
                 Live Demo
               </Link>
               <Link href="/signup" className="inline-block bg-zinc-800 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-700 transition-colors">

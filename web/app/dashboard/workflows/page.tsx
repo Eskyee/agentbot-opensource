@@ -12,7 +12,7 @@ export default function WorkflowsPage() {
   ])
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -53,7 +53,7 @@ export default function WorkflowsPage() {
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
           <h2 className="text-lg font-bold mb-4">Workflow Templates</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {['Email Automation', 'Data Pipeline', 'Customer Support'].map(template => (
               <div key={template} className="bg-zinc-800 rounded-lg p-4 hover:bg-zinc-700 cursor-pointer">
                 <div className="font-medium mb-2">{template}</div>

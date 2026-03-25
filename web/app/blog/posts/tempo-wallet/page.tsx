@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,17 +11,17 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">19 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Tempo Wallet: Autonomous Agent Payments</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Tempo Wallet: Autonomous Agent Payments</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">MPP</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">Tempo</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-green-800 text-green-400">Agents</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">MPP</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Tempo</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Agents</span>
             </div>
           </div>
 
           <p className="text-zinc-300 mb-4">We&apos;re excited to announce <strong>Tempo Wallet</strong> support in Agentbot. Now your AI agents can pay for services autonomously using USDC on Base — no human intervention required.</p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What is Tempo Wallet?</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What is Tempo Wallet?</h2>
           <p className="text-zinc-300 mb-4">Tempo is a wallet infrastructure designed specifically for AI agents. Unlike traditional wallets that require human signatures, Tempo wallets can:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Sign transactions automatically</li>
@@ -30,7 +30,7 @@ export default function Post() {
             <li>Handle micropayments efficiently</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">How It Works</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">How It Works</h2>
           <p className="text-zinc-300 mb-4">Each agent can have its own Tempo wallet. When the agent needs to pay for a service (AI API calls, data queries, etc.), it automatically signs and submits the payment.</p>
 
           <pre className="bg-zinc-900 p-4 rounded-lg text-zinc-300 mb-4 overflow-x-auto">
@@ -44,7 +44,7 @@ const result = await agent.callPaidService('https://mpp.dev/api/ai', {
 // No human approval needed`}
           </pre>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Multi-Wallet Support</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Multi-Wallet Support</h2>
           <p className="text-zinc-300 mb-4">Every company can have multiple agents, each with their own wallet. This provides:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>Budget isolation</strong> — Each agent has its own USDC balance</li>
@@ -52,9 +52,9 @@ const result = await agent.callPaidService('https://mpp.dev/api/ai', {
             <li><strong>Audit trails</strong> — Track spending per agent</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">API Endpoints</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">API Endpoints</h2>
           
-          <h3 className="text-xl font-bold mt-6 mb-3">Create Wallet</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Create Wallet</h3>
           <pre className="bg-zinc-900 p-4 rounded-lg text-zinc-300 mb-4 overflow-x-auto">
 {`POST /api/agent/mpp
 {
@@ -66,12 +66,12 @@ const result = await agent.callPaidService('https://mpp.dev/api/ai', {
 // Returns: { address, privateKey }`}
           </pre>
 
-          <h3 className="text-xl font-bold mt-6 mb-3">Get Balance</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Get Balance</h3>
           <pre className="bg-zinc-900 p-4 rounded-lg text-zinc-300 mb-4 overflow-x-auto">
 {`GET /api/agent/mpp?action=get-balance&agentId=agent-123`}
           </pre>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Use Cases</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Use Cases</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>AI API calls</strong> — Agents pay for GPT-4, Claude, Gemini usage</li>
             <li><strong>Data queries</strong> — Pay for database lookups, API access</li>
@@ -79,12 +79,12 @@ const result = await agent.callPaidService('https://mpp.dev/api/ai', {
             <li><strong>Services</strong> — Pay for external APIs on demand</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Get Started</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Get Started</h2>
           <p className="text-zinc-300 mb-4">Tempo Wallet is now available in Agentbot. Configure your agent&apos;s wallet via the API or dashboard.</p>
           <p className="text-zinc-300 mb-4">Built on <strong>x402 protocol</strong> for standardized machine-to-machine payments.</p>
 
           <div className="mt-12 pt-8 border-t border-zinc-800">
-            <p className="text-zinc-500">Learn more: <a href="https://mpp.dev" className="text-blue-400 hover:underline">mpp.dev</a> | <a href="https://wallet.tempo.xyz" className="text-blue-400 hover:underline">wallet.tempo.xyz</a></p>
+            <p className="text-zinc-500">Learn more: <a href="https://mpp.dev" className="text-zinc-400 hover:text-white">mpp.dev</a> | <a href="https://wallet.tempo.xyz" className="text-zinc-400 hover:text-white">wallet.tempo.xyz</a></p>
           </div>
         </article>
       </div>

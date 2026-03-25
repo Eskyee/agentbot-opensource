@@ -61,7 +61,7 @@ export default function StreamingPage() {
           </div>
 
           {/* Platform Cards */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {connectedPlatforms.map(platform => (
               <div key={platform.id} className={`bg-zinc-900 rounded-xl p-5 border transition-colors ${platform.connected ? 'border-green-500/30' : 'border-zinc-800'}`}>
                 <div className="flex items-center justify-between mb-4">
@@ -77,7 +77,7 @@ export default function StreamingPage() {
                 </div>
 
                 {platform.connected && (
-                  <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-sm">
                     <div>
                       <div className="text-xs text-zinc-500">Listeners</div>
                       <div className="font-mono">{platform.stats.listeners.toLocaleString()}</div>
@@ -111,7 +111,7 @@ export default function StreamingPage() {
             ))}
           </div>
 
-          <div className="mt-8 bg-zinc-900 rounded-xl p-6 border border-zinc-800 text-center">
+          <div className="mt-8 bg-zinc-900 rounded-xl p-6 border border-zinc-800 text-left">
             <p className="text-sm text-zinc-400">
               Streaming integrations require OAuth authentication with each platform. Your agent will automatically track plays, listeners, and royalties once connected.
             </p>

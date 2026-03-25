@@ -268,7 +268,7 @@ export default function ColonyPage() {
             <SoulIndicators soul={data.root.soul} />
 
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
                 <div className="text-[10px] text-zinc-500 font-mono uppercase mb-1">Colony Size</div>
                 <div className="text-2xl font-black">{data.colony_size}</div>
@@ -310,7 +310,7 @@ export default function ColonyPage() {
                   <AgentLineageNode key={agent.id} agent={agent} allAgents={data.agents} />
                 ))}
                 {data.agents.length === 0 && (
-                  <div className="text-center py-10 text-zinc-600 text-sm font-mono">
+                  <div className="text-left py-10 text-zinc-600 text-sm font-mono">
                     No agents in colony yet
                   </div>
                 )}
@@ -319,7 +319,7 @@ export default function ColonyPage() {
               <div>
                 <h2 className="text-xs font-mono text-zinc-500 uppercase mb-4">Fitness Ranking</h2>
                 <div className="rounded-lg border border-zinc-800 overflow-hidden">
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto"><table className="w-full text-sm">
                     <thead>
                       <tr className="bg-zinc-900 text-[10px] font-mono text-zinc-500 uppercase">
                         <th className="text-left p-3">Rank</th>
@@ -356,7 +356,7 @@ export default function ColonyPage() {
                           </tr>
                         ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
             )}

@@ -192,13 +192,13 @@ export default function BillingPage() {
             {/* Payment Methods */}
             <div className="mb-8">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">Payment Methods</span>
-              <div className="grid gap-4 md:grid-cols-2 mt-2">
+              <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 mt-2">
                 <div className="border border-zinc-800 p-4">
                   <div className="text-sm font-bold mb-1">Stripe</div>
                   <p className="text-zinc-500 text-xs mb-3">Pay with card. Instant activation.</p>
                   <a
                     href="/api/stripe/checkout?plan=solo"
-                    className="block w-full text-center bg-white text-black px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                    className="block w-full text-left bg-white text-black px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                   >
                     Pay with Card
                   </a>
@@ -208,7 +208,7 @@ export default function BillingPage() {
                   <p className="text-zinc-500 text-xs mb-3">Pay with USDC. On-chain settlement.</p>
                   <a
                     href="/dashboard/wallet"
-                    className="block w-full text-center border border-zinc-700 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:border-zinc-500 transition-colors"
+                    className="block w-full text-left border border-zinc-700 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:border-zinc-500 transition-colors"
                   >
                     Open Wallet
                   </a>
@@ -219,7 +219,7 @@ export default function BillingPage() {
             {/* Upgrade Plans */}
             <div>
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">Upgrade</span>
-              <div className="grid gap-4 md:grid-cols-3 mt-2">
+              <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-2">
                 {plans.map((plan) => (
                   <div
                     key={plan.id}

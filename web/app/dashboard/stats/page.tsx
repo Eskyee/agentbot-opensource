@@ -97,7 +97,7 @@ export default function StatsPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
               {/* CPU */}
               <div className="border border-zinc-700 rounded-lg p-6 bg-zinc-900/50">
                 <div className="flex items-center justify-between mb-3">
@@ -201,7 +201,7 @@ export default function StatsPage() {
             </div>
           </>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-left py-12">
             <p className="text-zinc-400">No stats available</p>
           </div>
         )}

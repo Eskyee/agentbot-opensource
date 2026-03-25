@@ -87,7 +87,7 @@ export default function DJStreamPage() {
   const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">🎛️ DJ Stream Dashboard</h1>
 
@@ -228,7 +228,7 @@ export default function DJStreamPage() {
                   </code>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <div className="text-zinc-400 text-sm mb-1">Playback ID</div>
                     <code className="block bg-black p-2 rounded text-sm">

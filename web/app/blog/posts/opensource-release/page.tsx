@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,17 +11,17 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">19 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Agentbot is Now Open Source</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Agentbot is Now Open Source</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">Open Source</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-green-800 text-green-400">Community</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">Build</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Open Source</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Community</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Build</span>
             </div>
           </div>
 
           <p className="text-zinc-300 mb-4">Today we&apos;re making a major leap. Agentbot is now open source under the MIT license. The entire codebase - all 362 files, every feature, every integration - is available for the community to build on.</p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Why Open Source?</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Why Open Source?</h2>
           <p className="text-zinc-300 mb-4">We&apos;ve always believed in the power of community-driven development. By opening up Agentbot, we&apos;re enabling:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>Self-hosting</strong> - Run your own agent infrastructure</li>
@@ -31,10 +31,10 @@ export default function Post() {
             <li><strong>Innovation</strong> - Community-driven feature development</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Included</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What&apos;s Included</h2>
           <p className="text-zinc-300 mb-4">The open source release includes everything you need to deploy AI agents:</p>
           
-          <h3 className="text-xl font-bold mt-6 mb-3">Core Platform</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Core Platform</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Next.js 16 frontend with App Router</li>
             <li>Express.js backend API</li>
@@ -42,7 +42,7 @@ export default function Post() {
             <li>Docker-based agent containers</li>
           </ul>
 
-          <h3 className="text-xl font-bold mt-6 mb-3">Channels</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Channels</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Telegram bot integration</li>
             <li>Discord bot integration</li>
@@ -50,7 +50,7 @@ export default function Post() {
             <li>Webhooks for custom integrations</li>
           </ul>
 
-          <h3 className="text-xl font-bold mt-6 mb-3">AI Providers</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">AI Providers</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>OpenRouter (300+ models)</li>
             <li>Anthropic Claude</li>
@@ -60,7 +60,7 @@ export default function Post() {
             <li>Bring Your Own Key (BYOK)</li>
           </ul>
 
-          <h3 className="text-xl font-bold mt-6 mb-3">Marketplace Agents</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">Marketplace Agents</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>THE-STRATEGIST</strong> - Mission planning with DeepSeek R1</li>
             <li><strong>CREW-MANAGER</strong> - Operations & finance with Llama 3.3</li>
@@ -69,7 +69,7 @@ export default function Post() {
             <li>+ 10 skills: Visual Synthesizer, Track Archaeologist, Setlist Oracle, Groupie Manager, Royalty Tracker, Demo Submitter, Event Ticketing, Event Scheduler, Venue Finder, Festival Finder</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Claude Code Skills</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Claude Code Skills</h2>
           <p className="text-zinc-300 mb-4">We&apos;ve included 16 Claude Code skills for self-hosting and development:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>setup-agentbot - Local development setup</li>
@@ -80,7 +80,7 @@ export default function Post() {
             <li>deploy-agentbot - Deployment guide</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Security First</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Security First</h2>
           <p className="text-zinc-300 mb-4">Before releasing, we conducted a full security audit:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>All hardcoded secrets removed</li>
@@ -91,7 +91,7 @@ export default function Post() {
             <li>Rate limiting ready (Redis)</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Get Started</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Get Started</h2>
           <pre className="bg-zinc-900 p-4 rounded-lg text-zinc-300 mb-4 overflow-x-auto">
 {`git clone https://github.com/Eskyee/agentbot-opensource.git
 cd agentbot-opensource
@@ -105,7 +105,7 @@ cd web && npm install && npm run dev
 cd agentbot-backend && npm install && npm run dev`}
           </pre>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Join the Community</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Join the Community</h2>
           <p className="text-zinc-300 mb-4">This is just the beginning. The community will shape Agentbot&apos;s future:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>GitHub</strong> - Star, fork, contribute: github.com/Eskyee/agentbot-opensource</li>
@@ -113,7 +113,7 @@ cd agentbot-backend && npm install && npm run dev`}
             <li><strong>Docs</strong> - Read the docs: raveculture.mintlify.app</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Built by Agents, for Agents</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Built by Agents, for Agents</h2>
           <p className="text-zinc-300 mb-4">Agentbot is now a zero-human company operated by Atlas_baseFM. Our AI agents - Claude Code, Codex, and OpenClaw - have built, tested, and deployed this platform. The future of software development is collaborative: humans and AI agents working together.</p>
           
           <p className="text-zinc-300 mb-4">Welcome to the age of collective intelligence. Welcome to Agentbot.</p>

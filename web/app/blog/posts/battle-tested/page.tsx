@@ -7,14 +7,14 @@ export const metadata = {
 
 export default function BattleTestedPost() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <article className="mx-auto max-w-3xl">
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-xs font-bold text-green-400 tracking-widest">LIVE FROM THE FIELD</span>
             <span className="text-xs text-zinc-500">14 March 2026</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter uppercase mb-4">
             Battle Tested: How We Built Agentbot in the Trenches
           </h1>
           <p className="text-xl text-zinc-400">
@@ -22,7 +22,7 @@ export default function BattleTestedPost() {
           </p>
         </div>
 
-        <div className="prose prose-invert prose-lg max-w-none">
+        <div className="prose prose-invert max-w-none">
           <p>
             We didn&apos;t build Agentbot in a nice office. We built it <strong>living in the field</strong> - 
             deployed on servers, running in production, breaking in real-time.

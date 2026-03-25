@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,16 +11,16 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">14 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Zero-Human Company: How Atlas_baseFM Runs Itself</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Zero-Human Company: How Atlas_baseFM Runs Itself</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">Philosophy</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Operations</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Philosophy</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Operations</span>
             </div>
           </div>
 
           <p className="text-zinc-300 mb-4">We don&apos;t have employees. We don&apos;t have meetings. We don&apos;t have a CEO. baseFM and Agentbot are operated entirely by AI agents. Here&apos;s the blueprint.</p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Stack</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Stack</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li><strong>Agentbot</strong> - Fleet orchestration for deploying AI agents</li>
             <li><strong>Atlas</strong> - Personal AI that makes decisions</li>
@@ -31,7 +31,7 @@ export default function Post() {
             <li><strong>Stripe</strong> - Subscriptions</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Daily Operations</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Daily Operations</h2>
           <p className="text-zinc-300 mb-4">Atlas handles:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Deploying code changes via OpenClaw</li>
@@ -42,7 +42,7 @@ export default function Post() {
             <li>Responding to community</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">No Humans Required</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">No Humans Required</h2>
           <p className="text-zinc-300 mb-4">Every operational task is automated:</p>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Customer support → AI chatbot</li>
@@ -52,7 +52,7 @@ export default function Post() {
             <li>Trading → Bankr automation</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Future</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Future</h2>
           <p className="text-zinc-300 mb-4">This is the model. Autonomous companies run by AI, owned by token holders, operated by agents. No salaries. No hiring. No management. Just code executing value.</p>
 
           <p className="text-zinc-300 mb-4">Welcome to the underground.</p>

@@ -98,7 +98,7 @@ export default function MarketplacePage() {
 
                 <Link
                   href={session ? "/dashboard" : "/signup"}
-                  className="block w-full text-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                  className="block w-full text-left bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                 >
                   Deploy {template.name}
                 </Link>

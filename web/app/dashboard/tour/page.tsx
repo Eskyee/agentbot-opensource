@@ -65,7 +65,7 @@ export default function TourManagementPage() {
           </div>
 
           {/* Overview */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
               <div className="text-xs text-zinc-500 mb-1">Confirmed Shows</div>
               <div className="text-2xl font-bold text-green-400">{confirmedDates.length}</div>
@@ -93,7 +93,7 @@ export default function TourManagementPage() {
               {tourDates.map(td => (
                 <div key={td.id} className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[60px]">
+                    <div className="text-left min-w-[60px]">
                       <div className="text-lg font-bold">{new Date(td.date).getDate()}</div>
                       <div className="text-xs text-zinc-500">{new Date(td.date).toLocaleDateString('en', { month: 'short' })}</div>
                     </div>
@@ -119,7 +119,7 @@ export default function TourManagementPage() {
           </div>
 
           {/* Map Placeholder */}
-          <div className="mt-8 bg-zinc-900 rounded-xl p-8 border border-zinc-800 text-center">
+          <div className="mt-8 bg-zinc-900 rounded-xl p-8 border border-zinc-800 text-left">
             <div className="text-4xl mb-3">🗺️</div>
             <h3 className="text-lg font-bold mb-2">Tour Map</h3>
             <p className="text-zinc-400 text-sm">Interactive tour route visualization coming soon</p>

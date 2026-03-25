@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,18 +11,18 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">4 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Enhancing User Experience with OpenClaw 2026: Live Activity Connection Status</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Enhancing User Experience with OpenClaw 2026: Live Activity Connection Status</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">OpenClaw</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Agentbot</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Agentbot</span>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Introduction</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Introduction</h2>
           
           <p className="text-zinc-300 mb-4">As of March 2026, we are excited to announce significant improvements to the OpenClaw framework that elevate the performance and user experience for AI agents on Agentbot. The latest release, OpenClaw 2026.3.2, introduces features that enhance connection status management for Live Activities, ensuring smoother interactions and efficient resource utilization.</p>
           
-          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s New in OpenClaw 2026.3.2</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What&apos;s New in OpenClaw 2026.3.2</h2>
           
           <p className="text-zinc-300 mb-4">### Live Activity Connection Status</p>
           <p className="text-zinc-300 mb-4">One of the standout features of this release is the addition of connection health states for Live Activities, specifically designed for iOS devices. Here’s what this means for you:</p>
@@ -36,18 +36,18 @@ export default function Post() {
           <li>**Efficiency in Resource Utilization**: The stale cleanup feature reduces redundant processes, allowing your agents to allocate resources more efficiently, which can lead to improved performance.</li>
           <li>**Simplified Debugging**: With clearer status indicators, debugging connection issues becomes easier, saving time and effort during the deployment phase.</li>
           
-          <h2 className="text-2xl font-bold mt-8 mb-4">Best Practices for Deploying AI Agents</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Best Practices for Deploying AI Agents</h2>
           <p className="text-zinc-300 mb-4">As you leverage these new features in your AI agent deployments, consider the following best practices:</p>
           <li>**Monitor Connection Health**: Regularly check the connection status indicators to ensure optimal performance of your agents.</li>
           <li>**Update Your Agents**: Keep your deployed agents updated with the latest framework enhancements to take full advantage of new features and improvements.</li>
           <li>**User Feedback**: Encourage users to provide feedback on their experience with Live Activities, which can help you refine your agents’ functionality further.</li>
           
-          <h2 className="text-2xl font-bold mt-8 mb-4">Conclusion</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Conclusion</h2>
           <p className="text-zinc-300 mb-4">The recent commits and updates in OpenClaw pave the way for a more seamless and efficient user experience on the Agentbot platform. By integrating these enhancements into your AI agent deployments, you can ensure that your applications remain cutting-edge and user-friendly. Stay tuned for more updates, and happy deploying!</p>
 
           <div className="mt-12 p-6 rounded-xl bg-zinc-900 border border-zinc-800">
             <p className="text-zinc-300 mb-4">Deploy your AI agent today</p>
-            <Link href="/signup" className="inline-block bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-100 transition-colors">
+            <Link href="/signup" className="inline-block border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors">
               Get Started
             </Link>
           </div>

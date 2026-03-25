@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,12 +11,12 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">21 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">10 Days Out: What We Shipped This Week</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">10 Days Out: What We Shipped This Week</h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Build Log</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Security</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Platform</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Launch</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Build Log</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Security</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Platform</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Launch</span>
             </div>
           </div>
 
@@ -24,7 +24,7 @@ export default function Post() {
             March 31 is 10 days away. This week we went from &ldquo;mostly working&rdquo; to production-hardened. 313 commits across 5 days. Here&apos;s what actually shipped.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Security Hardening</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Security Hardening</h2>
           <p className="text-zinc-300 mb-4">
             We found and fixed a set of production-breaking security gaps that would have been embarrassing on launch day.
           </p>
@@ -38,12 +38,12 @@ export default function Post() {
             <li><strong>Gateway tokens upgraded</strong> — <code className="text-zinc-300">Math.random()</code> replaced with <code className="text-zinc-300">crypto.randomBytes(32)</code></li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Row-Level Security + Data Isolation</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Row-Level Security + Data Isolation</h2>
           <p className="text-zinc-300 mb-4">
             Every user now operates in a fully isolated data context. RLS policies enforce at the database level that no user can read, write, or enumerate another user&apos;s agents, metrics, or configs. Auth middleware attaches user context to every request, and the provision layer validates plan entitlements before any allocation.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Real Agent Provisioning — Wired End to End</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Real Agent Provisioning — Wired End to End</h2>
           <p className="text-zinc-300 mb-4">
             The provisioning path was previously simulated with a <code className="text-zinc-300">{"// TODO"}</code> placeholder. That&apos;s gone. The full flow now:
           </p>
@@ -59,12 +59,12 @@ export default function Post() {
             Real Mux live streams are provisioned on agent creation. Every agent gets a dedicated RTMP endpoint and HLS playback URL from day one.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">BullMQ Worker Service</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">BullMQ Worker Service</h2>
           <p className="text-zinc-300 mb-4">
             Long-running agent tasks now go through a BullMQ queue backed by Redis. Provisioning, updates, and repair jobs are fully async — the API returns instantly and the worker handles the heavy lifting. Jobs are retried automatically on failure with exponential backoff.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">No Free Tier — Everyone Pays</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">No Free Tier — Everyone Pays</h2>
           <p className="text-zinc-300 mb-4">
             We killed the free tier. Agentbot is infrastructure — it costs money to run, and agents that generate value should pay for themselves. Three plans from launch:
           </p>
@@ -77,7 +77,7 @@ export default function Post() {
             Plan enforcement is now deep in the stack — not just a UI gate. The backend validates entitlements before any container is created.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Design System Lock</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Design System Lock</h2>
           <p className="text-zinc-300 mb-4">
             29 design violations across 15 pages were found and fixed. Every page on the platform now runs through the same design system — dark-first, zinc palette, <code className="text-zinc-300">font-mono</code>, no gradients on containers, no <code className="text-zinc-300">white/opacity</code> tokens. This runs all the way from the marketing site to the dashboard fleet view.
           </p>
@@ -85,12 +85,12 @@ export default function Post() {
             The rule: if it wasn&apos;t in the design system, it got replaced before it shipped.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Build Pipeline — Clean</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Build Pipeline — Clean</h2>
           <p className="text-zinc-300 mb-4">
             A pre-existing <code className="text-zinc-300">await</code> in a non-async <code className="text-zinc-300">useEffect</code> callback was breaking the Turbopack build. Fixed with an async IIFE wrapper. The build is now clean on every push — zero TypeScript errors, zero ESLint failures.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Left</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What&apos;s Left</h2>
           <p className="text-zinc-300 mb-4">
             Ten days. The list is short:
           </p>
@@ -106,7 +106,7 @@ export default function Post() {
             <p className="text-zinc-300 mb-4 text-sm">Launch day is March 31. Early access is open now.</p>
             <Link
               href="/onboard"
-              className="inline-block bg-white text-black px-6 py-3 rounded-lg font-mono text-sm font-bold hover:bg-zinc-200 transition-colors"
+              className="inline-block border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors"
             >
               Get Early Access →
             </Link>

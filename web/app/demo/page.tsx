@@ -236,7 +236,7 @@ export default function DemoPage() {
         )}
 
         {!showApiKeyInput && (
-          <div className="mb-6 sm:mb-8 text-center">
+          <div className="mb-6 sm:mb-8 text-left">
             <button
               onClick={() => setShowApiKeyInput(true)}
               className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white py-2 px-4 min-h-[44px] font-bold"
@@ -300,9 +300,9 @@ export default function DemoPage() {
             {/* Chat Messages */}
             <div className="bg-zinc-900 border border-zinc-800 flex-1 min-h-[300px] sm:min-h-[400px] max-h-[calc(100vh-380px)] sm:max-h-[500px] overflow-y-auto mb-4 p-4 sm:p-6">
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-zinc-500 px-4">
-                  <p className="text-sm font-bold uppercase tracking-widest mb-2 text-center text-zinc-400">AI Agent SaaS Platform</p>
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6 text-center">Subscribe. Deploy in 60s. Scale as you grow.</p>
+                <div className="h-full flex flex-col items-start justify-center text-zinc-500 px-4">
+                  <p className="text-sm font-bold uppercase tracking-widest mb-2 text-zinc-400">AI Agent SaaS Platform</p>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Subscribe. Deploy in 60s. Scale as you grow.</p>
                   
                   {/* SaaS Plans */}
                   <div className="w-full max-w-lg mb-4 border-t border-zinc-900 pt-4">
@@ -440,7 +440,7 @@ export default function DemoPage() {
             </div>
 
             {/* Compare Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1 min-h-0">
+            <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-0">
               {compareModels.map((modelId) => (
                 <div key={modelId} className="bg-zinc-900 border border-zinc-800 overflow-hidden flex flex-col min-h-[250px] sm:min-h-[300px]">
                   <div className="bg-zinc-800 px-4 py-2 border-b border-zinc-700 flex-shrink-0">
@@ -502,7 +502,7 @@ export default function DemoPage() {
         )}
 
         {/* CTA */}
-        <div className="mt-12 sm:mt-16 text-center border-t border-zinc-900 pt-12 safe-area-bottom">
+        <div className="mt-12 sm:mt-16 border-t border-zinc-900 pt-12 safe-area-bottom">
           <p className="text-zinc-400 text-sm mb-4">Like what you see?</p>
           <Link
             href="/signup"

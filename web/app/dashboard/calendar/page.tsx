@@ -89,7 +89,7 @@ function CalendarPageContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-black">
+    <div className="flex min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       <DashboardSidebar
         userName="User"
         plan="Underground"
@@ -150,7 +150,7 @@ function CalendarPageContent() {
             <>
               <div className="flex items-center justify-between mb-4">
                 <button onClick={prevMonth} className="p-2 hover:bg-zinc-800 rounded-lg">←</button>
-                <h2 className="text-xl font-semibold">
+                <h2 className="text-xl font-bold uppercase tracking-tighter">
                   {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                 </h2>
                 <button onClick={nextMonth} className="p-2 hover:bg-zinc-800 rounded-lg">→</button>
@@ -158,7 +158,7 @@ function CalendarPageContent() {
 
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {dayNames.map(day => (
-                  <div key={day} className="text-center text-zinc-400 py-2">{day}</div>
+                  <div key={day} className="text-left text-zinc-400 py-2 text-xs uppercase tracking-widest">{day}</div>
                 ))}
               </div>
 
@@ -193,7 +193,7 @@ function CalendarPageContent() {
               </div>
 
               <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4">Upcoming Events</h3>
+                <h3 className="text-lg font-bold mb-4 uppercase tracking-tighter">Upcoming Events</h3>
                 <div className="space-y-2">
                   {events.slice(0, 5).map((event: any) => (
                     <div key={event.id} className="bg-zinc-900 rounded-lg p-4 flex justify-between items-center">
@@ -209,16 +209,16 @@ function CalendarPageContent() {
                     </div>
                   ))}
                   {events.length === 0 && (
-                    <div className="text-zinc-500 text-center py-8">No upcoming events</div>
+                    <div className="text-zinc-500 py-8">No upcoming events</div>
                   )}
                 </div>
               </div>
             </>
           ) : (
-            <div className="text-center py-16">
+            <div className="py-16">
               <div className="text-6xl mb-4">📆</div>
-              <h2 className="text-2xl font-bold mb-2">Connect Your Calendar</h2>
-              <p className="text-zinc-400 mb-8 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold mb-2 uppercase tracking-tighter">Connect Your Calendar</h2>
+              <p className="text-sm text-zinc-400 mb-8 max-w-md">
                 Sync with Google Calendar to schedule events, manage availability, and let your agent handle bookings automatically.
               </p>
               <button

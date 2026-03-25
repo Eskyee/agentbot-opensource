@@ -180,7 +180,7 @@ export default function WalletPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -202,7 +202,7 @@ export default function WalletPage() {
                 value={addressInput}
                 onChange={(e) => setAddressInput(e.target.value)}
                 placeholder="0x..."
-                className="w-full bg-black border border-zinc-800 p-3 text-sm font-mono text-zinc-300 placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 mb-4"
+                className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono mb-4"
               />
               <button
                 type="submit"
@@ -298,7 +298,7 @@ export default function WalletPage() {
               </div>
               {mppSession ? (
                 <>
-                  <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <div>
                       <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Deposited</span>
                       <span className="text-lg font-bold tracking-tighter">${mppSession.deposit}</span>
@@ -340,7 +340,7 @@ export default function WalletPage() {
             </div>
 
             {/* Actions */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
               <div className="border border-zinc-800 p-4">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Top Up via Stripe</span>
                 <div className="grid grid-cols-2 gap-2">
@@ -398,7 +398,7 @@ export default function WalletPage() {
             <div>
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">Recent Activity</span>
               <div className="border border-zinc-800 p-6 mt-2">
-                <div className="text-center">
+                <div>
                   <p className="text-zinc-500 text-sm mb-3">
                     Transaction history is available on Tempo Explorer.
                   </p>

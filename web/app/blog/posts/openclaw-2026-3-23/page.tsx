@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function OpenClawReleasePost() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -23,11 +23,11 @@ export default function OpenClawReleasePost() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">24 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">OpenClaw v2026.3.23</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">OpenClaw v2026.3.23</h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-900/30 text-blue-400 border border-blue-800/50">Release</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Stability</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Security</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400 border border-blue-800/50">Release</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Stability</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Security</span>
             </div>
           </div>
 
@@ -36,39 +36,39 @@ export default function OpenClawReleasePost() {
             ClawHub authentication, gateway reliability, and security hardening. Agentbot is already running it.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Highlights</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Highlights</h2>
           
           <div className="grid gap-4 mb-6">
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-              <h3 className="text-lg font-bold mb-2">🔧 Browser/Chrome MCP</h3>
+              <h3 className="text-lg font-bold uppercase tracking-tighter mb-2">🔧 Browser/Chrome MCP</h3>
               <p className="text-zinc-400 text-sm">
                 Existing session tabs now wait for usability after attach. Reduces user-profile timeouts and consent churn on macOS Chrome.
               </p>
             </div>
             
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-              <h3 className="text-lg font-bold mb-2">🔐 ClawHub Auth</h3>
+              <h3 className="text-lg font-bold uppercase tracking-tighter mb-2">🔐 ClawHub Auth</h3>
               <p className="text-zinc-400 text-sm">
                 macOS auth config and XDG paths now honored. Skill browsing uses signed-in state instead of falling back to unauthenticated mode.
               </p>
             </div>
             
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-              <h3 className="text-lg font-bold mb-2">🛡️ Security Hardening</h3>
+              <h3 className="text-lg font-bold uppercase tracking-tighter mb-2">🛡️ Security Hardening</h3>
               <p className="text-zinc-400 text-sm">
                 Canvas routes now require auth. Admin scope required for agent session reset. Shell-wrapper exec matching hardened.
               </p>
             </div>
             
             <div className="p-4 rounded-xl bg-zinc-900 border border-zinc-800">
-              <h3 className="text-lg font-bold mb-2">⚡ Gateway Stability</h3>
+              <h3 className="text-lg font-bold uppercase tracking-tighter mb-2">⚡ Gateway Stability</h3>
               <p className="text-zinc-400 text-sm">
                 Gateway probes no longer timeout falsely. Lock conflicts under launchd/systemd no longer crash-loop.
               </p>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Full Changelog</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Full Changelog</h2>
           
           <div className="space-y-4 text-zinc-300 text-sm">
             <div>
@@ -122,7 +122,7 @@ export default function OpenClawReleasePost() {
           <div className="mt-12 p-6 rounded-xl bg-zinc-900 border border-zinc-800">
             <p className="text-zinc-300 mb-4">Agentbot is already running v2026.3.23</p>
             <div className="flex gap-3">
-              <Link href="/demo" className="inline-block bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-100 transition-colors">
+              <Link href="/demo" className="inline-block border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors">
                 Try Demo
               </Link>
               <Link href="https://github.com/openclaw/openclaw/releases/tag/v2026.3.23" className="inline-block bg-zinc-800 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-zinc-700 transition-colors">

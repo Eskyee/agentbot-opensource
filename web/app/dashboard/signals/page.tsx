@@ -93,20 +93,20 @@ export default function SignalsPage() {
     .sort((a, b) => b.upvotes - a.upvotes)
 
   return (
-    <div className="mt-[4rem] min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       {/* Header */}
       <div className="px-6 py-5 border-b border-zinc-800 flex items-center gap-3">
         <Radio className="h-5 w-5 text-pink-400" />
-        <h1 className="text-xl font-bold tracking-tight">Practitioner Signals</h1>
+        <h1 className="text-xl font-bold uppercase tracking-tighter">Practitioner Signals</h1>
         <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5">{filtered.length} signals</span>
       </div>
 
-      <div className="px-6 py-6 space-y-5">
+      <div className="max-w-7xl mx-auto px-6 py-16 space-y-5">
         {/* Filters */}
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">
             <Filter className="h-3.5 w-3.5 text-zinc-500" />
-            <span className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Platform</span>
+            <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Platform</span>
           </div>
           {(['all', 'reddit', 'twitter', 'hacker-news', 'discord'] as Platform[]).map(p => (
             <button
@@ -122,7 +122,7 @@ export default function SignalsPage() {
             </button>
           ))}
           <div className="ml-4 flex items-center gap-2">
-            <span className="text-xs text-zinc-500 uppercase tracking-widest font-medium">Relevance</span>
+            <span className="text-[10px] text-zinc-500 uppercase tracking-widest">Relevance</span>
           </div>
           {(['all', 'high', 'medium', 'low'] as Relevance[]).map(r => (
             <button

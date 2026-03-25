@@ -38,7 +38,7 @@ export default function FinancePage() {
         <p className="text-zinc-400">Real-time spend attribution and revenue tracking across your agent fleet.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-6 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         <MetricCard
           label="Total Fleet Spend"
           value={`$${totalSpend.toFixed(2)}`}
@@ -64,7 +64,7 @@ export default function FinancePage() {
         />
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-8 lg:grid-cols-1 sm:grid-cols-2">
         <div className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold flex items-center gap-2">
@@ -90,7 +90,7 @@ export default function FinancePage() {
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2 mt-8">
+      <div className="grid gap-8 lg:grid-cols-1 sm:grid-cols-2 mt-8">
         <div className="bg-blue-600/10 border border-blue-500/30 rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">

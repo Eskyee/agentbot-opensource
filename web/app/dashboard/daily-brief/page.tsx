@@ -119,13 +119,13 @@ export default function DailyBriefPage() {
   const today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
-    <div className="mt-[4rem] min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-zinc-800 flex items-center justify-between">
+      <div className="px-6 py-5 border-b border-zinc-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Sun className="h-5 w-5 text-yellow-400" />
           <div>
-            <h1 className="text-xl font-bold tracking-tight">Daily Brief</h1>
+            <h1 className="text-xl font-bold uppercase tracking-tighter">Daily Brief</h1>
             <p className="text-xs text-zinc-500">{today}</p>
           </div>
         </div>
@@ -140,8 +140,9 @@ export default function DailyBriefPage() {
       </div>
 
       <div className="px-6 py-6 space-y-3">
+        <div className="max-w-7xl mx-auto">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="flex flex-col py-20 gap-4">
             <RefreshCw className="h-6 w-6 text-yellow-400 animate-spin" />
             <p className="text-zinc-400 text-sm">Generating your brief…</p>
           </div>
@@ -160,7 +161,7 @@ export default function DailyBriefPage() {
                     className="w-full px-5 py-4 flex items-center gap-3 text-left hover:bg-zinc-800/50 transition-colors"
                   >
                     <Icon className={`h-4 w-4 shrink-0 ${section.color}`} />
-                    <span className="font-semibold text-sm flex-1">{section.title}</span>
+                    <span className="font-bold text-sm flex-1 uppercase tracking-tighter">{section.title}</span>
                     <span className="text-xs text-zinc-600">{section.items.length} items</span>
                     <svg
                       className={`h-4 w-4 text-zinc-500 transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -184,6 +185,7 @@ export default function DailyBriefPage() {
             })}
           </>
         )}
+        </div>
       </div>
     </div>
   )

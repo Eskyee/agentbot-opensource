@@ -169,7 +169,7 @@ export default function KeysPage() {
         )}
 
         {keys.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-left py-12">
             <p className="text-zinc-400">No API keys yet. Create one to get started.</p>
           </div>
         ) : (
@@ -217,7 +217,7 @@ export default function KeysPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-4">
                   <div>
                     <p className="text-zinc-500">Created</p>
                     <p className="text-white">{new Date(key.createdAt).toLocaleDateString()}</p>

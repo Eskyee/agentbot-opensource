@@ -53,7 +53,7 @@ export default function PartnerPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-2 gap-16">
           {/* Left Column — Info */}
           <div className="space-y-12">
             {/* What We're Looking For */}
@@ -134,7 +134,7 @@ export default function PartnerPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Name</label>
                       <input

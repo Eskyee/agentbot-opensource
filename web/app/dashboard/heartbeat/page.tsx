@@ -117,14 +117,14 @@ export default function HeartbeatPage() {
                 <AgentCard key={agent.id}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="text-lg font-bold">{agent.name || agent.id}</h3>
+                      <h3 className="text-lg font-bold uppercase tracking-tighter">{agent.name || agent.id}</h3>
                       <p className="text-xs text-zinc-500 font-mono mt-0.5">ID: {agent.id}</p>
                     </div>
                     <Badge variant="outline" className={statusConf.className}>
                       {statusConf.label}
                     </Badge>
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
                     <div>
                       <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Port</div>
                       <div className="font-mono">{agent.port}</div>

@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function AgentbotLaunchPost() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,10 +11,10 @@ export default function AgentbotLaunchPost() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Introducing Agentbot: Your AI Agent. Hosted. Always Online.</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Introducing Agentbot: Your AI Agent. Hosted. Always Online.</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-400">Launch</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">OpenClaw</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Launch</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>
             </div>
           </div>
 
@@ -22,7 +22,7 @@ export default function AgentbotLaunchPost() {
             After 3 months of building, security hardening, and infrastructure work—Agentbot is live. Here&apos;s the story behind it and why it exists.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Problem</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Problem</h2>
           <p className="text-zinc-300 mb-4">
             Building AI agents is easy. Deploying them is hard.
           </p>
@@ -42,7 +42,7 @@ export default function AgentbotLaunchPost() {
             Most developers just want to <em>talk</em> to their AI agent. Not manage a server farm.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Solution</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Solution</h2>
           <p className="text-zinc-300 mb-4">
             Agentbot = OpenClaw as a Service.
           </p>
@@ -50,7 +50,7 @@ export default function AgentbotLaunchPost() {
             One-click deploy. Your API key. No markup. No credit system. Just conversation.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Included</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What&apos;s Included</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li><strong>One-click deploy</strong> — From signup to chatting with your agent in under 60 seconds</li>
             <li><strong>24/7 availability</strong> — Cloud-hosted, always online, zero maintenance</li>
@@ -60,7 +60,7 @@ export default function AgentbotLaunchPost() {
             <li><strong>A+ Security</strong> — Rate limiting, CSRF protection, session auth everywhere</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Pricing</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Pricing</h2>
           <p className="text-zinc-300 mb-4">
             Simple. Transparent. Scale as you grow.
           </p>
@@ -75,7 +75,7 @@ export default function AgentbotLaunchPost() {
             First 14 days free. Cancel anytime.
           </p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Security First</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Security First</h2>
           <p className="text-zinc-300 mb-4">
             AI agents handle sensitive data. We took security seriously from day one:
           </p>
@@ -88,7 +88,7 @@ export default function AgentbotLaunchPost() {
             <li>No hardcoded secrets—centralized API key management</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">The Stack</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">The Stack</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
             <li><strong>Frontend:</strong> Next.js 16 (Vercel)</li>
             <li><strong>Backend:</strong> Node.js + Docker (Render)</li>
@@ -98,7 +98,7 @@ export default function AgentbotLaunchPost() {
             <li><strong>AI:</strong> OpenRouter (Kimi K2.5 default)</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">What&apos;s Next</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">What&apos;s Next</h2>
           <p className="text-zinc-300 mb-4">
             We&apos;re just getting started. Here&apos;s what&apos;s on the roadmap:
           </p>
@@ -110,7 +110,7 @@ export default function AgentbotLaunchPost() {
             <li>More messaging channels</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Get Started</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Get Started</h2>
           <p className="text-zinc-300 mb-4">
             → <Link href="/signup" className="text-blue-400 hover:text-blue-300">agentbot.raveculture.xyz</Link>
           </p>

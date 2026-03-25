@@ -35,7 +35,7 @@ export default function TokenPage() {
         <section className="border-t border-zinc-900 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Token Information</span>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
             <div className="space-y-2">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Name</span>
               <span className="text-white text-sm font-bold uppercase">Agentbot</span>
@@ -91,7 +91,7 @@ export default function TokenPage() {
         <section className="border-t border-zinc-900 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Official Links</span>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <a
               href="https://agentbot.raveculture.xyz"
               target="_blank"
@@ -176,7 +176,7 @@ export default function TokenPage() {
         <section className="border-t border-zinc-900 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Deploy with Agentbot</span>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-1 sm:grid-cols-2">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h3 className="text-lg font-bold uppercase tracking-tight mb-3">60-Second Deploy</h3>
               <p className="text-zinc-400 text-sm mb-4 leading-relaxed">
@@ -224,7 +224,7 @@ export default function TokenPage() {
         <section className="border-t border-zinc-900 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Token Use Cases</span>
 
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { title: 'Platform Access', desc: 'Token holders unlock premium tiers and early access to new agent capabilities.' },
               { title: 'Governance', desc: 'Vote on platform direction, feature priorities, and ecosystem integrations.' },

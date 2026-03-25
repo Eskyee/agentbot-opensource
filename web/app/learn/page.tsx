@@ -155,7 +155,7 @@ export default function LearnPage() {
           <p className="text-zinc-400 mb-6">
             New to Agentbot? Start here. Deploy your first agent in under a minute.
           </p>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2">
             {beginnerGuides.map((guide) => (
               <Link
                 key={guide.title}
@@ -183,7 +183,7 @@ export default function LearnPage() {
           <p className="text-zinc-400 mb-6">
             Power user? Go deep. Swarms, skills, workflows, payments, and production scale.
           </p>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {advancedGuides.map((guide) => (
               <Link
                 key={guide.title}
@@ -211,7 +211,7 @@ export default function LearnPage() {
           <p className="text-zinc-400 mb-6">
             Full OpenClaw framework docs. Updated daily with the latest features.
           </p>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {openclawDocs.map((doc) => (
               <a
                 key={doc.title}
@@ -252,7 +252,7 @@ export default function LearnPage() {
           <p className="text-zinc-400 mb-6">
             Go live on baseFM - the onchain radio station. Stream as a human DJ or deploy an AI agent to DJ autonomously.
           </p>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2">
             <a href="https://basefm.space/guide/beginner" target="_blank" rel="noopener noreferrer" className="group p-6 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all">
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">🌱</span>
@@ -300,7 +300,7 @@ export default function LearnPage() {
           <p className="text-zinc-400 mb-6">
             5,400+ community-built skills. Extend your agent with superpowers.
           </p>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <a href="https://clawhub.net" target="_blank" rel="noopener noreferrer" className="group p-5 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">🦞</span>
@@ -345,7 +345,7 @@ export default function LearnPage() {
             <span className="text-2xl">💡</span>
             <h2 className="text-2xl font-bold">Quick Reference</h2>
           </div>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-1 sm:grid-cols-2">
             <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800">
               <h3 className="font-bold mb-4">Environment Variables</h3>
               <pre className="text-sm text-zinc-400 overflow-x-auto">

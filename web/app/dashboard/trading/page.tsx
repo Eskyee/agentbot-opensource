@@ -108,7 +108,7 @@ export default function TradingPage() {
         <p className="text-zinc-400">AI-powered crypto trading with Bankr</p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
+      <div className="grid gap-8 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {/* Portfolio Section */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-zinc-900/50 rounded-2xl p-6 border border-zinc-800">
@@ -152,7 +152,7 @@ export default function TradingPage() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8 text-zinc-500">
+                <div className="text-left py-8 text-zinc-500">
                   No balances found. Make sure BANKR_API_KEY is configured.
                 </div>
               )}

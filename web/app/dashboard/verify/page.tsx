@@ -58,7 +58,7 @@ function VerifyContent() {
           verificationType={instance?.verificationType}
         />
       ) : (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-left">
           <p className="text-zinc-400">
             No agent found. Deploy an agent first to verify it.
           </p>
@@ -70,7 +70,7 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Verify Your Agent</h1>
@@ -97,7 +97,7 @@ export default function VerifyPage() {
           <VerifyContent />
         </Suspense>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-left">
           <a href="/dashboard" className="text-blue-400 hover:text-blue-300">
             ← Back to Dashboard
           </a>

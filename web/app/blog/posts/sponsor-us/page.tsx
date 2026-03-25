@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function Post() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
           ← Back to Blog
@@ -11,17 +11,17 @@ export default function Post() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">19 March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">Sponsor Agentbot & Build the Future of Agentic AI</h1>
+            <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Sponsor Agentbot & Build the Future of Agentic AI</h1>
             <div className="flex gap-2">
-              <span className="text-xs px-2 py-1 rounded-full bg-yellow-800 text-yellow-400">Sponsors</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">Partnership</span>
-              <span className="text-xs px-2 py-1 rounded-full bg-blue-800 text-blue-400">Agentic AI</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Sponsors</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Partnership</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Agentic AI</span>
             </div>
           </div>
 
           <p className="text-zinc-300 mb-4">We&apos;re inviting the community to sponsor Agentbot&apos;s development. Your support directly funds the future of autonomous AI agents - built by agents, for agents.</p>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Why Sponsor?</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Why Sponsor?</h2>
           <p className="text-zinc-300 mb-4">Agentbot is an open source project operated by Atlas_baseFM. We&apos;re building the infrastructure for agentic AI - and we want you to be part of it.</p>
           
           <ul className="list-disc list-inside text-zinc-300 mb-4">
@@ -32,31 +32,31 @@ export default function Post() {
             <li><strong>Join the collective</strong> - Be part of the Agentbot community</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Partnership Opportunities</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Partnership Opportunities</h2>
           <p className="text-zinc-300 mb-4">We&apos;re actively seeking partners to build the agentic AI ecosystem together:</p>
           
-          <h3 className="text-xl font-bold mt-6 mb-3">🤖 AI Providers</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">🤖 AI Providers</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Integrate your models into Agentbot marketplace</li>
             <li>Get featured as supported provider</li>
             <li>Joint marketing & developer outreach</li>
           </ul>
 
-          <h3 className="text-xl font-bold mt-6 mb-3">📡 Channel Partners</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">📡 Channel Partners</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Add new messaging platforms (Slack, Teams, etc.)</li>
             <li>Build custom integrations for enterprise</li>
             <li>White-label solutions</li>
           </ul>
 
-          <h3 className="text-xl font-bold mt-6 mb-3">💰 Payment Partners</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">💰 Payment Partners</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>x402 protocol expansion</li>
             <li>Multi-chain USDC payments</li>
             <li>Fiat on/off ramps</li>
           </ul>
 
-          <h3 className="text-xl font-bold mt-6 mb-3">🏢 Enterprise Partners</h3>
+          <h3 className="text-xl font-bold uppercase tracking-tighter mt-6 mb-3">🏢 Enterprise Partners</h3>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
             <li>Custom agent deployments</li>
             <li>SLA guarantees</li>
@@ -64,7 +64,7 @@ export default function Post() {
             <li>On-premise installations</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Sponsorship Tiers</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Sponsorship Tiers</h2>
           
           <div className="bg-zinc-900 p-6 rounded-lg mb-6">
             <h3 className="text-lg font-bold text-blue-400 mb-2">🥉 Supporter - $5/month</h3>
@@ -107,7 +107,7 @@ export default function Post() {
             </ul>
           </div>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Our Vision</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Our Vision</h2>
           <p className="text-zinc-300 mb-4">We&apos;re building Agentbot to be the infrastructure for agentic AI - where autonomous agents work together, share knowledge, and create value. This is a massive undertaking that benefits from community support.</p>
           
           <p className="text-zinc-300 mb-4">Every sponsor helps us:</p>
@@ -119,7 +119,7 @@ export default function Post() {
             <li>Support self-hosting users</li>
           </ul>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Get Started</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Get Started</h2>
           <p className="text-zinc-300 mb-4">Ready to sponsor or partner with us?</p>
           
           <pre className="bg-zinc-900 p-4 rounded-lg text-zinc-300 mb-4 overflow-x-auto">
@@ -133,7 +133,7 @@ dev@raveculture.xyz
 discord.gg/eskyee`}
           </pre>
 
-          <h2 className="text-2xl font-bold mt-8 mb-4">Thank You</h2>
+          <h2 className="text-2xl font-bold uppercase tracking-tighter mt-8 mb-4">Thank You</h2>
           <p className="text-zinc-300 mb-4">Whether you sponsor $5 or $5,000, you&apos;re helping build the future of agentic AI. We&apos;re committed to being transparent with how funds are used and giving sponsors a real voice in our development.</p>
           
           <p className="text-zinc-300 mb-4">Let&apos;s build something incredible together.</p>

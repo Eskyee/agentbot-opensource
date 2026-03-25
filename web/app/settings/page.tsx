@@ -363,7 +363,7 @@ export default function SettingsPage() {
             </div>
 
             {agents.length === 0 ? (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-left">
                 <div className="text-4xl mb-4">🤖</div>
                 <h3 className="text-lg font-medium mb-2">No Agents Deployed</h3>
                 <p className="text-zinc-400 text-sm max-w-sm mx-auto mb-6">
@@ -388,7 +388,7 @@ export default function SettingsPage() {
                   <tbody>
                     {apiKeys.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-8 text-center text-zinc-500 italic">
+                        <td colSpan={4} className="p-8 text-left text-zinc-500 italic">
                           No API keys created yet.
                         </td>
                       </tr>
@@ -535,7 +535,7 @@ export default function SettingsPage() {
 
         {/* Agents placeholder */}
         {activeTab === 'agents' && (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-center">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-left">
             <p className="text-zinc-400">Manage your agents from the Dashboard</p>
             <Link href="/dashboard" className="text-white hover:underline mt-2 inline-block">
               Go to Dashboard →

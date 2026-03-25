@@ -132,7 +132,7 @@ export default function SystemPulsePage() {
 
       <div className="px-6 py-6 space-y-6">
         {/* Stat cards — real data */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             icon={DollarSign}
             label="Total Cost"
@@ -164,7 +164,7 @@ export default function SystemPulsePage() {
         </div>
 
         {/* Second row — agents & messages */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             icon={Bot}
             label="Agents"

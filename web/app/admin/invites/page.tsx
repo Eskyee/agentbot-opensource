@@ -62,7 +62,7 @@ export default function AdminInvitesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Invite Management</h1>
 
@@ -157,18 +157,18 @@ export default function AdminInvitesPage() {
         </div>
 
         {/* Stats */}
-        <div className="mt-8 grid grid-cols-3 gap-4">
-          <div className="border border-zinc-700 rounded-lg p-4 text-center">
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="border border-zinc-700 rounded-lg p-4 text-left">
             <div className="text-2xl font-bold">{invites.length}</div>
             <div className="text-sm text-zinc-400">Total Invites</div>
           </div>
-          <div className="border border-zinc-700 rounded-lg p-4 text-center">
+          <div className="border border-zinc-700 rounded-lg p-4 text-left">
             <div className="text-2xl font-bold">
               {invites.filter((i) => i.status === 'active').length}
             </div>
             <div className="text-sm text-zinc-400">Active</div>
           </div>
-          <div className="border border-zinc-700 rounded-lg p-4 text-center">
+          <div className="border border-zinc-700 rounded-lg p-4 text-left">
             <div className="text-2xl font-bold">
               {invites.filter((i) => i.status === 'used').length}
             </div>

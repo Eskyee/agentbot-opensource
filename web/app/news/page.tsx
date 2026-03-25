@@ -215,7 +215,7 @@ export default function NewsPage() {
         {/* Upcoming Events */}
         <section className="mb-12">
           <h2 className="text-sm font-bold text-zinc-500 tracking-widest uppercase mb-4">📅 COMING UP</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2">
             {upcomingEvents.map((event) => (
               <div
                 key={event.title}
@@ -265,7 +265,7 @@ export default function NewsPage() {
         {/* Global News */}
         <section className="mt-16">
           <h2 className="text-sm font-bold text-zinc-500 tracking-widest uppercase mb-6">🌍 GLOBAL AI NEWS</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2">
             {globalNews.map((item, i) => (
               <a
                 key={i}
@@ -286,7 +286,7 @@ export default function NewsPage() {
         </section>
 
         {/* CTA */}
-        <section className="mt-16 p-8 rounded-lg bg-zinc-900 border border-zinc-800 text-center">
+        <section className="mt-16 p-8 rounded-lg bg-zinc-900 border border-zinc-800 text-left">
           <h2 className="text-2xl font-bold mb-2">🇬🇧 London AI Community</h2>
           <p className="text-zinc-400 mb-4">
             We&apos;re building in London. Join the meetups, share what you&apos;re building, connect with fellow agent builders.

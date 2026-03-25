@@ -270,7 +270,7 @@ export default function MemoryPage() {
             return (
               <div
                 key={entry.id}
-                className={`border rounded-xl p-4 flex gap-4 ${meta.bg}`}
+                className={`border rounded-xl p-4 flex flex-col sm:flex-row gap-4 ${meta.bg}`}
               >
                 <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${meta.color}`} />
                 <div className="flex-1 min-w-0">
@@ -292,7 +292,7 @@ export default function MemoryPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
+                <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 shrink-0">
                   <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {formatRelative(entry.createdAt)}

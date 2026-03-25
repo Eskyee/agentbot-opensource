@@ -36,7 +36,7 @@ function CheckoutSuccessContent() {
   if (status === 'loading') {
     return (
       <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono">
-        <div className="text-center space-y-4">
+        <div className="text-left space-y-4">
           <div className="w-6 h-6 border border-zinc-600 border-t-white animate-spin mx-auto" />
           <div className="text-sm font-bold uppercase tracking-widest">Deploying Service</div>
           <p className="text-[10px] text-zinc-600 uppercase tracking-widest">This may take 30-60 seconds</p>
@@ -48,7 +48,7 @@ function CheckoutSuccessContent() {
   if (status === 'error') {
     return (
       <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono p-6">
-        <div className="max-w-sm w-full space-y-8 text-center">
+        <div className="max-w-sm w-full space-y-8 text-left">
           <div>
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Error</div>
             <h1 className="text-2xl font-bold tracking-tighter uppercase">
@@ -60,7 +60,7 @@ function CheckoutSuccessContent() {
           </div>
           <Link
             href="/pricing"
-            className="block w-full py-3 text-center text-xs font-bold uppercase tracking-widest border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            className="block w-full py-3 text-left text-xs font-bold uppercase tracking-widest border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
           >
             Back to Pricing
           </Link>
@@ -72,7 +72,7 @@ function CheckoutSuccessContent() {
   return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono p-6">
       <div className="max-w-sm w-full space-y-8">
-        <div className="text-center">
+        <div className="text-left">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Confirmed</div>
           <h1 className="text-2xl font-bold tracking-tighter uppercase">
             Welcome to<br /><span className="text-zinc-700">Agentbot</span>
@@ -81,7 +81,7 @@ function CheckoutSuccessContent() {
 
         <div className="border border-zinc-900 p-6 space-y-4">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Subscription Details</div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-1">Plan</span>
               <span className="text-sm font-bold uppercase tracking-wider">{subscription?.plan || 'Loading...'}</span>
@@ -108,19 +108,19 @@ function CheckoutSuccessContent() {
         <div className="space-y-3">
           <Link
             href="/dashboard"
-            className="block w-full py-3 text-center text-xs font-bold uppercase tracking-widest bg-white text-black hover:bg-zinc-200 transition-colors"
+            className="block w-full py-3 text-left text-xs font-bold uppercase tracking-widest bg-white text-black hover:bg-zinc-200 transition-colors"
           >
             Go to Dashboard
           </Link>
           <Link
             href="/"
-            className="block w-full py-3 text-center text-xs font-bold uppercase tracking-widest border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            className="block w-full py-3 text-left text-xs font-bold uppercase tracking-widest border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
           >
             Back to Home
           </Link>
         </div>
 
-        <p className="text-center text-zinc-700 text-[10px] uppercase tracking-widest">
+        <p className="text-left text-zinc-700 text-[10px] uppercase tracking-widest">
           Need help? support@agentbot.raveculture.xyz
         </p>
       </div>
@@ -131,7 +131,7 @@ function CheckoutSuccessContent() {
 function CheckoutSuccessFallback() {
   return (
     <main className="min-h-screen bg-black text-white flex items-center justify-center font-mono">
-      <div className="text-center space-y-4">
+      <div className="text-left space-y-4">
         <div className="w-6 h-6 border border-zinc-600 border-t-white animate-spin mx-auto" />
         <div className="text-sm font-bold uppercase tracking-widest">Deploying Service</div>
         <p className="text-[10px] text-zinc-600 uppercase tracking-widest">This may take 30-60 seconds</p>

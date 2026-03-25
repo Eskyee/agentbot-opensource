@@ -36,12 +36,12 @@ export default function FleetPage() {
   const selectedAgent = agents.find((a: any) => a.id === selectedAgentId);
 
   return (
-    <div className="mt-[4rem] h-[calc(100vh-4rem)] flex bg-black text-white">
+    <div className="mt-[4rem] min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono flex flex-col">
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold tracking-tight">Mission Control: Fleet</h1>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 border-b border-zinc-800 gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+            <h1 className="text-xl font-bold tracking-tighter uppercase">Mission Control: Fleet</h1>
             <div className="flex items-center gap-1 rounded-lg bg-zinc-900 p-1">
               <button
                 onClick={() => setActiveTab('organism')}
@@ -64,7 +64,7 @@ export default function FleetPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-6">
             <div className="flex flex-col items-end">
               <span className="text-[10px] text-zinc-500 uppercase font-bold">Active Agents</span>
               <span className="text-sm font-mono">{agents.length} / 10</span>
@@ -98,8 +98,8 @@ export default function FleetPage() {
             )}
           </div>
 
-          {/* Right: Traces & Details (35% width) */}
-          <div className="w-[400px] border-l border-zinc-800 flex flex-col bg-[#0a0a0a]">
+          {/* Right: Traces & Details */}
+          <div className="hidden lg:flex w-[400px] border-l border-zinc-800 flex-col bg-[#0a0a0a]">
             {/* Trace Header */}
             <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export default function FleetPage() {
                     <div className="text-[10px] text-zinc-500 font-mono uppercase">{selectedAgent.type}</div>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px]">
                   <div className="bg-black/30 p-2 rounded border border-white/5">
                     <div className="text-zinc-500 mb-1">HEALTH</div>
                     <div className="text-green-400 font-bold">100%</div>
