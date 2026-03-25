@@ -105,7 +105,10 @@ export async function POST(req: NextRequest) {
     // Save file to disk
     const uploadDir = path.join(UPLOAD_DIR, session.user.id, agentId)
     await fs.mkdir(uploadDir, { recursive: true })
-    const safeFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+
+    // Sanitize filename: reject dotfiles, limit length, strip path traversal
+    const baseName = file.name.replace(/^\.+/, '').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 128)
+    const safeFilename = baseName || `upload_${Date.now()}`
     const filePath = path.join(uploadDir, `${Date.now()}_${safeFilename}`)
     const buffer = Buffer.from(await file.arrayBuffer())
     await fs.writeFile(filePath, buffer)

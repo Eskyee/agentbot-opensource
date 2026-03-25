@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
@@ -42,8 +43,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Generate secure invite token
-    const token = Buffer.from(Math.random().toString()).toString('base64').substring(0, 32)
+    // Generate secure invite token — crypto-random, not Math.random()
+    const token = crypto.randomBytes(32).toString('hex')
     
     return NextResponse.json({
       success: true,
