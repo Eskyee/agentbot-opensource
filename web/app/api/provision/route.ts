@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       email: bodyEmail,
     } = body
 
-    // 1. Require an authenticated session
+    // 1. Require an authenticated session — NEVER trust body email for auth
     let session = await getServerSession(authOptions)
     const adminEmails = (process.env.ADMIN_EMAILS || '')
       .split(',')
@@ -48,31 +48,28 @@ export async function POST(request: NextRequest) {
     const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
     const allAdmins = [...new Set([...adminEmails, ...HARDCODED_ADMINS])]
 
-    // Admin check — use body email if session is missing or email differs
+    // Admin check — session email ONLY, never body email
     let isAdmin = false
     const sessionEmail = (session?.user?.email || '').toLowerCase()
-    const emailToCheck = sessionEmail || (bodyEmail || '').toLowerCase()
-    console.log(`[Provision] emailToCheck=${emailToCheck}, allAdmins=${JSON.stringify(allAdmins)}`)
-    if (emailToCheck && allAdmins.includes(emailToCheck)) {
+    if (sessionEmail && allAdmins.includes(sessionEmail)) {
       isAdmin = true
-      console.log(`[Provision] Admin detected: ${emailToCheck}`)
+      console.log(`[Provision] Admin detected: ${sessionEmail}`)
     }
 
-    // If no session AND not admin, reject
-    if (!session?.user?.id && !isAdmin) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required',
-      }, { status: 401 })
+    // If no session, reject — no synthetic sessions from body email
+    if (!session?.user?.id) {
+      if (isAdmin) {
+        // Allow admin with verified session to proceed
+        session = { user: { id: 'admin', email: sessionEmail, isAdmin: true } } as any
+      } else {
+        return NextResponse.json({
+          success: false,
+          error: 'Authentication required',
+        }, { status: 401 })
+      }
     }
 
-    // Synthetic session for admin without session
-    if (!session?.user?.id && isAdmin) {
-      session = { user: { id: 'admin', email: emailToCheck, isAdmin: true } } as any
-      console.log(`[Provision] Admin fallback for ${emailToCheck}`)
-    }
-
-    const userEmail = (session!.user!.email || emailToCheck) as string
+    const userEmail = (session!.user!.email || sessionEmail) as string
     const userId = (session!.user!.id || 'admin') as string
 
     // 3. DB subscription check — disabled for initial testing

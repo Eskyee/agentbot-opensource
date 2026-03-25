@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { verifyPaymentProof, type CloneRequest, type PaymentProof } from '@/lib/x402-tempo';
 import { createAgentWallet, registerAgentWallet } from '@/lib/mpp';
 
@@ -26,8 +27,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate new agent ID
-    const agentId = `agent_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    // Generate new agent ID — crypto-secure
+    const agentId = `agent_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
 
     // Create wallet for the new agent
     const wallet = createAgentWallet();
