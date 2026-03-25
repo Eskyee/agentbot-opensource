@@ -220,7 +220,7 @@ export default function SettingsPage() {
     <div className="flex min-h-screen bg-black">
       <DashboardSidebar
         userName={userName}
-        plan="Underground"
+        plan="Solo"
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />

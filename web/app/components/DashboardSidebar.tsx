@@ -141,7 +141,7 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
 
           <Link href="/billing" onClick={onToggle} className="block mt-8 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
-            <div className="text-xl font-bold capitalize">{plan || 'Underground'}</div>
+            <div className="text-xl font-bold capitalize">{plan || 'Solo'}</div>
           </Link>
         </nav>
 

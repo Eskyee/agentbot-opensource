@@ -79,7 +79,7 @@ const jsonLd = {
   offers: [
     {
       '@type': 'Offer',
-      name: 'Underground',
+      name: 'Solo',
       price: '29.00',
       priceCurrency: 'GBP',
       priceSpecification: {

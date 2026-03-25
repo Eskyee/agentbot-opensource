@@ -11,8 +11,8 @@ import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 const plans = [
   {
     id: 'solo',
-    name: 'Underground',
-    specs: '1 Agent · Mistral 7B',
+    name: 'Solo',
+    specs: '1 Agent · MiMo V2 Pro',
     price: 29,
     period: 'mo',
     features: [
@@ -32,7 +32,7 @@ const plans = [
     period: 'mo',
     popular: true,
     features: [
-      { label: 'Everything in Underground', included: true },
+      { label: 'Everything in Solo', included: true },
       { label: 'Royalty Split Engine', included: true },
       { label: 'Mission Control Graph', included: true },
       { label: 'Telegram + WhatsApp', included: true },
@@ -150,7 +150,7 @@ export default function BillingPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-2xl font-bold uppercase tracking-tighter">
-                        {plans.find(p => p.id === currentPlan)?.name || 'Underground'}
+                        {plans.find(p => p.id === currentPlan)?.name || 'Solo'}
                       </h2>
                       <p className="text-zinc-500 text-sm mt-1">
                         {plans.find(p => p.id === currentPlan)?.specs || '1 Agent · Mistral 7B'}
