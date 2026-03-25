@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'platform-ops-2026-03-25',
+    date: '25 March 2026',
+    title: 'Platform Ops: Dashboard Overhaul & Infrastructure Hardening',
+    excerpt: 'Unified dashboard layout, Redis recovery, Google Calendar integration, full infra audit. All services green.',
+    tags: ["Update", "Infrastructure"]
+  },
+  {
     slug: 'openclaw-2026-3-23',
     date: '24 March 2026',
     title: 'OpenClaw v2026.3.23 — Stability & Auth Fixes',
