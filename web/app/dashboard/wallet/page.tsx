@@ -219,7 +219,7 @@ export default function WalletPage() {
                 rel="noopener noreferrer"
                 className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400"
               >
-                Don't have a wallet? Create one at wallet.tempo.xyz →
+                Don&apos;t have a wallet? Create one at wallet.tempo.xyz →
               </a>
             </div>
           </div>

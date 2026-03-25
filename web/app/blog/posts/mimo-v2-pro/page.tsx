@@ -23,7 +23,7 @@ export default function MiMoV2ProPost() {
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">March 2026</p>
-            <h1 className="text-4xl font-bold mb-4">MiMo-V2-Pro: Xiaomi's Flagship AI Model</h1>
+            <h1 className="text-4xl font-bold mb-4">MiMo-V2-Pro: Xiaomi&apos;s Flagship AI Model</h1>
             <div className="flex gap-2 flex-wrap">
               <span className="text-xs px-2 py-1 rounded-full bg-blue-900/30 text-blue-400 border border-blue-800/50">New Model</span>
               <span className="text-xs px-2 py-1 rounded-full bg-zinc-800 text-zinc-400">Xiaomi</span>
@@ -32,7 +32,7 @@ export default function MiMoV2ProPost() {
           </div>
 
           <p className="text-lg text-zinc-300 mb-6">
-            We're excited to announce that <strong>MiMo-V2-Pro</strong>, Xiaomi's flagship foundation model, 
+            We&apos;re excited to announce that <strong>MiMo-V2-Pro</strong>, Xiaomi&apos;s flagship foundation model,
             is now available as the default model on Agentbot.
           </p>
 
@@ -182,7 +182,7 @@ export default function MiMoV2ProPost() {
             <li><strong>Agent-first design:</strong> Built specifically for agentic scenarios, not retrofitted</li>
             <li><strong>Massive context:</strong> 1M tokens means entire codebases in context</li>
             <li><strong>Programming excellence:</strong> #1 ranking means better code generation and debugging</li>
-            <li><strong>Reliable uptime:</strong> 100% uptime from Xiaomi's infrastructure</li>
+            <li><strong>Reliable uptime:</strong> 100% uptime from Xiaomi&apos;s infrastructure</li>
             <li><strong>Cost-effective:</strong> Competitive pricing vs Claude/GPT for similar quality</li>
           </ul>
 
@@ -196,7 +196,7 @@ export default function MiMoV2ProPost() {
           <ol className="list-decimal list-inside text-zinc-300 mb-4 space-y-2">
             <li>Go to your Agentbot dashboard</li>
             <li>Navigate to Settings → Models</li>
-            <li>Select "MiMo-V2-Pro" from the dropdown</li>
+            <li>Select &quot;MiMo-V2-Pro&quot; from the dropdown</li>
             <li>Your agent will use MiMo-V2-Pro for all new conversations</li>
           </ol>
 
