@@ -2,7 +2,6 @@
 
 import { useState, Suspense, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 
 type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
 
@@ -11,11 +10,10 @@ const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'm
 const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
 
 function OnboardContent() {
-  const { data: session } = useSession()
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') || 'solo'
   const mode = searchParams.get('mode') || 'create' // link, create, deploy
-  const isAdmin = ADMIN_EMAILS.includes(session?.user?.email?.toLowerCase() || '')
+  const [isAdmin, setIsAdmin] = useState(false)
   const isPaid = searchParams.get('paid') === '1' || isAdmin
   const paymentError = searchParams.get('payment_error')
   const paymentCancelled = searchParams.get('payment_cancelled') === '1'
@@ -66,6 +64,17 @@ function OnboardContent() {
     { id: 'support', name: 'Customer Support', description: 'FAQ, tickets, and helpdesk', icon: '🎫', color: 'orange' },
     { id: 'research', name: 'Research Agent', description: 'Web search, analysis, and reports', icon: '🔬', color: 'cyan' },
   ]
+
+  // Check admin status from session
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then(r => r.json())
+      .then(data => {
+        const email = data?.user?.email?.toLowerCase() || ''
+        if (ADMIN_EMAILS.includes(email)) setIsAdmin(true)
+      })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     // Handle payment status messages
