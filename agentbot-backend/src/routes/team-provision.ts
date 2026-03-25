@@ -8,7 +8,7 @@
  */
 
 import { Router } from 'express'
-import { provisionTeam, TEAM_TEMPLATES, generateTeamYAML } from '../../lib/team-provisioning'
+import { provisionTeam, TEAM_TEMPLATES, TEMPLATE_CATEGORIES, generateTeamYAML } from '../../lib/team-provisioning'
 
 const router = Router()
 
@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
   }
 })
 
-// List available team templates
+// List available team templates (grouped by category)
 router.get('/templates', (_req, res) => {
   const templates = Object.entries(TEAM_TEMPLATES).map(([key, t]) => ({
     key,
@@ -62,7 +62,13 @@ router.get('/templates', (_req, res) => {
     })),
   }))
 
-  res.json({ templates })
+  const categories = Object.entries(TEMPLATE_CATEGORIES).map(([key, cat]) => ({
+    key,
+    label: cat.label,
+    templates: cat.templates,
+  }))
+
+  res.json({ templates, categories })
 })
 
 export default router
