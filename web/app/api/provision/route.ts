@@ -78,16 +78,6 @@ export async function POST(request: NextRequest) {
     // 3. DB subscription check — disabled for initial testing
     // Frontend enforces payment via isPaid check before deploy button
     // TODO: Re-enable after fixing Vercel env var encoding
-    /* if (!isAdmin) {
-      const user = await prisma.user.findUnique({ where: { id: userId } })
-      if (!user || user.subscriptionStatus !== 'active') {
-        return NextResponse.json({
-          success: false,
-          error: 'Active subscription required. Subscribe at /pricing',
-          code: 'SUBSCRIPTION_REQUIRED',
-        }, { status: 402 })
-      }
-    } */
 
     if (!telegramToken && !whatsappToken && !discordBotToken) {
       return NextResponse.json({
