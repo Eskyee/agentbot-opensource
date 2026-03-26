@@ -27,9 +27,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check invite in database (if InviteCode model exists)
+    // Check invite in database
     try {
-      const invite = await prisma.inviteCode.findUnique({
+      const invite = await prisma.invite_codes.findUnique({
         where: { code: token },
       })
 
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      if (invite.usedAt) {
+      if (invite.used) {
         return NextResponse.json(
           { error: 'Invite has already been used' },
           { status: 410 }
@@ -49,11 +49,10 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         valid: true,
-        email: invite.email,
-        plan: invite.plan || 'solo',
+        plan: 'solo',
       })
     } catch {
-      // InviteCode table may not exist — accept valid hex tokens
+      // invite_codes table may not exist — accept valid hex tokens
       return NextResponse.json({
         valid: true,
         plan: 'solo',
