@@ -13,6 +13,7 @@ import agentsRouter from './routes/agents';
 import openclawRouter from './routes/openclaw';
 import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
 import AIProviderService from './services/ai-provider';
+import { startScheduler, stopScheduler } from './scheduler';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -1161,9 +1162,20 @@ app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
+  
+  // Start inline scheduler (replaces separate worker service)
+  startScheduler();
+  
   if (process.env.NODE_ENV === 'production') {
     startAutoUpdater();
   }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('[API] Shutting down...');
+  stopScheduler();
+  process.exit(0);
 });
 
 export default app;

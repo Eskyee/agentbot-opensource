@@ -26,7 +26,6 @@ function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
     AGENTBOT_PLAN: plan,
     AGENTBOT_API_URL: process.env.BACKEND_API_URL || 'https://agentbot-api.onrender.com',
     DATABASE_URL: process.env.DATABASE_URL || '',
-    REDIS_URL: process.env.REDIS_URL || '',
     OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
     INTERNAL_API_KEY: process.env.INTERNAL_API_KEY || '',
     WALLET_ENCRYPTION_KEY: process.env.WALLET_ENCRYPTION_KEY || '',

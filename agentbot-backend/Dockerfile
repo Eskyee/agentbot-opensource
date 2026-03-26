@@ -1,29 +1,32 @@
+# Unified Dockerfile for agentbot-backend
+# RUN_MODE=api (default) — runs the API server
+# RUN_MODE=worker — runs the inline scheduler worker
+# RUN_MODE=cron — runs just the cron/scheduler
+
 FROM node:22-alpine
 
 WORKDIR /app
 
-# Install Docker CLI (for container provisioning) + utilities
+# Install system deps — docker-cli for container provisioning, curl for health checks
 RUN apk add --no-cache dumb-init curl docker-cli bash
 
 COPY package*.json ./
-# Use --omit=dev in production to exclude devDependencies from the final image
 RUN npm ci --omit=dev --ignore-scripts || npm install --omit=dev --ignore-scripts
 
-# Copy source and build
 COPY . .
 RUN npm run build
 
-# Copy provision script to known path
+# Copy provision script
 RUN mkdir -p /app/docker
 COPY docker/provision.sh /app/docker/provision.sh
 RUN chmod +x /app/docker/provision.sh
 
-# Remove source files after build to reduce attack surface
+# Remove source files after build
 RUN rm -rf src
 
-# Run as non-root user for security
 USER node
 
-# Use dumb-init as PID 1 to properly handle signals and reap zombies
 ENTRYPOINT ["dumb-init", "--"]
+
+# Default: run the API server (scheduler starts inline)
 CMD ["node", "dist/index.js"]

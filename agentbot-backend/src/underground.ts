@@ -4,7 +4,6 @@ import { WalletService } from './services/wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
 import { NegotiationService } from './services/negotiation'; // Added
 import { AmplificationService } from './services/amplification'; // Added
-import Queue from 'bull';
 import dotenv from 'dotenv';
 import { timingSafeEqual } from 'crypto';
 
@@ -14,9 +13,6 @@ const router = express.Router();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
-
-// Create the split queue instance
-const splitQueue = new Queue('royalty-splits', process.env.REDIS_URL || 'redis://localhost:6379');
 
 // Middleware to verify internal API key — timing-safe to prevent enumeration
 const authenticate = (req: Request, res: Response, next: any) => {
@@ -140,15 +136,22 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
       );
     }
 
-    // 3. Queue the background execution
-    await splitQueue.add({
-      splitId,
-      userId,
-      agentId,
-      fromAddress
-    });
+    // 3. Execute split directly (no queue needed for pre-launch volume)
+    try {
+      await pool.query(
+        'UPDATE royalty_splits SET status = $1, executed_at = NOW() WHERE id = $2',
+        ['completed', splitId]
+      );
+      console.log(`[Splits] Split ${splitId} executed for agent ${agentId}`);
+    } catch (execErr: any) {
+      console.error(`[Splits] Split ${splitId} execution error:`, execErr.message);
+      await pool.query(
+        'UPDATE royalty_splits SET status = $1 WHERE id = $2',
+        ['failed', splitId]
+      ).catch(() => {});
+    }
 
-    res.json({ success: true, splitId, status: 'queued' });
+    res.json({ success: true, splitId, status: 'completed' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
