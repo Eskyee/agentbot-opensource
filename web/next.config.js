@@ -4,6 +4,20 @@ const nextConfig = {
   poweredByHeader: false,
   output: 'standalone',
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
+  async redirects() {
+    return [
+      {
+        source: '/auth/login',
+        destination: '/login',
+        permanent: false,
+      },
+      {
+        source: '/auth/:path*',
+        destination: '/login',
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
