@@ -51,7 +51,7 @@ export const navSections = [
   {
     label: 'Platform',
     items: [
-      { label: 'Borg Soul', href: 'https://borg-0-production.up.railway.app/dashboard', icon: '⬢', external: true },
+      { label: 'Borg Soul', href: 'https://tempo-x402-production.up.railway.app/dashboard', icon: '⬢', external: true },
       { label: 'Cost Tracking', href: '/dashboard/cost', icon: '$' },
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '♥' },
       { label: 'Heartbeat', href: '/dashboard/heartbeat', icon: '♡' },
