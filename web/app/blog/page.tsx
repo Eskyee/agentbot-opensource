@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'openclaw-v2026-3-24',
+    date: '26 March 2026',
+    title: 'Agentbot Now Runs OpenClaw v2026.3.24',
+    excerpt: 'Gateway OpenAI compatibility, security fix, CLI container support, channel isolation, and restart recovery.',
+    tags: ["Release", "OpenClaw", "Security"]
+  },
+  {
     slug: 'countdown-d6',
     date: '25 March 2026',
     title: 'T-6 Days: Agentbot Launches March 31',
