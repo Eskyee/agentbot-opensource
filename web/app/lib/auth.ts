@@ -1,14 +1,3 @@
-/**
- * ⚠️ AUTH CONFIG — See web/🚨 AUTH LOOP WARNING.md before modifying
- *
- * This is the web frontend's NextAuth config. It delegates sessions to the
- * core API via NEXT_PUBLIC_KEYCHAIN_URL. Do NOT add build-time throws for
- * runtime-only env vars (like NEXTAUTH_SECRET) — it causes login loops.
- *
- * Two verification paths exist: getToken() (edge, proxy.ts) and auth()
- * (this handler). They use different methods and can disagree if secrets
- * are misaligned. See warning doc for details.
- */
 import { AuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
@@ -172,7 +161,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === 'production' && process.env.NEXTAUTH_SECRET !== undefined
+  secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === 'production'
     ? (() => { throw new Error('NEXTAUTH_SECRET is required in production') })()
     : 'dev-secret-do-not-use-in-production-12345'),
   debug: process.env.NODE_ENV === "development",

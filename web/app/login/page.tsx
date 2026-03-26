@@ -1,4 +1,3 @@
-// ⚠️ See web/🚨 AUTH LOOP WARNING.md — NEVER auto-redirect to /dashboard from here
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
@@ -22,9 +21,7 @@ function LoginForm() {
 
   useEffect(() => {
     if (error) {
-      if (error === 'SessionExpired') {
-        setLoginError('Your session expired. Please sign in again.')
-      } else if (error === 'OAuthCallback') {
+      if (error === 'OAuthCallback') {
         setLoginError('Authentication failed. Please try again.')
       } else if (error === 'OAuthAccountNotLinked') {
         setLoginError('This email is already associated with another account.')
@@ -134,13 +131,6 @@ function LoginForm() {
       <p className="mt-6 text-zinc-600 text-[10px] uppercase tracking-widest">
         By continuing, you agree to Agentbot&apos;s Terms
       </p>
-
-      {status === 'authenticated' && (
-        <div className="mt-4 p-3 border border-green-500/30 text-green-400 text-xs">
-          You're already logged in.{' '}
-          <a href="/dashboard" className="underline hover:text-green-300">Go to Dashboard →</a>
-        </div>
-      )}
     </div>
   );
 }
