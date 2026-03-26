@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
       apiKey,
       plan,
       email: bodyEmail,
+      autoProvision,
+      agentType,
     } = body
 
     // 1. Require an authenticated session — NEVER trust body email for auth
@@ -75,7 +77,9 @@ export async function POST(request: NextRequest) {
     // Frontend enforces payment via isPaid check before deploy button
     // TODO: Re-enable after fixing Vercel env var encoding
 
-    if (!telegramToken && !whatsappToken && !discordBotToken) {
+    // OpenClaw-only deployments (autoProvision or agentType=business) skip channel token requirement
+    const isOpenClawDeploy = autoProvision === true || agentType === 'business'
+    if (!isOpenClawDeploy && !telegramToken && !whatsappToken && !discordBotToken) {
       return NextResponse.json({
         success: false,
         error: 'At least one channel token required (telegram, whatsapp, or discord)',
@@ -143,6 +147,19 @@ export async function POST(request: NextRequest) {
           import('@/app/lib/alerts').then(({ alertNewProvision }) => {
             alertNewProvision(data.userId || agentId, legacyPayload.plan || 'solo').catch(() => {})
           }).catch(() => {})
+
+          // Persist OpenClaw URL to user record for reliable sidebar access
+          if (data.url && userId && userId !== 'admin') {
+            prisma.user.update({
+              where: { id: userId },
+              data: {
+                openclawUrl: data.url,
+                openclawInstanceId: data.userId || agentId,
+              },
+            }).catch((err: unknown) => {
+              console.error('[Provision] Failed to save openclawUrl to user:', err)
+            })
+          }
 
           return NextResponse.json({
             success: true,

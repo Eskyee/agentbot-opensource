@@ -92,13 +92,31 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
   const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
 
   useEffect(() => {
+    // Check localStorage first
     try {
       const stored = localStorage.getItem('agentbot_instance')
       if (stored) {
         const data = JSON.parse(stored)
-        if (data.url) setOpenclawUrl(data.url)
+        if (data.url) {
+          setOpenclawUrl(data.url)
+          return
+        }
       }
     } catch {}
+    // Fallback: fetch from DB
+    fetch('/api/user/openclaw')
+      .then(r => r.json())
+      .then(data => {
+        if (data.openclawUrl) {
+          setOpenclawUrl(data.openclawUrl)
+          // Restore localStorage for future visits
+          localStorage.setItem('agentbot_instance', JSON.stringify({
+            userId: data.openclawInstanceId,
+            url: data.openclawUrl,
+          }))
+        }
+      })
+      .catch(() => {})
   }, [])
 
   return (

@@ -22,6 +22,8 @@ model User {
   subscriptionEndDate   DateTime?
   subscriptionStartDate DateTime?
   subscriptionStatus    String           @default("inactive")
+  openclawUrl           String?
+  openclawInstanceId    String?
   referralCode          String?          @unique
   referralCredits       Int              @default(0)
   referredBy            String?

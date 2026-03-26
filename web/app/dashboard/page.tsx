@@ -183,7 +183,25 @@ function DashboardContent() {
           }
         } catch {}
       }
-      
+
+      // Fallback: check DB for OpenClaw instance
+      if (!userId) {
+        try {
+          const openclawRes = await fetch('/api/user/openclaw')
+          const openclawData = await openclawRes.json()
+          if (openclawData.openclawInstanceId) {
+            userId = openclawData.openclawInstanceId
+            // Also restore localStorage for future visits
+            if (openclawData.openclawUrl) {
+              localStorage.setItem('agentbot_instance', JSON.stringify({
+                userId: openclawData.openclawInstanceId,
+                url: openclawData.openclawUrl,
+              }))
+            }
+          }
+        } catch {}
+      }
+
       if (!userId) {
         setError('No instance found. Please deploy first.')
         setLoading(false)
