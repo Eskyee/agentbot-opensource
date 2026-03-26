@@ -12,7 +12,7 @@ const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz
 function OnboardContent() {
   const searchParams = useSearchParams()
   const plan = searchParams.get('plan') || 'solo'
-  const mode = searchParams.get('mode') || 'create' // link, create, deploy
+  const mode = searchParams.get('mode') || 'deploy' // deploy (default), create, link
   const [isAdmin, setIsAdmin] = useState(false)
   const isPaid = searchParams.get('paid') === '1' || isAdmin
   const paymentError = searchParams.get('payment_error')
@@ -198,36 +198,36 @@ function OnboardContent() {
       {/* Mode Selector */}
       {step === 'telegram' && (
         <div className="mb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 bg-zinc-900 p-2 rounded-xl border border-zinc-800">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-900 p-2 rounded-xl border border-zinc-800">
             <button
-              onClick={() => window.location.href = '/onboard?mode=link'}
+              onClick={() => window.location.href = `/onboard?mode=deploy&plan=${plan}`}
               className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-                mode === 'link' 
-                  ? 'bg-white text-black' 
+                mode === 'deploy'
+                  ? 'bg-white text-black'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+              }`}
+            >
+              Deploy OpenClaw
+            </button>
+            <button
+              onClick={() => window.location.href = `/onboard?mode=create&plan=${plan}`}
+              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                mode === 'create'
+                  ? 'bg-white text-black'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+              }`}
+            >
+              Custom Agent
+            </button>
+            <button
+              onClick={() => window.location.href = `/onboard?mode=link&plan=${plan}`}
+              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
+                mode === 'link'
+                  ? 'bg-white text-black'
                   : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
               }`}
             >
               Link Existing
-            </button>
-            <button
-              onClick={() => window.location.href = '/onboard?mode=create'}
-              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-                mode === 'create' 
-                  ? 'bg-white text-black' 
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-              }`}
-            >
-              Create New
-            </button>
-            <button
-              onClick={() => window.location.href = '/onboard?mode=deploy'}
-              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-                mode === 'deploy' 
-                  ? 'bg-white text-black' 
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-              }`}
-            >
-              One-Click Deploy
             </button>
           </div>
         </div>
