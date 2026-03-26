@@ -33,11 +33,8 @@ function LoginForm() {
     }
   }, [error])
 
-  useEffect(() => {
-    if (session && status === 'authenticated') {
-      window.location.href = '/dashboard'
-    }
-  }, [session, status])
+  // Don't auto-redirect — prevents infinite loop when session is stale
+  // User can click through to dashboard manually
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,6 +128,13 @@ function LoginForm() {
       <p className="mt-6 text-zinc-600 text-[10px] uppercase tracking-widest">
         By continuing, you agree to Agentbot&apos;s Terms
       </p>
+
+      {status === 'authenticated' && (
+        <div className="mt-4 p-3 border border-green-500/30 text-green-400 text-xs">
+          You're already logged in.{' '}
+          <a href="/dashboard" className="underline hover:text-green-300">Go to Dashboard →</a>
+        </div>
+      )}
     </div>
   );
 }
