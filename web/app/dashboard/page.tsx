@@ -183,7 +183,25 @@ function DashboardContent() {
           }
         } catch {}
       }
-      
+
+      // Fallback: check DB for OpenClaw instance
+      if (!userId) {
+        try {
+          const openclawRes = await fetch('/api/user/openclaw')
+          const openclawData = await openclawRes.json()
+          if (openclawData.openclawInstanceId) {
+            userId = openclawData.openclawInstanceId
+            // Also restore localStorage for future visits
+            if (openclawData.openclawUrl) {
+              localStorage.setItem('agentbot_instance', JSON.stringify({
+                userId: openclawData.openclawInstanceId,
+                url: openclawData.openclawUrl,
+              }))
+            }
+          }
+        } catch {}
+      }
+
       if (!userId) {
         setError('No instance found. Please deploy first.')
         setLoading(false)
@@ -322,6 +340,20 @@ function DashboardContent() {
 
   if (error) {
     const isAuthError = error.includes('sign in') || error.includes('Unauthorized')
+    const isNoInstance = error.includes('deploy first') || error.includes('No instance')
+    const isInstanceError = !isAuthError && !isNoInstance // backend returned error for existing instance
+
+    let title = 'Deploy your first agent'
+    let cta = { label: 'Deploy Now', href: '/onboard' }
+
+    if (isAuthError) {
+      title = 'Sign in required'
+      cta = { label: 'Sign In', href: '/login?callbackUrl=/dashboard' }
+    } else if (isInstanceError) {
+      title = 'Instance unavailable'
+      cta = { label: 'View Status', href: '/dashboard/system-pulse' }
+    }
+
     return (
       <div className="flex h-screen bg-black font-mono">
         <DashboardSidebar
@@ -330,26 +362,17 @@ function DashboardContent() {
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
-        
+
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-left max-w-md">
-            <h1 className="text-2xl font-bold uppercase tracking-tighter mb-4">{isAuthError ? 'Sign in required' : 'Deploy your first agent'}</h1>
+            <h1 className="text-2xl font-bold uppercase tracking-tighter mb-4">{title}</h1>
             <p className="text-zinc-400 text-sm mb-8">{error}</p>
-            {isAuthError ? (
-              <Link
-                href="/login?callbackUrl=/dashboard"
-                className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-              >
-                Sign In
-              </Link>
-            ) : (
-              <Link
-                href="/onboard"
-                className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-              >
-                Deploy New Agent
-              </Link>
-            )}
+            <Link
+              href={cta.href}
+              className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            >
+              {cta.label}
+            </Link>
           </div>
         </div>
       </div>

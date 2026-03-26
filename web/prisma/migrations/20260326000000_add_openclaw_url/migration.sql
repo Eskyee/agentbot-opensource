@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "openclawUrl" TEXT;
+ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "openclawInstanceId" TEXT;
