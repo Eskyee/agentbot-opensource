@@ -1,0 +1,129 @@
+{
+  "deploymentChecklist": {
+    "metadata": {
+      "version": "1.0.0",
+      "lastUpdated": "2026-03-23",
+      "template": "production"
+    },
+    "preDeployment": {
+      "codeQuality": {
+        "title": "Code Quality & Validation",
+        "items": [
+          { "id": "cd-1", "task": "Run pre-deployment validation script", "command": "node scripts/pre-deployment-validation.js", "status": "pending", "required": true },
+          { "id": "cd-2", "task": "Pull latest main branch", "command": "git pull origin main", "status": "pending", "required": true },
+          { "id": "cd-3", "task": "Verify git status is clean", "command": "git status --porcelain", "expect": "empty", "status": "pending", "required": true },
+          { "id": "cd-4", "task": "Run backend tests", "command": "cd agentbot-backend && npm test", "status": "pending", "required": true },
+          { "id": "cd-5", "task": "Run frontend tests", "command": "cd web && npm test", "status": "pending", "required": true },
+          { "id": "cd-6", "task": "Run E2E tests", "command": "cd web && npx playwright test", "status": "pending", "required": true },
+          { "id": "cd-7", "task": "Build backend", "command": "cd agentbot-backend && npm run build", "status": "pending", "required": true },
+          { "id": "cd-8", "task": "Build frontend", "command": "cd web && npm run build", "status": "pending", "required": true }
+        ]
+      },
+      "environment": {
+        "title": "Environment Configuration",
+        "items": [
+          { "id": "env-1", "task": "Verify Vercel secrets configured", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "env-2", "task": "Verify Render secrets configured", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "env-3", "task": "Verify NEXTAUTH_SECRET set", "check": "vercel env vars", "status": "pending", "required": true },
+          { "id": "env-4", "task": "Verify DATABASE_URL set", "check": "vercel + render env vars", "status": "pending", "required": true },
+          { "id": "env-5", "task": "Verify STRIPE_SECRET_KEY set", "check": "vercel + render env vars", "status": "pending", "required": true },
+          { "id": "env-6", "task": "Verify STRIPE_WEBHOOK_SECRET set", "check": "vercel + render env vars", "status": "pending", "required": true },
+          { "id": "env-7", "task": "Verify OPENROUTER_API_KEY set", "check": "vercel + render env vars", "status": "pending", "required": true },
+          { "id": "env-8", "task": "Verify ADMIN_EMAILS set", "check": "vercel + render env vars", "status": "pending", "required": true }
+        ]
+      },
+      "database": {
+        "title": "Database & Migrations",
+        "items": [
+          { "id": "db-1", "task": "Verify migrations directory exists", "check": "web/prisma/migrations/", "status": "pending", "required": true },
+          { "id": "db-2", "task": "Verify schema file exists", "check": "web/prisma/schema.prisma", "status": "pending", "required": true },
+          { "id": "db-3", "task": "Test database connection locally", "command": "cd web && npx prisma db push --skip-generate", "status": "pending", "required": true },
+          { "id": "db-4", "task": "Verify database backups enabled", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "db-5", "task": "Verify PITR enabled", "check": "render dashboard", "status": "pending", "required": false }
+        ]
+      }
+    },
+    "deployment": {
+      "git": {
+        "title": "Git & CI/CD",
+        "items": [
+          { "id": "git-1", "task": "Commit all changes", "command": "git add . && git commit -m 'chore: deployment preparation'", "status": "pending", "required": true },
+          { "id": "git-2", "task": "Push to main branch", "command": "git push origin main", "status": "pending", "required": true },
+          { "id": "git-3", "task": "Monitor GitHub Actions", "check": "github actions", "status": "pending", "required": true },
+          { "id": "git-4", "task": "Verify backend build succeeds", "check": "github actions logs", "status": "pending", "required": true },
+          { "id": "git-5", "task": "Verify frontend build succeeds", "check": "github actions logs", "status": "pending", "required": true },
+          { "id": "git-6", "task": "Verify validation passes", "check": "github actions logs", "status": "pending", "required": true }
+        ]
+      },
+      "vercel": {
+        "title": "Vercel Deployment",
+        "items": [
+          { "id": "vercel-1", "task": "Monitor Vercel deployment", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "vercel-2", "task": "Verify deployment completes successfully", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "vercel-3", "task": "Verify custom domain active", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "vercel-4", "task": "Test frontend health endpoint", "command": "curl https://agentbot.raveculture.xyz/api/health", "expect": "200 ok", "status": "pending", "required": true }
+        ]
+      },
+      "render": {
+        "title": "Render Deployment",
+        "items": [
+          { "id": "render-1", "task": "Monitor backend deployment", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "render-2", "task": "Monitor worker deployment", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "render-3", "task": "Monitor Redis deployment", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "render-4", "task": "Verify backend health endpoint", "command": "curl https://agentbot-api.onrender.com/health", "expect": "200 ok", "status": "pending", "required": true },
+          { "id": "render-5", "task": "Verify no errors in deployment logs", "check": "render logs", "status": "pending", "required": true }
+        ]
+      }
+    },
+    "postDeployment": {
+      "verification": {
+        "title": "Post-Deployment Verification",
+        "items": [
+          { "id": "pd-1", "task": "Test homepage loads", "check": "https://agentbot.raveculture.xyz", "status": "pending", "required": true },
+          { "id": "pd-2", "task": "Test login page accessible", "check": "https://agentbot.raveculture.xyz/login", "status": "pending", "required": true },
+          { "id": "pd-3", "task": "Test OAuth providers (Google)", "check": "manual test", "status": "pending", "required": true },
+          { "id": "pd-4", "task": "Test OAuth providers (GitHub)", "check": "manual test", "status": "pending", "required": true },
+          { "id": "pd-5", "task": "Test dashboard accessible", "check": "manual test after login", "status": "pending", "required": true },
+          { "id": "pd-6", "task": "Verify no console errors", "check": "browser dev tools", "status": "pending", "required": true },
+          { "id": "pd-7", "task": "Test API stats endpoint", "command": "curl https://agentbot.raveculture.xyz/api/stats", "expect": "200", "status": "pending", "required": true },
+          { "id": "pd-8", "task": "Test Lighthouse score", "command": "lighthouse https://agentbot.raveculture.xyz --view", "expect": ">80", "status": "pending", "required": false }
+        ]
+      },
+      "monitoring": {
+        "title": "Monitoring Setup",
+        "items": [
+          { "id": "mon-1", "task": "Check Render logs for errors", "check": "render dashboard logs", "status": "pending", "required": true },
+          { "id": "mon-2", "task": "Check Vercel logs for errors", "check": "vercel dashboard logs", "status": "pending", "required": true },
+          { "id": "mon-3", "task": "Verify database connection pool", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "mon-4", "task": "Verify Redis connectivity", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "mon-5", "task": "Set up monitoring alerts (optional)", "check": "render/vercel dashboards", "status": "pending", "required": false },
+          { "id": "mon-6", "task": "Verify uptime monitoring", "check": "third-party service", "status": "pending", "required": false }
+        ]
+      },
+      "documentation": {
+        "title": "Documentation & Records",
+        "items": [
+          { "id": "doc-1", "task": "Record deployment date/time", "check": "deployment log", "status": "pending", "required": true },
+          { "id": "doc-2", "task": "Record deployed version", "check": "git commit hash", "status": "pending", "required": true },
+          { "id": "doc-3", "task": "Document any issues encountered", "check": "deployment log", "status": "pending", "required": true },
+          { "id": "doc-4", "task": "Update changelog if needed", "check": "CHANGELOG.md", "status": "pending", "required": true },
+          { "id": "doc-5", "task": "Notify team of deployment", "check": "team communication", "status": "pending", "required": true }
+        ]
+      }
+    },
+    "rollback": {
+      "emergency": {
+        "title": "Emergency Rollback (If Needed)",
+        "items": [
+          { "id": "rb-1", "task": "Identifier rollback need", "check": "monitoring/team decision", "status": "pending", "required": true },
+          { "id": "rb-2", "task": "Execute frontend rollback", "command": "npx vercel rollback", "status": "pending", "required": true },
+          { "id": "rb-3", "task": "Execute backend rollback", "check": "render dashboard", "status": "pending", "required": true },
+          { "id": "rb-4", "task": "Verify health endpoints", "command": "curl https://agentbot.raveculture.xyz/api/health && curl https://agentbot-api.onrender.com/health", "status": "pending", "required": true },
+          { "id": "rb-5", "task": "Test critical user flows", "check": "manual test", "status": "pending", "required": true },
+          { "id": "rb-6", "task": "Monitor logs for errors", "check": "render/vercel logs", "status": "pending", "required": true },
+          { "id": "rb-7", "task": "Document rollback", "check": "rollback log", "status": "pending", "required": true }
+        ]
+      }
+    }
+  }
+}

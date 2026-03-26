@@ -13,12 +13,21 @@ export async function POST(req: NextRequest) {
   }
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set('agentbot-session', '', {
+  const cookieOpts = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'lax' as const,
     path: '/',
     maxAge: 0,
-  });
+  };
+  // Clear custom session cookie
+  response.cookies.set('agentbot-session', '', cookieOpts);
+  // Clear NextAuth cookies to prevent stale JWT sessions
+  response.cookies.set('next-auth.session-token', '', cookieOpts);
+  response.cookies.set('__Secure-next-auth.session-token', '', cookieOpts);
+  response.cookies.set('next-auth.callback-url', '', { ...cookieOpts, httpOnly: false });
+  response.cookies.set('__Secure-next-auth.callback-url', '', { ...cookieOpts, httpOnly: false });
+  response.cookies.set('next-auth.csrf-token', '', cookieOpts);
+  response.cookies.set('__Host-next-auth.csrf-token', '', cookieOpts);
   return response;
 }

@@ -1,8 +1,8 @@
 /**
  * Wallet API — Tempo Balance
- * 
+ *
  * GET  /api/wallet?address=0x...  → Balance, fee token info
- * 
+ *
  * Queries Tempo RPC for user wallet state.
  */
 
@@ -91,7 +91,7 @@ export async function GET(request: Request) {
 
     // Find tokens with balances > 0
     const fundedTokens = tokenResults.filter(t => t?.hasBalance)
-    
+
     // Primary token: first funded one, or pathUSD as default
     const primary = fundedTokens[0] || tokenResults[0]
 

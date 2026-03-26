@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
 import { getBackendApiUrl } from '@/app/api/lib/api-keys';
 
 const API_VERSION = '1.0.0';
@@ -31,7 +30,7 @@ const agentInstances = new Map<string, {
 }>();
 
 export async function GET(request: NextRequest) {
-  const authSession = await getServerSession(authOptions);
+  const authSession = await getAuthSession();
   if (!authSession?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -141,7 +140,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const authSession = await getServerSession(authOptions);
+  const authSession = await getAuthSession();
   if (!authSession?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

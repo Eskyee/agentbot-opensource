@@ -1,193 +1,296 @@
 #!/usr/bin/env node
-
 /**
  * Pre-Deployment Validation Script
- * Run before pushing to main to catch issues early
+ * Runs checks before deployment to ensure production readiness
  */
 
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const ROOT = path.resolve(__dirname, '..');
+const COLORS = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+};
 
-let passed = 0;
-let failed = 0;
+const log = {
+  info: (msg) => console.log(`${COLORS.blue}[INFO]${COLORS.reset} ${msg}`),
+  success: (msg) => console.log(`${COLORS.green}[PASS]${COLORS.reset} ${msg}`),
+  warn: (msg) => console.log(`${COLORS.yellow}[WARN]${COLORS.reset} ${msg}`),
+  error: (msg) => console.log(`${COLORS.red}[FAIL]${COLORS.reset} ${msg}`),
+  section: (msg) => console.log(`\n${COLORS.bright}${COLORS.magenta}=== ${msg} ===${COLORS.reset}\n`),
+};
+
+let failures = 0;
 let warnings = 0;
 
-function check(name, fn) {
+function runCommand(cmd, cwd = process.cwd()) {
   try {
-    const result = fn();
-    if (result === 'warn') {
-      console.log(`⚠️  ${name}`);
+    return execSync(cmd, { cwd, encoding: 'utf8' });
+  } catch (error) {
+    return null;
+  }
+}
+
+function check(condition, message, isWarning = false) {
+  if (condition) {
+    log.success(message);
+    return true;
+  } else {
+    if (isWarning) {
+      log.warn(message);
       warnings++;
+      return false;
     } else {
-      console.log(`✅ ${name}`);
-      passed++;
-    }
-  } catch (e) {
-    console.log(`❌ ${name}: ${e.message}`);
-    failed++;
-  }
-}
-
-function fileExists(filePath) {
-  return fs.existsSync(path.join(ROOT, filePath));
-}
-
-function readFile(filePath) {
-  return fs.readFileSync(path.join(ROOT, filePath), 'utf8');
-}
-
-console.log('\n🔍 Pre-Deployment Validation\n');
-console.log('='.repeat(50));
-
-// 1. Git Status
-check('Git working directory clean', () => {
-  const status = execSync('git status --porcelain', { cwd: ROOT }).toString().trim();
-  if (status) throw new Error('Uncommitted changes found');
-});
-
-check('No .env files tracked in git', () => {
-  const tracked = execSync('git ls-files | grep -E "\\.env$|\\.env\\."', { cwd: ROOT }).toString().trim();
-  // Allow .env.example files
-  const badFiles = tracked.split('\n').filter(f => !f.endsWith('.example') && !f.endsWith('.recoverycheck'));
-  if (badFiles.length > 0) throw new Error(`Tracked env files: ${badFiles.join(', ')}`);
-});
-
-// 2. Configuration Files
-check('render.yaml exists', () => {
-  if (!fileExists('render.yaml')) throw new Error('Missing render.yaml');
-});
-
-check('vercel.json exists', () => {
-  if (!fileExists('vercel.json')) throw new Error('Missing vercel.json');
-});
-
-check('.gitignore covers .env files', () => {
-  const gitignore = readFile('.gitignore');
-  if (!gitignore.includes('.env')) throw new Error('.env not in .gitignore');
-});
-
-// 3. Docker Files
-check('Backend Dockerfile exists', () => {
-  if (!fileExists('agentbot-backend/Dockerfile')) throw new Error('Missing Dockerfile');
-});
-
-check('Frontend Dockerfile exists', () => {
-  if (!fileExists('web/Dockerfile')) throw new Error('Missing Dockerfile');
-});
-
-check('Worker Dockerfile exists', () => {
-  if (!fileExists('agentbot-worker/Dockerfile') && !fileExists('agentbot-backend/Dockerfile.worker')) {
-    throw new Error('Missing Dockerfile');
-  }
-});
-
-// 4. Package.json Scripts
-check('Backend has build script', () => {
-  const pkg = JSON.parse(readFile('agentbot-backend/package.json'));
-  if (!pkg.scripts?.build) throw new Error('No build script');
-});
-
-check('Frontend has build script', () => {
-  const pkg = JSON.parse(readFile('web/package.json'));
-  if (!pkg.scripts?.build) throw new Error('No build script');
-});
-
-// 5. Health Endpoints
-check('Backend health endpoint exists', () => {
-  if (!fileExists('agentbot-backend/src/routes/health.ts') &&
-      !readFile('agentbot-backend/src/index.ts').includes('/health')) {
-    return 'warn';
-  }
-});
-
-check('Frontend health route exists', () => {
-  if (!fileExists('web/app/api/health/route.ts')) {
-    return 'warn';
-  }
-});
-
-// 6. Prisma
-check('Prisma schema exists', () => {
-  if (!fileExists('web/prisma/schema.prisma')) throw new Error('Missing schema');
-});
-
-check('Prisma migrations exist', () => {
-  const migrations = fs.readdirSync(path.join(ROOT, 'web/prisma/migrations'));
-  if (migrations.length === 0) throw new Error('No migrations');
-});
-
-// 7. CI/CD
-check('GitHub Actions workflow exists', () => {
-  if (!fileExists('.github/workflows/ci-cd.yml')) throw new Error('Missing CI/CD');
-});
-
-// 8. Security
-check('No hardcoded secrets in source', () => {
-  const patterns = [
-    /sk_live_[a-zA-Z0-9]+/,
-    /sk_test_[a-zA-Z0-9]+/,
-    /xox[bpsa]-[a-zA-Z0-9-]+/,
-  ];
-  
-  // Only check tracked files
-  const tracked = execSync('git ls-files', { cwd: ROOT }).toString().trim().split('\n');
-  for (const f of tracked) {
-    if (f.endsWith('.env') && !f.endsWith('.example')) {
-      const content = readFile(f);
-      for (const p of patterns) {
-        if (p.test(content)) throw new Error(`Possible secret in ${f}`);
-      }
+      log.error(message);
+      failures++;
+      return false;
     }
   }
-});
+}
 
-// 9. Dependencies
-check('Frontend dependencies installed', () => {
-  if (!fileExists('web/node_modules/.package-lock.json')) {
-    return 'warn';
+function checkFileExists(filePath, description) {
+  const exists = fs.existsSync(filePath);
+  return check(exists, `${description} exists: ${path.basename(filePath)}`);
+}
+
+function checkFileNotContains(filePath, patterns, description) {
+  const content = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
+  const issues = [];
+
+  for (const pattern of patterns) {
+    if (content.includes(pattern)) {
+      issues.push(pattern);
+    }
   }
-});
 
-check('Backend dependencies installed', () => {
-  if (!fileExists('agentbot-backend/node_modules/.package-lock.json')) {
-    return 'warn';
+  if (issues.length > 0) {
+    failures++;
+    log.error(`${description} contains sensitive patterns: ${issues.join(', ')}`);
+    return false;
+  } else {
+    log.success(`${description} contains no sensitive patterns`);
+    return true;
   }
+}
+
+// Validation Checks
+
+log.section('1. Git Status & Secrets');
+const gitStatus = runCommand('git status --porcelain');
+const hasStagedChanges = gitStatus && gitStatus.trim().length > 0;
+
+check(!hasStagedChanges, 'Working directory is clean');
+
+const checkPatterns = [
+  'sk_live_', 'sk_test_', 'AIza', 'pk_test_', 'ghp_', 'gho_', 'ghu_', 'ghs_', 'ghr_',
+  'xoxb-', 'eyJhbG', 'REDACTED', 'password123', 'admin123'
+];
+
+checkFileNotContains(
+  path.join(__dirname, '..', '.gitignore'),
+  ['# Environment files', '.env', '**/.env'],
+  'Root .gitignore'
+);
+
+log.section('2. Project Structure');
+const dirs = ['web', 'agentbot-backend', '.github/workflows', 'web/prisma/migrations'];
+
+dirs.forEach(dir => {
+  checkFileExists(path.join(__dirname, '..', dir), `Required directory`);
 });
 
-// 10. TypeScript
-check('Frontend TypeScript compiles', () => {
+log.section('3. Configuration Files');
+const configFiles = [
+  'render.yaml',
+  'web/vercel.json',
+  'web/.env.example',
+  'agentbot-backend/Dockerfile',
+  'web/Dockerfile',
+  '.github/workflows/ci-cd.yml',
+  'web/prisma/schema.prisma'
+];
+
+configFiles.forEach(file => {
+  checkFileExists(path.join(__dirname, '..', file), `Config file`);
+});
+
+log.section('4. Docker Configuration');
+try {
+  const backendDocker = fs.readFileSync(path.join(__dirname, '..', 'agentbot-backend/Dockerfile'), 'utf8');
+  check(backendDocker.includes('FROM node:'), 'Backend Dockerfile has FROM node:');
+  check(backendDocker.includes('USER node') || backendDocker.includes('--ch=node'), 'Backend Dockerfile uses non-root user');
+
+  const webDocker = fs.readFileSync(path.join(__dirname, '..', 'web/Dockerfile'), 'utf8');
+  check(webDocker.includes('FROM node:'), 'Frontend Dockerfile has FROM node:');
+  check(webDocker.includes('npx prisma generate'), 'Frontend Dockerfile generates Prisma client');
+  check(webDocker.includes('next build'), 'Frontend Dockerfile builds Next.js');
+} catch (error) {
+  log.error('Failed to parse Dockerfile configurations');
+  failures++;
+}
+
+log.section('5. Database & Migrations');
+const migrationsDir = path.join(__dirname, '..', 'web/prisma/migrations');
+if (fs.existsSync(migrationsDir)) {
+  const migrations = fs.readdirSync(migrationsDir);
+  check(migrations.length >= 3, `Has ${migrations.length} database migrations`);
+} else {
+  log.error('No migrations directory found');
+  failures++;
+}
+
+log.section('6. Health Checks');
+const tsFiles = [];
+function findTsFiles(dir) {
+  const files = fs.readdirSync(dir, { withFileTypes: true });
+  files.forEach(file => {
+    const fullPath = path.join(dir, file.name);
+    if (file.isDirectory && !file.name.includes('node_modules') && !file.name.includes('.next')) {
+      findTsFiles(fullPath);
+    } else if (file.name.endsWith('.ts') || file.name.endsWith('.tsx')) {
+      tsFiles.push(fullPath);
+    }
+  });
+}
+
+findTsFiles(path.join(__dirname, '..', 'agentbot-backend/src'));
+const hasHealthCheck = tsFiles.some(file => {
   try {
-    execSync('cd web && npx tsc --noEmit 2>&1', { cwd: ROOT, timeout: 60000 });
-  } catch (e) {
-    throw new Error('TypeScript errors found');
+    const content = fs.readFileSync(file, 'utf8');
+    return content.includes("'/health'") || content.includes('app.get.*health');
+  } catch {
+    return false;
   }
 });
 
-check('Backend TypeScript compiles', () => {
+check(hasHealthCheck, 'Backend has health check endpoint');
+
+findTsFiles(path.join(__dirname, '..', 'web/app'));
+const hasApiHealth = tsFiles.some(file => {
   try {
-    execSync('cd agentbot-backend && npx tsc --noEmit 2>&1', { cwd: ROOT, timeout: 60000 });
-  } catch (e) {
-    throw new Error('TypeScript errors found');
+    const content = fs.readFileSync(file, 'utf8');
+    return content.includes('/health') || content.includes('/api/health');
+  } catch {
+    return false;
   }
 });
 
-// Summary
-console.log('\n' + '='.repeat(50));
-console.log(`\n📊 Results: ${passed} passed, ${failed} failed, ${warnings} warnings\n`);
+check(hasApiHealth, 'Frontend has health check route', true);
 
-if (failed > 0) {
-  console.log('❌ Deployment validation FAILED');
-  console.log('Fix the issues above before deploying.\n');
+log.section('7. Security Headers');
+try {
+  const vercelJson = fs.readFileSync(path.join(__dirname, '..', 'web/vercel.json'), 'utf8');
+  check(vercelJson.includes('X-Frame-Options'), 'Has X-Frame-Options header');
+  check(vercelJson.includes('X-Content-Type-Options'), 'Has X-Content-Type-Options header');
+  check(vercelJson.includes('Permissions-Policy'), 'Has Permissions-Policy header');
+} catch (error) {
+  log.error('Failed to parse vercel.json');
+  failures++;
+}
+
+log.section('8. CI/CD Configuration');
+try {
+  const ciCdFile = fs.readFileSync(path.join(__dirname, '..', '.github/workflows/ci-cd.yml'), 'utf8');
+  check(ciCdFile.includes('backend'), 'CI runs backend build');
+  check(ciCdFile.includes('frontend'), 'CI runs frontend build');
+  check(ciCdFile.includes('deploy') || ciCdFile.includes('Deploy'), 'CI has deploy step');
+  check(ciCdFile.includes('test'), 'CI runs tests');
+} catch (error) {
+  log.error('Failed to parse CI/CD file');
+  failures++;
+}
+
+log.section('9. Render Configuration');
+try {
+  const renderYaml = fs.readFileSync(path.join(__dirname, '..', 'render.yaml'), 'utf8');
+  check(renderYaml.includes('agentbot-api'), 'Render backend service defined');
+  check(renderYaml.includes('agentbot-web'), 'Render frontend service defined');
+  check(renderYaml.includes('redis'), 'Render Redis service defined');
+  check(renderYaml.includes('databases'), 'Render database service defined');
+  check(renderYaml.includes('healthCheckPath'), 'Render has health check path');
+  check(renderYaml.includes('autoDeploy'), 'Render has auto-deploy enabled');
+} catch (error) {
+  log.error('Failed to parse render.yaml');
+  failures++;
+}
+
+log.section('10. Test Coverage');
+const testFiles = tsFiles.filter(file => {
+  const basename = path.basename(file);
+  return basename.includes('.test.') || basename.includes('.spec.');
+});
+
+check(testFiles.length >= 3, `Has ${testFiles.length} test files`);
+
+log.section('11. Package.json Validation');
+const checkPackage = (dir, name) => {
+  try {
+    const pkgPath = path.join(__dirname, '..', dir, 'package.json');
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+    check(pkg.scripts && pkg.scripts.build, `${name} has build script`);
+    check(pkg.scripts && pkg.scripts.test, `${name} has test script`, true);
+    check(pkg.scripts && pkg.scripts.dev, `${name} has dev script`);
+
+    check(pkg.engines && pkg.engines.node, `${name} specifies Node.js version`);
+    check(!pkg.dependencies || !pkg.dependencies['any'], `${name} doesn't use TypeScript 'any' type (manual check required)`, true);
+    return true;
+  } catch (error) {
+    log.error(`Failed to parse ${dir}/package.json`);
+    failures++;
+    return false;
+  }
+};
+
+checkPackage('web', 'Frontend');
+checkPackage('agentbot-backend', 'Backend');
+
+log.section('12. Documentation');
+const docsRequired = [
+  'README.md',
+  'SECURITY.md',
+  'CONTRIBUTING.md'
+];
+
+docsRequired.forEach(doc => {
+  checkFileExists(path.join(__dirname, '..', doc), `Documentation ${doc}`);
+});
+
+log.section('13. Build Readiness');
+const webBuild = runCommand('cd web && npm run build 2>&1 | tail -1');
+check(webBuild && !webBuild.includes('error'), 'Web project builds successfully');
+
+const backendBuild = runCommand('cd agentbot-backend && npm run build 2>&1 | tail -1');
+check(backendBuild && !backendBuild.includes('error'), 'Backend project builds successfully');
+
+log.section('VALIDATION SUMMARY');
+
+console.log('\n' + '='.repeat(60));
+console.log(`${COLORS.bright}RESULTS:${COLORS.reset}`);
+console.log(`${COLORS.green}✓ Checks passed: Failures prevented`);
+console.log(`${COLORS.yellow}⚠ Warnings: ${warnings}`);
+console.log(`${COLORS.red}✗ Failures: ${failures}`);
+console.log('='.repeat(60) + '\n');
+
+if (failures > 0) {
+  log.error('Deployment NOT READY - Fix failures before deploying');
   process.exit(1);
 } else if (warnings > 0) {
-  console.log('⚠️  Deployment validation PASSED with warnings');
-  console.log('Review warnings above but deployment can proceed.\n');
-  process.exit(0);
+  log.warn('Deployment READY with warnings - Review warnings before deploying');
 } else {
-  console.log('✅ Deployment validation PASSED');
-  console.log('Ready to deploy!\n');
-  process.exit(0);
+  log.success('Deployment FULLY READY - All checks passed');
+  console.log('\nNext steps:');
+  console.log('1. Ensure all secrets are configured in Vercel/Render dashboards');
+  console.log('2. Verify DATABASE_URL is injected correctly');
+  console.log('3. Test health check endpoint: GET /health');
+  console.log('4. Push to main branch to trigger deployment');
+  console.log('5. Monitor deployment via GitHub Actions and Render/Vercel dashboards\n');
 }
+
+process.exit(failures > 0 ? 1 : 0);

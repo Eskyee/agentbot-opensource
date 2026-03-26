@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import path from 'path'
 import { promises as fs } from 'fs'
@@ -12,7 +11,7 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || '/tmp/agentbot-uploads'
  * List files for a given agent
  */
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -93,7 +92,7 @@ export async function GET(req: NextRequest) {
  * Upload a file for an agent
  */
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -191,7 +190,7 @@ export async function POST(req: NextRequest) {
  * Delete a file
  */
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

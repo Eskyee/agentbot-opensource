@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 /**
  * x402-Gateway Integration
@@ -70,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Require authenticated session for all other actions
-    const session = await getServerSession(authOptions)
+    const session = await getAuthSession()
     if (!session?.user?.id || !session.user.email) {
       return NextResponse.json({
         success: false,

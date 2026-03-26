@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto'
 
 const invites = new Map()
@@ -20,7 +19,7 @@ function isAdmin(email?: string | null) {
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!isAdmin(session?.user?.email)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
@@ -38,7 +37,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!isAdmin(session?.user?.email)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }

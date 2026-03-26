@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -32,7 +31,7 @@ const PLANS = {
 export async function POST(request: NextRequest) {
   try {
     // Auth required for all billing actions
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -126,7 +125,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   // Auth required — users can only see their own billing info
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

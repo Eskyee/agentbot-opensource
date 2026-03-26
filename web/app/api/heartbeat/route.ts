@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
 const HEARTBEAT_KEY = 'heartbeat_settings'
@@ -10,7 +9,7 @@ const HEARTBEAT_KEY = 'heartbeat_settings'
  * Get heartbeat settings for an agent
  */
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -59,7 +58,7 @@ export async function GET(req: NextRequest) {
  * Update heartbeat settings for an agent
  */
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -121,7 +120,7 @@ export async function POST(req: NextRequest) {
  * Reset heartbeat settings for an agent
  */
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

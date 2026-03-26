@@ -1,10 +1,9 @@
 import Link from 'next/link'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import HeroSphere from '@/app/components/MorphingHero'
 
 export default async function Home() {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
 
   return (
     <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">

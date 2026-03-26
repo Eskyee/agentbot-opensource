@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import Stripe from 'stripe'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
 
 // Allowlist of valid credit top-up price IDs (Stripe price IDs, not product IDs)
 // Add additional price IDs here or configure via STRIPE_CREDIT_PRICE_IDS env var
@@ -14,7 +13,7 @@ function getAllowedPriceIds(): Set<string> {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.id) {
     const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
     return NextResponse.redirect(new URL(`/billing?error=unauthorized`, origin), 303)

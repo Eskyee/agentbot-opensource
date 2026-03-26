@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 
 /**
@@ -38,7 +37,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     // 1. Require an authenticated session — NEVER trust body email for auth
-    let session = await getServerSession(authOptions)
+    let session = await getAuthSession()
     const adminEmails = (process.env.ADMIN_EMAILS || '')
       .split(',')
       .map(e => e.trim().toLowerCase())

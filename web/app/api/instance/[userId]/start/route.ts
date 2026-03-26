@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 
@@ -10,7 +9,7 @@ export async function POST(
 ) {
   const BACKEND_API_URL = getBackendApiUrl()
   const { userId } = await params
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.id || session.user.id !== userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }

@@ -9,7 +9,7 @@
  */
 
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { authOptions } from '@/app/lib/auth'
 import type { Address } from 'viem'
 import {
@@ -25,7 +25,7 @@ import {
  * GET — List sessions or get specific session
  */
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
  * POST — Create new session
  */
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
  * DELETE — Close session
  */
 export async function DELETE(request: Request) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

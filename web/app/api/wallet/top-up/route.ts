@@ -12,8 +12,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import Stripe from 'stripe'
-import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { getUserSession, createSession } from '@/lib/mpp/sessions'
 import type { Address } from 'viem'

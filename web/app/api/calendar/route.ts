@@ -7,7 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { authOptions } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
 import { encryptToken, decryptToken } from '@/app/lib/token-encryption';
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
   const action = searchParams.get('action');
 
   if (action === 'auth') {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (action === 'list') {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (action === 'availability') {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -170,7 +170,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import Stripe from 'stripe'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
   solo: { amount: 2900, name: 'Solo' },
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/pricing?error=invalid_plan`, origin), 303)
   }
 
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   const userId = session?.user?.id || ''
   const userEmail = session?.user?.email || ''
 

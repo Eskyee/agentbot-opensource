@@ -23,7 +23,11 @@ export async function GET(req: NextRequest) {
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
-        isAdmin: (session.user as any).isAdmin ?? false,
+        isAdmin: (() => {
+          const adminEmails = (process.env.ADMIN_EMAILS || '')
+            .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+          return adminEmails.includes((session.user.email || '').toLowerCase());
+        })(),
       },
     });
   } catch (error) {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 
@@ -8,7 +8,7 @@ import { prisma } from '@/app/lib/prisma'
  * Returns active booking requests for the user's fleet
  */
 export async function GET() {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.email) {
     return NextResponse.json({ bookings: [] })
   }
