@@ -1,6 +1,6 @@
-# Agentbot Render Blueprint
+# Agentbot Render Blueprint (Open Source Demo)
 services:
-  # Backend API + MCP Gateway + Skills Marketplace
+  # Backend API + inline scheduler
   - type: web
     name: agentbot-api
     env: docker
@@ -18,8 +18,6 @@ services:
       - key: RENDER_API_KEY
         sync: false
       - key: DATABASE_URL
-        sync: false
-      - key: REDIS_URL
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
