@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import HeroSphere from '@/app/components/MorphingHero'
 
 export default async function Home() {
   const session = await getAuthSession()
@@ -7,8 +8,13 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 py-32 md:py-44">
-        <div className="max-w-3xl">
+      <section className="relative max-w-7xl mx-auto px-6 py-32 md:py-44 overflow-hidden">
+        {/* Particle sphere — positioned on the right */}
+        <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
+          <HeroSphere />
+        </div>
+
+        <div className="relative z-10 max-w-3xl">
           <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest mb-8">
             Built for the Creative Industry
           </div>
@@ -33,7 +39,7 @@ export default async function Home() {
               </Link>
             ) : (
               <Link
-                href="/signup"
+                href="/onboard?plan=solo"
                 className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
                 Deploy Your Crew
@@ -45,42 +51,6 @@ export default async function Home() {
             >
               Try Demo
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* baseFM */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <div className="flex flex-col md:flex-row gap-16 items-start">
-            <div className="flex-1 space-y-6">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
-              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
-              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
-                A live radio station run entirely by an Agentbot agent — handling broadcast, fan engagement, and on-chain coordination with zero human input.
-              </p>
-              <div className="flex gap-3">
-                <a
-                  href="https://basefm.space/live"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                >
-                  Listen Live
-                </a>
-                <a
-                  href="https://bankr.bot/agents/basefm"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  Support $BASEFM
-                </a>
-              </div>
-            </div>
-            <div className="text-zinc-600 text-[10px] font-mono">
-              $BASEFM · 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 · Base
-            </div>
           </div>
         </div>
       </section>
@@ -111,7 +81,7 @@ export default async function Home() {
             </div>
 
             <Link
-              href="/signup"
+              href="/onboard?plan=solo"
               className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
             >
               Get Agentbot
@@ -143,7 +113,7 @@ export default async function Home() {
       {/* Powered By */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-6 py-10">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-600 text-center mb-6">Powered By</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 text-left mb-6">Powered By</div>
           <div className="flex items-center justify-center gap-8 flex-wrap">
             {['Vercel', 'Render', 'Base', 'Coinbase', 'OpenRouter', 'Mux'].map((name) => (
               <span key={name} className="text-zinc-600 text-xs uppercase tracking-widest hover:text-white transition-colors cursor-default">
@@ -169,7 +139,7 @@ export default async function Home() {
           </div>
 
           {/* What's included */}
-          <div className="grid sm:grid-cols-3 gap-8 mb-16 pb-16 border-b border-zinc-900">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 pb-16 border-b border-zinc-900">
             <div>
               <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Agentbot</div>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-3">Creative Crew</h4>
@@ -230,7 +200,7 @@ export default async function Home() {
                 </ul>
                 <Link
                   href={`/api/stripe/checkout?plan=${plan.id}`}
-                  className={`block w-full py-3 text-center text-xs font-bold uppercase tracking-widest transition-colors ${
+                  className={`block w-full py-3 text-left text-xs font-bold uppercase tracking-widest transition-colors ${
                     plan.popular
                       ? 'bg-white text-black hover:bg-zinc-200'
                       : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
@@ -271,6 +241,42 @@ export default async function Home() {
               >
                 Buy $AGENTBOT
               </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* baseFM */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-6 py-20">
+          <div className="flex flex-col md:flex-row gap-16 items-start">
+            <div className="flex-1 space-y-6">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
+              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
+                A live radio station run entirely by an Agentbot agent — handling broadcast, fan engagement, and on-chain coordination with zero human input.
+              </p>
+              <div className="flex gap-3">
+                <a
+                  href="https://basefm.space/live"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Listen Live
+                </a>
+                <a
+                  href="https://bankr.bot/agents/basefm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  Support $BASEFM
+                </a>
+              </div>
+            </div>
+            <div className="text-zinc-600 text-[10px] font-mono">
+              $BASEFM · 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3 · Base
             </div>
           </div>
         </div>

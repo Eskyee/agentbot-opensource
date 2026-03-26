@@ -60,29 +60,27 @@ const faqs = [
 
 export default function PricingPage() {
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30">
-      {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 py-32">
-        <div className="max-w-2xl">
-          <Badge variant="outline" className="mb-8 border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
-            Pricing
-          </Badge>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
-            One Creative Crew,<br />
-            <span className="text-zinc-700">One Business Mind</span>
-          </h1>
-          <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">
-            Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card or Apple Pay.
-          </p>
-        </div>
-      </section>
+    <main className="min-h-screen bg-black text-white font-mono">
+      <div className="max-w-5xl mx-auto px-6 py-16">
+        {/* Hero */}
+        <section className="mb-16">
+          <div className="max-w-2xl">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Pricing</span>
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
+              One Creative Crew,<br />
+              <span className="text-zinc-700">One Business Mind</span>
+            </h1>
+            <p className="text-zinc-400 text-sm max-w-md leading-relaxed mt-8">
+              Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card or Apple Pay.
+            </p>
+          </div>
+        </section>
 
-      {/* What's included */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid sm:grid-cols-3 gap-12">
+        {/* What's included */}
+        <section className="border-t border-zinc-800 pt-16 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
             <div>
-              <Badge variant="secondary" className="mb-3 text-[10px] uppercase tracking-widest">Agentbot</Badge>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Agentbot</span>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-4">Creative Crew</h4>
               <ul className="space-y-2 text-xs text-zinc-500">
                 <li>Fan engagement (Telegram/WhatsApp)</li>
@@ -92,7 +90,7 @@ export default function PricingPage() {
               </ul>
             </div>
             <div>
-              <Badge variant="secondary" className="mb-3 text-[10px] uppercase tracking-widest">OpenClaw</Badge>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">OpenClaw</span>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-4">Business Operations</h4>
               <ul className="space-y-2 text-xs text-zinc-500">
                 <li>Email inbox management</li>
@@ -102,7 +100,7 @@ export default function PricingPage() {
               </ul>
             </div>
             <div>
-              <Badge variant="secondary" className="mb-3 text-[10px] uppercase tracking-widest">You Provide</Badge>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">You Provide</span>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-4">Your Own Keys</h4>
               <ul className="space-y-2 text-xs text-zinc-500">
                 <li>Your own AI API key</li>
@@ -112,21 +110,19 @@ export default function PricingPage() {
               </ul>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Plan Cards — Vercel-style borderless grid */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+        {/* Plan Cards */}
+        <section className="border-t border-zinc-800 pt-16 mb-16">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
             {plans.map((plan) => (
               <div key={plan.id} className="bg-black p-8 flex flex-col">
                 <div className="flex items-center gap-2 mb-6">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <Badge variant="outline" className="text-[9px] uppercase tracking-widest text-blue-500 border-blue-500/30">
+                    <span className="text-[9px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-2 py-0.5">
                       Popular
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 <div className="text-3xl font-bold tracking-tighter mb-6">
@@ -145,7 +141,7 @@ export default function PricingPage() {
                   className={`w-full text-xs font-bold uppercase tracking-widest ${
                     plan.popular
                       ? 'bg-white text-black hover:bg-zinc-200'
-                      : 'border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+                      : 'border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500'
                   }`}
                   onClick={() => window.location.href = `/api/stripe/checkout?plan=${plan.id}`}
                 >
@@ -154,29 +150,25 @@ export default function PricingPage() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Payment Methods */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-6 py-16">
+        {/* Payment Methods */}
+        <section className="border-t border-zinc-800 pt-16 mb-16">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Accepted Payment Methods</div>
           <div className="flex flex-wrap gap-3">
             {paymentMethods.map((method) => (
-              <Badge key={method} variant="outline" className="border-zinc-900 text-zinc-500 text-[10px] uppercase tracking-widest">
+              <span key={method} className="border border-zinc-800 text-zinc-500 text-[10px] uppercase tracking-widest px-3 py-1">
                 {method}
-              </Badge>
+              </span>
             ))}
           </div>
           <p className="mt-6 text-xs text-zinc-600">
             Secure payments via Stripe. Crypto optional — use USDC on Base for discounts.
           </p>
-        </div>
-      </section>
+        </section>
 
-      {/* FAQ */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-6 py-20">
+        {/* FAQ */}
+        <section className="border-t border-zinc-800 pt-20 mb-16">
           <div className="max-w-2xl">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Support</div>
             <h2 className="text-2xl font-bold tracking-tighter uppercase mb-12">
@@ -186,21 +178,19 @@ export default function PricingPage() {
             <div className="space-y-0">
               {faqs.map((faq, i) => (
                 <div key={i}>
-                  {i > 0 && <Separator className="bg-zinc-900" />}
+                  {i > 0 && <Separator className="bg-zinc-800" />}
                   <div className="py-6">
                     <dt className="text-sm font-bold text-white uppercase tracking-wider">{faq.q}</dt>
-                    <dd className="mt-2 text-xs text-zinc-500 leading-relaxed">{faq.a}</dd>
+                    <dd className="mt-2 text-sm text-zinc-400 leading-relaxed">{faq.a}</dd>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-6 py-20">
+        {/* CTA */}
+        <section className="border-t border-zinc-800 pt-20">
           <div className="flex flex-col md:flex-row gap-16 items-start">
             <div className="flex-1">
               <h2 className="text-2xl font-bold tracking-tighter uppercase">
@@ -216,15 +206,15 @@ export default function PricingPage() {
               </Button>
               <Button
                 variant="outline"
-                className="border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 text-xs font-bold uppercase tracking-widest"
+                className="border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 text-xs font-bold uppercase tracking-widest"
                 onClick={() => window.location.href = 'https://raveculture.mintlify.app'}
               >
                 Documentation
               </Button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </main>
   )
 }

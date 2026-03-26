@@ -1,8 +1,13 @@
 /**
  * MPP (Machine Payments Protocol) Middleware for Agentbot
  * 
- * Dual payment layer: Stripe (existing) + Tempo MPP (new additive)
+ * Triple payment layer: Stripe (existing) + Tempo MPP + Payment Sessions
  * Users choose payment method per request or set a default.
+ * 
+ * Payment flow priority:
+ * 1. Session (auto-debit via voucher if active session exists)
+ * 2. MPP (Tempo on-chain payment via 402 challenge)
+ * 3. Stripe (existing credit card flow)
  * 
  * MPP flow:
  * 1. Client sends request
@@ -10,13 +15,18 @@
  * 3. Client pays via Tempo transaction
  * 4. Client retries with Authorization: Payment <credential>
  * 5. Server verifies on-chain, returns resource with Receipt
+ * 
+ * Session flow:
+ * 1. User opens session, deposits pathUSD
+ * 2. Agent calls auto-debit via off-chain voucher (sub-100ms)
+ * 3. Server settles on-chain periodically
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyMppCredential, MPP_CONFIG } from './config';
 
 // Payment method enum
-export type PaymentMethod = 'stripe' | 'mpp';
+export type PaymentMethod = 'stripe' | 'mpp' | 'session';
 
 // MPP challenge structure (402 response)
 export interface MppChallenge {
@@ -136,15 +146,19 @@ export async function verifyMppPayment(
 
 /**
  * Determine payment method from request
- * Priority: explicit header → cookie → default
+ * Priority: session (if active) → MPP credential → stripe → default
  */
 export function getPaymentMethod(req: NextRequest): PaymentMethod {
   // Check explicit header
   const header = req.headers.get('X-Payment-Method');
-  if (header === 'mpp' || header === 'stripe') return header;
+  if (header === 'session' || header === 'mpp' || header === 'stripe') return header;
   
   // Check if MPP credential present
   if (hasMppCredential(req)) return 'mpp';
+  
+  // Check for session header (set by frontend when session is active)
+  const sessionHeader = req.headers.get('X-Session-Id');
+  if (sessionHeader) return 'session';
   
   // Default to stripe (existing behavior)
   return 'stripe';

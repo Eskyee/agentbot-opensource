@@ -7,7 +7,6 @@ import {
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import {
   DashboardShell,
   DashboardHeader,
@@ -15,6 +14,7 @@ import {
 } from '@/app/components/shared/DashboardShell'
 import { AgentInput, AgentTextarea } from '@/app/components/shared/AgentInput'
 import { EmptyState } from '@/app/components/shared/EmptyState'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 type MemoryKind = 'fact' | 'decision' | 'note' | 'alert'
 
@@ -30,31 +30,31 @@ const KIND_META: Record<MemoryKind, {
   label: string
   icon: React.ElementType
   color: string
-  bg: string
+  status: 'active' | 'idle' | 'error' | 'offline'
 }> = {
   fact: {
     label: 'Fact',
     icon: FileText,
     color: 'text-blue-400',
-    bg: 'bg-blue-900/20 border-blue-800/40',
+    status: 'active',
   },
   decision: {
     label: 'Decision',
     icon: Lightbulb,
     color: 'text-yellow-400',
-    bg: 'bg-yellow-900/20 border-yellow-800/40',
+    status: 'idle',
   },
   note: {
     label: 'Note',
     icon: FileText,
     color: 'text-zinc-400',
-    bg: 'bg-zinc-900/40 border-zinc-700/40',
+    status: 'offline',
   },
   alert: {
     label: 'Alert',
     icon: AlertCircle,
     color: 'text-red-400',
-    bg: 'bg-red-900/20 border-red-800/40',
+    status: 'error',
   },
 }
 
@@ -120,7 +120,7 @@ export default function MemoryPage() {
   const { data: apiMemory } = useQuery({
     queryKey: ['agent-memory'],
     queryFn: async () => {
-      const res = await fetch('/api/memory')
+      const res = await fetch('/api/memory?agentId=default')
       return res.json()
     },
     staleTime: 30_000,
@@ -168,7 +168,7 @@ export default function MemoryPage() {
         count={entries.length}
         action={
           <Button
-            className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest"
+            className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
             onClick={() => setAddOpen(true)}
           >
             <Plus className="h-4 w-4 mr-1" /> Add Memory
@@ -186,47 +186,45 @@ export default function MemoryPage() {
               placeholder="Search memories…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 rounded-lg pl-10 pr-4 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-zinc-950 border border-zinc-800 pl-10 pr-4 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 font-mono"
             />
           </div>
           {FILTER_OPTIONS.map(({ key, label }) => (
-            <Badge
+            <button
               key={key}
-              variant={filter === key ? 'default' : 'outline'}
-              className={`cursor-pointer transition-colors capitalize ${
-                filter === key
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'border-zinc-700 text-zinc-400 hover:text-white'
-              }`}
               onClick={() => setFilter(key)}
+              className={`border text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 transition-colors ${
+                filter === key
+                  ? 'border-white text-white bg-white/10'
+                  : 'border-zinc-700 text-zinc-500 hover:border-zinc-500 hover:text-white'
+              }`}
             >
               {label}
-            </Badge>
+            </button>
           ))}
         </div>
 
         {/* Add form */}
         {addOpen && (
-          <div className="bg-zinc-900 border border-blue-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-widest">
+          <div className="border border-zinc-800 bg-zinc-950 p-5 space-y-4">
+            <h3 className="text-sm font-bold text-white uppercase tracking-tight">
               New Memory
             </h3>
             <div className="flex gap-2 flex-wrap">
               {KIND_OPTIONS.map((k) => {
                 const meta = KIND_META[k]
                 return (
-                  <Badge
+                  <button
                     key={k}
-                    variant={newKind === k ? 'default' : 'outline'}
-                    className={`cursor-pointer capitalize ${
-                      newKind === k
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-zinc-700 text-zinc-400'
-                    }`}
                     onClick={() => setNewKind(k)}
+                    className={`border text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 transition-colors ${
+                      newKind === k
+                        ? 'border-white text-white bg-white/10'
+                        : 'border-zinc-700 text-zinc-500 hover:border-zinc-500'
+                    }`}
                   >
                     {meta.label}
-                  </Badge>
+                  </button>
                 )
               })}
             </div>
@@ -243,14 +241,14 @@ export default function MemoryPage() {
             />
             <div className="flex gap-3">
               <Button
-                className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-widest"
+                className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
                 onClick={addEntry}
               >
                 Save
               </Button>
               <Button
                 variant="ghost"
-                className="text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest"
+                className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4"
                 onClick={() => setAddOpen(false)}
               >
                 Cancel
@@ -260,40 +258,44 @@ export default function MemoryPage() {
         )}
 
         {/* Memory entries */}
-        <div className="space-y-3">
+        <div className="space-y-px bg-zinc-800">
           {filtered.length === 0 && (
-            <EmptyState title="No memories match your filter." />
+            <div className="bg-zinc-950 p-8">
+              <EmptyState title="No memories match your filter." />
+            </div>
           )}
-          {filtered.map((entry, i) => {
+          {filtered.map((entry) => {
             const meta = KIND_META[entry.kind]
             const Icon = meta.icon
             return (
               <div
                 key={entry.id}
-                className={`border rounded-xl p-4 flex gap-4 ${meta.bg}`}
+                className="bg-zinc-950 border border-zinc-800 p-4 flex flex-col sm:flex-row gap-4"
               >
                 <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${meta.color}`} />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm text-zinc-100 leading-relaxed">
+                  <div className="flex items-center gap-2 mb-2">
+                    <StatusPill status={meta.status} label={meta.label} size="sm" />
+                  </div>
+                  <div className="text-xs text-zinc-300 leading-relaxed">
                     {entry.content}
                   </div>
                   {entry.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {entry.tags.map((tag) => (
-                        <Badge
+                        <span
                           key={tag}
-                          variant="outline"
-                          className="text-[10px] border-zinc-700 text-zinc-400 gap-1"
+                          className="inline-flex items-center gap-1 text-[10px] border border-zinc-700 text-zinc-500 px-2 py-0.5"
                         >
                           <Tag className="h-2.5 w-2.5" />
                           {tag}
-                        </Badge>
+                        </span>
                       ))}
                     </div>
                   )}
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  <span className="text-[10px] text-zinc-500 font-mono flex items-center gap-1">
+                <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 shrink-0">
+                  <span className="text-[10px] text-zinc-600 font-mono flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {formatRelative(entry.createdAt)}
                   </span>

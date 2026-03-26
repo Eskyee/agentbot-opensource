@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
+export const dynamic = 'force-dynamic';
+
 interface Fan {
   id: string;
   userId?: string;

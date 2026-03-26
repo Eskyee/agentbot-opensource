@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     
     if (!tokens.access_token) {
       console.error('Google token error:', tokens);
-      return NextResponse.redirect(new URL(`/login?error=GoogleTokenFailed&detail=${encodeURIComponent(tokens.error_description || tokens.error || 'no_token')}`, req.url));
+      return NextResponse.redirect(new URL('/login?error=GoogleTokenFailed', req.url));
     }
 
     // Get user info

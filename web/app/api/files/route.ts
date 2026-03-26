@@ -18,6 +18,42 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = new URL(req.url)
+  const downloadId = searchParams.get('download')
+
+  // File download by ID
+  if (downloadId) {
+    try {
+      const file = await prisma.agentFile.findFirst({
+        where: { id: downloadId, userId: session.user.id },
+      })
+      if (!file) {
+        return NextResponse.json({ error: 'File not found' }, { status: 404 })
+      }
+      // Validate path is within UPLOAD_DIR to prevent path traversal
+      if (!file.path) {
+        return NextResponse.json({ error: 'File path missing' }, { status: 500 })
+      }
+      const resolvedPath = path.resolve(file.path)
+      const resolvedUploadDir = path.resolve(UPLOAD_DIR)
+      if (!resolvedPath.startsWith(resolvedUploadDir)) {
+        console.error('Path traversal attempt blocked:', file.path)
+        return NextResponse.json({ error: 'Invalid file path' }, { status: 403 })
+      }
+      const buffer = await fs.readFile(resolvedPath)
+      return new NextResponse(buffer, {
+        headers: {
+          'Content-Type': file.mimeType || 'application/octet-stream',
+          'Content-Disposition': `attachment; filename="${encodeURIComponent(file.filename)}"`,
+          'Content-Length': String(file.size),
+        },
+      })
+    } catch (error) {
+      console.error('File download error:', error)
+      return NextResponse.json({ error: 'Download failed' }, { status: 500 })
+    }
+  }
+
+  // List files
   const agentId = searchParams.get('agentId')
 
   try {
@@ -104,12 +140,15 @@ export async function POST(req: NextRequest) {
     // Save file to disk
     const uploadDir = path.join(UPLOAD_DIR, session.user.id, agentId)
     await fs.mkdir(uploadDir, { recursive: true })
-    const safeFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+
+    // Sanitize filename: reject dotfiles, limit length, strip path traversal
+    const baseName = file.name.replace(/^\.+/, '').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 128)
+    const safeFilename = baseName || `upload_${Date.now()}`
     const filePath = path.join(uploadDir, `${Date.now()}_${safeFilename}`)
     const buffer = Buffer.from(await file.arrayBuffer())
     await fs.writeFile(filePath, buffer)
 
-    // Create database record
+    // Create database record (url updated after creation)
     const record = await prisma.agentFile.create({
       data: {
         userId: session.user.id,
@@ -117,16 +156,16 @@ export async function POST(req: NextRequest) {
         agentId,
         filename: file.name,
         path: filePath,
-        url: `/api/files/download?id=`,  // Will be updated below
         size: file.size,
         mimeType: file.type || 'application/octet-stream',
       },
     })
 
     // Update URL with the record ID
+    const downloadUrl = `/api/files?download=${record.id}`
     await prisma.agentFile.update({
       where: { id: record.id },
-      data: { url: `/api/files/download?id=${record.id}` },
+      data: { url: downloadUrl },
     })
 
     return NextResponse.json({
@@ -136,7 +175,7 @@ export async function POST(req: NextRequest) {
         name: file.name,
         size: file.size,
         type: file.type,
-        url: `/api/files/download?id=${record.id}`,
+        url: downloadUrl,
         uploaded: record.createdAt,
       },
     }, { status: 201 })
@@ -189,3 +228,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Delete failed' }, { status: 500 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

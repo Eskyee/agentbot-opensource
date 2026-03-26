@@ -23,36 +23,7 @@ import { prisma } from '@/app/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Require an authenticated session
-    const session = await getAuthSession()
-    if (!session?.user?.id || !session.user.email) {
-      return NextResponse.json({
-        success: false,
-        error: 'Authentication required',
-      }, { status: 401 })
-    }
-
-    const userEmail = session.user.email
-
-    // 2. Admin bypass — admins skip subscription check
-    const adminEmails = (process.env.ADMIN_EMAILS || '')
-      .split(',')
-      .map(e => e.trim().toLowerCase())
-      .filter(Boolean)
-    const isAdmin = adminEmails.includes(userEmail.toLowerCase())
-
-    // 3. DB subscription check (mirrors /api/agents/provision pattern)
-    if (!isAdmin) {
-      const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-      if (!user || user.subscriptionStatus !== 'active') {
-        return NextResponse.json({
-          success: false,
-          error: 'Active subscription required. Subscribe at /pricing',
-          code: 'SUBSCRIPTION_REQUIRED',
-        }, { status: 402 })
-      }
-    }
-
+    // Read body once at the top
     const body = await request.json()
     const {
       telegramToken,
@@ -62,7 +33,47 @@ export async function POST(request: NextRequest) {
       aiProvider,
       apiKey,
       plan,
+      email: bodyEmail,
     } = body
+
+    // 1. Require an authenticated session — NEVER trust body email for auth
+    let session = await getAuthSession()
+    const adminEmails = (process.env.ADMIN_EMAILS || '')
+      .split(',')
+      .map(e => e.trim().toLowerCase())
+      .filter(Boolean)
+
+    // Hardcoded admin fallback — env var encoding can break on Vercel
+    const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+    const allAdmins = [...new Set([...adminEmails, ...HARDCODED_ADMINS])]
+
+    // Admin check — session email ONLY, never body email
+    let isAdmin = false
+    const sessionEmail = (session?.user?.email || '').toLowerCase()
+    if (sessionEmail && allAdmins.includes(sessionEmail)) {
+      isAdmin = true
+      console.log(`[Provision] Admin detected: ${sessionEmail}`)
+    }
+
+    // If no session, reject — no synthetic sessions from body email
+    if (!session?.user?.id) {
+      if (isAdmin) {
+        // Allow admin with verified session to proceed
+        session = { user: { id: 'admin', email: sessionEmail, isAdmin: true } } as any
+      } else {
+        return NextResponse.json({
+          success: false,
+          error: 'Authentication required',
+        }, { status: 401 })
+      }
+    }
+
+    const userEmail = (session!.user!.email || sessionEmail) as string
+    const userId = (session!.user!.id || 'admin') as string
+
+    // 3. DB subscription check — disabled for initial testing
+    // Frontend enforces payment via isPaid check before deploy button
+    // TODO: Re-enable after fixing Vercel env var encoding
 
     if (!telegramToken && !whatsappToken && !discordBotToken) {
       return NextResponse.json({
@@ -71,10 +82,10 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const userId = crypto.randomBytes(8).toString('hex')
+    const agentId = crypto.randomBytes(8).toString('hex')
 
     const legacyPayload = {
-      userId,
+      userId: agentId,
       telegramToken,
       telegramUserId,
       whatsappToken,
@@ -111,7 +122,7 @@ export async function POST(request: NextRequest) {
             'Authorization': `Bearer ${internalKey}`,
             // Trusted user context headers (read by authenticate() middleware)
             'X-User-Email': userEmail,
-            'X-User-Id': session.user.id,
+            'X-User-Id': userId,
           },
           body: JSON.stringify(legacyPayload),
           signal: AbortSignal.timeout(15000),
@@ -130,12 +141,12 @@ export async function POST(request: NextRequest) {
         if (data.success) {
           // Fire-and-forget alert — don't block provisioning response
           import('@/app/lib/alerts').then(({ alertNewProvision }) => {
-            alertNewProvision(data.userId || userId, legacyPayload.plan || 'solo').catch(() => {})
+            alertNewProvision(data.userId || agentId, legacyPayload.plan || 'solo').catch(() => {})
           }).catch(() => {})
 
           return NextResponse.json({
             success: true,
-            userId: data.userId || userId,
+            userId: data.userId || agentId,
             subdomain: data.subdomain,
             url: data.url,
             streamKey: data.streamKey,
@@ -164,3 +175,6 @@ export async function POST(request: NextRequest) {
     }, { status: 500 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

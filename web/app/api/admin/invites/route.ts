@@ -49,22 +49,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 })
     }
 
-    const code = `invite-${crypto.randomBytes(12).toString('hex')}`
+    const token = crypto.randomBytes(32).toString('hex')
     const invite: Invite = {
-      code,
+      code: token,
       email,
       createdAt: new Date().toISOString(),
       status: 'active',
     }
 
-    invites.set(code, invite)
+    invites.set(token, invite)
 
     return NextResponse.json(
       {
         success: true,
-        code,
+        code: token,
         email,
-        inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL}/join?code=${code}`,
+        inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'}/invite?token=${token}`,
       },
       { status: 201 }
     )
@@ -73,3 +73,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

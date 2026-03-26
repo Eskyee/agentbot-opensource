@@ -49,7 +49,7 @@ export default function TestStreamClient() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-white p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">🎛️ baseFM Stream Test</h1>
 

@@ -6,6 +6,9 @@ import { getBackendApiUrl } from '@/app/api/lib/api-keys';
 const API_VERSION = '1.0.0';
 const AGENTBOT_VERSION = '2026.3.1';
 
+// Force dynamic — uses getServerSession at runtime
+export const dynamic = 'force-dynamic';
+
 const sessions = new Map<string, {
   id: string;
   userId: string;

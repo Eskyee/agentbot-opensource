@@ -1,159 +1,130 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
-import { prisma } from '@/app/lib/prisma'
-import crypto from 'crypto'
+/**
+ * Wallet API — Tempo Balance
+ *
+ * GET  /api/wallet?address=0x...  → Balance, fee token info
+ *
+ * Queries Tempo RPC for user wallet state.
+ */
 
-// WALLET_ENCRYPTION_KEY - use fallback during build, must be set in production
-const ENCRYPTION_KEY = process.env.WALLET_ENCRYPTION_KEY || 'dev-fallback-key-for-build-only-32bytes'
-const IV_LENGTH = 16
+import { NextResponse } from 'next/server'
+import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem'
+import { tempo, tempoTestnet } from 'viem/chains'
 
-function encryptWalletSeed(seed: string): string {
-  const iv = crypto.randomBytes(IV_LENGTH)
-  const key = Buffer.from(ENCRYPTION_KEY.slice(0, 32), 'utf8')
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
-  let encrypted = cipher.update(seed, 'utf8', 'hex')
-  encrypted += cipher.final('hex')
-  return iv.toString('hex') + ':' + encrypted
+const useTestnet = process.env.TEMPO_TESTNET === 'true'
+const chain = useTestnet ? tempoTestnet : tempo
+const rpcUrl = useTestnet
+  ? 'https://rpc.moderato.tempo.xyz'
+  : 'https://rpc.tempo.xyz'
+
+const client = createPublicClient({
+  chain,
+  transport: http(rpcUrl),
+})
+
+// All known tokens on Tempo (from official tokenlist)
+const KNOWN_TOKENS = {
+  pathUSD: '0x20c0000000000000000000000000000000000000' as Address,
+  alphaUSD: '0x20c0000000000000000000000000000000000001' as Address,
+  betaUSD: '0x20c0000000000000000000000000000000000002' as Address,
+  thetaUSD: '0x20c0000000000000000000000000000000000003' as Address,
+  'USDC.e': '0x20c000000000000000000000b9537d11c60e8b50' as Address,
+  'EURC.e': '0x20c0000000000000000000001621e21f71cf12fb' as Address,
+  USDT0: '0x20c00000000000000000000014f22ca97301eb73' as Address,
+  frxUSD: '0x20c0000000000000000000003554d28269e0f3c2' as Address,
+  cUSD: '0x20c0000000000000000000000520792dcccccccc' as Address,
+  stcUSD: '0x20c0000000000000000000008ee4fcff88888888' as Address,
+  GUSD: '0x20c0000000000000000000005c0bac7cef389a11' as Address,
 }
 
-function decryptWalletSeed(encryptedSeed: string): string {
-  const parts = encryptedSeed.split(':')
-  const iv = Buffer.from(parts[0], 'hex')
-  const encrypted = parts[1]
-  const key = Buffer.from(ENCRYPTION_KEY.slice(0, 32), 'utf8')
-  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8')
-  decrypted += decipher.final('utf8')
-  return decrypted
-}
+// ERC20 ABI for balance and metadata
+const ERC20_ABI = parseAbi([
+  'function balanceOf(address) view returns (uint256)',
+  'function name() view returns (string)',
+  'function symbol() view returns (string)',
+  'function decimals() view returns (uint8)',
+])
 
-function generateRandomAddress(): string {
-  const randomBytes = crypto.randomBytes(20)
-  return '0x' + randomBytes.toString('hex')
-}
-
-export async function GET(req: NextRequest) {
-  // Return CDP Agentic Wallet status if configured
-  const hasCDP = !!(process.env.CDP_PROJECT_ID);
-  
-  if (hasCDP) {
-    return NextResponse.json({
-      agenticWallet: {
-        status: 'configured',
-        projectId: process.env.CDP_PROJECT_ID?.slice(0, 8) + '...',
-        features: ['create_wallet', 'get_balance', 'send_usdc', 'trade_tokens', 'x402_payments'],
-      },
-      instructions: 'CDP Agentic Wallet is configured. Use /api/wallet/cdp/* endpoints.',
-    });
-  }
-
-  // Otherwise return user wallet status
+/**
+ * Query balance for a specific token
+ */
+async function getTokenBalance(tokenAddress: Address, account: Address) {
   try {
-    const session = await getAuthSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const [balance, name, symbol, decimals] = await Promise.all([
+      client.readContract({ address: tokenAddress, abi: ERC20_ABI, functionName: 'balanceOf', args: [account] }),
+      client.readContract({ address: tokenAddress, abi: ERC20_ABI, functionName: 'name' }).catch(() => 'Unknown'),
+      client.readContract({ address: tokenAddress, abi: ERC20_ABI, functionName: 'symbol' }).catch(() => '???'),
+      client.readContract({ address: tokenAddress, abi: ERC20_ABI, functionName: 'decimals' }).catch(() => 6),
+    ])
+    return {
+      address: tokenAddress,
+      name,
+      symbol,
+      decimals,
+      balance: formatUnits(balance, decimals),
+      balanceRaw: balance.toString(),
+      hasBalance: balance > 0n,
     }
-
-    const wallet = await prisma.wallet.findFirst({
-      where: { userId: session.user.id },
-    })
-
-    if (!wallet) {
-      return NextResponse.json({
-        address: null,
-        balance: '0',
-        network: 'base-sepolia',
-        hasWallet: false,
-        message: 'No wallet found. Create one to get started.'
-      })
-    }
-
-    return NextResponse.json({
-      address: wallet.address,
-      balance: '0',
-      network: wallet.network,
-      hasWallet: true,
-      createdAt: wallet.createdAt,
-    })
-  } catch (error) {
-    console.error('Wallet fetch error:', error)
-    return NextResponse.json({ error: 'Failed to fetch wallet' }, { status: 500 })
+  } catch {
+    return null
   }
 }
 
-export async function POST(req: NextRequest) {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const address = searchParams.get('address') as Address | null
+
+  if (!address) {
+    return NextResponse.json(
+      { error: 'Missing address parameter' },
+      { status: 400 }
+    )
+  }
+
   try {
-    const session = await getAuthSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { action } = await req.json()
-
-    if (action === 'create') {
-      const existingWallet = await prisma.wallet.findFirst({
-        where: { userId: session.user.id },
+    // Query all known tokens in parallel
+    const tokenResults = await Promise.all(
+      Object.entries(KNOWN_TOKENS).map(async ([name, tokenAddr]) => {
+        const data = await getTokenBalance(tokenAddr, address)
+        return { name, ...data }
       })
+    )
 
-      if (existingWallet) {
-        return NextResponse.json({
-          error: 'Wallet already exists',
-          address: existingWallet.address,
-        }, { status: 400 })
-      }
+    // Find tokens with balances > 0
+    const fundedTokens = tokenResults.filter(t => t?.hasBalance)
 
-      const newAddress = generateRandomAddress()
-      const walletData = { address: newAddress, privateKey: crypto.randomBytes(32).toString('hex') }
-      const encryptedSeed = encryptWalletSeed(JSON.stringify(walletData))
+    // Primary token: first funded one, or pathUSD as default
+    const primary = fundedTokens[0] || tokenResults[0]
 
-      const newWallet = await prisma.wallet.create({
-        data: {
-          userId: session.user.id,
-          address: newAddress,
-          walletSeedEncrypted: encryptedSeed,
-          network: 'base-sepolia',
-          walletType: 'generated',
-        },
-      })
+    // Calculate total USD value (all tokens are 1:1 USD pegged)
+    const totalUsd = fundedTokens.reduce((sum, t) => {
+      return sum + parseFloat(t?.balance || '0')
+    }, 0)
 
-      return NextResponse.json({
-        address: newWallet.address,
-        network: newWallet.network,
-        message: 'Wallet created successfully'
-      })
-    }
-
-    // get_seed: Returns ONLY the address — private key NEVER leaves the server.
-    // If you need to sign transactions, do it server-side via a dedicated signing endpoint.
-    if (action === 'get_seed') {
-      const wallet = await prisma.wallet.findFirst({
-        where: { userId: session.user.id },
-      })
-
-      if (!wallet) {
-        return NextResponse.json({ error: 'No wallet found' }, { status: 404 })
-      }
-
-      // Return wallet address only — never expose private key material over HTTP
-      return NextResponse.json({
-        address: wallet.address,
-        network: wallet.network,
-        createdAt: wallet.createdAt,
-        warning: 'Private keys are stored encrypted server-side and never exposed.'
-      })
-    }
-
-    // export_seed: Admin-only, requires re-authentication (future implementation)
-    if (action === 'export_seed') {
-      return NextResponse.json(
-        { error: 'Seed export is disabled for security. Contact support if you need your private key.' },
-        { status: 403 }
-      )
-    }
-
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    return NextResponse.json({
+      address,
+      chain: chain.name,
+      chainId: chain.id,
+      testnet: useTestnet,
+      totalUsd: totalUsd.toFixed(2),
+      primaryToken: primary ? {
+        address: primary.address,
+        name: primary.name,
+        symbol: primary.symbol,
+        decimals: primary.decimals,
+        balance: primary.balance,
+      } : null,
+      allTokens: tokenResults.filter(t => t?.hasBalance).map(t => ({
+        address: t!.address,
+        name: t!.name,
+        symbol: t!.symbol,
+        balance: t!.balance,
+      })),
+    })
   } catch (error) {
-    console.error('Wallet error:', error)
-    return NextResponse.json({ error: 'Failed to process request' }, { status: 500 })
+    console.error('[Wallet API] Error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch wallet data' },
+      { status: 500 }
+    )
   }
 }

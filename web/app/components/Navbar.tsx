@@ -31,8 +31,6 @@ export default function Navbar() {
   const isLoggedIn = mounted && session;
   const isDashboard = pathname.startsWith('/dashboard');
 
-  if (isDashboard && isLoggedIn) return null;
-
   return (
     <>
       <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-900 font-mono">

@@ -79,7 +79,7 @@ const jsonLd = {
   offers: [
     {
       '@type': 'Offer',
-      name: 'Underground',
+      name: 'Solo',
       price: '29.00',
       priceCurrency: 'GBP',
       priceSpecification: {
@@ -104,7 +104,7 @@ const jsonLd = {
     {
       '@type': 'Offer',
       name: 'Label',
-      price: '199.00',
+      price: '149.00',
       priceCurrency: 'GBP',
       priceSpecification: {
         '@type': 'RecurringChargeSpecification',

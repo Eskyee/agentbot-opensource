@@ -86,7 +86,7 @@ export default function VenueFinderPage() {
           </div>
 
           {/* Results */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map(venue => (
               <div key={venue.id} className="bg-zinc-900 rounded-xl p-5 border border-zinc-800 hover:border-zinc-600 transition-colors">
                 <div className="flex items-start justify-between mb-3">
@@ -129,7 +129,7 @@ export default function VenueFinderPage() {
           </div>
 
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-zinc-500">No venues match your filters</div>
+            <div className="text-left py-12 text-zinc-500">No venues match your filters</div>
           )}
         </div>
       </main>

@@ -4,7 +4,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
 
 interface AgentCost {
   name: string;
@@ -39,24 +38,9 @@ export async function GET(req: NextRequest) {
     const since = new Date();
     since.setDate(since.getDate() - days);
 
-    // Fetch real usage data
-    const logs = await prisma.usageLog.findMany({
-      where: {
-        createdAt: { gte: since },
-      },
-      select: {
-        agentId: true,
-        model: true,
-        inputTokens: true,
-        outputTokens: true,
-        costUsd: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    }).catch((err) => {
-      console.error('[Cost API] Prisma error:', err);
-      return [];
-    });
+    // Always return mock data — UsageLog model not yet in schema
+    // TODO: Add UsageLog model to Prisma schema and enable real queries
+    const logs: any[] = [];
 
     console.log(`[Cost API] Found ${logs.length} usage logs`);
 

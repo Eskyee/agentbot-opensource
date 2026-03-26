@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys';
 
+export const dynamic = 'force-dynamic';
+
 function getAdminEmails(): string[] {
   const adminEmails = process.env.ADMIN_EMAILS;
   if (!adminEmails) return [];

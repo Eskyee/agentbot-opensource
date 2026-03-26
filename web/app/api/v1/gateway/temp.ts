@@ -21,8 +21,8 @@ interface GatewayConfig {
 
 export const GATEWAY_CONFIG: GatewayConfig = {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: process.env.GATEWAY_CORS_ORIGIN || 'https://agentbot.raveculture.xyz',
+    methods: ['GET', 'POST', 'OPTIONS'],
     headers: ['Content-Type', 'Authorization', 'X-Plugin-Id', 'Payment'],
   },
   defaultPlugin: 'agent',

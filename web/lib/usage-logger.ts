@@ -1,11 +1,9 @@
 /**
  * Usage Logger — records token usage for cost tracking
  * 
- * Call this after any AI API call to track costs.
- * Uses Prisma for database writes.
+ * Console-only for now. TODO: persist to DB when usageLog model
+ * is added to Prisma schema.
  */
-
-import { prisma } from '../app/lib/prisma';
 
 // Model pricing per 1M tokens (input, output) in USD
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
@@ -40,105 +38,16 @@ interface UsageData {
  * Calculate cost from token usage
  */
 export function calculateCost(model: string, inputTokens: number, outputTokens: number): number {
-  const pricing = MODEL_PRICING[model] || { input: 1.0, output: 3.0 }; // default pricing
+  const pricing = MODEL_PRICING[model] || { input: 1.0, output: 3.0 };
   const inputCost = (inputTokens / 1_000_000) * pricing.input;
   const outputCost = (outputTokens / 1_000_000) * pricing.output;
   return inputCost + outputCost;
 }
 
 /**
- * Log usage to database
- * Fire-and-forget — don't block the response
+ * Log usage — console only (DB persistence pending)
  */
 export function logUsage(data: UsageData): void {
   const costUsd = calculateCost(data.model, data.inputTokens, data.outputTokens);
-
-  console.log(`[UsageLogger] Logging: ${data.agentId} | ${data.model} | ${data.inputTokens}+${data.outputTokens} tokens | $${costUsd.toFixed(6)}`);
-
-  // Fire and forget — don't await
-  prisma.usageLog.create({
-    data: {
-      userId: data.userId,
-      agentId: data.agentId,
-      model: data.model,
-      inputTokens: data.inputTokens,
-      outputTokens: data.outputTokens,
-      costUsd,
-      endpoint: data.endpoint,
-      latencyMs: data.latencyMs,
-      success: data.success ?? true,
-      errorMessage: data.errorMessage,
-    },
-  }).catch((err: Error) => {
-    console.error('[UsageLogger] Failed to log usage:', err.message);
-  });
-}
-
-/**
- * Get usage summary for a user
- */
-export async function getUserUsage(userId: string, days: number = 7) {
-  const since = new Date();
-  since.setDate(since.getDate() - days);
-
-  const logs = await prisma.usageLog.findMany({
-    where: {
-      userId,
-      createdAt: { gte: since },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  return logs;
-}
-
-/**
- * Get aggregated usage for dashboard
- */
-export async function getUsageDashboard(days: number = 7) {
-  const since = new Date();
-  since.setDate(since.getDate() - days);
-
-  const [agentStats, dailyStats, modelStats] = await Promise.all([
-    // By agent
-    prisma.$queryRaw`
-      SELECT 
-        agent_id as "agentId",
-        model,
-        COUNT(*) as calls,
-        SUM(input_tokens + output_tokens) as tokens,
-        SUM(cost_usd) as cost
-      FROM usage_logs
-      WHERE created_at >= ${since}
-      GROUP BY agent_id, model
-      ORDER BY cost DESC
-    `,
-
-    // By day
-    prisma.$queryRaw`
-      SELECT 
-        DATE(created_at) as date,
-        COUNT(*) as calls,
-        SUM(input_tokens + output_tokens) as tokens,
-        SUM(cost_usd) as cost
-      FROM usage_logs
-      WHERE created_at >= ${since}
-      GROUP BY DATE(created_at)
-      ORDER BY date ASC
-    `,
-
-    // By model
-    prisma.$queryRaw`
-      SELECT 
-        model,
-        COUNT(*) as calls,
-        SUM(cost_usd) as cost
-      FROM usage_logs
-      WHERE created_at >= ${since}
-      GROUP BY model
-      ORDER BY cost DESC
-    `,
-  ]);
-
-  return { agentStats, dailyStats, modelStats };
+  console.log(`[UsageLogger] ${data.agentId} | ${data.model} | ${data.inputTokens}+${data.outputTokens} tokens | $${costUsd.toFixed(6)}`);
 }

@@ -184,3 +184,6 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: 'Task deletion failed' }, { status: 500 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

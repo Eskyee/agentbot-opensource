@@ -1,32 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
+// Debug Stripe endpoint — DISABLED in production
+// This route previously listed Stripe env vars and price IDs.
+// Removed for security. Use Render/Vercel dashboard for config verification.
 
-function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-  return adminEmails.includes(email.toLowerCase())
-}
+import { NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
-  // Admin-only
-  const session = await getAuthSession()
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  }
-
-  const priceIds = {
-    starter: process.env.STRIPE_PRICE_ID_STARTER,
-    pro: process.env.STRIPE_PRICE_ID_PRO,
-    pro_plus: process.env.STRIPE_PRICE_ID_PRO_PLUS,
-    scale: process.env.STRIPE_PRICE_ID_SCALE,
-    white_glove: process.env.STRIPE_PRICE_ID_WHITE_GLOVE,
-  }
-
-  // Only show env var names, never values or prefixes
-  const allEnvVars = Object.keys(process.env).filter(k => k.startsWith('STRIPE'))
-
-  return NextResponse.json({
-    allStripeEnvVars: allEnvVars,
-    priceIds,
-  })
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Debug endpoint disabled' },
+    { status: 404 }
+  )
 }

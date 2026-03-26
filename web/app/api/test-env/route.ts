@@ -22,3 +22,6 @@ export async function GET(request: NextRequest) {
     envCount: Object.keys(process.env).filter(k => k.startsWith('STRIPE')).length,
   })
 }
+
+
+export const dynamic = 'force-dynamic';

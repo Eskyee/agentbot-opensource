@@ -2,6 +2,34 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'openclaw-v2026-3-24',
+    date: '26 March 2026',
+    title: 'Agentbot Now Runs OpenClaw v2026.3.24',
+    excerpt: 'Gateway OpenAI compatibility, security fix, CLI container support, channel isolation, and restart recovery.',
+    tags: ["Release", "OpenClaw", "Security"]
+  },
+  {
+    slug: 'countdown-d6',
+    date: '25 March 2026',
+    title: 'T-6 Days: Agentbot Launches March 31',
+    excerpt: '6 days until launch. Platform hardened, security audited, countdown on. Your AI agent. Your hardware. Your rules.',
+    tags: ["Countdown", "Launch", "D-6"]
+  },
+  {
+    slug: 'agentbot-launch',
+    date: '31 March 2026',
+    title: 'Agentbot: The Managed Platform for Self-Hosted AI Agents',
+    excerpt: 'Your AI agent. Your hardware. Your rules. Self-hosted, BYOK, one command deploy. No cloud dependency.',
+    tags: ["Launch", "v0.1.0-beta.1", "Self-Hosted"]
+  },
+  {
+    slug: 'platform-ops-2026-03-25',
+    date: '25 March 2026',
+    title: 'Platform Ops: Dashboard Overhaul & Infrastructure Hardening',
+    excerpt: 'Unified dashboard layout, Redis recovery, Google Calendar integration, full infra audit. All services green.',
+    tags: ["Update", "Infrastructure"]
+  },
+  {
     slug: 'openclaw-2026-3-23',
     date: '24 March 2026',
     title: 'OpenClaw v2026.3.23 — Stability & Auth Fixes',

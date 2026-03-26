@@ -7,8 +7,55 @@
 
 import { NextResponse } from 'next/server';
 import { SoulClient } from '@/lib/soul';
+import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem';
+import { tempo } from 'viem/chains';
 
 const SOUL_URL = process.env.SOUL_SERVICE_URL || 'http://localhost:4023';
+
+// Tempo RPC for real wallet balances
+const tempoClient = createPublicClient({
+  chain: tempo,
+  transport: http('https://rpc.tempo.xyz'),
+})
+
+// ERC20 ABI
+const ERC20_ABI = parseAbi([
+  'function balanceOf(address) view returns (uint256)',
+  'function symbol() view returns (string)',
+  'function decimals() view returns (uint8)',
+])
+
+// Known tokens to check
+const TOKENS = [
+  { address: '0x20c000000000000000000000b9537d11c60e8b50' as Address, symbol: 'USDC.e' },
+  { address: '0x20c0000000000000000000000000000000000000' as Address, symbol: 'pathUSD' },
+  { address: '0x20c00000000000000000000014f22ca97301eb73' as Address, symbol: 'USDT0' },
+]
+
+/**
+ * Fetch real Tempo balance for a wallet address
+ */
+async function getTempoBalance(address: Address): Promise<{ formatted: string; token: string }> {
+  for (const token of TOKENS) {
+    try {
+      const balance = await tempoClient.readContract({
+        address: token.address,
+        abi: ERC20_ABI,
+        functionName: 'balanceOf',
+        args: [address],
+      })
+      if (balance > 0n) {
+        return {
+          formatted: formatUnits(balance, 6),
+          token: token.symbol,
+        }
+      }
+    } catch {
+      continue
+    }
+  }
+  return { formatted: '0.00', token: 'USDC.e' }
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -93,7 +140,7 @@ export async function GET(request: Request) {
             address: instanceInfo.identity.address,
             designation: instanceInfo.designation,
             fitness: instanceInfo.fitness,
-            wallet_balance: instanceInfo.wallet_balance,
+            wallet_balance: await getTempoBalance(instanceInfo.identity.address as Address),
             clone_available: instanceInfo.clone_available,
             clone_price: instanceInfo.clone_price,
             soul: {

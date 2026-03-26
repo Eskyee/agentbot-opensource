@@ -4,56 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useBasename, getWalletAddress } from '@/app/hooks/useBasename'
-
-const navItems = [
-  { icon: '🤖', label: 'Agents', href: '/agents', active: false },
-  { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
-  { icon: '💳', label: 'Billing', href: '/billing', active: false },
-  { icon: '⚙️', label: 'Account', href: '/settings', active: true },
-]
-
-function SettingsSidebar({ userName, credits = 0 }: { userName: string; credits?: number }) {
-  return (
-    <aside className="w-64 bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0">
-      <nav className="flex-1 p-4">
-        <div className="space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                item.active
-                  ? 'bg-zinc-700 text-white'
-                  : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-              }`}
-            >
-              <span>{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-
-        <Link href="/billing" className="block mt-8 p-4 bg-zinc-800 rounded-xl hover:bg-zinc-700 transition-colors">
-          <div className="text-sm text-zinc-400 mb-1">Credits</div>
-          <div className="text-xl font-bold">${credits.toFixed(2)}</div>
-          <div className="text-xs text-blue-400 mt-2">+ Add credits</div>
-        </Link>
-      </nav>
-
-      <div className="p-4 border-t border-zinc-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">
-            {userName.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div className="font-medium">{userName}</div>
-            <div className="text-sm text-blue-400">Account</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  )
-}
+import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 
 export default function SettingsPage() {
   const { data: session } = useCustomSession()
@@ -263,24 +214,56 @@ export default function SettingsPage() {
     { id: 'notifications', label: 'Notifications', icon: '🔔' },
   ]
 
-  return (
-    <div className="flex h-screen bg-black text-white">
-      <SettingsSidebar userName={userName} credits={credits} />
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-8 max-w-4xl">
-          <h1 className="text-3xl font-bold mb-8">Account Settings</h1>
+  return (
+    <div className="flex min-h-screen bg-black">
+      <DashboardSidebar
+        userName={userName}
+        plan="Solo"
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
+
+      <div className="flex-1 flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold uppercase tracking-tighter">⚙ Settings</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <a href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors">
+              Dashboard
+            </a>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Account</span>
+              <h1 className="text-3xl font-bold tracking-tighter uppercase mt-1">Settings</h1>
+            </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+        <div className="flex gap-1 mb-8 overflow-x-auto pb-2 border-b border-zinc-800">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-2 px-4 py-3 text-[10px] uppercase tracking-widest whitespace-nowrap transition-colors border-b-2 ${
                 activeTab === tab.id 
-                  ? 'bg-white text-black' 
-                  : 'bg-zinc-900 text-zinc-400 hover:text-white'
+                  ? 'border-white text-white' 
+                  : 'border-transparent text-zinc-600 hover:text-zinc-400'
               }`}
             >
               <span>{tab.icon}</span>
@@ -380,7 +363,7 @@ export default function SettingsPage() {
             </div>
 
             {agents.length === 0 ? (
-              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-center">
+              <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-12 text-left">
                 <div className="text-4xl mb-4">🤖</div>
                 <h3 className="text-lg font-medium mb-2">No Agents Deployed</h3>
                 <p className="text-zinc-400 text-sm max-w-sm mx-auto mb-6">
@@ -405,7 +388,7 @@ export default function SettingsPage() {
                   <tbody>
                     {apiKeys.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="p-8 text-center text-zinc-500 italic">
+                        <td colSpan={4} className="p-8 text-left text-zinc-500 italic">
                           No API keys created yet.
                         </td>
                       </tr>
@@ -552,7 +535,7 @@ export default function SettingsPage() {
 
         {/* Agents placeholder */}
         {activeTab === 'agents' && (
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-center">
+          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6 text-left">
             <p className="text-zinc-400">Manage your agents from the Dashboard</p>
             <Link href="/dashboard" className="text-white hover:underline mt-2 inline-block">
               Go to Dashboard →
@@ -621,7 +604,8 @@ export default function SettingsPage() {
           </div>
         )}
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

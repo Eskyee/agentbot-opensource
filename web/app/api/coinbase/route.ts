@@ -59,6 +59,14 @@ export async function POST(request: NextRequest) {
           )
         }
 
+        // Validate wallet address format to prevent SSRF
+        if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+          return NextResponse.json(
+            { error: 'Invalid wallet address format' },
+            { status: 400 }
+          )
+        }
+
         const response = await fetch(
           `https://api.cdp.coinbase.com/wallet/v2/accounts/${walletAddress}/balances`,
           {
@@ -150,3 +158,6 @@ export async function GET(request: NextRequest) {
     { status: 400 }
   )
 }
+
+
+export const dynamic = 'force-dynamic';

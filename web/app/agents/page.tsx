@@ -27,7 +27,7 @@ export default function AgentsPage() {
             autonomous AI agents directly from your dashboard — no infrastructure required.
           </p>
 
-          <div className="grid grid-cols-2 gap-8 pt-8 border-t border-zinc-900">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-zinc-900">
             <div className="space-y-2">
               <span className="text-zinc-600 text-[10px] uppercase tracking-widest block">Status</span>
               <span className="text-white text-sm font-bold uppercase">Coming Soon</span>

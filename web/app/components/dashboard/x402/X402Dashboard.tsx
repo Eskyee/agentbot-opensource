@@ -126,7 +126,7 @@ export default function X402Dashboard() {
     <div className="space-y-6">
       {/* Status */}
       <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
-        <h2 className="text-lg font-mono font-bold text-white mb-4">x402 GATEWAY</h2>
+        <h2 className="text-lg font-bold uppercase tracking-tighter text-white mb-4">x402 GATEWAY</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <p className="text-xs font-mono text-zinc-500 uppercase">Status</p>
@@ -151,7 +151,7 @@ export default function X402Dashboard() {
 
       {/* Endpoints */}
       <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
-        <h3 className="text-sm font-mono font-bold text-white mb-4">x402 ENDPOINTS</h3>
+        <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4">x402 ENDPOINTS</h3>
         <div className="space-y-3">
           {endpoints.map((ep, i) => (
             <div key={i} className="flex items-center justify-between p-3 bg-zinc-800/50 rounded">
@@ -168,9 +168,9 @@ export default function X402Dashboard() {
       {/* Fitness & Pricing */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-6">
-          <h3 className="text-sm font-mono font-bold text-white mb-4">AGENT FITNESS</h3>
-          <div className="text-center">
-            <div className={`text-4xl font-mono font-bold ${
+          <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-4">AGENT FITNESS</h3>
+          <div>
+            <div className={`text-4xl font-bold ${
               (fitness?.score || 0) > 80 ? 'text-green-400' :
               (fitness?.score || 0) > 60 ? 'text-yellow-400' :
               'text-zinc-400'

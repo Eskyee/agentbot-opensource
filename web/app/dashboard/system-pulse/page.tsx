@@ -1,11 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
-  LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts'
-import { Activity, Cpu, DollarSign, Zap, AlertTriangle, CheckCircle, Shield, MessageSquare, Bot, Clock, Database } from 'lucide-react'
+import { Activity, DollarSign, Zap, Shield, MessageSquare, Bot, Clock, Database } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 interface CostSummary {
   totalCost: number
@@ -46,7 +52,6 @@ interface Metrics {
 export default function SystemPulsePage() {
   const [costPeriod, setCostPeriod] = useState('7d')
 
-  // Fetch real metrics
   const { data: metricsData } = useQuery({
     queryKey: ['system-pulse-metrics'],
     queryFn: async () => {
@@ -56,7 +61,6 @@ export default function SystemPulsePage() {
     refetchInterval: 30_000,
   })
 
-  // Fetch real cost data
   const { data: costData } = useQuery({
     queryKey: ['cost-dashboard', costPeriod],
     queryFn: async () => {
@@ -86,8 +90,8 @@ export default function SystemPulsePage() {
     sub?: string
     color?: string
   }) => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col gap-2">
-      <div className="flex items-center gap-2 text-zinc-400 text-xs uppercase font-semibold tracking-widest">
+    <div className="border border-zinc-800 bg-zinc-950 p-5 flex flex-col gap-2">
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600">
         <Icon className={`h-4 w-4 ${color}`} />
         {label}
       </div>
@@ -97,42 +101,40 @@ export default function SystemPulsePage() {
   )
 
   return (
-    <div className="mt-[4rem] min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="px-6 py-5 border-b border-zinc-800 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Activity className="h-5 w-5 text-blue-400" />
-          <h1 className="text-xl font-bold tracking-tight">System Pulse</h1>
-          <span className="flex items-center gap-1.5 text-[11px] text-green-400 bg-green-900/20 border border-green-800 rounded-full px-3 py-0.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            OPERATIONAL
-          </span>
-          {isMockData && (
-            <span className="text-[10px] text-yellow-400 bg-yellow-900/20 border border-yellow-800 rounded-full px-2 py-0.5 font-mono">
-              SAMPLE DATA
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {['7d', '30d'].map(p => (
-            <button
-              key={p}
-              onClick={() => setCostPeriod(p)}
-              className={`text-xs font-mono px-3 py-1 rounded-lg border transition-colors ${
-                costPeriod === p
-                  ? 'bg-blue-900/20 border-blue-800 text-blue-400'
-                  : 'border-zinc-800 text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
+    <DashboardShell>
+      <DashboardHeader
+        title="System Pulse"
+        icon={<Activity className="h-5 w-5 text-blue-400" />}
+        action={
+          <div className="flex items-center gap-3">
+            <StatusPill status="active" label="Operational" size="sm" />
+            {isMockData && (
+              <span className="text-[10px] text-yellow-400 bg-yellow-900/20 border border-yellow-800 px-2 py-0.5 font-mono uppercase tracking-widest">
+                Sample Data
+              </span>
+            )}
+            <div className="flex items-center gap-px bg-zinc-800">
+              {['7d', '30d'].map(p => (
+                <button
+                  key={p}
+                  onClick={() => setCostPeriod(p)}
+                  className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border transition-colors ${
+                    costPeriod === p
+                      ? 'bg-zinc-950 border-zinc-700 text-white'
+                      : 'bg-zinc-950 border-zinc-800 text-zinc-600 hover:text-zinc-300'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+          </div>
+        }
+      />
 
-      <div className="px-6 py-6 space-y-6">
-        {/* Stat cards — real data */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <DashboardContent className="space-y-6">
+        {/* Stat cards — row 1 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
           <StatCard
             icon={DollarSign}
             label="Total Cost"
@@ -163,8 +165,8 @@ export default function SystemPulsePage() {
           />
         </div>
 
-        {/* Second row — agents & messages */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Stat cards — row 2 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
           <StatCard
             icon={Bot}
             label="Agents"
@@ -196,8 +198,8 @@ export default function SystemPulsePage() {
         </div>
 
         {/* Cost over time chart */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">
+        <div className="border border-zinc-800 bg-zinc-950 p-5">
+          <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-tight mb-4">
             Cost Over Time — {costPeriod}
           </h2>
           <ResponsiveContainer width="100%" height={220}>
@@ -222,8 +224,8 @@ export default function SystemPulsePage() {
         </div>
 
         {/* Tokens per day */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">
+        <div className="border border-zinc-800 bg-zinc-950 p-5">
+          <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-tight mb-4">
             Tokens Per Day
           </h2>
           <ResponsiveContainer width="100%" height={180}>
@@ -235,21 +237,21 @@ export default function SystemPulsePage() {
                 contentStyle={{ background: '#111', border: '1px solid #374151', fontSize: 12 }}
                 formatter={(value: any) => [Number(value).toLocaleString(), 'Tokens']}
               />
-              <Bar dataKey="tokens" fill="#6366f1" radius={[4, 4, 0, 0]} name="Tokens" />
+              <Bar dataKey="tokens" fill="#6366f1" name="Tokens" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Agent breakdown */}
         {agents.length > 0 && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">
+          <div className="border border-zinc-800 bg-zinc-950 p-5">
+            <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-tight mb-4">
               Agent Cost Breakdown
             </h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-xs">
                 <thead>
-                  <tr className="text-zinc-500 text-xs uppercase tracking-wider border-b border-zinc-800">
+                  <tr className="text-zinc-600 text-[10px] uppercase tracking-widest border-b border-zinc-800">
                     <th className="text-left py-2 px-3">Agent</th>
                     <th className="text-right py-2 px-3">Calls</th>
                     <th className="text-right py-2 px-3">Tokens</th>
@@ -259,12 +261,12 @@ export default function SystemPulsePage() {
                 </thead>
                 <tbody>
                   {agents.map(a => (
-                    <tr key={a.name} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
-                      <td className="py-3 px-3 font-mono font-medium">{a.name}</td>
-                      <td className="py-3 px-3 text-right font-mono text-zinc-300">{a.calls.toLocaleString()}</td>
-                      <td className="py-3 px-3 text-right font-mono text-zinc-300">{a.tokens.toLocaleString()}</td>
+                    <tr key={a.name} className="border-b border-zinc-800/50 hover:bg-zinc-900/30 transition-colors">
+                      <td className="py-3 px-3 font-mono font-bold text-zinc-300">{a.name}</td>
+                      <td className="py-3 px-3 text-right font-mono text-zinc-400">{a.calls.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-right font-mono text-zinc-400">{a.tokens.toLocaleString()}</td>
                       <td className="py-3 px-3 text-right font-mono text-emerald-400">${a.cost.toFixed(4)}</td>
-                      <td className="py-3 px-3 text-right text-zinc-500 text-xs">{a.model}</td>
+                      <td className="py-3 px-3 text-right text-zinc-600">{a.model}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -275,28 +277,28 @@ export default function SystemPulsePage() {
 
         {/* Model breakdown */}
         {modelBreakdown.length > 0 && (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-widest mb-4">
+          <div className="border border-zinc-800 bg-zinc-950 p-5">
+            <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-tight mb-4">
               Model Usage
             </h2>
             <div className="space-y-3">
               {modelBreakdown.map(m => (
                 <div key={m.model} className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-zinc-400 w-40 truncate">{m.model}</span>
-                  <div className="flex-1 bg-zinc-800 rounded-full h-2 overflow-hidden">
+                  <span className="text-xs font-mono text-zinc-500 w-40 truncate">{m.model}</span>
+                  <div className="flex-1 bg-zinc-800 h-2 overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-500"
+                      className="h-full bg-blue-500 transition-all duration-500"
                       style={{ width: `${m.percent}%` }}
                     />
                   </div>
-                  <span className="text-xs font-mono text-zinc-500 w-12 text-right">{m.percent}%</span>
+                  <span className="text-[10px] font-mono text-zinc-600 w-12 text-right">{m.percent}%</span>
                   <span className="text-xs font-mono text-emerald-400 w-16 text-right">${m.cost.toFixed(2)}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

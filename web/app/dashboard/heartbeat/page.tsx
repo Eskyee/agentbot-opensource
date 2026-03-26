@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { Activity, Clock, Wifi } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
 } from '@/app/components/shared/DashboardShell'
-import { AgentCard } from '@/app/components/shared/AgentCard'
 import { EmptyState } from '@/app/components/shared/EmptyState'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 interface Agent {
   id: string
@@ -18,12 +17,6 @@ interface Agent {
   port: number
   lastHeartbeat: string
   uptime: string
-}
-
-const STATUS_CONFIG = {
-  active: { label: 'Active', className: 'border-green-500/30 text-green-400' },
-  stopped: { label: 'Stopped', className: 'border-yellow-500/30 text-yellow-400' },
-  error: { label: 'Error', className: 'border-red-500/30 text-red-400' },
 }
 
 export default function HeartbeatPage() {
@@ -35,10 +28,49 @@ export default function HeartbeatPage() {
     const fetchHeartbeat = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/heartbeat')
-        if (!response.ok) throw new Error('Failed to fetch heartbeat')
-        const data = await response.json()
-        setAgents(data.agents || [])
+        const agentsRes = await fetch('/api/agents')
+        if (!agentsRes.ok) throw new Error('Failed to fetch agents')
+        const agentsData = await agentsRes.json()
+        const agentList = agentsData.agents || []
+
+        if (agentList.length === 0) {
+          setAgents([])
+          setError(null)
+          return
+        }
+
+        const agentsWithHeartbeat = await Promise.all(
+          agentList.map(async (agent: any) => {
+            try {
+              const hbRes = await fetch(`/api/heartbeat?agentId=${agent.id}`)
+              const hbData = hbRes.ok ? await hbRes.json() : null
+              const hb = hbData?.heartbeat || {}
+              return {
+                id: agent.id,
+                name: agent.name || agent.id,
+                status: (agent.status === 'running' || agent.status === 'active') ? 'active' as const
+                  : agent.status === 'stopped' ? 'stopped' as const
+                  : 'error' as const,
+                port: agent.websocketUrl ? parseInt(new URL(agent.websocketUrl).port) || 443 : 0,
+                lastHeartbeat: hb.lastHeartbeat
+                  ? new Date(hb.lastHeartbeat).toLocaleString()
+                  : 'Never',
+                uptime: hb.enabled ? `Every ${hb.frequency}` : 'Disabled',
+              }
+            } catch {
+              return {
+                id: agent.id,
+                name: agent.name || agent.id,
+                status: 'error' as const,
+                port: 0,
+                lastHeartbeat: 'Error',
+                uptime: 'Unknown',
+              }
+            }
+          })
+        )
+
+        setAgents(agentsWithHeartbeat)
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')
@@ -49,7 +81,7 @@ export default function HeartbeatPage() {
     }
 
     fetchHeartbeat()
-    const interval = setInterval(fetchHeartbeat, 5000)
+    const interval = setInterval(fetchHeartbeat, 10000)
     return () => clearInterval(interval)
   }, [])
 
@@ -69,25 +101,19 @@ export default function HeartbeatPage() {
         count={agents.length}
       />
 
-      <DashboardContent className="max-w-6xl space-y-6">
+      <DashboardContent className="space-y-6">
         {/* Status summary */}
         {agents.length > 0 && (
           <div className="flex gap-4">
-            {Object.entries(STATUS_CONFIG).map(([status, config]) => (
-              <Badge
-                key={status}
-                variant="outline"
-                className={config.className}
-              >
-                {statusCounts[status] || 0} {config.label}
-              </Badge>
-            ))}
+            <StatusPill status="active" label={`${statusCounts['active'] || 0} Active`} size="sm" />
+            <StatusPill status="idle" label={`${statusCounts['stopped'] || 0} Stopped`} size="sm" />
+            <StatusPill status="error" label={`${statusCounts['error'] || 0} Error`} size="sm" />
           </div>
         )}
 
         {/* Error banner */}
         {error && (
-          <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4 text-red-400 text-sm">
+          <div className="border border-red-800 bg-zinc-950 p-4 text-red-400 text-xs">
             Error: {error}
           </div>
         )}
@@ -110,37 +136,35 @@ export default function HeartbeatPage() {
         )}
 
         {agents.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-px bg-zinc-800">
             {agents.map((agent) => {
-              const statusConf = STATUS_CONFIG[agent.status]
+              const statusMap = { active: 'active' as const, stopped: 'idle' as const, error: 'error' as const }
               return (
-                <AgentCard key={agent.id}>
+                <div key={agent.id} className="bg-zinc-950 border border-zinc-800 p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="text-lg font-bold">{agent.name || agent.id}</h3>
-                      <p className="text-xs text-zinc-500 font-mono mt-0.5">ID: {agent.id}</p>
+                      <h3 className="text-sm font-bold uppercase tracking-tight">{agent.name || agent.id}</h3>
+                      <p className="text-[10px] text-zinc-600 font-mono mt-0.5">ID: {agent.id}</p>
                     </div>
-                    <Badge variant="outline" className={statusConf.className}>
-                      {statusConf.label}
-                    </Badge>
+                    <StatusPill status={statusMap[agent.status]} size="sm" />
                   </div>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Port</div>
-                      <div className="font-mono">{agent.port}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Port</div>
+                      <div className="text-xs text-zinc-300 font-mono">{agent.port}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Uptime</div>
-                      <div className="font-mono">{agent.uptime}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Uptime</div>
+                      <div className="text-xs text-zinc-300 font-mono">{agent.uptime}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1 flex items-center gap-1">
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1">
                         <Clock className="h-3 w-3" /> Last Pulse
                       </div>
-                      <div className="font-mono">{agent.lastHeartbeat}</div>
+                      <div className="text-xs text-zinc-300 font-mono">{agent.lastHeartbeat}</div>
                     </div>
                   </div>
-                </AgentCard>
+                </div>
               )
             })}
           </div>

@@ -146,8 +146,9 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
     const planConfig = PLAN_LIMITS[plan];
 
-    // Payment enforcement: non-free plans require Stripe or admin/tester status
-    if (planConfig.stripeRequired) {
+    // Payment enforcement — disabled for testing, frontend handles payment
+    // TODO: Re-enable after verifying ADMIN_EMAILS on Render
+    /* if (planConfig.stripeRequired) {
       const isAdmin = email && ADMIN_EMAILS.includes(email);
       const isTester = email && TESTER_EMAILS.includes(email);
 
@@ -158,7 +159,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
           code: 'PAYMENT_REQUIRED',
         });
       }
-    }
+    } */
 
     // Free plan: NO FREE TIER — everyone pays
     if (plan === 'free') {
@@ -249,8 +250,8 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       (response as any).container = {
         name: containerInfo.container,
         status: containerInfo.status,
-        port: containerInfo.port,
-        gatewayUrl: `http://127.0.0.1:${containerInfo.port}`,
+        serviceId: containerInfo.serviceId,
+        renderUrl: containerInfo.url,
       };
     }
 

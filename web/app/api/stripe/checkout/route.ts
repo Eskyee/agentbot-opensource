@@ -138,3 +138,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/pricing?error=checkout_failed`, origin), 303)
   }
 }
+
+
+export const dynamic = 'force-dynamic';

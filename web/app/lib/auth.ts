@@ -18,7 +18,6 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     GitHubProvider({
       clientId: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
     }) as unknown as ReturnType<typeof CredentialsProvider>
   );
 }
@@ -28,7 +27,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
     }) as unknown as ReturnType<typeof CredentialsProvider>
   );
 }
@@ -163,7 +161,9 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || 'dev-secret-do-not-use-in-production-12345',
+  secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === 'production'
+    ? (() => { throw new Error('NEXTAUTH_SECRET is required in production') })()
+    : 'dev-secret-do-not-use-in-production-12345'),
   debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login",

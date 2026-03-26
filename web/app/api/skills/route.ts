@@ -35,6 +35,8 @@ const DEFAULT_SKILLS = [
 /**
  * Ensure skills are seeded in the database.
  * Runs once on first request; subsequent calls are a no-op.
+
+export const dynamic = 'force-dynamic';
  */
 async function ensureSkillsSeeded() {
   const count = await prisma.skill.count()

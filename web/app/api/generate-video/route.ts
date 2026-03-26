@@ -3,6 +3,8 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { generateDemoVideo, generateMarketingVideo, animateScreenshot, generateTutorialVideo } from '@/app/lib/video';
 import { put } from '@vercel/blob';
 
+export const dynamic = 'force-dynamic';
+
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {

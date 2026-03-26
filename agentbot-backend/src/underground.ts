@@ -135,7 +135,7 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
     // 2. Add recipients to DB
     for (const recipient of recipients) {
       await pool.query(
-        'INSERT INTO royalty_recipients (split_id, wallet_address, share_percentage, paid) VALUES ($1, $2, $3, FALSE)',
+        'INSERT INTO royalty_recipients (split_id, wallet_address, percentage, paid) VALUES ($1, $2, $3, FALSE)',
         [splitId, recipient.address, recipient.share]
       );
     }

@@ -7,10 +7,12 @@ import aiRouter from './routes/ai';
 import renderMcpRouter from './routes/render-mcp';
 import metricsRouter from './routes/metrics';
 import provisionRouter from './routes/provision';
+import teamProvisionRouter from './routes/team-provision';
 import registrationRouter from './routes/registration';
 import agentsRouter from './routes/agents';
 import openclawRouter from './routes/openclaw';
 import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
+import AIProviderService from './services/ai-provider';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
@@ -135,11 +137,11 @@ const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only';
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.13';
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.24';
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
 const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'google/gemini-2.0-flash';
 const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
-const OPENCLAW_RUNTIME_VERSION = '2026.3.13'
+const OPENCLAW_RUNTIME_VERSION = '2026.3.24'
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
@@ -706,6 +708,7 @@ app.use('/api/mission-control', missionControlRouter);
 app.use('/api/ai', authenticate, aiChatLimiter, aiRouter);
 app.use('/api/render-mcp', authenticate, renderMcpRouter);
 app.use('/api/provision', authenticate, provisionRouter);
+app.use('/api/provision/team', authenticate, teamProvisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
 app.use('/api/agents', authenticate, agentsRouter);
 app.use('/api/openclaw', authenticate, openclawRouter);
@@ -718,7 +721,67 @@ app.get('/health', async (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     docker: dockerAvailable ? 'available' : 'unavailable',
     provisioning: dockerAvailable ? 'enabled' : 'disabled',
+    provider: 'render',
   });
+});
+
+// OpenAI-compatible endpoints for RAG/SDK compatibility
+app.get('/v1/models', async (_req: Request, res: Response) => {
+  try {
+    const models = await AIProviderService.getAllModels();
+    res.json({
+      object: 'list',
+      data: models.map((m: { id: string; name: string; provider: string }) => ({
+        id: m.id,
+        object: 'model',
+        created: Math.floor(Date.now() / 1000),
+        owned_by: m.provider || 'agentbot',
+      })),
+    });
+  } catch {
+    res.status(500).json({ error: { message: 'Failed to fetch models', type: 'server_error' } });
+  }
+});
+
+app.get('/v1/models/:model', async (req: Request, res: Response) => {
+  try {
+    const models = await AIProviderService.getAllModels();
+    const model = models.find((m: { id: string }) => m.id === req.params.model);
+    if (!model) {
+      return res.status(404).json({ error: { message: `Model ${req.params.model} not found`, type: 'invalid_request_error' } });
+    }
+    res.json({
+      id: model.id,
+      object: 'model',
+      created: Math.floor(Date.now() / 1000),
+      owned_by: model.provider || 'agentbot',
+    });
+  } catch {
+    res.status(500).json({ error: { message: 'Failed to fetch model', type: 'server_error' } });
+  }
+});
+
+app.post('/v1/embeddings', authenticate, async (req: Request, res: Response) => {
+  const { input, model } = req.body as { input?: string | string[]; model?: string };
+  if (!input) {
+    return res.status(400).json({ error: { message: 'input is required', type: 'invalid_request_error' } });
+  }
+  // Proxy to OpenRouter embeddings
+  try {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ error: { message: 'Embeddings not configured', type: 'server_error' } });
+    }
+    const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input, model: model || 'openai/text-embedding-3-small' }),
+    });
+    const data = await response.json() as Record<string, unknown>;
+    res.json(data);
+  } catch {
+    res.status(500).json({ error: { message: 'Embeddings request failed', type: 'server_error' } });
+  }
 });
 
 // Install script endpoints
@@ -1067,20 +1130,32 @@ initDatabase().then(() => {
 });
 
 // Check Docker availability at startup (non-fatal — container provisioning degrades gracefully)
-const checkDocker = async () => {
+const checkProvisioning = async () => {
+  // Check Render API availability (replaces Docker check)
+  const apiKey = process.env.RENDER_API_KEY;
+  if (!apiKey) {
+    console.warn('[Provisioning] RENDER_API_KEY not set — provisioning disabled');
+    return false;
+  }
   try {
-    const { runCommand } = require('./utils');
-    await runCommand('docker', ['version', '--format', '{{.Server.Version}}'], { timeout: 5000 });
-    console.log('[Docker] Available — container provisioning enabled');
-    return true;
+    const res = await fetch('https://api.render.com/v1/services?limit=1', {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      console.log('[Provisioning] Render API available — container provisioning enabled');
+      return true;
+    }
+    console.warn(`[Provisioning] Render API returned ${res.status} — provisioning disabled`);
+    return false;
   } catch (err: any) {
-    console.warn('[Docker] Not available — container provisioning disabled. Error:', err.code || err.message);
+    console.warn('[Provisioning] Render API unreachable — provisioning disabled. Error:', err.code || err.message);
     return false;
   }
 };
 
 let dockerAvailable = false;
-checkDocker().then(available => { dockerAvailable = available; });
+checkProvisioning().then(available => { dockerAvailable = available; });
 
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);

@@ -165,7 +165,7 @@ export default function MusicWizardPage() {
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-left mb-8">
           <span className="text-6xl mb-4">🎵</span>
           <h1 className="text-4xl font-black tracking-tight mb-2">
             Music Agent Wizard
@@ -200,7 +200,7 @@ export default function MusicWizardPage() {
               Choose Your Focus Area
             </h2>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {musicRoles.map((role) => (
                 <button
                   key={role.id}
@@ -542,10 +542,10 @@ export default function MusicWizardPage() {
 
         {/* Benefits Summary */}
         <div className="mt-8 pt-8 border-t border-zinc-700">
-          <h3 className="text-lg font-semibold mb-4 text-center">
+          <h3 className="text-lg font-semibold mb-4 text-left">
             What Your AI Agent Will Do For You:
           </h3>
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <h4 className="text-sm text-zinc-500 mb-2">Industry Connections</h4>
               <ul className="space-y-2 text-sm text-zinc-300">
@@ -584,7 +584,7 @@ export default function MusicWizardPage() {
         </div>
 
         {/* Back to regular signup option */}
-        <div className="text-center mt-8">
+        <div className="text-left mt-8">
           <Link href="/signup" className="text-sm text-blue-400 hover:text-blue-300">
             ← Skip to standard signup process
           </Link>

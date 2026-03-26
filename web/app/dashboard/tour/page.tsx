@@ -2,6 +2,13 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Map, Plus, Calendar, ExternalLink } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 interface TourDate {
   id: string
@@ -23,6 +30,12 @@ const mockTourDates: TourDate[] = [
   { id: '5', date: '2026-05-17', venue: 'Womb', city: 'Tokyo', country: 'JP', status: 'pending', fee: '$800', ticketsSold: 0, capacity: 500 },
 ]
 
+const STATUS_MAP = {
+  confirmed: 'active' as const,
+  pending: 'idle' as const,
+  cancelled: 'error' as const,
+}
+
 export default function TourManagementPage() {
   const [tourDates, setTourDates] = useState(mockTourDates)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -32,100 +45,88 @@ export default function TourManagementPage() {
   const totalRevenue = confirmedDates.reduce((acc, d) => acc + parseFloat(d.fee.replace('$', '')), 0)
   const totalTickets = confirmedDates.reduce((acc, d) => acc + d.ticketsSold, 0)
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed': return 'bg-green-900/50 text-green-400'
-      case 'pending': return 'bg-yellow-900/50 text-yellow-400'
-      case 'cancelled': return 'bg-red-900/50 text-red-400'
-      default: return 'bg-zinc-800 text-zinc-400'
-    }
-  }
-
   return (
-    <div className="min-h-screen bg-black text-white">
-      <main className="px-4 sm:px-6 py-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold">Tour Management</h1>
-              <p className="text-zinc-400 text-sm mt-1">Manage your upcoming tour dates and bookings</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowAddForm(!showAddForm)}
-                className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-zinc-200"
-              >
-                + Add Date
-              </button>
-              <Link href="/dashboard/venue-finder" className="bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-lg text-sm">
-                Find Venues
-              </Link>
-              <Link href="/dashboard" className="text-sm text-zinc-400 hover:text-white">Dashboard</Link>
-            </div>
+    <DashboardShell>
+      <DashboardHeader
+        title="Tour Management"
+        icon={<Calendar className="h-5 w-5 text-blue-400" />}
+        action={
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-4"
+            >
+              + Add Date
+            </button>
+            <Link href="/dashboard/venue-finder" className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4">
+              Find Venues
+            </Link>
           </div>
+        }
+      />
 
-          {/* Overview */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
-              <div className="text-xs text-zinc-500 mb-1">Confirmed Shows</div>
-              <div className="text-2xl font-bold text-green-400">{confirmedDates.length}</div>
-            </div>
-            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
-              <div className="text-xs text-zinc-500 mb-1">Pending</div>
-              <div className="text-2xl font-bold text-yellow-400">{pendingDates.length}</div>
-            </div>
-            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
-              <div className="text-xs text-zinc-500 mb-1">Total Revenue</div>
-              <div className="text-2xl font-bold text-green-400">${totalRevenue.toLocaleString()}</div>
-            </div>
-            <div className="bg-zinc-900 rounded-xl p-5 border border-zinc-800">
-              <div className="text-xs text-zinc-500 mb-1">Tickets Sold</div>
-              <div className="text-2xl font-bold text-blue-400">{totalTickets.toLocaleString()}</div>
-            </div>
+      <DashboardContent className="space-y-6">
+        <p className="text-xs text-zinc-500">
+          Manage your upcoming tour dates and bookings.
+        </p>
+
+        {/* Overview stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
+          <div className="border border-zinc-800 bg-zinc-950 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Confirmed Shows</div>
+            <div className="text-2xl font-mono font-bold text-green-400">{confirmedDates.length}</div>
           </div>
-
-          {/* Tour Dates */}
-          <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
-            <div className="p-4 border-b border-zinc-800">
-              <h2 className="font-semibold">Tour Schedule</h2>
-            </div>
-            <div className="divide-y divide-zinc-800">
-              {tourDates.map(td => (
-                <div key={td.id} className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="text-center min-w-[60px]">
-                      <div className="text-lg font-bold">{new Date(td.date).getDate()}</div>
-                      <div className="text-xs text-zinc-500">{new Date(td.date).toLocaleDateString('en', { month: 'short' })}</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold">{td.venue}</div>
-                      <div className="text-sm text-zinc-400">{td.city}, {td.country}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right hidden sm:block">
-                      <div className="text-sm font-mono">{td.fee}</div>
-                      {td.ticketsSold > 0 && (
-                        <div className="text-xs text-zinc-500">{td.ticketsSold}/{td.capacity} tickets</div>
-                      )}
-                    </div>
-                    <span className={`text-xs px-2.5 py-1 rounded-full ${getStatusColor(td.status)}`}>
-                      {td.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="border border-zinc-800 bg-zinc-950 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Pending</div>
+            <div className="text-2xl font-mono font-bold text-yellow-400">{pendingDates.length}</div>
           </div>
-
-          {/* Map Placeholder */}
-          <div className="mt-8 bg-zinc-900 rounded-xl p-8 border border-zinc-800 text-center">
-            <div className="text-4xl mb-3">🗺️</div>
-            <h3 className="text-lg font-bold mb-2">Tour Map</h3>
-            <p className="text-zinc-400 text-sm">Interactive tour route visualization coming soon</p>
+          <div className="border border-zinc-800 bg-zinc-950 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Total Revenue</div>
+            <div className="text-2xl font-mono font-bold text-green-400">${totalRevenue.toLocaleString()}</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Tickets Sold</div>
+            <div className="text-2xl font-mono font-bold text-blue-400">{totalTickets.toLocaleString()}</div>
           </div>
         </div>
-      </main>
-    </div>
+
+        {/* Tour Dates */}
+        <div>
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Tour Schedule</h2>
+          <div className="space-y-px bg-zinc-800">
+            {tourDates.map(td => (
+              <div key={td.id} className="bg-zinc-950 border border-zinc-800 flex items-center justify-between p-4 hover:bg-zinc-900/30 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="text-left min-w-[60px]">
+                    <div className="text-lg font-mono font-bold">{new Date(td.date).getDate()}</div>
+                    <div className="text-[10px] text-zinc-600 uppercase tracking-widest">{new Date(td.date).toLocaleDateString('en', { month: 'short' })}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold uppercase tracking-tight">{td.venue}</div>
+                    <div className="text-xs text-zinc-500">{td.city}, {td.country}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right hidden sm:block">
+                    <div className="text-xs font-mono text-zinc-300">{td.fee}</div>
+                    {td.ticketsSold > 0 && (
+                      <div className="text-[10px] text-zinc-600">{td.ticketsSold}/{td.capacity} tickets</div>
+                    )}
+                  </div>
+                  <StatusPill status={STATUS_MAP[td.status]} label={td.status} size="sm" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Map Placeholder */}
+        <div className="border border-zinc-800 bg-zinc-950 p-8 text-left">
+          <Map className="h-6 w-6 text-zinc-600 mb-3" />
+          <h3 className="text-sm font-bold uppercase tracking-tight mb-2">Tour Map</h3>
+          <p className="text-xs text-zinc-500">Interactive tour route visualization coming soon</p>
+        </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

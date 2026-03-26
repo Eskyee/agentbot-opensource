@@ -45,32 +45,68 @@ interface InstanceData {
   verifiedAt?: string | null
 }
 
-const navItems = [
-  { label: 'Dashboard', href: '/dashboard' },
-  { label: 'Agent Fleet', href: '/dashboard/fleet' },
-  { label: '🧬 Colony', href: '/dashboard/colony' },
-  { label: 'Cost Tracking', href: '/dashboard/cost' },
-  { label: 'System Pulse', href: '/dashboard/system-pulse' },
-  { label: 'Memory Log', href: '/dashboard/memory' },
-  { label: 'Daily Brief', href: '/dashboard/daily-brief' },
-  { label: 'Tech Updates', href: '/dashboard/tech-updates' },
-  { label: 'Market Intel', href: '/dashboard/market-intel' },
-  { label: 'Signals', href: '/dashboard/signals' },
-  { label: 'Tasks', href: '/dashboard/tasks' },
-  { label: 'Personality', href: '/dashboard/personality' },
-  { label: 'Skills', href: '/dashboard/skills' },
-  { label: 'Swarms', href: '/dashboard/swarms' },
-  { label: 'Workflows', href: '/dashboard/workflows' },
-  { label: 'Files', href: '/dashboard/files' },
-  { label: 'Calendar', href: '/dashboard/calendar' },
-  { label: 'Heartbeat', href: '/dashboard/heartbeat' },
-  { label: 'Verify', href: '/dashboard/verify' },
-  { label: 'DJ Stream', href: '/dashboard/dj-stream' },
-  { label: 'Trading', href: '/dashboard/trading' },
-  { label: 'Marketplace', href: '/marketplace' },
-  { label: 'Billing', href: '/billing' },
-  { label: 'API Keys', href: '/dashboard/keys' },
-  { label: 'Settings', href: '/settings' },
+const navSections = [
+  {
+    label: 'Overview',
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: '◈' },
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
+    ]
+  },
+  {
+    label: 'Agents',
+    items: [
+      { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
+      { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
+      { label: 'Swarms', href: '/dashboard/swarms', icon: '◇' },
+      { label: 'Workflows', href: '/dashboard/workflows', icon: '▹' },
+    ]
+  },
+  {
+    label: 'Intelligence',
+    items: [
+      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '☉' },
+      { label: 'Market Intel', href: '/dashboard/market-intel', icon: '◉' },
+      { label: 'Signals', href: '/dashboard/signals', icon: '⚡' },
+      { label: 'Memory', href: '/dashboard/memory', icon: '◐' },
+      { label: 'Tasks', href: '/dashboard/tasks', icon: '☑' },
+    ]
+  },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'Calendar', href: '/dashboard/calendar', icon: '◌' },
+      { label: 'Files', href: '/dashboard/files', icon: '▣' },
+      { label: 'Skills', href: '/dashboard/skills', icon: '✦' },
+      { label: 'Personality', href: '/dashboard/personality', icon: '◐' },
+      { label: 'Tech Updates', href: '/dashboard/tech-updates', icon: '↻' },
+    ]
+  },
+  {
+    label: 'Platform',
+    items: [
+      { label: 'Cost Tracking', href: '/dashboard/cost', icon: '$' },
+      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '♥' },
+      { label: 'Heartbeat', href: '/dashboard/heartbeat', icon: '♡' },
+      { label: 'API Keys', href: '/dashboard/keys', icon: '⚿' },
+    ]
+  },
+  {
+    label: 'Media',
+    items: [
+      { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '♫' },
+      { label: 'Trading', href: '/dashboard/trading', icon: '↕' },
+      { label: 'Verify', href: '/dashboard/verify', icon: '✓' },
+    ]
+  },
+  {
+    label: 'Account',
+    items: [
+      { label: 'Billing', href: '/billing', icon: '☆' },
+      { label: 'Settings', href: '/settings', icon: '⚙' },
+      { label: 'Marketplace', href: '/marketplace', icon: '⬡' },
+    ]
+  },
 ]
 
 function DashboardContent() {
@@ -276,7 +312,7 @@ function DashboardContent() {
    if (loading) {
      return (
        <div className="flex items-center justify-center mt-[4rem] h-[calc(100vh-4rem)] bg-black font-mono">
-         <div className="text-center">
+         <div className="text-left">
            <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
            <p className="text-zinc-400 text-sm">Loading your instance...</p>
          </div>
@@ -296,7 +332,7 @@ function DashboardContent() {
         />
         
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center max-w-md">
+          <div className="text-left max-w-md">
             <h1 className="text-2xl font-bold uppercase tracking-tighter mb-4">{isAuthError ? 'Sign in required' : 'Deploy your first agent'}</h1>
             <p className="text-zinc-400 text-sm mb-8">{error}</p>
             {isAuthError ? (
@@ -325,7 +361,7 @@ function DashboardContent() {
   if (status === 'loading' || status === 'unauthenticated') {
     return (
       <div className="flex items-center justify-center h-screen bg-black font-mono">
-        <div className="text-center">
+        <div className="text-left">
           <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
           <p className="text-zinc-400 text-sm">Loading...</p>
         </div>
@@ -343,7 +379,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="flex h-screen bg-black font-mono">
+    <div className="flex min-h-screen bg-black font-mono pt-14">
       <DashboardSidebar
         userName={userName}
         credits={credits}
@@ -352,44 +388,41 @@ function DashboardContent() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-4 lg:p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
-                aria-label="Open menu"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold uppercase tracking-tighter">Mission Control</h1>
-                <p className="text-zinc-400 text-sm">Agent monitoring & control center</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 border border-zinc-800 px-3 py-1 text-[10px] uppercase tracking-widest">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-zinc-400">System Online</span>
-              </div>
-              <a
-                href="/agents"
-                className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
-              >
-                <span>+</span> New Agent
-              </a>
-              {instance?.verified && (
-                <AgentVerifiedBadge verified={instance.verified} verificationType={instance.verificationType} />
-              )}
-            </div>
+      <div className="flex-1 flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold uppercase tracking-tighter">◈ Mission Control</span>
           </div>
+          <div className="flex items-center gap-3">
+            <a
+              href="/dashboard/wallet"
+              className="hidden sm:inline-block border border-zinc-800 px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              ◎ Wallet
+            </a>
+            <a
+              href="/agents"
+              className="bg-white text-black px-4 sm:px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            >
+              + New Agent
+            </a>
+          </div>
+        </header>
 
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 lg:p-8">
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4 mb-8">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Active Agents</span>
@@ -421,7 +454,7 @@ function DashboardContent() {
           </div>
 
           {/* System Vitals */}
-          <div className="grid gap-4 md:grid-cols-3 mb-8">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">CPU</span>
@@ -470,7 +503,7 @@ function DashboardContent() {
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
                 Agent Details
@@ -740,7 +773,7 @@ function DashboardContent() {
               </div>
               <div className="space-y-2">
                 {tasks.length === 0 ? (
-                  <div className="text-center py-8 text-zinc-500 text-sm">
+                  <div className="py-8 text-zinc-500 text-sm">
                     No tasks yet
                   </div>
                 ) : (
@@ -830,7 +863,7 @@ function DashboardContent() {
                   <span className="text-zinc-400">Calendar</span>
                   <span className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
-                <a href="/marketplace" className="block text-center text-sm text-zinc-400 hover:text-white mt-3 transition-colors">
+                <a href="/marketplace" className="block text-sm text-zinc-400 hover:text-white mt-3 transition-colors">
                   + Add more skills
                 </a>
               </div>
@@ -904,18 +937,18 @@ function DashboardContent() {
               <div>
                 <h2 className="text-xs font-bold uppercase tracking-widest mb-1">Invite Friends, Get Free Months</h2>
                 <p className="text-zinc-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   <input
                     type="text"
                     readOnly
                     value={`https://agentbot.raveculture.xyz/ref/${instance?.userId}`}
-                    className="bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm text-zinc-400 w-64 font-mono focus:outline-none"
+                    className="bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm text-zinc-400 w-full sm:w-64 font-mono focus:outline-none"
                     placeholder="Referral link"
                     title="Referral link"
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(`https://agentbot.raveculture.xyz/ref/${instance?.userId}`)}
-                    className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                    className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors whitespace-nowrap"
                   >
                     Copy
                   </button>
@@ -924,7 +957,8 @@ function DashboardContent() {
             </div>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
@@ -958,26 +992,34 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
         </button>
 
         <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
-          <div className="space-y-0.5">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={onToggle}
-                className={`flex items-center px-4 py-2.5 text-sm transition-colors ${
-                  pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'bg-zinc-900 text-white' 
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
-                }`}
-              >
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
+          {navSections.map((section, i) => (
+            <div key={section.label} className={i > 0 ? 'mt-4' : ''}>
+              <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 px-4 mb-1.5">
+                {section.label}
+              </div>
+              <div className="space-y-0.5">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={onToggle}
+                    className={`flex items-center gap-2.5 px-4 py-2 text-xs transition-colors ${
+                      pathname === item.href || pathname.startsWith(item.href + '/')
+                        ? 'bg-zinc-900 text-white'
+                        : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                    }`}
+                  >
+                    <span className="text-[10px] w-4 text-left opacity-60">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
 
           <Link href="/billing" onClick={onToggle} className="block mt-8 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
-            <div className="text-xl font-bold capitalize">{plan || 'Underground'}</div>
+            <div className="text-xl font-bold capitalize">{plan || 'Solo'}</div>
           </Link>
         </nav>
 
@@ -1008,7 +1050,7 @@ export default function Dashboard() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center h-screen bg-black font-mono">
-        <div className="text-center">
+        <div className="text-left">
           <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
           <p className="text-zinc-400 text-sm">Loading...</p>
         </div>
