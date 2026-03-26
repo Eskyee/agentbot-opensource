@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 const BANKR_API_URL = process.env.BANKR_API_URL || 'https://api.bankr.bot';
 const BANKR_API_KEY = process.env.BANKR_API_KEY;
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'raveculture@icloud.com').split(',').map(e => e.trim().toLowerCase());

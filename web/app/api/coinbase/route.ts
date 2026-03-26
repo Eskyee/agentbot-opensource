@@ -158,3 +158,6 @@ export async function GET(request: NextRequest) {
     { status: 400 }
   )
 }
+
+
+export const dynamic = 'force-dynamic';

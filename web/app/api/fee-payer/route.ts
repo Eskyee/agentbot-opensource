@@ -74,3 +74,6 @@ export async function GET() {
     chainId: chain.id,
   })
 }
+
+
+export const dynamic = 'force-dynamic';

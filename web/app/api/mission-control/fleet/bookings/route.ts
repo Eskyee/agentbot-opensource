@@ -44,3 +44,6 @@ export async function GET() {
     return NextResponse.json({ bookings: [] })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

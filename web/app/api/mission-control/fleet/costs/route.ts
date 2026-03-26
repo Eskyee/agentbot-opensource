@@ -78,3 +78,6 @@ export async function GET() {
     return NextResponse.json({ costs: [], totalSpend: 0, managedAiCost: 0, coordinationRevenue: 0 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

@@ -105,3 +105,6 @@ export async function PUT(
     )
   }
 }
+
+
+export const dynamic = 'force-dynamic';

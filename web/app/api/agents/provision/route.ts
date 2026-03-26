@@ -22,6 +22,8 @@ import { prisma } from '@/app/lib/prisma';
 import { stripe } from '@/app/lib/stripe';
 import crypto from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 // Types
 interface ProvisionAgentRequest {
   name: string;

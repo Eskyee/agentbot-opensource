@@ -4,6 +4,8 @@ import { authOptions } from '@/app/lib/auth';
 import { prisma } from "@/app/lib/prisma";
 import { randomBytes } from "crypto";
 
+export const dynamic = 'force-dynamic';
+
 function generateReferralCode(): string {
   return randomBytes(4).toString("hex").toUpperCase();
 }

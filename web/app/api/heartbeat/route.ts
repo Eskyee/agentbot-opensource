@@ -166,3 +166,6 @@ function parseFrequency(freq: string): number {
     default: return 3 * 60 * 60 * 1000
   }
 }
+
+
+export const dynamic = 'force-dynamic';

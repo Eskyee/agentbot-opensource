@@ -170,3 +170,6 @@ export async function GET(request: NextRequest) {
     }, { status: 503 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

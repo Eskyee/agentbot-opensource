@@ -56,3 +56,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Checkout failed' }, { status: 500 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

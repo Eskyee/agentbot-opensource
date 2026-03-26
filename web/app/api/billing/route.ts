@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 const PLANS = {
   starter: {
     name: 'Starter',

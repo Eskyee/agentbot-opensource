@@ -41,3 +41,6 @@ export async function GET() {
     return NextResponse.json({ credits: 0 }, { status: 500 })
   }
 }
+
+
+export const dynamic = 'force-dynamic';

@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys';
 
+export const dynamic = 'force-dynamic';
+
 function getAdminEmails(): string[] {
   const adminEmails = process.env.ADMIN_EMAILS;
   if (!adminEmails) return [];

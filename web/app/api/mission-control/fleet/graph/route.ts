@@ -6,6 +6,8 @@ const SOUL_URLS = [
   'https://borg-0-production.up.railway.app',
 ];
 
+export const dynamic = 'force-dynamic';
+
 async function fetchSoulNode(url: string) {
   try {
     const [infoRes, statusRes] = await Promise.all([
