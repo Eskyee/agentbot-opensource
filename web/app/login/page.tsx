@@ -36,8 +36,11 @@ function LoginForm() {
     }
   }, [error])
 
-  // Don't auto-redirect — prevents infinite loop when session is stale
-  // User can click through to dashboard manually
+  useEffect(() => {
+    if (session && status === 'authenticated') {
+      window.location.href = '/dashboard'
+    }
+  }, [session, status])
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
