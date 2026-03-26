@@ -95,7 +95,7 @@ export default async function Image() {
           {[
             { name: 'Solo', price: '£29/mo', glow: '#6b3fa0' },
             { name: 'Collective', price: '£69/mo', glow: '#00bfff' },
-            { name: 'Label', price: '£199/mo', glow: '#8b5cf6' },
+            { name: 'Label', price: '£149/mo', glow: '#8b5cf6' },
           ].map((plan) => (
             <div
               key={plan.name}
