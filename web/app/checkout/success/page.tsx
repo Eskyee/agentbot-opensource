@@ -10,6 +10,8 @@ function CheckoutSuccessContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [subscription, setSubscription] = useState<{ plan?: string; nextBilling?: string } | null>(null)
 
+  const [provisionStatus, setProvisionStatus] = useState<'idle' | 'provisioning' | 'done' | 'failed'>('idle')
+
   useEffect(() => {
     if (!sessionId) {
       setStatus('error')
@@ -24,6 +26,9 @@ function CheckoutSuccessContent() {
         const data = await response.json()
         setSubscription(data)
         setStatus('success')
+
+        // Auto-provision OpenClaw after successful payment
+        autoProvisionOpenClaw(data.plan)
       } catch (error) {
         console.error('Verification error:', error)
         setStatus('error')
@@ -32,6 +37,36 @@ function CheckoutSuccessContent() {
 
     verifySession()
   }, [sessionId])
+
+  const autoProvisionOpenClaw = async (plan: string) => {
+    setProvisionStatus('provisioning')
+    try {
+      const res = await fetch('/api/provision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          aiProvider: 'openrouter',
+          plan: plan || 'solo',
+          agentType: 'business',
+          autoProvision: true,
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setProvisionStatus('done')
+        localStorage.setItem('agentbot_instance', JSON.stringify({
+          userId: data.userId,
+          subdomain: data.subdomain,
+          url: data.url,
+        }))
+      } else {
+        setProvisionStatus('failed')
+      }
+    } catch {
+      setProvisionStatus('failed')
+    }
+  }
 
   if (status === 'loading') {
     return (
@@ -100,9 +135,26 @@ function CheckoutSuccessContent() {
         </div>
 
         <div className="border border-zinc-900 p-4">
-          <p className="text-xs text-zinc-500">
-            Your service is being deployed. You&apos;ll receive an email with your dashboard link shortly.
-          </p>
+          {provisionStatus === 'provisioning' && (
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 border border-zinc-600 border-t-white animate-spin" />
+              <p className="text-xs text-zinc-400">Deploying your OpenClaw instance...</p>
+            </div>
+          )}
+          {provisionStatus === 'done' && (
+            <p className="text-xs text-green-400">OpenClaw deployed successfully. Head to your dashboard to configure.</p>
+          )}
+          {provisionStatus === 'failed' && (
+            <p className="text-xs text-zinc-500">
+              Auto-deploy didn&apos;t complete. You can deploy manually from{' '}
+              <a href="/onboard?mode=deploy" className="text-white underline">the onboard page</a>.
+            </p>
+          )}
+          {provisionStatus === 'idle' && (
+            <p className="text-xs text-zinc-500">
+              Your service is being deployed. You&apos;ll receive an email with your dashboard link shortly.
+            </p>
+          )}
         </div>
 
         <div className="space-y-3">
