@@ -51,13 +51,11 @@ export default function MarketplacePage() {
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
-      <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
+    <main className="min-h-screen bg-black text-white font-mono">
+      <div className="max-w-5xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-16 space-y-6">
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
-            Verified Fleet
-          </div>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Verified Fleet</span>
 
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-none">
             Agent <span className="text-zinc-700">Marketplace</span>
@@ -71,44 +69,42 @@ export default function MarketplacePage() {
         {/* Agent Grid */}
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-2">
           {templates.map((template) => (
-            <article key={template.name} className="bg-zinc-900 border border-zinc-800 overflow-hidden group">
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">{template.tier} Tier</span>
-                    <h2 className="text-xl font-bold text-white uppercase tracking-tight">{template.name}</h2>
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">{template.role}</p>
-                  </div>
-                  <div className="border border-zinc-800 px-3 py-1">
-                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">{template.brain}</span>
-                  </div>
+            <article key={template.name} className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">{template.tier} Tier</span>
+                  <h2 className="text-xl font-bold text-white uppercase tracking-tight">{template.name}</h2>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-1">{template.role}</p>
                 </div>
-
-                <div className="border-t border-zinc-900 pt-4 mb-4">
-                  <p className="text-sm text-zinc-400 leading-relaxed">{template.description}</p>
+                <div className="border border-zinc-800 px-3 py-1">
+                  <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">{template.brain}</span>
                 </div>
-
-                <div className="grid gap-2 grid-cols-2 mb-6">
-                  {template.skills.map((skill) => (
-                    <div key={skill} className="text-[10px] uppercase tracking-widest border border-zinc-800 px-3 py-1.5 text-zinc-500">
-                      {skill}
-                    </div>
-                  ))}
-                </div>
-
-                <Link
-                  href={session ? "/dashboard" : "/signup"}
-                  className="block w-full text-left bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                >
-                  Deploy {template.name}
-                </Link>
               </div>
+
+              <div className="border-t border-zinc-800 pt-4 mb-4">
+                <p className="text-sm text-zinc-400 leading-relaxed">{template.description}</p>
+              </div>
+
+              <div className="grid gap-2 grid-cols-2 mb-6">
+                {template.skills.map((skill) => (
+                  <div key={skill} className="text-[10px] uppercase tracking-widest border border-zinc-800 px-3 py-1.5 text-zinc-500">
+                    {skill}
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href={session ? "/dashboard" : "/signup"}
+                className="block w-full text-left bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors text-center"
+              >
+                Deploy {template.name}
+              </Link>
             </article>
           ))}
         </div>
 
         {/* Platform Note */}
-        <div className="mt-16 pt-8 border-t border-zinc-900">
+        <div className="mt-16 pt-8 border-t border-zinc-800">
           <div className="max-w-2xl">
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Platform Integrity</span>
             <h3 className="text-lg font-bold uppercase tracking-tight mb-3">The Purge</h3>
@@ -119,14 +115,14 @@ export default function MarketplacePage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-32 pt-12 border-t border-zinc-900 flex flex-col md:flex-row justify-between gap-8">
+        <div className="mt-32 pt-12 border-t border-zinc-800 flex flex-col md:flex-row justify-between gap-8">
           <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
             Agentbot Marketplace
           </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <Link href="/agents" className="hover:text-blue-500 transition-colors">Agent Builder</Link>
-            <Link href="/token" className="hover:text-blue-500 transition-colors">Token</Link>
-            <Link href="/partner" className="hover:text-blue-500 transition-colors">Partner</Link>
+            <Link href="/agents" className="hover:text-white transition-colors">Agent Builder</Link>
+            <Link href="/token" className="hover:text-white transition-colors">Token</Link>
+            <Link href="/partner" className="hover:text-white transition-colors">Partner</Link>
           </div>
         </div>
       </div>

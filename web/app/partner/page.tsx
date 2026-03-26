@@ -35,13 +35,11 @@ export default function PartnerPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
-      <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
+    <main className="min-h-screen bg-black text-white font-mono">
+      <div className="max-w-5xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-16 space-y-6 max-w-2xl">
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
-            Partnership Program
-          </div>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Partnership Program</span>
 
           <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
             Partner <br />
@@ -53,11 +51,11 @@ export default function PartnerPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-1 sm:grid-cols-2 gap-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
           {/* Left Column — Info */}
           <div className="space-y-12">
             {/* What We're Looking For */}
-            <section className="border-t border-zinc-900 pt-8">
+            <section className="border-t border-zinc-800 pt-8">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-6">What We&apos;re Looking For</span>
               <ul className="space-y-4">
                 <li className="flex gap-3 text-sm">
@@ -88,7 +86,7 @@ export default function PartnerPage() {
             </section>
 
             {/* What We Bring */}
-            <section className="border-t border-zinc-900 pt-8">
+            <section className="border-t border-zinc-800 pt-8">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-6">What We Bring</span>
               <ul className="space-y-4">
                 <li className="flex gap-3 text-sm">
@@ -121,20 +119,20 @@ export default function PartnerPage() {
 
           {/* Right Column — Form */}
           <div>
-            <section className="border-t border-zinc-900 pt-8 lg:border-t-0 lg:pt-0">
+            <section className="border-t border-zinc-800 pt-8 lg:border-t-0 lg:pt-0">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-6">Get In Touch</span>
               <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
                 Tell us who you are, what you&apos;re building, and what value you could bring.
               </p>
 
               {status === 'success' ? (
-                <div className="bg-zinc-900 border border-zinc-800 p-6">
+                <div className="border border-zinc-800 bg-black p-5">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Received</span>
                   <p className="text-white text-sm">Thanks! We&apos;ll be in touch soon.</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Name</label>
                       <input
@@ -143,7 +141,7 @@ export default function PartnerPage() {
                         required
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
+                        className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                         placeholder="Your name"
                       />
                     </div>
@@ -155,7 +153,7 @@ export default function PartnerPage() {
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
+                        className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                         placeholder="you@company.com"
                       />
                     </div>
@@ -167,7 +165,7 @@ export default function PartnerPage() {
                       id="company"
                       value={formData.company}
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                      className="w-full bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
+                      className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                       placeholder="Your company"
                     />
                   </div>
@@ -179,14 +177,14 @@ export default function PartnerPage() {
                       rows={5}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full bg-zinc-900 border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600 resize-none"
+                      className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 resize-none"
                       placeholder="Tell us about what you're building and how we could partner..."
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={status === 'loading'}
-                    className="w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-700 disabled:text-zinc-400 transition-colors"
+                    className="w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-400 transition-colors"
                   >
                     {status === 'loading' ? 'Sending...' : 'Send Message'}
                   </button>
@@ -200,24 +198,24 @@ export default function PartnerPage() {
         </div>
 
         {/* Back Link */}
-        <div className="mt-16 border-t border-zinc-900 pt-8">
+        <div className="mt-16 border-t border-zinc-800 pt-8">
           <Link
             href="/"
-            className="border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors inline-block"
+            className="border border-zinc-700 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors inline-block"
           >
             Back to Agentbot
           </Link>
         </div>
 
         {/* Footer */}
-        <div className="mt-32 pt-12 border-t border-zinc-900 flex flex-col md:flex-row justify-between gap-8">
+        <div className="mt-32 pt-12 border-t border-zinc-800 flex flex-col md:flex-row justify-between gap-8">
           <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
             Agentbot Partnership
           </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <Link href="/marketplace" className="hover:text-blue-500 transition-colors">Marketplace</Link>
-            <Link href="/token" className="hover:text-blue-500 transition-colors">Token</Link>
-            <Link href="/agents" className="hover:text-blue-500 transition-colors">Agent Builder</Link>
+            <Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
+            <Link href="/token" className="hover:text-white transition-colors">Token</Link>
+            <Link href="/agents" className="hover:text-white transition-colors">Agent Builder</Link>
           </div>
         </div>
       </div>

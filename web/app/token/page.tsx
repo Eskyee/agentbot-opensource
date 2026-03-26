@@ -13,13 +13,11 @@ export const metadata: Metadata = {
 
 export default function TokenPage() {
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
-      <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
+    <main className="min-h-screen bg-black text-white font-mono">
+      <div className="max-w-5xl mx-auto px-6 py-16">
         {/* Header */}
         <div className="mb-16 space-y-6">
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
-            Native Token
-          </div>
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Native Token</span>
 
           <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
             AGENTBOT <br />
@@ -32,10 +30,10 @@ export default function TokenPage() {
         </div>
 
         {/* Token Information */}
-        <section className="border-t border-zinc-900 pt-12 mb-16">
+        <section className="border-t border-zinc-800 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Token Information</span>
 
-          <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
             <div className="space-y-2">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Name</span>
               <span className="text-white text-sm font-bold uppercase">Agentbot</span>
@@ -59,7 +57,7 @@ export default function TokenPage() {
             <div className="space-y-2 md:col-span-2">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Contract Address</span>
               <div className="flex items-center gap-4 flex-wrap">
-                <code className="text-blue-500 bg-zinc-900 border border-zinc-800 px-4 py-2 font-mono text-sm break-all">
+                <code className="text-blue-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
                   0x986b41C76aB8B7350079613340ee692773B34bA3
                 </code>
                 <a
@@ -88,15 +86,15 @@ export default function TokenPage() {
         </section>
 
         {/* Official Links */}
-        <section className="border-t border-zinc-900 pt-12 mb-16">
+        <section className="border-t border-zinc-800 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Official Links</span>
 
-          <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <a
               href="https://agentbot.raveculture.xyz"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Website</span>
               <span className="text-sm text-white">agentbot.raveculture.xyz</span>
@@ -106,7 +104,7 @@ export default function TokenPage() {
               href="https://bankr.bot/agents/agentbot"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Bankr Profile</span>
               <span className="text-sm text-white">View Agent</span>
@@ -116,7 +114,7 @@ export default function TokenPage() {
               href="https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">GeckoTerminal</span>
               <span className="text-sm text-white">AGENTBOT/WETH Pool</span>
@@ -126,7 +124,7 @@ export default function TokenPage() {
               href="https://app.uniswap.org/swap?outputCurrency=0x986b41C76aB8B7350079613340ee692773B34bA3&chain=base"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Trade</span>
               <span className="text-sm text-white">Buy on Uniswap</span>
@@ -136,7 +134,7 @@ export default function TokenPage() {
               href="https://basescan.org/token/0x986b41C76aB8B7350079613340ee692773B34bA3"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Explorer</span>
               <span className="text-sm text-white">View on Basescan</span>
@@ -144,7 +142,7 @@ export default function TokenPage() {
 
             <Link
               href="/wristband"
-              className="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Wristband</span>
               <span className="text-sm text-white">Get your wristband</span>
@@ -153,7 +151,7 @@ export default function TokenPage() {
         </section>
 
         {/* About */}
-        <section className="border-t border-zinc-900 pt-12 mb-16">
+        <section className="border-t border-zinc-800 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">About</span>
 
           <div className="max-w-2xl space-y-4">
@@ -173,11 +171,11 @@ export default function TokenPage() {
         </section>
 
         {/* Deploy with AGENTBOT */}
-        <section className="border-t border-zinc-900 pt-12 mb-16">
+        <section className="border-t border-zinc-800 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Deploy with Agentbot</span>
 
-          <div className="grid gap-6 md:grid-cols-1 sm:grid-cols-2">
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
               <h3 className="text-lg font-bold uppercase tracking-tight mb-3">60-Second Deploy</h3>
               <p className="text-zinc-400 text-sm mb-4 leading-relaxed">
                 Sign up, pick a plan, and your AI agent is running. No infrastructure knowledge required.
@@ -190,7 +188,7 @@ export default function TokenPage() {
               </ul>
             </div>
 
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
+            <div className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
               <h3 className="text-lg font-bold uppercase tracking-tight mb-3">Zero Human Company</h3>
               <p className="text-zinc-400 text-sm mb-4 leading-relaxed">
                 Agentbot itself is run by AI agents. The platform is the proof of concept.
@@ -213,7 +211,7 @@ export default function TokenPage() {
             </Link>
             <Link
               href="/signup"
-              className="border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+              className="border border-zinc-700 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
             >
               Create Account
             </Link>
@@ -221,17 +219,17 @@ export default function TokenPage() {
         </section>
 
         {/* Token Use Cases */}
-        <section className="border-t border-zinc-900 pt-12 mb-16">
+        <section className="border-t border-zinc-800 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Token Use Cases</span>
 
-          <div className="grid sm:grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[
               { title: 'Platform Access', desc: 'Token holders unlock premium tiers and early access to new agent capabilities.' },
               { title: 'Governance', desc: 'Vote on platform direction, feature priorities, and ecosystem integrations.' },
               { title: 'Payments', desc: 'Pay for agent deployments, API credits, and enterprise add-ons using AGENTBOT.' },
               { title: 'Partner Rewards', desc: 'Partners and integrators earn AGENTBOT for bringing new agents to the platform.' },
             ].map((item) => (
-              <div key={item.title} className="bg-zinc-900 border border-zinc-800 p-5">
+              <div key={item.title} className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
                 <h3 className="text-sm font-bold uppercase tracking-tight mb-2">{item.title}</h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">{item.desc}</p>
               </div>
@@ -240,7 +238,7 @@ export default function TokenPage() {
         </section>
 
         {/* Built On */}
-        <section className="border-t border-zinc-900 pt-12 mb-16">
+        <section className="border-t border-zinc-800 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Built On</span>
 
           <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
@@ -254,24 +252,24 @@ export default function TokenPage() {
         </section>
 
         {/* Back Link */}
-        <div className="border-t border-zinc-900 pt-8">
+        <div className="border-t border-zinc-800 pt-8">
           <Link
             href="/"
-            className="border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors inline-block"
+            className="border border-zinc-700 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors inline-block"
           >
             Back to Agentbot Platform
           </Link>
         </div>
 
         {/* Footer */}
-        <div className="mt-32 pt-12 border-t border-zinc-900 flex flex-col md:flex-row justify-between gap-8">
+        <div className="mt-32 pt-12 border-t border-zinc-800 flex flex-col md:flex-row justify-between gap-8">
           <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
             AGENTBOT Token
           </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <Link href="/marketplace" className="hover:text-blue-500 transition-colors">Marketplace</Link>
-            <Link href="/wristband" className="hover:text-blue-500 transition-colors">Wristband</Link>
-            <Link href="/partner" className="hover:text-blue-500 transition-colors">Partner</Link>
+            <Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
+            <Link href="/wristband" className="hover:text-white transition-colors">Wristband</Link>
+            <Link href="/partner" className="hover:text-white transition-colors">Partner</Link>
           </div>
         </div>
       </div>
