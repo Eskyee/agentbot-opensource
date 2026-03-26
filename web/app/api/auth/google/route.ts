@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     response_type: 'code',
     scope: 'openid email profile',
     access_type: 'offline',
-    prompt: 'consent',
+    prompt: 'select_account',
   });
 
   return NextResponse.redirect(
