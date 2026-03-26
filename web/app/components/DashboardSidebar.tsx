@@ -6,6 +6,7 @@
 
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -88,6 +89,17 @@ interface DashboardSidebarProps {
 
 export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('agentbot_instance')
+      if (stored) {
+        const data = JSON.parse(stored)
+        if (data.url) setOpenclawUrl(data.url)
+      }
+    } catch {}
+  }, [])
 
   return (
     <>
@@ -150,7 +162,30 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
             </div>
           ))}
 
-          <Link href="/billing" onClick={onToggle} className="block mt-8 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
+          {/* OpenClaw Dashboard Link */}
+          {openclawUrl ? (
+            <a
+              href={openclawUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block mt-6 border border-blue-500/30 bg-blue-500/5 p-4 hover:border-blue-500/50 transition-colors"
+            >
+              <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-1">OpenClaw</div>
+              <div className="text-sm font-bold flex items-center gap-2">
+                Your Dashboard <span className="text-[10px] text-blue-500/60">↗</span>
+              </div>
+            </a>
+          ) : (
+            <a
+              href="/onboard?mode=deploy"
+              className="block mt-6 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
+            >
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">OpenClaw</div>
+              <div className="text-sm font-bold text-zinc-500">Deploy Now</div>
+            </a>
+          )}
+
+          <Link href="/billing" onClick={onToggle} className="block mt-4 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
             <div className="text-xl font-bold capitalize">{plan || 'Solo'}</div>
           </Link>
