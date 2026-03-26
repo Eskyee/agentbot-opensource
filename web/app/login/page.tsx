@@ -1,3 +1,4 @@
+// ⚠️ See web/🚨 AUTH LOOP WARNING.md — NEVER auto-redirect to /dashboard from here
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
@@ -21,7 +22,9 @@ function LoginForm() {
 
   useEffect(() => {
     if (error) {
-      if (error === 'OAuthCallback') {
+      if (error === 'SessionExpired') {
+        setLoginError('Your session expired. Please sign in again.')
+      } else if (error === 'OAuthCallback') {
         setLoginError('Authentication failed. Please try again.')
       } else if (error === 'OAuthAccountNotLinked') {
         setLoginError('This email is already associated with another account.')
