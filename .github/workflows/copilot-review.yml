@@ -29,7 +29,7 @@ jobs:
           FILES=$(gh pr view $PR_NUM --json files -q '.files | length')
           
           # Build review comment
-          cat > review.md << 'EOF'
+          cat > review.md << 'REVIEW_EOF'
           ## AI Code Review
 
           ### Summary
@@ -45,7 +45,7 @@ jobs:
           - [ ] Documentation updated if needed
           
           *Reviewed with GitHub Copilot*
-          EOF
+          REVIEW_EOF
           
           # Post comment
           gh pr comment $PR_NUM --body-file review.md

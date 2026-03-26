@@ -241,7 +241,7 @@ export default function SettingsPage() {
     const newKey = {
       id: Date.now().toString(),
       name,
-      key: `sk_test_demo_${Math.random().toString(36).substring(2, 15)}`,
+      key: `demo_key_${Math.random().toString(36).substring(2, 15)}`,
       created: new Date().toISOString().split('T')[0]
     }
     

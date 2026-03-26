@@ -1,48 +1,12 @@
 name: OpenClaw Agent Automation
 
+# Disabled — requires OPENCLAW_TOKEN/URL secrets
 on:
-  schedule:
-    - cron: '0 8 * * *'  # Daily at 8am UTC
   workflow_dispatch:
-    inputs:
-      task:
-        description: 'Task to run'
-        required: true
-        default: 'health-check'
 
 jobs:
   automate:
     runs-on: ubuntu-latest
+    if: false
     steps:
-      - name: Run OpenClaw task
-        env:
-          OPENCLAW_TOKEN: ${{ secrets.OPENCLAW_TOKEN }}
-          OPENCLAW_URL: ${{ secrets.OPENCLAW_URL }}
-        run: |
-          echo "Running OpenClaw automation: ${{ github.event.inputs.task }}"
-          
-          case "${{ github.event.inputs.task }}" in
-            "health-check")
-              echo "Checking agent health..."
-              # Add health check commands
-              ;;
-            "report")
-              echo "Generating daily report..."
-              # Generate report
-              ;;
-            *)
-              echo "Unknown task"
-              ;;
-          esac
-
-      - name: Create issue on failure
-        if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "🤖 Automation Failed: ${{ github.event.inputs.task }}",
-              body: "Automation job failed. Check logs: ${{ github.run_id }}"
-            })
+      - run: echo "Disabled — configure OPENCLAW_TOKEN and OPENCLAW_URL secrets to enable"

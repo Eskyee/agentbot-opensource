@@ -1,38 +1,15 @@
-name: CI
+name: Contract Tests
 
-permissions: {}
-
+# Disabled — no Foundry project in this repo.
+# Re-enable when smart contracts are added.
 on:
-  push:
-  pull_request:
   workflow_dispatch:
-
-env:
-  FOUNDRY_PROFILE: ci
 
 jobs:
   check:
     name: Foundry project
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    if: false  # Disabled
     steps:
       - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
-          submodules: recursive
-
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
-      - name: Show Forge version
-        run: forge --version
-
-      - name: Run Forge fmt
-        run: forge fmt --check
-
-      - name: Run Forge build
-        run: forge build --sizes
-
-      - name: Run Forge tests
-        run: forge test -vvv
+      - run: echo "Foundry tests disabled — no contracts in this repo."
