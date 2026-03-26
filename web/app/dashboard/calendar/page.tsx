@@ -2,7 +2,13 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Breadcrumbs } from '@/app/components/Breadcrumbs'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import { SectionHeader } from '@/app/components/shared/SectionHeader'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 function CalendarPageContent() {
   const searchParams = useSearchParams()
@@ -20,7 +26,6 @@ function CalendarPageContent() {
   const connectCalendar = async () => {
     setLoading(true)
     try {
-      // No userId needed — API uses session auth
       const res = await fetch('/api/calendar?action=connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -41,7 +46,6 @@ function CalendarPageContent() {
     try {
       const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString()
       const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString()
-      // No userId in URL — API derives from session
       const res = await fetch(`/api/calendar?action=list&start=${start}&end=${end}`)
       const data = await res.json()
       setEvents(data.events || [])
@@ -79,125 +83,158 @@ function CalendarPageContent() {
     })
   }
 
+  const CalendarIcon = () => (
+    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="square" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
+  )
+
+  const ChevronLeft = () => (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="square" d="M15 19l-7-7 7-7" />
+    </svg>
+  )
+
+  const ChevronRight = () => (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="square" d="M9 5l7 7-7 7" />
+    </svg>
+  )
+
   return (
-    <div>
-      <div className="max-w-4xl mx-auto px-6 py-6">
-            <Breadcrumbs />
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Google Calendar</span>
-                <h1 className="text-3xl font-bold tracking-tighter uppercase mt-1">Calendar</h1>
-              </div>
-            {!connected ? (
-              <button
-                onClick={connectCalendar}
-                disabled={loading}
-                className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:opacity-50 transition-colors"
-              >
-                {loading ? 'Connecting...' : 'Connect Google Calendar'}
-              </button>
-            ) : (
+    <DashboardShell>
+      <DashboardHeader
+        title="Calendar"
+        icon={<CalendarIcon />}
+        action={
+          !connected ? (
+            <button
+              onClick={connectCalendar}
+              disabled={loading}
+              className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:opacity-50 px-4"
+            >
+              {loading ? 'Connecting...' : 'Connect Google Calendar'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-3">
+              <StatusPill status="active" label="Connected" size="sm" />
               <button
                 onClick={fetchEvents}
                 disabled={loading}
-                className="border border-zinc-800 px-4 py-2 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 disabled:opacity-50 transition-colors"
+                className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4 disabled:opacity-50"
               >
                 {loading ? 'Loading...' : 'Refresh'}
               </button>
-            )}
-          </div>
+            </div>
+          )
+        }
+      />
 
-          {connected ? (
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <button onClick={prevMonth} className="p-2 hover:bg-zinc-800 rounded-lg">←</button>
-                <h2 className="text-xl font-bold uppercase tracking-tighter">
-                  {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-                </h2>
-                <button onClick={nextMonth} className="p-2 hover:bg-zinc-800 rounded-lg">→</button>
-              </div>
-
-              <div className="grid grid-cols-7 gap-1 mb-2">
-                {dayNames.map(day => (
-                  <div key={day} className="text-left text-zinc-400 py-2 text-xs uppercase tracking-widest">{day}</div>
-                ))}
-              </div>
-
-              <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-                  <div key={`empty-${i}`} className="h-24 bg-zinc-900/50 rounded-lg" />
-                ))}
-                {Array.from({ length: daysInMonth }).map((_, i) => {
-                  const day = i + 1
-                  const dayEvents = getEventsForDay(day)
-                  const isToday = new Date().getDate() === day && 
-                    new Date().getMonth() === currentDate.getMonth() &&
-                    new Date().getFullYear() === currentDate.getFullYear()
-                  
-                  return (
-                    <div 
-                      key={day} 
-                      className={`h-24 bg-zinc-900 rounded-lg p-2 ${isToday ? 'border border-white' : ''}`}
-                    >
-                      <div className={`text-sm ${isToday ? 'text-white font-bold' : 'text-zinc-400'}`}>{day}</div>
-                      {dayEvents.slice(0, 2).map((event: any, idx: number) => (
-                        <div key={idx} className="text-xs bg-blue-900/50 text-blue-200 truncate rounded px-1 mt-1">
-                          {event.summary}
-                        </div>
-                      ))}
-                      {dayEvents.length > 2 && (
-                        <div className="text-xs text-zinc-500 mt-1">+{dayEvents.length - 2} more</div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div className="mt-8">
-                <h3 className="text-lg font-bold mb-4 uppercase tracking-tighter">Upcoming Events</h3>
-                <div className="space-y-2">
-                  {events.slice(0, 5).map((event: any) => (
-                    <div key={event.id} className="bg-zinc-900 rounded-lg p-4 flex justify-between items-center">
-                      <div>
-                        <div className="font-medium">{event.summary}</div>
-                        <div className="text-sm text-zinc-400">
-                          {new Date(event.start?.dateTime || event.start?.date).toLocaleString()}
-                        </div>
-                      </div>
-                      {event.location && (
-                        <div className="text-sm text-zinc-500">{event.location}</div>
-                      )}
-                    </div>
-                  ))}
-                  {events.length === 0 && (
-                    <div className="text-zinc-500 py-8">No upcoming events</div>
-                  )}
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="py-16">
-              <div className="text-6xl mb-4">📆</div>
-              <h2 className="text-2xl font-bold mb-2 uppercase tracking-tighter">Connect Your Calendar</h2>
-              <p className="text-sm text-zinc-400 mb-8 max-w-md">
-                Sync with Google Calendar to schedule events, manage availability, and let your agent handle bookings automatically.
-              </p>
-              <button
-                onClick={connectCalendar}
-                className="bg-white text-black px-6 py-3 rounded-lg font-medium hover:bg-zinc-200"
-              >
-                Connect Google Calendar
+      <DashboardContent className="max-w-5xl">
+        {connected ? (
+          <div className="space-y-6">
+            {/* Month navigation */}
+            <div className="flex items-center justify-between">
+              <button onClick={prevMonth} className="p-2 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white">
+                <ChevronLeft />
+              </button>
+              <h2 className="text-sm font-bold tracking-tight uppercase">
+                {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+              </h2>
+              <button onClick={nextMonth} className="p-2 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white">
+                <ChevronRight />
               </button>
             </div>
-          )}
-        </div>
-    </div>
+
+            {/* Day headers */}
+            <div className="grid grid-cols-7 gap-px bg-zinc-800">
+              {dayNames.map(day => (
+                <div key={day} className="bg-zinc-950 text-left text-zinc-500 py-2 px-2 text-[10px] uppercase tracking-widest">{day}</div>
+              ))}
+            </div>
+
+            {/* Calendar grid */}
+            <div className="grid grid-cols-7 gap-px bg-zinc-800">
+              {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                <div key={`empty-${i}`} className="h-24 bg-zinc-950/50" />
+              ))}
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const day = i + 1
+                const dayEvents = getEventsForDay(day)
+                const isToday = new Date().getDate() === day && 
+                  new Date().getMonth() === currentDate.getMonth() &&
+                  new Date().getFullYear() === currentDate.getFullYear()
+                
+                return (
+                  <div 
+                    key={day} 
+                    className={`h-24 bg-zinc-950 p-2 ${isToday ? 'border border-white' : 'border border-zinc-800'}`}
+                  >
+                    <div className={`text-xs ${isToday ? 'text-white font-bold' : 'text-zinc-500'}`}>{day}</div>
+                    {dayEvents.slice(0, 2).map((event: any, idx: number) => (
+                      <div key={idx} className="text-[10px] bg-blue-500/10 text-blue-400 truncate border border-blue-500/20 px-1 mt-1 py-0.5">
+                        {event.summary}
+                      </div>
+                    ))}
+                    {dayEvents.length > 2 && (
+                      <div className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest">+{dayEvents.length - 2} more</div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Upcoming Events */}
+            <div className="mt-8">
+              <SectionHeader
+                label="Schedule"
+                title="Upcoming Events"
+              />
+              <div className="space-y-px bg-zinc-800">
+                {events.slice(0, 5).map((event: any) => (
+                  <div key={event.id} className="bg-zinc-950 p-4 flex justify-between items-center">
+                    <div>
+                      <div className="text-sm font-bold tracking-tight uppercase">{event.summary}</div>
+                      <div className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest">
+                        {new Date(event.start?.dateTime || event.start?.date).toLocaleString()}
+                      </div>
+                    </div>
+                    {event.location && (
+                      <div className="text-[10px] text-zinc-500 uppercase tracking-widest">{event.location}</div>
+                    )}
+                  </div>
+                ))}
+                {events.length === 0 && (
+                  <div className="bg-zinc-950 text-zinc-500 py-8 text-center text-xs">No upcoming events</div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="py-16 text-center">
+            <svg className="h-16 w-16 text-zinc-700 mx-auto mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+              <path strokeLinecap="square" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <h2 className="text-sm font-bold tracking-tight uppercase mb-2">Connect Your Calendar</h2>
+            <p className="text-xs text-zinc-500 mb-8 max-w-md mx-auto">
+              Sync with Google Calendar to schedule events, manage availability, and let your agent handle bookings automatically.
+            </p>
+            <button
+              onClick={connectCalendar}
+              className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-6"
+            >
+              Connect Google Calendar
+            </button>
+          </div>
+        )}
+      </DashboardContent>
+    </DashboardShell>
   )
 }
 
 export default function CalendarPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<DashboardShell><DashboardContent><div className="text-zinc-500 text-xs">Loading...</div></DashboardContent></DashboardShell>}>
       <CalendarPageContent />
     </Suspense>
   )

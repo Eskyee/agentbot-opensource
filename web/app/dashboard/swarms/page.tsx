@@ -9,8 +9,8 @@ import {
   DashboardHeader,
   DashboardContent,
 } from '@/app/components/shared/DashboardShell'
-import { AgentCard } from '@/app/components/shared/AgentCard'
 import { EmptyState } from '@/app/components/shared/EmptyState'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 export default function SwarmsPage() {
   const [swarms, setSwarms] = useState<any[]>([])
@@ -30,7 +30,7 @@ export default function SwarmsPage() {
         count={swarms.length}
         action={
           <Button
-            className="bg-white text-black hover:bg-zinc-200 text-xs font-bold uppercase tracking-widest"
+            className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
             onClick={() => setShowCreate(true)}
           >
             <Plus className="h-4 w-4 mr-1" /> Create Swarm
@@ -38,7 +38,7 @@ export default function SwarmsPage() {
         }
       />
 
-      <DashboardContent className="max-w-6xl">
+      <DashboardContent>
         {swarms.length === 0 ? (
           <EmptyState
             icon={<Users className="h-8 w-8 text-zinc-600" />}
@@ -47,7 +47,7 @@ export default function SwarmsPage() {
             action={
               <Button
                 variant="outline"
-                className="border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest"
+                className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4"
                 onClick={() => setShowCreate(true)}
               >
                 Create your first swarm →
@@ -55,39 +55,34 @@ export default function SwarmsPage() {
             }
           />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-px bg-zinc-800">
             {swarms.map((swarm: any) => (
-              <AgentCard key={swarm.id}>
+              <div key={swarm.id} className="bg-zinc-950 border border-zinc-800 p-5">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-bold">{swarm.name}</h3>
-                    <p className="text-sm text-zinc-400 mt-1">{swarm.description}</p>
+                    <h3 className="text-sm font-bold uppercase tracking-tight">{swarm.name}</h3>
+                    <p className="text-xs text-zinc-500 mt-1">{swarm.description}</p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="border-green-500/30 text-green-400"
-                  >
-                    {swarm.agents.length} agents
-                  </Badge>
+                  <StatusPill status="active" label={`${swarm.agents.length} agents`} size="sm" />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800">
                   {swarm.agents.map((agent: any, i: number) => (
                     <div
                       key={i}
-                      className="bg-black/30 border border-zinc-800 rounded-lg p-4"
+                      className="bg-zinc-950 border border-zinc-800 p-4"
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Bot className="h-4 w-4 text-zinc-500" />
-                        <span className="text-sm font-medium">{agent.role}</span>
+                        <Bot className="h-4 w-4 text-zinc-600" />
+                        <span className="text-xs font-bold uppercase tracking-tight">{agent.role}</span>
                       </div>
-                      <div className="text-xs text-zinc-400">{agent.model}</div>
+                      <div className="text-[10px] text-zinc-600 uppercase tracking-widest">{agent.model}</div>
                       <div className="text-xs text-zinc-500 mt-2 font-mono">
                         {agent.prompt}
                       </div>
                     </div>
                   ))}
                 </div>
-              </AgentCard>
+              </div>
             ))}
           </div>
         )}
