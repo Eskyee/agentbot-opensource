@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 const SOUL_URLS = [
   'https://borg-0-production.up.railway.app',
@@ -21,7 +20,7 @@ async function fetchSoulThoughts(url: string) {
 
 export async function GET() {
   // Require authentication
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.email) {
     // Return empty traces for unauthenticated users instead of error
     return NextResponse.json([])

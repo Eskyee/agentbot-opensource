@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys';
 
 function getAdminEmails(): string[] {
@@ -16,7 +15,7 @@ function isAdmin(email: string | null | undefined): boolean {
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
 
     // Use ADMIN_EMAILS env var — role field is not exposed in JWT/session
     if (!session?.user?.email || !isAdmin(session.user.email)) {

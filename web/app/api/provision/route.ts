@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
 
 /**
@@ -25,7 +24,7 @@ import { prisma } from '@/app/lib/prisma'
 export async function POST(request: NextRequest) {
   try {
     // 1. Require an authenticated session
-    const session = await getServerSession(authOptions)
+    const session = await getAuthSession()
     if (!session?.user?.id || !session.user.email) {
       return NextResponse.json({
         success: false,

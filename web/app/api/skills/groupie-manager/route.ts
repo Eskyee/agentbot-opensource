@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 interface Fan {
   id: string;
@@ -57,14 +56,14 @@ export async function POST(request: NextRequest) {
     // Auth required in production, optional in demo mode
     const isDemoMode = process.env.SKIP_AUTH_FOR_DEMO === 'true';
     if (!isDemoMode) {
-      const session = await getServerSession(authOptions);
+      const session = await getAuthSession();
       if (!session?.user?.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
     }
 
     // Demo mode - no auth required for now (would use getServerSession in production)
-    // const session = await getServerSession(authOptions);
+    // const session = await getAuthSession();
     // if (!session?.user?.id) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     // }

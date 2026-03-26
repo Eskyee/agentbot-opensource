@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { GATEWAY_CONFIG } from './temp';
 import {
   getPaymentMethod,
@@ -93,7 +92,7 @@ export async function POST(req: NextRequest) {
     // 5. Check authentication for protected plugins
     const plugin = GATEWAY_CONFIG.plugins[pluginName as keyof typeof GATEWAY_CONFIG.plugins];
     if (plugin?.auth) {
-      const session = await getServerSession(authOptions);
+      const session = await getAuthSession();
       if (!session?.user?.email) {
         // Allow MPP-authenticated requests without session
         if (paymentMethod !== 'mpp' || !mppReceipt) {

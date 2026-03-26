@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { SecureRoute } from '@/app/lib/secure-route'
 import { SecurityMiddleware } from '@/app/lib/security-middleware'
@@ -9,7 +8,7 @@ import { SecurityMiddleware } from '@/app/lib/security-middleware'
 // Protected with: Auth, Rate Limiting, Injection Prevention, DDoS Protection
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }

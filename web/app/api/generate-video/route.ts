@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { generateDemoVideo, generateMarketingVideo, animateScreenshot, generateTutorialVideo } from '@/app/lib/video';
 import { put } from '@vercel/blob';
 
@@ -8,7 +7,7 @@ export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   // Authentication check - video generation uses paid AI APIs
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

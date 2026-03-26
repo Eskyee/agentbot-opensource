@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 const BANKR_API_URL = process.env.BANKR_API_URL || 'https://api.bankr.bot';
 const BANKR_API_KEY = process.env.BANKR_API_KEY;
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'raveculture@icloud.com').split(',').map(e => e.trim().toLowerCase());
 
 async function requireAdmin() {
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email.toLowerCase())) {
     return null;
   }

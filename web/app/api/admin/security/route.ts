@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 /**
  * Security monitoring endpoint - ADMIN ONLY
@@ -8,7 +7,7 @@ import { authOptions } from '@/app/lib/auth'
  */
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getAuthSession()
     
     // Verify admin access
     if (!session?.user?.email) {

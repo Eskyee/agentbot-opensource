@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/lib/auth';
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import {
   createAgentWallet,
   getAgentMPPWallets,
@@ -11,7 +10,7 @@ import {
 } from '@/lib/mpp';
 
 export async function GET(request: NextRequest) {
-  const authSession = await getServerSession(authOptions);
+  const authSession = await getAuthSession();
   if (!authSession?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -59,7 +58,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const authSession = await getServerSession(authOptions);
+  const authSession = await getAuthSession();
   if (!authSession?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

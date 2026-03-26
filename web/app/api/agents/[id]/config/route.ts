@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/lib/auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
@@ -8,7 +7,7 @@ import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
  * Verify the authenticated user owns the agent. Returns null if unauthorized.
  */
 async function verifyAgentOwnership(agentId: string) {
-  const session = await getServerSession(authOptions)
+  const session = await getAuthSession()
   if (!session?.user?.id) return null
   const agent = await prisma.agent.findFirst({
     where: { id: agentId, userId: session.user.id }
