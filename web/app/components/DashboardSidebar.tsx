@@ -50,6 +50,7 @@ export const navSections = [
   {
     label: 'Platform',
     items: [
+      { label: 'Borg', href: 'https://borg-0-production.up.railway.app/dashboard', icon: '⬢', external: true },
       { label: 'Cost Tracking', href: '/dashboard/cost', icon: '$' },
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '♥' },
       { label: 'Heartbeat', href: '/dashboard/heartbeat', icon: '♡' },
@@ -121,21 +122,30 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
                 {section.label}
               </div>
               <div className="space-y-0.5">
-                {section.items.map((item) => (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    onClick={onToggle}
-                    className={`flex items-center gap-2.5 px-4 py-2 text-xs transition-colors ${
-                      pathname === item.href || pathname.startsWith(item.href + '/')
-                        ? 'bg-zinc-900 text-white'
-                        : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
-                    }`}
-                  >
-                    <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </Link>
-                ))}
+                {section.items.map((item) => {
+                  const isExternal = 'external' in item && item.external
+                  const isActive = !isExternal && (pathname === item.href || pathname.startsWith(item.href + '/'))
+                  const cls = `flex items-center gap-2.5 px-4 py-2 text-xs transition-colors ${
+                    isActive
+                      ? 'bg-zinc-900 text-white'
+                      : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                  }`
+                  if (isExternal) {
+                    return (
+                      <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                        <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                        <span>{item.label}</span>
+                        <span className="text-[8px] text-zinc-700 ml-auto">↗</span>
+                      </a>
+                    )
+                  }
+                  return (
+                    <Link key={item.label} href={item.href} onClick={onToggle} className={cls}>
+                      <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </Link>
+                  )
+                })}
               </div>
             </div>
           ))}
