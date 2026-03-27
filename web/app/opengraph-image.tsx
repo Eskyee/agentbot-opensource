@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Agentbot — Deploy AI Agents in 60 Seconds'
+export const alt = 'Agentbot — Focus on the Work. Agents Handle the Rest.'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -87,7 +87,7 @@ export default async function Image() {
             letterSpacing: '0.5px',
           }}
         >
-          Deploy AI Agents in 60 Seconds
+          Focus on the Work. Agents Handle the Rest.
         </div>
 
         {/* Plans row */}
