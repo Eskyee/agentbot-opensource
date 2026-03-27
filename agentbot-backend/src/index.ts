@@ -1122,6 +1122,8 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
 // In production, a DB failure is fatal — don't serve traffic with a broken schema.
 initDatabase().then(() => {
   console.log('[DB] Ready');
+  // Start scheduler only after schema is confirmed ready — avoids 42P01 race on boot
+  startScheduler();
 }).catch(err => {
   console.error('[DB] Init error:', err.message);
   if (process.env.NODE_ENV === 'production') {
@@ -1162,10 +1164,8 @@ app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
-  
-  // Start inline scheduler (replaces separate worker service)
-  startScheduler();
-  
+  // Note: startScheduler() is called after initDatabase() resolves (above) — not here
+
   if (process.env.NODE_ENV === 'production') {
     startAutoUpdater();
   }

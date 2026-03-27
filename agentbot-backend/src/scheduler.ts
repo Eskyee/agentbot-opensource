@@ -59,6 +59,11 @@ async function processScheduledTasks(): Promise<void> {
       ).catch(err => console.error(`[Scheduler] Failed to mark task completed:`, err));
     }
   } catch (err: any) {
+    // 42P01 = undefined_table — DB schema not ready yet (race on first boot)
+    if (err.code === '42P01') {
+      console.warn('[Scheduler] scheduled_tasks table not ready yet — will retry next tick');
+      return;
+    }
     console.error('[Scheduler] Error processing tasks:', err.message);
   }
 }
