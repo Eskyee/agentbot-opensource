@@ -151,7 +151,7 @@ export default function MarketIntelPage() {
         {/* Opportunity map */}
         <section>
           <h2 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-4">Opportunity Map</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-800">
             {[
               { title: 'DJ / Creative AI', gap: 'No competitor owns the music-creator segment', action: 'Double down on DJ Stream + $BASEFM ecosystem' },
               { title: 'Wallet-native Auth', gap: 'Competitors rely on email auth only', action: 'SIWE + Base smart wallet is a genuine moat' },

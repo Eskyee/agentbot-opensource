@@ -75,7 +75,7 @@ export default function FinancePage() {
         </div>
 
         {/* Charts & Tables */}
-        <div className="grid gap-px bg-zinc-800 lg:grid-cols-1 sm:grid-cols-2">
+        <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-2">
           <div className="bg-zinc-950 border border-zinc-800 p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-sm font-bold tracking-tight uppercase">Spend Attribution</h2>
@@ -98,7 +98,7 @@ export default function FinancePage() {
         </div>
 
         {/* Wallet & Treasury */}
-        <div className="grid gap-px bg-zinc-800 lg:grid-cols-1 sm:grid-cols-2 mt-8">
+        <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-2 mt-8">
           <div className="bg-zinc-950 border border-zinc-800 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">

@@ -150,8 +150,8 @@ export default function AnalyticsPage() {
             <h2 className="text-sm font-bold tracking-tight uppercase mb-6">Top Skills</h2>
             <div className="space-y-4">
               {data.topSkills.map(skill => (
-                <div key={skill.name} className="flex items-center justify-between">
-                  <span className="text-xs text-zinc-300">{skill.name}</span>
+                <div key={skill.name} className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-zinc-300 min-w-0 truncate">{skill.name}</span>
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-zinc-500">{skill.usage} uses</span>
                     <div className="w-20 h-1 bg-zinc-800">

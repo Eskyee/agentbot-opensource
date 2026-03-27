@@ -221,7 +221,7 @@ export function MetricsCard({ userId }: { userId?: string }) {
               <div className={`text-6xl font-bold font-mono ${healthColor}`}>{healthScore}</div>
               <div className="text-sm text-zinc-400 mt-1">{healthLabel}</div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {[
                 { label: 'Revenue', weight: '30%', active: parseFloat(metrics.revenue.month.replace(/[$,]/g, '')) > 0 },
                 { label: 'Bookings', weight: '25%', active: parseFloat(metrics.bookings.conversion.replace('%', '')) >= 50 },

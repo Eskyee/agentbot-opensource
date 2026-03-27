@@ -51,7 +51,7 @@ export default function TourManagementPage() {
         title="Tour Management"
         icon={<Calendar className="h-5 w-5 text-blue-400" />}
         action={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowAddForm(!showAddForm)}
               className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-4"

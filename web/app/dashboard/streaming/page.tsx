@@ -55,7 +55,7 @@ export default function StreamingPage() {
         </div>
 
         {/* Platform Cards */}
-        <div className="grid gap-px bg-zinc-800 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {connectedPlatforms.map(platform => (
             <div key={platform.id} className="bg-zinc-950 border border-zinc-800 p-5">
               <div className="flex items-center justify-between mb-4">

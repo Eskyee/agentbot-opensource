@@ -242,7 +242,7 @@ export default function CostPage() {
           <div className="space-y-3">
             {modelBreakdown.map((m) => (
               <div key={m.model} className="flex items-center gap-4">
-                <div className="w-40 text-xs font-mono text-zinc-400 truncate">{m.model}</div>
+                <div className="w-24 sm:w-40 text-xs font-mono text-zinc-400 truncate">{m.model}</div>
                 <div className="flex-1 bg-zinc-800 h-1.5 overflow-hidden">
                   <div className="h-full bg-blue-500" style={{ width: `${m.percent}%` }} />
                 </div>

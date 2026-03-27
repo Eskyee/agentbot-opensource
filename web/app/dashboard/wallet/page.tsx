@@ -289,7 +289,7 @@ export default function WalletPage() {
                 </div>
                 {mppSession ? (
                   <>
-                    <div className="grid gap-px bg-zinc-800 grid-cols-3 mb-4">
+                    <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-3 mb-4">
                       <div className="bg-zinc-950 p-3">
                         <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Deposited</span>
                         <span className="text-lg font-bold tracking-tight">${mppSession.deposit}</span>

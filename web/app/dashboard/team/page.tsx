@@ -96,7 +96,7 @@ export default function TeamPage() {
         </div>
 
         {/* Category tabs */}
-        <div className="flex gap-2 border-b border-zinc-800 pb-3">
+        <div className="flex gap-2 border-b border-zinc-800 pb-3 overflow-x-auto">
           {categories.map(cat => (
             <button
               key={cat.key}

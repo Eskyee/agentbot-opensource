@@ -237,8 +237,8 @@ export default function KeysPage() {
                 </div>
 
                 <div className="mb-4 p-3 border border-zinc-800 bg-black">
-                  <div className="flex items-center justify-between">
-                    <code className="text-xs text-zinc-300 font-mono">
+                  <div className="flex items-center justify-between gap-2">
+                    <code className="text-xs text-zinc-300 font-mono truncate min-w-0 flex-1">
                       {visibleKeys.has(key.id) ? key.key : maskKey(key.key)}
                     </code>
                     <div className="flex gap-2">

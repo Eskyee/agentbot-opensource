@@ -106,7 +106,7 @@ export default function SystemPulsePage() {
         title="System Pulse"
         icon={<Activity className="h-5 w-5 text-blue-400" />}
         action={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <StatusPill status="active" label="Operational" size="sm" />
             {isMockData && (
               <span className="text-[10px] text-yellow-400 bg-yellow-900/20 border border-yellow-800 px-2 py-0.5 font-mono uppercase tracking-widest">
@@ -284,7 +284,7 @@ export default function SystemPulsePage() {
             <div className="space-y-3">
               {modelBreakdown.map(m => (
                 <div key={m.model} className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-zinc-500 w-40 truncate">{m.model}</span>
+                  <span className="text-xs font-mono text-zinc-500 w-24 sm:w-40 truncate">{m.model}</span>
                   <div className="flex-1 bg-zinc-800 h-2 overflow-hidden">
                     <div
                       className="h-full bg-blue-500 transition-all duration-500"

@@ -477,7 +477,7 @@ function DashboardContent() {
           </div>
 
           {/* System Vitals */}
-          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">CPU</span>
@@ -526,7 +526,7 @@ function DashboardContent() {
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
                 Agent Details
