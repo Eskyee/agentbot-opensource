@@ -41,6 +41,7 @@ interface AgentConfig {
   updatedAt: Date;
   websocketUrl: string;
   config: Record<string, any>;
+  algorithmMode?: boolean;
 }
 
 /**
