@@ -16,11 +16,12 @@ interface CheckResult {
 // GET /api/agents/preflight/:action?agentId=xxx
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ action: string }> }
 ) {
   try {
-    const { action } = await params;
-    const agentId = req.nextUrl.searchParams.get('agentId');
+    const url = req.nextUrl;
+    const agentId = url.searchParams.get('agentId');
+    // Extract action from query param or default
+    const action = url.searchParams.get('action') || 'setup';
 
     if (!agentId) {
       return NextResponse.json({ error: 'agentId is required' }, { status: 400 });
