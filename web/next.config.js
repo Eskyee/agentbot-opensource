@@ -4,6 +4,9 @@ const nextConfig = {
   poweredByHeader: false,
   output: 'standalone',
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
+  turbopack: {
+    root: __dirname,
+  },
   async redirects() {
     return [
       {

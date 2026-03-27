@@ -11,16 +11,15 @@ import { verifyCSRFToken, getCSRFTokenFromHeader } from './csrf'
 // For production, set REDIS_URL + REDIS_TOKEN for persistent rate limiting.
 let redis: Redis | null = null
 try {
-  const redisUrl = process.env.REDIS_URL
-  if (redisUrl && !redisUrl.includes('localhost')) {
-    redis = new Redis({
-      url: redisUrl,
-      token: process.env.REDIS_TOKEN || '',
-    })
+  // Upstash REST client needs the https:// URL (KV_REST_API_URL) + REST token (KV_REST_API_TOKEN)
+  // REDIS_URL is a rediss:// direct connection string — not compatible with REST client
+  const restUrl = process.env.KV_REST_API_URL
+  const restToken = process.env.KV_REST_API_TOKEN
+  if (restUrl && restToken && !restUrl.includes('localhost')) {
+    redis = new Redis({ url: restUrl, token: restToken })
     console.log('[SECURITY] Redis rate limiting enabled')
   }
-  // Note: In-memory rate limiting is fine for demos and low-traffic deployments.
-  // Set REDIS_URL for persistent rate limiting in production.
+  // In-memory fallback is fine for low-traffic; set KV_REST_API_URL + KV_REST_API_TOKEN for production.
 } catch (error) {
   console.warn('[SECURITY] Redis not available, using in-memory rate limiting')
 }
