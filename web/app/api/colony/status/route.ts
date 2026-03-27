@@ -6,6 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession';
 import { SoulClient } from '@/lib/soul';
 import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem';
 import { tempo } from 'viem/chains';
@@ -58,6 +59,11 @@ async function getTempoBalance(address: Address): Promise<{ formatted: string; t
 }
 
 export async function GET(request: Request) {
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action') || 'tree';
 
