@@ -4,7 +4,7 @@
 **Status:** Active — Phase 1 Complete
 **Priority:** Critical — v2 differentiator
 **Reference:** [tempo-x402](https://github.com/compusophy/tempo-x402) v3.0.0 (crates.io, MIT)
-**Live Node:** https://borg-0-production.up.railway.app
+**Live Node:** https://YOUR_SERVICE_URL
 
 ## What We're Integrating
 
@@ -78,7 +78,7 @@ x402-gateway:
     - TEMPO_RPC_URL=https://rpc.moderato.tempo.xyz
     - FACILITATOR_PRIVATE_KEY=<from_vault>
     - PLATFORM_REGISTRATION_FEE=1.0
-    - PLATFORM_WALLET=0xd8fd0e1dce89beaab924ac68098ddb17613db56f
+    - PLATFORM_WALLET=0xYOUR_WALLET_ADDRESS_HERE
     - DATABASE_URL=sqlite:///data/x402.db
   disk:
     mountPath: /data

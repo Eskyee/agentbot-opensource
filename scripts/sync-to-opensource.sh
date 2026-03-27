@@ -55,6 +55,20 @@ rsync -a --delete \
   --exclude='*.log' \
   --exclude='web/.github/' \
   --exclude='x402-tempo/' \
+  \
+  `# ── Internal-only files/dirs — not for public contributors ──────────` \
+  --exclude='AUDIT-*.md' \
+  --exclude='AUDIT_REPORT_*.md' \
+  --exclude='SESSION_NOTES.md' \
+  --exclude='TASKS.md' \
+  --exclude='SECRETS.md' \
+  --exclude='SECRETS_CHECKLIST.md' \
+  --exclude='CODE_REVIEW.md' \
+  --exclude='*.docx' \
+  --exclude='dashboard.html' \
+  --exclude='memory/' \
+  --exclude='.claire/' \
+  --exclude='CLAUDE.md' \
   "$PRIVATE_ROOT/" "$TEMP_DIR/"
 
 # ── 4. Strip secrets globally ────────────────────────────────────────────────

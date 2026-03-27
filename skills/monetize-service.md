@@ -4,7 +4,7 @@ Agentbot supports x402 payment protocol for creating paid API endpoints. Agents 
 
 ## Payment Address
 
-- **Wallet:** `0xd8fd0e1dce89beaab924ac68098ddb17613db56f` (Bankr)
+- **Wallet:** `0xYOUR_WALLET_ADDRESS_HERE` (Bankr)
 - **Network:** Base (eip155:8453)
 
 ## How It Works
@@ -73,7 +73,7 @@ npx awal x402 pay https://agentbot.raveculture.xyz/api/your-endpoint
 ## Environment Variables
 
 ```bash
-X402_PAY_TO=0xd8fd0e1dce89beaab924ac68098ddb17613db56f
+X402_PAY_TO=0xYOUR_WALLET_ADDRESS_HERE
 X402_FACILITATOR_URL=https://x402.org/facilitator
 ```
 
