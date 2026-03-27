@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
 
 const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'model', 'skills', 'deploy', 'done']
+const DEPLOY_FLOW_STEPS: Step[] = ['ai', 'deploy', 'done']
 
 const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
 
@@ -53,7 +54,7 @@ function OnboardContent() {
     { id: 'file-handler', name: 'File Handler', description: 'Read, write, and process files', icon: '📁' },
     { id: 'code-interpreter', name: 'Code Runner', description: 'Execute code snippets safely', icon: '💻' },
     { id: 'image-analyzer', name: 'Image Analyzer', description: 'Analyze and describe images', icon: '🖼️' },
-    { id: ' scheduler', name: 'Scheduler', description: 'Schedule tasks and reminders', icon: '⏰' },
+    { id: 'scheduler', name: 'Scheduler', description: 'Schedule tasks and reminders', icon: '⏰' },
     { id: 'email-sender', name: 'Email Sender', description: 'Send emails via SMTP', icon: '📧' },
     { id: 'api-caller', name: 'API Caller', description: 'Make HTTP requests', icon: '🌐' },
     { id: 'database-query', name: 'Database Query', description: 'Query databases', icon: '🗄️' }
@@ -79,6 +80,14 @@ function OnboardContent() {
       })
       .catch(() => {})
   }, [])
+
+  // Deploy mode: skip Telegram setup, start at AI key step
+  useEffect(() => {
+    if (mode === 'deploy') {
+      setStep('ai')
+      setAgentType('business')
+    }
+  }, [mode])
 
   useEffect(() => {
     // Handle payment status messages
@@ -148,19 +157,21 @@ function OnboardContent() {
         userEmail = sessionData?.user?.email || ''
       } catch {}
 
+      const isDeployMode = mode === 'deploy'
       const res = await fetch('/api/provision', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
         body: JSON.stringify({
-          telegramToken,
-          telegramUserId,
+          telegramToken: isDeployMode ? '' : telegramToken,
+          telegramUserId: isDeployMode ? '' : telegramUserId,
           aiProvider,
           apiKey,
           plan,
           model: selectedModel,
           skills: selectedSkills,
-          agentType,
+          agentType: isDeployMode ? 'business' : agentType,
+          autoProvision: isDeployMode,
           email: userEmail
         })
       })
@@ -259,17 +270,21 @@ function OnboardContent() {
       {/* Progress */}
       <div className="mb-12 overflow-x-auto pb-2">
         <div className="flex min-w-max items-center gap-2 px-2">
-          {FLOW_STEPS.map((s, i) => (
+          {(mode === 'deploy' ? DEPLOY_FLOW_STEPS : FLOW_STEPS).map((s, i) => {
+            const activeSteps = mode === 'deploy' ? DEPLOY_FLOW_STEPS : FLOW_STEPS
+            const currentIdx = activeSteps.indexOf(step)
+            return (
             <div key={s} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                step === s ? 'bg-white text-black' : 
-                FLOW_STEPS.indexOf(step) > i ? 'bg-green-500 text-white' : 'bg-zinc-3 text-zinc-7'
+                step === s ? 'bg-white text-black' :
+                currentIdx > i ? 'bg-green-500 text-white' : 'bg-zinc-800 text-zinc-500'
               }`}>
-                {FLOW_STEPS.indexOf(step) > i ? '✓' : i + 1}
+                {currentIdx > i ? '✓' : i + 1}
               </div>
-              {i < FLOW_STEPS.length - 1 && <div className="w-8 h-0.5 bg-zinc-3" />}
+              {i < activeSteps.length - 1 && <div className="w-8 h-0.5 bg-zinc-800" />}
             </div>
-          ))}
+            )
+          })}
         </div>
       </div>
 
@@ -475,13 +490,13 @@ function OnboardContent() {
             
             <div className="flex gap-3 mt-8">
               <button
-                onClick={() => setStep('token')}
+                onClick={() => setStep('userid')}
                 className="px-6 py-3 border border-zinc-700 text-zinc-300 rounded-lg font-medium hover:bg-zinc-800 transition-colors"
               >
                 ← Back
               </button>
               <button
-                onClick={() => setStep('agenttype')}
+                onClick={() => setStep('ai')}
                 className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors"
               >
                 Continue →
@@ -599,18 +614,20 @@ function OnboardContent() {
               )}
               
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                {mode !== 'deploy' && (
+                  <button
+                    onClick={() => setStep('token')}
+                    className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
+                  >
+                    ← Back
+                  </button>
+                )}
                 <button
-                  onClick={() => setStep('token')}
-                  className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
-                >
-                  ← Back
-                </button>
-                <button
-                  onClick={() => setStep(aiProvider === 'openrouter' ? 'model' : 'skills')}
+                  onClick={() => mode === 'deploy' ? setStep('deploy') : setStep(aiProvider === 'openrouter' ? 'model' : 'skills')}
                   disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq') && !apiKey}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
-                  {aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
+                  {mode === 'deploy' ? 'Deploy OpenClaw →' : aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
                 </button>
               </div>
             </div>
@@ -917,53 +934,93 @@ function OnboardContent() {
           </div>
         )}
         
-        {/* Step 5: Done */}
+        {/* Done */}
         {step === 'done' && result && (
           <div>
             <div className="text-6xl mb-6">🎉</div>
             <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">You&apos;re Live!</h2>
-            <p className="text-sm text-zinc-400 mb-8">Your AI assistant is ready to chat.</p>
-            
-            <div className="bg-zinc-800 rounded-xl p-6 mb-8 text-left">
-              <p className="text-sm font-semibold text-zinc-400 mb-4 flex items-center gap-2">
-                <span className="text-lg">📡</span> Broadcast Credentials (OBS)
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Server URL</label>
-                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">rtmps://global-live.mux.com:443/app</p>
+            <p className="text-sm text-zinc-400 mb-8">
+              {mode === 'deploy' ? 'Your OpenClaw business agent is running.' : 'Your AI assistant is ready to chat.'}
+            </p>
+
+            {mode === 'deploy' ? (
+              <>
+                <div className="bg-zinc-800 rounded-xl p-6 mb-8 text-left">
+                  <p className="text-sm font-semibold text-zinc-400 mb-4 flex items-center gap-2">
+                    <span className="text-lg">🦞</span> OpenClaw Dashboard
+                  </p>
+                  <div>
+                    <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Your Instance URL</label>
+                    <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">
+                      {result.url}
+                    </p>
+                  </div>
+                  <p className="text-[10px] text-zinc-500 mt-4">
+                    Bookmark this URL — it&apos;s your OpenClaw control panel.
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Stream Key</label>
-                  <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">{result.streamKey || 'Generating...'}</p>
+
+                <div className="space-y-4">
+                  <a
+                    href={result.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors text-center"
+                  >
+                    Open OpenClaw Dashboard →
+                  </a>
+                  <a
+                    href="/dashboard"
+                    className="block w-full bg-zinc-800 py-3 rounded-lg font-semibold hover:bg-zinc-700 transition-colors text-center"
+                  >
+                    Go to Mission Control
+                  </a>
                 </div>
-              </div>
-              <p className="text-[10px] text-zinc-500 mt-4">
-                Paste these into OBS to start your station. Do not share your Stream Key.
-              </p>
-            </div>
-            
-            <div className="bg-zinc-800 rounded-xl p-6 mb-8">
-              <p className="text-sm text-zinc-400 mb-2">Open Telegram and message:</p>
-              <p className="text-xl font-mono">@{botInfo?.username}</p>
-            </div>
-            
-            <div className="space-y-4">
-              <a
-                href={`https://t.me/${botInfo?.username}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full bg-blue-500 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors"
-              >
-                Open in Telegram →
-              </a>
-              <a
-                href={`/dashboard?id=${result.userId}`}
-                className="block w-full bg-zinc-800 py-3 rounded-lg font-semibold hover:bg-zinc-700 transition-colors"
-              >
-                Go to Dashboard
-              </a>
-            </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-zinc-800 rounded-xl p-6 mb-8 text-left">
+                  <p className="text-sm font-semibold text-zinc-400 mb-4 flex items-center gap-2">
+                    <span className="text-lg">📡</span> Broadcast Credentials (OBS)
+                  </p>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Server URL</label>
+                      <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">rtmps://global-live.mux.com:443/app</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Stream Key</label>
+                      <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">{result.streamKey || 'Generating...'}</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-zinc-500 mt-4">
+                    Paste these into OBS to start your station. Do not share your Stream Key.
+                  </p>
+                </div>
+
+                <div className="bg-zinc-800 rounded-xl p-6 mb-8">
+                  <p className="text-sm text-zinc-400 mb-2">Open Telegram and message:</p>
+                  <p className="text-xl font-mono">@{botInfo?.username}</p>
+                </div>
+
+                <div className="space-y-4">
+                  <a
+                    href={`https://t.me/${botInfo?.username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full bg-blue-500 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors text-center"
+                  >
+                    Open in Telegram →
+                  </a>
+                  <a
+                    href={`/dashboard?id=${result.userId}`}
+                    className="block w-full bg-zinc-800 py-3 rounded-lg font-semibold hover:bg-zinc-700 transition-colors text-center"
+                  >
+                    Go to Dashboard
+                  </a>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
