@@ -761,16 +761,18 @@ function OnboardContent() {
         {/* Step 7: Deploy */}
         {step === 'deploy' && (
           <div>
-            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-6">Step 7: Deploy Your Assistant</h2>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-6">{mode === 'deploy' ? 'Deploy OpenClaw' : 'Step 7: Deploy Your Assistant'}</h2>
             
             <div className="space-y-6">
               <div className="bg-zinc-800 rounded-xl p-6">
                 <h3 className="font-semibold mb-4">Summary</h3>
                 <dl className="space-y-2 text-sm">
+                  {mode !== 'deploy' && (
                   <div className="flex justify-between">
                     <dt className="text-zinc-400">Telegram Bot</dt>
                     <dd>@{botInfo?.username}</dd>
                   </div>
+                  )}
                   <div className="flex justify-between">
                     <dt className="text-zinc-400">AI Provider</dt>
                     <dd>{aiProvider === 'openrouter' ? 'OpenRouter (Free)' : 
@@ -878,7 +880,7 @@ function OnboardContent() {
               
               <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                 <button
-                  onClick={() => setStep('agenttype')}
+                  onClick={() => setStep(mode === 'deploy' ? 'ai' : 'agenttype')}
                   className="w-full rounded-lg border border-zinc-700 px-6 py-3 hover:bg-zinc-800 transition-colors sm:w-auto"
                 >
                   ← Back
