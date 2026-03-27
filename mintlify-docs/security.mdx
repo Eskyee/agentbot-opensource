@@ -22,6 +22,10 @@ Agentbot is committed to keeping your data safe. Here's our security posture.
 | A2A Authentication | ✅ | Message verification enforced before delivery |
 | Audit Logging | ✅ | All actions logged, including per-payment audit trail |
 | Payment Validation | ✅ | Amount limits ($100 max), recipient address format verification (EVM/Solana) |
+| Webhook Signatures | ✅ | Svix verification (Resend), timing-safe secret (Railway), `constructEvent` (Stripe) |
+| CSPRNG Tokens | ✅ | Invite codes and agent IDs use `crypto.randomBytes` |
+| Session Signing | ✅ | Farcaster session tokens are HMAC-SHA256 signed with expiry |
+| File Upload Safety | ✅ | Dotfile rejection, filename sanitization, 128-character limit |
 
 ## Skill Security Matrix
 
@@ -279,8 +283,9 @@ The `/api/security/risc` endpoint validates incoming SET JWTs by:
 
 1. Verifying the issuer is `https://accounts.google.com/`
 2. Checking the audience matches a configured `GOOGLE_CLIENT_ID`
-3. Fetching Google's RISC signing keys from the well-known configuration endpoint (cached for 24 hours)
+3. Fetching Google's RISC signing keys from the JWKS endpoint discovered via `https://accounts.google.com/.well-known/risc-configuration` (keys are cached for 24 hours)
 4. Matching the signing key by `kid` header claim
+5. Verifying the RS256 signature using the Web Crypto API (`crypto.subtle`) with the matched RSA public key
 
 ### Security response
 

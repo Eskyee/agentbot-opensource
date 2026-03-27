@@ -175,7 +175,7 @@ Returns the USDC balance for an agent wallet. Requires bearer token authenticati
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `userId` | string | Yes | User identifier for authorization |
+| `userId` | number | Yes | User identifier for authorization. The value is cast to a number before being passed to the wallet service. |
 
 ### Response
 
@@ -199,7 +199,7 @@ Returns the USDC balance for an agent wallet. Requires bearer token authenticati
 POST /api/underground/splits
 ```
 
-Creates and queues a royalty split for background execution. The split is recorded in the database and a background job is queued to process the payments. Requires bearer token authentication.
+Creates and executes a royalty split. The split is recorded in the database and processed inline. Requires bearer token authentication.
 
 ### Request body
 
@@ -220,14 +220,14 @@ Creates and queues a royalty split for background execution. The split is record
 {
   "success": true,
   "splitId": 1,
-  "status": "queued"
+  "status": "completed"
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `splitId` | number | Identifier of the created split |
-| `status` | string | Always `queued` — the split is processed asynchronously via a background job |
+| `status` | string | `completed` — the split is processed synchronously when the request is made |
 
 ### Errors
 

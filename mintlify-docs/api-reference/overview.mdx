@@ -128,7 +128,7 @@ curl -X POST https://agentbot.raveculture.xyz/api/ai/chat \
 | 400 | Bad request or validation error |
 | 401 | Unauthorized (missing or invalid authentication) |
 | 402 | Payment required — a paid subscription is mandatory for all agent provisioning and usage. The minimum plan is `solo`. Also returned when an [MPP](/payments/mpp) credential is missing for gateway requests. Requests using the deprecated `free` plan value receive this status. |
-| 403 | Forbidden (insufficient permissions, token gating failure, bot detection, or missing CSRF token) |
+| 403 | Forbidden (insufficient permissions, token gating failure, bot detection, missing CSRF token, or missing active subscription). Non-admin users without an active subscription who attempt to provision an agent receive a `403` with the message `Active subscription required`. |
 | 404 | Resource not found |
 | 429 | Too many requests or tier limit reached |
 | 500 | Internal server error |
@@ -146,7 +146,7 @@ curl -X POST https://agentbot.raveculture.xyz/api/ai/chat \
 | `/api/agents/:id/config` | PUT | Update agent configuration |
 | `/api/agents/:id/messages` | GET | Get agent messages |
 | `/api/agents/:id/stats` | GET | Get agent stats |
-| `/api/agents/:id/verify` | GET | Get verification status |
+| `/api/agents/:id/verification` | GET | Get verification status |
 | `/api/agents/:id/verify` | POST | Verify an agent |
 | `/api/agents/:id/verify` | DELETE | Remove verification |
 | `/api/agents/:id/start` | POST | Start an agent |
@@ -191,13 +191,19 @@ curl -X POST https://agentbot.raveculture.xyz/api/ai/chat \
 | `/api/wallet/create` | POST | Create a CDP wallet |
 | `/api/wallet/cdp` | GET | Get CDP wallet status |
 | `/api/wallet/cdp` | POST | Create a CDP wallet client |
-| `/api/provision` | POST | Provision agent with channel tokens (requires auth) |
+| `/api/wallet/top-up` | GET | Create a Stripe checkout session for wallet top-up |
+| `/api/wallet/top-up` | POST | Stripe webhook for wallet top-up payment completion |
+| `/api/provision` | POST | Provision agent with channel tokens or as OpenClaw-only deployment (requires auth) |
+| `/api/user/openclaw` | GET | Get the authenticated user's OpenClaw URL and instance ID |
 | `/api/validate-key` | POST | Validate an API key (backend only) |
 | `/api/register-home` | POST | Register a Home mode installation (backend only, requires identity headers) |
 | `/api/register-link` | POST | Register a Link mode installation (backend only, requires identity headers) |
 | `/api/installations` | GET | List registered installations (backend only, requires identity headers) |
 | `/api/agent` | GET | Agent interaction (health, sessions, memory, skills, credentials) |
 | `/api/agent` | POST | Agent interaction (chat, create-session, update-skill, set-credential) |
+| `/api/files` | GET | List files for an agent |
+| `/api/files` | POST | Upload a file for an agent |
+| `/api/files` | DELETE | Delete a file |
 | `/api/settings` | GET | Get current user profile |
 | `/api/settings` | POST, PATCH | Update user profile |
 | `/api/settings/password` | POST | Change password |
@@ -218,6 +224,7 @@ curl -X POST https://agentbot.raveculture.xyz/api/ai/chat \
 | `/api/scheduled-tasks` | POST | Create a scheduled task |
 | `/api/scheduled-tasks` | PUT | Update a scheduled task |
 | `/api/scheduled-tasks` | DELETE | Delete a scheduled task |
+| `/api/checkout/verify` | GET | Verify a Stripe checkout session and activate subscription |
 | `/api/stripe/checkout` | GET | Redirect to Stripe checkout (accepts `plan` query param: `solo`, `collective`, `label`, `network`). Prices are in GBP. |
 | `/api/stripe/credits` | GET | Redirect to Stripe credit purchase (accepts `price` query param) |
 | `/api/stripe/storage-upgrade` | POST | Upgrade storage plan |
@@ -247,7 +254,9 @@ curl -X POST https://agentbot.raveculture.xyz/api/ai/chat \
 | `/api/basefm/streams` | POST | Create a Mux live stream (RAVE token-gated) |
 | `/api/generate-video` | POST | Generate and upload a video (requires session) |
 | `/api/webhooks/mux` | POST | Mux webhook receiver (signature-verified) |
-| `/api/webhooks/resend` | POST | Resend inbound email webhook (signature-verified, sender allowlist) |
+| `/api/webhooks/resend` | POST | Resend email webhook — inbound email processing and outbound event tracking (sent, delivered, bounced, opened, clicked, complained) |
+| `/api/webhooks/railway-status` | POST | Railway platform status webhook receiver |
+| `/api/webhooks/railway-status` | GET | Railway status webhook health check |
 | `/api/mission-control/fleet/graph` | GET | Get agent fleet constellation graph |
 | `/api/mission-control/fleet/traces` | GET | Get real-time execution traces |
 | `/api/mission-control/fleet/costs` | GET | Get per-agent cost attribution |
@@ -275,13 +284,21 @@ curl -X POST https://agentbot.raveculture.xyz/api/ai/chat \
 | `/api/underground/events` | POST | Create an underground event (backend only, requires auth) |
 | `/api/underground/wallets` | POST | Create an agent wallet (backend only, requires auth) |
 | `/api/underground/wallets/:address/balance` | GET | Get agent wallet USDC balance (backend only, requires auth) |
-| `/api/underground/splits` | POST | Create and queue a royalty split (backend only, requires auth) |
+| `/api/underground/splits` | POST | Create and execute a royalty split (backend only, requires auth) |
 | `/api/colony/status` | GET | Get colony tree, soul cognitive state, or diagnostics |
-| `/api/invite/generate` | POST | Generate an invite code (backend only, requires internal API key) |
-| `/api/invite/validate` | POST | Validate and consume an invite code (backend only, no auth) |
+| `/api/invite` | POST | Create an invite token (requires session auth) |
+| `/api/invites/verify` | POST | Verify an invite token (no auth required) |
+| `/api/admin/invites` | GET | List all invites (requires admin session) |
+| `/api/admin/invites` | POST | Create an invite for a specific email (requires admin session) |
 | `/api/summarize` | POST | Summarize a URL — returns title, description, headings, paragraphs, word count (web summarizer service) |
 | `/api/extract` | POST | Extract links, images, and Open Graph metadata from a URL (web summarizer service) |
 | `/api/clawmerchants` | GET | List available ClawMerchants data feeds, or fetch a specific feed by `feed` query parameter |
+| `/v1/models` | GET | List all available models (OpenAI-compatible, no auth required) |
+| `/v1/models/:model` | GET | Get a single model by ID (OpenAI-compatible, no auth required) |
+| `/v1/embeddings` | POST | Generate embeddings (OpenAI-compatible, proxied to OpenRouter, requires auth) |
+| `/health` | GET | Backend health check (no auth required) |
+| `/install` | GET | Download the Home mode installation shell script |
+| `/link` | GET | Download the Link mode installation shell script |
 
 ## SDK
 

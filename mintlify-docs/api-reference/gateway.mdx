@@ -1,11 +1,11 @@
 ---
 title: Gateway
-description: "Route requests to plugins through the v1 gateway with support for Stripe and MPP payments."
+description: "Route requests to plugins through the v1 gateway with support for Stripe, MPP, and session-based payments."
 ---
 
 # Gateway
 
-The v1 gateway routes incoming requests to registered plugins. It supports dual payment methods — Stripe (existing) and [MPP](/payments/mpp) (Machine Payments Protocol) via the Tempo blockchain.
+The v1 gateway routes incoming requests to registered plugins. It supports three payment methods — Stripe (existing), [MPP](/payments/mpp) (Machine Payments Protocol) via the Tempo blockchain, and session-based billing for low-latency, off-chain per-call payments.
 
 ## Base URL
 
@@ -21,22 +21,24 @@ POST /api/v1/gateway
 |--------|------|----------|-------------|
 | `Content-Type` | string | Yes | Must be `application/json` |
 | `X-Plugin-Id` | string | No | Plugin to route the request to. Overrides the `plugin` field in the body. |
-| `X-Payment-Method` | string | No | Payment method to use: `stripe` or `mpp`. Defaults to `stripe`. |
+| `X-Payment-Method` | string | No | Payment method to use: `stripe`, `mpp`, or `session`. Defaults to `stripe`. |
 | `Authorization` | string | No | For MPP payments, use `Payment <credential>`. For session auth, handled via cookies. |
+| `X-Session-Id` | string | No | Active session ID for session-based billing. Required when `X-Payment-Method` is `session`. |
+| `X-Wallet-Address` | string | No | Wallet address that owns the session (0x-prefixed). Required when `X-Payment-Method` is `session`. |
 | `Accept` | string | No | Set to `text/event-stream` for streaming responses (where supported). |
 
 ### Body
 
 ```json
 {
-  "plugin": "generate-text",
+  "plugin": "agent",
   "messages": [{ "role": "user", "content": "Hello" }]
 }
 ```
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `plugin` | string | No | Plugin ID to route to. The `X-Plugin-Id` header takes priority if both are provided. Defaults to `generate-text`. |
+| `plugin` | string | No | Plugin ID to route to. The `X-Plugin-Id` header takes priority if both are provided. Defaults to `agent`. |
 
 Additional body fields are forwarded to the target plugin.
 
@@ -46,27 +48,28 @@ The gateway routes to the following plugins:
 
 | Plugin ID | Name | Description | Auth required | Streaming |
 |-----------|------|-------------|---------------|-----------|
-| `agent` | Agent | Agent orchestrator for multi-step tasks | Yes | Yes |
-| `generate-text` | Text Generation | LLM text generation | Yes | Yes |
-| `tts` | Text-to-Speech | Speech synthesis | Yes | No |
-| `stt` | Speech-to-Text | Speech transcription | Yes | No |
+| `agent` | Agent | Agent orchestrator for multi-step tasks | No | Yes |
+| `generate-text` | Text Generation | LLM text generation | No | Yes |
+| `tts` | Text-to-Speech | Speech synthesis | No | No |
+| `stt` | Speech-to-Text | Speech transcription | No | No |
 
-<Note>`generate-text` is the default plugin when no plugin ID is specified.</Note>
+<Note>`agent` is the default plugin when no plugin ID is specified.</Note>
 
 ## Authentication
 
-Protected plugins require either a valid session (cookie-based via NextAuth) or a verified MPP payment credential. If you pay with MPP, session authentication is not required.
+No plugins currently require authentication. The gateway checks whether a plugin has its `auth` flag enabled — since no built-in plugin sets this flag, all requests are processed without requiring a session, MPP credential, or payment session. If a custom plugin is registered with `auth: true`, the gateway enforces either a valid session (cookie-based via NextAuth), a verified MPP payment credential, or an active payment session. If you pay with MPP or use session-based billing, cookie-based authentication is not required for auth-enabled plugins.
 
 ## Payment flow
 
-The gateway supports two payment methods per request:
+The gateway supports three payment methods per request:
 
 1. **Stripe** — Default. Requires an active subscription or credits. See [Stripe integration](/payments/stripe).
 2. **MPP** — Crypto-native payments on the Tempo blockchain. See [MPP payments](/payments/mpp).
+3. **Session** — Off-chain, per-call billing using a pre-funded payment session. See [MPP payments — sessions](/payments/mpp#sessions) and the [wallet sessions API](/api-reference/wallet#mpp-payment-sessions).
 
 The server selects the payment method using the following priority:
 
-1. `X-Payment-Method` header (`mpp` or `stripe`)
+1. `X-Payment-Method` header (`session`, `mpp`, or `stripe`)
 2. Presence of an `Authorization: Payment` header (implies `mpp`)
 3. Default: `stripe`
 
@@ -101,14 +104,27 @@ The `WWW-Authenticate` header is also set:
 Payment amount="0.05", currency="0x20c0000000000000000000000000000000000000", recipient="0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
 ```
 
+### Session-based billing
+
+When `X-Payment-Method` is `session`, the gateway auto-debits the caller's payment session using an off-chain voucher. This avoids the 402 challenge/response round-trip and settles each call in sub-100ms.
+
+To use session-based billing:
+
+1. Open a payment session via `POST /api/wallet/sessions`. See [wallet sessions](/api-reference/wallet#mpp-payment-sessions).
+2. Include `X-Session-Id` and `X-Wallet-Address` headers on every gateway request.
+3. The gateway looks up the session, verifies the balance covers the plugin price, and debits the session automatically.
+4. The response includes a `Payment-Receipt` header with the voucher reference and an `X-Session-Remaining` header with the updated balance.
+
+If the session is missing, expired, or has insufficient balance, the gateway returns `402` with a descriptive error. See [error responses](#error-responses) for the full list of session-related error codes.
+
 ## Response
 
 ### Success (200)
 
 ```json
 {
-  "plugin": "generate-text",
-  "message": "Request processed by generate-text plugin",
+  "plugin": "agent",
+  "message": "Request processed by agent plugin",
   "timestamp": "2026-03-20T03:33:15.000Z",
   "payment": {
     "method": "stripe",
@@ -117,21 +133,27 @@ Payment amount="0.05", currency="0x20c0000000000000000000000000000000000000", re
 }
 ```
 
-When paid via MPP, the response includes a `Payment-Receipt` header and the `payment.receipt` field contains the transaction hash.
+When paid via MPP, the response includes a `Payment-Receipt` header and the `payment.receipt` field contains the transaction hash. When paid via a session, the `payment.receipt` field contains the voucher reference (formatted as `session:<sessionId>:<nonce>`).
 
 ### Response headers
 
 | Header | Description |
 |--------|-------------|
 | `x-plugin-id` | The plugin that handled the request |
-| `Payment-Receipt` | MPP transaction receipt hash (only present for MPP-paid requests) |
+| `Payment-Receipt` | Payment receipt. For MPP: transaction hash. For sessions: voucher reference (`session:<sessionId>:<nonce>`). Only present for MPP or session-paid requests. |
+| `X-Session-Remaining` | Remaining session balance in USD after the debit. Only present for session-paid requests. |
 
 ## Error responses
 
 | Status | Error code | Description |
 |--------|-----------|-------------|
-| 401 | `Unauthorized` | Authentication required for a protected plugin and no valid session or MPP credential |
+| 400 | `unknown_plugin` | No pricing configured for the requested plugin (session billing only) |
+| 401 | `Unauthorized` | Authentication required for a protected plugin and no valid session, MPP credential, or payment session |
 | 402 | `payment_required` | MPP payment required. Response includes challenge and pricing. |
+| 402 | `session_required` | Session billing was requested but `X-Session-Id` or `X-Wallet-Address` header is missing |
+| 402 | `session_invalid` | No active session found for the provided session ID and wallet address |
+| 402 | `insufficient_balance` | Session balance is too low to cover the plugin price. Response includes `session.remaining` and `session.cost`. |
+| 402 | `voucher_failed` | The off-chain voucher could not be processed (e.g., concurrent debit race) |
 | 500 | `internal` | Internal server error |
 | 502 | `no_plugin` | No plugin registered for the given ID |
 
@@ -153,20 +175,28 @@ When an agent is provisioned, the backend generates an OpenClaw configuration wi
 
 ### Container environment variables
 
-The following environment variables are set on every agent container at launch:
+The following environment variables are set on every agent container at launch. Variables are grouped by source — some are set by the container image entrypoint (local Docker path) and others are injected by the provisioning service (Render path). When both paths set the same variable, the provisioning service value takes precedence.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `NODE_ENV` | `production` | Node.js environment. Set by the provisioning service. |
+| `PORT` | `3001` | Port the agent process listens on inside the container. Set by the provisioning service. |
 | `HOME` | `/home/node` | Home directory for the `node` user that the official OpenClaw image runs as |
 | `TERM` | `xterm-256color` | Terminal type |
 | `NODE_COMPILE_CACHE` | `/var/tmp/openclaw-compile-cache` | Directory for the Node.js compile cache. Speeds up cold starts by caching compiled bytecode across process restarts. |
 | `OPENCLAW_NO_RESPAWN` | `1` | When set to `1`, prevents the OpenClaw process from automatically respawning after exit. Container-level restart policies (Docker `--restart` or orchestrator health checks) handle process recovery instead. |
 | `OPENCLAW_GATEWAY_TOKEN` | Auto-generated | Gateway authentication token. When not set, the entrypoint generates a 32-character hex token. See [per-agent gateway authentication](#per-agent-gateway-authentication). |
+| `OPENCLAW_GATEWAY_URL` | Platform URL | Gateway URL for the agent to communicate with the platform gateway. Set by the provisioning service. |
 | `OPENCLAW_GATEWAY_PORT` | `18789` | Port the gateway listens on inside the container |
 | `AGENTBOT_USER_ID` | Per-user | Owner user ID passed at provisioning time |
 | `AGENTBOT_PLAN` | `solo` | Subscription plan tier (`solo`, `collective`, `label`, or `network`) |
+| `AGENTBOT_API_URL` | `https://agentbot-api.onrender.com` | Backend API URL for the agent to call platform services. Set by the provisioning service. |
 | `AGENTBOT_MODE` | `home` | Installation mode (`home` for self-hosted, `link` for existing OpenClaw) |
 | `AGENTBOT_API_KEY` | Per-user | API key for authenticating with the Agentbot platform |
+| `DATABASE_URL` | Platform-provided | PostgreSQL connection string for agent data persistence. Set by the provisioning service. |
+| `OPENROUTER_API_KEY` | Platform-provided | OpenRouter API key for AI model access. Set by the provisioning service. |
+| `INTERNAL_API_KEY` | Platform-provided | Internal API key for authenticating agent-to-platform requests. Set by the provisioning service. |
+| `WALLET_ENCRYPTION_KEY` | Platform-provided | Encryption key for securing agent wallet data at rest. Set by the provisioning service. |
 
 ### Gateway settings
 
@@ -229,13 +259,153 @@ The gateway monitors channel health for each agent container. When a channel bec
 
 ## CORS
 
-The gateway supports CORS preflight via `OPTIONS /api/v1/gateway`. Allowed methods are `POST` and `OPTIONS`. The `Authorization`, `Content-Type`, `X-Plugin-Id`, and `X-Payment-Method` headers are permitted.
+The gateway supports CORS preflight via `OPTIONS /api/v1/gateway`. Allowed methods are `GET`, `POST`, and `OPTIONS`. The `Content-Type`, `Authorization`, `X-Plugin-Id`, and `Payment` headers are permitted in the CORS configuration.
+
+<Warning>The `X-Payment-Method`, `X-Session-Id`, and `X-Wallet-Address` headers are read server-side but are not included in the CORS `Access-Control-Allow-Headers` response. Cross-origin requests that include these headers may be rejected by the browser preflight check. Same-origin requests are unaffected. If you need to send these headers from a different origin, configure the `GATEWAY_CORS_ORIGIN` environment variable or proxy the request through a same-origin endpoint.</Warning>
+
+## OpenAI-compatible endpoints
+
+The gateway exposes a set of endpoints that follow the [OpenAI API format](https://platform.openai.com/docs/api-reference). These allow you to use Agentbot as a drop-in replacement for the OpenAI SDK or any tool that supports the OpenAI API shape.
+
+### List models
+
+```http
+GET /v1/models
+```
+
+Returns all available models in OpenAI-compatible format. This endpoint is public and does not require authentication.
+
+#### Response (200)
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "openrouter/openai/gpt-4o-mini",
+      "object": "model",
+      "created": 1742472000,
+      "owned_by": "openrouter"
+    }
+  ]
+}
+```
+
+#### Model object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Model identifier (provider-prefixed) |
+| `object` | string | Always `model` |
+| `created` | number | Unix timestamp of when the response was generated |
+| `owned_by` | string | Provider that serves the model (e.g., `openrouter`, `agentbot`) |
+
+#### Errors
+
+| Status | Description |
+|--------|-------------|
+| 500 | `Failed to fetch models` — an internal error occurred while retrieving the model list |
+
+### Retrieve a model
+
+```http
+GET /v1/models/:model
+```
+
+Returns details for a single model by its ID. This endpoint is public and does not require authentication.
+
+#### Path parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `model` | string | Yes | The model ID to look up (e.g., `openrouter/openai/gpt-4o-mini`) |
+
+#### Response (200)
+
+```json
+{
+  "id": "openrouter/openai/gpt-4o-mini",
+  "object": "model",
+  "created": 1742472000,
+  "owned_by": "openrouter"
+}
+```
+
+#### Errors
+
+| Status | Description |
+|--------|-------------|
+| 404 | `Model {model} not found` — no model matches the provided ID |
+| 500 | `Failed to fetch model` — an internal error occurred |
+
+### Create embeddings
+
+```http
+POST /v1/embeddings
+```
+
+Generates embeddings for the given input. Proxies the request to OpenRouter. Requires authentication.
+
+#### Headers
+
+| Header | Type | Required | Description |
+|--------|------|----------|-------------|
+| `Authorization` | string | Yes | Bearer token or session cookie |
+| `Content-Type` | string | Yes | Must be `application/json` |
+
+#### Request body
+
+```json
+{
+  "input": "The quick brown fox jumps over the lazy dog",
+  "model": "openai/text-embedding-3-small"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `input` | string or string[] | Yes | Text to generate embeddings for. Can be a single string or an array of strings. |
+| `model` | string | No | Embedding model to use. Defaults to `openai/text-embedding-3-small`. |
+
+#### Response (200)
+
+The response follows the OpenAI embeddings format. The exact shape depends on the upstream provider.
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.0023064255, -0.009327292, ...]
+    }
+  ],
+  "model": "openai/text-embedding-3-small",
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 9
+  }
+}
+```
+
+#### Errors
+
+| Status | Description |
+|--------|-------------|
+| 400 | `input is required` — the `input` field is missing from the request body |
+| 401 | Unauthorized — valid authentication is required |
+| 503 | `Embeddings not configured` — the server does not have an OpenRouter API key configured |
+| 500 | `Embeddings request failed` — the upstream provider returned an error |
 
 ## Rate limits
 
 | Endpoint | Limit |
 |----------|-------|
 | `/api/v1/gateway` | 100/min |
+| `/v1/models` | 120/min (general) |
+| `/v1/models/:model` | 120/min (general) |
+| `/v1/embeddings` | 120/min (general) |
 
 ## Examples
 
@@ -257,4 +427,44 @@ curl -X POST https://agentbot.raveculture.xyz/api/v1/gateway \
   -H "X-Plugin-Id: generate-text" \
   -H "Authorization: Payment {\"scheme\":\"Payment\",\"transaction\":\"0x76...\",\"challengeNonce\":\"abc123\"}" \
   -d '{"messages": [{"role": "user", "content": "Hello"}]}'
+```
+
+### Route a request with session-based billing
+
+```bash
+curl -X POST https://agentbot.raveculture.xyz/api/v1/gateway \
+  -H "Content-Type: application/json" \
+  -H "X-Plugin-Id: agent" \
+  -H "X-Payment-Method: session" \
+  -H "X-Session-Id: ses_a1b2c3d4e5f6..." \
+  -H "X-Wallet-Address: 0xd8fd0e1dce89beaab924ac68098ddb17613db56f" \
+  -d '{"messages": [{"role": "user", "content": "Summarize my tasks"}]}'
+```
+
+The response includes the remaining session balance:
+
+```
+Payment-Receipt: session:ses_a1b2c3d4e5f6...:v_abc123def456
+X-Session-Remaining: 9.95
+```
+
+### List available models (OpenAI-compatible)
+
+```bash
+curl https://agentbot.raveculture.xyz/v1/models
+```
+
+### Retrieve a specific model
+
+```bash
+curl https://agentbot.raveculture.xyz/v1/models/openrouter/openai/gpt-4o-mini
+```
+
+### Generate embeddings
+
+```bash
+curl -X POST https://agentbot.raveculture.xyz/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"input": "Hello world", "model": "openai/text-embedding-3-small"}'
 ```

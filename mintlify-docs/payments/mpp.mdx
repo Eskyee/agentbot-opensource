@@ -175,6 +175,43 @@ const { supported } = await checkMppSupport(
 
 The function sends an `OPTIONS` request and checks for a `WWW-Authenticate: Payment` header.
 
+## Sessions
+
+Payment sessions provide off-chain, per-call billing without an on-chain transaction for every request. This reduces latency to sub-100ms per call while still settling on-chain periodically.
+
+### How sessions work
+
+1. **Open a session** — deposit pathUSD (minimum $1.00, maximum $100.00) into escrow via `POST /api/wallet/sessions`.
+2. **Make gateway calls** — include `X-Session-Id` and `X-Wallet-Address` headers on your [gateway](/api-reference/gateway) requests with `X-Payment-Method: session`. The gateway auto-debits your session balance using off-chain vouchers — no 402 round-trip needed.
+3. **Automatic settlement** — when accumulated vouchers reach $5.00 or after one hour, the server batches them into a single on-chain transaction.
+4. **Close the session** — call `DELETE /api/wallet/sessions?sessionId=ses_...` to settle any remaining vouchers and return unused funds.
+
+<Tip>You can also submit vouchers manually via `POST /api/wallet/sessions/voucher` if you need fine-grained control. When using the gateway with `X-Payment-Method: session`, voucher creation is handled automatically.</Tip>
+
+### Session configuration
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Minimum deposit | $1.00 | Minimum amount to open a session |
+| Maximum deposit | $100.00 | Maximum amount per session |
+| Settle threshold | $5.00 | Accumulated voucher total that triggers on-chain settlement |
+| Settle interval | 1 hour | Maximum time between on-chain settlements |
+
+### Session states
+
+| State | Description |
+|-------|-------------|
+| `active` | Session is open and accepting vouchers |
+| `settling` | Vouchers are being settled on-chain (temporary) |
+| `closed` | Session has been closed and remaining funds returned |
+
+### When to use sessions vs. per-request MPP
+
+- **Sessions** are ideal for high-frequency agent calls where sub-100ms billing latency matters (e.g., chat, real-time orchestration).
+- **Per-request MPP** (the standard 402 flow) is better for infrequent or large-value calls where on-chain settlement per request is acceptable.
+
+See the [Wallet API — MPP payment sessions](/api-reference/wallet#mpp-payment-sessions) reference for the full endpoint documentation.
+
 ## Troubleshooting
 
 <AccordionGroup>

@@ -21,7 +21,7 @@ GET /api/metrics
 
 <Note>This endpoint is served by the web application, not the backend API service. It is not available on the backend base URL.</Note>
 
-Returns platform-wide metrics including agent counts, message volumes, deployment stats, uptime, performance, and storage usage. Requires bearer token (API key) authentication.
+Returns platform-wide metrics including agent counts, message volumes, deployment stats, uptime, performance, and storage usage. Requires session authentication.
 
 <Warning>The `messages`, `performance`, and `storage.used` fields currently return randomized mock data. Agent and deployment counts are retrieved from the database. A future release will connect all fields to real telemetry.</Warning>
 

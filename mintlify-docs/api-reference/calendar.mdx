@@ -1,0 +1,331 @@
+---
+title: Calendar API
+description: "Google Calendar integration endpoints for OAuth, event management, and availability checks"
+---
+
+# Calendar API
+
+Connect a Google Calendar account and manage events, check availability, and schedule directly through the API.
+
+<Note>All calendar endpoints require an authenticated session. Use the [connect flow](#connect-calendar) to authorize Google Calendar access before calling event endpoints.</Note>
+
+## Authentication
+
+All calendar endpoints require a valid NextAuth session. The user identity is derived from your session — you never pass a `userId` directly. Unauthenticated requests receive a `401` response.
+
+## Base URL
+
+```
+https://agentbot.raveculture.xyz/api/calendar
+```
+
+## Connect calendar
+
+```http
+POST /api/calendar
+```
+
+Initiates the Google Calendar OAuth flow. Returns an authorization URL that the user must visit to grant calendar access. The OAuth state parameter is cryptographically signed (HMAC) to bind the callback to the authenticated session.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `connect` |
+
+### Response
+
+```json
+{
+  "authUrl": "https://accounts.google.com/o/oauth2/v2/auth?..."
+}
+```
+
+Redirect the user to `authUrl` to begin the OAuth consent flow. After granting access, Google redirects to the callback endpoint below.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Not authenticated |
+| 400 | Invalid action |
+
+## OAuth callback
+
+```http
+GET /api/calendar/callback
+```
+
+Handles the OAuth authorization code exchange after Google redirects the user back from the consent screen. You do not call this endpoint directly — Google redirects to it automatically.
+
+### Query parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `code` | string | Authorization code provided by Google |
+| `state` | string | HMAC-signed state token that encodes the authenticated user and a timestamp. The server verifies this signature before accepting the callback. |
+| `error` | string | Error code if the user denied access or an error occurred |
+
+### Behavior
+
+On success, this endpoint:
+
+1. Verifies the HMAC signature on the `state` parameter and checks that it has not expired (10-minute window).
+2. Exchanges the authorization code for access and refresh tokens.
+3. Retrieves the user's primary calendar ID and timezone.
+4. Stores the connection for future API calls, keyed to the verified user from the signed state.
+5. Redirects to `/dashboard/calendar?connected=true`.
+
+### Error redirects
+
+If an error occurs, the endpoint redirects to `/dashboard/calendar` with an `error` query parameter:
+
+| Redirect query | Description |
+|----------------|-------------|
+| `error=<google_error>` | The user denied access or Google returned an error |
+| `error=no_code` | No authorization code was present in the callback |
+| `error=missing_state` | The state parameter was not included in the callback |
+| `error=invalid_state` | The state signature is invalid or the state has expired |
+| `error=token_failed` | The authorization code could not be exchanged for tokens |
+| `error=unknown` | An unexpected error occurred during the callback |
+
+## Start OAuth (redirect)
+
+```http
+GET /api/calendar?action=auth
+```
+
+Redirects the browser directly to the Google OAuth consent screen. This is an alternative to the POST-based connect flow — use it when you want a simple link-based authorization. Requires an authenticated session; unauthenticated users are redirected to the login page.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `action` | string | Yes | Must be `auth` |
+
+## List events
+
+```http
+GET /api/calendar?action=list
+```
+
+Returns calendar events within a date range.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `action` | string | Yes | Must be `list` |
+| `start` | string | No | ISO 8601 start date. Defaults to now. |
+| `end` | string | No | ISO 8601 end date. Defaults to 30 days from now. |
+
+### Response
+
+```json
+{
+  "events": [
+    {
+      "id": "event_abc123",
+      "summary": "Team standup",
+      "start": { "dateTime": "2026-03-24T10:00:00Z" },
+      "end": { "dateTime": "2026-03-24T10:30:00Z" },
+      "location": "Zoom"
+    }
+  ],
+  "timezone": "America/New_York"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Not authenticated or calendar not connected |
+
+## Check availability
+
+```http
+GET /api/calendar?action=availability
+```
+
+Returns available and busy time slots for a given date. Slots are one hour each, from 09:00 to 23:00.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `action` | string | Yes | Must be `availability` |
+| `date` | string | No | Date in `YYYY-MM-DD` format. Defaults to today. |
+
+### Response
+
+```json
+{
+  "availableSlots": [
+    { "start": "2026-03-24T09:00:00", "end": "2026-03-24T10:00:00" },
+    { "start": "2026-03-24T11:00:00", "end": "2026-03-24T12:00:00" }
+  ],
+  "busySlots": [
+    { "start": "2026-03-24T10:00:00Z", "end": "2026-03-24T11:00:00Z" }
+  ],
+  "date": "2026-03-24"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Not authenticated or calendar not connected |
+
+## Create event
+
+```http
+POST /api/calendar
+```
+
+Creates a new calendar event.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `create-event` |
+| `title` | string | Yes | Event title |
+| `start` | string | Yes | ISO 8601 start time |
+| `end` | string | Yes | ISO 8601 end time |
+| `description` | string | No | Event description |
+| `location` | string | No | Event location |
+| `attendees` | string[] | No | List of attendee email addresses |
+
+### Example request
+
+```json
+{
+  "action": "create-event",
+  "title": "DJ Set @ Warehouse",
+  "start": "2026-03-28T22:00:00Z",
+  "end": "2026-03-29T02:00:00Z",
+  "location": "Warehouse 42, London",
+  "attendees": ["promoter@example.com"]
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "eventId": "event_abc123",
+  "event": {
+    "id": "event_abc123",
+    "summary": "DJ Set @ Warehouse",
+    "start": { "dateTime": "2026-03-28T22:00:00Z" },
+    "end": { "dateTime": "2026-03-29T02:00:00Z" }
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Not authenticated or calendar not connected |
+| 500 | Internal error |
+
+## Update event
+
+```http
+POST /api/calendar
+```
+
+Updates an existing calendar event. Only the fields you include are changed.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `update-event` |
+| `eventId` | string | Yes | ID of the event to update |
+| `title` | string | No | Updated event title |
+| `description` | string | No | Updated description |
+| `start` | string | No | Updated start time (ISO 8601) |
+| `end` | string | No | Updated end time (ISO 8601) |
+| `location` | string | No | Updated location |
+
+### Response
+
+```json
+{
+  "success": true,
+  "event": { "id": "event_abc123", "summary": "Updated title" }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Not authenticated or calendar not connected |
+| 500 | Internal error |
+
+## Delete event
+
+```http
+POST /api/calendar
+```
+
+Deletes a calendar event.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `delete-event` |
+| `eventId` | string | Yes | ID of the event to delete |
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Not authenticated or calendar not connected |
+| 500 | Internal error |
+
+## Quick add
+
+```http
+POST /api/calendar
+```
+
+Creates an event from a natural language string using Google Calendar's quick-add feature.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `quick-add` |
+| `text` | string | Yes | Natural language event description (for example, `"Meeting with Sarah tomorrow at 3pm"`) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "eventId": "event_abc123"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Not authenticated or calendar not connected |
+| 500 | Internal error |

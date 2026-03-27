@@ -7,7 +7,7 @@ description: "AI provider endpoints for model selection, chat completion, and co
 
 Endpoints for interacting with AI models through a unified provider layer. These endpoints are served by the backend API service, not the web application. They are available at the backend base URL, which may differ from the web API base URL depending on your deployment.
 
-<Note>These endpoints are internal backend endpoints and are not exposed through the web application's `/api` routes. The health check (`GET /api/ai/health`) and model listing endpoints (`GET /api/ai/models`, `GET /api/ai/models/:provider`) are public and do not require authentication — they return non-sensitive data for status monitoring and pricing discovery. All other endpoints require bearer token (API key) authentication. The chat and cost estimation endpoints additionally require a valid subscription plan. All POST requests must include the `Content-Type: application/json` header.</Note>
+<Note>These endpoints are internal backend endpoints and are not exposed through the web application's `/api` routes. All `/api/ai/*` endpoints require bearer token (API key) authentication — the auth middleware is applied at the router mount level, so requests without a valid token receive a `401` response regardless of the endpoint. The chat and cost estimation endpoints additionally require a valid subscription plan. All POST requests must include the `Content-Type: application/json` header.</Note>
 
 <Warning>All `/api/ai/*` endpoints share a rate limit of 30 requests per minute per IP, not just the chat endpoint.</Warning>
 
@@ -17,7 +17,7 @@ Endpoints for interacting with AI models through a unified provider layer. These
 GET /api/ai/health
 ```
 
-No authentication required. Returns the availability status of configured AI providers.
+Requires bearer token authentication. Returns the availability status of configured AI providers.
 
 ### Response
 
@@ -31,11 +31,11 @@ No authentication required. Returns the availability status of configured AI pro
 }
 ```
 
-The `status` field is `healthy` when all providers are reachable and `degraded` when one or more are down.
+The `status` field is `healthy` when the OpenRouter provider is reachable and `degraded` when it is not. Only the OpenRouter provider is checked.
 
 ### Error response
 
-When one or more providers fail, the response uses `status: "error"` and includes the error message:
+When the provider check fails, the response uses `status: "error"` and includes the error message:
 
 ```json
 {
@@ -54,7 +54,7 @@ When one or more providers fail, the response uses `status: "error"` and include
 GET /api/ai/models
 ```
 
-No authentication required. Returns all available AI models across providers. This endpoint is public to support pricing pages and model discovery.
+Requires bearer token authentication. Returns all available AI models across providers.
 
 ### Response
 
@@ -91,7 +91,7 @@ No authentication required. Returns all available AI models across providers. Th
 GET /api/ai/models/:provider
 ```
 
-No authentication required.
+Requires bearer token authentication.
 
 ### Path parameters
 
@@ -115,6 +115,8 @@ No authentication required.
 ```http
 POST /api/ai/models/select
 ```
+
+Requires bearer token authentication and a valid subscription plan.
 
 Automatically selects the best model for a given task type.
 
@@ -141,6 +143,8 @@ Automatically selects the best model for a given task type.
 
 | Code | Description |
 |------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 402 | Valid subscription required |
 | 404 | No models available |
 
 ## Chat completion
@@ -219,7 +223,6 @@ Returns a structured response with the following shape:
 | 402 | Valid subscription required. Returned when the plan header is missing or unrecognized (`PLAN_REQUIRED`), or when there is no active Stripe subscription (`SUBSCRIPTION_REQUIRED`). |
 | 403 | Model not available on your plan (`MODEL_RESTRICTED`). The response includes an `allowedModels` array listing the models your plan supports. |
 | 404 | No models available |
-| 429 | Monthly token quota exceeded (`QUOTA_EXCEEDED`). See [token quotas](#token-quotas) below. |
 | 500 | AI provider error |
 
 #### 402 error example
@@ -242,42 +245,33 @@ Returns a structured response with the following shape:
 }
 ```
 
-#### 429 error example
+## Token quotas (planned)
 
-```json
-{
-  "error": "Monthly token quota exceeded for plan \"solo\". Used 2,000,000 of 2,000,000 tokens. Quota resets at the start of next month.",
-  "code": "QUOTA_EXCEEDED"
-}
-```
+<Warning>Token quotas are not yet enforced. The backend does not currently track token usage or reject requests based on usage limits. The quota system described below is planned for a future release. When implemented, requests exceeding the plan limit will be rejected with a `429` status and a `QUOTA_EXCEEDED` error code.</Warning>
 
-## Token quotas
-
-Each plan enforces a monthly token budget across all AI chat requests. Token usage (input + output) is tracked per user and checked before each request. When your usage reaches the plan limit, subsequent requests are rejected with a `429` status and a `QUOTA_EXCEEDED` error code. Quotas reset at the start of each calendar month.
-
-| Plan | Monthly token limit |
+| Plan | Monthly token limit (planned) |
 |------|-------------------|
 | `solo` | 2,000,000 |
 | `collective` | 6,000,000 |
 | `label` | 20,000,000 |
 | `network` | Unlimited |
 
-<Note>The `free` plan has a token limit of zero. All agent usage requires a paid subscription.</Note>
-
 ## Plan-based model access
 
-Each subscription plan grants access to a specific set of AI models. The chat endpoint enforces these limits automatically.
+Each subscription plan grants access to a specific set of AI models. The chat endpoint enforces these limits automatically via the plan middleware.
 
-| Plan | Price | Models | Provision limit | Skill limit | A2A messages/day |
-|------|-------|--------|-----------------|-------------|------------------|
-| `solo` | £29/mo | `openai/gpt-4o-mini`, `openai/gpt-4o`, `google/gemini-2.0-flash`, `anthropic/claude-3.5-sonnet`, `xiaomi/mimo-v2-pro` | 1 | 10 | 500 |
-| `collective` | £69/mo | `openai/gpt-4o-mini`, `openai/gpt-4o`, `openai/gpt-4-turbo`, `google/gemini-2.0-flash`, `anthropic/claude-3.5-sonnet`, `anthropic/claude-3-opus`, `xiaomi/mimo-v2-pro` | 3 | 25 | 2,000 |
-| `label` | £149/mo | `openai/gpt-4o-mini`, `google/gemini-2.0-flash`, `xiaomi/mimo-v2-pro` | 10 | 3 | 100 |
-| `network` | £499/mo | All models | Unlimited | 100 | 10,000 |
+| Plan | Price | Models | Agent limit | Skill limit | A2A messages/day |
+|------|-------|--------|-------------|-------------|------------------|
+| `solo` | £29/mo | `openai/gpt-4o-mini`, `google/gemini-2.0-flash`, `xiaomi/mimo-v2-pro` | 1 | 3 | 100 |
+| `collective` | £69/mo | `openai/gpt-4o-mini`, `openai/gpt-4o`, `google/gemini-2.0-flash`, `anthropic/claude-3.5-sonnet`, `xiaomi/mimo-v2-pro` | 10 | 10 | 500 |
+| `label` | £149/mo | `openai/gpt-4o-mini`, `openai/gpt-4o`, `openai/gpt-4-turbo`, `google/gemini-2.0-flash`, `anthropic/claude-3.5-sonnet`, `anthropic/claude-3-opus`, `xiaomi/mimo-v2-pro` | 3 | 25 | 2,000 |
+| `network` | £499/mo | All models | 100 | 100 | 10,000 |
 
 <Note>Admin users are automatically granted `network`-level access regardless of their subscription plan.</Note>
 
-<Warning>The plan middleware enforces model access based on the `x-user-plan` header. The `label` plan has the smallest model set (3 models) despite having a higher provision limit (10 agents) than `solo`. This is because `label` is designed for label operations where fewer model choices are needed but more agents are required.</Warning>
+<Note>The plan middleware (`x-user-plan` header) enforces model access, skill limits, and A2A message quotas. The provisioning endpoint enforces separate agent limits: `solo` 1, `collective` 3, `label` 10, `network` unlimited. When the two systems reference the same plan name, the provisioning limits apply to agent creation and the middleware limits apply to AI model access and skill usage.</Note>
+
+<Warning>The `label` plan has the largest model set (7 models) and the highest skill limit (25), but its middleware agent limit is 3 while the provisioning endpoint allows up to 10 agents on `label`. When the two limits differ, the provisioning limit governs agent creation and the middleware limit governs per-request enforcement.</Warning>
 
 ## Model fallbacks
 
@@ -285,7 +279,7 @@ Each AI provider is configured with a primary model and a fallback model. When t
 
 | Provider | Primary model | Fallback model |
 |----------|--------------|----------------|
-| `openrouter` | `xiaomi/mimo-v2-pro` | `openrouter/anthropic/claude-sonnet-4`, `openrouter/google/gemini-2.5-flash` |
+| `openrouter` | `moonshotai/kimi-k2.5` | `openrouter/openai/gpt-4o-mini` |
 | `gemini` | `google/gemini-2.0-flash` | `openrouter/anthropic/claude-sonnet-4-5` |
 | `groq` | `groq/gemma2-9b-it` | `openai/gpt-4o-mini` |
 | `anthropic` | `anthropic/claude-sonnet-4-5` | `openai/gpt-4o` |
@@ -295,24 +289,27 @@ Each AI provider is configured with a primary model and a fallback model. When t
 
 Fallback routing is handled transparently. The response always indicates which model ultimately served the request via the `model` field.
 
-## Task-based model tiers
+## Task-based model selection
 
-In addition to provider-level fallbacks, the backend AI service uses a tier-based routing system that selects models based on the type of work being performed. Each tier defines a primary model and two fallback models. If the primary model fails or times out, the system tries each fallback in order.
+In addition to provider-level fallbacks, the backend AI service uses tag-based model selection that picks the best available model based on the type of work being performed. When you specify a `taskType`, the system searches the available OpenRouter models for matching capability tags and selects the first match.
 
-| Tier | Primary model | Fallback models |
-|------|--------------|----------------|
-| `reasoning` | `deepseek/deepseek-r1` | `meta-llama/llama-3.3-70b-instruct`, `moonshotai/kimi-k2.5` |
-| `coding` | `qwen/qwen-2.5-coder-32b-instruct` | `deepseek/deepseek-r1`, `google/gemini-2.0-flash-001` |
-| `fast` | `meta-llama/llama-3.3-70b-instruct` | `mistralai/mistral-7b-instruct`, `google/gemini-2.0-flash-001` |
-| `creative` | `moonshotai/kimi-k2.5` | `deepseek/deepseek-r1`, `meta-llama/llama-3.3-70b-instruct` |
+| Task type | Matching tags |
+|-----------|--------------|
+| `coding` | `coding`, `logic` |
+| `analysis` | `analysis` |
+| `creative` | `creative` |
+| `long` | `long-context` |
+| `general` | `general`, `balanced` |
 
-Each model attempt has a timeout of 30 seconds by default. You can override this with the `AI_MODEL_TIMEOUT_MS` environment variable. All tier-based requests are routed through OpenRouter.
+When no model matches the requested task tags, the first available model from the OpenRouter catalog is used as a fallback. All task-based requests are routed through OpenRouter.
 
 ## Estimate cost
 
 ```http
 POST /api/ai/estimate-cost
 ```
+
+Requires bearer token authentication and a valid subscription plan.
 
 Estimate the cost of a request based on token counts and model pricing.
 
@@ -342,3 +339,5 @@ Estimate the cost of a request based on token counts and model pricing.
 | Code | Description |
 |------|-------------|
 | 400 | Model, inputTokens, and outputTokens are all required |
+| 401 | Unauthorized — missing or invalid bearer token |
+| 402 | Valid subscription required |

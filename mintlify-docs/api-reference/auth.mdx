@@ -61,6 +61,10 @@ Most web API endpoints use cookie-based session authentication. The platform iss
 
 You can retrieve the current session at any time using the [Get session](#get-session) endpoint and end it using the [Sign out](#sign-out) endpoint.
 
+#### Admin session fallback
+
+The [`POST /api/provision`](/api-reference/agents#provision-with-channel-tokens) endpoint supports an admin fallback when the session is missing (for example, after a Stripe checkout redirect loses the session cookie). The endpoint resolves the admin email using the session email when available, falling back to the `email` field in the request body when no session email exists. If the resolved email matches `ADMIN_EMAILS`, a synthetic session is created and the request proceeds without a real session. This fallback only applies to admin users on the provisioning endpoint — all other session-authenticated endpoints still require a valid session.
+
 ## Sign up
 
 ```http
@@ -219,9 +223,9 @@ Redirects to GitHub OAuth flow. Requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_S
 GET /api/auth/google
 ```
 
-Redirects to Google OAuth consent screen. Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to be configured.
+Redirects to the Google account selector. Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to be configured.
 
-The flow requests the `openid`, `email`, and `profile` scopes with offline access. After the user grants consent, Google redirects back to the callback endpoint below.
+The flow requests the `openid`, `email`, and `profile` scopes with offline access and uses the `select_account` prompt, which lets the user pick a Google account without forcing re-consent. After the user selects an account, Google redirects back to the callback endpoint below.
 
 If `GOOGLE_CLIENT_ID` is not set, the endpoint redirects to `/login?error=GoogleNotConfigured`.
 
@@ -231,14 +235,17 @@ If `GOOGLE_CLIENT_ID` is not set, the endpoint redirects to `/login?error=Google
 GET /api/auth/google/callback
 ```
 
-Handles the OAuth authorization code exchange. This endpoint is called by Google after the user grants consent — you do not call it directly.
+Handles the OAuth authorization code exchange. This endpoint is called by Google after the user selects an account — you do not call it directly.
+
+If Google returns an `error` query parameter (for example, when the user cancels the sign-in), the callback redirects to `/login` with an appropriate error code without attempting a token exchange.
 
 On success the endpoint:
 1. Exchanges the authorization code for an access token.
 2. Fetches the user's email and name from the Google userinfo API.
 3. Creates a new user if no account with that email exists (automatic account linking applies when a matching email is found).
-4. Creates a session and sets the `agentbot-session` cookie.
-5. Redirects to `/dashboard`.
+4. Links a Google `Account` record to the user for dual-auth compatibility. If the user already has a linked Google account, this step is skipped. The Account record stores the OAuth access token, refresh token, and token metadata so the user can sign in with either email/password or Google.
+5. Creates a session and sets the `agentbot-session` cookie.
+6. Redirects to `/dashboard`.
 
 #### Errors
 
@@ -246,7 +253,9 @@ The callback redirects to `/login` with an `error` query parameter instead of re
 
 | Error value | Description |
 |-------------|-------------|
-| `GoogleAuthFailed` | No authorization code received from Google |
+| `AccessDenied` | The user cancelled the Google sign-in or denied access |
+| `GoogleAuthFailed` | No authorization code received from Google, or Google returned an unrecognized error |
+| `GoogleNotConfigured` | `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is not set |
 | `GoogleTokenFailed` | Code-to-token exchange failed |
 | `GoogleNoEmail` | Google account has no email address |
 | `GoogleAuthError` | Unexpected server error during authentication |
@@ -278,8 +287,9 @@ The endpoint validates the incoming JWT before processing:
 
 1. Checks the issuer is `https://accounts.google.com/`
 2. Checks the audience matches one of the configured Google client IDs
-3. Fetches Google's signing keys from the RISC well-known configuration endpoint (keys are cached for 24 hours)
+3. Fetches Google's signing keys from the JWKS endpoint discovered via `https://accounts.google.com/.well-known/risc-configuration` (keys are cached for 24 hours)
 4. Matches the signing key by the `kid` header claim
+5. Verifies the RS256 signature using the Web Crypto API (`crypto.subtle`) with the matched RSA public key
 
 If validation fails, the endpoint returns `400`.
 
@@ -519,7 +529,29 @@ PATCH /api/settings
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `name` | string | No | New display name |
-| `notifications` | object | No | Notification preferences |
+| `notifications` | object | No | Notification preferences (accepted but not yet persisted) |
+
+### Response (POST and PATCH)
+
+```json
+{
+  "id": "user-a1b2c3d4",
+  "email": "user@example.com",
+  "name": "Updated Name",
+  "plan": "solo",
+  "credits": 100,
+  "twoFactorEnabled": false
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | User identifier |
+| `email` | string | User email address |
+| `name` | string | Display name |
+| `plan` | string | Current subscription plan |
+| `credits` | number | Remaining credits balance |
+| `twoFactorEnabled` | boolean | Whether two-factor authentication is enabled |
 
 ## Change password
 
@@ -638,13 +670,27 @@ The `GET` method returns endpoint metadata. The `POST` method verifies a Farcast
 ```json
 {
   "success": true,
-  "sessionToken": "base64-encoded-session",
+  "sessionToken": "eyJmaWRUb2tlbiI6Ii4uLiIsImFkZHJlc3MiOiIweC4uLiIsInZlcmlmaWVkIjp0cnVlLCJpYXQiOjE3MTA4MDY0MDAsImV4cCI6MTcxMDg5MjgwMH0.HMAC_SIGNATURE",
   "address": "0x...",
   "message": "Farcaster verification successful",
   "tokenGated": true,
   "accessLevel": "premium"
 }
 ```
+
+The `sessionToken` is an HMAC-SHA256 signed token in the format `{base64url-data}.{base64url-signature}`. The data payload contains the following claims:
+
+| Claim | Type | Description |
+|-------|------|-------------|
+| `fidToken` | string | Farcaster ID token (truncated to 64 characters) |
+| `address` | string | Ethereum address from the request |
+| `verified` | boolean | Always `true` on success |
+| `iat` | number | Issued-at timestamp (Unix seconds) |
+| `exp` | number | Expiry timestamp (24 hours after issuance) |
+
+The token is signed using the `FARCASTER_SESSION_SECRET` environment variable. If not set, the signing key falls back to `NEXTAUTH_SECRET`.
+
+<Warning>Session tokens are no longer plain base64-encoded JSON. Tokens issued before this change are not compatible with the new HMAC verification and must be refreshed.</Warning>
 
 #### Errors
 

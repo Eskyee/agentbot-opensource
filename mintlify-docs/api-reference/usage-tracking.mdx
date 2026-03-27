@@ -9,6 +9,8 @@ The usage tracking system records per-event token consumption and tool execution
 
 <Note>The usage tracker records events to a PostgreSQL database whenever an AI completion or tool call is made. The endpoints below are read-only query APIs for retrieving aggregated usage data. When no real usage data exists yet, the cost dashboard returns sample data with a `isMockData: true` flag.</Note>
 
+<Warning>The `UsageLog` Prisma model is not yet added to the database schema. Until it is available, the cost dashboard endpoint always returns mock data with `isMockData: true`. Real usage aggregation will be enabled in a future release once the model is added.</Warning>
+
 ## Test usage logging (deprecated)
 
 <Warning>This endpoint was removed in the March 2026 security audit and is no longer available. Requests to this path return `404`. Use the [cost dashboard](#cost-dashboard) endpoint to verify that usage tracking is working.</Warning>
@@ -27,9 +29,9 @@ POST /api/test-usage
 GET /api/dashboard/cost
 ```
 
-Returns aggregated cost, token, and call data for the cost dashboard. Breaks down spending by agent, model, and day. Requires session authentication.
+Requires session authentication. Returns aggregated cost, token, and call data for the cost dashboard. Breaks down spending by agent, model, and day.
 
-When no usage data is available, the endpoint returns realistic sample data with `isMockData` set to `true` and a `message` field explaining that usage tracking is not yet configured.
+<Warning>The `UsageLog` Prisma model has not yet been added to the schema. This endpoint currently always returns sample data with `isMockData` set to `true` and a `message` field explaining that usage tracking is not yet configured. Real data aggregation will be enabled once the model is added.</Warning>
 
 ### Query parameters
 
@@ -107,6 +109,7 @@ When no usage data is available, the endpoint returns realistic sample data with
 
 | Code | Description |
 |------|-------------|
+| 401 | Unauthorized — no valid session |
 | 500 | Failed to fetch cost data |
 
 ---
@@ -338,9 +341,9 @@ Returns aggregated tool execution statistics, optionally filtered by agent.
 
 ## Usage event schema
 
-Each usage event is stored as a row in the `usage_logs` table (Prisma model name: `UsageLog`). Events are recorded automatically whenever an AI completion is made (for example, from the [demo chat endpoint](/api-reference/demo-chat) or agent chat). Cost is calculated at write time using per-model pricing rates.
+Each usage event is intended to be stored as a row in the `usage_logs` table (Prisma model name: `UsageLog`). Events will be recorded automatically whenever an AI completion is made (for example, from the [demo chat endpoint](/api-reference/demo-chat) or agent chat). Cost is calculated at write time using per-model pricing rates.
 
-<Note>The `usage_logs` table is created via a dedicated SQL migration (`20260323000000_add_usage_logs`) rather than through Prisma's schema push. This ensures the table is created reliably across deployments without requiring Prisma to manage the migration state.</Note>
+<Warning>The `UsageLog` Prisma model is not yet in the schema. The `usage_logs` table was originally created via a dedicated SQL migration (`20260323000000_add_usage_logs`), but the Prisma model was removed from the build due to build failures. Usage event recording is currently inactive. The schema below documents the intended table structure for when the model is re-added.</Warning>
 
 ### Server-side logging
 
@@ -379,14 +382,10 @@ The cost dashboard endpoint emits its own diagnostic log lines prefixed with `[C
 For example:
 
 ```
-[Cost API] Found 42 usage logs
+[Cost API] Found 0 usage logs
 ```
 
-If the Prisma query fails, the endpoint logs the error and falls back to sample data:
-
-```
-[Cost API] Prisma error: <error message>
-```
+<Note>Because the `UsageLog` Prisma model is not yet in the schema, the log count is currently always `0` and the endpoint returns mock data. Once the model is added and real usage data is available, this log line will reflect the actual number of records queried.</Note>
 
 If the entire handler fails, a general error is logged and a `500` response is returned:
 

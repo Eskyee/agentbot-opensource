@@ -7,6 +7,8 @@ description: "Create and manage cron-scheduled tasks that prompt your agents on 
 
 Schedule recurring prompts for your agents using cron expressions. You can create, update, list, and delete scheduled tasks through these endpoints.
 
+<Note>Scheduled tasks are processed by an inline scheduler that runs inside the API process. The scheduler polls for pending tasks every 30 seconds and executes up to 10 tasks per cycle. Each task is dispatched as an HTTP request to the target agent with a 30-second timeout.</Note>
+
 <Note>All scheduled task endpoints require session authentication. Tasks are scoped to the authenticated user — you can only manage tasks for agents you own.</Note>
 
 ## List scheduled tasks

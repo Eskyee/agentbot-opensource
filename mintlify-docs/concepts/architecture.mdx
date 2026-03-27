@@ -13,7 +13,7 @@ How Agentbot is built. A reference for contributors, self-hosters, and anyone wh
 ┌──────────────────────────────────────────────────────────────┐
 │                        USERS                                 │
 │         Telegram · Discord · WhatsApp · Web Dashboard        │
-└──────────────────────────┬───────────────────────────────────┘
+└──────────────────────────────┬───────────────────────────────┘
                            │
                     ┌──────▼──────┐
                     │   VERCEL    │
@@ -23,18 +23,18 @@ How Agentbot is built. A reference for contributors, self-hosters, and anyone wh
                            │
               ┌────────────┼────────────┐
               │            │            │
-       ┌──────▼──────┐ ┌──▼───┐ ┌──────▼──────┐
-       │   RENDER    │ │Redis │ │  Neon PG    │
-       │  Backend    │ │Cache │ │  Database   │
-       │  (Express)  │ │      │ │             │
-       └──────┬──────┘ └──────┘ └─────────────┘
+       ┌──────▼──────┐          ┌──────▼──────┐
+       │   RENDER    │          │  Neon PG    │
+       │  Backend    │          │  Database   │
+       │  (Express)  │          │             │
+       └──────┬──────┘          └─────────────┘
               │
     ┌─────────┼─────────┐
     │         │         │
-┌───▼───┐ ┌──▼──┐ ┌────▼────┐
-│Worker │ │Ollama│ │  A2A    │
-│Service│ │ AI  │ │  Bus    │
-└───────┘ └─────┘ └─────────┘
+┌───▼────┐ ┌──▼──┐ ┌────▼────┐
+│Inline  │ │Ollama│ │  A2A    │
+│Sched.  │ │ AI  │ │  Bus    │
+└────────┘ └─────┘ └─────────┘
 ```
 
 ## Components
@@ -58,8 +58,8 @@ Key directories:
 The core API server. Handles agent provisioning, deployments, A2A communication, and skill management.
 
 Key services:
-- `POST /api/provision` — Create new agents (public, no auth)
-- `POST /api/deployments` — Deploy agent containers (auth required)
+- `POST /api/provision` — Create new agents (auth required)
+- `POST /api/deployments` — Deploy agent services on Render (auth required)
 - `GET /api/agents` — List and manage agents
 - `POST /api/ai/*` — AI provider proxy (OpenRouter, Anthropic, etc.)
 - `GET /api/browse/*` — File explorer (tree, read, write, git sync)
@@ -68,21 +68,13 @@ Key services:
 
 Protected endpoints use JWT auth middleware that verifies the token, attaches user context, and sets the RLS context on the database connection. See the [auth API](/api-reference/auth#auth-middleware) for details.
 
-### Worker service (Render)
+### Inline scheduler
 
-A standalone background job processor built on BullMQ. It connects to the same Redis instance used by the backend and processes jobs from two queues:
+Background task processing runs inside the API process via an inline scheduler. The scheduler polls the `scheduled_tasks` database table every 30 seconds and executes up to 10 pending tasks per cycle. Each task is dispatched as an HTTP request to the target agent's URL with a 30-second timeout.
 
-| Queue | Job types | Concurrency |
-|-------|-----------|-------------|
-| `tasks` | `scheduled-task` — cron jobs per agent | 5 |
-| | `skill-execution` — run a skill on behalf of an agent | |
-| `provision` | `new-agent` — provision a new agent asynchronously | 2 |
+This replaces the previous standalone worker service and BullMQ queue system. No separate worker process or Redis instance is required.
 
-The worker also handles:
-- A2A message routing between agents
-- Webhook processing (Stripe, Telegram, Discord)
-
-The worker listens for `SIGTERM` and drains in-flight jobs before shutting down.
+<Warning>**Deprecated:** The standalone worker service (`Dockerfile.worker`) and its Redis/BullMQ dependency have been removed. All background task processing now happens inline in the API process. If you were running a separate worker service, you can safely remove it.</Warning>
 
 ### Database (Neon PostgreSQL)
 
@@ -95,14 +87,7 @@ Stores:
 
 All user-scoped tables are protected by PostgreSQL row-level security (RLS) policies. Each authenticated request sets a database-level user context so queries automatically return only the calling user's data. Admin users bypass RLS and can access all rows. See [Security](/security#row-level-security) for the full list of protected tables.
 
-### Cache (Redis)
-
-Used for:
-- Rate limiting
-- Session management
-- Real-time agent status
-- A2A message queues
-- Webhook deduplication
+<Warning>**Deprecated:** The Redis cache layer has been removed. Rate limiting is now handled by in-process middleware (`express-rate-limit`). Session management and other functionality previously backed by Redis now use PostgreSQL or in-memory state. If you were running a Redis instance for Agentbot, it is no longer required.</Warning>
 
 ### AI Layer (Ollama + BYOK)
 
@@ -140,7 +125,7 @@ See [File Explorer API](/api-reference/browse) for the full API.
 
 ### Usage Tracker
 
-SQLite-backed token and cost tracking per agent, model, and time period:
+PostgreSQL-backed token and cost tracking per agent, model, and time period:
 
 - Per-event recording (session, agent, provider, model, tokens, cost)
 - Daily aggregation with upsert
@@ -171,9 +156,8 @@ POST /api/provision (Render backend)
        ├── Validate input (plan, provider, tokens)
        ├── Generate userId + agentId
        ├── Store config in PostgreSQL
-       ├── Allocate port + subdomain
-       ├── Deploy Docker container
-       ├── Configure Caddy reverse proxy
+       ├── Create Render web service via Render API
+       ├── Assign subdomain
        │
        ▼
 Return agent URL + stream key to user
@@ -185,7 +169,7 @@ Return agent URL + stream key to user
 User sends message (Telegram/Discord/WhatsApp)
        │
        ▼
-Webhook → Worker Service
+Webhook → Backend API
        │
        ├── Route to correct agent container
        ├── Load agent config + memory
@@ -202,11 +186,9 @@ Response sent back to user
 Agentbot is fully open source. To self-host:
 
 1. **Frontend:** Deploy `web/` to Vercel or any Next.js-compatible host
-2. **Backend:** Run `agentbot-backend/` on any Docker-capable server
-3. **Worker:** Run the worker entry point from `agentbot-backend/` using `Dockerfile.worker`
-4. **Database:** Neon Postgres (free tier available) or any PostgreSQL 15+
-5. **Redis:** Any Redis 7+ instance
-6. **AI:** Ollama for local inference, or configure BYOK providers
+2. **Backend:** Run `agentbot-backend/` on Render or any Express-compatible host (includes the inline scheduler — no separate worker needed)
+3. **Database:** Neon Postgres (free tier available) or any PostgreSQL 15+
+4. **AI:** Ollama for local inference, or configure BYOK providers
 
 See [Installation](/installation) for full setup instructions.
 
@@ -217,7 +199,7 @@ See [Installation](/installation) for full setup instructions.
 | Next.js 16 | App Router, server components, Vercel-native DX |
 | Express (not serverless) | Long-running agent processes need persistent connections |
 | Neon Postgres | Serverless, scales to zero, generous free tier |
-| Redis | Fast rate limiting and session management |
-| Docker | Isolated agent environments per user |
+| In-process rate limiting | `express-rate-limit` middleware — no external dependencies |
+| Render services | Isolated agent environments per user (provisioned via Render API) |
 | BYOK over reselling | Users pay providers directly — no markup, no lock-in |
 | Base (not Ethereum) | Low fees, fast finality, Coinbase ecosystem |

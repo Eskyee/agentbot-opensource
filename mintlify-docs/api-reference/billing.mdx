@@ -22,26 +22,32 @@ Returns the available plans, the authenticated user's current plan, subscription
 ```json
 {
   "plans": {
-    "starter": {
-      "name": "Starter",
-      "price": 19,
-      "dailyUnits": 600,
-      "features": ["1 AI Agent", "2GB RAM", "Telegram", "Basic skills"]
+    "solo": {
+      "name": "Solo",
+      "price": 29,
+      "agents": 1,
+      "features": ["1 AI Agent", "2GB RAM", "Telegram"]
     },
-    "pro": {
-      "name": "Pro",
-      "price": 39,
-      "dailyUnits": 1000,
-      "features": ["1 AI Agent", "4GB RAM", "All channels", "All skills", "Priority support"]
+    "collective": {
+      "name": "Collective",
+      "price": 69,
+      "agents": 3,
+      "features": ["3 AI Agents", "4GB RAM", "Telegram + WhatsApp"]
     },
-    "scale": {
-      "name": "Scale",
-      "price": 79,
-      "dailyUnits": 2500,
-      "features": ["3 AI Agents", "8GB RAM", "All channels", "All skills", "Analytics"]
+    "label": {
+      "name": "Label",
+      "price": 149,
+      "agents": 10,
+      "features": ["10 AI Agents", "8GB RAM", "All channels", "White-label emails"]
+    },
+    "network": {
+      "name": "Network",
+      "price": 499,
+      "agents": -1,
+      "features": ["Unlimited agents", "16GB RAM", "White-label reselling"]
     }
   },
-  "currentPlan": "starter",
+  "currentPlan": "solo",
   "subscriptionStatus": "active",
   "byokEnabled": false,
   "usage": {
@@ -57,12 +63,14 @@ Returns the available plans, the authenticated user's current plan, subscription
 | Field | Type | Description |
 |-------|------|-------------|
 | `plans` | object | Map of available plans with pricing and features |
-| `currentPlan` | string | User's current plan (`free`, `starter`, `pro`, or `scale`) |
+| `currentPlan` | string | User's current plan. One of `solo`, `collective`, `label`, or `network`. Users who subscribed via the Stripe checkout flow have plans like `solo`, `collective`, `label`, or `network`. |
 | `subscriptionStatus` | string | Stripe subscription status (`active`, `inactive`, etc.) |
 | `byokEnabled` | boolean | Whether BYOK mode is active |
 | `usage.dailyUnits` | number | Daily unit allowance for the current plan |
 | `usage.used` | number | Units used today |
 | `usage.remaining` | number | Units remaining today |
+
+<Note>The `currentPlan` value is set by the Stripe webhook when a checkout completes. Plans created through the primary checkout flow (`/api/stripe/checkout`) use `solo`, `collective`, `label`, or `network`. The billing dashboard displays these with their plan names: `solo` appears as "Solo", `collective` as "Collective", and `label` as "Label".</Note>
 
 ### Errors
 
@@ -88,7 +96,7 @@ Creates a Stripe checkout session for subscribing to a plan.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `action` | string | Yes | Must be `create-checkout` |
-| `plan` | string | Yes | Plan to subscribe to: `starter`, `pro`, or `scale` |
+| `plan` | string | Yes | Plan to subscribe to: `solo`, `collective`, `label`, or `network` |
 
 #### Response
 
@@ -224,7 +232,7 @@ GET /api/stripe/checkout
 
 Redirects to a Stripe checkout session for subscribing to a plan. This endpoint uses the `solo`, `collective`, `label`, and `network` plan names with GBP pricing. Admin users (configured via `ADMIN_EMAILS`) bypass Stripe and are redirected directly to the onboarding page.
 
-<Note>The Stripe checkout plans (`solo`, `collective`, `label`, `network`) use different names and pricing from the billing API plans (`starter`, `pro`, `scale`). The checkout plans are the primary subscription path for agent provisioning, while the billing API plans power the dashboard billing page.</Note>
+<Note>The checkout plans (`solo`, `collective`, `label`, `network`) are the primary subscription path for agent provisioning. Admin users (configured via `ADMIN_EMAILS`) bypass Stripe entirely.</Note>
 
 ### Query parameters
 
@@ -243,11 +251,13 @@ Redirects to a Stripe checkout session for subscribing to a plan. This endpoint 
 
 ### Response
 
-On success, redirects (303) to the Stripe checkout URL. On error, redirects to the pricing page with an error query parameter.
+On success, redirects (303) to the Stripe checkout URL. After payment completes, Stripe redirects the user to `/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan={plan}`. On error, redirects to the pricing page with an error query parameter.
 
 | Redirect | Description |
 |----------|-------------|
-| Stripe checkout URL | Successful session creation |
+| Stripe checkout URL | Successful session creation — user completes payment on Stripe |
+| `/checkout/success?session_id=...&plan=...` | Post-payment redirect from Stripe after successful checkout |
+| `/pricing?cancelled=1` | User cancelled the Stripe checkout |
 | `/pricing?error=invalid_plan` | Unrecognized plan name |
 | `/pricing?error=stripe_not_configured` | Stripe secret key not set |
 | `/pricing?error=checkout_failed` | Stripe API error |

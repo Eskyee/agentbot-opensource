@@ -18,7 +18,7 @@ Every agent needs data. Agentbot provides a layered data architecture — from l
 | Source | Purpose | Access |
 |--------|---------|--------|
 | **PostgreSQL (Neon)** | User data, agent config, workflows, billing | `DATABASE_URL` env var |
-| **Redis** | Caching, rate limiting, session state | `REDIS_URL` env var |
+| ~~**Redis**~~ | ~~Caching, rate limiting, session state~~ | ~~`REDIS_URL` env var~~ **Deprecated** — Redis is no longer required. Rate limiting uses in-process middleware. |
 | **BlockDB** | Music metadata, audio components, rights | [BlockDB docs](/services/blockdb) |
 
 ### Blockchain
@@ -68,7 +68,6 @@ Set data source credentials in your `.env`:
 ```bash
 # Database
 DATABASE_URL=postgresql://user:pass@host:5432/agentbot
-REDIS_URL=redis://localhost:6379
 
 # AI Providers (at least one required)
 OPENROUTER_API_KEY=sk-or-...
@@ -93,10 +92,10 @@ CDP_API_KEY_PRIVATE_KEY=your-private-key
    ┌────▼──────────────▼─────────────▼────┐
    │        DATA SOURCE LAYER             │
    │                                      │
-   │  ┌───────┐ ┌───────┐ ┌───────────┐  │
-   │  │  PG   │ │ Redis │ │Blockchain │  │
-   │  │(Neon) │ │       │ │  (Base)   │  │
-   │  └───────┘ └───────┘ └───────────┘  │
+   │  ┌───────┐           ┌───────────┐  │
+   │  │  PG   │           │Blockchain │  │
+   │  │(Neon) │           │  (Base)   │  │
+   │  └───────┘           └───────────┘  │
    │                                      │
    │  ┌───────┐ ┌───────┐ ┌───────────┐  │
    │  │AI APIs│ │BlockDB│ │  External │  │

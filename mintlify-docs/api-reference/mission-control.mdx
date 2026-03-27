@@ -7,7 +7,7 @@ description: "Monitor your agent fleet with real-time graphs, execution traces, 
 
 Mission control provides a real-time view of your agent fleet. Use these endpoints to visualize agent relationships, trace execution activity, attribute costs per agent, and track talent bookings.
 
-<Note>All mission control endpoints require bearer token (API key) authentication. The fleet graph and traces endpoints also require a `userId` query parameter. The web proxy uses session authentication and resolves the user ID from the session before forwarding to these endpoints. The fleet graph and traces endpoints return safe default responses for unauthenticated requests instead of an error.</Note>
+<Note>All four mission control endpoints require bearer token (API key) authentication and accept a `userId` query parameter. The backend returns `401` for unauthenticated requests. The web proxy uses session authentication and resolves the user ID from the session before forwarding to these backend endpoints — the web proxy layer returns safe default responses (empty data with a `200` status) for unauthenticated requests instead of forwarding the `401`.</Note>
 
 ## Fleet graph
 
@@ -33,8 +33,8 @@ Requires bearer token authentication.
 {
   "nodes": [
     {
-      "id": "borg-0",
-      "name": "borg-0",
+      "id": "tempo-x402",
+      "name": "tempo-x402",
       "role": "orchestrator",
       "status": "active",
       "x": 400,
@@ -48,25 +48,7 @@ Requires bearer token authentication.
       "cycles": 1042,
       "regime": "explore",
       "freeEnergy": 0.34,
-      "url": "https://borg-0-production.up.railway.app"
-    },
-    {
-      "id": "borg-0-3",
-      "name": "borg-0-3",
-      "role": "specialist",
-      "status": "active",
-      "x": 400,
-      "y": 250,
-      "load": 44,
-      "memory": 61,
-      "fitness": 70,
-      "walletAddress": "0x5678...ef01",
-      "children": 0,
-      "endpoints": 1,
-      "cycles": 530,
-      "regime": "exploit",
-      "freeEnergy": 0.18,
-      "url": "https://borg-0-3-production.up.railway.app"
+      "url": "https://tempo-x402-production.up.railway.app"
     },
     {
       "id": "a1b2c3d4",
@@ -83,21 +65,15 @@ Requires bearer token authentication.
   ],
   "edges": [
     {
-      "id": "e-borg-0-a1b2c3d4",
-      "from": "borg-0",
+      "id": "e-tempo-x402-a1b2c3d4",
+      "from": "tempo-x402",
       "to": "a1b2c3d4",
       "strength": 0.6
-    },
-    {
-      "id": "e-borg-0-borg-0-3",
-      "from": "borg-0",
-      "to": "borg-0-3",
-      "strength": 0.7
     }
   ],
   "timestamp": "2026-03-22T12:00:00.000Z",
   "source": "soul",
-  "nodeCount": 2
+  "nodeCount": 1
 }
 ```
 
@@ -123,7 +99,7 @@ When no souls are reachable, the response uses the fallback shape with minimal n
 }
 ```
 
-When the request is unauthenticated (no valid session), the endpoint returns a default response instead of an error:
+When the request is unauthenticated (no valid session), the web proxy returns a default response instead of forwarding the backend `401` error:
 
 ```json
 {
@@ -189,7 +165,12 @@ When the request is unauthenticated (no valid session), the endpoint returns a d
 
 ### Errors
 
-Unauthenticated requests return a `200` response with default empty data (see above) instead of an error.
+| Code | Source | Description |
+|------|--------|-------------|
+| 401 | Backend | Unauthorized — missing or invalid bearer token |
+| 500 | Backend | Internal server error |
+
+The web proxy returns a `200` response with default empty data (see above) for unauthenticated requests instead of forwarding the backend `401`.
 
 ## Execution traces
 
@@ -217,7 +198,7 @@ Requires bearer token authentication.
     "id": "trace-plan-0",
     "type": "plan",
     "label": "plan: reflect (2/5)",
-    "agent": "borg-0",
+    "agent": "tempo-x402",
     "status": "running",
     "duration": "—",
     "startedAt": "2026-03-22T12:00:00.000Z",
@@ -227,7 +208,7 @@ Requires bearer token authentication.
     "id": "trace-thought-0-0",
     "type": "inference",
     "label": "plan: next step is to consolidate memory entries",
-    "agent": "borg-0",
+    "agent": "tempo-x402",
     "status": "success",
     "duration": "285ms",
     "startedAt": "2026-03-22T11:59:56.000Z",
@@ -237,7 +218,7 @@ Requires bearer token authentication.
     "id": "trace-fe-0-0",
     "type": "monitor",
     "label": "cortex: surprise=0.12, contribution=0.04",
-    "agent": "borg-0",
+    "agent": "tempo-x402",
     "status": "success",
     "duration": "1ms",
     "startedAt": "2026-03-22T11:59:50.000Z",
@@ -247,7 +228,7 @@ Requires bearer token authentication.
     "id": "trace-cycles-0",
     "type": "monitor",
     "label": "cycle 1042 complete — mode: active, regime: explore",
-    "agent": "borg-0",
+    "agent": "tempo-x402",
     "status": "success",
     "duration": "—",
     "startedAt": "2026-03-22T11:59:45.000Z",
@@ -263,7 +244,7 @@ Requires bearer token authentication.
 | `id` | string | Unique trace identifier |
 | `type` | string | Task type. One of `plan`, `tool_call`, `inference`, or `monitor` |
 | `label` | string | Description of the task executed |
-| `agent` | string | Soul designation that produced the trace (for example `"borg-0"`) |
+| `agent` | string | Soul designation that produced the trace (for example `"tempo-x402"`) |
 | `status` | string | Execution result. One of `success`, `running`, or `idle` |
 | `duration` | string | Execution time in milliseconds (for example `"285ms"`), or `"—"` for ongoing or non-timed traces |
 | `startedAt` | string | ISO 8601 timestamp when the task started |
@@ -273,7 +254,12 @@ Requires bearer token authentication.
 
 ### Errors
 
-Unauthenticated requests return a `200` response with an empty array `[]` instead of an error.
+| Code | Source | Description |
+|------|--------|-------------|
+| 401 | Backend | Unauthorized — missing or invalid bearer token |
+| 500 | Backend | Internal server error |
+
+The web proxy returns a `200` response with an empty array `[]` for unauthenticated requests instead of forwarding the backend `401`.
 
 ## Cost attribution
 
@@ -281,45 +267,46 @@ Unauthenticated requests return a `200` response with an empty array `[]` instea
 GET /api/mission-control/fleet/costs
 ```
 
-Returns per-agent cost attribution metrics grouped by spending category. Use this to understand how costs are distributed across your agent fleet.
+Returns a cost breakdown for your agent fleet. Requires bearer token authentication. The web proxy uses session authentication and resolves the user ID from the session before forwarding to this backend endpoint. Returns a default empty response for unauthenticated requests.
+
+### Authentication
+
+Requires bearer token authentication.
 
 ### Query parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `userId` | number | Yes | The user ID to fetch cost metrics for |
+| `userId` | number | Yes | The user ID to fetch cost data for |
 
 ### Response
 
 ```json
-[
-  {
-    "agent_id": "atlas",
-    "total_spend": "12.50",
-    "category": "ai_metric"
-  },
-  {
-    "agent_id": "djbot",
-    "total_spend": "8.30",
-    "category": "agent_message"
-  }
-]
+{
+  "costs": [],
+  "totalSpend": 0,
+  "managedAiCost": 0,
+  "coordinationRevenue": 0
+}
 ```
 
-### Cost object
+### Response fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `agent_id` | string | Agent identifier |
-| `total_spend` | string | Total spend in USDC for this agent and category |
-| `category` | string | Spending category, such as `ai_metric` or `agent_message` |
+| `costs` | array | List of cost line items. Currently returns an empty array while real data wiring is in progress |
+| `totalSpend` | number | Total spend across the fleet |
+| `managedAiCost` | number | AI model usage cost |
+| `coordinationRevenue` | number | Revenue from agent coordination |
 
 ### Errors
 
-| Code | Description |
-|------|-------------|
-| 401 | Unauthorized |
-| 500 | Failed to fetch cost metrics |
+| Code | Source | Description |
+|------|--------|-------------|
+| 401 | Backend | Unauthorized — missing or invalid bearer token |
+| 500 | Backend | Internal server error |
+
+The web proxy returns a `200` response with `{ costs: [] }` for unauthenticated requests instead of forwarding the backend `401`.
 
 ## Talent bookings
 
@@ -327,41 +314,37 @@ Returns per-agent cost attribution metrics grouped by spending category. Use thi
 GET /api/mission-control/fleet/bookings
 ```
 
-Returns talent bookings associated with your agent fleet. Each booking includes the linked event name and booking details.
+Returns active booking requests for your agent fleet. Requires bearer token authentication. The web proxy uses session authentication and resolves the user ID from the session before forwarding to this backend endpoint. Returns a default empty response for unauthenticated requests.
+
+### Authentication
+
+Requires bearer token authentication.
 
 ### Query parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `userId` | number | Yes | The user ID to fetch bookings for |
+| `userId` | number | Yes | The user ID to fetch booking data for |
 
 ### Response
 
 ```json
-[
-  {
-    "id": 1,
-    "event_id": 42,
-    "event_name": "Underground Rave",
-    "status": "confirmed",
-    "created_at": "2026-03-20T18:00:00.000Z"
-  }
-]
+{
+  "bookings": []
+}
 ```
 
-### Booking object
+### Response fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | number | Booking identifier |
-| `event_id` | number | Associated event identifier |
-| `event_name` | string | Name of the associated event |
-| `status` | string | Booking status |
-| `created_at` | string | ISO 8601 timestamp when the booking was created |
+| `bookings` | array | List of booking objects. Currently returns an empty array while real data wiring is in progress |
 
 ### Errors
 
-| Code | Description |
-|------|-------------|
-| 401 | Unauthorized |
-| 500 | Failed to fetch bookings |
+| Code | Source | Description |
+|------|--------|-------------|
+| 401 | Backend | Unauthorized — missing or invalid bearer token |
+| 500 | Backend | Internal server error |
+
+The web proxy returns a `200` response with `{ bookings: [] }` for unauthenticated requests instead of forwarding the backend `401`.

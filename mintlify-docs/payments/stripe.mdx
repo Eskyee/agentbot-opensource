@@ -41,7 +41,14 @@ Crypto payments are not accepted through Stripe checkout. For USDC payments on B
 2. Enter keys
 3. Click **Connect**
 
-### Step 4: Configure webhook
+### Step 4: Configure webhooks
+
+Two webhook endpoints handle Stripe events:
+
+1. **Subscription webhook** — handles subscription lifecycle events
+2. **Wallet top-up webhook** — handles wallet top-up payments
+
+#### Subscription webhook
 
 1. Go to **Developers → Webhooks**
 2. Add endpoint: `https://agentbot.raveculture.xyz/api/webhooks/stripe`
@@ -54,18 +61,29 @@ Crypto payments are not accepted through Stripe checkout. For USDC payments on B
    - `invoice.payment_failed`
 4. Copy webhook secret and add to Agentbot
 
+#### Wallet top-up webhook
+
+1. Add a second endpoint: `https://agentbot.raveculture.xyz/api/wallet/top-up`
+2. Select events:
+   - `checkout.session.completed`
+3. Copy webhook secret and add to Agentbot as `STRIPE_WEBHOOK_SECRET`
+
+<Note>The wallet top-up webhook only processes `checkout.session.completed` events where the session metadata `type` field is set to `wallet_top_up`. All other checkout events are ignored by this endpoint.</Note>
+
 ## Pricing plans
 
 All plans are billed monthly in GBP. A paid subscription is required to provision and use agents — there is no free tier.
 
-<Warning>Attempting to provision an agent without an active paid subscription returns `402 Payment Required`. All users must subscribe to a plan before creating agents.</Warning>
+<Warning>Attempting to provision an agent without an active paid subscription returns an error. The web proxy returns `403 Forbidden` with the message `Active subscription required. Please purchase a plan to deploy.` Admin users bypass this check. All non-admin users must subscribe to a plan before creating agents.</Warning>
 
-| Plan | Price | Features |
-|------|-------|----------|
-| Solo | £29/mo | 1 Creative Agent thread, Telegram, 2GB RAM |
-| Collective | £69/mo | 3 Creative Agent threads, +1 OpenClaw seat, WhatsApp, 4GB RAM |
-| Label | £149/mo | 10 Creative Agent threads, +3 OpenClaw seats, white-label emails, 8GB RAM |
-| Network | £499/mo | Unlimited agents and OpenClaw seats, white-label reselling, 16GB RAM |
+| Plan | Price | Specs | Key features |
+|------|-------|-------|--------------|
+| Solo | £29/mo | 1 Agent · Mistral 7B | Telegram, BYOK, A2A Bus Access, Basic Analytics |
+| Collective | £69/mo | 3 Agents · Llama 3.3 | Everything in Solo + Royalty Split Engine, Mission Control Graph, WhatsApp, Priority support |
+| Label | £149/mo | Unlimited · DeepSeek R1 | Everything in Collective + Priority A2A Routing, 24/7 Signal Guard, White-glove staging, Custom integrations, Dedicated account manager |
+| Network | £499/mo | Unlimited | Everything in Label + white-label reselling, 16GB RAM |
+
+<Note>The billing page displays the Solo, Collective, and Label plans as upgrade options. The Network plan is available by contacting sales.</Note>
 
 ## Enterprise add-ons
 
@@ -100,6 +118,15 @@ The Full Enterprise Suite bundles all add-ons and additional enterprise capabili
 
 To purchase the Full Enterprise Suite, contact sales or use the billing page in the dashboard.
 
+## Payment methods
+
+The billing page supports two payment methods:
+
+- **Stripe** — pay with card for instant activation
+- **Tempo Wallet** — pay with USDC for on-chain settlement
+
+Card payments go through the Stripe checkout flow described below. For USDC payments, see the [Wallet API reference](/api-reference/wallet) and [MPP payments](/payments/mpp).
+
 ## Checkout
 
 ### Start a checkout session
@@ -116,7 +143,9 @@ GET /api/stripe/checkout?plan={plan_id}
 |-----------|------|----------|-------------|
 | `plan` | string | Yes | One of `solo`, `collective`, `label`, or `network` |
 
-The endpoint redirects the user to Stripe's hosted checkout page. On success, the user is redirected to the onboarding page. On cancellation, the user returns to the pricing page.
+<Note>The `plan` parameter uses internal plan IDs. The billing page maps these to display names: `solo` is shown as "Solo", `collective` as "Collective", `label` as "Label", and `network` as "Network".</Note>
+
+The endpoint redirects the user to Stripe's hosted checkout page. On successful payment, the user is redirected to `/checkout/success` with the Stripe session ID and plan as query parameters. On cancellation, the user returns to the pricing page.
 
 <Note>
 Admin users (configured via `ADMIN_EMAILS`) skip the Stripe checkout flow entirely and are redirected straight to onboarding. No payment is required for admin accounts.
@@ -136,6 +165,51 @@ window.location.href = '/api/stripe/checkout?plan=collective'
 <Warning>
 The legacy `POST /api/checkout` endpoint is deprecated and returns a `410 Gone` status. Use `GET /api/stripe/checkout` instead.
 </Warning>
+
+### Verify a checkout session
+
+After a successful checkout, you can verify the session and retrieve the resulting plan:
+
+```http
+GET /api/checkout/verify?session_id={session_id}
+```
+
+**Parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `session_id` | string | Yes | The Stripe checkout session ID returned after payment |
+
+This endpoint verifies that the checkout session has been paid and returns the subscription details. When the session metadata includes a `userId`, the endpoint also eagerly marks the user's subscription as active in the database. This ensures the user can provision agents immediately without waiting for the Stripe webhook to arrive.
+
+<Note>The subscription activation performed by this endpoint is idempotent. The Stripe webhook will also set the same values when it arrives — whichever runs first wins, and the second update is a no-op.</Note>
+
+**Response**
+
+```json
+{
+  "plan": "collective",
+  "status": "active",
+  "nextBilling": "2026-04-27T00:00:00.000Z",
+  "customerId": "cus_abc123"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `plan` | string | The plan from session metadata (defaults to `solo` if not set) |
+| `status` | string | Always `active` when payment is confirmed |
+| `nextBilling` | string \| null | ISO 8601 date of the next billing cycle, if available from the subscription |
+| `customerId` | string | Stripe customer ID |
+
+**Errors**
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `session_id` parameter |
+| 402 | Payment not completed |
+| 500 | Verification failed |
+| 503 | Stripe not configured |
 
 ### Buy credits
 
@@ -376,7 +450,7 @@ Redirect the user to the returned `url` to complete the upgrade. On success, the
 Handle subscription events:
 
 ```typescript
-// /api/webhooks/stripe
+// /api/webhooks/stripe (canonical endpoint)
 export async function POST(request) {
   const sig = request.headers.get('stripe-signature');
   const body = await request.text();
@@ -385,7 +459,7 @@ export async function POST(request) {
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
   } catch (err) {
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    return new Response(`Webhook Error: ${err.message}`, { status: 401 });
   }
   
   switch (event.type) {
@@ -403,21 +477,68 @@ export async function POST(request) {
 }
 ```
 
+<Warning>The legacy endpoint at `/api/stripe/webhook` is deprecated. It logs a deprecation warning and forwards requests to `/api/webhooks/stripe`. Update your Stripe dashboard webhook URL to the canonical endpoint. If the forwarding request fails, the legacy endpoint returns a `502 Bad Gateway` response with `{ "error": "Forward failed" }`. A `GET` request to the legacy endpoint returns `{ "status": "deprecated", "message": "Use /api/webhooks/stripe instead" }`.</Warning>
+
 ### Plan mapping
 
 When processing `checkout.session.completed` events, the webhook maps the `plan` value from the session metadata to a subscription tier. The following plans are recognized:
 
 | Metadata value | Mapped plan |
 |----------------|-------------|
-| `underground` | `underground` |
+| `underground` | `solo` |
 | `solo` | `solo` |
 | `collective` | `collective` |
 | `label` | `label` |
 | `network` | `network` |
 
-Any unrecognized plan value falls back to `free`. This means the user's subscription is not activated for agent provisioning — they must complete checkout with a valid plan name.
+Any unrecognized plan value falls back to `solo`. The `underground` plan is mapped to `solo` for backward compatibility.
 
-<Warning>If your Stripe product metadata uses a plan name that is not in the table above, the subscription will be recorded as `free` and the user will not be able to provision agents. Make sure your Stripe product metadata `plan` field matches one of the recognized values exactly.</Warning>
+<Warning>If your Stripe product metadata uses a plan name that is not in the table above, the subscription will be recorded as `solo`. Make sure your Stripe product metadata `plan` field matches one of the recognized values exactly.</Warning>
+
+## Wallet top-up
+
+In addition to subscriptions and credit packs, you can use Stripe to add funds directly to your wallet for agent calls. The wallet top-up flow uses a dedicated endpoint that creates a one-time Stripe checkout session.
+
+### Available amounts
+
+| Amount | Description |
+|--------|-------------|
+| $5 | 5 agent calls |
+| $10 | 10 agent calls |
+| $25 | 25 agent calls |
+| $50 | 50 agent calls |
+
+### Start a wallet top-up
+
+Redirect the user to the wallet top-up endpoint with `amount` and `address` query parameters:
+
+```http
+GET /api/wallet/top-up?amount=1000&address=0x...
+```
+
+**Parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `amount` | number | No | Amount in cents: `500`, `1000`, `2500`, or `5000`. Defaults to `1000`. |
+| `address` | string | Yes | Wallet address to credit (0x-prefixed, 42 characters). |
+
+The endpoint returns a JSON response with the Stripe checkout URL and session ID. Redirect the user to the `url` to complete payment. No session authentication is required — the wallet address identifies the recipient.
+
+**Example**
+
+```bash
+# Redirect user to wallet top-up ($25)
+window.location.href = '/api/wallet/top-up?amount=2500&address=0xd8fd...db56f'
+```
+
+On success, the user is redirected to `/dashboard/wallet?top_up=success`. On cancellation, the user is redirected to `/dashboard/wallet?top_up=cancelled`.
+
+<Note>Wallet top-up payments are processed as one-time charges, not recurring subscriptions. The amount is credited to the user's wallet after successful payment via the webhook at `POST /api/wallet/top-up`. See the [Wallet API reference](/api-reference/wallet#wallet-top-up) for full endpoint details.</Note>
+
+### Direct transfer
+
+You can also fund your wallet by sending USDC directly to your wallet address on the Tempo network. Copy your wallet address from the wallet dashboard and transfer funds from any compatible wallet. No Stripe checkout is needed for direct transfers.
 
 ## Troubleshooting
 

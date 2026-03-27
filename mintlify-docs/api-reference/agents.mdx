@@ -92,7 +92,7 @@ Creates a new agent with an auto-generated ID and stores its metadata on disk. R
 |-------|------|----------|-------------|
 | `name` | string | Yes | Agent name |
 | `config` | object | No | Agent configuration |
-| `config.plan` | string | No | Plan tier (for example, `solo`, `collective`, `label`, `network`) |
+| `config.plan` | string | No | Plan tier (for example, `solo`, `collective`, `label`, `network`). Defaults to `free` when omitted. Note that `free` is not a standard plan tier and may not be recognized by other endpoints. |
 | `config.aiProvider` | string | No | AI provider (for example, `openrouter`, `anthropic`) |
 
 ### Response (201 Created)
@@ -113,11 +113,11 @@ Creates a new agent with an auto-generated ID and stores its metadata on disk. R
 
 | Code | Description |
 |------|-------------|
-| 400 | Agent name is required |
+| 400 | Name required |
 | 401 | Unauthorized |
 | 500 | Failed to create agent |
 
-<Note>For provisioning an agent with messaging channel tokens and a live container deployment, use [`POST /api/agents/provision`](#provision-agent) or [`POST /api/provision`](#provision-with-channel-tokens) instead.</Note>
+<Note>For provisioning an agent with messaging channel tokens and a live Render service deployment, use [`POST /api/agents/provision`](#provision-agent) or [`POST /api/provision`](#provision-with-channel-tokens) instead.</Note>
 
 ## Get agent
 
@@ -139,7 +139,7 @@ The backend returns the agent object directly without a wrapper:
   "plan": "solo",
   "subdomain": "agent_123.agents.localhost",
   "url": "https://agent_123.agents.localhost",
-  "openclawVersion": "2026.3.13",
+  "openclawVersion": "2026.3.24",
   "verified": false,
   "verificationType": null,
   "attestationUid": null,
@@ -160,13 +160,12 @@ The web proxy wraps the agent in an object:
     "plan": "solo",
     "subdomain": "agent_123.agents.localhost",
     "url": "https://agent_123.agents.localhost",
-    "openclawVersion": "2026.3.13",
+    "openclawVersion": "2026.3.24",
     "verified": false,
     "verificationType": null,
     "attestationUid": null,
     "verifiedAt": null
-  },
-  "status": "ok"
+  }
 }
 ```
 
@@ -225,7 +224,7 @@ Updates an agent's metadata including plan, AI provider, and configuration. Requ
 DELETE /api/agents/:id
 ```
 
-Stops the agent's container, releases its port, and removes its metadata. Requires bearer token authentication (backend).
+Stops and removes the agent's local Docker container, deallocates its port, and removes its metadata file. Requires bearer token authentication (backend).
 
 ### Response
 
@@ -243,7 +242,7 @@ Stops the agent's container, releases its port, and removes its metadata. Requir
 | 401 | Unauthorized |
 | 500 | Failed to delete agent |
 
-<Note>The backend uses best-effort cleanup (container stop, port release, metadata removal). If the agent does not exist, the operation succeeds silently and returns `deleted: true`.</Note>
+<Note>The backend uses best-effort cleanup (service destruction and metadata removal). If the agent does not exist, the operation succeeds silently and returns `deleted: true`.</Note>
 
 ## Provision agent
 
@@ -253,9 +252,9 @@ POST /api/agents/provision
 
 Provisions a new agent. Requires an active subscription unless the caller is an admin.
 
-<Note>Provisioning requests may be processed asynchronously through the background task queue. The agent is created immediately with a `provisioning` status and transitions to `running` once the backend deployment endpoint confirms the deployment. If deployment fails, the status changes to `error`.</Note>
+<Note>The agent is created immediately with a `provisioning` status and transitions to `running` once the backend deployment endpoint confirms the deployment. If deployment fails, the status changes to `error`.</Note>
 
-<Note>The provisioning endpoint calls `POST /api/deployments` on the backend to deploy the agent container. The request includes a 15-second timeout. When the model is set to `claude-opus-4-6`, the AI provider is automatically set to `anthropic`; otherwise it falls back to the provider specified in the agent configuration (default: `openrouter`). The plan sent to the backend defaults to `label` when no tier is specified.</Note>
+<Note>The provisioning endpoint calls `POST /api/deployments` on the backend to deploy the agent as a Render service. The request includes a 15-second timeout. When the model is set to `claude-opus-4-6`, the AI provider is automatically set to `anthropic`; otherwise it falls back to the provider specified in the agent configuration (default: `openrouter`). The plan sent to the backend defaults to `label` when no tier is specified.</Note>
 
 ### Request body
 
@@ -266,7 +265,9 @@ Provisions a new agent. Requires an active subscription unless the caller is an 
 | `config` | object | No | Agent configuration |
 | `tier` | string | No | Subscription tier hint. Options: `starter`, `pro`, `enterprise`. This value is forwarded to the backend as the `plan` field (mapped to `solo`, `collective`, `label`, `network`). When omitted, the backend deployment defaults to `label`. |
 
-<Note>The web proxy enforces agent limits based on the subscription tier (`starter`: 1, `pro`: 3, `enterprise`: 100). The backend provisioning route (`POST /api/provision`) enforces its own limits (`solo`: 1, `collective`: 3, `label`: 10, `network`: unlimited). These are the primary enforcement points for agent provisioning. The limit cannot be overridden in the request body.</Note>
+<Note>The web proxy enforces agent limits based on the subscription tier (`starter`: 1, `pro`: 3, `enterprise`: 100). The backend provisioning route (`POST /api/provision`) enforces its own limits (`solo`: 1, `collective`: 3, `label`: 10, `network`: 999999). The plan middleware enforces a separate set of agent limits for AI model access (`solo`: 1, `collective`: 10, `label`: 3, `network`: 100). The provisioning limits and middleware limits apply independently. The limit cannot be overridden in the request body.</Note>
+
+<Note>The backend also accepts legacy plan aliases for resource allocation: `underground` (2 GB / 1 CPU), `starter` (2 GB / 1 CPU), `pro` (4 GB / 2 CPU), `scale` (8 GB / 4 CPU), `enterprise` (16 GB / 4 CPU), and `white_glove` (32 GB / 8 CPU). These are accepted in addition to the standard plan names (`solo`, `collective`, `label`, `network`) when determining container resource limits.</Note>
 
 ### Admin bypass
 
@@ -274,6 +275,10 @@ Admin users (configured via `ADMIN_EMAILS`) are exempt from the following restri
 
 - **Subscription requirement** — admins can provision agents without an active subscription (the `402` error is not returned).
 - **Agent limit** — admins receive an elevated agent slot limit instead of the plan-based cap.
+
+Admin status is determined by checking the session email against `ADMIN_EMAILS`. This endpoint does not accept an `email` field in the request body — only the authenticated session email is used for the admin check. See [admin check](#admin-check) in the `POST /api/provision` section for the legacy endpoint's resolution order, which also supports a body email fallback when no session is present.
+
+<Note>The backend also supports a `TESTER_EMAILS` environment variable. When backend payment enforcement is re-enabled, emails listed in `TESTER_EMAILS` will bypass the Stripe subscription check, similar to admin emails. This feature is currently inactive because backend payment enforcement is disabled (see the `402` error note below).</Note>
 
 ### Response (201 Created)
 
@@ -307,67 +312,25 @@ Admin users (configured via `ADMIN_EMAILS`) are exempt from the following restri
 POST /api/agents/clone
 ```
 
-Creates a new agent by cloning an existing parent agent. Requires a verified payment proof on the Tempo chain (x402 protocol). The caller must pay 1.0 pathUSD to clone an agent.
+<Warning>**Not yet available.** Agent cloning is under development and this endpoint currently returns `501 Not Implemented`. No payment is processed. The request body is ignored.</Warning>
 
-<Note>This endpoint uses the [x402 Tempo protocol](/payments/x402#tempo-chain) for payment verification. The payment must be completed on the Tempo chain (chain ID `4217`) before calling this endpoint.</Note>
-
-### Request body
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `parentAgentId` | string | Yes | ID of the agent to clone |
-| `name` | string | Yes | Name for the new agent |
-| `specialization` | string | No | Agent specialization. Options: `general` (default), `ar`, `promo`, `booking`, `support`, `analytics` |
-| `paymentProof` | object | Yes | On-chain payment proof (see below) |
-| `generation` | number | No | Current generation depth of the parent agent (default: `1`). The cloned agent's generation is set to this value plus one. |
-
-#### Payment proof object
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `transactionHash` | string | Yes | Transaction hash on Tempo chain (must start with `0x`) |
-| `amount` | string | Yes | Payment amount (must be at least `1.0`) |
-| `currency` | string | Yes | Must be `pathUSD` |
-| `chainId` | number | Yes | Must be `4217` (Tempo chain) |
-| `from` | string | Yes | Sender wallet address |
-| `to` | string | Yes | Recipient wallet address |
-| `timestamp` | number | Yes | Unix timestamp of the payment |
-
-### Response (200)
+### Response (501 Not Implemented)
 
 ```json
 {
-  "success": true,
-  "agentId": "agent_1711234567890_a1b2c3",
-  "walletAddress": "0x1234...abcd",
-  "parentAgentId": "agent_789",
-  "generation": 2,
-  "transactionHash": "0xabc123...",
-  "specialization": "general",
-  "status": "provisioning",
-  "message": "Agent \"My Clone\" cloned successfully. Wallet funded with 0 pathUSD."
+  "error": "Agent cloning is not yet available",
+  "message": "This feature is under development. No payment has been charged.",
+  "status": "unavailable"
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | boolean | Whether the clone was created |
-| `agentId` | string | Unique identifier for the new agent |
-| `walletAddress` | string | Wallet address assigned to the new agent |
-| `parentAgentId` | string | ID of the parent agent |
-| `generation` | number | Generation depth (number of hops from the root agent) |
-| `transactionHash` | string | Transaction hash from the payment proof |
-| `specialization` | string | Agent specialization |
-| `status` | string | Always `provisioning` on success |
-| `message` | string | Human-readable confirmation message |
+All POST requests to this endpoint return `501` regardless of the request body. No payment flow is initiated.
 
 ### Errors
 
 | Code | Description |
 |------|-------------|
-| 400 | Missing required fields: `parentAgentId`, `name`, or `paymentProof` |
-| 402 | Invalid payment proof — transaction not verified on Tempo chain |
-| 500 | Clone failed |
+| 501 | Agent cloning is not yet available |
 
 ### Clone service health
 
@@ -581,7 +544,7 @@ Returns paginated messages for an agent. Requires authentication and ownership.
 GET /api/agents/:id/stats
 ```
 
-Returns live container metrics when available, with a mock fallback.
+Returns live service metrics when available, with a mock fallback.
 
 ### Response (live)
 
@@ -636,13 +599,15 @@ Lifecycle operations are available at two endpoint patterns depending on which s
 
 Both patterns support the same actions. The examples below use the backend pattern.
 
-<Note>All lifecycle operations require Docker to be available on the backend server. When Docker is unavailable, these endpoints return `500` with an error message describing the failure. You can check Docker availability using the [backend health endpoint](/api-reference/health#backend-health-check) — when the `docker` field is `unavailable`, lifecycle operations will fail. The API itself continues to serve non-Docker endpoints normally.</Note>
+<Note>The backend agents route uses local Docker commands (`docker start`, `docker stop`, `docker restart`) for lifecycle operations, not the Render API. The Render API is used by the provisioning route (`POST /api/provision`) for creating new agent services. When Docker is unavailable on the backend host, lifecycle operations return `500` with an error message. You can check availability using the [backend health endpoint](/api-reference/health#backend-health-check) — when the `docker` field is `unavailable`, lifecycle operations will fail.</Note>
 
 ### Start agent
 
 ```http
 POST /api/agents/:id/start
 ```
+
+Starts a stopped agent container using `docker start`.
 
 ```json
 {
@@ -656,6 +621,8 @@ POST /api/agents/:id/start
 ```http
 POST /api/agents/:id/stop
 ```
+
+Stops the agent container using `docker stop`. The container retains its data and configuration and can be resumed with the [start endpoint](#start-agent).
 
 ```json
 {
@@ -675,15 +642,15 @@ POST /api/agents/:id/restart
   "success": true,
   "status": "active",
   "healedLegacyModel": false,
-  "healMessage": "",
-  "openclawVersion": "2026.3.13"
+  "healMessage": "skip",
+  "openclawVersion": "2026.3.24"
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `healedLegacyModel` | boolean | Whether a deprecated model was automatically migrated during restart |
-| `healMessage` | string | Description of the migration performed (empty if none) |
+| `healMessage` | string | Description of the migration performed (`skip` when no migration was needed, or `skip:container-not-running` when the container is unavailable) |
 | `openclawVersion` | string | Current OpenClaw runtime version |
 
 ### Update agent image
@@ -692,13 +659,13 @@ POST /api/agents/:id/restart
 POST /api/agents/:id/update
 ```
 
-Triggers an image update on the backend. Before replacing the container, the endpoint creates a compressed backup of the agent's data volume. If the new image fails to start, the endpoint automatically rolls back to the previous image.
+Triggers an image update on the backend. Before replacing the service, the endpoint creates a backup of the agent's data. If the new image fails to start, the endpoint automatically rolls back to the previous image.
 
 #### Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `image` | string | No | Custom container image to deploy. When omitted, the platform default image is used. |
+| `image` | string | No | Custom image to deploy. When omitted, the platform default image is used. |
 
 #### Response
 
@@ -706,27 +673,27 @@ Triggers an image update on the backend. Before replacing the container, the end
 {
   "success": true,
   "status": "active",
-  "image": "ghcr.io/openclaw/openclaw:2026.3.13",
+  "image": "ghcr.io/openclaw/openclaw:2026.3.24",
   "previousImage": "ghcr.io/openclaw/openclaw:2026.3.12",
-  "backupPath": "/backups/agent_123_2026-03-20",
-  "openclawVersion": "2026.3.13"
+  "backupPath": "/opt/agentbot/data/backups/openclaw-updates/agent_123/20260320-000000.tar.gz",
+  "openclawVersion": "2026.3.24"
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `image` | string | New container image. The platform default is `ghcr.io/openclaw/openclaw:2026.3.13`. |
-| `previousImage` | string | Previous container image before the update |
+| `image` | string | New service image. The platform default is `ghcr.io/openclaw/openclaw:2026.3.24`. |
+| `previousImage` | string | Previous service image before the update |
 | `backupPath` | string \| null | Path to the pre-update backup archive |
 | `openclawVersion` | string | Current OpenClaw runtime version |
 
-<Note>When the new container fails to start, the endpoint removes the failed container and recreates it using `previousImage`. The caller still receives a `500` error, but the agent is restored to its prior working state. The pre-update backup remains available at `backupPath` for manual recovery if needed.</Note>
+<Note>When the new service fails to start, the endpoint reverts to `previousImage`. The caller still receives a `500` error, but the agent is restored to its prior working state. The pre-update backup remains available at `backupPath` for manual recovery if needed.</Note>
 
 #### Errors
 
 | Code | Description |
 |------|-------------|
-| 400 | Invalid Docker image name |
+| 400 | Invalid docker image value |
 | 500 | Update failed. When automatic rollback succeeds, the agent continues running on the previous image. |
 
 ### Repair agent
@@ -782,7 +749,7 @@ Web proxy lifecycle endpoints return a different error shape:
 |------|--------|-------------|
 | 401 | Both | Unauthorized — missing or invalid authentication |
 | 403 | Web proxy | Forbidden — authenticated user does not own this agent instance |
-| 500 | Backend | Internal server error (for example, Docker unavailable or container operation failed) |
+| 500 | Backend | Internal server error (for example, Render API unavailable or service operation failed) |
 | 502 | Web proxy | Backend service unavailable |
 
 ## Get instance details
@@ -824,7 +791,7 @@ Returns resource usage statistics for an agent instance.
   "memory": "128MiB",
   "status": "running",
     "plan": "solo",
-    "openclawVersion": "2026.3.13"
+    "openclawVersion": "2026.3.24"
 }
 ```
 
@@ -834,7 +801,7 @@ Returns resource usage statistics for an agent instance.
 GET /api/agents/:id/token
 ```
 
-Returns the gateway token for the agent. If no token exists, a new cryptographically random token is generated using 32 bytes of entropy (returned as a 64-character hex string). Tokens generated by the container entrypoint (when the `OPENCLAW_GATEWAY_TOKEN` environment variable is not set) use 16 bytes (32 hex characters).
+Returns the gateway token for the agent. If no token exists, a new cryptographically random token is generated using 32 bytes of entropy (returned as a 64-character hex string). Tokens generated by the service entrypoint (when the `OPENCLAW_GATEWAY_TOKEN` environment variable is not set) use 24 bytes (48 hex characters).
 
 ```json
 {
@@ -856,10 +823,10 @@ Agents can be verified using multiple verification types: `eas` (Ethereum Attest
 ### Get verification status
 
 ```http
-GET /api/agents/:id/verify
+GET /api/agents/:id/verification
 ```
 
-<Note>On the backend, the GET endpoint uses `/api/agents/:id/verification` while POST and DELETE use `/api/agents/:id/verify`. The web API uses `/api/agents/:id/verify` for all three methods (GET, POST, DELETE).</Note>
+<Note>The backend GET endpoint uses `/api/agents/:id/verification` while POST and DELETE use `/api/agents/:id/verify`. The web API proxies all three methods through `/api/agents/:id/verify`.</Note>
 
 ```json
 {
@@ -885,11 +852,12 @@ POST /api/agents/:id/verify
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `verificationType` | string | Yes | One of: `eas`, `coinbase`, `ens`, `webauthn` |
+| `verified` | boolean | No | Whether the agent is verified (defaults to `true` via web API) |
 | `attestationUid` | string | No | Attestation UID from EAS |
-| `walletAddress` | string | No | Address of the verifying wallet (web API) |
-| `signature` | string | No | Wallet signature for verification (web API) |
+| `verifierAddress` | string | No | Address of the verifying wallet |
+| `metadata` | object | No | Additional verification metadata |
 
-<Note>The web API always sets `verified: true` on success. The backend accepts an additional `verified` boolean, `verifierAddress`, and `metadata` object directly.</Note>
+<Note>The web API always sets `verified: true` on success. When calling the backend directly, you can pass `verified`, `verifierAddress`, and `metadata` explicitly.</Note>
 
 #### Response
 
@@ -929,7 +897,20 @@ DELETE /api/agents/:id/verify
 POST /api/provision
 ```
 
-Provisions a new agent with messaging channel tokens. Requires bearer token (API key) authentication. When a session is active, the user's email is automatically resolved from it. At least one channel token is required.
+Provisions a new agent with messaging channel tokens. Requires session authentication. When a session is active, the user's email is automatically resolved from it.
+
+When `autoProvision` is `true` or `agentType` is `business`, channel tokens are not required and the agent is provisioned as an OpenClaw-only deployment. Otherwise, at least one channel token (Telegram, WhatsApp, or Discord) is required.
+
+### Admin check
+
+Admin status is determined by resolving a single email and checking it against the configured `ADMIN_EMAILS`:
+
+1. **Session email** — if an authenticated session exists, the session email is used.
+2. **Body email fallback** — if no session email is available (for example, the session is missing or the session user has no email), the `email` field in the request body is used instead.
+
+The first available email is checked against `ADMIN_EMAILS`. If it matches, the caller is treated as an admin. When the session is missing entirely (for example, after a Stripe checkout redirect loses the session cookie) and the body `email` matches an admin, a synthetic session is created and the request proceeds without requiring a real session. Non-admin users without a valid session receive a `401` error.
+
+<Note>Only one email is checked — the session email takes priority. If the session email exists but is not an admin, the body email is not checked as a secondary fallback. This differs from previous behavior where both emails were checked independently.</Note>
 
 <Warning>This endpoint is subject to the general rate limit of 120 requests per minute per IP.</Warning>
 
@@ -939,17 +920,20 @@ The request is proxied to the backend provisioning service. When `MUX_TOKEN_ID` 
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `telegramToken` | string | Conditional | Telegram bot token. At least one channel token is required. |
+| `telegramToken` | string | Conditional | Telegram bot token. At least one channel token is required unless `autoProvision` is `true` or `agentType` is `business`. |
 | `telegramUserId` | string | No | Telegram user ID for owner binding |
-| `whatsappToken` | string | Conditional | WhatsApp API token. At least one channel token is required. |
-| `discordBotToken` | string | Conditional | Discord bot token. At least one channel token is required. |
+| `whatsappToken` | string | Conditional | WhatsApp API token. At least one channel token is required unless `autoProvision` is `true` or `agentType` is `business`. |
+| `discordBotToken` | string | Conditional | Discord bot token. At least one channel token is required unless `autoProvision` is `true` or `agentType` is `business`. |
 | `aiProvider` | string | No | AI provider (default: `openrouter`). Options: `openrouter`, `gemini`, `groq`, `anthropic`, `openai`. Each provider maps to a default model — see [AI provider defaults](#ai-provider-defaults) below. |
-| `apiKey` | string | No | API key for the AI provider |
-| `plan` | string | No | Plan tier. Options: `solo`, `collective`, `label`, `network`. Defaults to `free` when omitted, which is not a valid plan and returns `400` with the message `Invalid plan`. A paid plan must be specified explicitly. |
-| `email` | string | No | User email address. When omitted, the email is automatically populated from the authenticated session if one exists. The resolved email is forwarded to the backend in the `X-User-Email` header. |
-| `stripeSubscriptionId` | string | No | Stripe subscription ID from checkout |
+| `plan` | string | No | Plan tier. Options: `solo`, `collective`, `label`, `network`. Defaults to `free` when omitted. Since `free` is not a valid plan, omitting this field returns a `400` validation error — you must explicitly specify a paid plan when calling the backend directly. |
+| `model` | string | No | AI model identifier. When omitted, the default model for the selected `aiProvider` is used (see [AI provider defaults](#ai-provider-defaults)). |
+| `skills` | string[] | No | List of skill identifiers to enable on the agent. |
+| `agentType` | string | No | Agent type. When set to `business`, the agent is provisioned as an OpenClaw-only deployment and channel tokens are not required. |
+| `autoProvision` | boolean | No | When `true`, the agent is provisioned as an OpenClaw-only deployment and channel tokens are not required. The onboard flow sets this automatically in deploy mode. |
+| `email` | string | No | User email address. When omitted, the email is automatically populated from the authenticated session. When a session email is available, it takes priority and the body email is not used for the admin check. This field is only checked against `ADMIN_EMAILS` when no session email is present (see [admin check](#admin-check) above). The resolved email is forwarded to the backend in the `X-User-Email` header. |
+| `stripeSubscriptionId` | string | No | Stripe subscription ID from checkout. This field is accepted by the backend provisioning service directly. The web proxy does not forward this field — it performs its own subscription check against the database instead. |
 
-<Note>When a session is active, the server resolves the user email from the session via `getServerSession`. If the `email` field is also present in the request body, the request body value takes precedence. The resolved email is sent to the backend provisioning service in the `X-User-Email` header.</Note>
+<Note>When a session is active, the server resolves the user email from the session via `getServerSession`. The session email is used for the admin check. When no session email is available, the `email` field from the request body is checked against `ADMIN_EMAILS` — if it matches, a synthetic session is created and the request proceeds. The resolved email is sent to the backend provisioning service in the `X-User-Email` header.</Note>
 
 <Warning>The following request fields are deprecated and no longer accepted: `whatsappPhoneNumberId`, `whatsappBusinessAccountId`, `discordGuildId`, `discordChannelId`.</Warning>
 
@@ -970,9 +954,11 @@ The proxy returns a filtered subset of the backend response:
 
 <Note>The `/api/provision` proxy returns only `success`, `userId`, `subdomain`, `url`, `streamKey`, and `liveStreamId`. The full response shape from the backend provisioning service is shown below.</Note>
 
+<Note>When provisioning with `autoProvision: true` or `agentType: "business"` (OpenClaw-only deployment), the proxy also persists the `openclawUrl` and `openclawInstanceId` to the user record. You can retrieve these values later using [`GET /api/user/openclaw`](#get-user-openclaw-instance).</Note>
+
 ### Full backend response
 
-When calling the backend provisioning service directly, the response includes additional fields.
+When calling the backend provisioning service directly, the response includes additional fields. The backend returns `200 OK` on success (not `201 Created`).
 
 <Warning>Channel tokens (`telegramToken`, `discordBotToken`, `whatsappToken`) are no longer included in the provision response. Tokens are write-only secrets — they are stored server-side but never returned to the caller.</Warning>
 
@@ -1018,36 +1004,39 @@ When calling the backend provisioning service directly, the response includes ad
     }
   },
   "container": {
-    "name": "openclaw-a1b2c3d4e5",
+    "name": "agentbot-agent-a1b2c3d4e5",
     "status": "running",
-    "port": 19000,
-    "gatewayUrl": "http://127.0.0.1:19000"
+    "serviceId": "srv-abc123def456",
+    "renderUrl": "https://agentbot-agent-a1b2c3d4e5.onrender.com"
   }
 }
 ```
 
-<Note>The `container` object is included when the backend successfully creates a Docker container for the agent. If container creation fails (for example, when Docker is unavailable), provisioning still succeeds and the `container` field is omitted. The agent can operate using API-side processing until a container becomes available. You can check Docker availability using the [backend health endpoint](/api-reference/health#backend-health-check).</Note>
+<Note>The `container` object is included when the backend successfully creates a container for the agent. If container creation fails, provisioning still succeeds and the `container` field is omitted. The agent can operate using API-side processing until the container becomes available. You can check backend availability using the [backend health endpoint](/api-reference/health#backend-health-check).</Note>
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `container.name` | string | Docker container name |
-| `container.status` | string | Container status (for example, `running`) |
-| `container.port` | number | Host port mapped to the container gateway (maps to internal port `18789`) |
-| `container.gatewayUrl` | string | Local URL for the container gateway |
-
-<Note>Each agent container exposes multiple ports. The deployment maps host port `container.port` to internal port `18789` (gateway) and `container.port + 2` to internal port `18791`. The official OpenClaw image also exposes port `18790` (bridge) which can be mapped separately if needed.</Note>
+| `container.name` | string | Container name (format: `agentbot-agent-{userId}`) |
+| `container.status` | string | Container status (for example, `running`, `stopped`) |
+| `container.serviceId` | string | Render service ID for the agent container. |
+| `container.renderUrl` | string | Public Render service URL for the agent container (for example, `https://agentbot-agent-{userId}.onrender.com`). |
+| `container.port` | number \| null | **Deprecated.** Previously held the container's local listening port. Removed in favor of `container.renderUrl` because Docker-backed services on Render do not expose a local port. |
+| `container.gatewayUrl` | string | **Deprecated.** Previously held the local gateway URL. Replaced by `container.renderUrl`, which points to the Render service URL instead. |
 
 ### Errors
 
 | Code | Description |
 |------|-------------|
-| 400 | At least one channel token required (Telegram, WhatsApp, or Discord), or invalid `aiProvider` value |
-| 400 | Invalid plan value. The `plan` field must be one of `solo`, `collective`, `label`, or `network`. Unrecognized values (including the default `free`) return this error. |
-| 402 | Active subscription required. Returned when a valid plan is specified but no Stripe subscription ID is provided and the caller is not an admin or tester. The response body includes a `code` field set to `PAYMENT_REQUIRED`. |
+| 400 | At least one channel token required (Telegram, WhatsApp, or Discord) when `autoProvision` is not `true` and `agentType` is not `business`, or invalid `aiProvider` value |
+| 400 | Invalid plan value (backend only). The `plan` field must be one of `solo`, `collective`, `label`, or `network`. The web proxy defaults to `label` when forwarding to the backend, so this error is only returned when calling the backend directly with an unrecognized value. Since the `plan` field defaults to `free` when omitted, and `free` is not a valid plan, callers must always specify an explicit paid plan. The error message is: `Invalid plan. Supported: solo, collective, label, network`. |
+| 401 | Authentication required. Returned when no session is present and the resolved email (session email or body `email`) does not match a configured admin email (or no email is available). |
+| 403 | Active subscription required (web proxy). Returned when the authenticated user does not have an active subscription and is not an admin. The response body includes `success: false` and an `error` message: `Active subscription required. Please purchase a plan to deploy.` |
+| 402 | No free tier available. Returned when `plan` is `free` (the default when omitted). The response body includes `code: "PAYMENT_REQUIRED"` and the message `"No free tier. Choose a paid plan to get started."` You must explicitly specify a paid plan (`solo`, `collective`, `label`, or `network`). |
+| 402 | Active subscription required (backend). **Currently disabled.** This check is commented out in the backend while payment enforcement is being validated. When re-enabled, it will be returned when a valid paid plan is specified but no Stripe subscription ID is provided and the caller is not an admin or tester. The response body will include a `code` field set to `PAYMENT_REQUIRED`. |
 | 402 | Agent limit reached for your plan. The response body includes a `code` field set to `AGENT_LIMIT_REACHED`, along with `current` (current agent count) and `limit` (maximum allowed) fields. Provisioning limits: `solo` 1, `collective` 3, `label` 10, `network` unlimited. |
 | 500 | Internal server error |
 | 502 | Provisioning service unavailable or returned an error. All backend URLs failed or returned non-success responses. |
-| 503 | Provisioning is temporarily disabled (kill switch active) |
+| 503 | Provisioning is temporarily disabled (kill switch active) or provisioning service misconfigured. |
 
 ### AI provider defaults
 
@@ -1055,12 +1044,12 @@ Each `aiProvider` value maps to a default model and base URL. There are two mode
 
 #### Container config models
 
-These models are configured inside the agent container at provisioning time and are used by the gateway's model fallback chain:
+These models are configured inside the agent service at provisioning time and are used by the gateway's model fallback chain:
 
 | Provider | Primary model | Fallback model | Base URL |
 |----------|--------------|----------------|----------|
-| `openrouter` | `xiaomi/mimo-v2-pro` | `openrouter/anthropic/claude-sonnet-4`, `openrouter/google/gemini-2.5-flash` | `https://openrouter.ai/api/v1` |
-| `gemini` | `google/gemini-2.0-flash` | `openrouter/anthropic/claude-sonnet-4-5` | `https://generativelanguage.googleapis.com/v1beta/models` |
+| `openrouter` | `moonshotai/kimi-k2.5` | `openrouter/openai/gpt-4o-mini` | `https://openrouter.ai/api/v1` |
+| `gemini` (or `google`) | `google/gemini-2.0-flash` | `openrouter/anthropic/claude-sonnet-4-5` | `https://generativelanguage.googleapis.com/v1beta/models` |
 | `groq` | `groq/gemma2-9b-it` | `openai/gpt-4o-mini` | `https://api.groq.com/openai/v1` |
 | `anthropic` | `anthropic/claude-sonnet-4-5` | `openai/gpt-4o` | `https://api.anthropic.com/v1` |
 | `openai` | `openai/gpt-4o` | `openai/gpt-4o-mini` | `https://api.openai.com/v1` |
@@ -1076,10 +1065,10 @@ The `aiProviderConfig` object returned in the provision response uses different 
 | `gemini` | `gemini-2.0-flash` | `https://generativelanguage.googleapis.com/v1beta/models` |
 | `groq` | `mixtral-8x7b-32768` | `https://api.groq.com/openai/v1` |
 | `anthropic` | `claude-3-sonnet-20240229` | `https://api.anthropic.com/v1` |
-| `openai` | `openai/gpt-4o` | `https://api.openai.com/v1` |
+| `openai` | `gpt-4o` | `https://api.openai.com/v1` |
 | `minimax` | `MiniMax/MiniMax-Text-01` | `https://api.minimax.chat/v1` |
 
-Each provider includes a fallback model in the container config that is used automatically when the primary model is unavailable or returns an error.
+Each provider includes a fallback model in the service config that is used automatically when the primary model is unavailable or returns an error.
 
 <Note>`minimax` is available as a fallback in the provider configuration map but is not currently accepted as a value for the `aiProvider` request parameter. Passing `minimax` as `aiProvider` returns a `400` validation error. This provider may be enabled in a future release.</Note>
 
@@ -1147,9 +1136,9 @@ Each agent is assigned a tool profile at provisioning time based on its plan tie
 | `label` | `coding` | Full development tools including code execution |
 | `network` | `coding` | Full development tools including code execution |
 
-<Note>The tool profile is set once at container creation and persists for the lifetime of the agent. Upgrading your plan does not automatically change the tool profile of existing agents — you need to reprovision the agent or use the [repair endpoint](#repair-agent) to apply the new profile.</Note>
+<Note>The tool profile is set once at service creation and persists for the lifetime of the agent. Upgrading your plan does not automatically change the tool profile of existing agents — you need to reprovision the agent or use the [repair endpoint](#repair-agent) to apply the new profile.</Note>
 
-All tool profiles deny `browser` and `canvas` tools inside containers. The `coding` profile includes shell commands (`ls`, `cat`, `grep`, `curl`, `git`, `node`, `python3`, and others) while the `messaging` profile restricts the agent to chat-oriented capabilities.
+All tool profiles deny `browser` and `canvas` tools inside agent services. The `coding` profile includes shell commands (`ls`, `cat`, `grep`, `curl`, `git`, `node`, `python3`, and others) while the `messaging` profile restricts the agent to chat-oriented capabilities.
 
 ## Deploy agent (backend)
 
@@ -1157,7 +1146,7 @@ All tool profiles deny `browser` and `canvas` tools inside containers. The `codi
 POST /api/deployments
 ```
 
-<Note>This is a backend-only endpoint. It deploys an agent container directly and requires a `Content-Type: application/json` header. Requires bearer token authentication. Rate limited to 5 requests per minute per IP.</Note>
+<Note>This is a backend-only endpoint. It deploys an agent as a Render web service and requires a `Content-Type: application/json` header. Requires bearer token authentication. Rate limited to 5 requests per minute per IP.</Note>
 
 ### Request body
 
@@ -1169,7 +1158,7 @@ POST /api/deployments
 | `config.ownerIds` | string[] | No | Telegram owner user IDs |
 | `config.aiProvider` | string | No | AI provider (default: `openrouter`) |
 | `config.apiKey` | string | No | API key for the AI provider |
-| `config.plan` | string | No | Plan tier. Options: `label`, `solo`, `collective`, `network`. |
+| `config.plan` | string | No | Plan tier. Options: `label`, `solo`, `collective`, `network`. When omitted, defaults to `free` which resolves to `starter` resource limits (2 GB memory, 1 CPU). |
 
 ### Response (201 Created)
 
@@ -1180,13 +1169,13 @@ POST /api/deployments
   "subdomain": "agent_123.agents.localhost",
   "url": "https://agent_123.agents.localhost",
   "status": "active",
-  "openclawVersion": "2026.3.13"
+  "openclawVersion": "2026.3.24"
 }
 ```
 
 ### Response (200 Already Active)
 
-If the agent container is already running, returns the existing deployment details with the same shape as the 201 response.
+If the agent service is already running, returns the existing deployment details with the same shape as the 201 response.
 
 ### Errors
 
@@ -1194,7 +1183,7 @@ If the agent container is already running, returns the existing deployment detai
 |------|-------------|
 | 400 | `agentId is required`, `Invalid agentId`, or `telegramToken is required` |
 | 401 | Unauthorized |
-| 500 | Deployment failed. When Docker is not available on the server, the error message indicates that container provisioning requires Docker. Check the [backend health endpoint](/api-reference/health#backend-health-check) to verify Docker availability before deploying. |
+| 500 | Deployment failed. When the Render API is not reachable, the error message indicates that provisioning is unavailable. Check the [backend health endpoint](/api-reference/health#backend-health-check) to verify Render API availability before deploying. |
 
 ## OpenClaw version (backend)
 
@@ -1208,11 +1197,13 @@ Returns the current OpenClaw runtime version. Requires bearer token authenticati
 
 ```json
 {
-  "openclawVersion": "2026.3.13",
-  "image": "ghcr.io/openclaw/openclaw:2026.3.13",
+  "openclawVersion": "2026.3.24",
+  "image": "ghcr.io/openclaw/openclaw:2026.3.24",
   "deployedAt": "2026-03-20T00:00:00Z"
 }
 ```
+
+<Note>`deployedAt` returns the current server time when the request is made, not the actual deployment time of the OpenClaw runtime.</Note>
 
 ## List instances (backend)
 
@@ -1220,7 +1211,7 @@ Returns the current OpenClaw runtime version. Requires bearer token authenticati
 GET /api/openclaw/instances
 ```
 
-Returns all running agent instances. Requires bearer token authentication.
+Returns all running agent services. Requires bearer token authentication.
 
 ### Response
 
@@ -1230,16 +1221,22 @@ Returns all running agent instances. Requires bearer token authentication.
     {
       "agentId": "agent_123",
       "name": "openclaw-agent_123",
-      "image": "ghcr.io/openclaw/openclaw:2026.3.13",
-      "status": "running",
-      "createdAt": "2026-03-01T00:00:00Z",
-      "version": "2026.3.13",
-      "metadata": null
+      "image": "ghcr.io/openclaw/openclaw:2026.3.24",
+      "status": "Up 2 hours",
+      "createdAt": "2026-03-20 00:00:00 +0000 UTC",
+      "version": "2026.3.24",
+      "metadata": {
+        "agentId": "agent_123",
+        "createdAt": "2026-03-20T00:00:00Z",
+        "plan": "solo"
+      }
     }
   ],
   "count": 1
 }
 ```
+
+<Note>The `metadata` object contains the full agent metadata from the on-disk JSON file and may include additional fields beyond those shown (for example, `aiProvider`, `port`, `subdomain`, `url`, `status`, and `config`).</Note>
 
 ### Errors
 
@@ -1248,13 +1245,13 @@ Returns all running agent instances. Requires bearer token authentication.
 | 401 | Unauthorized |
 | 500 | Failed to list instances |
 
-## Get instance container stats (backend)
+## Get instance service stats (backend)
 
 ```http
 GET /api/openclaw/instances/:id/stats
 ```
 
-Returns container resource usage for a specific agent. Requires bearer token authentication.
+Returns resource usage for a specific agent service. Requires bearer token authentication.
 
 ### Path parameters
 
@@ -1279,6 +1276,28 @@ Returns container resource usage for a specific agent. Requires bearer token aut
   "timestamp": "2026-03-20T00:00:00Z"
 }
 ```
+
+## Get user OpenClaw instance
+
+```http
+GET /api/user/openclaw
+```
+
+Returns the authenticated user's OpenClaw URL and instance ID. These values are set during provisioning when `autoProvision` is `true` or `agentType` is `business`. Requires session authentication.
+
+### Response
+
+```json
+{
+  "openclawUrl": "https://dj-a1b2c3d4e5.agentbot.raveculture.xyz",
+  "openclawInstanceId": "inst_a1b2c3d4e5"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `openclawUrl` | string \| null | The OpenClaw dashboard URL for this user. `null` when no OpenClaw instance has been provisioned. |
+| `openclawInstanceId` | string \| null | The OpenClaw instance identifier. `null` when no OpenClaw instance has been provisioned. |
 
 ## Agent interaction
 

@@ -9,6 +9,34 @@ Register self-hosted (Home) and linked (Link) agent installations. These endpoin
 
 <Note>Home mode runs the agent container on your own hardware via Docker. Link mode connects an existing OpenClaw instance to the Agentbot platform. Cloud mode (the default) runs the agent on Agentbot infrastructure.</Note>
 
+## Install script
+
+```http
+GET /install
+```
+
+Returns the Home mode installation shell script. No authentication required. The response content type is `text/plain`.
+
+This script automates the setup of a self-hosted agent container. Pipe it to your shell to begin the Home mode installation:
+
+```bash
+curl -sSL https://api.agentbot.raveculture.xyz/install | bash
+```
+
+## Link script
+
+```http
+GET /link
+```
+
+Returns the Link mode setup shell script. No authentication required. The response content type is `text/plain`.
+
+This script connects an existing OpenClaw instance to the Agentbot platform. Pipe it to your shell to begin the Link mode setup:
+
+```bash
+curl -sSL https://api.agentbot.raveculture.xyz/link | bash
+```
+
 ## Validate API key
 
 ```http
@@ -56,9 +84,9 @@ Validates a bearer token by computing a SHA-256 hash of the raw key and looking 
 POST /api/register-home
 ```
 
-Registers a Home mode installation. Requires bearer token (API key) authentication.
+Registers a Home mode installation. Requires identity headers (`x-user-email`, `x-user-id`, `x-user-role`) set by the authenticated frontend. The backend middleware extracts these headers but does not independently verify a bearer token on this route.
 
-<Note>The web proxy forwards identity headers (`x-user-email`, `x-user-id`, `x-user-role`) from the active session, but the backend authenticates the request using the bearer token, not these headers.</Note>
+<Note>The web proxy forwards identity headers from the active session. The backend `authenticate` middleware reads these headers and attaches them to the request context. If no headers are provided, `userId` defaults to `anonymous`.</Note>
 
 ### Request body
 
@@ -83,7 +111,6 @@ Registers a Home mode installation. Requires bearer token (API key) authenticati
 | Code | Description |
 |------|-------------|
 | 400 | `userId` is required |
-| 401 | Unauthorized — missing or invalid bearer token |
 | 500 | Internal server error |
 
 ## Register Link installation
@@ -92,16 +119,15 @@ Registers a Home mode installation. Requires bearer token (API key) authenticati
 POST /api/register-link
 ```
 
-Registers a Link mode installation that connects an existing OpenClaw instance. Requires bearer token (API key) authentication.
+Registers a Link mode installation that connects an existing OpenClaw instance. Requires identity headers (`x-user-email`, `x-user-id`, `x-user-role`) set by the authenticated frontend.
 
-<Note>The web proxy forwards identity headers (`x-user-email`, `x-user-id`, `x-user-role`) from the active session, but the backend authenticates the request using the bearer token, not these headers.</Note>
+<Note>The web proxy forwards identity headers from the active session. The backend `authenticate` middleware reads these headers and attaches them to the request context. If no headers are provided, `userId` defaults to `anonymous`.</Note>
 
 ### Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `userId` | string | Yes | User identifier |
-| `mode` | string | No | Always set to `link` regardless of the value provided |
 | `gatewayToken` | string | No | Gateway token for the linked instance |
 
 ### Response
@@ -119,7 +145,6 @@ Registers a Link mode installation that connects an existing OpenClaw instance. 
 | Code | Description |
 |------|-------------|
 | 400 | `userId` is required |
-| 401 | Unauthorized — missing or invalid bearer token |
 | 500 | Internal server error |
 
 ## List installations
@@ -128,7 +153,7 @@ Registers a Link mode installation that connects an existing OpenClaw instance. 
 GET /api/installations
 ```
 
-Returns all registered installations across all deployment modes. Requires bearer token (API key) authentication.
+Returns all registered installations across all deployment modes. Requires identity headers (`x-user-email`, `x-user-id`, `x-user-role`) set by the authenticated frontend.
 
 ### Response
 
@@ -138,17 +163,17 @@ Returns all registered installations across all deployment modes. Requires beare
   "count": 2,
   "installations": [
     {
-      "userId": "user-a1b2c3d4",
+      "user_id": "user-a1b2c3d4",
       "mode": "home",
-      "registeredAt": "2026-03-21T00:00:00Z",
-      "lastSeen": "2026-03-21T12:00:00Z",
+      "registered_at": "2026-03-21T00:00:00Z",
+      "last_seen": "2026-03-21T12:00:00Z",
       "status": "active"
     },
     {
-      "userId": "user-e5f6g7h8",
+      "user_id": "user-e5f6g7h8",
       "mode": "link",
-      "registeredAt": "2026-03-21T01:00:00Z",
-      "lastSeen": "2026-03-21T11:00:00Z",
+      "registered_at": "2026-03-21T01:00:00Z",
+      "last_seen": "2026-03-21T11:00:00Z",
       "status": "active"
     }
   ]
@@ -157,17 +182,16 @@ Returns all registered installations across all deployment modes. Requires beare
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `installations[].userId` | string | User identifier |
+| `installations[].user_id` | string | User identifier |
 | `installations[].mode` | string | Deployment mode: `home`, `link`, or `cloud` |
-| `installations[].registeredAt` | string | ISO 8601 timestamp of registration |
-| `installations[].lastSeen` | string | ISO 8601 timestamp of last heartbeat |
+| `installations[].registered_at` | string | ISO 8601 timestamp of registration |
+| `installations[].last_seen` | string | ISO 8601 timestamp of last heartbeat |
 | `installations[].status` | string | Current status: `active` or `inactive` |
 
 ### Errors
 
 | Code | Description |
 |------|-------------|
-| 401 | Unauthorized — missing or invalid bearer token |
 | 500 | Internal server error |
 
 ## Registration heartbeat
@@ -176,9 +200,13 @@ Returns all registered installations across all deployment modes. Requires beare
 POST /api/heartbeat
 ```
 
-Reports the status of a registered installation. When the `userId` matches a known registration, the `lastSeen` timestamp is updated and the status is set to `active`. No authentication is required.
+Reports the status of a registered installation. When the `userId` matches a known registration, the `last_seen` timestamp is updated and the status is set to `active`. Requires authentication.
 
 <Note>This is a backend registration heartbeat for Home and Link installations. It is separate from the [web heartbeat settings](/api-reference/health#get-heartbeat-settings) endpoint, which configures heartbeat scheduling for the web dashboard.</Note>
+
+### Authentication
+
+This endpoint uses the `authenticate` middleware which reads identity headers (`x-user-email`, `x-user-id`, `x-user-role`) from the request. If no headers are provided, the middleware assigns default values (`userId` defaults to `anonymous`) and the request proceeds. The middleware does not reject unauthenticated requests.
 
 ### Request body
 

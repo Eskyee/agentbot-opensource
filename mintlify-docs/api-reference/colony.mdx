@@ -15,7 +15,7 @@ The colony endpoint proxies requests to the soul service, which provides cogniti
 GET /api/colony/status
 ```
 
-No authentication required. Returns colony tree data, agent fitness rankings, and root node details by default.
+Requires session authentication. Returns colony tree data, agent fitness rankings, and root node details by default.
 
 ### Query parameters
 
@@ -30,7 +30,8 @@ No authentication required. Returns colony tree data, agent fitness rankings, an
 Returns the full colony tree with fitness rankings, agent metadata, and root node soul state.
 
 ```bash
-curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=tree"
+curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=tree" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN"
 ```
 
 #### Response
@@ -199,7 +200,8 @@ curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=tree"
 Returns the full cognitive state of the soul service.
 
 ```bash
-curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=soul"
+curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=soul" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN"
 ```
 
 #### Response
@@ -307,7 +309,8 @@ curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=soul"
 Returns diagnostic data including failure patterns, stagnation risk, and capability bottlenecks.
 
 ```bash
-curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=diagnostics"
+curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=diagnostics" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN"
 ```
 
 #### Response
@@ -376,4 +379,5 @@ When an unrecognized `action` parameter is provided, the endpoint returns HTTP `
 |------|-------------|
 | 200 | Colony data retrieved |
 | 400 | Unknown action parameter |
+| 401 | Unauthorized — no valid session |
 | 503 | Soul service unavailable |
