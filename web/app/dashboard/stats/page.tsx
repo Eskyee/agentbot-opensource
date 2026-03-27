@@ -62,7 +62,7 @@ export default function StatsPage() {
   if (loading) {
     return (
       <DashboardShell>
-        <DashboardHeader title="System Stats" icon={<Activity className="h-5 w-5 text-blue-400" />} />
+        <DashboardHeader title="System Stats" icon={<Activity className="h-5 w-5 text-brand-400" />} />
         <DashboardContent>
           <div className="text-xs text-zinc-500">Loading...</div>
         </DashboardContent>
@@ -72,7 +72,7 @@ export default function StatsPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="System Stats" icon={<Activity className="h-5 w-5 text-blue-400" />} />
+      <DashboardHeader title="System Stats" icon={<Activity className="h-5 w-5 text-brand-400" />} />
       <DashboardContent>
         {error && (
           <div className="border border-red-500/30 bg-zinc-950 p-4 mb-6">
@@ -99,7 +99,7 @@ export default function StatsPage() {
               <div className="bg-zinc-950 border border-zinc-800 p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Cpu className="h-4 w-4 text-blue-400" />
+                    <Cpu className="h-4 w-4 text-brand-400" />
                     <span className="text-[10px] uppercase tracking-widest text-zinc-600">CPU Usage</span>
                   </div>
                 </div>
@@ -119,7 +119,7 @@ export default function StatsPage() {
               <div className="bg-zinc-950 border border-zinc-800 p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <HardDrive className="h-4 w-4 text-blue-400" />
+                    <HardDrive className="h-4 w-4 text-brand-400" />
                     <span className="text-[10px] uppercase tracking-widest text-zinc-600">Memory Usage</span>
                   </div>
                 </div>

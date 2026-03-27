@@ -42,7 +42,7 @@ export default function FleetPage() {
   const selectedAgent = agents.find((a: any) => a.id === selectedAgentId);
 
   const FleetIcon = () => (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
     </svg>
   )
@@ -111,7 +111,7 @@ export default function FleetPage() {
           {/* Trace Header */}
           <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Radio className="h-4 w-4 text-blue-500" />
+              <Radio className="h-4 w-4 text-brand-500" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Live Traces</span>
             </div>
             <span className="text-[10px] font-mono text-zinc-600">v2.1.0-alpha</span>

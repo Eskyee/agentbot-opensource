@@ -6,7 +6,7 @@ export default async function Home() {
   const session = await getAuthSession()
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white selection:bg-brand-500/30 font-mono overflow-x-hidden">
       {/* Hero */}
       <section className="relative max-w-7xl mx-auto px-5 sm:px-6 py-20 sm:py-32 md:py-44 overflow-hidden">
         {/* Particle sphere — positioned on the right */}
@@ -15,7 +15,7 @@ export default async function Home() {
         </div>
 
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest mb-6 sm:mb-8">
+          <div className="inline-block px-3 py-1 border border-zinc-800 text-brand-500 text-[10px] uppercase tracking-widest mb-6 sm:mb-8">
             Built for the Creative Industry
           </div>
 
@@ -101,7 +101,7 @@ export default async function Home() {
               { num: '04', label: 'Mission', title: 'Industrial Control', desc: 'High-fidelity visualization of agent swarms and execution traces in real-time.' },
             ].map((f) => (
               <div key={f.num}>
-                <div className="text-blue-500 text-[10px] uppercase tracking-widest mb-3 sm:mb-4">{f.num} {"//"} {f.label}</div>
+                <div className="text-brand-500 text-[10px] uppercase tracking-widest mb-3 sm:mb-4">{f.num} {"//"} {f.label}</div>
                 <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-2">{f.title}</h3>
                 <p className="text-zinc-500 text-[11px] sm:text-xs leading-relaxed">{f.desc}</p>
               </div>
@@ -184,7 +184,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 mb-4 sm:mb-6">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-1.5 sm:px-2 py-0.5">Popular</span>
+                    <span className="text-[8px] sm:text-[9px] uppercase tracking-widest text-brand-500 border border-brand-500/30 px-1.5 sm:px-2 py-0.5">Popular</span>
                   )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold tracking-tighter mb-4 sm:mb-6">

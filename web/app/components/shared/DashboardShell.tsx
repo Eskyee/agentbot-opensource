@@ -7,7 +7,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children, className }: DashboardShellProps) {
   return (
-    <div className={cn('mt-[4rem] min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono', className)}>
+    <div className={cn('mt-[4rem] min-h-screen bg-black text-white selection:bg-brand-500/30 font-mono', className)}>
       {children}
     </div>
   )

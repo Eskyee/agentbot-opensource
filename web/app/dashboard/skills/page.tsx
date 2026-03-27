@@ -47,7 +47,7 @@ export default function SkillsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Skill Marketplace"
-        icon={<Wrench className="h-5 w-5 text-blue-400" />}
+        icon={<Wrench className="h-5 w-5 text-brand-400" />}
       />
 
       <DashboardContent className="max-w-7xl space-y-6">
@@ -83,7 +83,7 @@ export default function SkillsPage() {
                 {skill.featured && (
                   <Badge
                     variant="outline"
-                    className="mb-3 border-blue-500/30 text-blue-400 text-[10px] uppercase tracking-widest"
+                    className="mb-3 border-brand-500/30 text-brand-400 text-[10px] uppercase tracking-widest"
                   >
                     Featured
                   </Badge>

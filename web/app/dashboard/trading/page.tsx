@@ -102,7 +102,7 @@ export default function TradingPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Trading Agent" icon={<Sparkles className="h-5 w-5 text-blue-400" />} />
+      <DashboardHeader title="Trading Agent" icon={<Sparkles className="h-5 w-5 text-brand-400" />} />
       <DashboardContent>
         <div className="grid gap-px bg-zinc-800 lg:grid-cols-3">
           {/* Portfolio + Quick Actions — spans 2 cols */}
@@ -231,7 +231,7 @@ export default function TradingPage() {
 
             {jobId && !result && (
               <div className="bg-zinc-950 border border-zinc-800 p-6 flex items-center gap-3">
-                <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+                <Loader2 className="h-5 w-5 animate-spin text-brand-400" />
                 <span className="text-xs text-zinc-500">Processing job: {jobId}</span>
               </div>
             )}

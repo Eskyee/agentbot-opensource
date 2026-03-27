@@ -57,7 +57,7 @@ export default function TokenPage() {
             <div className="space-y-2 md:col-span-2">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Contract Address</span>
               <div className="flex items-center gap-4 flex-wrap">
-                <code className="text-blue-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
+                <code className="text-brand-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
                   0x986b41C76aB8B7350079613340ee692773B34bA3
                 </code>
                 <a
@@ -242,7 +242,7 @@ export default function TokenPage() {
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Built On</span>
 
           <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
-            AGENTBOT is deployed on <span className="text-blue-500 font-bold">Base</span> — Coinbase&apos;s
+            AGENTBOT is deployed on <span className="text-brand-500 font-bold">Base</span> — Coinbase&apos;s
             Ethereum L2. Low fees, high throughput, and native Coinbase Wallet support. The Agentbot platform
             runs at{' '}
             <a href="https://agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white transition-colors underline">

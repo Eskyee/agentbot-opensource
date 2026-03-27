@@ -116,7 +116,7 @@ export default function AdminPage() {
               </div>
               <div className="bg-zinc-900 p-4 border border-white/5">
                 <div className="text-[10px] text-zinc-500 uppercase">Uptime Score</div>
-                <div className="text-xl font-bold text-blue-400">99.98%</div>
+                <div className="text-xl font-bold text-brand-400">99.98%</div>
               </div>
             </div>
 
@@ -136,7 +136,7 @@ export default function AdminPage() {
                 <tbody className="divide-y divide-white/5">
                   {instances.map((agent) => (
                     <tr key={agent.agentId} className="hover:bg-white/5 transition-colors">
-                      <td className="px-6 py-4 font-bold text-blue-400">{agent.agentId}</td>
+                      <td className="px-6 py-4 font-bold text-brand-400">{agent.agentId}</td>
                       <td className="px-6 py-4">
                         <span className={`flex items-center gap-2 ${agent.status === 'active' ? 'text-green-400' : 'text-zinc-500'}`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${agent.status === 'active' ? 'bg-green-400 animate-pulse' : 'bg-zinc-600'}`}></span>

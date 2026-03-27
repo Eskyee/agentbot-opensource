@@ -76,7 +76,7 @@ const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: st
   reddit:        { label: 'Reddit',  color: 'text-orange-400' },
   twitter:       { label: 'X',       color: 'text-sky-400' },
   'hacker-news': { label: 'HN',     color: 'text-yellow-400' },
-  discord:       { label: 'Discord', color: 'text-blue-400' },
+  discord:       { label: 'Discord', color: 'text-brand-400' },
 };
 
 export default function SignalsPage() {

@@ -12,6 +12,18 @@ module.exports = {
         mono: ['var(--font-geist-mono)', 'monospace'],
       },
       colors: {
+        brand: {
+          50: '#fef3ec',
+          100: '#fde3cf',
+          200: '#fbc9a0',
+          300: '#f9a96a',
+          400: '#f58538',
+          500: '#EF6F2E',
+          600: '#d95a22',
+          700: '#b4451c',
+          800: '#91381c',
+          900: '#76301a',
+        },
         background: {
           DEFAULT: 'var(--background)',
           1: 'var(--background-1)',

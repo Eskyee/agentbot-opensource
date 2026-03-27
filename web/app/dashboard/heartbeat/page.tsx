@@ -97,7 +97,7 @@ export default function HeartbeatPage() {
     <DashboardShell>
       <DashboardHeader
         title="Heartbeat Monitor"
-        icon={<Activity className="h-5 w-5 text-blue-400" />}
+        icon={<Activity className="h-5 w-5 text-brand-400" />}
         count={agents.length}
       />
 

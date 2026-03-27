@@ -48,7 +48,7 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-blue-500/30 font-mono">
+    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-brand-500/30 font-mono">
       <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
         <div className="mb-6">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Create Account</div>
@@ -56,7 +56,7 @@ export default function SignupPage() {
         </div>
         {showReferralBadge && (
           <div className="mb-6">
-            <span className="inline-block border border-blue-500/30 text-blue-500 px-3 py-1 text-[10px] uppercase tracking-widest">
+            <span className="inline-block border border-brand-500/30 text-brand-500 px-3 py-1 text-[10px] uppercase tracking-widest">
               Discount Applied
             </span>
           </div>

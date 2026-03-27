@@ -24,7 +24,7 @@ interface Workflow {
 }
 
 const NODE_TYPES = [
-  { type: 'trigger', label: 'Trigger', color: 'text-blue-400' },
+  { type: 'trigger', label: 'Trigger', color: 'text-brand-400' },
   { type: 'action', label: 'Action', color: 'text-green-400' },
   { type: 'condition', label: 'Condition', color: 'text-yellow-400' },
   { type: 'output', label: 'Output', color: 'text-purple-400' },

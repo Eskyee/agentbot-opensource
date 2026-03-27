@@ -358,7 +358,7 @@ export default function DemoPage() {
                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[90%] sm:max-w-[80%] px-4 py-3 ${
                         msg.role === 'user' 
-                          ? 'bg-blue-500 text-white' 
+                          ? 'bg-brand-500 text-white' 
                           : 'border border-zinc-800 bg-zinc-950 text-zinc-100'
                       }`}>
                         <div className="text-[10px] uppercase tracking-widest font-bold mb-1 opacity-70">
@@ -455,7 +455,7 @@ export default function DemoPage() {
                       <div className="space-y-3">
                         {(compareMessages[modelId] || []).map((msg) => (
                           <div key={msg.id} className={`px-3 py-2 ${
-                            msg.role === 'user' ? 'bg-blue-500/20 text-blue-100 border border-blue-500/30' : 'border border-zinc-800 bg-zinc-950 text-zinc-100'
+                            msg.role === 'user' ? 'bg-brand-500/20 text-brand-100 border border-brand-500/30' : 'border border-zinc-800 bg-zinc-950 text-zinc-100'
                           }`}>
                             <div className="text-[10px] uppercase tracking-widest font-bold mb-1 opacity-70">
                               {msg.role === 'user' ? 'You' : 'AI'}

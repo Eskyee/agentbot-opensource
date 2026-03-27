@@ -62,7 +62,7 @@ export default function AdminInvitesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-brand-500/30 font-mono p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Invite Management</h1>
 

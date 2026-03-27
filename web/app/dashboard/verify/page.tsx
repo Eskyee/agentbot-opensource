@@ -73,7 +73,7 @@ function VerifyContent() {
         </p>
         <a
           href="/dashboard"
-          className="text-[10px] text-blue-400 hover:text-blue-300 uppercase tracking-widest font-bold"
+          className="text-[10px] text-brand-400 hover:text-brand-300 uppercase tracking-widest font-bold"
         >
           ← Deploy an agent
         </a>
@@ -92,7 +92,7 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   const ShieldIcon = () => (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
     </svg>
   )
@@ -107,7 +107,7 @@ export default function VerifyPage() {
             href="https://selfclaw.ai/verify"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:text-blue-300 border border-zinc-700 hover:border-blue-500 px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-brand-400 hover:text-brand-300 border border-zinc-700 hover:border-brand-500 px-3 py-1.5 transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
             <span className="hidden sm:inline">selfclaw.ai/verify</span>
@@ -133,7 +133,7 @@ export default function VerifyPage() {
               { label: 'Stand out', desc: 'Verified agents get a special badge in chats' },
             ].map((item) => (
               <div key={item.label} className="bg-zinc-950 p-3 sm:p-4 flex items-start gap-3">
-                <div className="w-1 h-1 bg-blue-400 mt-1.5 flex-shrink-0" />
+                <div className="w-1 h-1 bg-brand-400 mt-1.5 flex-shrink-0" />
                 <div className="min-w-0">
                   <span className="text-xs font-bold uppercase tracking-wider">{item.label}</span>
                   <span className="text-xs text-zinc-500 ml-2">— {item.desc}</span>

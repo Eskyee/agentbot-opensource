@@ -100,7 +100,7 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
                 href={`https://t.me/${botUsername}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-blue-400 hover:underline"
+                className="text-xs text-brand-400 hover:underline"
               >
                 @{botUsername} on Telegram
               </a>
@@ -129,7 +129,7 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
                 href={`https://t.me/${botUsername}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block mt-4 text-blue-400 hover:underline text-sm"
+                className="inline-block mt-4 text-brand-400 hover:underline text-sm"
               >
                 Or chat on Telegram @{botUsername}
               </a>

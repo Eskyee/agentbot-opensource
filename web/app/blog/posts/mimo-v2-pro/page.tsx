@@ -25,7 +25,7 @@ export default function MiMoV2ProPost() {
  <p className="text-sm text-zinc-500 mb-2">March 2026</p>
  <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">MiMo-V2-Pro: Xiaomi&apos;s Flagship AI Model</h1>
  <div className="flex gap-2 flex-wrap">
- <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400 border border-blue-800/50">New Model</span>
+ <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400 border border-brand-800/50">New Model</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Xiaomi</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Agent-Optimized</span>
  </div>
@@ -97,19 +97,19 @@ export default function MiMoV2ProPost() {
  </tr>
  <tr className="border-b border-zinc-800/50">
  <td className="py-2 px-3">Academia</td>
- <td className="text-right py-2 px-3 text-blue-400 font-mono">#18</td>
+ <td className="text-right py-2 px-3 text-brand-400 font-mono">#18</td>
  </tr>
  <tr className="border-b border-zinc-800/50">
  <td className="py-2 px-3">Legal</td>
- <td className="text-right py-2 px-3 text-blue-400 font-mono">#21</td>
+ <td className="text-right py-2 px-3 text-brand-400 font-mono">#21</td>
  </tr>
  <tr className="border-b border-zinc-800/50">
  <td className="py-2 px-3">SEO</td>
- <td className="text-right py-2 px-3 text-blue-400 font-mono">#32</td>
+ <td className="text-right py-2 px-3 text-brand-400 font-mono">#32</td>
  </tr>
  <tr className="border-b border-zinc-800/50">
  <td className="py-2 px-3">Roleplay</td>
- <td className="text-right py-2 px-3 text-blue-400 font-mono">#43</td>
+ <td className="text-right py-2 px-3 text-brand-400 font-mono">#43</td>
  </tr>
  </tbody>
  </table>
@@ -158,7 +158,7 @@ export default function MiMoV2ProPost() {
  
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
  <div className="p-4 bg-zinc-950/50 border border-zinc-800">
- <div className="text-2xl font-mono font-bold text-blue-400">2.8s</div>
+ <div className="text-2xl font-mono font-bold text-brand-400">2.8s</div>
  <div className="text-xs text-zinc-500 mt-1">Latency</div>
  </div>
  <div className="p-4 bg-zinc-950/50 border border-zinc-800">
@@ -201,7 +201,7 @@ export default function MiMoV2ProPost() {
  </ol>
 
  <p className="text-zinc-300 mb-4">
- Or try it right now in our <Link href="/demo" className="text-blue-400 hover:text-blue-300">live demo</Link>.
+ Or try it right now in our <Link href="/demo" className="text-brand-400 hover:text-brand-300">live demo</Link>.
  </p>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Context Specs</h2>
