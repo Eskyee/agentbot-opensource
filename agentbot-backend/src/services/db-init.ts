@@ -204,6 +204,23 @@ CREATE TABLE IF NOT EXISTS model_metrics (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Scheduled tasks (used by inline scheduler in scheduler.ts)
+CREATE TABLE IF NOT EXISTS scheduled_tasks (
+  id BIGSERIAL PRIMARY KEY,
+  agent_id TEXT,
+  user_id TEXT,
+  config JSONB DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'pending',   -- pending | running | completed | failed
+  next_run_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_run_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_scheduled_tasks_due
+  ON scheduled_tasks(status, next_run_at)
+  WHERE status = 'pending';
+
 -- Indexes for performance
 -- Core FK indexes (prevent full-table scans on joins)
 CREATE INDEX IF NOT EXISTS idx_agents_user_id ON agents(user_id);
