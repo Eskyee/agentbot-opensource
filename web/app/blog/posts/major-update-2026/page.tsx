@@ -102,7 +102,7 @@ export default function MajorUpdatePost() {
  </ul>
  </div>
 
- <div className="bg-brand-900/20 border border-brand-800 p-6 mb-8">
+ <div className="bg-blue-900/20 border border-blue-800 p-6 mb-8">
  <h4 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Our Advantages</h4>
  <ul className="space-y-2 text-zinc-300">
  <li> Multi-channel (Telegram, Discord, WhatsApp)</li>

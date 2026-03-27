@@ -120,7 +120,7 @@ export default function PricingPage() {
                 <div className="flex items-center gap-2 mb-6">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <span className="text-[9px] uppercase tracking-widest text-brand-500 border border-brand-500/30 px-2 py-0.5">
+                    <span className="text-[9px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-2 py-0.5">
                       Popular
                     </span>
                   )}

@@ -57,7 +57,7 @@ export default function Post() {
 
  <p className="text-zinc-300 mb-4">Welcome to the underground.</p>
 
- <p className="text-xl font-bold text-brand-400 mt-8">Zero humans. 100% autonomous. </p>
+ <p className="text-xl font-bold text-blue-400 mt-8">Zero humans. 100% autonomous. </p>
  </article>
  </div>
  </main>

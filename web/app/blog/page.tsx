@@ -283,7 +283,7 @@ const upcomingFeatures = [
 
 export default function BlogPage() {
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-brand-500/30 font-mono">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       <div className="max-w-7xl mx-auto px-6 py-20">
         {/* Header */}
         <div className="mb-16">
@@ -392,7 +392,7 @@ export default function BlogPage() {
             {upcomingFeatures.map((feature) => (
               <div key={feature.title} className="border-t border-zinc-900 py-6 pr-6">
                 <span className={`text-[10px] uppercase tracking-widest font-bold ${
-                  feature.status === 'Coming Soon' ? 'text-brand-500' :
+                  feature.status === 'Coming Soon' ? 'text-blue-500' :
                   feature.status === 'In Progress' ? 'text-zinc-400' :
                   'text-zinc-600'
                 }`}>

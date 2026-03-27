@@ -69,7 +69,7 @@ export default function TeamPage() {
     <DashboardShell>
       <DashboardHeader
         title="Team Mode"
-        icon={<Users className="h-5 w-5 text-brand-400" />}
+        icon={<Users className="h-5 w-5 text-blue-400" />}
       />
 
       <DashboardContent className="space-y-6">

@@ -7,12 +7,12 @@ import DigitalWristband from '@/app/components/DigitalWristband';
  */
 export default function WristbandPage() {
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-brand-500/30 font-mono">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
         {/* Hero Section */}
         <div className="flex flex-col md:flex-row gap-16 items-center">
           <div className="flex-1 space-y-8">
-            <div className="inline-block px-3 py-1 border border-zinc-800 text-brand-500 text-[10px] uppercase tracking-widest animate-pulse">
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest animate-pulse">
               Onchain Access Protocol
             </div>
             
@@ -51,9 +51,9 @@ export default function WristbandPage() {
             &copy; 2026 baseFM x RaveCulture
           </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <a href="#" className="hover:text-brand-500 transition-colors">Smart Contract</a>
-            <a href="#" className="hover:text-brand-500 transition-colors">OnchainKit Spec</a>
-            <a href="#" className="hover:text-brand-500 transition-colors">Docs</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">Smart Contract</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">OnchainKit Spec</a>
+            <a href="#" className="hover:text-blue-500 transition-colors">Docs</a>
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@ export default function PersonalityPage() {
     <DashboardShell>
       <DashboardHeader
         title="Agent Personality"
-        icon={<User className="h-5 w-5 text-brand-400" />}
+        icon={<User className="h-5 w-5 text-blue-400" />}
       />
 
       <DashboardContent className="space-y-6">

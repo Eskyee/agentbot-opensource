@@ -22,7 +22,7 @@ function getTodayBrief(): BriefSection[] {
       id: 'system',
       icon: Cpu,
       title: 'System Status',
-      color: 'text-brand-400',
+      color: 'text-blue-400',
       items: [
         'All agents operational — 99.9% uptime maintained',
         'Vercel deployment: latest build succeeded ✓',
@@ -82,7 +82,7 @@ function getTodayBrief(): BriefSection[] {
       id: 'calendar',
       icon: Calendar,
       title: 'Upcoming',
-      color: 'text-brand-400',
+      color: 'text-blue-400',
       items: [
         'Daily cron cleanup runs at 03:00 UTC',
         'Subscription billing cycle: end of month (£29–£199 range)',

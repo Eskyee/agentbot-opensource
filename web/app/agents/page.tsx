@@ -9,11 +9,11 @@ export default function AgentsPage() {
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-brand-500/30 font-mono">
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
       <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
         {/* Hero */}
         <div className="space-y-8 max-w-2xl">
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-brand-500 text-[10px] uppercase tracking-widest">
+          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
             Agent Builder
           </div>
 
@@ -60,9 +60,9 @@ export default function AgentsPage() {
             Agentbot Platform
           </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <Link href="/marketplace" className="hover:text-brand-500 transition-colors">Marketplace</Link>
-            <Link href="/token" className="hover:text-brand-500 transition-colors">Token</Link>
-            <Link href="/partner" className="hover:text-brand-500 transition-colors">Partner</Link>
+            <Link href="/marketplace" className="hover:text-blue-500 transition-colors">Marketplace</Link>
+            <Link href="/token" className="hover:text-blue-500 transition-colors">Token</Link>
+            <Link href="/partner" className="hover:text-blue-500 transition-colors">Partner</Link>
           </div>
         </div>
       </div>

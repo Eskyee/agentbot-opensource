@@ -397,7 +397,7 @@ function DashboardContent() {
 
   const activityDotColor = (s: string) => {
     if (s === 'green') return 'bg-green-400'
-    if (s === 'blue') return 'bg-brand-500'
+    if (s === 'blue') return 'bg-blue-500'
     return 'bg-zinc-500'
   }
 
@@ -472,7 +472,7 @@ function DashboardContent() {
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Skills</span>
               </div>
               <div className="text-3xl font-bold">8<span className="text-lg text-zinc-500 font-normal">/14</span></div>
-              <div className="text-xs text-brand-500 mt-1">+2 this week</div>
+              <div className="text-xs text-blue-500 mt-1">+2 this week</div>
             </div>
           </div>
 
@@ -493,7 +493,7 @@ function DashboardContent() {
                 <span className="text-zinc-500 text-sm">{stats?.memory || '62%'}</span>
               </div>
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-brand-500" style={{ width: stats?.memory || '62%' }} />
+                <div className="h-full bg-blue-500" style={{ width: stats?.memory || '62%' }} />
               </div>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-4">
@@ -540,7 +540,7 @@ function DashboardContent() {
                         href={`https://t.me/${instance?.botUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-brand-500 hover:underline"
+                        className="text-blue-500 hover:underline"
                       >
                         @{instance?.botUsername}
                       </a>
@@ -623,7 +623,7 @@ function DashboardContent() {
                     <span>{stats?.memory || '0%'}</span>
                   </div>
                   <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                    <div className={`h-full bg-brand-500 ${getBarWidthClass(stats?.memory)}`} />
+                    <div className={`h-full bg-blue-500 ${getBarWidthClass(stats?.memory)}`} />
                   </div>
                 </div>
               </div>

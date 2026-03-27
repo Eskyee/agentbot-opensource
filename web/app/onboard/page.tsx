@@ -327,7 +327,7 @@ function OnboardContent() {
                 href="https://t.me/BotFather" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="block w-full bg-brand-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-brand-400 transition-colors"
+                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-blue-400 transition-colors"
               >
                 Open @BotFather →
               </a>
@@ -420,7 +420,7 @@ function OnboardContent() {
                 href="https://t.me/userinfobot" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="block w-full bg-brand-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-brand-400 transition-colors"
+                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-blue-400 transition-colors"
               >
                 Open @userinfobot →
               </a>
@@ -1010,7 +1010,7 @@ function OnboardContent() {
                     href={`https://t.me/${botInfo?.username}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full bg-brand-500 py-3 rounded-lg font-semibold hover:bg-brand-400 transition-colors text-center"
+                    className="block w-full bg-blue-500 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors text-center"
                   >
                     Open in Telegram →
                   </a>
@@ -1047,7 +1047,7 @@ if (typeof document !== 'undefined') {
 
 export default function Onboard() {
   return (
-    <main className="min-h-screen py-16 px-6 bg-black text-white selection:bg-brand-500/30 font-mono">
+    <main className="min-h-screen py-16 px-6 bg-black text-white selection:bg-blue-500/30 font-mono">
       <Suspense fallback={
         <div className="mx-auto max-w-2xl">
           <div className="text-5xl mb-4">🦞</div>

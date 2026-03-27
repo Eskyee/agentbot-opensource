@@ -77,7 +77,7 @@ export default function AnalyticsPage() {
   const maxMonthlyValue = Math.max(...data.monthly.map(m => m.revenue), 1)
 
   const AnalyticsIcon = () => (
-    <svg className="h-5 w-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     </svg>
   )
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] text-zinc-500">{skill.usage} uses</span>
                     <div className="w-20 h-1 bg-zinc-800">
-                      <div className="h-full bg-brand-500" style={{ width: `${skill.success}%` }} />
+                      <div className="h-full bg-blue-500" style={{ width: `${skill.success}%` }} />
                     </div>
                     <span className="text-[10px] text-zinc-400 w-8">{skill.success}%</span>
                   </div>

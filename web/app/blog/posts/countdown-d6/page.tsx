@@ -68,7 +68,7 @@ export default function CountdownD6Post() {
  </p>
 
  <p className="text-zinc-300 mb-4">
- → <Link href="/onboard" className="text-brand-400 hover:text-brand-300">Get early access</Link>
+ → <Link href="/onboard" className="text-blue-400 hover:text-blue-300">Get early access</Link>
  </p>
 
  <p className="text-xl text-zinc-300 mt-12 mb-4">

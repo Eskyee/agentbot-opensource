@@ -186,11 +186,11 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
               href={openclawUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block mt-6 border border-brand-500/30 bg-brand-500/5 p-4 hover:border-brand-500/50 transition-colors"
+              className="block mt-6 border border-blue-500/30 bg-blue-500/5 p-4 hover:border-blue-500/50 transition-colors"
             >
-              <div className="text-[10px] uppercase tracking-widest text-brand-500 mb-1">OpenClaw</div>
+              <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-1">OpenClaw</div>
               <div className="text-sm font-bold flex items-center gap-2">
-                Your Dashboard <span className="text-[10px] text-brand-500/60">↗</span>
+                Your Dashboard <span className="text-[10px] text-blue-500/60">↗</span>
               </div>
             </a>
           ) : (

@@ -175,7 +175,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
     switch (type) {
       case 'warning': return 'bg-yellow-500/10 border-yellow-500/30'
       case 'error': return 'bg-red-500/10 border-red-500/30'
-      case 'info': return 'bg-brand-500/10 border-brand-500/30'
+      case 'info': return 'bg-blue-500/10 border-blue-500/30'
     }
   }
 
@@ -329,7 +329,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                     step="5"
                     value={thresholds.cpu}
                     onChange={(e) => setThresholds(prev => ({ ...prev, cpu: Number(e.target.value) }))}
-                    className="w-32 accent-brand-500"
+                    className="w-32 accent-blue-500"
                   />
                   <span className="text-sm font-mono">{thresholds.cpu}%</span>
                 </div>
@@ -344,7 +344,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
                     step="5"
                     value={thresholds.memory}
                     onChange={(e) => setThresholds(prev => ({ ...prev, memory: Number(e.target.value) }))}
-                    className="w-32 accent-brand-500"
+                    className="w-32 accent-blue-500"
                   />
                   <span className="text-sm font-mono">{thresholds.memory}%</span>
                 </div>

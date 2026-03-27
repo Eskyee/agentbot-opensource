@@ -84,8 +84,8 @@ const ITEMS: TechItem[] = [
 
 const CATEGORY_META: Record<Category, { label: string; icon: React.ElementType; color: string }> = {
   all:       { label: 'All',       icon: Layers,    color: 'text-zinc-400' },
-  models:    { label: 'Models',    icon: Cpu,        color: 'text-brand-400' },
-  infra:     { label: 'Infra',     icon: Zap,        color: 'text-brand-400' },
+  models:    { label: 'Models',    icon: Cpu,        color: 'text-blue-400' },
+  infra:     { label: 'Infra',     icon: Zap,        color: 'text-blue-400' },
   security:  { label: 'Security',  icon: Shield,     color: 'text-red-400' },
   protocols: { label: 'Protocols', icon: Radio,      color: 'text-green-400' },
   tools:     { label: 'Tools',     icon: TrendingUp, color: 'text-yellow-400' },

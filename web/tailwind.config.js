@@ -12,7 +12,7 @@ module.exports = {
         mono: ['var(--font-geist-mono)', 'monospace'],
       },
       colors: {
-        brand: {
+        blue: {
           50: '#fef3ec',
           100: '#fde3cf',
           200: '#fbc9a0',

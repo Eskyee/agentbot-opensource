@@ -444,8 +444,8 @@ export default function SettingsPage() {
                   </div>
                   {basename ? (
                     <p className="mt-2 flex items-center gap-2 text-sm">
-                      <span className="inline-block w-4 h-4 rounded-full bg-brand-500" aria-hidden="true" />
-                      <span className="text-brand-400 font-medium">{basename}</span>
+                      <span className="inline-block w-4 h-4 rounded-full bg-blue-500" aria-hidden="true" />
+                      <span className="text-blue-400 font-medium">{basename}</span>
                       <span className="text-zinc-500">· Base Name</span>
                     </p>
                   ) : (
@@ -455,7 +455,7 @@ export default function SettingsPage() {
                         href="https://www.base.org/names"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-brand-400 hover:underline"
+                        className="text-blue-400 hover:underline"
                       >
                         Get one free →
                       </a>

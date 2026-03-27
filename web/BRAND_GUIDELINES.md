@@ -82,9 +82,9 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 ### Accents
 | Token | Value | Usage |
 |---|---|---|
-| `text-blue-500` | `#3b82f6` | Section labels, active states, links |
-| `border-blue-500/30` | `rgba(59,130,246,0.3)` | Active badges |
-| `bg-blue-500/30` | `rgba(59,130,246,0.3)` | Selection highlight |
+| `text-blue-500` | `#EF6F2E` | Section labels, active states, links |
+| `border-blue-500/30` | `rgba(239,111,46,0.3)` | Active badges |
+| `bg-blue-500/30` | `rgba(239,111,46,0.3)` | Selection highlight |
 | `bg-white` | `#fafafa` | Primary CTA buttons |
 
 ### Status
@@ -98,7 +98,7 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 ### Rules
 - **No gradients** — flat colors only
 - **No transparency overlays** on backgrounds
-- **Blue** is the only accent color — do not introduce purple, green, etc. for decorative purposes
+- **Orange (`#EF6F2E`)** is the primary accent — mapped to Tailwind `blue-500` via config override
 - Borders always `border-zinc-800` (interactive) or `border-zinc-900` (structural dividers)
 
 ---

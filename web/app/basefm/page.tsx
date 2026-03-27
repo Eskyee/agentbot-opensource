@@ -53,7 +53,7 @@ export default function BasefmTokenPage() {
                   href="https://basescan.org/token/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-brand-400 hover:text-white underline whitespace-nowrap text-xs uppercase tracking-widest"
+                  className="text-blue-400 hover:text-white underline whitespace-nowrap text-xs uppercase tracking-widest"
                 >
                   View on Basescan
                 </a>
@@ -66,7 +66,7 @@ export default function BasefmTokenPage() {
                 href="https://bankr.bot/agents/basefm"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-400 hover:text-white underline text-sm"
+                className="text-blue-400 hover:text-white underline text-sm"
               >
                 View on Bankr
               </a>
@@ -181,7 +181,7 @@ export default function BasefmTokenPage() {
           <p className="text-zinc-400 text-sm">
             baseFM is deployed on <span className="text-green-400 font-semibold">Agentbot</span> — the AI agent 
             deployment platform. Deploy your own AI agent in seconds at{' '}
-            <a href="https://agentbot.raveculture.xyz" className="text-brand-400 hover:text-white underline">
+            <a href="https://agentbot.raveculture.xyz" className="text-blue-400 hover:text-white underline">
               agentbot.raveculture.xyz
             </a>
           </p>

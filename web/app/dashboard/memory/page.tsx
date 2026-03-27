@@ -35,7 +35,7 @@ const KIND_META: Record<MemoryKind, {
   fact: {
     label: 'Fact',
     icon: FileText,
-    color: 'text-brand-400',
+    color: 'text-blue-400',
     status: 'active',
   },
   decision: {
@@ -164,7 +164,7 @@ export default function MemoryPage() {
     <DashboardShell>
       <DashboardHeader
         title="Memory Log"
-        icon={<Brain className="h-5 w-5 text-brand-400" />}
+        icon={<Brain className="h-5 w-5 text-blue-400" />}
         count={entries.length}
         action={
           <Button

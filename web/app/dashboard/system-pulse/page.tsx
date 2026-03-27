@@ -82,7 +82,7 @@ export default function SystemPulsePage() {
     label,
     value,
     sub,
-    color = 'text-brand-400',
+    color = 'text-blue-400',
   }: {
     icon: React.ElementType
     label: string
@@ -104,7 +104,7 @@ export default function SystemPulsePage() {
     <DashboardShell>
       <DashboardHeader
         title="System Pulse"
-        icon={<Activity className="h-5 w-5 text-brand-400" />}
+        icon={<Activity className="h-5 w-5 text-blue-400" />}
         action={
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill status="active" label="Operational" size="sm" />
@@ -147,7 +147,7 @@ export default function SystemPulsePage() {
             label="API Calls"
             value={costSummary?.totalCalls?.toLocaleString() ?? '0'}
             sub={`${costPeriod} total`}
-            color="text-brand-400"
+            color="text-blue-400"
           />
           <StatCard
             icon={Zap}
@@ -179,7 +179,7 @@ export default function SystemPulsePage() {
             label="Messages Today"
             value={metrics?.messages?.today?.toLocaleString() ?? '—'}
             sub={`${metrics?.messages?.thisWeek ?? 0} this week`}
-            color="text-brand-400"
+            color="text-blue-400"
           />
           <StatCard
             icon={Database}
@@ -287,7 +287,7 @@ export default function SystemPulsePage() {
                   <span className="text-xs font-mono text-zinc-500 w-24 sm:w-40 truncate">{m.model}</span>
                   <div className="flex-1 bg-zinc-800 h-2 overflow-hidden">
                     <div
-                      className="h-full bg-brand-500 transition-all duration-500"
+                      className="h-full bg-blue-500 transition-all duration-500"
                       style={{ width: `${m.percent}%` }}
                     />
                   </div>
