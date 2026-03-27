@@ -147,15 +147,15 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">Verified Human Badge</h3>
+    <div className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <h3 className="text-sm font-bold uppercase tracking-tight text-white">Verified Human Badge</h3>
         {status?.verified && <AgentVerifiedBadge verified={status.verified} verificationType={status.verificationType} />}
       </div>
 
       {status?.verified ? (
         <div className="space-y-4">
-          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+          <div className="bg-green-500/10 border border-green-500/30 p-4">
             <div className="flex items-center gap-2 text-green-400 mb-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -188,7 +188,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-zinc-300">Verification Method</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 { id: 'eas', label: 'Ethereum Attestation', icon: '🔗', desc: 'EAS onchain attestation' },
                 { id: 'coinbase', label: 'Coinbase Verify', icon: '₿', desc: 'Wallet-based verification' },
@@ -198,10 +198,10 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
                 <button
                   key={method.id}
                   onClick={() => setSelectedType(method.id as VerificationType)}
-                  className={`p-3 rounded-lg border text-left transition-all ${
+                  className={`p-3 border text-left transition-all ${
                     selectedType === method.id
                       ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
+                      : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'
                   }`}
                 >
                   <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
           <button
             onClick={handleVerify}
             disabled={verifying}
-            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest transition-colors"
           >
             {verifying ? 'Verifying...' : 'Connect & Verify'}
           </button>
