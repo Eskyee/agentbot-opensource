@@ -71,6 +71,24 @@ rsync -a --delete \
   --exclude='CLAUDE.md' \
   "$PRIVATE_ROOT/" "$TEMP_DIR/"
 
+# ── 3b. Remove internal-only files that rsync --exclude won't delete ─────────
+# (rsync exclude prevents copying but doesn't delete from dest; remove manually)
+remove_internal() {
+  local pattern="$1"
+  find "$TEMP_DIR" -maxdepth 2 -name "$pattern" -delete 2>/dev/null || true
+}
+remove_internal 'AUDIT-*.md'
+remove_internal 'AUDIT_REPORT_*.md'
+remove_internal 'SESSION_NOTES.md'
+remove_internal 'TASKS.md'
+remove_internal 'SECRETS.md'
+remove_internal 'SECRETS_CHECKLIST.md'
+remove_internal 'CODE_REVIEW.md'
+remove_internal '*.docx'
+remove_internal 'dashboard.html'
+remove_internal 'CLAUDE.md'
+rm -rf "$TEMP_DIR/memory" "$TEMP_DIR/.claire" 2>/dev/null || true
+
 # ── 4. Strip secrets globally ────────────────────────────────────────────────
 info "Stripping secrets..."
 
