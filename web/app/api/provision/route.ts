@@ -73,9 +73,19 @@ export async function POST(request: NextRequest) {
     const userEmail = (session!.user!.email || sessionEmail) as string
     const userId = (session!.user!.id || 'admin') as string
 
-    // 3. DB subscription check — disabled for initial testing
-    // Frontend enforces payment via isPaid check before deploy button
-    // TODO: Re-enable after fixing Vercel env var encoding
+    // 3. DB subscription check — admins bypass, everyone else must have active subscription
+    if (!isAdmin && userId !== 'admin') {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { subscriptionStatus: true },
+      })
+      if (user?.subscriptionStatus !== 'active') {
+        return NextResponse.json({
+          success: false,
+          error: 'Active subscription required. Please purchase a plan to deploy.',
+        }, { status: 403 })
+      }
+    }
 
     // OpenClaw-only deployments (autoProvision or agentType=business) skip channel token requirement
     const isOpenClawDeploy = autoProvision === true || agentType === 'business'
