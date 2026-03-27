@@ -259,12 +259,15 @@ docsRequired.forEach(doc => {
   checkFileExists(path.join(__dirname, '..', doc), `Documentation ${doc}`);
 });
 
+// Section 13 — Build Readiness
+// Note: actual builds are already verified in the CI backend/frontend jobs above.
+// Here we just confirm build scripts are declared; running them again would require
+// node_modules to be installed in this job, which is wasteful.
 log.section('13. Build Readiness');
-const webBuild = runCommand('cd web && npm run build 2>&1 | tail -1');
-check(webBuild && !webBuild.includes('error'), 'Web project builds successfully');
-
-const backendBuild = runCommand('cd agentbot-backend && npm run build 2>&1 | tail -1');
-check(backendBuild && !backendBuild.includes('error'), 'Backend project builds successfully');
+const webPkg   = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'web/package.json'), 'utf8'));
+const backPkg  = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'agentbot-backend/package.json'), 'utf8'));
+check(webPkg.scripts && webPkg.scripts.build,  'Web build script declared in package.json');
+check(backPkg.scripts && backPkg.scripts.build, 'Backend build script declared in package.json');
 
 log.section('VALIDATION SUMMARY');
 
