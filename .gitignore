@@ -33,6 +33,7 @@ agentbot-backend/.env
 agentbot-backend/.env.local
 **/.env
 **/.env.*
+!**/.env.example
 
 # Logs
 npm-debug.log*
