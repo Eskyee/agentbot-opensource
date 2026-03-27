@@ -59,7 +59,8 @@ router.post('/bus/send', async (req: Request, res: Response) => {
     await AgentBusService.deliverMessage(message);
     res.json({ success: true, messageId: message.messageId });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    console.error('[Bus] Send error:', error.message);
+    res.status(500).json({ error: 'Failed to send message' });
   }
 });
 
@@ -87,7 +88,10 @@ router.post('/events', authenticate, async (req: Request, res: Response) => {
   const userId = (req as any).userId;
   const { agentId, name, description, venue, eventDate, ticketPriceUsdc, totalTickets } = req.body;
   if (!userId) return res.status(401).json({ error: 'User context required' });
-  if (!agentId) return res.status(400).json({ error: 'agentId is required' });
+  if (!agentId || typeof agentId !== 'string') return res.status(400).json({ error: 'agentId (string) is required' });
+  if (!name || typeof name !== 'string' || name.length > 200) return res.status(400).json({ error: 'name (string, max 200) is required' });
+  if (ticketPriceUsdc != null && (typeof ticketPriceUsdc !== 'number' || ticketPriceUsdc < 0)) return res.status(400).json({ error: 'ticketPriceUsdc must be a non-negative number' });
+  if (totalTickets != null && (typeof totalTickets !== 'number' || totalTickets < 1 || !Number.isInteger(totalTickets))) return res.status(400).json({ error: 'totalTickets must be a positive integer' });
 
   try {
     // Verify user owns this agent
@@ -98,10 +102,11 @@ router.post('/events', authenticate, async (req: Request, res: Response) => {
 
     const result = await pool.query(
       'INSERT INTO events (agent_id, name, description, venue, event_date, ticket_price_usdc, total_tickets) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-      [agentId, name, description, venue, eventDate, ticketPriceUsdc, totalTickets]
+      [agentId, name, description || null, venue || null, eventDate || null, ticketPriceUsdc || 0, totalTickets || 100]
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
+    console.error('[Events] Create error:', error.message);
     res.status(500).json({ error: 'Failed to create event' });
   }
 });
@@ -154,9 +159,27 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
   const userId = (req as any).userId;
   const { agentId, name, totalAmount, recipients } = req.body;
   if (!userId) return res.status(401).json({ error: 'User context required' });
-  if (!agentId) return res.status(400).json({ error: 'agentId is required' });
+  if (!agentId || typeof agentId !== 'string') return res.status(400).json({ error: 'agentId (string) is required' });
+  if (!name || typeof name !== 'string' || name.length > 200) return res.status(400).json({ error: 'name (string, max 200) is required' });
+  if (typeof totalAmount !== 'number' || totalAmount <= 0) return res.status(400).json({ error: 'totalAmount must be a positive number' });
   if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
     return res.status(400).json({ error: 'recipients array is required' });
+  }
+
+  // Validate each recipient
+  let totalPercentage = 0;
+  for (let i = 0; i < recipients.length; i++) {
+    const r = recipients[i];
+    if (!r.address || typeof r.address !== 'string') {
+      return res.status(400).json({ error: `recipients[${i}].address (string) is required` });
+    }
+    if (typeof r.share !== 'number' || r.share < 0 || r.share > 100) {
+      return res.status(400).json({ error: `recipients[${i}].share must be 0-100` });
+    }
+    totalPercentage += r.share;
+  }
+  if (Math.abs(totalPercentage - 100) > 0.01) {
+    return res.status(400).json({ error: `Recipient shares must total 100% (got ${totalPercentage}%)` });
   }
 
   try {
