@@ -502,8 +502,8 @@ Track these metrics for continuous improvement:
 
 ### Related Documentation
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - Deployment runbook
-- [SECRETS.md](./SECRETS.md) - Secrets configuration
 - [AGENTS.md](./AGENTS.md) - Developer guide
+- [SAFETY_PROCEDURES.md](./SAFETY_PROCEDURES.md) - Emergency response procedures
 
 ### Service Documentation
 - [Vercel Rollback](https://vercel.com/docs/deployments/rollbacks)

@@ -15,7 +15,7 @@
 ### Environment Verification
 
 - [ ] **Vercel Dashboard**
-  - [ ] All production secrets configured (see [SECRETS.md](./SECRETS.md))
+  - [ ] All production secrets configured (see [README.md](./README.md#environment-variables))
   - [ ] `NEXTAUTH_SECRET` generated and set
   - [ ] `DATABASE_URL` configured from Render PostgreSQL
   - [ ] OAuth providers configured (Google, GitHub)
@@ -33,7 +33,6 @@
     - [ ] Mux tokens, BANKR_API_KEY, RESEND_API_KEY
     - [ ] `ADMIN_EMAILS` configured
   - [ ] PostgreSQL database provisioned
-  - [ ] Redis instance provisioned
   - [ ] Health check path verified: `/health`
   - [ ] Auto-deploy enabled for all services
 
@@ -113,8 +112,6 @@ git push origin main
 
 - [ ] **Render Deployment:**
   - [ ] Backend service: `agentbot-api` builds and deploys
-  - [ ] Frontend service: `agentbot-web` builds and deploys
-  - [ ] Worker service: `agentbot-worker` builds and deploys
   - [ ] Check render logs: Logs tab in Render dashboard
 
 - [ ] **Vercel Deployment:**
@@ -193,6 +190,8 @@ Expected response:
   - [ ] Check Render logs for errors
   - [ ] Check Vercel logs for errors
   - [ ] Verify no secrets in logs
+
+
 
 ---
 
@@ -314,13 +313,6 @@ echo $DATABASE_URL
 cd web && npx prisma db push --skip-generate
 ```
 
-**Redis Connection Failed:**
-```bash
-# Verify redis is running in Render
-# Check Redis log for connection errors
-# Verify REDIS_URL format
-```
-
 **Webhook Failures:**
 - Verify webhook secret matches Stripe
 - Check webhook endpoint is accessible
@@ -346,8 +338,8 @@ cd web && npx prisma db push --skip-generate
 ## Emergency Contacts
 
 ### On-Call Rotation
-- Primary: raveculture (YOUR_ADMIN_EMAIL_5)
-- Secondary: [TBD]
+- Primary: Set via `ADMIN_EMAILS` env var
+- See [SAFETY_PROCEDURES.md](./SAFETY_PROCEDURES.md) for full incident response procedures
 
 ### Service Providers
 - **Vercel Support:** https://vercel.com/support
@@ -358,7 +350,7 @@ cd web && npx prisma db push --skip-generate
 ### Monitoring Dashboards
 - **Render:** https://dashboard.render.com
 - **Vercel:** https://vercel.com/dashboards
-- **GitHub Actions:** https://github.com/raveculture/agentbot/actions
+- **GitHub Actions:** https://github.com/Eskyee/agentbot-opensource/actions
 
 ---
 
@@ -440,4 +432,4 @@ psql $DATABASE_URL < backup.sql
 
 ### Environment Variable References
 
-See [SECRETS.md](./SECRETS.md) for complete list of required environment variables.
+See [README.md](./README.md#environment-variables) for complete list of required environment variables.

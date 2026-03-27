@@ -1,90 +1,80 @@
 # Contributing to Agentbot
 
-Thank you for your interest in contributing to Agentbot! This guide will help you get started.
+Thank you for your interest in contributing! This guide covers everything you need to get started.
 
-## Development Setup
-
-```bash
-git clone https://github.com/raveculture/agentbot.git
-cd agentbot
-cp .env.example .env
-# Edit .env with your API keys
-```
-
-### Running Locally
+## Quick Start
 
 ```bash
-# Frontend (Next.js)
-cd web && npm install && npm run dev
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot-opensource
 
-# Backend (new terminal)
-cd agentbot-backend && npm install && npm run dev
+# Docker (recommended)
+cp web/.env.example web/.env   # fill in your values
+docker compose up -d           # http://localhost:3000
+
+# Manual
+cd web && npm install && npm run dev           # frontend → :3000
+cd agentbot-backend && npm install && npm run dev  # backend  → :4000
 ```
 
 ## Project Structure
 
 ```
-agentbot/
-├── web/                    # Next.js frontend
-│   ├── app/               # App router pages
-│   ├── components/       # React components
-│   └── lib/              # Utilities
-├── agentbot-backend/      # Express API server
+agentbot-opensource/
+├── web/                        # Next.js 16 frontend + API routes
+│   ├── app/
+│   │   ├── api/               # ~140 API route handlers
+│   │   ├── dashboard/         # Dashboard pages
+│   │   └── onboard/           # Agent setup wizard
+│   ├── lib/                   # Shared utilities
+│   └── prisma/                # Database schema + migrations
+├── agentbot-backend/           # Express.js backend API
 │   └── src/
-│       ├── routes/       # API endpoints
-│       └── services/     # Business logic
-└── skills/               # Claude Code skills
+│       ├── routes/            # REST endpoints
+│       └── services/          # Business logic
+├── mintlify-docs/              # Documentation site
+├── scripts/                   # Dev + ops utilities
+└── .github/workflows/          # CI/CD + secret scanning
 ```
 
-## Adding New Skills
+## Development Workflow
 
-Create a new skill in the `skills/` directory:
+1. Fork the repo and create a feature branch: `git checkout -b feat/my-feature`
+2. Make your changes — keep them focused and minimal
+3. Run the secret scanner before pushing: `bash scripts/check-secrets.sh .`
+4. Run tests:
+   ```bash
+   cd agentbot-backend && npm test
+   cd web && npm test
+   ```
+5. Open a pull request against `main`
 
-```typescript
-// skills/my-skill.md
----
-name: my-skill
-description: What my skill does
----
+## Code Standards
 
-# My Skill
+- **TypeScript strict** — no `any` where avoidable
+- **One feature or fix per PR** — keep diffs small and reviewable
+- **Follow existing patterns** — read the surrounding code before writing new code
+- **No shell injection** — use `spawn()` not `exec()` for all shell commands
+- **Fail-closed security** — auth checks default to deny, not allow
 
-## Setup
+## Environment Variables
 
-Instructions for setting up the skill...
+Copy `web/.env.example` to `web/.env`. Required fields are documented in the [README](README.md#environment-variables).
 
-## Usage
+> Never commit real API keys. The CI pipeline runs GitLeaks + TruffleHog on every push.
 
-How to use the skill...
-```
+## Before Opening a PR
 
-## Adding New Agents
+- [ ] `bash scripts/check-secrets.sh .` passes (no leaked secrets)
+- [ ] `cd agentbot-backend && npx tsc --noEmit` passes (no type errors)
+- [ ] Tests pass: `npm test` in both `web/` and `agentbot-backend/`
+- [ ] PR description explains **what** and **why**, not just what changed
 
-Define agent configurations in the backend:
+## Reporting Issues
 
-```typescript
-const agent = {
-  name: 'my-agent',
-  brain: 'llama-3.3-70b',
-  skills: ['web-search', 'my-skill'],
-  systemPrompt: 'You are a helpful agent...'
-}
-```
-
-## Pull Request Process
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## Code Style
-
-- Use TypeScript for new code
-- Run `prettier` before committing
-- Follow existing patterns in the codebase
+- Security vulnerabilities → see [SECURITY.md](SECURITY.md) (do not open public issues)
+- Bugs and features → [GitHub Issues](https://github.com/Eskyee/agentbot-opensource/issues)
 
 ## License
 
-By contributing to Agentbot, you agree that your contributions will be licensed under the MIT License.
+By contributing you agree your code will be licensed under the [MIT License](LICENSE).

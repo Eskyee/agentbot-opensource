@@ -54,13 +54,15 @@
 
 ---
 
-## Admin Accounts (hardcoded for now)
-- YOUR_ADMIN_EMAIL_5
-- YOUR_ADMIN_EMAIL_1
+## Admin Accounts
+
+Admin accounts are configured via the `ADMIN_EMAILS` environment variable (comma-separated).
+See your deployment's environment configuration — do not hardcode emails in source.
 
 ## Environment Variables Required
+
 ```
-ADMIN_EMAILS=YOUR_ADMIN_EMAIL_5,YOUR_ADMIN_EMAIL_1
+ADMIN_EMAILS=your-admin@example.com
 TESTER_EMAILS=
 STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...

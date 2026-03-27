@@ -1,9 +1,9 @@
 # Agentbot Safety & Recovery Procedures
 
 ## Emergency Contacts
-- **Primary:** Eskyee (YOUR_ADMIN_EMAIL_1)
+- **Primary:** Configure via `ADMIN_EMAILS` env var
 - **Render Dashboard:** https://dashboard.render.com
-- **GitHub:** https://github.com/Eskyee/agentbot
+- **GitHub:** https://github.com/Eskyee/agentbot-opensource/issues
 
 ## Emergency Procedures
 
@@ -12,11 +12,10 @@
 Step 1: Check Render dashboard → service status
 Step 2: Check build logs → find error
 Step 3: If bad deploy → rollback:
-        cd /Users/raveculture/agentbot
         git revert HEAD
         git push origin main
-Step 4: If database issue → check Postgres service
-Step 5: If costs spike → set KILL_SWITCH=true
+Step 4: If database issue → check Postgres service in Render
+Step 5: If costs spike → set KILL_SWITCH=true in Render env vars
 ```
 
 ### 2. Costs Spike
@@ -33,22 +32,21 @@ Step 5: Contact Render support if needed
 Step 1: Set KILL_SWITCH=true immediately
 Step 2: Rotate all API keys:
         - JWT_SECRET
-        - API_KEY
-        - MCP_API_KEY
+        - INTERNAL_API_KEY
+        - WALLET_ENCRYPTION_KEY
         - BANKR_API_KEY
         - OPENROUTER_API_KEY
-Step 3: Check RLS policies
+Step 3: Check RLS policies in database
 Step 4: Review access logs
 Step 5: Notify affected users
 ```
 
 ### 4. Database Failure
 ```
-Step 1: Check Postgres service status
-Step 2: If free tier expired → upgrade plan
-Step 3: If corrupted → restore from backup:
+Step 1: Check Postgres service status in Render dashboard
+Step 2: If corrupted → restore from backup:
         render db restore <backup-id>
-Step 4: If unrecoverable → rebuild from migrations:
+Step 3: If unrecoverable → rebuild from migrations:
         npx prisma migrate deploy
 ```
 
@@ -56,7 +54,6 @@ Step 4: If unrecoverable → rebuild from migrations:
 
 ### Quick Rollback (5 minutes)
 ```bash
-cd /Users/raveculture/agentbot
 git log --oneline -5  # Find last good commit
 git revert <commit-hash>
 git push origin main
@@ -65,7 +62,7 @@ git push origin main
 
 ### Full Rollback (15 minutes)
 ```bash
-# 1. Stop all services
+# 1. Suspend services
 render services list  # Get service IDs
 render service suspend <service-id>
 
@@ -76,38 +73,38 @@ git push origin main
 # 3. Restore database if needed
 render db restore <backup-id>
 
-# 4. Restart services
+# 4. Resume services
 render service resume <service-id>
 ```
 
 ## Monitoring
 
 ### Health Checks
-- API: https://agentbot-api.onrender.com/health
-- Web: https://agentbot-web.onrender.com
-- Dashboard: https://agentbot-web.onrender.com/dashboard
+```bash
+curl https://agentbot-api.onrender.com/health
+curl https://agentbot.raveculture.xyz/api/health
+```
 
 ### Cost Monitoring
-- Check every 12 hours via cron job
 - Alert threshold: $35 unbilled
-- Kill switch: KILL_SWITCH=true
+- Kill switch: set `KILL_SWITCH=true` in Render env vars
 
-### Performance Monitoring
-- API response time: <500ms
-- Web load time: <3s
-- Database queries: <100ms
+### Performance Targets
+- API response time: < 500ms
+- Web load time: < 3s
+- Database queries: < 100ms
 
 ## Backup Schedule
 
-### Automatic (when Postgres upgraded)
+### Automatic (Render paid tier)
 - Daily backups at 2 AM UTC
 - 7-day retention
-- Point-in-time recovery
+- Point-in-time recovery available
 
-### Manual (current free tier)
-- Weekly backup every Sunday
-- Command: `render db dump <db-id> > backup-$(date +%Y%m%d).sql`
-- Store in `/Users/raveculture/agentbot/backups/`
+### Manual Backup
+```bash
+pg_dump $DATABASE_URL > backup-$(date +%Y%m%d).sql
+```
 
 ## Recovery Testing
 
@@ -154,12 +151,6 @@ render service resume <service-id>
 ## Contacts
 
 ### Support
-- Render: support@render.com
-- GitHub: support@github.com
-- Stripe: support@stripe.com
-
-### Escalation
-1. Atlas (automated monitoring)
-2. Eskyee (manual intervention)
-3. Render support (infrastructure)
-4. GitHub support (code issues)
+- Render: https://render.com/support
+- GitHub: https://github.com/Eskyee/agentbot-opensource/issues
+- Stripe: https://stripe.com/go/contact
