@@ -59,7 +59,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.svg',
-    apple: '/apple-touch-icon.svg',
+    apple: '/apple-touch-icon.png',
+    other: [
+      { rel: 'apple-touch-icon', sizes: '120x120', url: '/icons/apple-touch-icon-120x120.png' },
+      { rel: 'apple-touch-icon', sizes: '152x152', url: '/icons/apple-touch-icon-152x152.png' },
+      { rel: 'apple-touch-icon', sizes: '167x167', url: '/icons/apple-touch-icon-167x167.png' },
+      { rel: 'apple-touch-icon', sizes: '180x180', url: '/icons/apple-touch-icon-180x180.png' },
+    ],
   },
   other: {
     'google-site-verification': 'zCtxfWmpS5bIT2JSGipE04GN85VYLaUEb4Xkkcb-ZCQ',
