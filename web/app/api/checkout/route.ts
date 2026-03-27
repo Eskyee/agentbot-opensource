@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // Kept as a stub to avoid 404s on any old bookmarks/integrations.
 export async function POST() {
   return NextResponse.json(
-    { error: 'This endpoint is deprecated. Use GET /api/stripe/checkout?plan=<solo|collective|label>' },
+    { error: 'This endpoint is deprecated. Use GET /api/stripe/checkout?plan=<solo|collective|label|network>' },
     { status: 410 }
   )
 }

@@ -43,7 +43,7 @@ function OnboardContent() {
   const AVAILABLE_MODELS = [
     { id: 'openrouter/xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (Recommended)', provider: 'openrouter', description: 'Xiaomi latest model. Fast, capable, great value.', recommended: true, tier: 'free' },
     { id: 'openrouter/mistralai/mistral-7b-instruct', name: 'Mistral 7B (Free Tier)', provider: 'openrouter', description: 'Lightweight & fast. Free for all users.', tier: 'free' },
-    { id: 'openrouter/meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 (Advanced)', provider: 'openrouter', description: 'Advanced general assistant. Requires Solo plan.', tier: 'underground' },
+    { id: 'openrouter/meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 (Advanced)', provider: 'openrouter', description: 'Advanced general assistant. Requires Solo plan.', tier: 'solo' },
     { id: 'openrouter/qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 (Coding)', provider: 'openrouter', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
     { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1 (Reasoning)', provider: 'openrouter', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
   ]
