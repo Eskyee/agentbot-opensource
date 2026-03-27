@@ -15,7 +15,7 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 export const metadata: Metadata = {
   metadataBase: new URL('https://agentbot.raveculture.xyz'),
   title: {
-    default: 'Agentbot — Deploy AI Agents in 60 Seconds',
+    default: 'Agentbot — Focus on the Work. Agents Handle the Rest.',
     template: '%s | Agentbot',
   },
   description: 'Deploy autonomous AI agents for your creative practice in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol.',
@@ -39,31 +39,37 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://agentbot.raveculture.xyz',
     siteName: 'Agentbot',
-    title: 'Agentbot | Deploy AI Agents in 60 Seconds',
+    title: 'Agentbot | Focus on the Work. Agents Handle the Rest.',
     description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Agentbot - AI Agent Deployment Platform',
+        alt: 'Agentbot — Focus on the Work. Agents Handle the Rest.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Agentbot | Deploy AI Agents in 60 Seconds',
+    title: 'Agentbot | Focus on the Work. Agents Handle the Rest.',
     description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
-    creator: '@agentbot',
-    images: ['/og-image.png'],
+    creator: '@Esky33junglist',
+    images: ['/opengraph-image'],
   },
   icons: {
     icon: '/favicon.svg',
-    apple: '/apple-touch-icon.svg',
+    apple: '/apple-touch-icon.png',
+    other: [
+      { rel: 'apple-touch-icon', sizes: '120x120', url: '/icons/apple-touch-icon-120x120.png' },
+      { rel: 'apple-touch-icon', sizes: '152x152', url: '/icons/apple-touch-icon-152x152.png' },
+      { rel: 'apple-touch-icon', sizes: '167x167', url: '/icons/apple-touch-icon-167x167.png' },
+      { rel: 'apple-touch-icon', sizes: '180x180', url: '/icons/apple-touch-icon-180x180.png' },
+    ],
   },
   other: {
     'google-site-verification': 'zCtxfWmpS5bIT2JSGipE04GN85VYLaUEb4Xkkcb-ZCQ',
-    'talentapp:project_verification': 'e2d5e2ed0997d853f19b01218d2ef704177dd8c0f8eb40ac43fe56a5ddaf0f9f929a05a8fa71e147df3cb240061a08b2b881d234de514679145af6ed6180d366',
+    'talentapp:project_verification': '02b6e4586b25009b3b24cd6f9e0d35e036960b2f0c037ccfefe8cc9e83e6c5c88a85efdeb3f7f4e97f7003d6b4e103e8858f0e5fe03c8c6a2207514f1b6449ff',
     'base:app_id': '6951feb4c63ad876c90817aa',
   },
 }
@@ -105,6 +111,18 @@ const jsonLd = {
       '@type': 'Offer',
       name: 'Label',
       price: '149.00',
+      priceCurrency: 'GBP',
+      priceSpecification: {
+        '@type': 'RecurringChargeSpecification',
+        billingDuration: 1,
+        billingIncrement: 1,
+        unitCode: 'MON',
+      },
+    },
+    {
+      '@type': 'Offer',
+      name: 'Network',
+      price: '499.00',
       priceCurrency: 'GBP',
       priceSpecification: {
         '@type': 'RecurringChargeSpecification',
