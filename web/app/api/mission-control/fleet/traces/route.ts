@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
 const SOUL_URLS = [
-  'https://borg-0-production.up.railway.app',
+  'https://tempo-x402-production.up.railway.app',
 ];
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ async function fetchSoulThoughts(url: string) {
     const res = await fetch(`${url}/soul/status`, { signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     const status = await res.json();
-    const designation = 'borg-0';
+    const designation = 'tempo-x402';
     return { designation, status };
   } catch {
     return null;

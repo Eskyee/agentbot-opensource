@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
 const SOUL_URLS = [
-  'https://borg-0-production.up.railway.app',
+  'https://tempo-x402-production.up.railway.app',
 ];
 
 export const dynamic = 'force-dynamic';
