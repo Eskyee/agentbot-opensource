@@ -9,7 +9,7 @@
 
 Deploy autonomous AI agents in 60 seconds.
 
-**[Website](https://agentbot.raveculture.xyz)** · **[Documentation](https://raveculture.mintlify.app)** · **[Talent App](https://talent.app/~/projects/26f977bb-d436-4e28-830e-184757f20f95)** · **[Discord](https://discord.gg/eskyee)** · **[GitHub](https://github.com/raveculture/agentbot)**
+**[Website](https://agentbot.raveculture.xyz)** · **[Documentation](https://docs.agentbot.raveculture.xyz)** · **[Discord](https://discord.gg/eskyee)** · **[GitHub](https://github.com/Eskyee/agentbot-opensource)**
 
 </div>
 
@@ -24,7 +24,7 @@ Deploy autonomous AI agents in 60 seconds.
 ## Quick Start
 
 ```bash
-git clone https://github.com/raveculture/agentbot.git
+git clone https://github.com/Eskyee/agentbot-opensource.git
 cd agentbot
 cp .env.example .env
 # Edit .env with your API keys

@@ -1,6 +1,6 @@
-# AGENTS.md — Agentbot Developer Guide
+# AGENTS.md — Developer Guide
 
-This file provides instructions for AI agents working on the Agentbot codebase.
+This file provides setup and development instructions for working on the Agentbot codebase. It is also used by AI coding assistants (Claude Code, Cursor, etc.) for context.
 
 ## Project Structure
 
