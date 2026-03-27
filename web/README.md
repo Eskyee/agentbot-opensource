@@ -1,433 +1,260 @@
-# Agentbot 🤖
-
 <div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+# Agentbot
+
+**Deploy autonomous AI agents in 60 seconds.**
+
+[![CI](https://github.com/Eskyee/agentbot-opensource/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Eskyee/agentbot-opensource/actions/workflows/ci-cd.yml)
+[![Secret Scan](https://github.com/Eskyee/agentbot-opensource/actions/workflows/check-secrets.yml/badge.svg)](https://github.com/Eskyee/agentbot-opensource/actions/workflows/check-secrets.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Eskyee/agentbot-opensource)
 
-Deploy autonomous AI agents in 60 seconds. 🦞
-
-<img src="https://github.com/Eskyee/agentbot-opensource/raw/main/web/public/og-image.png" width="600" alt="Agentbot" />
-
-**[Website](https://agentbot.raveculture.xyz)** · **[Documentation](https://raveculture.mintlify.app)** · **[Talent App](https://talent.app/~/projects/26f977bb-d436-4e28-830e-184757f20f95)** · **[Discord](https://discord.gg/eskyee)** · **[GitHub](https://github.com/Eskyee/agentbot-opensource)**
+[Website](https://agentbot.raveculture.xyz) · [Docs](https://raveculture.mintlify.app) · [Discord](https://discord.gg/eskyee) · [Report a Bug](https://github.com/Eskyee/agentbot-opensource/issues) · [Request a Feature](https://github.com/Eskyee/agentbot-opensource/issues)
 
 </div>
 
-## Why Agentbot?
+---
 
-- 🚀 **Deploy in 60 seconds** - From signup to chatting with your agent
-- 🔌 **Multiple Channels** - Telegram, Discord, WhatsApp
-- 🧠 **Bring Your Own Key** - Use OpenRouter, Anthropic, OpenAI, Gemini, Groq
-- 🐳 **Docker-powered** - Isolated containers per agent
-- 💰 **Pay what you use** - No markup on API keys
+## What is Agentbot?
 
-## Quick Start
+Agentbot is an open-source platform for deploying isolated AI agents connected to Telegram, Discord, and WhatsApp. Each agent runs in its own Docker container (powered by [OpenClaw](https://github.com/raveculture/openclaw)), with its own AI model, skills, and wallet.
 
-### Option 1: Docker (Recommended)
+**You own the infrastructure. We provide the platform.**
 
-```bash
-git clone https://github.com/Eskyee/agentbot-opensource.git
-cd agentbot-opensource
-docker compose up -d
-```
-
-Visit http://localhost:3000
-
-### Option 2: Manual Setup
-
-```bash
-git clone https://github.com/Eskyee/agentbot-opensource.git
-cd agentbot-opensource
-cp .env.example .env
-# Edit .env with your API keys
-
-# Frontend
-cd web && npm install && npm run dev
-
-# Backend (new terminal)
-cd agentbot-backend && npm install && npm run dev
-```
-
-### Quick Start Script
-
-```bash
-./quick-start.sh    # One-click: starts stack + health check
-make up             # Start all services
-make logs           # Tail logs
-make health         # Check service status
-make test           # Quick load test
-make dashboard      # Open control panel
-```
-
-### VS Code
-
-Open in VS Code and use `Cmd+Shift+P` → "Run Task" for:
-- 🦞 Quick Start
-- ⬆️ Start Stack
-- ⬇️ Stop Stack
-- 📋 Tail Logs
-- 🔍 Health Check
-- 🔥 Load Test
-
-### Dashboard
-
-A browser-based control panel is included:
-```bash
-python3 -m http.server 8080 dashboard/
-# Then open http://localhost:8080
-```
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `INTERNAL_API_KEY` | Yes | Your API key for authentication |
-| `OPENROUTER_API_KEY` | BYOK | OpenRouter API key (default provider) |
-| `ANTHROPIC_API_KEY` | BYOK | Anthropic Claude key |
-| `OPENAI_API_KEY` | BYOK | OpenAI GPT key |
-| `GEMINI_API_KEY` | BYOK | Google Gemini key |
-| `GROQ_API_KEY` | BYOK | Groq inference key |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `REDIS_URL` | Yes | Redis connection string |
-
-**BYOK** = Bring Your Own Key — no markup on API costs.
-
-## Architecture
-
-### High-Level Overview
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         USER                                   │
-│                  (Telegram / Discord / WhatsApp)             │
-└──────────────────────────────┬──────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                     AGENTBOT PLATFORM                         │
-│                                                                  │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐  │
-│  │   Web UI   │    │  Dashboard │    │   Onboarding Flow   │  │
-│  │ (Next.js)  │    │  (Next.js) │    │     (Next.js)      │  │
-│  └──────┬──────┘    └──────┬──────┘    └──────────┬──────────┘  │
-│         │                   │                      │             │
-│         └──────────────────┼──────────────────────┘             │
-│                            │                                    │
-│                    ┌───────▼───────┐                          │
-│                    │  REST API    │                          │
-│                    │ (Express.js)  │                          │
-│                    └───────┬───────┘                          │
-└────────────────────────────┼──────────────────────────────────┘
-                             │
-         ┌───────────────────┼───────────────────┐
-         │                   │                   │
-         ▼                   ▼                   ▼
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  PostgreSQL     │ │    OpenClaw    │ │   Skills &     │
-│   (Neon)       │ │  Container     │ │   Tools        │
-│                 │ │  (Docker)      │ │   Registry     │
-└─────────────────┘ └─────────────────┘ └─────────────────┘
-```
-
-### Agent Provisioning Flow
-
-```
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  User clicks │────▶│  Validate    │────▶│  Create      │────▶│  Pull       │
-│  "Deploy"    │     │  Telegram    │     │  Docker      │     │  OpenClaw   │
-│              │     │  Token       │     │  Container   │     │  Image      │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
-                                                                        │
-                                                                        ▼
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│  User chats  │◀────│  Webhook    │◀────│  Agent       │◀────│  Configure  │
-│  with Agent  │     │  Receives   │     │  Running     │     │  AI Model   │
-└──────────────┘     └──────────────┘     └──────────────┘     └──────────────┘
-```
-
-### Message Flow
-
-```
-┌─────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ Telegram │────▶│   Webhook   │────▶│   OpenClaw  │────▶│    AI       │
-│  User   │     │   Handler   │     │   Container │     │   Provider  │
-└─────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-                                         │                    │
-                                         ▼                    ▼
-┌─────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ Telegram │◀────│   Format   │◀────│   Process   │<────│   Response │
-│  Bot    │     │   Response │     │   Tool Use  │     │   (LLM)    │
-└─────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-```
-
-### Container Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                  DOCKER CONTAINER                          │
-│                   (Per Agent)                              │
-│                                                             │
-│  ┌───────────────────────────────────────────────────┐   │
-│  │                  OPENCLAW                          │   │
-│  │                                                    │   │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────────────┐  │   │
-│  │  │ Message │  │  Agent  │  │    Skills      │  │   │
-│  │  │ Handler │─▶│  Core   │─▶│  (web-search,  │  │   │
-│  │  └─────────┘  └────┬────┘  │   file-handler, │  │   │
-│  │                    │        │   code-runner)   │  │   │
-│  │                    ▼        └─────────────────┘  │   │
-│  │              ┌─────────┐                        │   │
-│  │              │   AI    │◀─────── API Keys      │   │
-│  │              │ Provider│                        │   │
-│  │              └─────────┘                        │   │
-│  └────────────────────────────────────────────────┘   │
-│                                                             │
-│  Mounted Volume: /home/node/.openclaw                     │
-│  - agents/       (agent configs)                         │
-│  - workspace/    (files)                                  │
-│  - logs/         (runtime logs)                           │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Supported Channels
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CHANNELS                               │
-├──────────────┬──────────────┬──────────────┬──────────────┤
-│   📱         │    🎮       │    💬       │    🌐        │
-│  Telegram    │   Discord   │  WhatsApp   │   Webhooks   │
-├──────────────┼──────────────┼──────────────┼──────────────┤
-│ @BotFather  │ Dev Portal  │  Business   │   REST      │
-│  Bot Token  │  Bot Token  │    API      │   API       │
-└──────────────┴──────────────┴──────────────┴──────────────┘
-```
-
-### AI Providers
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    AI PROVIDERS                          │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
-│   │  OpenRouter │  │  Anthropic  │  │   OpenAI    │   │
-│   │  (Default)  │  │  (Claude)   │  │   (GPT-4)   │   │
-│   └─────────────┘  └─────────────┘  └─────────────┘   │
-│                                                          │
-│   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
-│   │   Google    │  │    Groq     │  │   Local    │   │
-│   │   Gemini    │  │   (Fast)    │  │   Ollama    │   │
-│   └─────────────┘  └─────────────┘  └─────────────┘   │
-│                                                          │
-│   BYOK: Bring Your Own API Key                         │
-└──────────────────────────────────────────────────────────┘
-```
-
-## Marketplace Agents
-
-Agentbot includes Gordon-Approved production agents tuned for high-performance crew operations.
-
-### Core Agents
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│                              MARKETPLACE AGENTS                                     │
-├─────────────────┬─────────────────┬─────────────────┬─────────────────────────────┤
-│  THE-STRATEGIST │  CREW-MANAGER   │  SOUND-SYSTEM   │  THE-DEVELOPER             │
-│  ┌───────────┐  │  ┌───────────┐  │  ┌───────────┐  │  ┌───────────────────┐    │
-│  │ 🤖 Mission│  │  │ 💰 Ops &  │  │  │ 🔊 Auto   │  │  │ 💻 Logic &        │    │
-│  │ Planning  │  │  │ Finance   │  │  │ Feedback  │  │  │ Scripting         │    │
-│  └─────┬─────┘  │  └─────┬─────┘  │  └─────┬─────┘  │  └─────────┬─────────┘    │
-│        │         │        │         │        │         │           │             │
-│  Brain:       │  Brain:       │  Brain:       │  Brain:               │             │
-│  DeepSeek R1  │  Llama 3.3    │  Mistral 7B   │  Qwen 2.5             │             │
-│        │         │        │         │        │         │           │             │
-│  Tier:        │  Tier:        │  Tier:        │  Tier:                 │             │
-│  LABEL ●      │  UNDERGROUND ●│  FREE ●       │  COLLECTIVE ●          │             │
-└─────────────────┴─────────────────┴─────────────────┴─────────────────────────────┘
-
-SKILLS:
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│ MUSIC SKILLS                        │ EVENT SKILLS                               │
-├─────────────────────────────────────┼────────────────────────────────────────────┤
-│ 🎨 Visual Synthesizer               │ 🎫 Event Ticketing (x402 USDC)            │
-│    Generate artwork w/ Stable Diff  │    Sell tickets with Base payments         │
-│                                     │                                            │
-│ 🔍 Track Archaeologist               │ 📅 Event Scheduler                        │
-│    Deep catalog, sample clearing   │    Multi-channel (TG, DC, WA, Email)     │
-│                                     │                                            │
-│ 🎧 Setlist Oracle                   │ 🏠 Venue Finder                           │
-│    BPM/Key analysis, Camelot mix   │    Global venue booking                   │
-│                                     │                                            │
-│ 👥 Groupie Manager                  │ 🎪 Festival Finder                       │
-│    Fan segmentation, merch drops    │    Global festival discovery               │
-│                                     │                                            │
-│ 💰 Royalty Tracker                  │                                            │
-│    Streaming royalties, splits     │                                            │
-│                                     │                                            │
-│ 📩 Demo Submitter                   │                                            │
-│    AI-curated demo submissions      │                                            │
-└─────────────────────────────────────┴────────────────────────────────────────────┘
-```
-
-### Agent Interaction Flow
-
-```
-                    ┌─────────────────┐
-                    │   User Message  │
-                    │ (Telegram/Discord/
-                    │  WhatsApp/Web)  │
-                    └────────┬────────┘
-                             │
-                             ▼
-              ┌──────────────────────────────┐
-              │    Message Router           │
-              │  (Channel → Agent Mapping)  │
-              └──────────────┬──────────────┘
-                             │
-              ┌──────────────┼──────────────┐
-              │              │              │
-              ▼              ▼              ▼
-       ┌───────────┐  ┌───────────┐  ┌───────────┐
-       │ STRATEGIST│  │  CREW-    │  │  SOUND-  │
-       │ (Mission) │  │ MANAGER   │  │  SYSTEM  │
-       └─────┬─────┘  └─────┬─────┘  └─────┬─────┘
-             │              │              │
-             └──────────────┼──────────────┘
-                            │
-                            ▼
-              ┌──────────────────────────────┐
-              │    Skills Executor           │
-              │                             │
-              │  ┌────────┐ ┌────────┐ ┌───┐ │
-              │  │ Music │ │ Events │ │ A │ │
-              │  │Skills │ │Skills  │ │I  │ │
-              │  └────────┘ └────────┘ └───┘ │
-              └──────────────┬──────────────┘
-                             │
-                             ▼
-              ┌──────────────────────────────┐
-              │    AI Provider (LLM)         │
-              │   OpenRouter / Anthropic /   │
-              │   OpenAI / Gemini / Groq     │
-              └──────────────┬──────────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │  Response to    │
-                    │  User Channel  │
-                    └─────────────────┘
-```
+---
 
 ## Features
 
-- Multiple AI providers (OpenRouter, Anthropic, OpenAI, Gemini, Groq)
-- Telegram, Discord, WhatsApp channels
-- Web search, file handling, code execution
-- Real-time dashboard
+- 🚀 **One-click deploy** — From signup to live agent in under 60 seconds
+- 🔌 **Multi-channel** — Telegram, Discord, WhatsApp, REST webhooks
+- 🧠 **BYOK** — Bring Your Own Key: OpenRouter, Anthropic, OpenAI, Gemini, Groq
+- 🐳 **Container isolation** — One Docker container per agent, fully isolated
+- 💰 **x402 payments** — Agents can send and receive USDC on Base
+- 🛡️ **Security-first** — Bearer auth, hashed API keys, SSRF blocklist, fail-closed webhooks
+- 📊 **Observability** — Real-time dashboard, cost tracking, heartbeat monitoring
 
-## Deployment
+---
 
-**Vercel:**
-```bash
-cd web && vercel --prod
-```
+## Quick Start
 
-**Docker:**
-```bash
-docker-compose up -d
-```
-
-## For Developers & AI Agents
-
-Agentbot is built for extensibility. Developers and AI agents (Claude Code, Codex, OpenClaw) can contribute:
-
-### Building New Skills
-
-```typescript
-// skills/my-skill.ts
-export const skill = {
-  name: 'my-skill',
-  description: 'What my skill does',
-  parameters: {
-    input: z.string(),
-    options: z.object({}).optional()
-  },
-  execute: async (input, options, context) => {
-    // Your logic here
-    return { result: '...' }
-  }
-}
-```
-
-### Adding New Agents
-
-```typescript
-// Define agent configuration
-const agent = {
-  name: 'my-agent',
-  brain: 'llama-3.3-70b',
-  skills: ['web-search', 'my-skill'],
-  systemPrompt: 'You are a helpful agent...'
-}
-```
-
-### Claude Code Integration
+### Docker (recommended)
 
 ```bash
-# Use Claude Code skills for local development
-claude --prompt "Help me build a new skill for Agentbot"
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot-opensource
+cp web/.env.example web/.env   # fill in your values
+docker compose up -d
 ```
 
-### OpenClaw Builders
+Open http://localhost:3000
+
+### Manual
 
 ```bash
-# Clone and extend OpenClaw
-git clone https://github.com/raveculture/openclaw.git
-cd openclaw
-# Add your custom tools
-# Deploy as Agentbot agent
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot-opensource
+
+# Frontend
+cd web
+cp .env.example .env          # fill in your values
+npm install
+npm run dev                   # http://localhost:3000
+
+# Backend (new terminal)
+cd ../agentbot-backend
+cp .env.example .env
+npm install
+npm run dev                   # http://localhost:4000
 ```
+
+### Makefile shortcuts
+
+```bash
+make up        # Start all services
+make down      # Stop all services
+make logs      # Tail logs
+make health    # Check service status
+```
+
+---
+
+## Environment Variables
+
+Copy `web/.env.example` to `web/.env` and fill in the values. Required fields:
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | ✅ | Neon / PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | ✅ | Random 32-char secret for NextAuth |
+| `NEXTAUTH_URL` | ✅ | Your app URL (e.g. `http://localhost:3000`) |
+| `INTERNAL_API_KEY` | ✅ | Shared secret between frontend and backend |
+| `OPENROUTER_API_KEY` | BYOK | Default AI provider |
+| `ANTHROPIC_API_KEY` | BYOK | Claude models |
+| `OPENAI_API_KEY` | BYOK | GPT models |
+| `STRIPE_SECRET_KEY` | Payments | Stripe subscription billing |
+| `RESEND_API_KEY` | Email | Transactional email |
+| `CDP_API_KEY_NAME` | Wallets | Coinbase CDP agent wallets |
+| `SOUL_SERVICE_URL` | Optional | Your deployed backend URL |
+| `X402_PAY_TO` | Optional | USDC address for x402 payments |
+
+> **BYOK** — Agentbot never takes a cut of your AI API costs. Bring your own keys and pay providers directly.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                       USER                                      │
+│               Telegram / Discord / WhatsApp                     │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    AGENTBOT PLATFORM                            │
+│                                                                 │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │   Web UI    │  │  Dashboard   │  │   Onboarding Flow    │  │
+│  │  (Next.js)  │  │  (Next.js)   │  │     (Next.js)        │  │
+│  └──────┬──────┘  └──────┬───────┘  └──────────┬───────────┘  │
+│         └────────────────┼───────────────────────┘             │
+│                          │                                      │
+│                  ┌───────▼───────┐                             │
+│                  │   REST API    │                             │
+│                  │ (Express.js)  │                             │
+│                  └───────┬───────┘                             │
+└──────────────────────────┼─────────────────────────────────────┘
+                           │
+         ┌─────────────────┼──────────────────┐
+         │                 │                  │
+         ▼                 ▼                  ▼
+┌────────────────┐ ┌───────────────┐ ┌────────────────┐
+│  PostgreSQL    │ │   OpenClaw    │ │  Skills &      │
+│  (Neon)        │ │  Container    │ │  Tools         │
+│                │ │  (Docker)     │ │  Registry      │
+└────────────────┘ └───────────────┘ └────────────────┘
+```
+
+### Provisioning Flow
+
+```
+User clicks "Deploy"
+  → Validate bot token
+  → Create Docker container
+  → Pull OpenClaw image
+  → Configure AI model + channels
+  → Agent live ✅
+```
+
+### Agent Container (per-user isolation)
+
+```
+Docker Container
+├── OpenClaw runtime
+│   ├── Message handler
+│   ├── Agent core (AI model)
+│   └── Skills (web-search, file-handler, code-runner, ...)
+├── Mounted volume: /home/node/.openclaw
+│   ├── agents/    (configs)
+│   ├── workspace/ (files)
+│   └── logs/
+└── Environment: AI API key, channel tokens
+```
+
+---
+
+## Plans
+
+| Plan | Price | Agents | Memory | vCPUs |
+|------|-------|--------|--------|-------|
+| **Solo** | £29/mo | 1 | 2 GB | 1 |
+| **Collective** | £69/mo | 3 | 4 GB | 2 |
+| **Label** | £149/mo | 10 | 8 GB | 4 |
+| **Network** | £499/mo | Unlimited | 16 GB | 4 |
+
+Or **self-host for free** — same codebase, your own infrastructure.
+
+---
 
 ## Project Structure
 
 ```
-agentbot/
-├── web/                    # Next.js frontend
-│   ├── app/               # App router pages
-│   ├── components/       # React components  
-│   └── lib/              # Utilities
-├── agentbot-backend/      # Express API server
+agentbot-opensource/
+├── web/                        # Next.js 16 frontend + API routes
+│   ├── app/
+│   │   ├── api/               # ~140 API route handlers
+│   │   ├── dashboard/         # Dashboard pages
+│   │   ├── onboard/           # Agent setup wizard
+│   │   └── components/        # React components
+│   ├── lib/                   # Shared utilities
+│   └── prisma/                # Database schema + migrations
+├── agentbot-backend/           # Express.js API server
 │   └── src/
-│       ├── routes/       # API endpoints
-│       └── services/     # Business logic
-└── skills/               # Claude Code skills
+│       ├── routes/            # REST endpoints
+│       └── services/          # Business logic (caddy, wallet, bus, ...)
+├── mintlify-docs/              # Documentation site
+├── scripts/                   # Dev + ops utilities
+│   ├── check-secrets.sh       # Pre-push secret scanner
+│   └── sync-to-opensource.sh  # Private → public sync
+└── .github/workflows/         # CI/CD + secret scanning
 ```
 
-## Self-Host or Use Our Platform
+---
 
-You have two options:
+## Contributing
 
-### Option 1: Self-Host (Free)
-Clone the code and run it on your own infrastructure:
-- Your own servers or cloud (AWS, DigitalOcean, etc.)
-- You manage updates, security, scaling
-- Free - no monthly fees
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a PR.
 
-### Option 2: Hosted by Us
-Use our managed platform - we handle everything:
-- **SOLO** - £29/mo - 1 Creative Agent
-- **COLLECTIVE** - £69/mo - 3 Creative Agents + 1 OpenClaw
-- **LABEL** - £149/mo - 10 Creative Agents + 3 OpenClaw
-- **NETWORK** - £499/mo - Unlimited everything
+**Quick guide:**
 
-Same pricing whether you self-host or use our platform. The difference is we manage the infrastructure for you.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Make your changes — keep them focused and minimal
+4. Run the secret scanner before pushing: `bash scripts/check-secrets.sh`
+5. Open a pull request against `main`
+
+**Before your first PR:**
+- Check open [issues](https://github.com/Eskyee/agentbot-opensource/issues) for something to work on
+- For new features, open an issue first to discuss the approach
+- Keep PRs focused — one feature or fix per PR
+
+---
+
+## Security
+
+Found a vulnerability? Please **do not** open a public issue.
+
+See [SECURITY.md](SECURITY.md) for the responsible disclosure policy.
+
+**Quick checks we run on every push:**
+- GitLeaks + TruffleHog secret scanning
+- Custom pattern scanner (`scripts/check-secrets.sh`) for emails, wallet addresses, and private URLs
+- `npm audit` — 0 known vulnerabilities in both `web/` and `agentbot-backend/`
+
+---
+
+## Self-Hosting
+
+Full self-hosting guide: [DEPLOYMENT.md](DEPLOYMENT.md)
+
+**Minimum requirements:**
+- Node.js 20+
+- Docker 24+
+- PostgreSQL 15+ (or [Neon](https://neon.tech) free tier)
+- 1 GB RAM per concurrent agent container
+
+**Recommended stack:**
+- Frontend: [Vercel](https://vercel.com) (auto-deploys from `main`)
+- Backend: [Render](https://render.com) or any Docker host
+- Database: [Neon](https://neon.tech) serverless Postgres
+- Email: [Resend](https://resend.com)
+
+---
 
 ## License
 
-MIT - see [LICENSE](LICENSE)
+MIT — see [LICENSE](LICENSE).
+
+Built with ❤️ by [raveculture](https://agentbot.raveculture.xyz).
