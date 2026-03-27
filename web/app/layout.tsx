@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   },
   other: {
     'google-site-verification': 'zCtxfWmpS5bIT2JSGipE04GN85VYLaUEb4Xkkcb-ZCQ',
-    'talentapp:project_verification': '02b6e4586b25009b3b24cd6f9e0d35e036960b2f0c037ccfefe8cc9e83e6c5c88a85efdeb3f7f4e97f7003d6b4e103e8858f0e5fe03c8c6a2207514f1b6449ff',
+    'talentapp:project_verification': 'e2d5e2ed0997d853f19b01218d2ef704177dd8c0f8eb40ac43fe56a5ddaf0f9f929a05a8fa71e147df3cb240061a08b2b881d234de514679145af6ed6180d366',
     'base:app_id': '6951feb4c63ad876c90817aa',
   },
 }
