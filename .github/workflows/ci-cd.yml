@@ -3,8 +3,17 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
+    paths:
+      - 'agentbot-backend/**'
+      - 'web/**'
+      - 'package*.json'
+      - '.github/workflows/ci-cd.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'agentbot-backend/**'
+      - 'web/**'
+      - 'package*.json'
 
 jobs:
   backend:
