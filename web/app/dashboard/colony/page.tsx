@@ -177,12 +177,15 @@ export default function ColonyPage() {
       const res = await fetch('/api/colony/status?action=tree');
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.detail || body.error || `HTTP ${res.status}`);
+        const msg = body.detail || body.error || `HTTP ${res.status}`;
+        console.error('[Colony] API error:', msg, body);
+        throw new Error(msg);
       }
       const json = await res.json();
       setData(json);
       setLastFetch(new Date());
     } catch (err: any) {
+      console.error('[Colony] Fetch failed:', err.message);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -238,8 +241,15 @@ export default function ColonyPage() {
       <DashboardHeader title="Colony" icon={<GitBranch className="h-5 w-5 text-emerald-400" />} action={action} />
       <DashboardContent>
         {lastFetch && (
-          <div className="mb-4 text-[10px] text-zinc-700 font-mono">
-            Updated {lastFetch.toLocaleTimeString()}
+          <div className="mb-4 flex items-center gap-4">
+            <span className="text-[10px] text-zinc-700 font-mono">
+              Updated {lastFetch.toLocaleTimeString()}
+            </span>
+            {error && data && (
+              <span className="text-[10px] text-yellow-500 font-mono">
+                ⚠ {error}
+              </span>
+            )}
           </div>
         )}
 

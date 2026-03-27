@@ -141,11 +141,11 @@ export async function GET(request: Request) {
           avg_fitness: Math.round(
             agents.reduce((sum, a) => sum + a.fitness, 0) / Math.max(agents.length, 1)
           ),
-          fittest: agents.length > 0 ? agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0]) : null,
+          fittest: agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0]),
           cull_queue: agents.filter((a) => a.fitness < 40).length,
           agents,
           root: {
-            address: identity?.address ?? null,
+            address: identity?.address ?? '0x0000000000000000000000000000000000000000',
             designation: instanceInfo.designation,
             fitness: instanceInfo.fitness,
             wallet_balance: identity?.address
