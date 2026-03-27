@@ -141,14 +141,16 @@ export async function GET(request: Request) {
           avg_fitness: Math.round(
             agents.reduce((sum, a) => sum + a.fitness, 0) / Math.max(agents.length, 1)
           ),
-          fittest: agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0]),
+          fittest: agents.length > 0 ? agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0]) : null,
           cull_queue: agents.filter((a) => a.fitness < 40).length,
           agents,
           root: {
-            address: instanceInfo.identity.address,
+            address: identity?.address ?? null,
             designation: instanceInfo.designation,
             fitness: instanceInfo.fitness,
-            wallet_balance: await getTempoBalance(instanceInfo.identity.address as Address),
+            wallet_balance: identity?.address
+              ? await getTempoBalance(identity.address as Address)
+              : { formatted: '0.00', token: 'USDC.e' },
             clone_available: instanceInfo.clone_available,
             clone_price: instanceInfo.clone_price,
             soul: {

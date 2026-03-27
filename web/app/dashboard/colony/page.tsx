@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { GitBranch, Crown, TrendingUp, Zap, RefreshCw, WifiOff } from 'lucide-react';
+import { GitBranch, Crown, TrendingUp, Zap, RefreshCw, WifiOff, ExternalLink } from 'lucide-react';
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
 import { SectionHeader } from '@/app/components/shared/SectionHeader';
 import StatusPill from '@/app/components/shared/StatusPill';
@@ -196,7 +196,16 @@ export default function ColonyPage() {
   }, [fetchColony]);
 
   const action = (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
+      <a
+        href="https://tempo-x402-production.up.railway.app/dashboard"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors"
+      >
+        <ExternalLink className="w-3 h-3" />
+        Borg Dashboard
+      </a>
       <button
         onClick={fetchColony}
         disabled={loading}
@@ -245,9 +254,20 @@ export default function ColonyPage() {
             <WifiOff className="w-8 h-8 text-zinc-700 mb-3" />
             <p className="text-xs text-zinc-500 font-mono mb-2">Soul service offline</p>
             <p className="text-[10px] text-zinc-700 font-mono mb-4">{error}</p>
-            <button onClick={fetchColony} className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4">
-              Retry
-            </button>
+            <div className="flex gap-3">
+              <button onClick={fetchColony} className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4">
+                Retry
+              </button>
+              <a
+                href="https://tempo-x402-production.up.railway.app/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2"
+              >
+                <ExternalLink className="w-3 h-3" />
+                Borg Dashboard
+              </a>
+            </div>
           </div>
         )}
 
