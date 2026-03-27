@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Sun, RefreshCw, Cpu, TrendingUp, Shield, Calendar, CheckCircle2, ArrowRight } from 'lucide-react'
 import {
   DashboardShell,
@@ -8,109 +8,52 @@ import {
   DashboardContent,
 } from '@/app/components/shared/DashboardShell'
 
+const ICON_MAP: Record<string, React.ElementType> = {
+  system: Cpu,
+  tasks: CheckCircle2,
+  focus: ArrowRight,
+  intel: TrendingUp,
+  security: Shield,
+  calendar: Calendar,
+}
+
 interface BriefSection {
   id: string
-  icon: React.ElementType
   title: string
   color: string
   items: string[]
 }
 
-function getTodayBrief(): BriefSection[] {
-  return [
-    {
-      id: 'system',
-      icon: Cpu,
-      title: 'System Status',
-      color: 'text-blue-400',
-      items: [
-        'All agents operational — 99.9% uptime maintained',
-        'Vercel deployment: latest build succeeded ✓',
-        'Stripe webhook processing normally — last event 4 min ago',
-        'Database connections stable — Prisma pool healthy',
-      ],
-    },
-    {
-      id: 'tasks',
-      icon: CheckCircle2,
-      title: 'Completed Yesterday',
-      color: 'text-green-400',
-      items: [
-        'Fixed Stripe checkout prices (Underground £29, Collective £69, Label £199)',
-        'Switched API keys to Prisma-backed storage with bcrypt hashing',
-        'Resolved NEXTAUTH_SECRET build failure — deploy unblocked',
-        'Integrated openclaw-dashboard: fleet, system pulse, memory, signals',
-      ],
-    },
-    {
-      id: 'focus',
-      icon: ArrowRight,
-      title: 'Today\'s Focus',
-      color: 'text-yellow-400',
-      items: [
-        'Apply Prisma migration for ApiKey table to production database',
-        'Set CRON_SECRET env var in Vercel dashboard',
-        'Review PR: claude/angry-chatterjee → merge when green',
-        'Monitor Stripe webhook after price fixes — confirm subscriptions working',
-      ],
-    },
-    {
-      id: 'intel',
-      icon: TrendingUp,
-      title: 'Market Pulse',
-      color: 'text-emerald-400',
-      items: [
-        'Claude 3.7 Sonnet extended thinking now GA — agent quality improvement opportunity',
-        'MCP 1.1 resource subscriptions: enables real-time agent memory push',
-        'Competitor Lindy.ai at 1M users — differentiate via DJ/creative niche',
-        'EU AI Act enforcement July 2026 — begin compliance scoping',
-      ],
-    },
-    {
-      id: 'security',
-      icon: Shield,
-      title: 'Security Alerts',
-      color: 'text-red-400',
-      items: [
-        '15 Dependabot vulnerabilities on main branch — 2 critical, 2 high',
-        'OWASP LLM Top 10 updated — review prompt injection mitigations',
-        'Admin email hardcoded in Navbar (rbasefm@icloud.com) — move to env var',
-        'No anomalies detected in last 24h runtime logs',
-      ],
-    },
-    {
-      id: 'calendar',
-      icon: Calendar,
-      title: 'Upcoming',
-      color: 'text-blue-400',
-      items: [
-        'Daily cron cleanup runs at 03:00 UTC',
-        'Subscription billing cycle: end of month (£29–£199 range)',
-        'EU AI Act enforcement date: July 2026',
-        'Next planned sprint: referral credit system (P3)',
-      ],
-    },
-  ]
+interface BriefData {
+  date: string
+  generatedAt: string
+  brief: BriefSection[]
 }
 
 export default function DailyBriefPage() {
-  const [brief, setBrief] = useState<BriefSection[]>([])
+  const [data, setData] = useState<BriefData | null>(null)
   const [loading, setLoading] = useState(true)
   const [lastGenerated, setLastGenerated] = useState('')
-  const [expanded, setExpanded] = useState<Set<string>>(new Set(['system', 'tasks', 'focus']))
+  const [expanded, setExpanded] = useState<Set<string>>(new Set(['system', 'security', 'focus']))
 
-  const generate = () => {
+  const fetchBrief = useCallback(async () => {
     setLoading(true)
-    setTimeout(() => {
-      setBrief(getTodayBrief())
+    try {
+      const res = await fetch('/api/daily-brief')
+      if (!res.ok) throw new Error('Failed to fetch')
+      const json = await res.json()
+      setData(json)
       setLastGenerated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
+    } catch (e) {
+      console.error('Daily brief fetch failed:', e)
+    } finally {
       setLoading(false)
-    }, 800)
-  }
+    }
+  }, [])
 
   useEffect(() => {
-    generate()
-  }, [])
+    fetchBrief()
+  }, [fetchBrief])
 
   const toggle = (id: string) =>
     setExpanded(prev => {
@@ -128,7 +71,7 @@ export default function DailyBriefPage() {
         icon={<Sun className="h-5 w-5 text-yellow-400" />}
         action={
           <button
-            onClick={generate}
+            onClick={fetchBrief}
             disabled={loading}
             className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors disabled:opacity-50"
           >
@@ -146,15 +89,15 @@ export default function DailyBriefPage() {
           )}
         </div>
 
-        {loading ? (
+        {loading && !data ? (
           <div className="flex flex-col py-20 gap-4 items-center">
             <RefreshCw className="h-6 w-6 text-yellow-400 animate-spin" />
-            <p className="text-zinc-600 text-xs uppercase tracking-widest">Generating your brief…</p>
+            <p className="text-zinc-600 text-xs uppercase tracking-widest">Gathering real-time data…</p>
           </div>
         ) : (
           <div className="space-y-px bg-zinc-800">
-            {brief.map(section => {
-              const Icon = section.icon
+            {data?.brief.map(section => {
+              const Icon = ICON_MAP[section.id] || Cpu
               const isOpen = expanded.has(section.id)
               return (
                 <div key={section.id} className="bg-zinc-950 border border-zinc-800">
