@@ -198,7 +198,7 @@ curl -X POST https://agentbot-api.onrender.com/api/provision \
   -H "Content-Type: application/json" \
   -H "X-User-Email: YOUR_ADMIN_EMAIL_1" \
   -d '{
-    "telegramToken": "8298208379:AAG76NatBBuVLG6HAxeQkYLRgqwIUQuVy74",
+    "telegramToken": "YOUR_TELEGRAM_BOT_TOKEN",
     "plan": "solo"
   }'
 ```

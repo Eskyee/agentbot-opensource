@@ -69,8 +69,10 @@ check ".env payment wallet" "X402_PAY_TO=0x[0-9a-fA-F]{40}" \
   "YOUR_WALLET_ADDRESS"
 
 # ── Real API keys ────────────────────────────────────────────────────────────
-check "re_ resend key"  "re_[A-Za-z0-9]{20,}"
-check "sk- openai key"  "sk-[A-Za-z0-9]{20,}"
+check "re_ resend key"    "re_[A-Za-z0-9]{20,}"
+check "sk- openai key"    "sk-[A-Za-z0-9]{20,}"
+check "telegram bot token" "[0-9]{8,}:AA[A-Za-z0-9_-]{30,}" \
+  "YOUR_TELEGRAM_BOT_TOKEN"
 
 echo ""
 if [[ $FAIL -eq 1 ]]; then

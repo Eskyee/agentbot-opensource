@@ -84,6 +84,9 @@ strip_all 'djescaba@icloud\.com'               'YOUR_ADMIN_EMAIL_5'
 strip_all 'https://[a-zA-Z0-9_-]*\.up\.railway\.app' 'https://YOUR_SERVICE_URL'
 strip_all '[a-zA-Z0-9_-]*\.up\.railway\.app'          'YOUR_SERVICE_URL'
 
+# Telegram bot tokens (real tokens match \d{8,}:AA[A-Za-z0-9_-]{30,})
+strip_all '[0-9]\{8,\}:AA[A-Za-z0-9_-]\{30,\}' 'YOUR_TELEGRAM_BOT_TOKEN'
+
 # Personal payment wallet address (global — catches skills/monetize-service.md etc.)
 strip_all '0xYOUR_WALLET_ADDRESS_HERE' '0xYOUR_WALLET_ADDRESS_HERE'
 strip_all '0xYOUR_WALLET_ADDRESS_HERE' '0xYOUR_WALLET_ADDRESS_HERE'
