@@ -1,8 +1,18 @@
 # Agentbot Render Blueprint — API only (frontend on Vercel)
+#
+# ⚠️  INTERNAL_API_KEY SYNC REQUIRED:
+#     render.yaml uses `generateValue: true` which creates a unique key
+#     on first blueprint apply. After Render generates the key, copy it
+#     from the Render dashboard → Environment and paste it into:
+#       - Vercel dashboard → agentbot project → Environment Variables → INTERNAL_API_KEY
+#     Without this sync, web → backend API calls will return 401.
+
 databases:
   - name: agentbot-db
     databaseName: agentbot
     plan: free
+    # NOTE: Render free Postgres suspends after 90 days of inactivity.
+    # Upgrade to `starter` ($7/mo) when you're ready for production reliability.
     ipAllowList: []
 
 services:
@@ -29,6 +39,19 @@ services:
         generateValue: true
       - key: MCP_API_KEY
         generateValue: true
+      - key: WALLET_ENCRYPTION_KEY
+        generateValue: true
+      # ⚠️  After first deploy, copy the generated value to Vercel env vars
+      - key: INTERNAL_API_KEY
+        generateValue: true
+      # Soul/Railway service URL — backend needs this to proxy to borg/x402
+      - key: SOUL_SERVICE_URL
+        value: "https://tempo-x402-production.up.railway.app"
+      - key: OPENCLAW_GATEWAY_URL
+        value: "https://tempo-x402-production.up.railway.app"
+      - key: AGENTS_DOMAIN
+        value: "agents.raveculture.xyz"
+      # Set these in Render dashboard (sync: false = not in source control)
       - key: OPENROUTER_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
@@ -49,11 +72,3 @@ services:
         sync: false
       - key: ADMIN_EMAILS
         sync: false
-      - key: WALLET_ENCRYPTION_KEY
-        generateValue: true
-      - key: INTERNAL_API_KEY
-        generateValue: true
-      - key: OPENCLAW_GATEWAY_URL
-        sync: false
-      - key: AGENTS_DOMAIN
-        value: "agents.raveculture.xyz"
