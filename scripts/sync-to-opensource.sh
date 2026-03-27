@@ -46,6 +46,7 @@ git clone --depth=1 --branch "$BRANCH" "$PUBLIC_URL" "$TEMP_DIR" 2>/dev/null \
 info "Syncing files..."
 rsync -a --delete \
   --exclude='.git' \
+  --exclude='.claude/' \
   --exclude='node_modules' \
   --exclude='.next' \
   --exclude='.env' \
@@ -53,6 +54,7 @@ rsync -a --delete \
   --exclude='.env.*.local' \
   --exclude='*.log' \
   --exclude='web/.github/' \
+  --exclude='x402-tempo/' \
   "$PRIVATE_ROOT/" "$TEMP_DIR/"
 
 # ── 4. Strip secrets globally ────────────────────────────────────────────────
@@ -78,9 +80,13 @@ strip_all 'raveculture@icloud\.com'            'YOUR_ADMIN_EMAIL_3'
 strip_all 'admin@agentbot\.raveculture\.xyz'   'YOUR_ADMIN_EMAIL_4'
 strip_all 'djescaba@icloud\.com'               'YOUR_ADMIN_EMAIL_5'
 
-# Private infrastructure URLs
-strip_all 'https://borg-0-production\.up\.railway\.app' 'https://YOUR_SOUL_SERVICE_URL'
-strip_all 'borg-0-production\.up\.railway\.app'         'YOUR_SOUL_SERVICE_URL'
+# Private infrastructure URLs — strip ALL *.up.railway.app hostnames
+strip_all 'https://[a-zA-Z0-9_-]*\.up\.railway\.app' 'https://YOUR_SERVICE_URL'
+strip_all '[a-zA-Z0-9_-]*\.up\.railway\.app'          'YOUR_SERVICE_URL'
+
+# Personal payment wallet address (global — catches skills/monetize-service.md etc.)
+strip_all '0xd8fd0e1dce89beaab924ac68098ddb17613db56f' '0xYOUR_WALLET_ADDRESS_HERE'
+strip_all '0xD8FD0E1DCE89BEAAB924AC68098DDB17613DB56F' '0xYOUR_WALLET_ADDRESS_HERE'
 
 # Personal payment wallet in .env.example only
 ENV_EXAMPLE="$TEMP_DIR/web/.env.example"
