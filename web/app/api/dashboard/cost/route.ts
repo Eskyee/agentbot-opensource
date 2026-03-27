@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession';
 
 interface AgentCost {
   name: string;
@@ -31,6 +32,11 @@ interface ModelBreakdown {
  * Returns aggregated cost data
  */
 export async function GET(req: NextRequest) {
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const period = req.nextUrl.searchParams.get('period') || '7d';
   const days = period === '30d' ? 30 : period === 'mtd' ? new Date().getDate() : 7;
 

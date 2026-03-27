@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession';
 
 const CDP_PROJECT_ID = process.env.CDP_PROJECT_ID;
 const CDP_API_KEY_NAME = process.env.CDP_API_KEY_NAME;
 const CDP_API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY;
 
 export async function POST(req: NextRequest) {
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { email } = await req.json();
 

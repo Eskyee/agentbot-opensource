@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import os from 'os'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 let startTime = Date.now()
 let messageCount = 0
 let errorCount = 0
 
 export async function GET() {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const uptime = Math.floor((Date.now() - startTime) / 1000)
     
