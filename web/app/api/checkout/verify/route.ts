@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { prisma } from '@/app/lib/prisma'
 
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get('session_id')
@@ -35,6 +36,23 @@ export async function GET(request: NextRequest) {
       if (endTs) {
         nextBilling = new Date(endTs * 1000).toISOString()
       }
+    }
+
+    // Belt-and-suspenders: mark subscription active immediately so provision
+    // doesn't race against the Stripe webhook arriving a few seconds later.
+    // The webhook will also fire and set the same values — idempotent.
+    const userId = session.metadata?.userId
+    if (userId) {
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          subscriptionStatus: 'active',
+          plan,
+          stripeCustomerId: (session.customer as string) || undefined,
+        },
+      }).catch((err: unknown) => {
+        console.error('[Checkout Verify] Failed to update user subscription:', err)
+      })
     }
 
     return NextResponse.json({
