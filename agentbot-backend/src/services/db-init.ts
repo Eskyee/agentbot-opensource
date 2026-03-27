@@ -5,6 +5,14 @@ dotenv.config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  max: 10,                      // max connections in pool
+  idleTimeoutMillis: 30000,     // close idle clients after 30s
+  connectionTimeoutMillis: 10000, // fail fast if can't connect in 10s
+});
+
+// Catch idle client errors — don't crash, pool reconnects automatically
+pool.on('error', (err) => {
+  console.error('[DB] Idle client error (non-fatal):', err.message);
 });
 
 const SCHEMA = `
