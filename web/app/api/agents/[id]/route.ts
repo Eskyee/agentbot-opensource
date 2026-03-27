@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
@@ -24,8 +24,6 @@ export async function GET(
     if (!ownedAgent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
-
-    const API_KEY = getInternalApiKey()
 
     const response = await fetch(`${API_URL}/api/agents/${agentId}`, {
       headers: {
@@ -59,5 +57,67 @@ export async function GET(
   }
 }
 
+/**
+ * PATCH /api/agents/:id
+ * Rename an agent (updates name in Prisma + notifies backend if reachable)
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getAuthSession()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id: agentId } = await params
+    const body = await request.json()
+    const newName = (body.name || '').trim()
+
+    if (!newName) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 })
+    }
+    if (newName.length > 64) {
+      return NextResponse.json({ error: 'Name too long (max 64 chars)' }, { status: 400 })
+    }
+
+    // Ownership check
+    const existing = await prisma.agent.findFirst({
+      where: { id: agentId, userId: session.user.id }
+    })
+    if (!existing) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
+    // Update in Prisma
+    const updated = await prisma.agent.update({
+      where: { id: agentId },
+      data: { name: newName },
+      select: { id: true, name: true, status: true, updatedAt: true }
+    })
+
+    // Best-effort: notify backend of name change (non-fatal if unreachable)
+    try {
+      const API_URL = getBackendApiUrl()
+      const API_KEY = getInternalApiKey()
+      if (API_URL && API_KEY) {
+        await fetch(`${API_URL}/api/agents/${agentId}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: newName }),
+          signal: AbortSignal.timeout(4000),
+        })
+      }
+    } catch {
+      // Non-fatal — Prisma is the source of truth for name
+    }
+
+    return NextResponse.json({ success: true, agent: updated })
+  } catch (error) {
+    console.error('Failed to rename agent:', error)
+    return NextResponse.json({ error: 'Failed to rename agent' }, { status: 500 })
+  }
+}
 
 export const dynamic = 'force-dynamic';
