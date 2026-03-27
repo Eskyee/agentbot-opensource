@@ -8,7 +8,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
  * Provides colony membership, fitness scoring, and dynamic pricing.
  */
 
-const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://x402-gw-v2-production.up.railway.app'
+const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://tempo-x402-production.up.railway.app'
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,15 +86,24 @@ export async function POST(request: NextRequest) {
 
     // Join colony
     if (action === 'join-colony') {
-      const res = await fetch(`${X402_GATEWAY_URL}/gateway/colony/join`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agentId, walletAddress }),
-        signal: AbortSignal.timeout(10000)
-      })
+      try {
+        const res = await fetch(`${X402_GATEWAY_URL}/gateway/colony/join`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId, walletAddress }),
+          signal: AbortSignal.timeout(10000)
+        })
 
-      const data = await res.json() as any
-      return NextResponse.json(data)
+        if (!res.ok) {
+          const text = await res.text().catch(() => res.statusText)
+          return NextResponse.json({ success: false, error: `Colony join failed: ${res.status} ${text}` }, { status: res.status === 402 ? 402 : 502 })
+        }
+
+        const data = await res.json() as any
+        return NextResponse.json(data)
+      } catch (error) {
+        return NextResponse.json({ success: false, error: 'Colony gateway unreachable' }, { status: 503 })
+      }
     }
 
     // Make payment (REQUIRES AUTH + AMOUNT LIMITS)

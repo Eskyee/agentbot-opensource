@@ -20,7 +20,7 @@ export const TEMPO_CHAIN = {
 } as const;
 
 // x402 Gateway config
-export const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'http://localhost:4023';
+export const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://tempo-x402-production.up.railway.app';
 export const CLONE_PRICE = '1.0'; // pathUSD
 
 export interface CloneRequest {

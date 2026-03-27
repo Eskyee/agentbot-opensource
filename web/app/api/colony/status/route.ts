@@ -11,7 +11,7 @@ import { SoulClient } from '@/lib/soul';
 import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem';
 import { tempo } from 'viem/chains';
 
-const SOUL_URL = process.env.SOUL_SERVICE_URL || 'http://localhost:4023';
+const SOUL_URL = process.env.SOUL_SERVICE_URL || 'https://tempo-x402-production.up.railway.app';
 
 // Tempo RPC for real wallet balances
 const tempoClient = createPublicClient({
@@ -81,18 +81,20 @@ export async function GET(request: Request) {
         ]);
 
         // Build lineage tree from instance info + children
+        // identity may be null if the node hasn't registered yet — use safe fallbacks
+        const identity = instanceInfo.identity;
         const agents = [
           {
-            id: instanceInfo.identity.instance_id,
+            id: identity?.instance_id ?? 'borg-root',
             name: instanceInfo.designation || 'Atlas Prime',
             generation: 1,
             fitness: Math.round((instanceInfo.fitness?.total ?? 0) * 100),
             specialization: 'general',
             children: instanceInfo.children_count,
-            parent: instanceInfo.identity.parent_address,
-            walletAddress: instanceInfo.identity.address,
+            parent: identity?.parent_address ?? null,
+            walletAddress: identity?.address ?? null,
             status: 'active' as const,
-            createdAt: instanceInfo.identity.created_at,
+            createdAt: identity?.created_at ?? new Date().toISOString(),
             url: SOUL_URL,
             endpoints: instanceInfo.endpoints,
             uptime: instanceInfo.uptime_seconds,
@@ -105,7 +107,7 @@ export async function GET(request: Request) {
             fitness: 50, // Unknown until we fetch child status
             specialization: 'general',
             children: 0,
-            parent: instanceInfo.identity.address,
+            parent: identity?.address ?? null,
             walletAddress: child.address,
             status: child.status as 'active' | 'stale',
             createdAt: new Date(child.created_at * 1000).toISOString(),
@@ -115,7 +117,7 @@ export async function GET(request: Request) {
             version: 'unknown',
           })),
           ...siblings.siblings
-            .filter((s) => s.instance_id !== instanceInfo.identity.instance_id)
+            .filter((s) => identity ? s.instance_id !== identity.instance_id : true)
             .map((sibling) => ({
               id: sibling.instance_id,
               name: `Peer-${sibling.instance_id.slice(0, 8)}`,

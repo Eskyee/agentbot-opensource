@@ -48,31 +48,31 @@ export default function FleetPage() {
   )
 
   return (
-    <DashboardShell>
+    <DashboardShell className="flex flex-col h-screen overflow-hidden">
       <DashboardHeader
-        title="Mission Control: Fleet"
+        title="Fleet"
         icon={<FleetIcon />}
         action={
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             {/* Tab toggle */}
             <div className="flex items-center gap-px bg-zinc-800 border border-zinc-700">
               <button
                 onClick={() => setActiveTab('organism')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
+                  'flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
                   activeTab === 'organism' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'
                 )}
               >
-                <Dna className="h-3 w-3" /> Constellation
+                <Dna className="h-3 w-3" /> <span className="hidden sm:inline">Constellation</span><span className="sm:hidden">Map</span>
               </button>
               <button
                 onClick={() => setActiveTab('hierarchy')}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
+                  'flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors',
                   activeTab === 'hierarchy' ? 'bg-white text-black' : 'text-zinc-500 hover:text-white'
                 )}
               >
-                <LayoutGrid className="h-3 w-3" /> Hierarchy
+                <LayoutGrid className="h-3 w-3" /> <span className="hidden sm:inline">Hierarchy</span><span className="sm:hidden">List</span>
               </button>
             </div>
 
@@ -89,9 +89,9 @@ export default function FleetPage() {
       />
 
       {/* Main Content Area — special layout for canvas */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left: Constellation / Graph */}
-        <div className="flex-1 relative bg-[#050505]">
+        <div className="flex-1 min-w-0 relative bg-[#050505]">
           {graphLoading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="animate-pulse text-xs text-zinc-500 uppercase tracking-widest">Loading fleet...</div>

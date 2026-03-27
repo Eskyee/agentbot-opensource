@@ -697,7 +697,7 @@ export const OrganismCanvas = memo(function OrganismCanvas({
   const hoveredRef = useRef<number>(-1);
   const mouseRef = useRef({ x: 0, y: 0 });
   const sizeRef = useRef({ w: 0, h: 0 });
-  const [canvasSize, setCanvasSize] = useState({ w: 800, h: 600 });
+  const [canvasSize, setCanvasSize] = useState({ w: 0, h: 0 });
 
   const selectedAgentId = useDashboardStore((s) => s.selectedAgentId);
   const selectedAgentIdRef = useRef(selectedAgentId);
@@ -1065,7 +1065,7 @@ export const OrganismCanvas = memo(function OrganismCanvas({
   );
 
   return (
-    <div ref={containerRef} className="relative h-full w-full">
+    <div ref={containerRef} className="relative h-full w-full overflow-hidden">
       <canvas
         ref={canvasRef}
         width={canvasSize.w * (typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)}
