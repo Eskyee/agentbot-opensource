@@ -14,7 +14,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Middleware to verify internal API key — timing-safe to prevent enumeration
+// Middleware to verify internal API key + extract user context — timing-safe to prevent enumeration
 const authenticate = (req: Request, res: Response, next: any) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
@@ -27,6 +27,9 @@ const authenticate = (req: Request, res: Response, next: any) => {
   if (!expected || tokenBuf.length !== expectedBuf.length || !timingSafeEqual(tokenBuf, expectedBuf)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  // Extract user context from trusted frontend headers
+  (req as any).userId = req.headers['x-user-id'] as string || '';
+  (req as any).userEmail = req.headers['x-user-email'] as string || '';
   next();
 };
 
@@ -64,24 +67,42 @@ router.post('/bus/send', async (req: Request, res: Response) => {
  * --- EVENT MANAGEMENT ---
  */
 
-// List all events
+// List events for user's agents only
 router.get('/events', authenticate, async (req: Request, res: Response) => {
-  const result = await pool.query('SELECT * FROM events ORDER BY event_date DESC');
+  const userId = (req as any).userId;
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+
+  const result = await pool.query(
+    `SELECT e.* FROM events e
+     JOIN agents a ON e.agent_id = a.id
+     WHERE a.user_id = $1
+     ORDER BY e.event_date DESC`,
+    [userId]
+  );
   res.json(result.rows);
 });
 
-// Create a new event (Rave)
+// Create a new event (Rave) — user must own the agent
 router.post('/events', authenticate, async (req: Request, res: Response) => {
+  const userId = (req as any).userId;
   const { agentId, name, description, venue, eventDate, ticketPriceUsdc, totalTickets } = req.body;
-  
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+  if (!agentId) return res.status(400).json({ error: 'agentId is required' });
+
   try {
+    // Verify user owns this agent
+    const agentCheck = await pool.query('SELECT id FROM agents WHERE id = $1 AND user_id = $2', [agentId, userId]);
+    if (agentCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Agent not found or not owned by you' });
+    }
+
     const result = await pool.query(
       'INSERT INTO events (agent_id, name, description, venue, event_date, ticket_price_usdc, total_tickets) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
       [agentId, name, description, venue, eventDate, ticketPriceUsdc, totalTickets]
     );
     res.status(201).json(result.rows[0]);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to create event' });
   }
 });
 
@@ -89,26 +110,38 @@ router.post('/events', authenticate, async (req: Request, res: Response) => {
  * --- TREASURY & WALLETS ---
  */
 
-// Create a new agent wallet
+// Create a new agent wallet — userId from auth context, not body
 router.post('/wallets', authenticate, async (req: Request, res: Response) => {
-  const { userId, agentId } = req.body;
+  const userId = (req as any).userId;
+  const { agentId } = req.body;
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+  if (!agentId) return res.status(400).json({ error: 'agentId is required' });
+
   try {
+    // Verify user owns this agent
+    const agentCheck = await pool.query('SELECT id FROM agents WHERE id = $1 AND user_id = $2', [agentId, userId]);
+    if (agentCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Agent not found or not owned by you' });
+    }
+
     const wallet = await WalletService.createAgentWallet(userId, agentId);
     res.status(201).json(wallet);
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to create wallet' });
   }
 });
 
-// Get agent balance
+// Get agent balance — userId from auth context, not query param
 router.get('/wallets/:address/balance', authenticate, async (req: Request, res: Response) => {
-  const { userId } = req.query;
+  const userId = (req as any).userId;
   const { address } = req.params;
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+
   try {
     const balance = await WalletService.getBalance(Number(userId), address);
     res.json({ address, balance_usdc: balance });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to fetch balance' });
   }
 });
 
@@ -116,11 +149,23 @@ router.get('/wallets/:address/balance', authenticate, async (req: Request, res: 
  * --- ROYALTY SPLITS ---
  */
 
-// Create and execute a royalty split (Async Queue version)
+// Create and execute a royalty split — user must own the agent
 router.post('/splits', authenticate, async (req: Request, res: Response) => {
-  const { userId, agentId, fromAddress, name, totalAmount, recipients } = req.body;
+  const userId = (req as any).userId;
+  const { agentId, name, totalAmount, recipients } = req.body;
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+  if (!agentId) return res.status(400).json({ error: 'agentId is required' });
+  if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    return res.status(400).json({ error: 'recipients array is required' });
+  }
 
   try {
+    // Verify user owns this agent
+    const agentCheck = await pool.query('SELECT id FROM agents WHERE id = $1 AND user_id = $2', [agentId, userId]);
+    if (agentCheck.rows.length === 0) {
+      return res.status(403).json({ error: 'Agent not found or not owned by you' });
+    }
+
     // 1. Record split in DB
     const splitResult = await pool.query(
       'INSERT INTO royalty_splits (agent_id, name, total_amount_usdc, status) VALUES ($1, $2, $3, $4) RETURNING id',
@@ -153,7 +198,7 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
 
     res.json({ success: true, splitId, status: 'completed' });
   } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Failed to create split' });
   }
 });
 
