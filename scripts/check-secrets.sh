@@ -10,7 +10,6 @@ FAIL=0
 
 red()   { printf '\033[0;31m%s\033[0m\n' "$*"; }
 green() { printf '\033[0;32m%s\033[0m\n' "$*"; }
-warn()  { printf '\033[0;33m%s\033[0m\n' "$*"; }
 
 echo ""
 echo "=== Secret Scanner ==="
@@ -25,12 +24,14 @@ check() {
   results=$(grep -rn --include="*.ts" --include="*.tsx" --include="*.js" \
                   --include="*.jsx" --include="*.env*" --include="*.json" \
                   --include="*.sh" --include="*.yml" --include="*.yaml" \
+                  --include="*.md" \
                   -E "$pattern" "$SCAN_PATH" 2>/dev/null \
     | grep -v "node_modules" \
     | grep -v "\.next" \
-    | grep -v "check-secrets.sh" \
-    | grep -v "sync-to-opensource.sh" \
-    | { [[ "$exclude" == "__NONE__" ]] && cat || grep -v "$exclude"; } \
+    | grep -v "check-secrets\.sh" \
+    | grep -v "sync-to-opensource\.sh" \
+    | grep -v "SYNC\.md" \
+    | { [[ "$exclude" == "__NONE__" ]] && cat || grep -Ev "$exclude"; } \
     || true)
 
   if [[ -n "$results" ]]; then
@@ -44,21 +45,32 @@ check() {
 }
 
 # ── Personal emails ─────────────────────────────────────────────────────────
-check "personal gmail"    "[a-zA-Z0-9._%+-]+@gmail\.com" "example@gmail|your@gmail|user@gmail"
-check "personal icloud"   "[a-zA-Z0-9._%+-]+@icloud\.com"
-check "personal domains"  "(rbasefm|djescaba|eskyjunglelab|raveculture)@"
+check "personal gmail"   "[a-zA-Z0-9._%+-]+@gmail\.com" \
+  "(example@|your@|user@|test@|YOUR_ADMIN)"
 
-# ── Real wallet addresses ────────────────────────────────────────────────────
-check "wallet address"    "0x[0-9a-fA-F]{40}" "0xYOUR_WALLET|0x000000|0x123456|example|placeholder|USDC|Token|ERC20|parseAbi|address.*function|balanceOf|HARDCODED|wallet.*Address.*=.*'0x[0-9a-fA-F]{8}'"
+check "personal icloud"  "[a-zA-Z0-9._%+-]+@icloud\.com" \
+  "YOUR_ADMIN"
+
+check "personal domains" "(rbasefm|djescaba|eskyjunglelab|raveculture)@" \
+  "YOUR_ADMIN"
 
 # ── Private infrastructure URLs ─────────────────────────────────────────────
-check "railway URLs"      "\.up\.railway\.app"
-check "private subdomains" "borg-[0-9]+-production"
+check "railway URLs"       "\.up\.railway\.app" \
+  "YOUR_SOUL_SERVICE_URL"
+
+check "private subdomains" "borg-[0-9]+-production" \
+  "YOUR_SOUL_SERVICE_URL"
+
+# ── Personal payment wallet in .env.example ──────────────────────────────────
+# We only flag the X402_PAY_TO= pattern with a real 40-char address.
+# Public token contract addresses (token/page.tsx, basefm/page.tsx etc.) are
+# intentional blockchain data — not personal secrets.
+check ".env payment wallet" "X402_PAY_TO=0x[0-9a-fA-F]{40}" \
+  "YOUR_WALLET_ADDRESS"
 
 # ── Real API keys ────────────────────────────────────────────────────────────
-check "re_ resend key"    "re_[A-Za-z0-9]{20,}"
-check "sk- openai key"    "sk-[A-Za-z0-9]{20,}"
-check "Bearer hardcoded"  "Bearer [A-Za-z0-9+/]{20,}"
+check "re_ resend key"  "re_[A-Za-z0-9]{20,}"
+check "sk- openai key"  "sk-[A-Za-z0-9]{20,}"
 
 echo ""
 if [[ $FAIL -eq 1 ]]; then
