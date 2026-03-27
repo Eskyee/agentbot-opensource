@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 type VerificationType = 'eas' | 'coinbase' | 'ens' | 'webauthn'
 
@@ -66,11 +66,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
   const [verifying, setVerifying] = useState(false)
   const [selectedType, setSelectedType] = useState<VerificationType>('eas')
 
-  useEffect(() => {
-    fetchVerificationStatus()
-  }, [agentId])
-
-  const fetchVerificationStatus = async () => {
+  const fetchVerificationStatus = useCallback(async () => {
     try {
       const res = await fetch(`/api/agents/${agentId}/verify`)
       if (res.ok) {
@@ -82,7 +78,11 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
     } finally {
       setLoading(false)
     }
-  }
+  }, [agentId])
+
+  useEffect(() => {
+    fetchVerificationStatus()
+  }, [agentId, fetchVerificationStatus])
 
   const handleVerify = async () => {
     setVerifying(true)
@@ -140,14 +140,14 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
   if (loading) {
     return (
       <div className="animate-pulse">
-        <div className="h-4 bg-gray-700 rounded w-1/4 mb-2"></div>
-        <div className="h-20 bg-gray-800 rounded"></div>
+        <div className="h-4 bg-zinc-700 rounded w-1/4 mb-2"></div>
+        <div className="h-20 bg-zinc-800 rounded"></div>
       </div>
     )
   }
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-white">Verified Human Badge</h3>
         {status?.verified && <AgentVerifiedBadge verified={status.verified} verificationType={status.verificationType} />}
@@ -162,11 +162,11 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
               </svg>
               <span className="font-medium">Your agent is verified</span>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-zinc-400">
               This agent is linked to a verified human through {status.verificationType?.toUpperCase()} attestation.
             </p>
             {status.attestationUid && (
-              <p className="text-xs text-gray-500 mt-2 font-mono">
+              <p className="text-xs text-zinc-500 mt-2 font-mono">
                 Attestation: {status.attestationUid}
               </p>
             )}
@@ -181,13 +181,13 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-zinc-400">
             Link your agent to an onchain identity to prove a real human is behind it.
             Trust matters in crypto.
           </p>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Verification Method</label>
+            <label className="text-sm font-medium text-zinc-300">Verification Method</label>
             <div className="grid grid-cols-2 gap-2">
               {[
                 { id: 'eas', label: 'Ethereum Attestation', icon: '🔗', desc: 'EAS onchain attestation' },
@@ -201,14 +201,14 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
                   className={`p-3 rounded-lg border text-left transition-all ${
                     selectedType === method.id
                       ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                      : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{method.icon}</span>
                     <div>
                       <div className="text-sm font-medium text-white">{method.label}</div>
-                      <div className="text-xs text-gray-500">{method.desc}</div>
+                      <div className="text-xs text-zinc-500">{method.desc}</div>
                     </div>
                   </div>
                 </button>

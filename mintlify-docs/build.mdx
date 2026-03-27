@@ -1,0 +1,83 @@
+
+description: "Agentbot build process and deployment"
+
+# Build & Deployment
+
+## Vercel Setup
+
+### Project Settings
+
+- **Project Name:** agentbot
+- **Root Directory:** `web`
+- **Framework:** Next.js (auto-detected)
+
+### Environment Variables
+
+Required for production:
+
+| Variable | Description |
+|----------|-------------|
+| `DATABASE_URL` | Neon PostgreSQL connection string |
+| `NEXTAUTH_SECRET` | Auth secret (generate with `openssl rand -base64 32`) |
+| `NEXTAUTH_URL` | Production URL (https://agentbot.raveculture.xyz) |
+| `STRIPE_SECRET_KEY` | Stripe secret key |
+| `ADMIN_EMAILS` | Comma-separated admin emails |
+
+Optional but recommended:
+
+| Variable | Description |
+|----------|-------------|
+| `REDIS_URL` | Upstash Redis for rate limiting |
+| `RESEND_API_KEY` | For welcome emails |
+| `DISCORD_WEBHOOK_URL` | For notifications |
+| `TELEGRAM_BOT_TOKEN` | For Telegram bot |
+
+## Build Commands
+
+```bash
+# Development
+cd web && npm run dev
+
+# Production build
+cd web && npm run build
+
+# Lint
+cd web && npm run lint
+```
+
+## Deployment
+
+### Automatic (Git Push)
+
+Push to main branch triggers Vercel deployment automatically.
+
+### Manual
+
+```bash
+cd web
+vercel --prod --yes
+```
+
+## Build Stability
+
+### Pre-build Validation
+
+The build includes:
+1. Prisma client generation
+2. TypeScript compilation
+3. Next.js static generation
+
+### Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Module resolution errors | Check tsconfig.json path mappings |
+| Prisma errors | Run `npx prisma generate` |
+| Environment errors | Verify all required env vars set |
+
+## Rollback
+
+Vercel automatically keeps deployment history. To rollback:
+1. Go to Vercel Dashboard
+2. Find previous working deployment
+3. Click "..." → "Promote to Production"

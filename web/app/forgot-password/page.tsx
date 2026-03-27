@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
       } else {
         setError(data.error || "Failed to send reset email");
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -38,36 +38,37 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-          <div className="text-center">
+      <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-blue-500/30 font-mono">
+        <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+          <div>
             <div className="text-5xl mb-4">✉️</div>
-            <h1 className="text-2xl font-bold mb-2">Check your email</h1>
-            <p className="text-gray-400 mb-6">
-              We&apos;ve sent a password reset link to <strong>{email}</strong>
+            <h1 className="text-2xl font-bold tracking-tighter uppercase mb-2">Check your email</h1>
+            <p className="text-sm text-zinc-400 mb-6">
+              We&apos;ve sent a password reset link to <strong className="text-white">{email}</strong>
             </p>
             <Link
               href="/login"
-              className="inline-block w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black transition-colors"
+              className="block w-full bg-white text-black py-3 text-left text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
             >
               Back to Login
             </Link>
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-        <h1 className="text-2xl font-bold mb-2 text-center">Reset Password</h1>
-        <p className="text-gray-400 mb-6 text-center">
+    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-blue-500/30 font-mono">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Password Reset</div>
+        <h1 className="text-2xl font-bold tracking-tighter uppercase mb-2">Reset Password</h1>
+        <p className="text-sm text-zinc-400 mb-6">
           Enter your email and we&apos;ll send you a reset link
         </p>
         <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-gray-300 mb-1">Email</label>
+            <label htmlFor="email" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Email</label>
             <input
               type="email"
               id="email"
@@ -75,24 +76,24 @@ export default function ForgotPasswordPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
               placeholder="you@example.com"
             />
           </div>
-          {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+          {error && <div className="text-red-400 text-xs">{error}</div>}
           <button
             type="submit"
-            className="w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black transition-colors"
+            className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
             disabled={loading}
           >
             {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
-        <p className="mt-6 text-center text-gray-400">
+        <p className="mt-6 text-zinc-500 text-xs">
           Remember your password?{' '}
-          <Link href="/login" className="text-white hover:underline">Log in</Link>
+          <Link href="/login" className="text-white hover:text-zinc-300">Log in</Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }

@@ -21,10 +21,19 @@ If any missing, offer to install.
 ## 2. Clone & Install
 
 ```bash
-git clone https://github.com/raveculture/agentbot.git
+# For production (requires access)
+git clone https://github.com/Eskyee/agentbot.git
 cd agentbot
+
+# For open source demo (public)
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot-opensource
+
+# Either way
 cp .env.example .env
 ```
+
+**Note:** The open source repo is a demo version for community trust and contribution. The production repo has real features and customer data.
 
 ## 3. Configure Environment
 

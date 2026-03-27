@@ -1,0 +1,308 @@
+---
+title: "Security"
+description: "Agentbot security practices and trust guarantees"
+---
+
+# Security & Trust
+
+Agentbot is committed to keeping your data safe. Here's our security posture.
+
+## Security Overview
+
+| Category | Status | Notes |
+|----------|--------|-------|
+| Data Encryption | ✅ | TLS 1.3 in transit |
+| API Authorization | ✅ | Session-based auth + JWT middleware, timing-safe key comparison |
+| Data Isolation | ✅ | Row-level security (RLS) policies |
+| Bot Detection | ✅ | Automated request filtering on sensitive endpoints |
+| Input Validation | ✅ | Allowlist + sanitization |
+| Rate Limiting | ✅ | Per-IP limits (120/min general, 30/min AI, 5/min deploys and provisioning) |
+| CORS | ✅ | Restricted to allowed origins (no wildcard) |
+| SSRF Protection | ✅ | Webhook URLs validated against private/internal IP ranges |
+| A2A Authentication | ✅ | Message verification enforced before delivery |
+| Audit Logging | ✅ | All actions logged, including per-payment audit trail |
+| Payment Validation | ✅ | Amount limits ($100 max), recipient address format verification (EVM/Solana) |
+
+## Skill Security Matrix
+
+| Skill | Input Validation | Sanitization | User Data | External Calls |
+|-------|------------------|-------------|-----------|----------------|
+| Visual Synthesizer | ✅ | ✅ | ❌ | ✅ (Replicate) |
+| Track Archaeologist | ✅ | ✅ | ❌ | ❌ |
+| Setlist Oracle | ✅ | ✅ | ❌ | ❌ |
+| Groupie Manager | ✅ | ✅ | ✅ (demo) | ❌ |
+| Royalty Tracker | ✅ | ✅ | ❌ | ❌ |
+| Demo Submitter | ✅ | ✅ | ✅ (demo) | ❌ |
+| Event Ticketing | ✅ | ✅ | ✅ (email) | ❌ |
+| Event Scheduler | ✅ | ✅ | ❌ | ❌ |
+| Venue Finder | ✅ | ✅ | ❌ | ❌ |
+| Festival Finder | ✅ | ✅ | ❌ | ❌ |
+
+## Bot detection
+
+Sensitive API endpoints are protected by bot detection to prevent automated abuse. Protected endpoints return a `403` status code when a request is identified as coming from an automated source.
+
+**Protected endpoints:**
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/api/register` | Prevents fake account creation |
+| `/api/auth/forgot-password` | Blocks automated password reset abuse |
+
+Requests from standard web browsers are not affected. Automated clients such as scripts or bots may be blocked. If you are building a legitimate integration and receive a `403` response, ensure your requests originate from an environment that supports browser-level verification.
+
+## Trust Principles
+
+### 1. Minimal Data Collection
+- We don't store prompts or generated images permanently
+- Demo skills use in-memory data that resets on restart
+- No user data sent to third parties (except Replicate for image generation)
+
+### 2. Input Sanitization
+All user inputs are:
+- Length-limited (max 100-500 chars depending on field)
+- Type-checked (strings, arrays, numbers)
+- Allowlist-validated (enum values must match predefined lists)
+- HTML/JS stripped (`<>` characters removed)
+
+### 3. API Key Security
+- Replicate API tokens stored in server-side environment variables
+- Never exposed to client-side code
+- Used only for image generation requests
+
+### 4. Read-Only Skills
+Track Archaeologist, Setlist Oracle, Royalty Tracker, Venue Finder, Festival Finder, and Event Scheduler are **read-only**:
+- No user data stored
+- No external API calls
+- Uses only in-memory mock catalog
+- Safe for public demo use
+
+## Row-level security
+
+All user-scoped database tables are protected by PostgreSQL row-level security (RLS) policies. Each authenticated request sets a user context at the database level before any query executes, so users can only read and modify their own data.
+
+### Protected tables
+
+| Table | Policy | Isolation key |
+|-------|--------|---------------|
+| `User` | `user_isolation` | `id` |
+| `Agent` | `agent_isolation` | `userId` |
+| `ScheduledTask` | `task_isolation` | `userId` |
+| `AgentMemory` | `memory_isolation` | `userId` |
+| `AgentFile` | `file_isolation` | `userId` |
+| `InstalledSkill` | `skill_isolation` | `userId` |
+| `AgentSwarm` | `swarm_isolation` | `userId` |
+| `Workflow` | `workflow_isolation` | `userId` |
+| `Wallet` | `wallet_isolation` | `userId` |
+| `ApiKey` | `apikey_isolation` | `userId` |
+| `Account` | `account_isolation` | `userId` |
+| `Session` | `session_isolation` | `userId` |
+
+### Admin bypass
+
+Users with the `admin` role bypass RLS policies and can access all rows across tenants. Admin access is determined by the `role` column on the `User` table.
+
+### How it works
+
+1. The auth middleware verifies the JWT and extracts the `userId`.
+2. Before any database query, the middleware calls `set_current_user_id(userId)` to set a PostgreSQL session variable.
+3. RLS policies on each table compare the row's `userId` (or `id` for the `User` table) against the session variable.
+4. Queries automatically return only rows belonging to the authenticated user.
+
+<Note>RLS is enforced at the database level and cannot be bypassed by application code. Even if a query omits a `WHERE` clause, only the authenticated user's rows are returned.</Note>
+
+## Auth middleware
+
+The backend API uses auth middleware that runs before protected endpoints. API key comparison uses `crypto.timingSafeEqual` to prevent timing-based key enumeration. Two middleware functions are available: the inline `authenticate` function on the main router, and a standalone [`requireAuth`](/api-reference/auth#standalone-auth-middleware-requireauth) middleware that can be applied to individual route handlers not mounted through the main router.
+
+### Authentication flow
+
+1. The client includes a `Bearer` token in the `Authorization` header.
+2. The middleware performs a constant-time comparison of the token against the server key.
+3. On success, the middleware attaches `userId`, `userEmail`, and `userRole` to the request and sets the RLS context.
+4. On failure, the endpoint returns one of the error codes below.
+
+### Error codes
+
+| Code | HTTP status | Description |
+|------|-------------|-------------|
+| `AUTH_REQUIRED` | 401 | No `Authorization` header or missing `Bearer` prefix |
+| `TOKEN_INVALID` | 401 | JWT signature verification failed or token has expired |
+| `AUTH_ERROR` | 500 | Unexpected error during authentication |
+| `ADMIN_REQUIRED` | 403 | Endpoint requires admin privileges and the authenticated user is not an admin |
+
+### Admin endpoints
+
+Endpoints that require admin access use an additional `requireAdmin` check after authentication. The admin check compares the authenticated user's email against the `ADMIN_EMAILS` environment variable using a **case-insensitive** match. Non-admin users receive a `403` response with code `ADMIN_REQUIRED`.
+
+## Header stripping
+
+Both the backend API and the web frontend strip or reject requests that include headers commonly used to bypass URL-based access controls. The following headers are removed from every inbound request before it reaches any route handler:
+
+| Header | Reason |
+|--------|--------|
+| `X-Original-URL` | Prevents IIS/reverse-proxy URL override attacks |
+| `X-Rewrite-URL` | Prevents IIS/reverse-proxy URL rewrite attacks |
+| `X-Forwarded-Host` | Prevents host header injection and routing manipulation |
+
+On the backend API, these headers are deleted in a global middleware that runs before all routes. On the web frontend, `X-Original-URL` and `X-Rewrite-URL` are additionally scanned for injection patterns and the request is rejected with a `400` status if a suspicious payload is detected.
+
+<Note>If your reverse proxy or CDN injects any of these headers, they will be silently removed. Do not rely on them for application logic.</Note>
+
+## Web API security middleware
+
+The web frontend wraps API routes with security middleware that provides:
+
+- **Rate limiting** — per-IP request limits
+- **DDoS protection** — automated request filtering
+- **Bot detection** — blocks automated abuse on sensitive endpoints
+- **SQL injection prevention** — request parameters and body are scanned for injection patterns
+- **XSS prevention** — payloads containing script tags or event handlers are rejected
+- **JSON validation** — `Content-Type` enforcement and body parsing on mutation endpoints
+- **CSRF protection** — token-based verification using the `x-csrf-token` or `x-xsrf-token` header
+- **Header stripping** — bypass headers (`X-Original-URL`, `X-Rewrite-URL`, `X-Forwarded-Host`) are removed or rejected
+
+### Route protection levels
+
+| Level | Wrapper | Includes |
+|-------|---------|----------|
+| Public | `SecureRoute.public` | Rate limiting, bot detection, input validation |
+| Protected | `SecureRoute.protected` | Public checks + session or API key authentication |
+| Mutation | `SecureRoute.mutation` | Protected checks + POST-only enforcement |
+| JSON | `SecureRoute.json` | Public checks + POST-only + JSON content-type validation |
+| Sensitive | `SecureRoute.sensitive` | Protected + POST-only + JSON validation + CSRF token |
+
+### Error codes
+
+| HTTP status | Description |
+|-------------|-------------|
+| 400 | Invalid JSON body, missing `Content-Type: application/json`, or injection pattern detected in request |
+| 401 | Missing authentication credentials |
+| 403 | Invalid or missing CSRF token |
+| 405 | HTTP method not allowed (non-POST request on a mutation endpoint) |
+| 429 | Too many failed authentication attempts from the same IP |
+
+## SSRF protection
+
+Webhook URLs are validated before any outbound request is made. URLs that resolve to private or internal IP ranges are rejected, including:
+
+- `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`
+- `127.0.0.0/8` (localhost) and `::1`
+- Link-local and other reserved ranges
+
+This prevents server-side request forgery (SSRF) attacks where an attacker could use webhook configuration to probe internal services.
+
+## Agent-to-agent authentication
+
+All agent-to-agent (A2A) messages are verified before delivery. The `verifyMessage()` check runs before `deliverMessage()`, ensuring that unauthenticated A2A messages are blocked. Additionally, negotiation actions (accepting or declining bookings) enforce ownership checks — only the originating agent can modify its own bookings.
+
+## CORS
+
+The backend API restricts CORS to an explicit allowlist. The `ALLOWED_ORIGINS` environment variable accepts a comma-separated list of permitted origins. When unset, the API defaults to a built-in allowlist rather than accepting all origins. Wildcard (`*`) origins are not supported. Requests from unlisted origins receive a CORS error. Credentials are supported.
+
+The `X-Powered-By` header is disabled on both the API (Express) and the web frontend (Next.js) to reduce fingerprinting surface.
+
+## HTTP security headers
+
+All web frontend responses include the following security headers:
+
+| Header | Value | Purpose |
+|--------|-------|---------|
+| `Content-Security-Policy` | Restrictive policy with `default-src 'self'` | Limits sources for scripts, styles, images, and connections |
+| `X-Frame-Options` | `DENY` | Prevents clickjacking by blocking iframe embedding |
+| `X-Content-Type-Options` | `nosniff` | Prevents MIME type sniffing |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limits referrer information sent to external sites |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Disables access to sensitive browser APIs |
+| `Cross-Origin-Opener-Policy` | `same-origin-allow-popups` | Isolates browsing context from cross-origin windows |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` | Enforces HTTPS for two years, including all subdomains |
+
+### Cache control
+
+API responses include `no-cache, no-store, must-revalidate` to prevent caching of sensitive data. Static assets under `/public`, `/_next`, and `/assets` use `public, max-age=31536000, immutable` for long-term caching.
+
+## Known limitations
+
+### Demo mode
+Currently skills run in demo mode. In production:
+- API rate limits will be per-user
+
+### In-Memory Storage
+Groupie Manager uses in-memory Map storage. Data is:
+- Lost on server restart
+- Not shared between server instances
+- Only for demonstration purposes
+
+## Reporting Issues
+
+Found a security issue? Email security@raveculture.xyz or open a GitHub issue.
+
+## Google RISC Protocol
+
+Agentbot implements Google's [RISC (Risk Incident Sharing and Collaboration)](https://developers.google.com/identity/protocols/risc) protocol for enhanced OAuth security. Two endpoints handle RISC events, each serving a different role.
+
+### What is RISC?
+
+RISC enables real-time security event sharing between Google and Agentbot. When Google detects a security incident (compromised account, suspicious activity, etc.), it sends a webhook to Agentbot to take immediate action.
+
+### Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `POST /api/security/risc` | Cross-Account Protection receiver with token validation, event deduplication, and hijacking-specific responses |
+| `POST /api/auth/google/risc` | Legacy RISC webhook that revokes sessions on security events |
+
+The `/api/security/risc` endpoint is the primary receiver for Google Cross-Account Protection. It validates the SET (Security Event Token) JWT against Google's signing keys, checks the issuer and audience claims, deduplicates events using the `jti` claim, and takes targeted action depending on the event type. See the [API reference](/api-reference/auth#cross-account-protection-receiver) for full details.
+
+### Supported events
+
+| Event | `/api/security/risc` action | `/api/auth/google/risc` action |
+|-------|----------------------------|-------------------------------|
+| `account-disabled` (hijacking) | Disables Google Sign-in and invalidates all sessions | Revokes all sessions |
+| `account-disabled` (other) | Invalidates all sessions | Revokes all sessions |
+| `account-enabled` | Re-enables Google Sign-in | No action taken |
+| `sessions-revoked` | Invalidates all sessions | Revokes all sessions |
+| `tokens-revoked` | Revokes stored OAuth tokens and invalidates sessions | Not handled |
+| `account-credential-change-required` | Logged for monitoring | Not handled |
+| `verification` | Acknowledged (used during setup) | Not handled |
+| `account-compromised` | Not handled | Revokes all sessions |
+| `identifier-changed` | Not handled | Revokes all sessions |
+
+<Note>The `/api/security/risc` endpoint matches users by Google subject ID (`sub`) or email address. The `/api/auth/google/risc` endpoint matches by email only.</Note>
+
+### Event deduplication
+
+The `/api/security/risc` endpoint deduplicates events using the `jti` (JWT ID) claim. Each event is stored in the `risc_events` table with a unique constraint on the `jti` column. Duplicate events are acknowledged but not processed again.
+
+### Token validation
+
+The `/api/security/risc` endpoint validates incoming SET JWTs by:
+
+1. Verifying the issuer is `https://accounts.google.com/`
+2. Checking the audience matches a configured `GOOGLE_CLIENT_ID`
+3. Fetching Google's RISC signing keys from the well-known configuration endpoint (cached for 24 hours)
+4. Matching the signing key by `kid` header claim
+
+### Security response
+
+When a RISC event is received:
+
+1. **Immediate**: Disable Google Sign-in (for hijacking events) or invalidate sessions
+2. **Audit**: Log event type and affected user for security review
+3. **Recovery**: User must re-authenticate on next visit
+
+### Configuration
+
+RISC events are configured in Google Cloud Console:
+
+1. Go to **APIs & Services** → **Google RISC API**
+2. Add the webhook URL: `https://agentbot.raveculture.xyz/api/security/risc`
+3. Configure event types to receive
+4. Set delivery method (push or poll)
+
+The endpoint requires the `GOOGLE_CLIENT_ID` environment variable. Multiple client IDs can be provided as a comma-separated list.
+
+### Reference
+
+- [Google RISC Documentation](https://developers.google.com/identity/protocols/risc)
+- [Shared Signals Framework (SSF)](https://openid.net/specs/openid-sharedsignals-framework-1_0.html)
+- [CAEP (Continuous Access Evaluation Protocol)](https://openid.net/specs/openid-caep-specification-1_0.html)

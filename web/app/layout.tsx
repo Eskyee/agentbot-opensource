@@ -6,6 +6,11 @@ import Providers from "./providers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Analytics } from '@vercel/analytics/next'
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://agentbot.raveculture.xyz'),
@@ -13,8 +18,8 @@ export const metadata: Metadata = {
     default: 'Agentbot — Deploy AI Agents in 60 Seconds',
     template: '%s | Agentbot',
   },
-  description: 'Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol. Built for the underground.',
-  keywords: ['AI agent deployment', 'autonomous AI agents', 'BYOK AI', 'agent hosting', 'deploy AI agent', 'Telegram AI bot', 'crypto AI agent', 'Base blockchain', 'agent orchestration', 'AI infrastructure'],
+  description: 'Deploy autonomous AI agents for your creative practice in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol.',
+  keywords: ['AI agent deployment', 'autonomous AI agents', 'BYOK AI', 'agent hosting', 'deploy AI agent', 'creative industry AI', 'AI for creators', 'Base blockchain', 'agent orchestration', 'AI infrastructure'],
   authors: [{ name: 'Agentbot', url: 'https://agentbot.raveculture.xyz' }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
@@ -57,8 +62,9 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.svg',
   },
   other: {
-    'base:app_id': '6951feb4c63ad876c90817aa',
+    'google-site-verification': 'zCtxfWmpS5bIT2JSGipE04GN85VYLaUEb4Xkkcb-ZCQ',
     'talentapp:project_verification': '02b6e4586b25009b3b24cd6f9e0d35e036960b2f0c037ccfefe8cc9e83e6c5c88a85efdeb3f7f4e97f7003d6b4e103e8858f0e5fe03c8c6a2207514f1b6449ff',
+    'base:app_id': '6951feb4c63ad876c90817aa',
   },
 }
 
@@ -73,7 +79,7 @@ const jsonLd = {
   offers: [
     {
       '@type': 'Offer',
-      name: 'Underground',
+      name: 'Solo',
       price: '29.00',
       priceCurrency: 'GBP',
       priceSpecification: {
@@ -98,7 +104,7 @@ const jsonLd = {
     {
       '@type': 'Offer',
       name: 'Label',
-      price: '199.00',
+      price: '149.00',
       priceCurrency: 'GBP',
       priceSpecification: {
         '@type': 'RecurringChargeSpecification',
@@ -120,7 +126,7 @@ export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={cn(GeistSans.variable, GeistMono.variable, "font-sans", geist.variable)}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <script
@@ -128,7 +134,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-black text-white antialiased pt-[60px] flex flex-col min-h-screen font-sans">
+      <body className="bg-black text-white antialiased pt-14 flex flex-col min-h-screen font-sans">
         {/* Skip link for keyboard users */}
         <a
           href="#main-content"
@@ -137,6 +143,7 @@ export default function RootLayout({
           Skip to main content
         </a>
         <SpeedInsights />
+        <Analytics />
         <Providers>
           <Navbar />
           <main id="main-content" className="flex-1" tabIndex={-1}>

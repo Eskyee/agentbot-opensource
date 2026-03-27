@@ -13,35 +13,56 @@ interface Message {
 interface Model {
   id: string
   name: string
-  provider: string
 }
 
 const DEFAULT_MODELS: Model[] = [
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  { id: 'openai/gpt-4o', name: 'GPT-4o', provider: 'OpenAI' },
-  { id: 'google/gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', provider: 'Google' },
-  { id: 'minimax/minimax-chat', name: 'MiniMax M2.7', provider: 'MiniMax' },
+  { id: 'xiaomi/mimo-v2-pro', name: 'MiMo-V2-Pro' },
+  { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4' },
+  { id: 'openai/gpt-4o', name: 'GPT-4o' },
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+  { id: 'deepseek/deepseek-r1', name: 'DeepSeek R1' },
 ]
 
 export default function DemoPage() {
   const [mode, setMode] = useState<'single' | 'compare'>('single')
-  const [selectedModel, setSelectedModel] = useState(DEFAULT_MODELS[0].id)
-  const [compareModels, setCompareModels] = useState([DEFAULT_MODELS[0].id, DEFAULT_MODELS[1].id])
+  const [selectedModel, setSelectedModel] = useState('xiaomi/mimo-v2-pro')
+  const [compareModels, setCompareModels] = useState(['xiaomi/mimo-v2-pro', 'anthropic/claude-sonnet-4'])
   const [messages, setMessages] = useState<Message[]>([])
   const [compareMessages, setCompareMessages] = useState<{ [model: string]: Message[] }>({})
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [compareLoading, setCompareLoading] = useState(false)
   const [apiKey, setApiKey] = useState('')
-  const [showApiKeyInput, setShowApiKeyInput] = useState(true)
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  // Force scroll to top on mount (mobile browsers are finicky)
   useEffect(() => {
-    scrollToBottom()
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+      document.body.scrollTop = 0
+      document.documentElement.scrollTop = 0
+    }
+    
+    scrollToTop()
+    const timeout = setTimeout(scrollToTop, 100)
+    window.addEventListener('load', scrollToTop)
+    
+    return () => {
+      clearTimeout(timeout)
+      window.removeEventListener('load', scrollToTop)
+    }
+  }, [])
+
+  // Scroll to bottom of messages when they update
+  useEffect(() => {
+    if (messages.length > 0 || Object.keys(compareMessages).length > 0) {
+      scrollToBottom()
+    }
   }, [messages, compareMessages])
 
   const sendMessage = async () => {
@@ -78,14 +99,13 @@ export default function DemoPage() {
         setMessages(prev => [...prev, {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `Error: ${data.error}`
+          content: `Error: ${data.message || data.error}`
         }])
       } else {
         setMessages(prev => [...prev, {
-          id: data.id || Date.now().toString(),
+          id: Date.now().toString(),
           role: 'assistant',
-          content: data.message,
-          model: selectedModel
+          content: data.message
         }])
       }
     } catch (error) {
@@ -142,10 +162,9 @@ export default function DemoPage() {
       results.forEach(({ modelId, data }) => {
         const current = updatedCompareMessages[modelId] || []
         updatedCompareMessages[modelId] = [...current, {
-          id: data.id || Date.now().toString(),
+          id: Date.now().toString(),
           role: 'assistant' as const,
-          content: data.error || data.message || 'No response',
-          model: modelId
+          content: data.error || data.message || 'No response'
         }]
       })
       
@@ -177,35 +196,28 @@ export default function DemoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="border-b border-white/10 bg-gray-900/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="text-2xl">🦞</span>
-            <span className="font-black tracking-tighter text-xl">AGENTBOT</span>
-          </Link>
-          
-          <div className="flex items-center gap-4">
-            <Link
-              href="/signup"
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-500 transition-colors"
-            >
-              Deploy Your Fleet →
-            </Link>
-          </div>
+    <main className="min-h-screen bg-black text-white font-mono flex flex-col">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col max-w-5xl mx-auto px-6 py-8 sm:py-12 w-full">
+        {/* Page Title */}
+        <div className="mb-8 sm:mb-12">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4 block">Live Demo</span>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase leading-none">
+            Try Agentbot
+          </h1>
+          <p className="text-zinc-400 text-sm leading-relaxed mt-3 max-w-xl">
+            Test AI models directly in your browser. Compare responses side by side.
+          </p>
         </div>
-      </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* API Key Input */}
+        {/* API Key Input - Collapsible */}
         {showApiKeyInput && (
-          <div className="mb-8 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl max-w-3xl mx-auto">
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 border border-zinc-800 bg-black max-w-3xl mx-auto w-full">
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-bold text-blue-400">🔑 OpenRouter API Key</label>
+              <label className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold">Your API Key (Optional)</label>
               <button
                 onClick={() => setShowApiKeyInput(false)}
-                className="text-xs text-gray-500 hover:text-white"
+                className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white p-2 -mr-2"
               >
                 Hide
               </button>
@@ -215,95 +227,128 @@ export default function DemoPage() {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-or-v1-..."
-              className="w-full bg-gray-900 border border-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full bg-black border border-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 font-mono min-h-[44px]"
             />
-            <p className="mt-2 text-xs text-gray-500">
-              Get free key at{' '}
-              <a href="https://openrouter.ai" target="_blank" rel="noopener" className="text-blue-400 hover:underline">
-                openrouter.ai
-              </a>
-              {' '}&middot; Demo runs on your key
+            <p className="mt-2 text-[10px] uppercase tracking-widest text-zinc-600">
+              Optional: Add your own key for higher rate limits.
             </p>
           </div>
         )}
 
         {!showApiKeyInput && (
-          <div className="mb-8 text-center">
+          <div className="mb-6 sm:mb-8 text-left">
             <button
               onClick={() => setShowApiKeyInput(true)}
-              className="text-sm text-gray-500 hover:text-white"
+              className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white py-2 px-4 min-h-[44px] font-bold"
             >
-              🔑 {apiKey ? 'API key saved' : 'Add API key'}
+              {apiKey ? 'API key saved' : 'Add API key'}
             </button>
           </div>
         )}
 
         {/* Mode Selector */}
-        <div className="flex items-center justify-center gap-4 mb-8">
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:pb-0">
           <button
             onClick={() => setMode('single')}
-            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={`px-6 py-3 font-bold text-xs uppercase tracking-widest transition-all whitespace-nowrap flex-shrink-0 min-h-[44px] ${
               mode === 'single' 
                 ? 'bg-white text-black' 
-                : 'bg-gray-900 border border-white/10 text-gray-400 hover:text-white'
+                : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
             }`}
           >
-            💬 Chat Demo
+            Deployment Guide
           </button>
           <button
             onClick={() => setMode('compare')}
-            className={`px-6 py-3 rounded-xl font-bold text-sm transition-all ${
+            className={`px-6 py-3 font-bold text-xs uppercase tracking-widest transition-all whitespace-nowrap flex-shrink-0 min-h-[44px] ${
               mode === 'compare' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-900 border border-white/10 text-gray-400 hover:text-white'
+                ? 'bg-white text-black' 
+                : 'border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
             }`}
           >
-            ⚡ Compare Models
+            Compare Models
           </button>
         </div>
 
         {/* Single Chat Mode */}
         {mode === 'single' && (
-          <div className="max-w-3xl mx-auto">
+          <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full">
             {/* Model Selector */}
-            <div className="mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <label className="text-sm font-bold text-gray-400">Model:</label>
+            <div className="mb-4 sm:mb-6 flex items-center justify-between gap-2 border-t border-zinc-800 pt-4">
+              <div className="flex items-center gap-3 overflow-x-auto">
+                <label className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold whitespace-nowrap">Model:</label>
                 <select
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className="bg-gray-900 border border-white/10 rounded-lg px-4 py-2 text-sm font-medium text-white focus:outline-none focus:border-blue-500"
+                  className="bg-black border border-zinc-800 px-4 py-2 text-sm text-white focus:outline-none focus:border-zinc-500 min-h-[44px] font-mono"
                 >
                   {DEFAULT_MODELS.map(model => (
                     <option key={model.id} value={model.id}>
-                      {model.name} ({model.provider})
+                      {model.name}
                     </option>
                   ))}
                 </select>
               </div>
               <button
                 onClick={clearChat}
-                className="text-sm text-gray-500 hover:text-white transition-colors"
+                className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors py-2 px-3 min-h-[44px] whitespace-nowrap font-bold"
               >
-                Clear ↻
+                Clear
               </button>
             </div>
 
             {/* Chat Messages */}
-            <div className="bg-gray-900/50 border border-white/10 rounded-2xl min-h-[400px] max-h-[500px] overflow-y-auto mb-4 p-6">
+            <div className="border border-zinc-800 bg-black flex-1 min-h-[300px] sm:min-h-[400px] max-h-[calc(100vh-380px)] sm:max-h-[500px] overflow-y-auto mb-4 p-4 sm:p-6">
               {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-gray-500">
-                  <div className="text-4xl mb-4">🤖</div>
-                  <p className="text-lg font-medium mb-2">Try Agentbot for free</p>
-                  <p className="text-sm mb-4">Send a message to chat with AI models</p>
+                <div className="h-full flex flex-col items-start justify-center text-zinc-500 px-4">
+                  <p className="text-sm font-bold uppercase tracking-widest mb-2 text-zinc-400">AI Agent SaaS Platform</p>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Subscribe. Deploy in 60s. Scale as you grow.</p>
                   
-                  {/* Quick Help Links */}
-                  <div className="text-xs space-y-2 mt-4">
-                    <p className="text-gray-400">Need help choosing?</p>
-                    <div className="flex gap-2 flex-wrap justify-center">
-                      <Link href="/pricing" className="text-blue-400 hover:underline">View Plans →</Link>
-                      <span className="text-gray-600">|</span>
-                      <span className="text-gray-500">Solo £29 (chat) • Collective £69 (+ business) • Label £149 (full back office)</span>
+                  {/* SaaS Plans */}
+                  <div className="w-full max-w-lg mb-4 border-t border-zinc-800 pt-4">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold mb-3 text-left">Subscription Plans</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={() => setInput('What\'s included in Solo £29/mo?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Solo £29/mo
+                      </button>
+                      <button onClick={() => setInput('What\'s included in Collective £69/mo?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Collective £69/mo
+                      </button>
+                      <button onClick={() => setInput('What\'s included in Label £149/mo?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Label £149/mo
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* SaaS Value */}
+                  <div className="w-full max-w-lg mb-4 border-t border-zinc-800 pt-4">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold mb-3 text-left">SaaS Benefits</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={() => setInput('What does the subscription include?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        What&apos;s included?
+                      </button>
+                      <button onClick={() => setInput('How fast can I deploy?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Deploy speed?
+                      </button>
+                      <button onClick={() => setInput('Why SaaS vs self-hosted?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        SaaS vs self-hosted?
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Pricing & Costs */}
+                  <div className="w-full max-w-lg border-t border-zinc-800 pt-4">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold mb-3 text-left">Pricing & Costs</p>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={() => setInput('Are there any hidden fees?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Hidden fees?
+                      </button>
+                      <button onClick={() => setInput('How do AI costs work?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        AI costs explained
+                      </button>
+                      <button onClick={() => setInput('Can I upgrade or downgrade?')} className="text-xs bg-zinc-950 border border-zinc-800 px-3 py-1.5 hover:bg-zinc-800 hover:text-white text-zinc-400 transition-colors min-h-[32px] font-mono">
+                        Change plans?
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -311,25 +356,25 @@ export default function DemoPage() {
                 <div className="space-y-4">
                   {messages.map(msg => (
                     <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      <div className={`max-w-[90%] sm:max-w-[80%] px-4 py-3 ${
                         msg.role === 'user' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-800 text-gray-100'
+                          ? 'bg-blue-500 text-white' 
+                          : 'border border-zinc-800 bg-zinc-950 text-zinc-100'
                       }`}>
-                        <div className="text-xs font-bold mb-1 opacity-70">
-                          {msg.role === 'user' ? 'You' : getModelName(msg.model || '')}
+                        <div className="text-[10px] uppercase tracking-widest font-bold mb-1 opacity-70">
+                          {msg.role === 'user' ? 'You' : 'Agentbot'}
                         </div>
-                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                       </div>
                     </div>
                   ))}
                   {loading && (
                     <div className="flex justify-start">
-                      <div className="bg-gray-800 rounded-2xl px-4 py-3">
+                      <div className="border border-zinc-800 bg-zinc-950 px-4 py-3">
                         <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          <div className="w-2 h-2 bg-zinc-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-2 h-2 bg-zinc-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-2 h-2 bg-zinc-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                         </div>
                       </div>
                     </div>
@@ -345,16 +390,16 @@ export default function DemoPage() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask anything..."
-                className="flex-1 bg-gray-900 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                placeholder="Ask about deploying Agentbot..."
+                className="flex-1 bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 min-h-[48px] font-mono"
                 disabled={loading}
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
-                className="px-6 py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-white text-black font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-h-[48px] min-w-[80px]"
               >
-                Send →
+                Send
               </button>
             </form>
           </div>
@@ -362,11 +407,11 @@ export default function DemoPage() {
 
         {/* Compare Mode */}
         {mode === 'compare' && (
-          <div>
+          <div className="flex-1 flex flex-col">
             {/* Compare Model Selectors */}
-            <div className="mb-6 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <label className="text-sm font-bold text-gray-400">Compare:</label>
+            <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border-t border-zinc-800 pt-4">
+              <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto pb-2 sm:pb-0 -mx-3 px-3 sm:mx-0 sm:px-0">
+                <label className="text-[10px] uppercase tracking-widest text-zinc-600 font-bold whitespace-nowrap">Compare:</label>
                 {compareModels.map((modelId, idx) => (
                   <select
                     key={idx}
@@ -376,7 +421,7 @@ export default function DemoPage() {
                       newModels[idx] = e.target.value
                       setCompareModels(newModels)
                     }}
-                    className="bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-sm font-medium text-white focus:outline-none focus:border-blue-500"
+                    className="bg-black border border-zinc-800 px-4 py-2 text-sm text-white focus:outline-none focus:border-zinc-500 min-h-[44px] flex-shrink-0 font-mono"
                   >
                     {DEFAULT_MODELS.map(model => (
                       <option key={model.id} value={model.id} disabled={compareModels.includes(model.id) && compareModels[idx] !== model.id}>
@@ -388,44 +433,44 @@ export default function DemoPage() {
               </div>
               <button
                 onClick={clearChat}
-                className="text-sm text-gray-500 hover:text-white transition-colors"
+                className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors py-2 px-3 min-h-[44px] whitespace-nowrap self-start sm:self-auto font-bold"
               >
-                Clear ↻
+                Clear
               </button>
             </div>
 
             {/* Compare Grid */}
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-0">
               {compareModels.map((modelId) => (
-                <div key={modelId} className="bg-gray-900/50 border border-white/10 rounded-2xl overflow-hidden">
-                  <div className="bg-gray-800 px-4 py-2 border-b border-white/10">
-                    <span className="font-bold text-sm">{getModelName(modelId)}</span>
+                <div key={modelId} className="border border-zinc-800 bg-black overflow-hidden flex flex-col min-h-[250px] sm:min-h-[300px]">
+                  <div className="bg-zinc-950 px-4 py-2 border-b border-zinc-800 flex-shrink-0">
+                    <span className="font-bold text-xs uppercase tracking-widest">{getModelName(modelId)}</span>
                   </div>
-                  <div className="min-h-[300px] max-h-[400px] overflow-y-auto p-4">
+                  <div className="flex-1 overflow-y-auto p-4 min-h-0">
                     {(compareMessages[modelId] || []).length === 0 ? (
-                      <div className="h-full flex flex-col items-center justify-center text-gray-500 py-12">
-                        <p className="text-sm">Send a message to compare</p>
+                      <div className="h-full flex flex-col items-center justify-center text-zinc-600 py-8 sm:py-12">
+                        <p className="text-[10px] uppercase tracking-widest">Send a message to compare</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         {(compareMessages[modelId] || []).map((msg) => (
-                          <div key={msg.id} className={`rounded-xl px-3 py-2 ${
-                            msg.role === 'user' ? 'bg-blue-600/20 text-blue-100' : 'bg-gray-800 text-gray-100'
+                          <div key={msg.id} className={`px-3 py-2 ${
+                            msg.role === 'user' ? 'bg-blue-500/20 text-blue-100 border border-blue-500/30' : 'border border-zinc-800 bg-zinc-950 text-zinc-100'
                           }`}>
-                            <div className="text-[10px] font-bold mb-1 opacity-70">
+                            <div className="text-[10px] uppercase tracking-widest font-bold mb-1 opacity-70">
                               {msg.role === 'user' ? 'You' : 'AI'}
                             </div>
-                            <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                            <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                           </div>
                         ))}
                         {compareLoading && (
-                          <div className="flex items-center gap-2 text-gray-500 text-sm">
+                          <div className="flex items-center gap-2 text-zinc-500 text-xs">
                             <div className="flex gap-1">
-                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
-                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                              <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-zinc-500 animate-bounce" />
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-zinc-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-zinc-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                             </div>
-                            <span>Thinking...</span>
+                            <span className="text-[10px] uppercase tracking-widest">Thinking...</span>
                           </div>
                         )}
                       </div>
@@ -436,40 +481,40 @@ export default function DemoPage() {
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSubmit} className="flex gap-3 mt-4 max-w-2xl mx-auto">
+            <form onSubmit={handleSubmit} className="flex gap-3 mt-4 max-w-2xl mx-auto w-full">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question to compare models..."
-                className="flex-1 bg-gray-900 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                placeholder="Ask about deployment options..."
+                className="flex-1 bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500 min-h-[48px] font-mono"
                 disabled={compareLoading}
               />
               <button
                 type="submit"
                 disabled={compareLoading || !input.trim()}
-                className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-white text-black font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-h-[48px]"
               >
-                Compare →
+                Compare
               </button>
             </form>
           </div>
         )}
 
         {/* CTA */}
-        <div className="mt-12 text-center">
-          <p className="text-gray-400 mb-4">Like what you see?</p>
+        <div className="mt-12 sm:mt-16 border-t border-zinc-800 pt-12">
+          <p className="text-zinc-400 text-sm mb-4">Like what you see?</p>
           <Link
             href="/signup"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-sm font-bold text-black hover:bg-gray-200 transition-all"
+            className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-all min-h-[48px]"
           >
-            DEPLOY YOUR FLEET →
+            Deploy Your Fleet
           </Link>
-          <p className="mt-4 text-xs text-gray-600">
-            No credit card required. Your own API key required for production use.
+          <p className="mt-4 text-[10px] uppercase tracking-widest text-zinc-600">
+            No credit card required.
           </p>
         </div>
       </div>
-    </div>
+    </main>
   )
 }

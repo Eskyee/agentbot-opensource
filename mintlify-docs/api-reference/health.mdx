@@ -1,0 +1,305 @@
+---
+title: Health API
+description: "Health check and heartbeat endpoints for monitoring"
+---
+
+# Health API
+
+Monitor system health and configure heartbeat schedules.
+
+## Health check (web)
+
+```http
+GET /api/health
+```
+
+No authentication required. Returns system health metrics including CPU and memory usage.
+
+<Note>The backend service exposes its own health check at `GET /health` (without the `/api` prefix). The web and backend health endpoints are independent — the web endpoint reports on the web application process while the backend endpoint reports on the API service. See [backend health check](#backend-health-check) below for details.</Note>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "health": "healthy",
+  "timestamp": "2026-03-19T00:00:00Z",
+  "cpu": {
+    "usage": 15.3,
+    "cores": 4
+  },
+  "memory": {
+    "usage": 42.1,
+    "total": 8589934592,
+    "used": 3617054720,
+    "free": 4972879872
+  },
+  "uptime": 86400
+}
+```
+
+The `health` field reflects overall system status:
+
+| Value | Condition |
+|-------|-----------|
+| `healthy` | CPU and memory usage both at or below 70% |
+| `degraded` | CPU or memory usage above 70% but at or below 85% |
+| `unhealthy` | CPU or memory usage above 85% |
+
+### Degraded and unhealthy responses
+
+When the system is degraded or unhealthy, the endpoint still returns HTTP `200` with the `health` field set to `degraded` or `unhealthy`. The `status` field remains `ok`.
+
+```json
+{
+  "status": "ok",
+  "health": "unhealthy",
+  "timestamp": "2026-03-19T00:00:00Z",
+  "cpu": { "usage": 92.5, "cores": 4 },
+  "memory": { "usage": 88.0, "total": 8589934592, "used": 7558529024, "free": 1031405568 },
+  "uptime": 86400
+}
+```
+
+### Error response
+
+An HTTP `500` is returned only when an unexpected error occurs while collecting health metrics, not for degraded or unhealthy status:
+
+```json
+{
+  "status": "error",
+  "health": "unhealthy",
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Health check succeeded. Check the `health` field for `healthy`, `degraded`, or `unhealthy`. |
+| 500 | Unexpected error collecting health metrics. |
+
+## Backend health check
+
+```http
+GET /health
+```
+
+No authentication required. Returns backend service status including Docker availability. This endpoint is served by the backend API service (without the `/api` prefix).
+
+<Note>The backend API continues to serve non-Docker endpoints (health, metrics, auth, AI, registration) even when Docker is not available. Container provisioning and lifecycle operations are disabled until Docker becomes available.</Note>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-19T00:00:00Z",
+  "docker": "available",
+  "provisioning": "enabled"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Always `ok` when the backend is running |
+| `timestamp` | string | ISO 8601 timestamp of the health check |
+| `docker` | string | Docker daemon availability. `available` when Docker is reachable, `unavailable` otherwise. |
+| `provisioning` | string | Container provisioning capability. `enabled` when Docker is available, `disabled` otherwise. |
+
+### Response when Docker is unavailable
+
+When Docker is not available on the host, the health endpoint still returns HTTP `200` but reports degraded capabilities:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-19T00:00:00Z",
+  "docker": "unavailable",
+  "provisioning": "disabled"
+}
+```
+
+When `provisioning` is `disabled`, any request to a container-dependent endpoint (such as deploying, starting, stopping, or restarting an agent) returns a `500` error. Non-container endpoints continue to operate normally.
+
+## Get heartbeat settings
+
+```http
+GET /api/heartbeat
+```
+
+Requires session authentication.
+
+### Response
+
+```json
+{
+  "heartbeat": {
+    "frequency": "3h",
+    "enabled": true,
+    "lastHeartbeat": "2026-03-19T00:00:00Z",
+    "nextHeartbeat": "2026-03-19T03:00:00Z"
+  },
+  "message": "Heartbeat scheduling database integration pending"
+}
+```
+
+## Update heartbeat settings
+
+```http
+POST /api/heartbeat
+```
+
+Requires session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `frequency` | string | No | Heartbeat interval (for example, `3h`) |
+| `enabled` | boolean | No | Enable or disable heartbeats |
+
+### Response
+
+```json
+{
+  "frequency": "3h",
+  "enabled": true,
+  "lastUpdated": "2026-03-19T00:00:00Z",
+  "lastHeartbeat": "2026-03-19T00:00:00Z",
+  "nextHeartbeat": "2026-03-19T03:00:00Z",
+  "message": "Heartbeat settings will persist to database once integration is complete"
+}
+```
+
+## Delete heartbeat settings
+
+```http
+DELETE /api/heartbeat
+```
+
+Requires session authentication. Resets heartbeat configuration to defaults.
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Heartbeat settings reset - database cleanup will occur once integration is complete"
+}
+```
+
+## Container health checks
+
+Agent containers run the official OpenClaw image, which exposes built-in health endpoints on port `18789`. The backend uses these to determine container readiness during provisioning and ongoing monitoring.
+
+### Built-in health endpoints
+
+The OpenClaw image (`ghcr.io/openclaw/openclaw:2026.3.13`) provides two health endpoints on each agent container:
+
+| Endpoint | Purpose | Description |
+|----------|---------|-------------|
+| `GET /healthz` | Liveness | Returns `200` when the gateway process is running. Used by Docker's `HEALTHCHECK` to detect crashed or hung containers. |
+| `GET /readyz` | Readiness | Returns `200` when the gateway is ready to accept requests. Use this to verify the container has completed startup before routing traffic. |
+
+Both endpoints are unauthenticated and bind to the container's internal port (`18789`).
+
+#### `/healthz` response
+
+```json
+{
+  "ok": true,
+  "status": "live"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | boolean | `true` when the gateway process is running |
+| `status` | string | Always `live` when the endpoint responds |
+
+#### `/readyz` response
+
+```json
+{
+  "ready": true,
+  "failing": [],
+  "uptimeMs": 68163
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ready` | boolean | `true` when the gateway is ready to accept requests |
+| `failing` | array | List of failing readiness checks. Empty when all checks pass. |
+| `uptimeMs` | number | Gateway uptime in milliseconds since startup |
+
+<Note>The backend also probes `/health` on port `18789` for application-level health checks. The `/healthz` and `/readyz` endpoints are provided by the OpenClaw image itself and are available on all agent containers.</Note>
+
+### Container health statuses
+
+| Status | Condition |
+|--------|-----------|
+| `healthy` | Container is running and the internal health endpoint responds successfully |
+| `starting` | Container is running but the health endpoint is not yet responding after all retries |
+| `stopped` | Container has exited |
+| `unhealthy` | Container is in an unexpected state or cannot be inspected |
+
+### Health check behavior
+
+- Docker runs a `HEALTHCHECK` against `http://127.0.0.1:18789/healthz` every 30 seconds with a 5-second timeout, a 20-second start period, and 5 retries before marking the container as unhealthy. The health probe uses `node -e "fetch(...)"` instead of `curl` because the official OpenClaw image does not include `curl`.
+- The `waitForHealthy` function polls container health every 2 seconds, with a default overall timeout of 60 seconds.
+
+## Watchdog monitoring
+
+The backend runs a per-agent watchdog service that continuously monitors agent health, detects crash loops, and performs automatic recovery. The watchdog operates internally and does not expose dedicated API endpoints. Status information is surfaced through the existing agent status and lifecycle endpoints.
+
+### Health check cycle
+
+The watchdog probes each agent's gateway at `GET /healthz` on the agent's internal port. Health checks run on a configurable interval (default: every 2 minutes). When the gateway reports unhealthy, the watchdog transitions the agent to a degraded state and increases the check frequency to every 5 seconds.
+
+| Parameter | Default | Environment variable |
+|-----------|---------|---------------------|
+| Health check interval | 120 seconds | `WATCHDOG_CHECK_INTERVAL` |
+| Degraded check interval | 5 seconds | `WATCHDOG_DEGRADED_CHECK_INTERVAL` |
+| Startup failure threshold | 3 consecutive failures | `WATCHDOG_STARTUP_FAILURE_THRESHOLD` |
+| Max repair attempts | 2 | `WATCHDOG_MAX_REPAIR_ATTEMPTS` |
+| Crash loop window | 5 minutes | `WATCHDOG_CRASH_LOOP_WINDOW` |
+| Crash loop threshold | 3 crashes in window | `WATCHDOG_CRASH_LOOP_THRESHOLD` |
+
+### Lifecycle states
+
+The watchdog tracks the following lifecycle states for each agent:
+
+| State | Description |
+|-------|-------------|
+| `stopped` | Agent is not running |
+| `starting` | Agent container has started; waiting for the first successful health check |
+| `running` | Agent is healthy and serving requests |
+| `degraded` | Health checks are failing after a previous healthy state |
+| `crash_loop` | Multiple crashes detected within the crash loop window |
+| `repairing` | Auto-repair is in progress |
+
+### Auto-repair
+
+When the watchdog detects an unhealthy agent, it can automatically attempt recovery. Auto-repair is enabled by default and can be disabled by setting the `WATCHDOG_AUTO_REPAIR` environment variable to `false`.
+
+The repair sequence is:
+
+1. Kill the agent gateway process
+2. Wait 5 seconds
+3. Restart the gateway
+4. Wait 30 seconds (startup grace period)
+5. Verify health
+
+If the repair fails, the watchdog retries up to the configured maximum (default: 2 attempts). After exhausting all repair attempts, the agent transitions to the `crash_loop` state.
+
+### Crash loop detection
+
+The watchdog tracks crash timestamps within a sliding window (default: 5 minutes). When the number of crashes in the window reaches the threshold (default: 3), the agent enters the `crash_loop` state. This prevents infinite restart loops for agents with persistent failures.
+
+### Notifications
+
+The watchdog sends notifications for critical events (degraded, crash loop, repair attempts) through configured channels:
+
+- **Telegram** — when `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID` are set
+- **Discord** — when `DISCORD_WEBHOOK_URL` is set

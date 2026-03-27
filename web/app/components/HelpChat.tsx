@@ -91,7 +91,7 @@ export default function HelpChat() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-80 h-96 bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl flex flex-col z-50">
+        <div className="fixed bottom-20 right-4 w-80 h-96 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl flex flex-col z-50">
           {/* Header */}
           <div className="bg-blue-600 px-4 py-3 rounded-t-2xl flex items-center gap-2">
             <span className="text-lg">🤖</span>
@@ -105,7 +105,7 @@ export default function HelpChat() {
                 <div className={`max-w-[85%] rounded-2xl px-3 py-2 ${
                   msg.role === 'user' 
                     ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-800 text-gray-100'
+                    : 'bg-zinc-800 text-zinc-100'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                 </div>
@@ -113,11 +113,11 @@ export default function HelpChat() {
             ))}
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-gray-800 rounded-2xl px-3 py-2">
+                <div className="bg-zinc-800 rounded-2xl px-3 py-2">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-zinc-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               </div>
@@ -128,14 +128,14 @@ export default function HelpChat() {
           {/* Input */}
           <form
             onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
-            className="p-3 border-t border-gray-700 flex gap-2"
+            className="p-3 border-t border-zinc-700 flex gap-2"
           >
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask for help..."
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
               disabled={loading}
             />
             <button

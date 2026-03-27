@@ -1,0 +1,260 @@
+---
+title: Gateway
+description: "Route requests to plugins through the v1 gateway with support for Stripe and MPP payments."
+---
+
+# Gateway
+
+The v1 gateway routes incoming requests to registered plugins. It supports dual payment methods — Stripe (existing) and [MPP](/payments/mpp) (Machine Payments Protocol) via the Tempo blockchain.
+
+## Base URL
+
+```
+POST /api/v1/gateway
+```
+
+## Request
+
+### Headers
+
+| Header | Type | Required | Description |
+|--------|------|----------|-------------|
+| `Content-Type` | string | Yes | Must be `application/json` |
+| `X-Plugin-Id` | string | No | Plugin to route the request to. Overrides the `plugin` field in the body. |
+| `X-Payment-Method` | string | No | Payment method to use: `stripe` or `mpp`. Defaults to `stripe`. |
+| `Authorization` | string | No | For MPP payments, use `Payment <credential>`. For session auth, handled via cookies. |
+| `Accept` | string | No | Set to `text/event-stream` for streaming responses (where supported). |
+
+### Body
+
+```json
+{
+  "plugin": "generate-text",
+  "messages": [{ "role": "user", "content": "Hello" }]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `plugin` | string | No | Plugin ID to route to. The `X-Plugin-Id` header takes priority if both are provided. Defaults to `generate-text`. |
+
+Additional body fields are forwarded to the target plugin.
+
+## Plugins
+
+The gateway routes to the following plugins:
+
+| Plugin ID | Name | Description | Auth required | Streaming |
+|-----------|------|-------------|---------------|-----------|
+| `agent` | Agent | Agent orchestrator for multi-step tasks | Yes | Yes |
+| `generate-text` | Text Generation | LLM text generation | Yes | Yes |
+| `tts` | Text-to-Speech | Speech synthesis | Yes | No |
+| `stt` | Speech-to-Text | Speech transcription | Yes | No |
+
+<Note>`generate-text` is the default plugin when no plugin ID is specified.</Note>
+
+## Authentication
+
+Protected plugins require either a valid session (cookie-based via NextAuth) or a verified MPP payment credential. If you pay with MPP, session authentication is not required.
+
+## Payment flow
+
+The gateway supports two payment methods per request:
+
+1. **Stripe** — Default. Requires an active subscription or credits. See [Stripe integration](/payments/stripe).
+2. **MPP** — Crypto-native payments on the Tempo blockchain. See [MPP payments](/payments/mpp).
+
+The server selects the payment method using the following priority:
+
+1. `X-Payment-Method` header (`mpp` or `stripe`)
+2. Presence of an `Authorization: Payment` header (implies `mpp`)
+3. Default: `stripe`
+
+### MPP 402 challenge
+
+When an MPP request has no valid credential, the gateway returns `402 Payment Required` with pricing information for both payment methods:
+
+```json
+{
+  "error": "payment_required",
+  "message": "Payment required for agent. Choose payment method: Stripe or Tempo MPP.",
+  "mpp": {
+    "scheme": "Payment",
+    "amount": "0.05",
+    "currency": "0x20c0000000000000000000000000000000000000",
+    "recipient": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+    "description": "Agent orchestrator request",
+    "nonce": "a1b2c3d4e5f6...",
+    "expiresAt": 1742472000000
+  },
+  "stripe": {
+    "checkoutUrl": "/api/v1/payments/stripe/create?plugin=agent",
+    "amount": "0.05",
+    "currency": "usd"
+  }
+}
+```
+
+The `WWW-Authenticate` header is also set:
+
+```
+Payment amount="0.05", currency="0x20c0000000000000000000000000000000000000", recipient="0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+```
+
+## Response
+
+### Success (200)
+
+```json
+{
+  "plugin": "generate-text",
+  "message": "Request processed by generate-text plugin",
+  "timestamp": "2026-03-20T03:33:15.000Z",
+  "payment": {
+    "method": "stripe",
+    "receipt": null
+  }
+}
+```
+
+When paid via MPP, the response includes a `Payment-Receipt` header and the `payment.receipt` field contains the transaction hash.
+
+### Response headers
+
+| Header | Description |
+|--------|-------------|
+| `x-plugin-id` | The plugin that handled the request |
+| `Payment-Receipt` | MPP transaction receipt hash (only present for MPP-paid requests) |
+
+## Error responses
+
+| Status | Error code | Description |
+|--------|-----------|-------------|
+| 401 | `Unauthorized` | Authentication required for a protected plugin and no valid session or MPP credential |
+| 402 | `payment_required` | MPP payment required. Response includes challenge and pricing. |
+| 500 | `internal` | Internal server error |
+| 502 | `no_plugin` | No plugin registered for the given ID |
+
+## Per-agent gateway authentication
+
+Each agent container receives a unique gateway auth token at provisioning time. The internal gateway authenticates requests using token-based auth on port `18789`.
+
+| Field | Description |
+|-------|-------------|
+| `gateway.auth.mode` | `token` |
+| `gateway.auth.token` | Unique hex token auto-generated per container. Provisioning generates a 48-character token (24 bytes of entropy). The container entrypoint generates a 32-character token (16 bytes) if no token is passed via the `OPENCLAW_GATEWAY_TOKEN` environment variable. |
+| `gateway.port` | `18789` |
+
+<Note>The container entrypoint writes its own minimal configuration to `$HOME/.openclaw/openclaw.json` using a slightly different schema (`auth.method` at the top level instead of `gateway.auth.mode`). The provisioning config written by the backend uses the `gateway.auth.mode` path. When the entrypoint runs, it overwrites the provisioning config with its own minimal skeleton. To preserve the full provisioning config, pass the gateway token via the `OPENCLAW_GATEWAY_TOKEN` environment variable so the entrypoint uses the same token.</Note>
+
+## Agent container configuration
+
+When an agent is provisioned, the backend generates an OpenClaw configuration with the following parameters. These values are set automatically and cannot be overridden by the caller.
+
+### Container environment variables
+
+The following environment variables are set on every agent container at launch:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `HOME` | `/home/node` | Home directory for the `node` user that the official OpenClaw image runs as |
+| `TERM` | `xterm-256color` | Terminal type |
+| `NODE_COMPILE_CACHE` | `/var/tmp/openclaw-compile-cache` | Directory for the Node.js compile cache. Speeds up cold starts by caching compiled bytecode across process restarts. |
+| `OPENCLAW_NO_RESPAWN` | `1` | When set to `1`, prevents the OpenClaw process from automatically respawning after exit. Container-level restart policies (Docker `--restart` or orchestrator health checks) handle process recovery instead. |
+| `OPENCLAW_GATEWAY_TOKEN` | Auto-generated | Gateway authentication token. When not set, the entrypoint generates a 32-character hex token. See [per-agent gateway authentication](#per-agent-gateway-authentication). |
+| `OPENCLAW_GATEWAY_PORT` | `18789` | Port the gateway listens on inside the container |
+| `AGENTBOT_USER_ID` | Per-user | Owner user ID passed at provisioning time |
+| `AGENTBOT_PLAN` | `solo` | Subscription plan tier (`solo`, `collective`, `label`, or `network`) |
+| `AGENTBOT_MODE` | `home` | Installation mode (`home` for self-hosted, `link` for existing OpenClaw) |
+| `AGENTBOT_API_KEY` | Per-user | API key for authenticating with the Agentbot platform |
+
+### Gateway settings
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `gateway.bind` | `loopback` | Bind address for the gateway. The container entrypoint overrides this to `loopback` via the `--bind loopback` CLI flag, so the gateway only listens on `127.0.0.1`. Docker port mapping forwards external traffic to the loopback address inside the container. The provisioning config sets `lan` but the entrypoint takes precedence at runtime. |
+| `gateway.port` | `18789` | Internal gateway port |
+| `gateway.auth.mode` | `token` | Authentication mode |
+| `gateway.auth.rateLimit.maxAttempts` | `10` | Maximum authentication attempts before lockout |
+| `gateway.auth.rateLimit.windowMs` | `60000` | Rate limit window in milliseconds (1 minute) |
+| `gateway.auth.rateLimit.lockoutMs` | `300000` | Lockout duration in milliseconds (5 minutes) |
+| `gateway.auth.rateLimit.exemptLoopback` | `true` | Exempt loopback addresses from rate limiting |
+| `gateway.auth.allowTailscale` | `true` | Allow Tailscale network connections |
+| `gateway.controlUi.enabled` | `true` | Gateway control UI is enabled in containers. |
+
+### Tool settings
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `tools.profile` | `messaging` or `coding` | `messaging` for solo plan, `coding` for all other plans |
+| `tools.deny` | `["browser", "canvas"]` | Tools disabled in container environments |
+| `tools.exec.allowedCommands` | Array of whitelisted commands | Commands the agent is permitted to execute (includes `git`, `node`, `npm`, `python3`, `curl`, `ls`, `cat`, `grep`, `find`, `wget`, `mkdir`, `cp`, `mv`, `rm`, `echo`, `date`, `whoami`, `chmod`, `chown`, `touch`, `head`, `tail`, `wc`, `sort`, `uniq`, `awk`, `sed`, `tar`, `zip`, `unzip`, `docker`, `ps`, `df`, `du`) |
+| `tools.exec.allowedPaths` | `["~/.openclaw/workspace", "/tmp", "/home/node"]` | Filesystem paths the agent can access. The official OpenClaw image runs as the `node` user (`/home/node`). Configuration is stored at `/home/node/.openclaw/openclaw.json`. |
+| `tools.exec.denyPaths` | `["/etc/shadow", "/etc/passwd", "/proc", "/sys"]` | Filesystem paths the agent is blocked from accessing |
+| `tools.web.maxChars` | `50000` | Maximum characters returned from web tool requests |
+| `tools.loopDetection.maxIterations` | `20` | Maximum loop iterations before the agent is interrupted |
+| `tools.loopDetection.windowMinutes` | `5` | Time window for loop detection |
+
+### Session settings
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `session.maxTokens` | `100000` | Maximum tokens per session |
+| `session.compaction.strategy` | `auto` | Automatic context compaction strategy |
+| `session.compaction.triggerAtPercent` | `80` | Compaction triggers when token usage reaches this percentage |
+
+### Agent defaults
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `agents.defaults.workspace` | `~/.openclaw/workspace` | Default workspace directory |
+| `agents.defaults.imageMaxDimensionPx` | `1200` | Maximum image dimension in pixels (optimizes vision token usage) |
+| `agents.defaults.userTimezone` | `Europe/London` | Default timezone (overridden by signup timezone when available) |
+| `agents.defaults.timeFormat` | `24h` | Time format |
+| `agents.defaults.compaction.maxMessages` | `200` | Maximum messages before compaction |
+| `agents.defaults.compaction.keepLastN` | `20` | Number of recent messages preserved after compaction |
+| `agents.defaults.heartbeat.every` | `30m` | Self-monitoring heartbeat interval |
+| `agents.defaults.skipBootstrap` | `false` | Whether to skip the bootstrap phase |
+| `agents.defaults.bootstrapMaxChars` | `4000` | Maximum characters for bootstrap content |
+
+## Health monitoring
+
+The gateway monitors channel health for each agent container. When a channel becomes unresponsive, the gateway can automatically restart it.
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `channelHealthCheckMinutes` | `5` | Interval between health checks for each channel |
+| `channelStaleEventThresholdMinutes` | `30` | Channel is considered stale if no events are received within this window |
+| `channelMaxRestartsPerHour` | `10` | Maximum number of automatic channel restarts per hour |
+
+## CORS
+
+The gateway supports CORS preflight via `OPTIONS /api/v1/gateway`. Allowed methods are `POST` and `OPTIONS`. The `Authorization`, `Content-Type`, `X-Plugin-Id`, and `X-Payment-Method` headers are permitted.
+
+## Rate limits
+
+| Endpoint | Limit |
+|----------|-------|
+| `/api/v1/gateway` | 100/min |
+
+## Examples
+
+### Route a request to the agent plugin (Stripe)
+
+```bash
+curl -X POST https://agentbot.raveculture.xyz/api/v1/gateway \
+  -H "Content-Type: application/json" \
+  -H "X-Plugin-Id: agent" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{"messages": [{"role": "user", "content": "Summarize my tasks"}]}'
+```
+
+### Route a request with MPP payment
+
+```bash
+curl -X POST https://agentbot.raveculture.xyz/api/v1/gateway \
+  -H "Content-Type: application/json" \
+  -H "X-Plugin-Id: generate-text" \
+  -H "Authorization: Payment {\"scheme\":\"Payment\",\"transaction\":\"0x76...\",\"challengeNonce\":\"abc123\"}" \
+  -d '{"messages": [{"role": "user", "content": "Hello"}]}'
+```

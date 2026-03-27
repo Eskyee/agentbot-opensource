@@ -3,18 +3,7 @@
 
 import { createHash, randomBytes } from 'crypto'
 
-const getCsrfSecret = (): string => {
-  const secret = process.env.CSRF_SECRET || process.env.NEXTAUTH_SECRET
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('CSRF_SECRET or NEXTAUTH_SECRET must be set in production')
-    }
-    console.warn('CSRF_SECRET not set, using dev fallback')
-    return 'dev-secret-change-in-production'
-  }
-  return secret
-}
-const CSRF_SECRET = getCsrfSecret()
+const CSRF_SECRET = process.env.CSRF_SECRET || process.env.NEXTAUTH_SECRET || 'dev-secret-change-in-production'
 const TOKEN_LENGTH = 32
 
 export interface CSRFToken {

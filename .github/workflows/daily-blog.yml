@@ -1,8 +1,9 @@
 name: Daily Blog Post
 
-# Disabled — requires content generation setup
 on:
-  workflow_dispatch:
+  schedule:
+    - cron: '0 9 * * *'  # 9am UTC (9am UK time in winter, 8am UK in summer)
+  workflow_dispatch:  # Allow manual trigger
 
 permissions:
   contents: write
@@ -10,6 +11,29 @@ permissions:
 jobs:
   generate-blog-post:
     runs-on: ubuntu-latest
-    if: false
+    
     steps:
-      - run: echo "Disabled — re-enable when blog content pipeline is ready"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Generate blog post
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          node scripts/generate-daily-blog.js
+      
+      - name: Commit and push
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add web/app/blog/posts/
+          git add web/app/blog/page.tsx
+          git diff --staged --quiet || git commit -m "Auto: Daily blog post $(date +%Y-%m-%d)"
+          git push

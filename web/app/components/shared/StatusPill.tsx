@@ -12,7 +12,7 @@ const STATUS_STYLES: Record<string, string> = {
   active: 'bg-green-500/20 text-green-400 border-green-500/30',
   idle: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
   error: 'bg-red-500/20 text-red-400 border-red-500/30',
-  offline: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+  offline: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
 };
 
 export default function StatusPill({ status, label, size = 'md' }: StatusPillProps) {
@@ -29,7 +29,7 @@ export default function StatusPill({ status, label, size = 'md' }: StatusPillPro
         'bg-green-400': status === 'active',
         'bg-yellow-400': status === 'idle',
         'bg-red-400': status === 'error',
-        'bg-gray-400': status === 'offline' || !STATUS_STYLES[status],
+        'bg-zinc-400': status === 'offline' || !STATUS_STYLES[status],
       })} />
       {label ?? status}
     </span>

@@ -1,0 +1,132 @@
+---
+title: API keys
+description: "Bring your own AI API keys"
+---
+
+# API keys
+
+Agentbot uses a "bring your own keys" model for AI providers. You control your AI costs directly.
+
+<Note>This page covers third-party AI provider keys. For Agentbot platform API keys (prefixed with `sk_`), see the [keys API reference](/api-reference/keys).</Note>
+
+## Supported Providers
+
+### OpenRouter (Recommended)
+
+Best for: General use, wide model selection
+
+```bash
+OPENROUTER_API_KEY=sk-or-v1-xxxxx
+```
+
+Models available:
+- Anthropic: Claude 3.5 Sonnet, Claude 3 Opus
+- OpenAI: GPT-4, GPT-4 Turbo
+- Google: Gemini Pro
+- Meta: Llama 3
+- And 200+ more
+
+### Anthropic
+
+Best for: Highest quality reasoning
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-xxxxx
+```
+
+### OpenAI
+
+Best for: GPT-4 features
+
+```bash
+OPENAI_API_KEY=sk-xxxxx
+```
+
+### Google AI
+
+Best for: Gemini models
+
+```bash
+GOOGLE_API_KEY=AIzaSyxxxxx
+```
+
+## Adding API Keys
+
+### Via Dashboard
+
+1. Go to **Settings → API Keys**
+2. Click **Add Key**
+3. Select provider
+4. Paste your key
+5. Click **Save**
+
+### Via Environment Variable
+
+Set in your deployment:
+
+```bash
+# For all agents
+OPENROUTER_API_KEY=sk-or-...
+
+# Per-agent override
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+## Cost Tracking
+
+Monitor your usage in **Dashboard → Costs**:
+
+- API calls by agent
+- Token usage (input/output)
+- Cost per model
+- Daily/weekly/monthly reports
+
+## Rate Limits
+
+Each provider has rate limits:
+
+| Provider | Requests/min | Tokens/min |
+|----------|-------------|------------|
+| OpenRouter | 1000 | 100,000 |
+| Anthropic | 50 | 100,000 |
+| OpenAI | 500 | 150,000 |
+| Google | 60 | 60,000 |
+
+## Best Practices
+
+1. **Use OpenRouter** - Best model selection, competitive pricing
+2. **Set budgets** - Monitor costs in dashboard
+3. **Rotate keys** - Update keys periodically
+4. **Don't commit keys** - Use environment variables only
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion icon="error" title="Invalid API Key">
+
+Check:
+- Key is correct and not expired
+- Has sufficient credits/quota
+- Correct format for provider
+
+</Accordion>
+
+<Accordion icon="error" title="Rate Limited">
+
+- Wait and retry
+- Upgrade plan for higher limits
+- Use OpenRouter for more capacity
+
+</Accordion>
+
+<Accordion icon="error" title="Models Not Available">
+
+Some models require approval:
+- Apply for OpenRouter Prime
+- Enable in Anthropic console
+- Check Google AI quota
+
+</Accordion>
+
+</AccordionGroup>

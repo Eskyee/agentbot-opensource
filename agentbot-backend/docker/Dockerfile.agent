@@ -1,0 +1,19 @@
+# Agentbot - OpenClaw Agent Container (Official Image)
+FROM ghcr.io/openclaw/openclaw:2026.3.24
+
+# Performance tuning (from OpenClaw docs)
+ENV NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+ENV OPENCLAW_NO_RESPAWN=1
+
+# Copy custom entrypoint
+COPY entrypoint.sh /entrypoint.sh
+USER root
+RUN chmod 755 /entrypoint.sh && mkdir -p /var/tmp/openclaw-compile-cache && chown node:node /var/tmp/openclaw-compile-cache
+USER node
+
+# Health check — use Node.js (curl not in official image)
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 --start-period=20s \
+    CMD node -e "fetch('http://127.0.0.1:18789/healthz').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+EXPOSE 18789 18790
+ENTRYPOINT ["/entrypoint.sh"]

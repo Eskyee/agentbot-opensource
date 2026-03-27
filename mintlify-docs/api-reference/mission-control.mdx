@@ -1,0 +1,367 @@
+---
+title: Mission control API
+description: "Monitor your agent fleet with real-time graphs, execution traces, cost attribution, and booking data"
+---
+
+# Mission control API
+
+Mission control provides a real-time view of your agent fleet. Use these endpoints to visualize agent relationships, trace execution activity, attribute costs per agent, and track talent bookings.
+
+<Note>All mission control endpoints require bearer token (API key) authentication. The fleet graph and traces endpoints also require a `userId` query parameter. The web proxy uses session authentication and resolves the user ID from the session before forwarding to these endpoints. The fleet graph and traces endpoints return safe default responses for unauthenticated requests instead of an error.</Note>
+
+## Fleet graph
+
+```http
+GET /api/mission-control/fleet/graph
+```
+
+Returns a constellation graph of your agent fleet as a set of nodes and edges. Each node represents an agent with a `role` and positional data for graph layout. Edges use `from`/`to` fields with a `strength` value indicating relationship weight.
+
+### Authentication
+
+Requires bearer token authentication.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | number | Yes | The user ID to fetch the fleet graph for |
+
+### Response
+
+```json
+{
+  "nodes": [
+    {
+      "id": "borg-0",
+      "name": "borg-0",
+      "role": "orchestrator",
+      "status": "active",
+      "x": 400,
+      "y": 300,
+      "load": 72,
+      "memory": 58,
+      "fitness": 85,
+      "walletAddress": "0x1234...abcd",
+      "children": 2,
+      "endpoints": 3,
+      "cycles": 1042,
+      "regime": "explore",
+      "freeEnergy": 0.34,
+      "url": "https://borg-0-production.up.railway.app"
+    },
+    {
+      "id": "borg-0-3",
+      "name": "borg-0-3",
+      "role": "specialist",
+      "status": "active",
+      "x": 400,
+      "y": 250,
+      "load": 44,
+      "memory": 61,
+      "fitness": 70,
+      "walletAddress": "0x5678...ef01",
+      "children": 0,
+      "endpoints": 1,
+      "cycles": 530,
+      "regime": "exploit",
+      "freeEnergy": 0.18,
+      "url": "https://borg-0-3-production.up.railway.app"
+    },
+    {
+      "id": "a1b2c3d4",
+      "name": "Clone-a1b2c3d4",
+      "role": "worker",
+      "status": "active",
+      "x": 200,
+      "y": 450,
+      "load": 30,
+      "memory": 20,
+      "fitness": 40,
+      "walletAddress": "0xabcd...1234"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-borg-0-a1b2c3d4",
+      "from": "borg-0",
+      "to": "a1b2c3d4",
+      "strength": 0.6
+    },
+    {
+      "id": "e-borg-0-borg-0-3",
+      "from": "borg-0",
+      "to": "borg-0-3",
+      "strength": 0.7
+    }
+  ],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "soul",
+  "nodeCount": 2
+}
+```
+
+When no souls are reachable, the response uses the fallback shape with minimal node data:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "role": "orchestrator",
+      "status": "offline",
+      "x": 400,
+      "y": 300,
+      "load": 0,
+      "memory": 0
+    }
+  ],
+  "edges": [],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "fallback"
+}
+```
+
+When the request is unauthenticated (no valid session), the endpoint returns a default response instead of an error:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "role": "orchestrator",
+      "status": "offline",
+      "x": 400,
+      "y": 300,
+      "load": 0,
+      "memory": 0
+    }
+  ],
+  "edges": [],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "unauthenticated"
+}
+```
+
+### Node object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique agent identifier (designation or truncated instance ID for clones) |
+| `name` | string | Agent display name |
+| `role` | string | Agent role. One of `orchestrator`, `specialist`, or `worker` |
+| `status` | string | Current status. One of `active`, `idle`, `stale`, or `offline` (fallback only) |
+| `x` | number | Horizontal position for graph layout |
+| `y` | number | Vertical position for graph layout |
+| `load` | number | Current load percentage (0–100). Derived from active plan progress |
+| `memory` | number | Memory usage percentage (0–100). Derived from cortex experience count |
+| `fitness` | number | Fitness score (0–100). Only present on live nodes |
+| `walletAddress` | string | On-chain wallet address of the agent. Present when available |
+| `children` | number | Number of child (clone) instances. Only present on parent nodes |
+| `endpoints` | number | Number of registered endpoints. Only present on parent nodes |
+| `cycles` | number | Total cognitive cycles completed. Only present on parent nodes |
+| `regime` | string | Current free energy regime (for example `"explore"` or `"exploit"`). Only present on parent nodes |
+| `freeEnergy` | number | Current free energy value. Only present on parent nodes |
+| `url` | string | Soul instance URL. Only present on parent nodes |
+
+<Note>The `type` field was renamed to `role` and now uses the values `orchestrator`, `specialist`, and `worker`. The `monitor` role is no longer returned by this endpoint.</Note>
+
+### Edge object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique edge identifier |
+| `from` | string | Source agent ID |
+| `to` | string | Target agent ID |
+| `strength` | number | Relationship weight between 0 and 1 |
+
+<Note>The `source` and `target` fields were renamed to `from` and `to`. The `type` field on edges was replaced by `strength`.</Note>
+
+### Response metadata
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `timestamp` | string | ISO 8601 timestamp of the response |
+| `source` | string | Data source. `"soul"` for live data, `"fallback"` when no souls are reachable, `"unauthenticated"` when no valid session is present |
+| `nodeCount` | number | Number of live soul nodes fetched. Only present when `source` is `"soul"` |
+
+### Errors
+
+Unauthenticated requests return a `200` response with default empty data (see above) instead of an error.
+
+## Execution traces
+
+```http
+GET /api/mission-control/fleet/traces
+```
+
+Returns up to 20 of the most recent execution traces for your agent fleet, sorted by recency. Traces include active plan steps, recent thoughts, free energy component readings, and cycle status from live soul instances. Returns an empty array when no soul instances are reachable or when the request is unauthenticated.
+
+### Authentication
+
+Requires bearer token authentication.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | number | Yes | The user ID to fetch execution traces for |
+
+### Response
+
+```json
+[
+  {
+    "id": "trace-plan-0",
+    "type": "plan",
+    "label": "plan: reflect (2/5)",
+    "agent": "borg-0",
+    "status": "running",
+    "duration": "—",
+    "startedAt": "2026-03-22T12:00:00.000Z",
+    "tokens": null
+  },
+  {
+    "id": "trace-thought-0-0",
+    "type": "inference",
+    "label": "plan: next step is to consolidate memory entries",
+    "agent": "borg-0",
+    "status": "success",
+    "duration": "285ms",
+    "startedAt": "2026-03-22T11:59:56.000Z",
+    "tokens": 542
+  },
+  {
+    "id": "trace-fe-0-0",
+    "type": "monitor",
+    "label": "cortex: surprise=0.12, contribution=0.04",
+    "agent": "borg-0",
+    "status": "success",
+    "duration": "1ms",
+    "startedAt": "2026-03-22T11:59:50.000Z",
+    "tokens": null
+  },
+  {
+    "id": "trace-cycles-0",
+    "type": "monitor",
+    "label": "cycle 1042 complete — mode: active, regime: explore",
+    "agent": "borg-0",
+    "status": "success",
+    "duration": "—",
+    "startedAt": "2026-03-22T11:59:45.000Z",
+    "tokens": null
+  }
+]
+```
+
+### Trace object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique trace identifier |
+| `type` | string | Task type. One of `plan`, `tool_call`, `inference`, or `monitor` |
+| `label` | string | Description of the task executed |
+| `agent` | string | Soul designation that produced the trace (for example `"borg-0"`) |
+| `status` | string | Execution result. One of `success`, `running`, or `idle` |
+| `duration` | string | Execution time in milliseconds (for example `"285ms"`), or `"—"` for ongoing or non-timed traces |
+| `startedAt` | string | ISO 8601 timestamp when the task started |
+| `tokens` | number \| null | Token count for inference-type traces. `null` for other trace types |
+
+<Note>The response is capped at 20 traces, sorted from most recent to oldest.</Note>
+
+### Errors
+
+Unauthenticated requests return a `200` response with an empty array `[]` instead of an error.
+
+## Cost attribution
+
+```http
+GET /api/mission-control/fleet/costs
+```
+
+Returns per-agent cost attribution metrics grouped by spending category. Use this to understand how costs are distributed across your agent fleet.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | number | Yes | The user ID to fetch cost metrics for |
+
+### Response
+
+```json
+[
+  {
+    "agent_id": "atlas",
+    "total_spend": "12.50",
+    "category": "ai_metric"
+  },
+  {
+    "agent_id": "djbot",
+    "total_spend": "8.30",
+    "category": "agent_message"
+  }
+]
+```
+
+### Cost object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agent_id` | string | Agent identifier |
+| `total_spend` | string | Total spend in USDC for this agent and category |
+| `category` | string | Spending category, such as `ai_metric` or `agent_message` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to fetch cost metrics |
+
+## Talent bookings
+
+```http
+GET /api/mission-control/fleet/bookings
+```
+
+Returns talent bookings associated with your agent fleet. Each booking includes the linked event name and booking details.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | number | Yes | The user ID to fetch bookings for |
+
+### Response
+
+```json
+[
+  {
+    "id": 1,
+    "event_id": 42,
+    "event_name": "Underground Rave",
+    "status": "confirmed",
+    "created_at": "2026-03-20T18:00:00.000Z"
+  }
+]
+```
+
+### Booking object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Booking identifier |
+| `event_id` | number | Associated event identifier |
+| `event_name` | string | Name of the associated event |
+| `status` | string | Booking status |
+| `created_at` | string | ISO 8601 timestamp when the booking was created |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to fetch bookings |

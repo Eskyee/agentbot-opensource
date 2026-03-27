@@ -1,27 +1,41 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
+import { initDatabase } from './services/db-init';
 import inviteRouter from './invite';
 import undergroundRouter from './underground';
 import missionControlRouter from './mission-control';
 import aiRouter from './routes/ai';
 import renderMcpRouter from './routes/render-mcp';
+import metricsRouter from './routes/metrics';
 import provisionRouter from './routes/provision';
+import teamProvisionRouter from './routes/team-provision';
+import registrationRouter from './routes/registration';
+import agentsRouter from './routes/agents';
+import openclawRouter from './routes/openclaw';
+import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
+import AIProviderService from './services/ai-provider';
+import { startScheduler, stopScheduler } from './scheduler';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
+import path from 'path';
 import { timingSafeEqual, randomBytes } from 'crypto';
 import rateLimit from 'express-rate-limit';
-import path from 'path';
+import { Pool } from 'pg';
 
 dotenv.config();
 
 // Deployment version: track app changes for cache busting
 const DEPLOYMENT_VERSION = '2026.03.14.002';
 
+// Plan resources — matches pricing tiers (Solo £29, Collective £69, Label £149, Network £499)
 const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
-  underground: { memory: '2g', cpus: '1' },
+  solo: { memory: '2g', cpus: '1' },
   collective: { memory: '4g', cpus: '2' },
   label: { memory: '8g', cpus: '4' },
+  network: { memory: '16g', cpus: '4' },
+  // Legacy aliases
+  underground: { memory: '2g', cpus: '1' },
   starter: { memory: '2g', cpus: '1' },
   pro: { memory: '4g', cpus: '2' },
   scale: { memory: '8g', cpus: '4' },
@@ -34,65 +48,118 @@ const getPlanResources = (plan: string) => {
 };
 
 const app = express();
+
+// Trust proxy for accurate client IPs behind Render/Vercel load balancers
+app.set('trust proxy', true);
+app.disable('x-powered-by');
+
+// Security: strip IIS/Express bypass headers
+app.use((req, res, next) => {
+  delete req.headers['x-original-url'];
+  delete req.headers['x-rewrite-url'];
+  delete req.headers['x-forwarded-host'];
+  next();
+});
+
+app.use(express.json({ limit: '1mb' }));
+
+// Structured request logging middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const start = Date.now();
+  const requestId = randomBytes(8).toString('hex');
+
+  // Attach request ID for downstream use
+  (req as Request & { requestId: string }).requestId = requestId;
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const log = {
+      timestamp: new Date().toISOString(),
+      requestId,
+      method: req.method,
+      path: req.originalUrl || req.url,
+      status: res.statusCode,
+      durationMs: duration,
+      ip: req.ip || req.socket.remoteAddress,
+      userAgent: req.headers['user-agent']?.substring(0, 100),
+    };
+    // Use console.info for successful requests, console.warn for 4xx, console.error for 5xx
+    if (res.statusCode >= 500) console.error(JSON.stringify(log));
+    else if (res.statusCode >= 400) console.warn(JSON.stringify(log));
+    else console.info(JSON.stringify(log));
+  });
+
+  next();
+});
+
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.raveculture.xyz,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',');
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (server-to-server, curl, mobile apps)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+}));
+
+// Rate limiting — applied globally, with tighter limits on expensive endpoints
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,       // 1 minute window
+  max: 120,                   // 120 req/min per IP on general routes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please slow down.' },
+});
+const deployLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,                     // 5 deploys/min per IP — prevents container spam
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Deployment rate limit exceeded.' },
+});
+const aiChatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,                    // 30 AI chat req/min per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'AI rate limit exceeded.' },
+});
+app.use('/api/', generalLimiter);
+
 const PORT = process.env.PORT || 3001;
 
-// API key - MUST be set in production
-const API_KEY = process.env.INTERNAL_API_KEY
-if (!API_KEY && process.env.NODE_ENV === 'production') {
-  throw new Error('INTERNAL_API_KEY must be set in production')
+// API key — refuse to start in production without it
+if (!process.env.INTERNAL_API_KEY && process.env.NODE_ENV === 'production') {
+  console.error('FATAL: INTERNAL_API_KEY must be set in production. Refusing to start.');
+  process.exit(1);
 }
-const DEV_API_KEY = 'dev-api-key-build-only'
-const ACTIVE_API_KEY = API_KEY || (process.env.NODE_ENV !== 'production' ? DEV_API_KEY : (() => { throw new Error('INTERNAL_API_KEY must be set'); })())
+const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only';
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.13';
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.24';
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
 const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'google/gemini-2.0-flash';
 const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
-const OPENCLAW_RUNTIME_VERSION = '2026.3.13'
+const OPENCLAW_RUNTIME_VERSION = '2026.3.24'
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-
-// Rate limiting
-const globalLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests, please try again later.' },
-});
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 attempts per 15 minutes
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many authentication attempts.' },
-});
-
-// Middleware
-app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['https://agentbot.com'],
-  credentials: true,
-}));
-app.use(express.json());
-app.use(globalLimiter);
-app.use('/api/invite', inviteRouter);
-app.use('/api/underground', undergroundRouter);
-app.use('/api/mission-control', missionControlRouter);
-app.use('/api/ai', aiRouter); // Universal AI provider routes (OpenRouter)
-app.use('/api/render-mcp', renderMcpRouter); // Render MCP Server integration
-app.use('/api/provision', provisionRouter); // BASEFM agent provisioning
 
 type AgentMetadata = {
   agentId: string;
   createdAt: string;
   plan: string;
-  aiProvider: string;
-  port: number;
-  subdomain: string;
+  aiProvider?: string;
+  port?: number;
+  subdomain?: string;
+  url?: string;
+  status?: string;
+  openclawVersion?: string;
+  botUsername?: string;
+  metadata?: Record<string, unknown>;
   gatewayToken?: string;
+  config?: Record<string, unknown>;
   // Verification fields for Verified Human Badge
   verified?: boolean;
   verificationType?: string;
@@ -330,8 +397,8 @@ const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
       const handle = await fs.open(lockFile, 'wx');
       await handle.close();
       break;
-    } catch (err: any) {
-      if (err.code === 'EEXIST') {
+    } catch (err: unknown) {
+      if ((err as NodeJS.ErrnoException).code === 'EEXIST') {
         retries--;
         await new Promise(resolve => setTimeout(resolve, 100));
         continue;
@@ -441,360 +508,296 @@ const createOpenClawConfig = (
   telegramToken: string,
   aiProvider: string,
   ownerIds?: string[],
+  discordToken?: string,
+  whatsappEnabled?: boolean,
+  userTimezone?: string,
+  plan?: string,
 ): Record<string, unknown> => {
   let model = DEFAULT_MODEL;
+  let fallbacks = ['openai/gpt-4o-mini'];
   const provider = aiProvider || 'openrouter';
 
   if (provider === 'gemini' || provider === 'google') {
     model = 'google/gemini-2.0-flash';
+    fallbacks = ['openrouter/anthropic/claude-sonnet-4-5'];
   } else if (provider === 'groq') {
     model = 'groq/gemma2-9b-it';
+    fallbacks = ['openai/gpt-4o-mini'];
   } else if (provider === 'anthropic') {
     model = 'anthropic/claude-sonnet-4-5';
+    fallbacks = ['openai/gpt-4o'];
   } else if (provider === 'openai') {
     model = 'openai/gpt-4o';
+    fallbacks = ['openai/gpt-4o-mini'];
   } else if (provider === 'openrouter') {
     model = 'moonshotai/kimi-k2.5';
+    fallbacks = ['openrouter/openai/gpt-4o-mini'];
   } else {
     throw new Error(`Unsupported aiProvider: ${provider}`);
   }
 
-  const config: Record<string, unknown> = {
-    // Note: Secrets are now passed via Docker environment variables at runtime
-    agents: {
-      defaults: {
-        model: { primary: model },
-      },
-    },
-    channels: {
-      telegram: {
-        enabled: true,
-        botToken: telegramToken,
-        dmPolicy: 'pairing',
-        allowFrom: [],
-      },
-    },
-    gateway: {
-      mode: 'local',
-      port: 18789,
-    },
-    plugins: {
-      entries: {
-        telegram: {
-          enabled: true,
-        },
-      },
+  // Generate unique gateway auth token per agent
+  const gatewayToken = randomBytes(24).toString('hex');
+
+  // Tool profile per plan — solo gets messaging, others get coding
+  const toolProfile = (plan === 'solo') ? 'messaging' : 'coding';
+
+  const channels: Record<string, unknown> = {
+    defaults: {
+      groupPolicy: 'allowlist',
+      heartbeat: { showOk: false, showAlerts: true, useIndicator: true },
     },
   };
 
-  if (ownerIds && ownerIds.length > 0) {
-    (config.channels as { telegram: Record<string, unknown> }).telegram.allowFrom = ownerIds;
-    (config.channels as { telegram: Record<string, unknown> }).telegram.dmPolicy = 'allowlist';
+  // Telegram channel
+  if (telegramToken) {
+    channels.telegram = {
+      enabled: true,
+      botToken: telegramToken,
+      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
+      allowFrom: ownerIds || [],
+      groups: { '*': { requireMention: true } },
+      historyLimit: 50,
+      replyToMode: 'first',
+      streaming: 'partial',
+      retry: { attempts: 3, minDelayMs: 400, maxDelayMs: 30000, jitter: 0.1 },
+    };
+  }
+
+  // Discord channel
+  if (discordToken) {
+    channels.discord = {
+      enabled: true,
+      token: discordToken,
+      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
+      allowFrom: ownerIds || [],
+      dm: { enabled: true, groupEnabled: false },
+      guilds: {},
+      historyLimit: 20,
+      streaming: 'partial',
+      retry: { attempts: 3, minDelayMs: 500, maxDelayMs: 30000, jitter: 0.1 },
+    };
+  }
+
+  // WhatsApp channel
+  if (whatsappEnabled) {
+    channels.whatsapp = {
+      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
+      allowFrom: ownerIds || [],
+      groups: { '*': { requireMention: true } },
+      sendReadReceipts: true,
+    };
+  }
+
+  const config: Record<string, unknown> = {
+    agents: {
+      defaults: {
+        workspace: '~/.openclaw/workspace',
+        model: { primary: model, fallbacks },
+        imageMaxDimensionPx: 1200,
+        userTimezone: userTimezone || 'Europe/London',
+        timeFormat: '24h',
+        groupChat: {
+          mentionPatterns: ['@agent', 'agent'],
+        },
+        compaction: {
+          maxMessages: 200,
+          keepLastN: 20,
+        },
+        heartbeat: {
+          every: '30m',
+        },
+        skipBootstrap: false,
+        bootstrapMaxChars: 4000,
+      },
+    },
+    channels,
+    gateway: {
+      mode: 'local',
+      port: 18789,
+      bind: 'lan', // Required for Docker — listen on all interfaces, not just loopback
+      auth: {
+        mode: 'token',
+        token: gatewayToken,
+        allowTailscale: true,
+        rateLimit: {
+          maxAttempts: 10,
+          windowMs: 60000,
+          lockoutMs: 300000,
+          exemptLoopback: true,
+        },
+      },
+      channelHealthCheckMinutes: 5,
+      channelStaleEventThresholdMinutes: 30,
+      channelMaxRestartsPerHour: 10,
+      controlUi: {
+        enabled: true,
+      },
+    },
+    tools: {
+      profile: toolProfile,
+      deny: ['browser', 'canvas'], // No browser/canvas in containers
+      exec: {
+        allowedCommands: [
+          'ls', 'cat', 'grep', 'find', 'curl', 'wget', 'git', 'npm', 'node',
+          'python3', 'pip', 'mkdir', 'cp', 'mv', 'rm', 'echo', 'date', 'whoami',
+          'chmod', 'chown', 'touch', 'head', 'tail', 'wc', 'sort', 'uniq',
+          'awk', 'sed', 'tar', 'zip', 'unzip', 'docker', 'ps', 'df', 'du',
+        ],
+        allowedPaths: [
+          '~/.openclaw/workspace',
+          '/tmp',
+          '/home/node',
+        ],
+        denyPaths: [
+          '/etc/shadow',
+          '/etc/passwd',
+          '/proc',
+          '/sys',
+        ],
+      },
+      web: {
+        maxChars: 50000,
+      },
+      loopDetection: {
+        maxIterations: 20,
+        windowMinutes: 5,
+      },
+    },
+    session: {
+      maxTokens: 100000,
+      compaction: {
+        strategy: 'auto',
+        triggerAtPercent: 80,
+      },
+    },
+    plugins: {
+      entries: {},
+    },
+  };
+
+  // Enable plugins based on channels
+  if (telegramToken) {
+    (config.plugins as { entries: Record<string, unknown> }).entries.telegram = { enabled: true };
+  }
+  if (discordToken) {
+    (config.plugins as { entries: Record<string, unknown> }).entries.discord = { enabled: true };
   }
 
   return config;
 };
 
-// Auth middleware — constant-time comparison to prevent timing attacks
-const authenticate = (req: Request, res: Response, next: any) => {
+// Auth middleware — timing-safe to prevent key-enumeration attacks
+const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const token = auth.substring(7);
-
-  if (!ACTIVE_API_KEY) {
-    return res.status(500).json({ error: 'Server misconfiguration' });
-  }
-
-  // Constant-time comparison
-  try {
-    const tokenBuf = Buffer.from(token, 'utf8');
-    const keyBuf = Buffer.from(ACTIVE_API_KEY, 'utf8');
-
-    if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-  } catch {
+  const tokenBuf = Buffer.from(token);
+  const keyBuf = Buffer.from(API_KEY);
+  if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
     return res.status(403).json({ error: 'Forbidden' });
   }
-
   next();
 };
 
-// Health check
-app.get('/health', (req: Request, res: Response) => {
+// Mount sub-routers
+app.use('/api/invite', inviteRouter);
+app.use('/api/underground', undergroundRouter);
+app.use('/api/mission-control', missionControlRouter);
+app.use('/api/ai', authenticate, aiChatLimiter, aiRouter);
+app.use('/api/render-mcp', authenticate, renderMcpRouter);
+app.use('/api/provision', authenticate, provisionRouter);
+app.use('/api/provision/team', authenticate, teamProvisionRouter);
+app.use('/api/metrics', authenticate, metricsRouter);
+app.use('/api/agents', authenticate, agentsRouter);
+app.use('/api/openclaw', authenticate, openclawRouter);
+app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
+
+// Health check — includes Docker status for observability
+app.get('/health', async (req: Request, res: Response) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    mode: process.env.NODE_ENV === 'production' ? 'production' : 'demo',
-    version: DEPLOYMENT_VERSION,
+    docker: dockerAvailable ? 'available' : 'unavailable',
+    provisioning: dockerAvailable ? 'enabled' : 'disabled',
+    provider: 'render',
   });
 });
 
-app.get('/api/openclaw/version', (_req: Request, res: Response) => {
-  res.json({
-    openclawVersion: OPENCLAW_RUNTIME_VERSION,
-    image: OPENCLAW_IMAGE,
-    deployedAt: new Date().toISOString(),
-  });
-});
-
-app.get('/api/openclaw/instances', authenticate, async (_req: Request, res: Response) => {
+// OpenAI-compatible endpoints for RAG/SDK compatibility
+app.get('/v1/models', async (_req: Request, res: Response) => {
   try {
-    const { stdout } = await runCommand('docker', [
-      'ps', 
-      '--filter', 'name=openclaw-', 
-      '--format', '{{.Names}}|{{.Image}}|{{.Status}}|{{.CreatedAt}}'
-    ]);
-    const lines = stdout ? stdout.split('\n').filter(Boolean) : [];
-    const instances = await Promise.all(lines.map(async (line) => {
-      const [name, image, status, createdAt] = line.split('|');
-      const agentId = name.replace('openclaw-', '');
-      const metadata = await readAgentMetadata(agentId);
-      
-      let containerVersion = 'unknown';
-      try {
-        const { stdout: versionOutput } = await runCommand('docker', [
-          'exec', name, 'openclaw', '--version'
-        ]);
-        containerVersion = versionOutput.trim() || 'unknown';
-      } catch {
-        containerVersion = 'unknown';
-      }
-      
-      return {
-        agentId,
-        name,
-        image,
-        status,
-        createdAt,
-        version: containerVersion,
-        metadata,
-      };
-    }));
-    res.json({ instances, count: instances.length });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to list instances' });
-  }
-});
-
-app.get('/api/openclaw/instances/:id/stats', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  
-  try {
-    const { stdout: stats } = await runCommand('docker', [
-      'stats', 
-      containerName, 
-      '--no-stream', 
-      '--format', '{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.NetIO}}|{{.BlockIO}}|{{.PIDs}}'
-    ]);
-    
-    const { stdout: inspect } = await runCommand('docker', [
-      'inspect', 
-      containerName, 
-      '--format', '{{.State.StartedAt}}|{{.State.Status}}'
-    ]);
-    
-    const [cpu, memUsage, memPerc, netIO, blockIO, pids] = stats.trim().split('|');
-    const [startedAt, status] = inspect.trim().split('|');
-    
-    const startTime = new Date(startedAt);
-    const uptime = Date.now() - startTime.getTime();
-    
+    const models = await AIProviderService.getAllModels();
     res.json({
-      agentId: id,
-      cpu: cpu || '0%',
-      memory: memUsage || '0MiB / 0MiB',
-      memoryPercent: memPerc || '0%',
-      network: netIO || '0B / 0B',
-      blockIO: blockIO || '0B / 0B',
-      pids: pids || '0',
-      status: status || 'unknown',
-      uptime: uptime,
-      uptimeFormatted: formatUptime(uptime),
-      timestamp: new Date().toISOString(),
+      object: 'list',
+      data: models.map((m: { id: string; name: string; provider: string }) => ({
+        id: m.id,
+        object: 'model',
+        created: Math.floor(Date.now() / 1000),
+        owned_by: m.provider || 'agentbot',
+      })),
     });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to get container stats' });
+  } catch {
+    res.status(500).json({ error: { message: 'Failed to fetch models', type: 'server_error' } });
   }
 });
 
-function formatUptime(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  
-  if (days > 0) return `${days}d ${hours % 24}h`;
-  if (hours > 0) return `${hours}h ${minutes % 60}m`;
-  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
-  return `${seconds}s`;
-}
-
-// Agents endpoints
-app.get('/api/agents', authenticate, (req: Request, res: Response) => {
-  runCommand('docker', [
-    'ps', '-a', 
-    '--filter', 'name=openclaw-', 
-    '--format', '{{.Names}}|{{.Status}}'
-  ])
-    .then(async ({ stdout }) => {
-      const lines = stdout ? stdout.split('\n') : [];
-      const agents = await Promise.all(lines.filter(Boolean).map(async (line) => {
-        const [name, statusRaw] = line.split('|');
-        const agentId = name.replace('openclaw-', '');
-        const metadata = await readAgentMetadata(agentId);
-        return {
-          id: agentId,
-          status: statusRaw.toLowerCase().includes('up') ? 'active' : 'stopped',
-          created: metadata?.createdAt || new Date().toISOString(),
-          subdomain: metadata?.subdomain || `${agentId}.${AGENTS_DOMAIN}`,
-          url: `https://${metadata?.subdomain || `${agentId}.${AGENTS_DOMAIN}`}`,
-        };
-      }));
-      res.json(agents);
-    })
-    .catch(() => {
-      res.json([]);
-    });
-});
-
-app.post('/api/agents', authenticate, (req: Request, res: Response) => {
-  const { name, config } = req.body;
-  if (!name) {
-    return res.status(400).json({ error: 'Name required' });
-  }
-  res.status(501).json({ error: 'Agent creation not yet implemented. Use /api/deployments instead.' });
-});
-
-app.get('/api/agents/:id', authenticate, (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  Promise.all([containerStatus(containerName), readAgentMetadata(id), getContainerRuntimeVersion(containerName)])
-    .then(([runtime, metadata, openclawVersion]) => {
-      if (!runtime && !metadata) {
-        res.status(404).json({ error: 'Agent not found' });
-        return;
-      }
-
-      const subdomain = metadata?.subdomain || `${id}.${AGENTS_DOMAIN}`;
-      res.json({
-        id,
-        status: runtime?.status || 'stopped',
-        startedAt: runtime?.startedAt || metadata?.createdAt || new Date().toISOString(),
-        plan: metadata?.plan || 'free',
-        subdomain,
-        url: `https://${subdomain}`,
-        openclawVersion,
-        // Include verification status in response
-        verified: metadata?.verified || false,
-        verificationType: metadata?.verificationType || null,
-        attestationUid: metadata?.attestationUid || null,
-        verifiedAt: metadata?.verifiedAt || null,
-      });
-    })
-    .catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : 'Failed to fetch agent';
-      res.status(500).json({ error: message });
-    });
-});
-
-app.put('/api/agents/:id', authenticate, (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Agent update not yet implemented. Use /api/agents/:id/restart or /api/agents/:id/update instead.' });
-});
-
-app.delete('/api/agents/:id', authenticate, (req: Request, res: Response) => {
-  res.status(501).json({ error: 'Agent deletion not yet implemented.' });
-});
-
-// Agent verification endpoints for Verified Human Badge
-app.get('/api/agents/:id/verification', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
+app.get('/v1/models/:model', async (req: Request, res: Response) => {
   try {
-    const metadata = await readAgentMetadata(id);
-    if (!metadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
+    const models = await AIProviderService.getAllModels();
+    const model = models.find((m: { id: string }) => m.id === req.params.model);
+    if (!model) {
+      return res.status(404).json({ error: { message: `Model ${req.params.model} not found`, type: 'invalid_request_error' } });
     }
     res.json({
-      verified: metadata.verified || false,
-      verificationType: metadata.verificationType || null,
-      attestationUid: metadata.attestationUid || null,
-      verifierAddress: metadata.verifierAddress || null,
-      verifiedAt: metadata.verifiedAt || null,
-      metadata: metadata.verificationMetadata || null,
+      id: model.id,
+      object: 'model',
+      created: Math.floor(Date.now() / 1000),
+      owned_by: model.provider || 'agentbot',
     });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to fetch verification status';
-    res.status(500).json({ error: message });
+  } catch {
+    res.status(500).json({ error: { message: 'Failed to fetch model', type: 'server_error' } });
   }
 });
 
-app.post('/api/agents/:id/verify', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { verificationType, verified, attestationUid, verifierAddress, metadata } = req.body;
-
+app.post('/v1/embeddings', authenticate, async (req: Request, res: Response) => {
+  const { input, model } = req.body as { input?: string | string[]; model?: string };
+  if (!input) {
+    return res.status(400).json({ error: { message: 'input is required', type: 'invalid_request_error' } });
+  }
+  // Proxy to OpenRouter embeddings
   try {
-    const existingMetadata = await readAgentMetadata(id);
-    if (!existingMetadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({ error: { message: 'Embeddings not configured', type: 'server_error' } });
     }
-
-    // Update verification fields
-    existingMetadata.verified = verified;
-    existingMetadata.verificationType = verificationType;
-    existingMetadata.attestationUid = attestationUid;
-    existingMetadata.verifierAddress = verifierAddress;
-    existingMetadata.verifiedAt = verified ? new Date().toISOString() : undefined;
-    existingMetadata.verificationMetadata = metadata;
-
-    await writeAgentMetadata(existingMetadata);
-
-    res.json({
-      success: true,
-      verified: existingMetadata.verified,
-      verificationType: existingMetadata.verificationType,
-      attestationUid: existingMetadata.attestationUid,
-      verifiedAt: existingMetadata.verifiedAt,
+    const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input, model: model || 'openai/text-embedding-3-small' }),
     });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to update verification';
-    res.status(500).json({ error: message });
+    const data = await response.json() as Record<string, unknown>;
+    res.json(data);
+  } catch {
+    res.status(500).json({ error: { message: 'Embeddings request failed', type: 'server_error' } });
   }
 });
 
-app.delete('/api/agents/:id/verify', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
+// Install script endpoints
+app.get('/install', (req: Request, res: Response) => {
+  res.type('text/plain');
+  res.sendFile('install.sh', { root: path.join(__dirname, '../public') });
+});
 
-  try {
-    const existingMetadata = await readAgentMetadata(id);
-    if (!existingMetadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-
-    // Remove verification fields
-    existingMetadata.verified = false;
-    existingMetadata.verificationType = undefined;
-    existingMetadata.attestationUid = undefined;
-    existingMetadata.verifierAddress = undefined;
-    existingMetadata.verifiedAt = undefined;
-    existingMetadata.verificationMetadata = undefined;
-
-    await writeAgentMetadata(existingMetadata);
-
-    res.json({ success: true });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to remove verification';
-    res.status(500).json({ error: message });
-  }
+app.get('/link', (req: Request, res: Response) => {
+  res.type('text/plain');
+  res.sendFile('link.sh', { root: path.join(__dirname, '../public') });
 });
 
 // Deployments endpoint
-app.post('/api/deployments', authenticate, async (req: Request, res: Response) => {
+app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, res: Response) => {
   const { agentId, config } = req.body as {
     agentId?: string;
     config?: {
@@ -927,161 +930,6 @@ app.post('/api/deployments', authenticate, async (req: Request, res: Response) =
   }
 });
 
-app.post('/api/agents/:id/start', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    await runCommand('docker', ['start', containerName]);
-    res.json({ success: true, status: 'active' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Start failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/stop', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    await runCommand('docker', ['stop', containerName]);
-    res.json({ success: true, status: 'stopped' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Stop failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/restart', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    const healResult = await healLegacyModelInContainer(containerName);
-    await runCommand('docker', ['restart', containerName]);
-    const openclawVersion = await getContainerRuntimeVersion(containerName);
-    res.json({ success: true, status: 'active', healedLegacyModel: healResult.healed, healMessage: healResult.message, openclawVersion });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Restart failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-app.post('/api/agents/:id/update', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  const requestedImage = typeof req.body?.image === 'string' ? req.body.image.trim() : '';
-  const targetImage = requestedImage || OPENCLAW_IMAGE;
-
-  if (!isValidDockerImage(targetImage)) {
-    res.status(400).json({ error: 'Invalid docker image value' });
-    return;
-  }
-
-  try {
-    const inspect = await getContainerInspect(containerName);
-    const backupPath = await backupContainerData(containerName, inspect);
-    const oldImage = inspect.Config.Image;
-
-    await healLegacyModelInContainer(containerName);
-    await runCommand('docker', ['pull', targetImage]);
-    await runCommand('docker', ['stop', containerName]);
-    await runCommand('docker', ['rm', containerName]);
-
-    try {
-      await recreateContainerWithImage(containerName, inspect, targetImage);
-    } catch (e) {
-      await runCommand('docker', ['rm', '-f', containerName]).catch(() => Promise.resolve());
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-      throw e;
-    }
-
-    res.json({
-      success: true,
-      status: 'active',
-      image: targetImage,
-      previousImage: oldImage,
-      backupPath,
-      openclawVersion: OPENCLAW_RUNTIME_VERSION,
-    });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Update failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-// Get agent gateway token
-app.get('/api/agents/:id/token', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  try {
-    const metadata = await readAgentMetadata(id);
-    if (!metadata) {
-      res.status(404).json({ error: 'Agent not found' });
-      return;
-    }
-    if (!metadata.gatewayToken) {
-      const token = randomBytes(32).toString('hex');
-      metadata.gatewayToken = token;
-      await writeAgentMetadata(metadata);
-    }
-    res.json({ token: metadata.gatewayToken });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Failed to get token';
-    res.status(500).json({ error: message });
-  }
-});
-
-// Repair agent - full reconfigure
-app.post('/api/agents/:id/repair', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    const inspect = await getContainerInspect(containerName);
-    const oldImage = inspect.Config.Image;
-    
-    await healLegacyModelInContainer(containerName);
-    await runCommand('docker', ['stop', containerName]);
-    await runCommand('docker', ['rm', containerName]);
-    
-    try {
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-    } catch (e) {
-      await recreateContainerWithImage(containerName, inspect, oldImage);
-      throw e;
-    }
-    
-    res.json({ success: true, message: 'Agent repaired successfully' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Repair failed';
-    res.status(500).json({ error: message });
-  }
-});
-
-// Reset agent memory
-app.post('/api/agents/:id/reset-memory', authenticate, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const containerName = getContainerName(id);
-  try {
-    const mount = (await getContainerInspect(containerName)).Mounts.find((m) => m.Destination === '/home/node/.openclaw');
-    if (!mount) {
-      res.status(500).json({ error: 'Could not find data mount' });
-      return;
-    }
-    
-    if (mount.Type === 'volume' && mount.Name) {
-      // This command uses shell expansion (*)
-      await runShellCommand(`docker exec ${containerName} sh -lc "rm -rf /home/node/.openclaw/agents/*/memory /home/node/.openclaw/agents/*/identity 2>/dev/null || true"`);
-    } else if (mount.Type === 'bind' && mount.Source) {
-      // This command uses shell expansion (*)
-      await runShellCommand(`rm -rf "${mount.Source}"/agents/*/memory "${mount.Source}"/agents/*/identity 2>/dev/null || true`);
-    }
-    
-    await runCommand('docker', ['restart', containerName]);
-    res.json({ success: true, message: 'Memory reset successfully' });
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Reset failed';
-    res.status(500).json({ error: message });
-  }
-});
-
 const OPENCLAW_REPO = 'OpenClaw/openclaw';
 const AUTO_UPDATE_INTERVAL = process.env.AUTO_UPDATE_INTERVAL || '0 3 * * *';
 
@@ -1108,37 +956,74 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
 }
 
 async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number }> {
+  // Check Docker availability first
+  try {
+    await runCommand('docker', ['version', '--format', '{{.Server.Version}}']);
+  } catch (err: any) {
+    console.warn('[Auto-Update] Docker not available — skipping container updates');
+    return { success: 0, failed: 0 };
+  }
+
   const portsFileContent = await fs.readFile(portsFilePath(), 'utf8').catch(() => '{}');
   const ports = JSON.parse(portsFileContent) as Record<string, number>;
   const results = { success: 0, failed: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
-  
-  for (const agentId of Object.keys(ports)) {
-    const containerName = getContainerName(agentId);
-    try {
+  const agentIds = Object.keys(ports);
+
+  if (agentIds.length === 0) {
+    console.log('[Auto-Update] No containers to update');
+    return results;
+  }
+
+  // Pull the image once before touching any containers
+  console.log(`[Auto-Update] Pulling image ${newImage}...`);
+  try {
+    await runCommand('docker', ['pull', newImage]);
+  } catch (err: any) {
+    console.error('[Auto-Update] Failed to pull image:', err.message);
+    return { success: 0, failed: 0 };
+  }
+
+  // Update in parallel batches of 5 so we don't overwhelm the host
+  const CONCURRENCY = 5;
+  for (let i = 0; i < agentIds.length; i += CONCURRENCY) {
+    const batch = agentIds.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.allSettled(batch.map(async (agentId) => {
+      const containerName = getContainerName(agentId);
       console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
-      await runCommand('docker', ['pull', newImage]);
+
+      // MED-04 FIX: Read agent metadata so we can restore plan-specific resource
+      // limits when the container is recreated. Without this, every container
+      // would restart without --memory / --cpus constraints, effectively giving
+      // every agent unlimited host resources after an auto-update.
+      const metadata = await readAgentMetadata(agentId);
+      const resources = getPlanResources(metadata?.plan || 'starter');
+
       await runCommand('docker', ['stop', containerName]);
       await runCommand('docker', ['rm', containerName]);
-      
       const port = await getNextPortAndAssign(agentId);
-      
       await runCommand('docker', [
         'run', '-d',
         '--name', containerName,
         '--restart', 'unless-stopped',
-        '-v', `agentbot-${agentId}:/home/node/.openclaw`,
+        '--memory', resources.memory,
+        '--cpus', resources.cpus,
+        '-v', `openclaw-data-${agentId}:/home/node/.openclaw`,
         '-p', `${port}:18789`,
         newImage,
       ]);
-      
-      results.success++;
-    } catch (error) {
-      console.error(`[Auto-Update] Failed to update ${agentId}:`, error);
-      results.failed++;
+    }));
+
+    for (const result of batchResults) {
+      if (result.status === 'fulfilled') {
+        results.success++;
+      } else {
+        console.error(`[Auto-Update] Batch failure:`, result.reason);
+        results.failed++;
+      }
     }
   }
-  
+
   return results;
 }
 
@@ -1168,13 +1053,129 @@ function startAutoUpdater() {
   console.log('[Auto-Update] Auto-updater started');
 }
 
+/**
+ * POST /api/subscriptions/deploy
+ * Called by the Stripe webhook (via frontend) when a checkout completes.
+ * Records the subscription → plan mapping so the next agent deployment
+ * picks up the correct resource tier.
+ */
+app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Response) => {
+  const { tier, customerId, subscriptionId, stripeCustomerId } = req.body as {
+    tier?: string;
+    customerId?: string;
+    subscriptionId?: string;
+    stripeCustomerId?: string;
+  };
+
+  if (!customerId && !stripeCustomerId) {
+    res.status(400).json({ error: 'customerId is required' });
+    return;
+  }
+  if (!tier) {
+    res.status(400).json({ error: 'tier is required' });
+    return;
+  }
+
+  const validTiers = Object.keys(PLAN_RESOURCES);
+  if (!validTiers.includes(tier)) {
+    res.status(400).json({ error: `Invalid tier. Valid tiers: ${validTiers.join(', ')}` });
+    return;
+  }
+
+  try {
+    await ensureDataDirs();
+
+    // Persist subscription metadata so provisioning endpoints can read it
+    const id = (stripeCustomerId || customerId) as string;
+    const subscriptionFile = path.join(DATA_DIR, 'subscriptions', `${id.replace(/[^a-zA-Z0-9_-]/g, '_')}.json`);
+    await fs.mkdir(path.join(DATA_DIR, 'subscriptions'), { recursive: true });
+    await fs.writeFile(subscriptionFile, JSON.stringify({
+      customerId: id,
+      subscriptionId: subscriptionId || null,
+      tier,
+      plan: tier,
+      resources: PLAN_RESOURCES[tier],
+      activatedAt: new Date().toISOString(),
+    }, null, 2));
+
+    console.log(`[Subscriptions] Activated tier "${tier}" for customer ${id} (sub: ${subscriptionId})`);
+
+    res.json({
+      success: true,
+      customerId: id,
+      subscriptionId,
+      tier,
+      resources: PLAN_RESOURCES[tier],
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Subscription activation failed';
+    console.error('[Subscriptions] Deploy error:', message);
+    res.status(500).json({ error: message });
+  }
+});
+
+// NOTE: Routes for /api/ai, /api/provision, /api/metrics, /api/render-mcp,
+// /api/agents, and /api/openclaw are already mounted above with Bearer token
+// authentication. Do NOT re-mount them here without auth.
+
+// Initialize database schema on startup.
+// In production, a DB failure is fatal — don't serve traffic with a broken schema.
+initDatabase().then(() => {
+  console.log('[DB] Ready');
+}).catch(err => {
+  console.error('[DB] Init error:', err.message);
+  if (process.env.NODE_ENV === 'production') {
+    console.error('[DB] Refusing to serve in production with failed schema. Exiting.');
+    process.exit(1);
+  }
+});
+
+// Check Docker availability at startup (non-fatal — container provisioning degrades gracefully)
+const checkProvisioning = async () => {
+  // Check Render API availability (replaces Docker check)
+  const apiKey = process.env.RENDER_API_KEY;
+  if (!apiKey) {
+    console.warn('[Provisioning] RENDER_API_KEY not set — provisioning disabled');
+    return false;
+  }
+  try {
+    const res = await fetch('https://api.render.com/v1/services?limit=1', {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      console.log('[Provisioning] Render API available — container provisioning enabled');
+      return true;
+    }
+    console.warn(`[Provisioning] Render API returned ${res.status} — provisioning disabled`);
+    return false;
+  } catch (err: any) {
+    console.warn('[Provisioning] Render API unreachable — provisioning disabled. Error:', err.code || err.message);
+    return false;
+  }
+};
+
+let dockerAvailable = false;
+checkProvisioning().then(available => { dockerAvailable = available; });
+
 app.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log('Routes: /health, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
+  console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
+  
+  // Start inline scheduler (replaces separate worker service)
+  startScheduler();
+  
   if (process.env.NODE_ENV === 'production') {
     startAutoUpdater();
   }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('[API] Shutting down...');
+  stopScheduler();
+  process.exit(0);
 });
 
 export default app;

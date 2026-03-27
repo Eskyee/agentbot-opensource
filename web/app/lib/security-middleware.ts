@@ -18,9 +18,9 @@ try {
       token: process.env.REDIS_TOKEN || '',
     })
     console.log('[SECURITY] Redis rate limiting enabled')
-  } else if (process.env.NODE_ENV === 'production') {
-    console.warn('[SECURITY] ⚠️  REDIS_URL not set — rate limiting uses in-memory fallback which resets on cold starts. Set REDIS_URL for persistent rate limiting.')
   }
+  // Note: In-memory rate limiting is fine for demos and low-traffic deployments.
+  // Set REDIS_URL for persistent rate limiting in production.
 } catch (error) {
   console.warn('[SECURITY] Redis not available, using in-memory rate limiting')
 }

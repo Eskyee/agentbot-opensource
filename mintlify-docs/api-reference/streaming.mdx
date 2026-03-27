@@ -1,0 +1,202 @@
+---
+title: Streaming API
+description: "Mux-powered live streaming, video generation, and webhook endpoints"
+---
+
+# Streaming API
+
+Endpoints for live streaming via Mux, video generation, and streaming webhook processing.
+
+## List live streams
+
+```http
+GET /api/basefm/live
+```
+
+Returns all currently active Mux live streams. No authentication required.
+
+### Response
+
+```json
+{
+  "djs": [
+    {
+      "id": "aB1cD2eF3g",
+      "name": "DJ Rave",
+      "wallet": "0x1234...abcd",
+      "playbackId": "xYz789",
+      "streamKey": "sk-ab12-cd34-ef56",
+      "status": "active",
+      "startedAt": 1710806400,
+      "hlsUrl": "https://stream.mux.com/xYz789.m3u8",
+      "embedUrl": "https://stream.mux.com/xYz789.html"
+    }
+  ],
+  "count": 1
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `djs[].id` | string | Mux live stream ID |
+| `djs[].name` | string | DJ display name (defaults to `Anonymous DJ`) |
+| `djs[].wallet` | string \| null | DJ wallet address from stream metadata |
+| `djs[].playbackId` | string \| null | Mux playback ID |
+| `djs[].streamKey` | string | RTMP stream key |
+| `djs[].status` | string | Stream status (`active`) |
+| `djs[].startedAt` | number | Unix timestamp when the stream was created |
+| `djs[].hlsUrl` | string \| null | HLS playlist URL for playback |
+| `djs[].embedUrl` | string \| null | Embeddable player URL |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Mux is not configured or an internal error occurred |
+
+## Create live stream
+
+```http
+POST /api/basefm/streams
+```
+
+Creates a new Mux live stream. Access is gated by RAVE token balance — the caller's wallet must hold at least 1,250,000 RAVE tokens on the Base network.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `wallet` | string | Yes | Wallet address of the DJ. Used for RAVE token balance verification. |
+| `name` | string | No | DJ display name (default: `Anonymous DJ`) |
+
+### Response (200)
+
+```json
+{
+  "success": true,
+  "stream": {
+    "id": "aB1cD2eF3g",
+    "name": "DJ Rave",
+    "wallet": "0x1234...abcd",
+    "streamKey": "sk-ab12-cd34-ef56",
+    "rtmpUrl": "rtmp://global-live.mux.com:5222/app",
+    "fullRtmpUrl": "rtmp://global-live.mux.com:5222/app/sk-ab12-cd34-ef56",
+    "playbackId": "xYz789",
+    "status": "created"
+  },
+  "obsSettings": {
+    "server": "rtmp://global-live.mux.com:5222/app",
+    "streamKey": "sk-ab12-cd34-ef56",
+    "recommended": {
+      "audioBitrate": "256-320 kbps",
+      "encoder": "AAC",
+      "sampleRate": "44.1 kHz",
+      "channels": "Stereo"
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `stream.id` | string | Mux live stream ID |
+| `stream.streamKey` | string | RTMP stream key |
+| `stream.rtmpUrl` | string | RTMP ingest server URL |
+| `stream.fullRtmpUrl` | string | Full RTMP URL including stream key (for OBS) |
+| `stream.playbackId` | string \| null | Mux playback ID for viewers |
+| `obsSettings.recommended` | object | Recommended OBS audio encoding settings |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Wallet address required |
+| 403 | Insufficient RAVE tokens. The wallet must hold at least 1,250,000 RAVE. |
+| 500 | Mux is not configured or stream creation failed |
+
+## Generate video
+
+```http
+POST /api/generate-video
+```
+
+Generates a video and uploads it to blob storage. Requires session authentication. This endpoint has a 5-minute timeout.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | Video type. One of: `demo`, `marketing`, `screenshot`, `tutorial`. |
+| `agentName` | string | For `demo` | Agent name for the demo video |
+| `agentDescription` | string | For `demo` | Agent description for the demo video |
+| `productName` | string | For `marketing` | Product name for the marketing video |
+| `features` | any | For `marketing` | Product features for the marketing video |
+| `imageUrl` | string | For `screenshot` | Image URL to animate |
+| `description` | string | For `screenshot` | Description for the animation |
+| `topic` | string | For `tutorial` | Tutorial topic |
+| `steps` | any | For `tutorial` | Tutorial steps |
+
+### Response
+
+```json
+{
+  "url": "https://blob-storage-url/videos/1710806400000.mp4"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid video type |
+| 401 | Unauthorized — session required |
+| 500 | Video generation or upload failed |
+
+## Mux webhooks
+
+```http
+POST /api/webhooks/mux
+```
+
+Receives and processes Mux webhook events. This endpoint verifies the request signature using HMAC-SHA256 and rejects unsigned, expired, or tampered requests.
+
+<Warning>This endpoint is intended to be called by Mux only. You must configure the `MUX_SIGNING_SECRET` (or `MUX_WEBHOOK_SECRET`) environment variable for signature verification. When the signing secret is not configured, all requests are rejected.</Warning>
+
+### Headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `mux-signature` | Yes | Mux webhook signature in the format `t=<timestamp>,v1=<signature>` |
+
+### Signature verification
+
+The endpoint performs the following checks:
+
+1. Rejects requests missing the `mux-signature` header (`401`)
+2. Rejects requests with a timestamp older than 5 minutes to prevent replay attacks (`403`)
+3. Computes HMAC-SHA256 over `<timestamp>.<body>` using the signing secret
+4. Performs a timing-safe comparison of the computed signature against the provided signature (`403` on mismatch)
+
+### Handled event types
+
+| Event | Behavior |
+|-------|----------|
+| `video.asset.ready` | Archives HD assets (1080p or higher) longer than 15 minutes. Shorter or lower-resolution assets are queued for deletion. |
+| `video.live_stream.active` | Logs that a live stream has become active |
+| `video.live_stream.idle` | Logs that a live stream has stopped |
+
+### Response
+
+```json
+{
+  "received": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing `mux-signature` header |
+| 403 | Invalid signature or expired timestamp |
+| 500 | Webhook processing failed |

@@ -1,0 +1,77 @@
+
+description: "Connect your agent to Telegram"
+
+# Telegram Integration
+
+Connect your Agentbot agent to Telegram for real-time messaging.
+
+## Setup
+
+### Step 1: Create a Bot
+
+1. Open Telegram and search for [@BotFather](https://t.me/BotFather)
+2. Send `/newbot` command
+3. Follow prompts to name your bot
+4. Copy the **bot token**
+
+### Step 2: Connect to Agentbot
+
+1. Go to **Settings → Integrations → Telegram**
+2. Paste your bot token
+3. Click **Connect**
+
+### Step 3: Configure Webhook
+
+Agentbot automatically sets up the webhook. Just start chatting!
+
+## Bot Features
+
+| Feature | Description |
+|---------|-------------|
+| Direct Messages | Private chat with your agent |
+| Group Chats | Add bot to groups (requires /mention) |
+| Commands | Custom /help, /status, etc. |
+| Inline Queries | Search from any chat |
+
+## Custom Commands
+
+Add custom commands via BotFather:
+
+```
+/help - Get help
+/start - Start conversation
+/status - Check agent status
+/settings - Open settings
+```
+
+## Webhook Configuration
+
+For advanced setups, manually configure:
+
+```bash
+# Set webhook
+curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
+  -d "url=https://agentbot.raveculture.xyz/api/webhooks/telegram"
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion icon="error" title="Bot not responding">
+
+1. Check token is correct
+2. Verify webhook is set
+3. Check **Settings → Integrations** to confirm connected
+
+</Accordion>
+
+<Accordion icon="error" title="Group messages not working">
+
+1. Bot must be admin in group
+2. Group privacy must be disabled
+3. Use @mention to trigger agent
+
+</Accordion>
+
+</AccordionGroup>

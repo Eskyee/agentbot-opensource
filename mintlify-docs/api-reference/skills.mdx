@@ -1,0 +1,408 @@
+---
+title: Skills API
+description: "API endpoints for the agent skills marketplace"
+---
+
+# Skills API
+
+Use skill endpoints to extend your agents with specialized capabilities.
+
+## Base URL
+
+```
+https://agentbot.raveculture.xyz/api/skills
+```
+
+## List skills
+
+```http
+GET /api/skills
+```
+
+Returns all available skills in the marketplace. No authentication required.
+
+### Query parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `category` | string | Filter by category. Use `all` or omit for all skills. Options: `streaming`, `events`, `payments`, `finance`, `productivity`, `communication`, `development`, `channels`, `music`, `creative`, `marketing` |
+| `featured` | string | Set to `true` to return only featured skills |
+
+### Response
+
+```json
+{
+  "skills": [
+    {
+      "id": "dj-streaming",
+      "name": "DJ Streaming",
+      "description": "Stream DJ sets with Mux",
+      "category": "streaming",
+      "author": "Agentbot",
+      "downloads": 150,
+      "rating": 5.0,
+      "featured": true
+    }
+  ],
+  "categories": [
+    "streaming",
+    "events",
+    "payments",
+    "finance",
+    "productivity",
+    "communication",
+    "development",
+    "channels",
+    "music",
+    "creative",
+    "marketing"
+  ],
+  "featured": []
+}
+```
+
+## Install skill
+
+```http
+POST /api/skills
+```
+
+Requires session authentication. Installs a skill on an agent.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `skillId` | string | Yes | ID of the skill to install |
+| `agentId` | string | Yes | ID of the agent to install the skill on |
+
+### Response
+
+```json
+{
+  "success": true,
+  "installed": {
+    "id": "inst_123",
+    "skillId": "dj-streaming",
+    "agentId": "agent_456",
+    "installedAt": "2026-03-20T00:00:00Z"
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `skillId` or `agentId` |
+| 401 | Unauthorized |
+| 404 | Agent not found or skill not found |
+| 500 | Internal error |
+
+## Uninstall skill
+
+```http
+DELETE /api/skills
+```
+
+Requires session authentication. Removes a skill from an agent.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `skillId` | string | Yes | ID of the skill to uninstall |
+| `agentId` | string | Yes | ID of the agent to uninstall the skill from |
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `skillId` or `agentId` |
+| 401 | Unauthorized |
+| 404 | Skill installation not found |
+| 500 | Internal error |
+
+## Available skills
+
+### Streaming
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| DJ Streaming | `/dj-streaming` | Stream live DJ sets via Mux with RAVE token verification |
+
+### Events
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Guestlist Manager | `/guestlist` | Manage event guestlists, RSVPs, check-ins, and capacity limits |
+| Event Ticketing | `/event-ticketing` | Sell tickets with USDC payments on Base via x402 protocol |
+| Event Scheduler | `/event-scheduler` | Schedule events across Telegram, Discord, WhatsApp, and email with recurring support |
+| Venue Finder | `/venue-finder` | Find venues worldwide with capacity and price filters |
+| Festival Finder | `/festival-finder` | Discover festivals globally, compare lineups, and get recommendations |
+
+### Payments
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| USDC Payments | `/usdc-payments` | Accept USDC payments on Base, generate payment links, and track transactions |
+| Booking Settlement | `/booking-settlement` | Escrow and split execution for booking payments with auto-release on gig completion |
+| Instant Split | `/instant-split` | Execute royalty splits instantly in USDC on Base with configurable thresholds |
+
+### Finance
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Community Treasury | `/treasury` | Track spending, reimbursements, and multi-sig treasury management |
+| Royalty Tracker | `/royalty-tracker` | Track streaming royalties across platforms in USDC |
+
+### Productivity
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Google Calendar | `/google-calendar` | Schedule events, manage availability, and set reminders with full Google Calendar sync |
+| File Manager | `/file-manager` | Upload, download, and organize files with local storage integration |
+| Google Workspace | `/google-workspace` | Gmail, Calendar, Drive, and Sheets integration |
+| Notion | `/notion` | Sync with Notion databases, pages, and workflows |
+
+### Communication
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Email | `/email` | Send and receive emails with newsletter support |
+
+### Development
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Webhooks | `/webhook` | Connect to any API with HTTP requests, webhooks, and integrations |
+| Browser Automation | `/browser` | Browse websites, fill forms, and scrape data autonomously |
+
+### Channels
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Telegram | `/telegram` | Connect via Telegram with bot commands, messages, and groups |
+| Discord | `/discord` | Connect via Discord with slash commands, embeds, and voice channels |
+| WhatsApp | `/whatsapp` | Connect via WhatsApp with message templates, media, and status updates |
+| WhatsApp Business | `/whatsapp-business` | Full WhatsApp Business API with automated replies, labels, and catalogs |
+| Slack | `/slack` | Post to channels, create threads, and handle slash commands |
+
+### Music
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Track Archaeologist | `/track-archaeologist` | Deep catalog search via BlockDB similarity search |
+| Setlist Oracle | `/setlist-oracle` | BPM, key, and energy analysis to build DJ sets with Camelot mixing |
+| Demo Submitter | `/demo-submitter` | Submit demos to Base FM for airplay consideration |
+
+### Creative
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Visual Synthesizer | `/visual-synthesizer` | Generate release artwork and social media assets using Stable Diffusion XL |
+
+### Marketing
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Groupie Manager | `/groupie-manager` | Fan segmentation, lifecycle tracking, and automated merch drop campaigns |
+
+## Use a skill
+
+```http
+POST /api/skills/{skill-name}
+```
+
+### Visual Synthesizer
+
+```json
+{
+  "prompt": "dark techno album cover",
+  "style": "industrial"
+}
+```
+
+### Track Archaeologist
+
+```json
+{
+  "action": "search",
+  "bpm": 128,
+  "genre": "techno",
+  "mood": "dark"
+}
+```
+
+### Setlist Oracle
+
+```json
+{
+  "action": "build",
+  "genre": "house",
+  "duration": 120
+}
+```
+
+### Groupie Manager
+
+```json
+{
+  "action": "segment"
+}
+```
+
+### Royalty Tracker
+
+```json
+{
+  "action": "total"
+}
+```
+
+### Demo Submitter
+
+```json
+{
+  "action": "submit",
+  "title": "My Track",
+  "artist": "My Name"
+}
+```
+
+### Event Ticketing
+
+```json
+{
+  "action": "purchase",
+  "eventId": "e1",
+  "email": "fan@example.com",
+  "tier": "vip"
+}
+```
+
+### Event Scheduler
+
+```json
+{
+  "action": "schedule",
+  "title": "Newsletter",
+  "date": "2026-03-20",
+  "time": "18:00",
+  "channels": ["telegram", "email"]
+}
+```
+
+### Venue Finder
+
+```json
+{
+  "action": "search",
+  "city": "London",
+  "type": "underground",
+  "capacity": 200,
+  "maxPrice": 500
+}
+```
+
+### Festival Finder
+
+```json
+{
+  "action": "search",
+  "genre": "techno",
+  "country": "UK",
+  "maxPrice": 350
+}
+```
+
+### Booking Settlement
+
+Manage booking escrow, fund releases, and settlement simulations.
+
+**Actions:** `list`, `get`, `create_escrow`, `release_funds`, `simulate_settlement`
+
+```json
+{
+  "action": "create_escrow",
+  "bookingId": "bk_1"
+}
+```
+
+```json
+{
+  "action": "release_funds",
+  "bookingId": "bk_1"
+}
+```
+
+```json
+{
+  "action": "simulate_settlement",
+  "booking": {
+    "guarantee": 500,
+    "backend": 200,
+    "deposit": 100
+  }
+}
+```
+
+### Instant Split
+
+Execute royalty splits instantly in USDC on Base.
+
+**Actions:** `list_pending`, `create_split_rule`, `execute_split`, `get_balance`, `simulate`
+
+```json
+{
+  "action": "execute_split",
+  "splitId": "split_1"
+}
+```
+
+```json
+{
+  "action": "create_split_rule",
+  "splits": {
+    "recipientAddress": "0x...",
+    "percentage": 50,
+    "role": "artist",
+    "name": "Artist"
+  },
+  "threshold": 50
+}
+```
+
+```json
+{
+  "action": "simulate",
+  "streams": 100000,
+  "rate": 0.003
+}
+```
+
+## Response format
+
+```json
+{
+  "success": true
+}
+```
+
+<Note>Each skill returns additional data specific to its function alongside the `success` field.</Note>
+
+## Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid request parameters |
+| 404 | Skill not found |
+| 500 | Internal error |

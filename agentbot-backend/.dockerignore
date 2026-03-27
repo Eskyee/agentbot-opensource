@@ -1,8 +1,11 @@
 node_modules
-dist
-.env
-.env.local
-*.log
+.next
 .git
-.gitignore
-README.md
+.env*
+*.md
+.vscode
+coverage
+__tests__
+*.test.ts
+*.spec.ts
+prisma/migrations

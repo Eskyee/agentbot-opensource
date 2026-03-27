@@ -2,11 +2,60 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
-    slug: 'royaltybot-launch',
-    date: '18 March 2026',
-    title: 'Introducing RoyaltyBot: Instant Payment Layer for Music',
-    excerpt: 'Reprtoir calculates your splits. We execute them instantly. Welcome to the autonomous payment layer the music industry has been waiting for.',
-    tags: ["Launch", "Payments", "RoyaltyBot"]
+    slug: 'openclaw-v2026-3-24',
+    date: '26 March 2026',
+    title: 'Agentbot Now Runs OpenClaw v2026.3.24',
+    excerpt: 'Gateway OpenAI compatibility, security fix, CLI container support, channel isolation, and restart recovery.',
+    tags: ["Release", "OpenClaw", "Security"]
+  },
+  {
+    slug: 'countdown-d6',
+    date: '25 March 2026',
+    title: 'T-6 Days: Agentbot Launches March 31',
+    excerpt: '6 days until launch. Platform hardened, security audited, countdown on. Your AI agent. Your hardware. Your rules.',
+    tags: ["Countdown", "Launch", "D-6"]
+  },
+  {
+    slug: 'agentbot-launch',
+    date: '31 March 2026',
+    title: 'Agentbot: The Managed Platform for Self-Hosted AI Agents',
+    excerpt: 'Your AI agent. Your hardware. Your rules. Self-hosted, BYOK, one command deploy. No cloud dependency.',
+    tags: ["Launch", "v0.1.0-beta.1", "Self-Hosted"]
+  },
+  {
+    slug: 'platform-ops-2026-03-25',
+    date: '25 March 2026',
+    title: 'Platform Ops: Dashboard Overhaul & Infrastructure Hardening',
+    excerpt: 'Unified dashboard layout, Redis recovery, Google Calendar integration, full infra audit. All services green.',
+    tags: ["Update", "Infrastructure"]
+  },
+  {
+    slug: 'openclaw-2026-3-23',
+    date: '24 March 2026',
+    title: 'OpenClaw v2026.3.23 — Stability & Auth Fixes',
+    excerpt: '30+ fixes for browser attach, ClawHub auth, gateway reliability, and security hardening. Now live on Agentbot.',
+    tags: ["Release", "OpenClaw", "Stability"]
+  },
+  {
+    slug: 'mimo-v2-pro',
+    date: '23 March 2026',
+    title: 'MiMo-V2-Pro: Xiaomi\'s Flagship AI Model Now Default',
+    excerpt: 'Over 1T parameters, 1M context length, #1 in programming benchmarks. MiMo-V2-Pro is now the default model on Agentbot — the brain your agent deserves.',
+    tags: ["New Model", "Xiaomi", "Default"]
+  },
+  {
+    slug: 'launch-week-2026-3-21',
+    date: '21 March 2026',
+    title: '10 Days Out: What We Shipped This Week',
+    excerpt: '313 commits. Security hardening, RLS, real agent provisioning end-to-end, BullMQ worker service, design system locked, build clean. March 31 is on.',
+    tags: ["Build Log", "Security", "Platform", "Launch"]
+  },
+  {
+    slug: 'openclaw-2026-3-13-release',
+    date: '16 March 2026',
+    title: 'OpenClaw 2026.3.13 Released + Agentbot Progress Update',
+    excerpt: 'OpenClaw 2026.3.13 is now live with enhanced agent orchestration, Ollama support, streaming infrastructure, and A2A protocol. Plus: Agentbot achieves A++ certification.',
+    tags: ["Release", "OpenClaw", "Agentbot", "A++"]
   },
   {
     slug: 'battle-tested',
@@ -228,89 +277,129 @@ const upcomingFeatures = [
   { status: 'Coming Soon', title: 'WhatsApp', desc: 'Deploy agents to WA' },
   { status: 'Coming Soon', title: 'Agent Builder', desc: 'Visual drag-drop UI' },
   { status: 'Coming Soon', title: 'Voice Mode', desc: 'Talk to your agent' },
-  { status: 'Research', title: 'Neural Link', desc: 'Direct brain接口' },
+  { status: 'Research', title: 'Neural Link', desc: 'Direct brain interface' },
   { status: 'Research', title: 'Time Travel', desc: 'Replay agent decisions' },
 ];
 
 export default function BlogPage() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">Blog</h1>
-        <p className="text-gray-400 mb-2">
-          Product updates, deployment tips, and guides for running OpenClaw agents in production.
-        </p>
-        <p className="text-sm text-gray-500 mb-10">
-          Fresh content published daily at 9am UK London time
-        </p>
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+      <div className="max-w-7xl mx-auto px-6 py-20">
+        {/* Header */}
+        <div className="mb-16">
+          <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Updates & Guides</p>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none mb-4">Blog</h1>
+          <p className="text-zinc-400 text-sm leading-relaxed max-w-xl">
+            Product updates, deployment tips, and guides for running OpenClaw agents in production.
+          </p>
+          <p className="text-[10px] uppercase tracking-widest text-zinc-600 mt-3">
+            Fresh content published daily at 9am UK London time
+          </p>
+        </div>
 
-        <div className="mb-12 p-6 rounded-2xl bg-gray-900 border border-gray-800">
-          <p className="text-xs font-bold text-gray-500 tracking-widest uppercase mb-4">POWERED BY</p>
-          <div className="flex flex-wrap gap-6 text-lg font-bold">
-            <span className="text-gray-400">OpenAI</span>
-            <span className="text-gray-600">•</span>
-            <span className="text-gray-400">Anthropic</span>
-            <span className="text-gray-600">•</span>
-            <span className="text-gray-400">Google</span>
-            <span className="text-gray-600">•</span>
-            <span className="text-gray-400">xAI</span>
-            <span className="text-gray-600">•</span>
-            <span className="text-gray-400">DeepSeek</span>
-            <span className="text-gray-600">•</span>
-            <span className="text-gray-400">Meta</span>
-            <span className="text-gray-600">•</span>
-            <span className="text-gray-400">OpenRouter</span>
+        {/* Powered By - restyled to match */}
+        <div className="border-t border-zinc-900 py-8 mb-12">
+          <p className="text-[10px] font-bold text-zinc-600 tracking-widest uppercase mb-4">Powered By</p>
+          <div className="flex flex-wrap gap-6 text-sm font-bold">
+            <span className="text-zinc-400">OpenAI</span>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-400">Anthropic</span>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-400">Google</span>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-400">xAI</span>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-400">DeepSeek</span>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-400">Meta</span>
+            <span className="text-zinc-700">/</span>
+            <span className="text-zinc-400">OpenRouter</span>
           </div>
         </div>
 
-        <Link href="/news" className="block mb-12 p-6 rounded-2xl bg-gradient-to-r from-green-900/30 to-teal-900/30 border border-green-500/30 hover:border-green-400/50 transition-colors">
-          <p className="text-xs font-bold text-green-400 tracking-widest uppercase mb-2">COMMUNITY</p>
-          <h2 className="text-2xl font-bold text-white mb-2">📰 OpenClaw News</h2>
-          <p className="text-gray-300">
-            Latest updates from Peter and the Claw community — fresh daily.
-          </p>
-        </Link>
+        {/* Learn Agentbot */}
+        <div className="border-t border-zinc-900 py-8 mb-12">
+          <p className="text-[10px] font-bold text-zinc-600 tracking-widest uppercase mb-2">New</p>
+          <Link href="/learn" className="group block">
+            <h2 className="text-3xl font-bold tracking-tighter uppercase leading-none mb-2 group-hover:text-zinc-400 transition-colors">Learn Agentbot</h2>
+            <p className="text-zinc-400 text-sm leading-relaxed max-w-xl">
+              User guides, advanced tutorials, and embedded OpenClaw docs — everything you need to master agent deployment.
+            </p>
+            <span className="text-zinc-400 hover:text-white text-xs uppercase tracking-widest mt-3 inline-block">
+              Explore guides
+            </span>
+          </Link>
+        </div>
 
-        <div className="space-y-4">
+        {/* Quick Links Grid */}
+        <div className="grid gap-px md:grid-cols-2 mb-12 border-t border-zinc-900">
+          <Link href="/learn" className="group border-b border-zinc-900 md:border-r py-6 pr-6">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Guide</p>
+            <h3 className="text-lg font-bold uppercase tracking-tighter mb-1 group-hover:text-zinc-400 transition-colors">User Guide</h3>
+            <p className="text-zinc-400 text-sm leading-relaxed">Getting started for the first time. Deploy your first agent in 60 seconds.</p>
+          </Link>
+          <Link href="/learn" className="group border-b border-zinc-900 py-6 md:pl-6">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Advanced</p>
+            <h3 className="text-lg font-bold uppercase tracking-tighter mb-1 group-hover:text-zinc-400 transition-colors">Advanced</h3>
+            <p className="text-zinc-400 text-sm leading-relaxed">Swarms, skills, workflows, and production deployment strategies.</p>
+          </Link>
+        </div>
+
+        {/* OpenClaw News */}
+        <div className="border-t border-zinc-900 py-8 mb-12">
+          <p className="text-[10px] font-bold text-zinc-600 tracking-widest uppercase mb-2">Community</p>
+          <Link href="/news" className="group block">
+            <h2 className="text-3xl font-bold tracking-tighter uppercase leading-none mb-2 group-hover:text-zinc-400 transition-colors">OpenClaw News</h2>
+            <p className="text-zinc-400 text-sm leading-relaxed max-w-xl">
+              Latest updates from Peter and the Claw community — fresh daily.
+            </p>
+            <span className="text-zinc-400 hover:text-white text-xs uppercase tracking-widest mt-3 inline-block">
+              Read news
+            </span>
+          </Link>
+        </div>
+
+        {/* Blog Posts - List style */}
+        <div>
           {blogPosts.map((post) => (
-            <article key={post.title} className="rounded-2xl border border-gray-800 bg-gray-900 p-6 hover:border-white/50 transition-colors">
-              <div className="flex items-center gap-3 mb-3">
-                <p className="text-xs text-gray-500">{post.date}</p>
-                <div className="flex gap-2">
+            <article key={post.title} className="border-t border-zinc-900 py-8 group">
+              <div className="flex items-center gap-4 mb-3">
+                <p className="text-[10px] uppercase tracking-widest text-zinc-600">{post.date}</p>
+                <div className="flex gap-3">
                   {post.tags.map((tag) => (
-                    <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-gray-400">
+                    <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-600">
                       {tag}
                     </span>
                   ))}
                 </div>
               </div>
-              <h2 className="text-2xl font-semibold mb-2">{post.title}</h2>
-              <p className="text-gray-300 mb-4">
+              <h2 className="text-xl font-bold tracking-tighter uppercase leading-tight mb-2 group-hover:text-zinc-400 transition-colors">{post.title}</h2>
+              <p className="text-zinc-400 text-sm leading-relaxed mb-3 max-w-2xl">
                 {post.excerpt}
               </p>
-              <Link href={`/blog/posts/${post.slug}`} className="text-white hover:underline">
-                Read more →
+              <Link href={`/blog/posts/${post.slug}`} className="text-zinc-400 hover:text-white text-xs uppercase tracking-widest">
+                Read more
               </Link>
             </article>
           ))}
         </div>
 
-        <div className="mt-16">
-          <h2 className="text-2xl font-bold mb-6">Coming Soon & In Progress</h2>
-          <div className="grid gap-4 md:grid-cols-2">
+        {/* Upcoming Features */}
+        <div className="mt-20 border-t border-zinc-900 pt-12">
+          <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Roadmap</p>
+          <h2 className="text-3xl font-bold tracking-tighter uppercase leading-none mb-8">Coming Soon</h2>
+          <div className="grid gap-px md:grid-cols-2 lg:grid-cols-3">
             {upcomingFeatures.map((feature) => (
-              <div key={feature.title} className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    feature.status === 'Coming Soon' ? 'bg-blue-500/20 text-blue-400' :
-                    feature.status === 'In Progress' ? 'bg-green-500/20 text-green-400' :
-                    'bg-gray-500/20 text-gray-400'
-                  }`}>
-                    {feature.status}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-white">{feature.title}</h3>
-                <p className="text-sm text-gray-400 mt-1">{feature.desc}</p>
+              <div key={feature.title} className="border-t border-zinc-900 py-6 pr-6">
+                <span className={`text-[10px] uppercase tracking-widest font-bold ${
+                  feature.status === 'Coming Soon' ? 'text-blue-500' :
+                  feature.status === 'In Progress' ? 'text-zinc-400' :
+                  'text-zinc-600'
+                }`}>
+                  {feature.status}
+                </span>
+                <h3 className="font-bold text-white mt-2 uppercase tracking-tighter">{feature.title}</h3>
+                <p className="text-sm text-zinc-400 mt-1 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>

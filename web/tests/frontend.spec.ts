@@ -42,4 +42,14 @@ test.describe('Agentbot Frontend', () => {
     await expect(nav.getByRole('link', { name: 'Docs' })).toBeVisible();
     await expect(nav.getByRole('link', { name: 'Marketplace' })).toBeVisible();
   });
+
+  test('dashboard loads', async ({ page }) => {
+    await page.goto('/dashboard');
+    await expect(page.getByText('Dashboard')).toBeVisible();
+  });
+
+  test('trading page loads', async ({ page }) => {
+    await page.goto('/dashboard/trading');
+    await expect(page.getByText('Trading Agent')).toBeVisible();
+  });
 });

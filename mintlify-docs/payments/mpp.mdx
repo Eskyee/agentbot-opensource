@@ -1,0 +1,196 @@
+---
+title: MPP payments
+description: "Pay for API requests with crypto using the Machine Payments Protocol on the Tempo blockchain."
+---
+
+# MPP payments
+
+The Machine Payments Protocol (MPP) enables crypto-native, per-request payments on the Tempo blockchain. MPP is an additive payment method alongside [Stripe](/payments/stripe) — you choose which to use on each request.
+
+## How it works
+
+MPP uses an HTTP 402 challenge/response flow:
+
+1. You send a request to the [gateway](/api-reference/gateway).
+2. The server returns `402 Payment Required` with a challenge containing the price, token, and recipient.
+3. You sign a Tempo transaction matching the challenge.
+4. You retry the request with the signed transaction as a credential in the `Authorization` header.
+5. The server verifies the payment on-chain and returns the response with a `Payment-Receipt` header.
+
+## Supported networks
+
+| Network | Chain ID | RPC URL | Status |
+|---------|----------|---------|--------|
+| Tempo Mainnet | 4217 | `https://rpc.tempo.xyz` | Active |
+| Tempo Testnet | 42431 | `https://rpc.moderato.tempo.xyz` | Active |
+
+<Note>Set `TEMPO_TESTNET=true` in your environment to use the testnet during development.</Note>
+
+## Plugin pricing
+
+Each plugin has a fixed per-request price in USD, settled in pathUSD on Tempo.
+
+| Plugin | Price per request | Description |
+|--------|-------------------|-------------|
+| `agent` | $0.05 | Agent orchestrator |
+| `generate-text` | $0.01 | LLM text generation |
+| `tts` | $0.03 | Text-to-speech synthesis |
+| `stt` | $0.02 | Speech-to-text transcription |
+
+## Payment credential
+
+After receiving a 402 challenge, build and sign a credential to send with your retry:
+
+### Authorization header format
+
+```
+Authorization: Payment <JSON credential>
+```
+
+### Credential structure
+
+```json
+{
+  "scheme": "Payment",
+  "transaction": "0x76...",
+  "challengeNonce": "a1b2c3d4e5f6..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `scheme` | string | Always `Payment` |
+| `transaction` | string | Hex-encoded signed Tempo transaction (prefixed with `0x76` type marker) |
+| `challengeNonce` | string | The `nonce` value from the 402 challenge (replay protection) |
+
+## 402 challenge structure
+
+When a payment is required, the server responds with:
+
+```json
+{
+  "error": "payment_required",
+  "message": "Payment required for agent. Choose payment method: Stripe or Tempo MPP.",
+  "mpp": {
+    "scheme": "Payment",
+    "amount": "0.05",
+    "currency": "0x20c0000000000000000000000000000000000000",
+    "recipient": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+    "description": "Agent orchestrator request",
+    "nonce": "a1b2c3d4e5f6...",
+    "expiresAt": 1742472000000
+  },
+  "stripe": {
+    "checkoutUrl": "/api/v1/payments/stripe/create?plugin=agent",
+    "amount": "0.05",
+    "currency": "usd"
+  }
+}
+```
+
+### Challenge fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `scheme` | string | Always `Payment` |
+| `amount` | string | Price in USD |
+| `currency` | string | Token contract address (pathUSD) |
+| `recipient` | string | Wallet address to pay |
+| `description` | string | Human-readable description of the charge |
+| `nonce` | string | Unique nonce for this challenge (used for replay protection) |
+| `expiresAt` | number | Unix timestamp (ms) when the challenge expires. Challenges are valid for 5 minutes. |
+
+## Verification
+
+The server verifies your credential by checking:
+
+1. The transaction is hex-encoded and starts with the `0x76` type marker.
+2. The recipient address matches the expected recipient.
+3. The token address matches the expected currency (pathUSD).
+4. The amount matches the plugin price (within a 0.0001 tolerance).
+5. The nonce matches the original challenge nonce.
+
+If verification fails, the server returns an error with a description of the mismatch.
+
+## Receipt
+
+On success, the server returns:
+
+- A `Payment-Receipt` response header containing the transaction hash.
+- The `payment.receipt` field in the JSON response body.
+
+## Client usage
+
+Use `mppFetch` to handle the full 402 flow automatically:
+
+```typescript
+import { mppFetch } from '@agentbot/sdk';
+
+const result = await mppFetch({
+  plugin: 'agent',
+  body: { messages: [{ role: 'user', content: 'Hello' }] },
+  privateKey: '0xYOUR_PRIVATE_KEY',
+  baseUrl: 'https://agentbot.raveculture.xyz',
+  testnet: false,
+});
+
+if (result.success) {
+  console.log(result.data);
+  console.log('Receipt:', result.receipt);
+}
+```
+
+### `mppFetch` options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `plugin` | string | Yes | — | Plugin ID to call |
+| `body` | object | Yes | — | Request body forwarded to the plugin |
+| `privateKey` | string | Yes | — | Hex-encoded private key for signing Tempo transactions |
+| `baseUrl` | string | No | `https://agentbot.raveculture.xyz` | Agentbot instance URL |
+| `stream` | boolean | No | `false` | Request a streaming response |
+| `testnet` | boolean | No | `false` | Use Tempo testnet instead of mainnet |
+
+### `mppFetch` result
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the request succeeded |
+| `data` | object | Response body (non-streaming) |
+| `stream` | ReadableStream | Response stream (streaming) |
+| `receipt` | string | Payment receipt hash |
+| `error` | string | Error message on failure |
+
+## Check MPP support
+
+You can check whether an endpoint supports MPP payments:
+
+```typescript
+import { checkMppSupport } from '@agentbot/sdk';
+
+const { supported } = await checkMppSupport(
+  'https://agentbot.raveculture.xyz/api/v1/gateway'
+);
+```
+
+The function sends an `OPTIONS` request and checks for a `WWW-Authenticate: Payment` header.
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="402 response with no MPP challenge">
+The plugin may not have a configured price. Only plugins listed in the pricing table above support MPP payments.
+</Accordion>
+
+<Accordion title="Credential verification failed">
+- Ensure the `challengeNonce` matches the nonce from the 402 response.
+- Verify the transaction amount matches the challenge amount exactly.
+- Check that you are using the correct network (mainnet vs. testnet).
+</Accordion>
+
+<Accordion title="Transaction type error">
+The transaction hex must begin with `0x76` (the Tempo transaction type marker). Ensure your signing implementation includes this prefix.
+</Accordion>
+
+</AccordionGroup>

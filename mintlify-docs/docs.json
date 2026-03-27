@@ -1,0 +1,182 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Agentbot",
+  "logo": {
+    "light": "/logo/agentbot-logo-light.svg",
+    "dark": "/logo/agentbot-logo-dark.svg"
+  },
+  "theme": "mint",
+  "colors": {
+    "primary": "#3b82f6",
+    "light": "#60a5fa",
+    "dark": "#2563eb"
+  },
+  "favicon": "/favicon.svg",
+  "fonts": {
+    "family": "Inter",
+    "heading": {
+      "family": "Inter",
+      "weight": 700
+    },
+    "body": {
+      "family": "Inter",
+      "weight": 400
+    }
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "dark": "#000000",
+      "light": "#ffffff"
+    }
+  },
+  "styling": {
+    "codeblocks": "dark"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "index",
+          "quickstart",
+          "models",
+          "installation",
+          "build",
+          "development-standard",
+          "troubleshooting"
+        ]
+      },
+      {
+        "group": "Core Concepts",
+        "pages": [
+          "concepts/agents",
+          "concepts/workflows",
+          "concepts/api-keys",
+          "concepts/architecture"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "pages": [
+          "integrations/telegram",
+          "integrations/discord",
+          "integrations/whatsapp",
+          "integrations/resend"
+        ]
+      },
+      {
+        "group": "Core Services",
+        "pages": [
+          "services/data-sources",
+          "services/blockdb",
+          "services/skills-marketplace",
+          "services/base-fm"
+        ]
+      },
+      {
+        "group": "Payments",
+        "pages": [
+          "payments/stripe",
+          "payments/x402",
+          "payments/mpp"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api-reference/overview",
+          "api-reference/gateway",
+          "api-reference/agents",
+          "api-reference/auth",
+          "api-reference/keys",
+          "api-reference/wallet",
+          "api-reference/metrics",
+          "api-reference/skills",
+          "api-reference/memory",
+          "api-reference/ai",
+          "api-reference/render-mcp",
+          "api-reference/streaming",
+          "api-reference/registration",
+          "api-reference/health",
+          "api-reference/mission-control",
+          "api-reference/browse",
+          "api-reference/usage-tracking",
+          "api-reference/watchdog",
+          "api-reference/log-tail",
+          "api-reference/colony",
+          "api-reference/swarms",
+          "api-reference/underground",
+          "api-reference/invite",
+          "api-reference/web-summarizer",
+          "api-reference/x402",
+          "api-reference/demo-chat",
+          "api-reference/scheduled-tasks",
+          "api-reference/billing",
+          "api-reference/clawmerchants"
+        ]
+      },
+      {
+        "group": "MCP",
+        "pages": [
+          "mcp"
+        ]
+      },
+      {
+        "group": "Security",
+        "pages": [
+          "security"
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "logo": {
+      "light": "/logo/agentbot-logo-light.svg",
+      "dark": "/logo/agentbot-logo-dark.svg"
+    },
+    "links": [
+      {
+        "label": "Agentbot",
+        "href": "https://agentbot.raveculture.xyz"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/Eskyee/agentbot-opensource"
+      },
+      {
+        "label": "Discord",
+        "href": "https://discord.gg/vTPG4vdV6D"
+      },
+      {
+        "label": "Google Dev",
+        "href": "https://g.dev/agentbot"
+      },
+      {
+        "label": "Talent",
+        "href": "https://talent.app/raveculture.base.eth"
+      },
+      {
+        "label": "Base",
+        "href": "https://www.base.dev"
+      },
+      {
+        "label": "Cerebral Valley",
+        "href": "https://cerebralvalley.ai/u/Esky"
+      },
+      {
+        "label": "☕ Buy Me a Coffee",
+        "href": "https://buymeacoffee.com/agentbot"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Eskyee/agentbot-opensource",
+      "discord": "https://discord.gg/vTPG4vdV6D"
+    }
+  }
+}

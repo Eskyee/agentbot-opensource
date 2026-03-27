@@ -4,9 +4,6 @@
   "devCommand": "npm run dev",
   "installCommand": "npm install --include=dev",
   "framework": "nextjs",
-  "git": {
-    "submodules": false
-  },
   "regions": ["lhr1", "iad1"],
   "rewrites": [
     { "source": "/docs", "destination": "https://raveculture.mintlify.app" },

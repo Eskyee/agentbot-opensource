@@ -1,0 +1,164 @@
+
+description: "Self-host Agentbot"
+
+# Installation
+
+Run Agentbot locally or self-host on your own infrastructure.
+
+## Prerequisites
+
+- Node.js 22+
+- PostgreSQL database
+- Docker (for agent containers)
+
+## Quick Start (Dev Container)
+
+The fastest way to start developing:
+
+1. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) for VS Code
+2. Open the project in VS Code
+3. Click "Reopen in Container" when prompted
+
+Or use [Factory Cloud Templates](https://factory.ai) for instant cloud-hosted development with zero setup.
+
+## Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot
+
+# Install dependencies
+cd web && npm install
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your credentials
+
+# Run the development server
+npm run dev
+```
+
+## Environment Variables
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/agentbot
+
+# Auth
+NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_URL=http://localhost:3000
+
+# GitHub OAuth
+GITHUB_CLIENT_ID=your-client-id
+GITHUB_CLIENT_SECRET=your-client-secret
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Stripe
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# OpenRouter (default AI provider)
+OPENROUTER_API_KEY=sk-or-...
+
+# Telegram Bot
+TELEGRAM_BOT_TOKEN=your-bot-token
+```
+
+## Docker Production
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  web:
+    image: agentbot/web:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  agentbot-backend:
+    image: ghcr.io/raveculture/agentbot-backend:latest
+    init: true
+    ports:
+      - "3001:3001"
+    environment:
+      - HOME=/home/node
+      - TERM=xterm-256color
+      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      - OPENCLAW_NO_RESPAWN=1
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
+```
+
+<Note>The `init: true` flag enables proper signal forwarding and prevents zombie processes (PID 1 handling). The `HOME` and `TERM` environment variables are required by the official OpenClaw image which runs as the `node` user. `NODE_COMPILE_CACHE` enables the Node.js compile cache for faster startup, and `OPENCLAW_NO_RESPAWN=1` prevents the OpenClaw process from automatically respawning inside the container (Docker's `restart` policy handles restarts instead).</Note>
+
+```bash
+docker-compose up -d
+```
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Push code to GitHub
+2. Import project in Vercel
+3. Add environment variables
+4. Deploy
+
+### Railway
+
+```bash
+railway init
+railway up
+```
+
+### DigitalOcean
+
+Use the **One-Click App** for Node.js and connect a managed PostgreSQL database.
+
+## Verify Installation
+
+After deployment, visit:
+
+- Main app: `https://your-domain.com`
+- Health check: `https://your-domain.com/api/health`
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion icon="error" title="Database connection failed">
+
+Check your `DATABASE_URL` format:
+```
+postgresql://username:password@host:5432/database
+```
+
+</Accordion>
+
+<Accordion icon="error" title="OAuth not working">
+
+Ensure your OAuth redirect URLs match:
+- Development: `http://localhost:3000/api/auth/callback/github`
+- Production: `https://your-domain.com/api/auth/callback/github`
+
+</Accordion>
+
+</AccordionGroup>

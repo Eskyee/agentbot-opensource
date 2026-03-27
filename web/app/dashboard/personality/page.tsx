@@ -1,13 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { User, Save, Radio, Music, Mic, Truck, Disc3 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import { AgentInput } from '@/app/components/shared/AgentInput'
 
 const PERSONALITIES = [
-  { id: 'basement', name: 'Basement', tone: 'dark & hypnotic', emoji: '🔮', description: 'Underground techno energy. Minimal, hypnotic, warehouse vibes.' },
-  { id: 'selector', name: 'Selector', tone: 'DJ & curation', emoji: '🎧', description: 'Track recommendations, setlists, BPM matching. Always reading the room.' },
-  { id: 'ar', name: 'A&R', tone: 'industry & discovery', emoji: '🎤', description: 'Finding the next hits. Connecting artists, labels, and opportunities.' },
-  { id: 'road', name: 'Road', tone: 'logistics & touring', emoji: '🚛', description: 'Buses, venues, rider requirements. Making sure the show goes on.' },
-  { id: 'label', name: 'Label', tone: 'operations & roster', emoji: '🏷️', description: 'Release schedules, royalty splits, catalog management.' },
+  { id: 'basement', name: 'Basement', tone: 'dark & hypnotic', icon: Radio, description: 'Underground techno energy. Minimal, hypnotic, warehouse vibes.' },
+  { id: 'selector', name: 'Selector', tone: 'DJ & curation', icon: Music, description: 'Track recommendations, setlists, BPM matching. Always reading the room.' },
+  { id: 'ar', name: 'A&R', tone: 'industry & discovery', icon: Mic, description: 'Finding the next hits. Connecting artists, labels, and opportunities.' },
+  { id: 'road', name: 'Road', tone: 'logistics & touring', icon: Truck, description: 'Buses, venues, rider requirements. Making sure the show goes on.' },
+  { id: 'label', name: 'Label', tone: 'operations & roster', icon: Disc3, description: 'Release schedules, royalty splits, catalog management.' },
 ]
 
 export default function PersonalityPage() {
@@ -22,74 +30,80 @@ export default function PersonalityPage() {
       body: JSON.stringify({
         agentId: 'default',
         key: 'personality',
-        value: JSON.stringify({
-          type: selected,
-          greeting: customGreeting,
-          expertise
-        })
-      })
+        memory: JSON.stringify({ type: selected, greeting: customGreeting, expertise }),
+      }),
     })
     alert('Personality saved!')
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Agent Personality</h1>
-          <p className="text-gray-400 mt-2">Customize how your agent communicates</p>
-        </div>
+    <DashboardShell>
+      <DashboardHeader
+        title="Agent Personality"
+        icon={<User className="h-5 w-5 text-blue-400" />}
+      />
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Choose Personality Type</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {PERSONALITIES.map(p => (
-              <button
-                key={p.id}
-                onClick={() => setSelected(p.id)}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  selected === p.id
-                    ? 'border-white bg-gray-800'
-                    : 'border-gray-700 hover:border-gray-600'
-                }`}
-              >
-                <div className="text-3xl mb-2">{p.emoji}</div>
-                <div className="font-medium">{p.name}</div>
-                <div className="text-xs text-gray-400">{p.tone}</div>
-              </button>
-            ))}
+      <DashboardContent className="space-y-6">
+        {/* Personality type selector */}
+        <div>
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
+            Choose Personality Type
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-px bg-zinc-800">
+            {PERSONALITIES.map((p) => {
+              const Icon = p.icon
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setSelected(p.id)}
+                  className={`p-4 border text-left transition-all ${
+                    selected === p.id
+                      ? 'border-white bg-zinc-950'
+                      : 'border-zinc-800 bg-zinc-950 hover:border-zinc-600'
+                  }`}
+                >
+                  <Icon className={`h-5 w-5 mb-2 ${selected === p.id ? 'text-white' : 'text-zinc-500'}`} />
+                  <div className="text-sm font-bold uppercase tracking-tight">{p.name}</div>
+                  <div className="text-[10px] text-zinc-600 uppercase tracking-widest mt-1">{p.tone}</div>
+                  <div className="text-xs text-zinc-500 mt-2">{p.description}</div>
+                </button>
+              )
+            })}
           </div>
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Custom Greeting</h2>
-          <input
-            type="text"
+        {/* Custom greeting */}
+        <div className="border border-zinc-800 bg-zinc-950 p-5">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
+            Custom Greeting
+          </h2>
+          <AgentInput
+            placeholder="Hello! How can I assist you today?"
             value={customGreeting}
             onChange={(e) => setCustomGreeting(e.target.value)}
-            placeholder="Hello! How can I assist you today?"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
           />
         </div>
 
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 mb-6">
-          <h2 className="text-xl font-bold mb-4">Area of Expertise</h2>
-          <input
-            type="text"
+        {/* Area of expertise */}
+        <div className="border border-zinc-800 bg-zinc-950 p-5">
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
+            Area of Expertise
+          </h2>
+          <AgentInput
+            placeholder="e.g., customer support, data analysis, content writing"
             value={expertise}
             onChange={(e) => setExpertise(e.target.value)}
-            placeholder="e.g., customer support, data analysis, content writing"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
           />
         </div>
 
+        {/* Save */}
         <button
+          className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 flex items-center justify-center gap-2"
           onClick={savePersonality}
-          className="w-full bg-white text-black py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors"
         >
-          Save Personality
+          <Save className="h-4 w-4" /> Save Personality
         </button>
-      </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

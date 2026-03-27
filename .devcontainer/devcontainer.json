@@ -1,8 +1,6 @@
 {
-  "name": "Agentbot Open Source",
-  "dockerComposeFile": "../docker-compose.yml",
-  "service": "web",
-  "workspaceFolder": "/app",
+  "name": "Agentbot Development",
+  "image": "node:20-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/git:1": {}
@@ -14,12 +12,10 @@
         "esbenp.prettier-vscode",
         "prisma.prisma",
         "bradlc.vscode-tailwindcss"
-      ],
-      "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash"
-      }
+      ]
     }
   },
-  "forwardPorts": [3000, 3001, 5432, 6379],
-  "postCreateCommand": "npm install && npx prisma generate"
+  "postCreateCommand": "bash scripts/cloud-setup.sh",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind"
 }

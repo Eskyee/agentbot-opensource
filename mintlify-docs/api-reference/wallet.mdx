@@ -1,0 +1,247 @@
+---
+title: Wallet API
+description: "Manage wallets for on-chain transactions and payments"
+---
+
+# Wallet API
+
+Manage wallets for on-chain transactions and payments. Supports both session-based wallets and Coinbase Developer Platform (CDP) wallets.
+
+## Get wallet
+
+```http
+GET /api/wallet
+```
+
+Returns wallet information. When CDP is configured, returns CDP status without authentication. Otherwise, requires session authentication.
+
+### Response (CDP configured)
+
+```json
+{
+  "agenticWallet": {
+    "status": "configured",
+    "projectId": "abc12345...",
+    "features": [
+      "create_wallet",
+      "get_balance",
+      "send_usdc",
+      "trade_tokens",
+      "x402_payments"
+    ]
+  },
+  "instructions": "CDP Agentic Wallet is configured. Use /api/wallet/cdp/* endpoints."
+}
+```
+
+### Response (user wallet exists)
+
+```json
+{
+  "address": "0x...",
+  "balance": "0",
+  "network": "base-sepolia",
+  "hasWallet": true,
+  "createdAt": "2026-03-01T00:00:00Z"
+}
+```
+
+### Response (no wallet)
+
+```json
+{
+  "address": null,
+  "balance": "0",
+  "network": "base-sepolia",
+  "hasWallet": false,
+  "message": "No wallet found. Create one to get started."
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized (no session and CDP not configured) |
+
+## Wallet actions
+
+```http
+POST /api/wallet
+```
+
+Requires session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | One of: `create`, `get_seed`, `export_seed` |
+
+### Action: `create`
+
+Creates a new wallet for the authenticated user.
+
+```json
+{
+  "address": "0x...",
+  "network": "base-sepolia",
+  "message": "Wallet created successfully"
+}
+```
+
+Returns `400` if a wallet already exists.
+
+### Action: `get_seed`
+
+Returns wallet metadata. Private keys are stored encrypted server-side and are never exposed.
+
+```json
+{
+  "address": "0x...",
+  "network": "base-sepolia",
+  "createdAt": "2026-03-01T00:00:00Z",
+  "warning": "Private keys are stored encrypted server-side and never exposed."
+}
+```
+
+### Action: `export_seed`
+
+Seed export is disabled for security. Returns `403`.
+
+```json
+{
+  "error": "Seed export is disabled for security. Contact support if you need your private key."
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid action or wallet already exists |
+| 401 | Unauthorized |
+| 404 | No wallet found (for `get_seed`) |
+
+## Get CDP wallet address
+
+```http
+GET /api/wallet/address
+```
+
+Returns the address of the CDP Agentic Wallet.
+
+### Response (authenticated)
+
+```json
+{
+  "authenticated": true,
+  "address": "0x..."
+}
+```
+
+### Response (not authenticated)
+
+When the CDP wallet address cannot be retrieved, the response includes `authenticated: false` and `needsAuth: true`. The remaining fields vary by failure reason:
+
+```json
+{
+  "authenticated": false,
+  "needsAuth": true,
+  "message": "Run: npx awal auth login your@email.com"
+}
+```
+
+If the failure is caused by a configuration error, the response includes `error` and `setup` fields instead of `message`:
+
+```json
+{
+  "authenticated": false,
+  "needsAuth": true,
+  "error": "Error description",
+  "setup": "Install: npx skills add coinbase/agentic-wallet-skills"
+}
+```
+
+## Create CDP wallet
+
+```http
+POST /api/wallet/create
+```
+
+Creates a new wallet using the Coinbase Developer Platform SDK.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Email address for wallet registration |
+
+### Response
+
+```json
+{
+  "success": true,
+  "walletAddress": "0x...",
+  "walletId": "wallet_789",
+  "networks": ["base-sepolia", "base"]
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Email required |
+| 500 | CDP not configured. Response includes a `setup` field with configuration instructions. Generic errors include a `details` field with the error message. |
+
+## CDP wallet status
+
+```http
+GET /api/wallet/cdp
+```
+
+Returns supported chain information for the CDP wallet.
+
+```json
+{
+  "status": "ok",
+  "type": "evm_wallet",
+  "supportedChains": ["base", "base-sepolia"]
+}
+```
+
+## Create CDP wallet client
+
+```http
+POST /api/wallet/cdp
+```
+
+Creates a viem wallet client on Base Sepolia.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `privateKey` | string | No | Private key (0x-prefixed). A new key is generated if omitted. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "address": "0x...",
+  "network": "base-sepolia"
+}
+```
+
+## USDC transfer validation
+
+When transferring USDC through the wallet service, the following validation rules apply:
+
+- The transfer amount must be a positive finite number. Values such as `NaN`, `Infinity`, negative numbers, and zero are rejected.
+- Amounts are rounded to 6 decimal places (USDC precision). If the rounded value equals zero, the transfer is rejected.
+
+These checks run before any on-chain transaction is initiated.
+
+<Note>When payments are initiated through the [x402 pay action](/api-reference/x402#pay), additional protections apply: a per-payment maximum of $100, recipient address format validation (EVM or Solana), and audit logging of every payment attempt. See the [x402 gateway reference](/api-reference/x402) for details.</Note>

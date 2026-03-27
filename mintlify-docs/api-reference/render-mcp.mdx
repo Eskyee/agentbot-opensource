@@ -1,0 +1,313 @@
+---
+title: Render MCP API
+description: "Gateway endpoints for the Render MCP Server integration"
+---
+
+# Render MCP API
+
+Gateway endpoints that provide information about the Render MCP Server and validate configuration. These endpoints are served by the backend API service.
+
+<Note>All Render MCP endpoints require bearer token (API key) authentication. These endpoints are informational. Most users should use the official Render MCP Server Docker image directly. See the [MCP page](/mcp) for Agentbot's own MCP server.</Note>
+
+## Health check
+
+```http
+GET /api/render-mcp/health
+```
+
+Returns the operational status of the Render MCP gateway.
+
+### Response
+
+```json
+{
+  "name": "Render MCP Server Gateway",
+  "version": "1.0.0",
+  "description": "Gateway for the official Render MCP Server",
+  "status": "operational",
+  "official_repo": "https://github.com/render-oss/render-mcp-server",
+  "docker_image": "ghcr.io/render-oss/render-mcp-server",
+  "documentation": "https://render.com/docs/mcp-server",
+  "timestamp": "2026-03-20T00:00:00Z"
+}
+```
+
+## Server info
+
+```http
+GET /api/render-mcp/info
+```
+
+Returns metadata about the Render MCP Server, including supported features.
+
+### Response
+
+```json
+{
+  "name": "Render MCP Server",
+  "version": "latest",
+  "description": "Model Context Protocol server for managing Render infrastructure",
+  "maintained_by": "Render",
+  "repository": "https://github.com/render-oss/render-mcp-server",
+  "docker_image": "ghcr.io/render-oss/render-mcp-server",
+  "documentation": "https://render.com/docs/mcp-server",
+  "setup_guide": "/RENDER_MCP_SETUP_GUIDE.md in this repository",
+  "features": [
+    "Service management (web, static, cron, worker)",
+    "Environment variable management",
+    "Deployment history and monitoring",
+    "Database management (Postgres)",
+    "Key-Value store management (Redis)",
+    "Logs and metrics",
+    "SQL query execution (read-only)"
+  ]
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Server name |
+| `version` | string | Server version |
+| `description` | string | Server description |
+| `maintained_by` | string | Organization maintaining the server |
+| `repository` | string | GitHub repository URL |
+| `docker_image` | string | Docker image reference |
+| `documentation` | string | Official documentation URL |
+| `setup_guide` | string | Path to setup guide in the repository |
+| `features` | array | List of supported features |
+
+## Setup instructions
+
+```http
+GET /api/render-mcp/setup
+```
+
+Returns step-by-step setup instructions and an example Docker configuration for the Render MCP Server.
+
+### Response
+
+```json
+{
+  "title": "Render MCP Server Setup",
+  "recommended_approach": "Use the official Docker image directly",
+  "quick_start": {
+    "step_1": "Get RENDER_API_KEY from https://dashboard.render.com/account/api-tokens",
+    "step_2": "Configure your IDE (Cursor, Claude Desktop, VS Code)",
+    "step_3": "Use Docker configuration provided in setup guide"
+  },
+  "docker_config_example": {
+    "mcpServers": {
+      "render": {
+        "command": "docker",
+        "args": [
+          "run", "-i", "--rm",
+          "-e", "RENDER_API_KEY",
+          "-v", "render-mcp-server-config:/config",
+          "ghcr.io/render-oss/render-mcp-server"
+        ],
+        "env": {
+          "RENDER_API_KEY": "rnd_your_api_key_here"
+        }
+      }
+    }
+  },
+  "documentation_links": {
+    "official_setup": "https://render.com/docs/mcp-server",
+    "github": "https://github.com/render-oss/render-mcp-server",
+    "mcp_protocol": "https://modelcontextprotocol.io/",
+    "agentbot_guide": "See RENDER_MCP_SETUP_GUIDE.md"
+  }
+}
+```
+
+## List tools
+
+```http
+GET /api/render-mcp/tools
+```
+
+Returns the available MCP tools organized by category.
+
+### Response
+
+```json
+{
+  "source": "https://github.com/render-oss/render-mcp-server",
+  "tool_categories": {
+    "workspaces": [
+      "list_workspaces",
+      "select_workspace",
+      "get_selected_workspace"
+    ],
+    "services": [
+      "list_services",
+      "get_service",
+      "create_web_service",
+      "create_static_site",
+      "create_cron_job",
+      "update_environment_variables"
+    ],
+    "deployments": [
+      "list_deploys",
+      "get_deploy"
+    ],
+    "logs": [
+      "list_logs",
+      "list_log_label_values"
+    ],
+    "metrics": [
+      "get_metrics"
+    ],
+    "postgres": [
+      "list_postgres_instances",
+      "get_postgres",
+      "create_postgres",
+      "query_render_postgres"
+    ],
+    "key_value": [
+      "list_key_value",
+      "get_key_value",
+      "create_key_value"
+    ]
+  },
+  "complete_reference": "https://github.com/render-oss/render-mcp-server#tools"
+}
+```
+
+### Tool categories
+
+| Category | Tools | Description |
+|----------|-------|-------------|
+| `workspaces` | 3 | List, select, and get workspace |
+| `services` | 6 | Manage web services, static sites, cron jobs, and environment variables |
+| `deployments` | 2 | List and inspect deployments |
+| `logs` | 2 | Retrieve and filter logs |
+| `metrics` | 1 | Get service metrics |
+| `postgres` | 4 | Manage Postgres instances and run read-only queries |
+| `key_value` | 3 | Manage key-value stores (Redis) |
+
+## Example workflows
+
+```http
+GET /api/render-mcp/examples
+```
+
+Returns example prompts organized by use case.
+
+### Response
+
+```json
+{
+  "description": "Example prompts for the Render MCP Server",
+  "examples": {
+    "service_management": [
+      "List all my Render services",
+      "Get details about my agentbot-api service",
+      "Create a new Node.js web service from my GitHub repo",
+      "Update environment variables for my API service"
+    ],
+    "deployment_monitoring": [
+      "Show me deployment history for my main service",
+      "What was deployed today?",
+      "Get details about the last deployment",
+      "Which services have failed deployments?"
+    ],
+    "database_management": [
+      "List all my Postgres databases",
+      "Create a new Postgres database named cache-db",
+      "Query my database: SELECT COUNT(*) FROM users",
+      "Show database details and connection string"
+    ],
+    "monitoring_and_logs": [
+      "Get recent logs from my API service",
+      "Show me error logs from the last hour",
+      "What is the CPU usage for my service?",
+      "Display HTTP request metrics and latency"
+    ],
+    "troubleshooting": [
+      "Why is my service not running?",
+      "Show me all services and their current status",
+      "Get logs for failed deployments",
+      "What is the memory usage trend?"
+    ]
+  }
+}
+```
+
+## Validate configuration
+
+```http
+POST /api/render-mcp/validate-config
+```
+
+Validates a Render API key before you configure your IDE. Requires the `Content-Type: application/json` header.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `api_key` | string | Yes | Render API key (must start with `rnd_` and be at least 20 characters) |
+| `endpoint` | string | No | Custom Render API endpoint |
+
+### Successful response
+
+```json
+{
+  "valid": true,
+  "message": "Configuration looks valid",
+  "next_steps": [
+    "Add this key to your IDE MCP configuration",
+    "Reload your IDE",
+    "Test with: \"List my Render services\""
+  ]
+}
+```
+
+### Validation errors
+
+Missing API key:
+
+```json
+{
+  "valid": false,
+  "errors": ["api_key is required"],
+  "help": "Get your API key from https://dashboard.render.com/account/api-tokens"
+}
+```
+
+Invalid prefix:
+
+```json
+{
+  "valid": false,
+  "errors": ["api_key must start with rnd_"],
+  "help": "Check that you copied the full token from the dashboard"
+}
+```
+
+Key too short:
+
+```json
+{
+  "valid": false,
+  "errors": ["api_key appears too short"],
+  "help": "API keys are typically 40+ characters"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Validation failed. The response includes `valid: false`, an `errors` array, and a `help` string. |
+
+## Redirects
+
+The following endpoints redirect to external resources:
+
+| Endpoint | Redirects to |
+|----------|-------------|
+| `GET /api/render-mcp/docs` | `https://render.com/docs/mcp-server` (301) |
+| `GET /api/render-mcp/github` | `https://github.com/render-oss/render-mcp-server` (301) |

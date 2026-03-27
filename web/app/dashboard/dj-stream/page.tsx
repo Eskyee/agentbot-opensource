@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { injected } from 'wagmi/connectors'
+import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
+import { SectionHeader } from '@/app/components/shared/SectionHeader'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 RAVE in wei
@@ -20,19 +23,15 @@ export default function DJStreamPage() {
 
   const handleConnect = () => {
     if (typeof window === 'undefined') return
-    
     if (!window.ethereum) {
-      setError('No wallet found. Please install MetaMask or Coinbase Wallet.')
+      setError('No wallet found. Install MetaMask or Coinbase Wallet.')
       return
     }
-    
     connect({ connector: injected() })
   }
 
   useEffect(() => {
-    if (address) {
-      checkRAVEBalance(address)
-    }
+    if (address) checkRAVEBalance(address)
   }, [address])
 
   const checkRAVEBalance = async (walletAddress: string) => {
@@ -62,7 +61,6 @@ export default function DJStreamPage() {
     if (!address) return
     setLoading(true)
     setError('')
-    
     try {
       const res = await fetch('/api/basefm/streams', {
         method: 'POST',
@@ -70,7 +68,6 @@ export default function DJStreamPage() {
         body: JSON.stringify({ wallet: address, name: djName })
       })
       const data = await res.json()
-      
       if (!res.ok) {
         setError(data.error || 'Failed to create stream')
       } else {
@@ -87,176 +84,197 @@ export default function DJStreamPage() {
   const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">🎛️ DJ Stream Dashboard</h1>
+    <DashboardShell>
+      <DashboardHeader
+        title="DJ Stream"
+        icon={
+          <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+          </svg>
+        }
+      />
 
-        <div className="grid gap-6">
-          {/* Wallet Connection */}
-          <div className="bg-gray-800 p-6 rounded-xl">
-            <h2 className="text-xl font-semibold mb-4">1. Connect Wallet</h2>
-            
+      <DashboardContent>
+        <div className="max-w-3xl space-y-px">
+          {/* Step 1: Wallet */}
+          <div className="border border-zinc-800 bg-zinc-950 p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 01</span>
+                <span className="text-sm font-bold tracking-tight uppercase">Connect Wallet</span>
+              </div>
+              {isConnected && <StatusPill status="active" label="Connected" />}
+            </div>
+
             {!isConnected ? (
               <div>
                 <button
                   onClick={handleConnect}
-                  className="bg-white hover:bg-gray-100 text-black font-semibold py-3 px-6 rounded-xl flex items-center gap-2 transition-all"
+                  className="border border-zinc-700 hover:border-zinc-500 text-white text-xs font-bold uppercase tracking-widest py-3 px-6 transition-colors"
                 >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                  </svg>
                   Connect Wallet
                 </button>
-                
-                <p className="mt-4 text-sm text-gray-400">
-                  Need a wallet?{' '}
-                  <a href="https://metamask.io/download/" target="_blank" rel="noopener" className="text-blue-400 hover:underline">Install MetaMask</a>
-                  {' '}-{' '}
-                  <a href="https://www.coinbase.com/wallet" target="_blank" rel="noopener" className="text-blue-400 hover:underline">Coinbase Wallet</a>
+                <p className="mt-4 text-zinc-600 text-[10px] uppercase tracking-widest">
+                  Base network · MetaMask or Coinbase Wallet
                 </p>
               </div>
             ) : (
               <div className="flex items-center gap-4">
-                <div className="bg-green-600 px-4 py-2 rounded-lg">
-                  <span className="text-sm text-gray-300">Connected:</span>
-                  <span className="ml-2 font-mono">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
-                </div>
+                <code className="text-sm text-zinc-400 font-mono">{formatAddress(address!)}</code>
                 <button
                   onClick={() => disconnect()}
-                  className="text-gray-400 hover:text-white text-sm"
+                  className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors"
                 >
                   Disconnect
                 </button>
               </div>
             )}
-            
+
             {error && (
-              <div className="mt-4 p-3 bg-red-900/50 border border-red-500 rounded-lg text-red-300">
+              <div className="mt-4 border border-red-500/30 p-3 text-red-400 text-xs">
                 {error}
               </div>
             )}
           </div>
 
-          {/* RAVE Balance Check */}
+          {/* Step 2: RAVE Balance */}
           {isConnected && (
-            <div className="bg-gray-800 p-6 rounded-xl">
-              <h2 className="text-xl font-semibold mb-4">2. Verify RAVE Balance</h2>
-              
+            <div className="border border-zinc-800 bg-zinc-950 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 02</span>
+                  <span className="text-sm font-bold tracking-tight uppercase">Verify RAVE</span>
+                </div>
+                {hasAccess ? (
+                  <StatusPill status="active" label="Eligible" />
+                ) : raveBalance ? (
+                  <StatusPill status="error" label="Insufficient" />
+                ) : (
+                  <StatusPill status="idle" label="Checking" />
+                )}
+              </div>
+
               {raveBalance ? (
                 <div>
-                  <div className="flex items-center gap-4 mb-4">
-                    <span className="text-2xl">🎵</span>
-                    <div>
-                      <div className="text-3xl font-bold">
-                        {(Number(raveBalance) / 1e18).toLocaleString()} RAVE
-                      </div>
-                      <div className="text-gray-400 text-sm">
-                        Required: 1,250,000 RAVE
-                      </div>
-                    </div>
-                    {hasAccess ? (
-                      <span className="ml-auto bg-green-600 px-4 py-2 rounded-full font-semibold">
-                        ✓ Eligible
-                      </span>
-                    ) : (
-                      <span className="ml-auto bg-red-600 px-4 py-2 rounded-full font-semibold">
-                        ✗ Need more RAVE
-                      </span>
-                    )}
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="text-3xl font-bold tracking-tight">
+                      {(Number(raveBalance) / 1e18).toLocaleString()}
+                    </span>
+                    <span className="text-xs text-zinc-500 uppercase tracking-widest">RAVE</span>
                   </div>
-                  
+                  <p className="text-zinc-600 text-xs">
+                    Required: 1,250,000 RAVE · Gate: $RAVE token on Base
+                  </p>
+
                   {!hasAccess && (
-                    <div className="mt-4 p-4 bg-gray-700 rounded-lg">
-                      <p className="text-gray-300 mb-2">
-                        Need 1,250,000 RAVE tokens to stream for free.
+                    <div className="mt-4 border border-zinc-800 p-4">
+                      <p className="text-zinc-500 text-xs mb-1">
+                        Need 1,250,000 RAVE to stream. Acquire on Uniswap or earn through baseFM.
                       </p>
-                      <p className="text-gray-400 text-sm">
-                        Or pay £10/month via Stripe (coming soon).
+                      <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
+                        Stripe payment option coming soon
                       </p>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="text-gray-400">Checking balance...</div>
+                <p className="text-zinc-600 text-xs">Reading on-chain balance...</p>
               )}
             </div>
           )}
 
-          {/* Create Stream */}
+          {/* Step 3: Create Stream */}
           {hasAccess && !stream && (
-            <div className="bg-gray-800 p-6 rounded-xl">
-              <h2 className="text-xl font-semibold mb-4">3. Create Stream</h2>
-              
-              <div className="mb-4">
-                <label className="block text-sm text-gray-400 mb-1">DJ Name</label>
+            <div className="border border-zinc-800 bg-zinc-950 p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 03</span>
+                <span className="text-sm font-bold tracking-tight uppercase">Create Stream</span>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">DJ Name</label>
                 <input
                   type="text"
                   value={djName}
                   onChange={(e) => setDjName(e.target.value)}
                   placeholder="DJ YourName"
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white"
+                  className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
                 />
               </div>
 
               <button
                 onClick={createStream}
                 disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 rounded-lg py-3 font-semibold"
+                className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
               >
-                {loading ? 'Creating Stream...' : 'Start Streaming'}
+                {loading ? 'Creating...' : 'Start Streaming'}
               </button>
             </div>
           )}
 
-          {/* Stream Details */}
+          {/* Stream Ready */}
           {stream && (
-            <div className="bg-gray-800 p-6 rounded-xl">
-              <h2 className="text-xl font-semibold mb-4">🎉 Stream Ready!</h2>
-              
-              <div className="space-y-4">
-                <div className="p-4 bg-green-900/30 border border-green-500 rounded-lg">
-                  <div className="text-green-400 font-semibold mb-2">✓ Stream created successfully</div>
-                  <div className="text-sm text-gray-300">
-                    DJ: {stream.name || djName}
-                  </div>
+            <div className="border border-zinc-800 bg-zinc-950 p-6">
+              <SectionHeader
+                label="Live"
+                title="Stream Ready"
+                description="Configure OBS or Larix with the credentials below."
+              />
+
+              <div className="space-y-6">
+                {/* Status */}
+                <div className="flex items-center gap-3">
+                  <StatusPill status="active" label="Stream Created" />
+                  <span className="text-xs text-zinc-500">DJ: {stream.name || djName}</span>
                 </div>
 
+                {/* RTMP URL */}
                 <div>
-                  <div className="text-gray-400 text-sm mb-1">Full RTMP (for OBS/Larix)</div>
-                  <code className="block bg-black p-3 rounded text-sm break-all">
+                  <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">RTMP URL</span>
+                  <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
                     {stream.fullRtmpUrl}
                   </code>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-gray-400 text-sm mb-1">Playback ID</div>
-                    <code className="block bg-black p-2 rounded text-sm">
+                {/* Stream Key + Playback */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-zinc-800">
+                  <div className="bg-black p-4">
+                    <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Stream Key</span>
+                    <code className="block text-xs text-zinc-400 break-all select-all">
+                      {stream.streamKey}
+                    </code>
+                  </div>
+                  <div className="bg-black p-4">
+                    <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Playback ID</span>
+                    <code className="block text-xs text-zinc-400 break-all select-all">
                       {stream.playbackId || 'Pending...'}
                     </code>
                   </div>
-                  <div>
-                    <div className="text-gray-400 text-sm mb-1">Status</div>
-                    <span className="inline-block bg-yellow-600 px-3 py-1 rounded text-sm">
-                      {stream.status}
-                    </span>
-                  </div>
                 </div>
 
-                <div className="p-4 bg-blue-900/30 border border-blue-500 rounded-lg">
-                  <div className="font-semibold mb-2">📺 OBS Studio Settings</div>
-                  <div className="text-sm text-gray-300 space-y-1">
-                    <div><strong>Service:</strong> Custom</div>
-                    <div><strong>Server:</strong> {MUX_RTMP_URL}</div>
-                    <div><strong>Stream Key:</strong> {stream.streamKey}</div>
-                    <div><strong>Audio:</strong> 256-320 kbps, AAC, 44.1kHz Stereo</div>
+                {/* OBS Settings */}
+                <div className="border border-zinc-800 p-4">
+                  <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-3">OBS Studio Settings</span>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Service</span>
+                      <span className="text-zinc-300">Custom</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Server</span>
+                      <code className="text-zinc-400">{MUX_RTMP_URL}</code>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Audio</span>
+                      <span className="text-zinc-300">256-320 kbps · AAC · 44.1kHz Stereo</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

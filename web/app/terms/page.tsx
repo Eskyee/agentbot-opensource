@@ -1,11 +1,11 @@
 export default function TermsPage() {
   return (
-    <main className="min-h-screen px-6 py-16 lg:px-8">
-      <div className="mx-auto max-w-4xl rounded-2xl border border-gray-800 bg-gray-900 p-8">
+    <section className="min-h-screen px-6 py-16 lg:px-8">
+      <div className="mx-auto max-w-4xl rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
         <h1 className="text-3xl font-bold mb-2">Terms of Service</h1>
-        <p className="text-sm text-gray-500 mb-8">Effective date: February 19, 2026</p>
+        <p className="text-sm text-zinc-500 mb-8">Effective date: February 19, 2026</p>
 
-        <div className="space-y-6 text-gray-300">
+        <div className="space-y-6 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold mb-2">1. Service scope</h2>
             <p>
@@ -41,6 +41,6 @@ export default function TermsPage() {
           </section>
         </div>
       </div>
-    </main>
+    </section>
   );
 }

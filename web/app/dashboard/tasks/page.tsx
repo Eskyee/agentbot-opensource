@@ -1,13 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { useQuery } from '@tanstack/react-query'
+import { Clock, Plus, Pause, Play, Trash2, Terminal, Sparkles } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import { SectionHeader } from '@/app/components/shared/SectionHeader'
+import StatusPill from '@/app/components/shared/StatusPill'
+import { AgentInput, AgentTextarea } from '@/app/components/shared/AgentInput'
+import { AgentCard } from '@/app/components/shared/AgentCard'
+import { EmptyState } from '@/app/components/shared/EmptyState'
 import { naturalToCron, cronToNatural } from '@/lib/cron-parser'
 
 export default function TasksPage() {
-  const { data: session } = useSession()
-  const [tasks, setTasks] = useState([])
+  const [tasks, setTasks] = useState<any[]>([])
   const [showCreate, setShowCreate] = useState(false)
   const [useNatural, setUseNatural] = useState(true)
   const [newTask, setNewTask] = useState({
@@ -15,7 +27,7 @@ export default function TasksPage() {
     description: '',
     cronSchedule: '0 9 * * *',
     naturalSchedule: 'every day at 9am',
-    prompt: ''
+    prompt: '',
   })
 
   useEffect(() => {
@@ -34,13 +46,13 @@ export default function TasksPage() {
       setNewTask({
         ...newTask,
         naturalSchedule: value,
-        cronSchedule: cron || '0 9 * * *'
+        cronSchedule: cron || '0 9 * * *',
       })
     } else {
       setNewTask({
         ...newTask,
         cronSchedule: value,
-        naturalSchedule: cronToNatural(value)
+        naturalSchedule: cronToNatural(value),
       })
     }
   }
@@ -49,134 +61,164 @@ export default function TasksPage() {
     await fetch('/api/scheduled-tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...newTask,
-        agentId: 'default'
-      })
+      body: JSON.stringify({ ...newTask, agentId: 'default' }),
     })
     setShowCreate(false)
+    setNewTask({
+      name: '',
+      description: '',
+      cronSchedule: '0 9 * * *',
+      naturalSchedule: 'every day at 9am',
+      prompt: '',
+    })
     fetchTasks()
   }
 
-  return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Scheduled Tasks</h1>
-            <p className="text-gray-400 mt-2">Automate your agent with scheduled tasks</p>
-          </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="bg-white text-black px-6 py-2.5 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-          >
-            + Create Task
-          </button>
-        </div>
+  const ClockIcon = () => (
+    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="square" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  )
 
+  return (
+    <DashboardShell>
+      <DashboardHeader
+        title="Scheduled Tasks"
+        icon={<ClockIcon />}
+        count={tasks.length}
+        action={
+          <button
+            className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-4"
+            onClick={() => setShowCreate(true)}
+          >
+            <span className="flex items-center gap-2">
+              <Plus className="h-4 w-4" /> Create Task
+            </span>
+          </button>
+        }
+      />
+
+      <DashboardContent className="max-w-6xl space-y-6">
+        {/* Create form */}
         {showCreate && (
-          <div className="mb-8 bg-gray-900 border border-gray-800 rounded-xl p-6">
-            <h2 className="text-xl font-bold mb-4">Create Scheduled Task</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">Task Name</label>
-                <input
-                  type="text"
-                  value={newTask.name}
-                  onChange={(e) => setNewTask({...newTask, name: e.target.value})}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                  placeholder="Daily market report"
-                />
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-400">Schedule</label>
-                  <button
-                    onClick={() => setUseNatural(!useNatural)}
-                    className="text-xs text-blue-400 hover:underline"
-                  >
-                    {useNatural ? 'Use cron syntax' : 'Use natural language'}
-                  </button>
-                </div>
-                <input
-                  type="text"
-                  value={useNatural ? newTask.naturalSchedule : newTask.cronSchedule}
-                  onChange={(e) => handleScheduleChange(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
-                  placeholder={useNatural ? 'every day at 9am' : '0 9 * * *'}
-                />
-                <p className="text-xs text-gray-500 mt-1">
+          <div className="border border-zinc-800 bg-zinc-950 p-6 space-y-4">
+            <h2 className="text-sm font-bold tracking-tight uppercase">
+              New Scheduled Task
+            </h2>
+            <AgentInput
+              label="Task Name"
+              placeholder="Daily market report"
+              value={newTask.name}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNewTask({ ...newTask, name: e.target.value })
+              }
+            />
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-[10px] uppercase tracking-widest text-zinc-600">
+                  Schedule
+                </label>
+                <button
+                  onClick={() => setUseNatural(!useNatural)}
+                  className="flex items-center gap-1 text-xs text-blue-400 hover:underline"
+                >
                   {useNatural ? (
-                    <>Examples: "every day at 9am", "every monday at 2pm", "every 6 hours"</>
+                    <><Terminal className="h-3 w-3" /> Use cron syntax</>
                   ) : (
-                    <>Cron format: minute hour day month weekday</>
+                    <><Sparkles className="h-3 w-3" /> Use natural language</>
                   )}
+                </button>
+              </div>
+              <AgentInput
+                placeholder={useNatural ? 'every day at 9am' : '0 9 * * *'}
+                value={useNatural ? newTask.naturalSchedule : newTask.cronSchedule}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleScheduleChange(e.target.value)}
+                hint={
+                  useNatural
+                    ? 'Examples: "every day at 9am", "every monday at 2pm", "every 6 hours"'
+                    : 'Cron format: minute hour day month weekday'
+                }
+              />
+              {useNatural && (
+                <p className="text-[10px] text-green-400 mt-1 uppercase tracking-widest">
+                  Converts to: {newTask.cronSchedule}
                 </p>
-                {useNatural && (
-                  <p className="text-xs text-green-400 mt-1">
-                    → Converts to: {newTask.cronSchedule}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm text-gray-400 mb-2">What should the agent do?</label>
-                <textarea
-                  value={newTask.prompt}
-                  onChange={(e) => setNewTask({...newTask, prompt: e.target.value})}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 h-32"
-                  placeholder="Generate a daily market report with top 5 crypto trends..."
-                />
-              </div>
-              <div className="flex gap-3">
-                <button
-                  onClick={createTask}
-                  className="bg-white text-black px-6 py-2 rounded-lg font-medium hover:bg-gray-100"
-                >
-                  Create Task
-                </button>
-                <button
-                  onClick={() => setShowCreate(false)}
-                  className="border border-gray-700 px-6 py-2 rounded-lg hover:bg-gray-800"
-                >
-                  Cancel
-                </button>
-              </div>
+              )}
+            </div>
+            <AgentTextarea
+              label="What should the agent do?"
+              placeholder="Generate a daily market report with top 5 crypto trends..."
+              value={newTask.prompt}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                setNewTask({ ...newTask, prompt: e.target.value })
+              }
+              rows={4}
+            />
+            <div className="flex gap-3">
+              <button
+                className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-6"
+                onClick={createTask}
+              >
+                Create Task
+              </button>
+              <button
+                className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4"
+                onClick={() => setShowCreate(false)}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         )}
 
-        <div className="space-y-4">
-          {tasks.length === 0 ? (
-            <div className="text-center py-12 bg-gray-900 border border-gray-800 rounded-xl">
-              <p className="text-gray-400">No scheduled tasks yet</p>
+        {/* Task list */}
+        {tasks.length === 0 ? (
+          <EmptyState
+            icon={<Clock className="h-8 w-8 text-zinc-600" />}
+            title="No scheduled tasks yet"
+            description="Automate your agent with scheduled tasks"
+            action={
               <button
+                className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4"
                 onClick={() => setShowCreate(true)}
-                className="mt-4 text-white hover:underline"
               >
                 Create your first task →
               </button>
-            </div>
-          ) : (
-            tasks.map((task: any) => (
-              <div key={task.id} className="bg-gray-900 border border-gray-800 rounded-xl p-6">
+            }
+          />
+        ) : (
+          <div className="space-y-px bg-zinc-800">
+            {tasks.map((task: any) => (
+              <div key={task.id} className="border border-zinc-800 bg-zinc-950 p-6">
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-bold">{task.name}</h3>
-                    <p className="text-sm text-gray-400 mt-1">{task.description}</p>
-                    <p className="text-xs text-gray-500 mt-2">{cronToNatural(task.cronSchedule)}</p>
+                    <h3 className="text-sm font-bold tracking-tight uppercase">{task.name}</h3>
+                    {task.description && (
+                      <p className="text-xs text-zinc-500 mt-1">
+                        {task.description}
+                      </p>
+                    )}
+                    <p className="text-[10px] text-zinc-500 mt-2 flex items-center gap-1 uppercase tracking-widest">
+                      <Clock className="h-3 w-3" />
+                      {cronToNatural(task.cronSchedule)}
+                    </p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs ${task.enabled ? 'bg-green-500/20 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
-                    {task.enabled ? 'Active' : 'Paused'}
-                  </span>
+                  <StatusPill
+                    status={task.enabled ? 'active' : 'offline'}
+                    label={task.enabled ? 'Active' : 'Paused'}
+                    size="sm"
+                  />
                 </div>
-                <div className="mt-4 p-4 bg-gray-800 rounded-lg">
-                  <p className="text-sm text-gray-300">{task.prompt}</p>
+                <div className="mt-4 p-4 border border-zinc-800 bg-black">
+                  <p className="text-xs text-zinc-300 font-mono">
+                    {task.prompt}
+                  </p>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-      </div>
-    </div>
+            ))}
+          </div>
+        )}
+      </DashboardContent>
+    </DashboardShell>
   )
 }

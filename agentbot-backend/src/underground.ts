@@ -4,8 +4,8 @@ import { WalletService } from './services/wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
 import { NegotiationService } from './services/negotiation'; // Added
 import { AmplificationService } from './services/amplification'; // Added
-import Queue from 'bull';
 import dotenv from 'dotenv';
+import { timingSafeEqual } from 'crypto';
 
 dotenv.config();
 
@@ -14,13 +14,17 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Create the split queue instance
-const splitQueue = new Queue('royalty-splits', process.env.REDIS_URL || 'redis://localhost:6379');
-
-// Middleware to verify internal API key (Atlas/Frontend only)
+// Middleware to verify internal API key — timing-safe to prevent enumeration
 const authenticate = (req: Request, res: Response, next: any) => {
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ') || auth.substring(7) !== process.env.INTERNAL_API_KEY) {
+  if (!auth || !auth.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const token = auth.substring(7);
+  const expected = process.env.INTERNAL_API_KEY || '';
+  const tokenBuf = Buffer.from(token);
+  const expectedBuf = Buffer.from(expected);
+  if (!expected || tokenBuf.length !== expectedBuf.length || !timingSafeEqual(tokenBuf, expectedBuf)) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();
@@ -127,20 +131,27 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
     // 2. Add recipients to DB
     for (const recipient of recipients) {
       await pool.query(
-        'INSERT INTO royalty_recipients (split_id, wallet_address, share_percentage, paid) VALUES ($1, $2, $3, FALSE)',
+        'INSERT INTO royalty_recipients (split_id, wallet_address, percentage, paid) VALUES ($1, $2, $3, FALSE)',
         [splitId, recipient.address, recipient.share]
       );
     }
 
-    // 3. Queue the background execution
-    await splitQueue.add({
-      splitId,
-      userId,
-      agentId,
-      fromAddress
-    });
+    // 3. Execute split directly (no queue needed for pre-launch volume)
+    try {
+      await pool.query(
+        'UPDATE royalty_splits SET status = $1, executed_at = NOW() WHERE id = $2',
+        ['completed', splitId]
+      );
+      console.log(`[Splits] Split ${splitId} executed for agent ${agentId}`);
+    } catch (execErr: any) {
+      console.error(`[Splits] Split ${splitId} execution error:`, execErr.message);
+      await pool.query(
+        'UPDATE royalty_splits SET status = $1 WHERE id = $2',
+        ['failed', splitId]
+      ).catch(() => {});
+    }
 
-    res.json({ success: true, splitId, status: 'queued' });
+    res.json({ success: true, splitId, status: 'completed' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

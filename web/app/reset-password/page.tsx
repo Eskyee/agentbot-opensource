@@ -49,7 +49,7 @@ function ResetPasswordForm() {
       } else {
         setError(data.error || "Failed to reset password");
       }
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -58,16 +58,16 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-        <div className="text-center">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+        <div>
           <div className="text-5xl mb-4">✅</div>
-          <h1 className="text-2xl font-bold mb-2">Password Reset</h1>
-          <p className="text-gray-400 mb-6">
+          <h1 className="text-2xl font-bold tracking-tighter uppercase mb-2">Password Reset</h1>
+          <p className="text-sm text-zinc-400 mb-6">
             Your password has been reset successfully!
           </p>
           <Link
             href="/login"
-            className="inline-block w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black transition-colors"
+            className="block w-full bg-white text-black py-3 text-left text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
           >
             Log in with new password
           </Link>
@@ -78,14 +78,14 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-        <div className="text-center">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+        <div>
           <div className="text-5xl mb-4">❌</div>
-          <h1 className="text-2xl font-bold mb-2">Invalid Link</h1>
-          <p className="text-gray-400 mb-6">{error}</p>
+          <h1 className="text-2xl font-bold tracking-tighter uppercase mb-2">Invalid Link</h1>
+          <p className="text-sm text-zinc-400 mb-6">{error}</p>
           <Link
             href="/forgot-password"
-            className="inline-block w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black transition-colors"
+            className="block w-full bg-white text-black py-3 text-left text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
           >
             Request new reset link
           </Link>
@@ -95,14 +95,15 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-      <h1 className="text-2xl font-bold mb-2 text-center">New Password</h1>
-      <p className="text-gray-400 mb-6 text-center">
+    <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Password Reset</div>
+      <h1 className="text-2xl font-bold tracking-tighter uppercase mb-2">New Password</h1>
+      <p className="text-sm text-zinc-400 mb-6">
         Enter your new password below
       </p>
       <form className="space-y-5" onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="password" className="block text-gray-300 mb-1">New Password</label>
+          <label htmlFor="password" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">New Password</label>
           <input
             type="password"
             id="password"
@@ -110,13 +111,13 @@ function ResetPasswordForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
             placeholder="••••••••"
             minLength={6}
           />
         </div>
         <div>
-          <label htmlFor="confirmPassword" className="block text-gray-300 mb-1">Confirm Password</label>
+          <label htmlFor="confirmPassword" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Confirm Password</label>
           <input
             type="password"
             id="confirmPassword"
@@ -124,40 +125,44 @@ function ResetPasswordForm() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
             placeholder="••••••••"
             minLength={6}
           />
         </div>
-        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+        {error && <div className="text-red-400 text-xs">{error}</div>}
         <button
           type="submit"
-          className="w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black transition-colors"
+          className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
           disabled={loading}
         >
           {loading ? "Resetting..." : "Reset Password"}
         </button>
       </form>
-      <p className="mt-6 text-center text-gray-400">
+      <p className="mt-6 text-zinc-500 text-xs">
         Need a new link?{' '}
-        <Link href="/forgot-password" className="text-white hover:underline">Request again</Link>
+        <Link href="/forgot-password" className="text-white hover:text-zinc-300">Request again</Link>
       </p>
+    </div>
+  );
+}
+
+function ResetPasswordFallback() {
+  return (
+    <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+      <div className="animate-pulse space-y-5">
+        <div className="h-10 bg-zinc-800"></div>
+        <div className="h-10 bg-zinc-800"></div>
+        <div className="h-12 bg-zinc-800"></div>
+      </div>
     </div>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-950">
-      <Suspense fallback={
-        <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-          <div className="animate-pulse space-y-5">
-            <div className="h-10 bg-gray-800 rounded-lg"></div>
-            <div className="h-10 bg-gray-800 rounded-lg"></div>
-            <div className="h-12 bg-gray-800 rounded-lg"></div>
-          </div>
-        </div>
-      }>
+    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-blue-500/30 font-mono">
+      <Suspense fallback={<ResetPasswordFallback />}>
         <ResetPasswordForm />
       </Suspense>
     </main>

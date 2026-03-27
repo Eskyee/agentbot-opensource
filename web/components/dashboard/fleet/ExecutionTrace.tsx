@@ -55,7 +55,8 @@ export function ExecutionTrace({ tasks }: ExecutionTraceProps) {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   // Take last 10 tasks, ordered most recent first for display
-  const displayTasks = tasks.slice(-10).reverse();
+  const safeTasks = Array.isArray(tasks) ? tasks : [];
+  const displayTasks = safeTasks.slice(-10).reverse();
 
   if (displayTasks.length === 0) {
     return (

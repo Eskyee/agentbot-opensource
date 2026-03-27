@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useCustomSession, customSignOut } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
@@ -45,39 +45,73 @@ interface InstanceData {
   verifiedAt?: string | null
 }
 
-const navItems = [
-  { icon: '📊', label: 'Dashboard', href: '/dashboard' },
-  // Mission Control
-  { icon: '🛸', label: 'Agent Fleet', href: '/dashboard/fleet' },
-  { icon: '💰', label: 'Cost Tracking', href: '/dashboard/cost' },
-  { icon: '📡', label: 'System Pulse', href: '/dashboard/system-pulse' },
-  { icon: '🧠', label: 'Memory Log', href: '/dashboard/memory' },
-  { icon: '🌅', label: 'Daily Brief', href: '/dashboard/daily-brief' },
-  { icon: '🔭', label: 'Tech Updates', href: '/dashboard/tech-updates' },
-  { icon: '📈', label: 'Market Intel', href: '/dashboard/market-intel' },
-  { icon: '🔊', label: 'Signals', href: '/dashboard/signals' },
-  // Agent Management
-  { icon: '📋', label: 'Tasks', href: '/dashboard/tasks' },
-  { icon: '🎨', label: 'Personality', href: '/dashboard/personality' },
-  { icon: '🔧', label: 'Skills', href: '/dashboard/skills' },
-  { icon: '🤖', label: 'Swarms', href: '/dashboard/swarms' },
-  { icon: '⚡', label: 'Workflows', href: '/dashboard/workflows' },
-  // Tools & Account
-  { icon: '📁', label: 'Files', href: '/dashboard/files' },
-  { icon: '📆', label: 'Calendar', href: '/dashboard/calendar' },
-  { icon: '💓', label: 'Heartbeat', href: '/dashboard/heartbeat' },
-  { icon: '✅', label: 'Verify', href: '/dashboard/verify' },
-  { icon: '🎛️', label: 'DJ Stream', href: '/dashboard/dj-stream' },
-  { icon: '💹', label: 'Trading', href: '/dashboard/trading' },
-  { icon: '🛒', label: 'Marketplace', href: '/marketplace' },
-  { icon: '💳', label: 'Billing', href: '/billing' },
-  { icon: '🔑', label: 'API Keys', href: '/dashboard/keys' },
-  { icon: '⚙️', label: 'Settings', href: '/settings' },
+const navSections = [
+  {
+    label: 'Overview',
+    items: [
+      { label: 'Dashboard', href: '/dashboard', icon: '◈' },
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
+    ]
+  },
+  {
+    label: 'Agents',
+    items: [
+      { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
+      { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
+      { label: 'Swarms', href: '/dashboard/swarms', icon: '◇' },
+      { label: 'Workflows', href: '/dashboard/workflows', icon: '▹' },
+    ]
+  },
+  {
+    label: 'Intelligence',
+    items: [
+      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '☉' },
+      { label: 'Market Intel', href: '/dashboard/market-intel', icon: '◉' },
+      { label: 'Signals', href: '/dashboard/signals', icon: '⚡' },
+      { label: 'Memory', href: '/dashboard/memory', icon: '◐' },
+      { label: 'Tasks', href: '/dashboard/tasks', icon: '☑' },
+    ]
+  },
+  {
+    label: 'Tools',
+    items: [
+      { label: 'Calendar', href: '/dashboard/calendar', icon: '◌' },
+      { label: 'Files', href: '/dashboard/files', icon: '▣' },
+      { label: 'Skills', href: '/dashboard/skills', icon: '✦' },
+      { label: 'Personality', href: '/dashboard/personality', icon: '◐' },
+      { label: 'Tech Updates', href: '/dashboard/tech-updates', icon: '↻' },
+    ]
+  },
+  {
+    label: 'Platform',
+    items: [
+      { label: 'Cost Tracking', href: '/dashboard/cost', icon: '$' },
+      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '♥' },
+      { label: 'Heartbeat', href: '/dashboard/heartbeat', icon: '♡' },
+      { label: 'API Keys', href: '/dashboard/keys', icon: '⚿' },
+    ]
+  },
+  {
+    label: 'Media',
+    items: [
+      { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '♫' },
+      { label: 'Trading', href: '/dashboard/trading', icon: '↕' },
+      { label: 'Verify', href: '/dashboard/verify', icon: '✓' },
+    ]
+  },
+  {
+    label: 'Account',
+    items: [
+      { label: 'Billing', href: '/billing', icon: '☆' },
+      { label: 'Settings', href: '/settings', icon: '⚙' },
+      { label: 'Marketplace', href: '/marketplace', icon: '⬡' },
+    ]
+  },
 ]
 
 function DashboardContent() {
   const pathname = usePathname()
-  const { data: session, status } = useSession()
+  const { data: session, status } = useCustomSession()
   const router = useRouter()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const searchParams = useSearchParams()
@@ -95,12 +129,12 @@ function DashboardContent() {
   const [tasks, setTasks] = useState<{id: string; title: string; status: string; type: string}[]>([])
   const [signingOut, setSigningOut] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; icon: string}[]>([
-    { id: '1', action: 'Agent online', agent: 'Atlas', time: '2 min ago', icon: '🟢' },
-    { id: '2', action: 'Calendar sync completed', agent: 'Atlas', time: '8 min ago', icon: '⏱️' },
-    { id: '3', action: 'WhatsApp session started', agent: 'Atlas', time: '22 min ago', icon: '💬' },
-    { id: '4', action: 'Skill installed', agent: 'Atlas', time: '1 hour ago', icon: '🔌' },
-    { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', icon: '⚡' },
+  const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; status: string}[]>([
+    { id: '1', action: 'Agent online', agent: 'Atlas', time: '2 min ago', status: 'green' },
+    { id: '2', action: 'Calendar sync completed', agent: 'Atlas', time: '8 min ago', status: 'blue' },
+    { id: '3', action: 'WhatsApp session started', agent: 'Atlas', time: '22 min ago', status: 'blue' },
+    { id: '4', action: 'Skill installed', agent: 'Atlas', time: '1 hour ago', status: 'zinc' },
+    { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', status: 'green' },
   ])
 
   useEffect(() => {
@@ -109,7 +143,7 @@ function DashboardContent() {
     }
   }, [status, router])
 
-    useEffect(() => {
+    useEffect(() => { (async () => {
       // Clear localStorage instance data when no session (user logged out)
       if (!session) {
         localStorage.removeItem('agentbot_instance')
@@ -122,10 +156,9 @@ function DashboardContent() {
       const urlUserId = searchParams.get('id')
       const storedData = localStorage.getItem('agentbot_instance')
       
-      // If no session, don't proceed with fetching instance data
+      // If no session, show login prompt
       if (!session) {
-        setInstance(null)
-        setError('')
+        setError('Please sign in to view your dashboard')
         setLoading(false)
         return
       }
@@ -139,6 +172,36 @@ function DashboardContent() {
         botUsername = parsed.botUsername || ''
       }
       
+      // Fallback: fetch from API if no localStorage data
+      if (!userId) {
+        try {
+          const agentsRes = await fetch('/api/agents')
+          const agentsData = await agentsRes.json()
+          if (agentsData.agents && agentsData.agents.length > 0) {
+            userId = agentsData.agents[0].userId
+            botUsername = agentsData.agents[0].botUsername || ''
+          }
+        } catch {}
+      }
+
+      // Fallback: check DB for OpenClaw instance
+      if (!userId) {
+        try {
+          const openclawRes = await fetch('/api/user/openclaw')
+          const openclawData = await openclawRes.json()
+          if (openclawData.openclawInstanceId) {
+            userId = openclawData.openclawInstanceId
+            // Also restore localStorage for future visits
+            if (openclawData.openclawUrl) {
+              localStorage.setItem('agentbot_instance', JSON.stringify({
+                userId: openclawData.openclawInstanceId,
+                url: openclawData.openclawUrl,
+              }))
+            }
+          }
+        } catch {}
+      }
+
       if (!userId) {
         setError('No instance found. Please deploy first.')
         setLoading(false)
@@ -147,6 +210,7 @@ function DashboardContent() {
       
       fetchInstance(userId, botUsername)
       fetchCredits()
+    })(); // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams, session])
 
   const fetchCredits = async () => {
@@ -265,35 +329,49 @@ function DashboardContent() {
 
    if (loading) {
      return (
-       <div className="flex items-center justify-center mt-[4rem] h-[calc(100vh-4rem)] bg-black">
-         <div className="text-center">
-           <div className="text-5xl mb-4 animate-pulse">🦞</div>
-           <p className="text-gray-400">Loading your instance...</p>
+       <div className="flex items-center justify-center mt-[4rem] h-[calc(100vh-4rem)] bg-black font-mono">
+         <div className="text-left">
+           <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
+           <p className="text-zinc-400 text-sm">Loading your instance...</p>
          </div>
        </div>
      )
    }
 
   if (error) {
+    const isAuthError = error.includes('sign in') || error.includes('Unauthorized')
+    const isNoInstance = error.includes('deploy first') || error.includes('No instance')
+    const isInstanceError = !isAuthError && !isNoInstance // backend returned error for existing instance
+
+    let title = 'Deploy your first agent'
+    let cta = { label: 'Deploy Now', href: '/onboard' }
+
+    if (isAuthError) {
+      title = 'Sign in required'
+      cta = { label: 'Sign In', href: '/login?callbackUrl=/dashboard' }
+    } else if (isInstanceError) {
+      title = 'Instance unavailable'
+      cta = { label: 'View Status', href: '/dashboard/system-pulse' }
+    }
+
     return (
-      <div className="flex h-screen bg-black">
+      <div className="flex h-screen bg-black font-mono">
         <DashboardSidebar
           userName={userName}
           plan={instance?.plan}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
-        
+
         <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center max-w-md">
-            <div className="text-6xl mb-4">🚀</div>
-            <h1 className="text-2xl font-bold mb-4">Deploy your first agent</h1>
-            <p className="text-gray-400 mb-8">{error}</p>
+          <div className="text-left max-w-md">
+            <h1 className="text-2xl font-bold uppercase tracking-tighter mb-4">{title}</h1>
+            <p className="text-zinc-400 text-sm mb-8">{error}</p>
             <Link
-              href="/onboard"
-              className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+              href={cta.href}
+              className="inline-block bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
             >
-              Deploy New Agent →
+              {cta.label}
             </Link>
           </div>
         </div>
@@ -305,10 +383,10 @@ function DashboardContent() {
 
   if (status === 'loading' || status === 'unauthenticated') {
     return (
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🦞</div>
-          <p className="text-gray-400">Loading...</p>
+      <div className="flex items-center justify-center h-screen bg-black font-mono">
+        <div className="text-left">
+          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
+          <p className="text-zinc-400 text-sm">Loading...</p>
         </div>
       </div>
     )
@@ -317,8 +395,14 @@ function DashboardContent() {
   const isRunning = instance.status === 'running'
   const startedAt = instance.startedAt
 
+  const activityDotColor = (s: string) => {
+    if (s === 'green') return 'bg-green-400'
+    if (s === 'blue') return 'bg-blue-500'
+    return 'bg-zinc-500'
+  }
+
   return (
-    <div className="flex h-screen bg-black">
+    <div className="flex min-h-screen bg-black font-mono pt-14">
       <DashboardSidebar
         userName={userName}
         credits={credits}
@@ -327,143 +411,136 @@ function DashboardContent() {
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-4 lg:p-8">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors z-50"
-                aria-label="Open menu"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold">Mission Control</h1>
-                <p className="text-gray-400 text-sm lg:text-base">Agent monitoring & control center</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/30 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                <span className="text-sm text-green-400">System Online</span>
-              </div>
-              <a
-                href="/agents"
-                className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
-              >
-                <span>+</span> New Agent
-              </a>
-              {instance?.verified && (
-                <AgentVerifiedBadge verified={instance.verified} verificationType={instance.verificationType} />
-              )}
-            </div>
+      <div className="flex-1 flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold uppercase tracking-tighter">◈ Mission Control</span>
           </div>
+          <div className="flex items-center gap-3">
+            <a
+              href="/dashboard/wallet"
+              className="hidden sm:inline-block border border-zinc-800 px-4 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              ◎ Wallet
+            </a>
+            <a
+              href="/agents"
+              className="bg-white text-black px-4 sm:px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            >
+              + New Agent
+            </a>
+          </div>
+        </header>
 
-          {/* Mission Control Header */}
-          <div className="grid gap-4 md:grid-cols-4 mb-8">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-4 lg:p-8">
+          {/* Stats Cards */}
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Active Agents</span>
-                <span className="text-2xl">🤖</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Active Agents</span>
               </div>
-              <div className="text-3xl font-bold">1<span className="text-lg text-gray-500 font-normal">/6</span></div>
+              <div className="text-3xl font-bold">1<span className="text-lg text-zinc-500 font-normal">/6</span></div>
               <div className="text-xs text-green-400 mt-1">+2 today</div>
             </div>
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Token Spend</span>
-                <span className="text-2xl">💰</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Token Spend</span>
               </div>
               <div className="text-3xl font-bold">£12.40</div>
               <div className="text-xs text-green-400 mt-1">+8.2% this month</div>
             </div>
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Sessions</span>
-                <span className="text-2xl">💬</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions</span>
               </div>
               <div className="text-3xl font-bold">11</div>
-              <div className="text-xs text-gray-500 mt-1">active now</div>
+              <div className="text-xs text-zinc-500 mt-1">active now</div>
             </div>
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-4 border border-gray-700">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Skills</span>
-                <span className="text-2xl">🛠️</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Skills</span>
               </div>
-              <div className="text-3xl font-bold">8<span className="text-lg text-gray-500 font-normal">/14</span></div>
-              <div className="text-xs text-blue-400 mt-1">+2 this week</div>
+              <div className="text-3xl font-bold">8<span className="text-lg text-zinc-500 font-normal">/14</span></div>
+              <div className="text-xs text-blue-500 mt-1">+2 this week</div>
             </div>
           </div>
 
           {/* System Vitals */}
-          <div className="grid gap-4 md:grid-cols-3 mb-8">
-            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+          <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+            <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">CPU</span>
-                <span className="text-gray-500 text-sm">{stats?.cpu || '34%'}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">CPU</span>
+                <span className="text-zinc-500 text-sm">{stats?.cpu || '34%'}</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full" style={{ width: stats?.cpu || '34%' }} />
+              <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-white" style={{ width: stats?.cpu || '34%' }} />
               </div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Memory</span>
-                <span className="text-gray-500 text-sm">{stats?.memory || '62%'}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Memory</span>
+                <span className="text-zinc-500 text-sm">{stats?.memory || '62%'}</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" style={{ width: stats?.memory || '62%' }} />
+              <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-blue-500" style={{ width: stats?.memory || '62%' }} />
               </div>
             </div>
-            <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-gray-400 text-sm">Disk</span>
-                <span className="text-gray-500 text-sm">45%</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Disk</span>
+                <span className="text-zinc-500 text-sm">45%</span>
               </div>
-              <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full" style={{ width: '45%' }} />
+              <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-white" style={{ width: '45%' }} />
               </div>
             </div>
           </div>
 
           {/* Activity Feed */}
-          <div className="bg-gray-900 rounded-xl border border-gray-800 mb-8">
-            <div className="p-4 border-b border-gray-800">
-              <h2 className="font-semibold">Recent Activity</h2>
+          <div className="bg-zinc-900 border border-zinc-800 mb-8">
+            <div className="p-4 border-b border-zinc-800">
+              <h2 className="text-xs font-bold uppercase tracking-widest">Recent Activity</h2>
             </div>
-            <div className="divide-y divide-gray-800">
-              {activities.map((activity) => (
-                <div key={activity.id} className="flex items-center gap-4 p-4 hover:bg-gray-800/50 transition-colors">
-                  <span className="text-xl">{activity.icon}</span>
+            <div>
+              {activities.map((activity, i) => (
+                <div key={activity.id} className={`flex items-center gap-4 p-4 hover:bg-zinc-800/50 transition-colors ${i > 0 ? 'border-t border-zinc-900' : ''}`}>
+                  <span className={`w-2 h-2 rounded-full ${activityDotColor(activity.status)}`} />
                   <div className="flex-1">
-                    <div className="text-sm">{activity.action}</div>
-                    <div className="text-xs text-gray-500">{activity.agent}</div>
+                    <div className="text-sm text-zinc-400">{activity.action}</div>
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600">{activity.agent}</div>
                   </div>
-                  <div className="text-xs text-gray-500">{activity.time}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">{activity.time}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>🤖</span> Agent Details
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Agent Details
               </h2>
               <dl className="space-y-3">
                 {instance?.botUsername && (
                   <div>
-                    <dt className="text-xs text-gray-500 uppercase">Telegram</dt>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Telegram</dt>
                     <dd className="font-mono">
                       <a 
                         href={`https://t.me/${instance?.botUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-400 hover:underline"
+                        className="text-blue-500 hover:underline"
                       >
                         @{instance?.botUsername}
                       </a>
@@ -471,59 +548,59 @@ function DashboardContent() {
                   </div>
                 )}
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Instance ID</dt>
-                  <dd className="font-mono text-sm text-gray-300">{instance?.userId}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Instance ID</dt>
+                  <dd className="font-mono text-sm text-zinc-400">{instance?.userId}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">URL</dt>
-                  <dd className="font-mono text-sm text-gray-300 break-all">
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">URL</dt>
+                  <dd className="font-mono text-sm text-zinc-400 break-all">
                     <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
                       {instance?.subdomain}
                     </a>
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Plan</dt>
-                  <dd className="text-gray-300 capitalize">{instance?.plan || 'free'}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Plan</dt>
+                  <dd className="text-zinc-400 capitalize">{instance?.plan || 'free'}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Version</dt>
-                  <dd className="font-mono text-gray-300">{instance?.openclawVersion || '2026.2.26'}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
+                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || '2026.2.26'}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-gray-500 uppercase">Started</dt>
-                  <dd className="text-gray-300">{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>
+                  <dd className="text-zinc-400">{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
                 </div>
               </dl>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>📊</span> Stats & Health
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Stats & Health
               </h2>
               <dl className="space-y-3">
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">CPU</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.cpu || 'N/A'}</dd>
+                  <dt className="text-zinc-500">CPU</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.cpu || 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Memory</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.memory || 'N/A'}</dd>
+                  <dt className="text-zinc-500">Memory</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.memory || 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Uptime</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.uptime || 'N/A'}</dd>
+                  <dt className="text-zinc-500">Uptime</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.uptime || 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Messages</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.messages ?? 'N/A'}</dd>
+                  <dt className="text-zinc-500">Messages</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.messages ?? 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Errors</dt>
-                  <dd className="text-gray-300 font-mono">{stats?.errors ?? 'N/A'}</dd>
+                  <dt className="text-zinc-500">Errors</dt>
+                  <dd className="text-zinc-400 font-mono">{stats?.errors ?? 'N/A'}</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-gray-500">Health</dt>
+                  <dt className="text-zinc-500">Health</dt>
                   <dd className={`font-mono ${stats?.health === 'healthy' ? 'text-green-400' : 'text-yellow-400'}`}>
                     {stats?.health || 'N/A'}
                   </dd>
@@ -532,38 +609,38 @@ function DashboardContent() {
               
               <div className="mt-4 space-y-3">
                 <div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
                     <span>CPU</span>
                     <span>{stats?.cpu || '0%'}</span>
                   </div>
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className={`h-full bg-white rounded-full ${getBarWidthClass(stats?.cpu)}`} />
+                  <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                    <div className={`h-full bg-white ${getBarWidthClass(stats?.cpu)}`} />
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between text-xs text-gray-500 mb-1">
+                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
                     <span>Memory</span>
                     <span>{stats?.memory || '0%'}</span>
                   </div>
-                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div className={`h-full bg-purple-500 rounded-full ${getBarWidthClass(stats?.memory)}`} />
+                  <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                    <div className={`h-full bg-blue-500 ${getBarWidthClass(stats?.memory)}`} />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>⚡</span> Quick Actions
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Quick Actions
               </h2>
               <div className="space-y-3">
                 <a
                   href={instance?.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full bg-green-600 hover:bg-green-500 px-4 py-3 rounded-lg transition-colors"
+                  className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                 >
-                  <span className="font-semibold">🎮 Open OpenClaw UI</span>
+                  <span>Open OpenClaw UI</span>
                   <span>→</span>
                 </a>
                 {instance?.botUsername && (
@@ -571,118 +648,120 @@ function DashboardContent() {
                     href={`https://t.me/${instance?.botUsername}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between w-full bg-blue-600 hover:bg-blue-500 px-4 py-3 rounded-lg transition-colors"
+                    className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
                   >
-                    <span className="font-semibold">📱 Open Telegram</span>
+                    <span>Open Telegram</span>
                     <span>→</span>
                   </a>
                 )}
                 <button
                   onClick={() => performAction('update')}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-purple-600 hover:bg-purple-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
                 >
-                  <span>Update OpenClaw</span>
-                  {actionLoading === 'update' ? <span className="animate-spin">⏳</span> : <span>⬆️</span>}
+                  <span>Update</span>
+                  {actionLoading === 'update' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↑</span>}
                 </button>
                 <button
                   onClick={() => performAction('restart')}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
                 >
                   <span>Restart</span>
-                  {actionLoading === 'restart' ? <span className="animate-spin">⏳</span> : <span>🔄</span>}
+                  {actionLoading === 'restart' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↻</span>}
                 </button>
                 {isRunning ? (
                   <button
                     onClick={() => performAction('stop')}
                     disabled={!!actionLoading}
-                    className="flex items-center justify-between w-full bg-red-600 hover:bg-red-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                   >
                     <span>Stop</span>
-                    {actionLoading === 'stop' ? <span className="animate-spin">⏳</span> : <span>⏹</span>}
+                    {actionLoading === 'stop' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>■</span>}
                   </button>
                 ) : (
                   <button
                     onClick={() => performAction('start')}
                     disabled={!!actionLoading}
-                    className="flex items-center justify-between w-full bg-green-600 hover:bg-green-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
                   >
                     <span>Start</span>
-                    {actionLoading === 'start' ? <span className="animate-spin">⏳</span> : <span>▶️</span>}
+                    {actionLoading === 'start' ? <span className="w-2 h-2 rounded-full bg-black animate-pulse" /> : <span>▶</span>}
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>🎛️</span> Control Panel
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Control Panel
               </h2>
               <div className="space-y-3">
                 <button
                   onClick={() => performAction('repair')}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-orange-600 hover:bg-orange-500 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
                 >
                   <div className="text-left">
-                    <div className="font-semibold">🔧 Repair Agent</div>
-                    <div className="text-xs opacity-70">Full reconfigure — fixes broken proxy, tokens, config</div>
+                    <div>Repair Agent</div>
+                    <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-600 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
                   </div>
-                  {actionLoading === 'repair' ? <span className="animate-spin">⏳</span> : <span>→</span>}
+                  {actionLoading === 'repair' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>→</span>}
                 </button>
                 
-                <div className="bg-gray-800 rounded-lg p-3">
-                  <div className="text-xs text-gray-400 mb-2">Gateway Token</div>
+                <div className="border border-zinc-800 p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Gateway Token</div>
                   <div className="flex items-center gap-2">
                     <input
                       type="password"
                       readOnly
                       value={instance?.gatewayToken ? '••••••••••••' : ''}
                       placeholder="Click to load token"
-                      className="flex-1 bg-gray-900 border border-gray-700 rounded px-3 py-2 text-sm font-mono"
+                      className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm font-mono focus:outline-none focus:border-zinc-600"
                     />
                     <button
                       onClick={handleCopyToken}
-                      className="bg-white text-black hover:bg-gray-200 px-3 py-2 rounded text-sm font-semibold"
+                      className="bg-white text-black px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                     >
-                      📋
+                      Copy
                     </button>
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-[10px] text-zinc-600 mt-2">
                     Paste this token in the Control UI settings to connect.
                   </div>
                 </div>
                 
                 <button
                   onClick={() => {
-                    if (confirm('⚠️ Wipe memory, identity & conversation history? This cannot be undone.')) {
+                    if (confirm('Wipe memory, identity & conversation history? This cannot be undone.')) {
                       performAction('reset-memory')
                     }
                   }}
                   disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full bg-red-700 hover:bg-red-600 px-4 py-3 rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                 >
                   <div className="text-left">
-                    <div className="font-semibold">⚠️ Reset Agent Memory</div>
-                    <div className="text-xs opacity-70">Wipe memory, identity & conversation history</div>
+                    <div>Reset Agent Memory</div>
+                    <div className="text-[10px] font-normal normal-case tracking-normal text-red-400/60 mt-1">Wipe memory, identity & conversation history</div>
                   </div>
-                  {actionLoading === 'reset-memory' ? <span className="animate-spin">⏳</span> : <span>→</span>}
+                  {actionLoading === 'reset-memory' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>→</span>}
                 </button>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>📋</span> Tasks
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Tasks
               </h2>
               <div className="flex gap-2 mb-4 overflow-x-auto">
                 {['all', 'recurring', 'chat', 'scheduled', 'completed'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTaskTab(tab)}
-                    className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap ${
-                      activeTaskTab === tab ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
+                    className={`border px-3 py-1.5 text-[10px] uppercase tracking-widest whitespace-nowrap transition-colors ${
+                      activeTaskTab === tab
+                        ? 'bg-white text-black border-white'
+                        : 'border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
                     }`}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -696,7 +775,7 @@ function DashboardContent() {
                     value={taskInput}
                     onChange={(e) => setTaskInput(e.target.value)}
                     placeholder="Tell your agent what to do..."
-                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-white"
+                    className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm focus:outline-none focus:border-zinc-600"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && taskInput.trim()) {
                         setTasks([...tasks, { id: Date.now().toString(), title: taskInput, status: 'pending', type: 'chat' }])
@@ -704,29 +783,28 @@ function DashboardContent() {
                       }
                     }}
                   />
-                  <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200">
+                  <button className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
                     Send
                   </button>
                 </div>
                 <div className="flex gap-2 mt-3 flex-wrap">
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">🔍 Research</button>
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📧 Draft email</button>
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">📈 Market update</button>
-                  <button className="bg-gray-800 hover:bg-gray-700 px-3 py-1.5 rounded-lg text-xs">✍️ Write a post</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Research</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Draft email</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Market update</button>
+                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Write a post</button>
                 </div>
               </div>
               <div className="space-y-2">
                 {tasks.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 text-sm">
-                    <div className="text-4xl mb-2">📋</div>
+                  <div className="py-8 text-zinc-500 text-sm">
                     No tasks yet
                   </div>
                 ) : (
                   tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab).map((task) => (
-                    <div key={task.id} className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2">
-                      <span className="text-sm">{task.title}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded ${
-                        task.status === 'completed' ? 'bg-green-900 text-green-400' : 'bg-yellow-900 text-yellow-400'
+                    <div key={task.id} className="flex items-center justify-between border border-zinc-800 px-4 py-2">
+                      <span className="text-sm text-zinc-400">{task.title}</span>
+                      <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 ${
+                        task.status === 'completed' ? 'text-green-400' : 'text-yellow-400'
                       }`}>
                         {task.status}
                       </span>
@@ -736,26 +814,28 @@ function DashboardContent() {
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>💓</span> Heartbeat
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Heartbeat
               </h2>
-              <p className="text-sm text-gray-400 mb-4">Your agent's pulse. See when it last checked in and control how often it does.</p>
+              <p className="text-sm text-zinc-400 mb-4">Your agent&apos;s pulse. See when it last checked in and control how often it does.</p>
               
               <div className="flex items-center gap-2 mb-4">
                 <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                <span className="text-sm">On schedule</span>
+                <span className="text-sm text-zinc-400">On schedule</span>
               </div>
               
               <div className="mb-4">
-                <div className="text-xs text-gray-500 mb-2">Frequency</div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Frequency</div>
                 <div className="flex gap-2 flex-wrap">
                   {['1h', '3h', '6h', '12h', 'Off'].map((freq) => (
                     <button
                       key={freq}
                       onClick={() => setHeartbeatFreq(freq)}
-                      className={`px-3 py-1.5 rounded-lg text-xs ${
-                        heartbeatFreq === freq ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:text-white'
+                      className={`border px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
+                        heartbeatFreq === freq
+                          ? 'bg-white text-black border-white'
+                          : 'border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
                       }`}
                     >
                       {freq}
@@ -766,139 +846,142 @@ function DashboardContent() {
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <div className="text-xs text-gray-500">Last seen</div>
-                  <div className="text-sm">{lastSeen || 'Just now'}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Last seen</div>
+                  <div className="text-sm text-zinc-400">{lastSeen || 'Just now'}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500">Next in</div>
-                  <div className="text-sm">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Next in</div>
+                  <div className="text-sm text-zinc-400">
                     {heartbeatFreq === 'Off' ? '—' : heartbeatFreq}
                   </div>
                 </div>
               </div>
               
-              <div className="bg-gray-800 rounded-lg p-3">
+              <div className="border border-zinc-800 p-4">
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-400">Daily heartbeat pool</span>
-                  <span>{heartbeatCredits} of 200 remaining</span>
+                  <span className="text-zinc-400">Daily heartbeat pool</span>
+                  <span className="text-zinc-400">{heartbeatCredits} of 200 remaining</span>
                 </div>
-                <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div className="h-full bg-green-500 rounded-full" style={{ width: `${(200 - heartbeatCredits) / 2}%` }} />
+                <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                  <div className="h-full bg-white" style={{ width: `${(200 - heartbeatCredits) / 2}%` }} />
                 </div>
-                <div className="text-xs text-gray-500 mt-2">Separate from your daily credits - heartbeats never eat into your quota.</div>
+                <div className="text-[10px] text-zinc-600 mt-2">Separate from your daily credits — heartbeats never eat into your quota.</div>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>🎯</span> Active Skills
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Active Skills
               </h2>
               <div className="space-y-2">
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Web Scraping</span>
-                  <span className="text-green-400">✓</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Web Scraping</span>
+                  <span className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Email</span>
-                  <span className="text-green-400">✓</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Email</span>
+                  <span className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Calendar</span>
-                  <span className="text-green-400">✓</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Calendar</span>
+                  <span className="w-2 h-2 rounded-full bg-green-400" />
                 </div>
-                <a href="/marketplace" className="block text-center text-sm text-white hover:underline mt-3">
-                  + Add more skills →
+                <a href="/marketplace" className="block text-sm text-zinc-400 hover:text-white mt-3 transition-colors">
+                  + Add more skills
                 </a>
               </div>
             </div>
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>💬</span> Channels
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Channels
               </h2>
               <div className="space-y-2">
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Telegram</span>
-                  <span className="text-green-400">✓ Connected</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Telegram</span>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-500">Connected</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>Discord</span>
-                  <span className="text-gray-500">Not connected</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">Discord</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Not connected</span>
                 </div>
-                <div className="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
-                  <span>WhatsApp</span>
-                  <span className="text-gray-500">Not connected</span>
+                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                  <span className="text-zinc-400">WhatsApp</span>
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Not connected</span>
                 </div>
               </div>
             </div>
 
             <WalletCard />
-            <AIModelCard plan={instance?.plan || 'starter'} />
+            <AIModelCard plan={instance?.plan || 'free'} />
 
-            <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <span>❓</span> Help & Support
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Help & Support
               </h2>
               <div className="space-y-3 text-sm">
-                <a href="https://raveculture.mintlify.app" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
-                  <span>📚</span> Documentation
+                <a href="/docs" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Documentation
                 </a>
-                <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
-                  <span>💬</span> Discord
+                <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Discord
                 </a>
-                <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-gray-400 hover:text-gray-200">
-                  <span>📧</span> Contact
+                <a href="mailto:YOUR_ADMIN_EMAIL_2" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Contact
                 </a>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 bg-gray-900 rounded-2xl p-6 border border-gray-800">
-            <h2 className="text-lg font-semibold mb-4">📝 Recent Activity</h2>
-            <div className="text-gray-400 text-sm space-y-2">
+          <div className="mt-6 bg-zinc-900 border border-zinc-800 p-6">
+            <h2 className="text-xs font-bold uppercase tracking-widest mb-4">Recent Activity</h2>
+            <div className="text-zinc-400 text-sm space-y-2">
               <div className="flex items-center gap-3">
-                <span>•</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                 <span>Instance started</span>
-                <span className="ml-auto text-gray-600">{startedAt ? new Date(startedAt).toLocaleTimeString() : 'N/A'}</span>
+                <span className="ml-auto text-zinc-600 text-[10px] uppercase tracking-widest">{startedAt ? new Date(startedAt).toLocaleTimeString() : 'N/A'}</span>
               </div>
               <div className="flex items-center gap-3">
-                <span>•</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                 <span>Connected to Telegram</span>
               </div>
               <div className="flex items-center gap-3">
-                <span>•</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
                 <span>Skills loaded</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 bg-gradient-to-r from-white/20 to-gray-200/20 rounded-2xl p-6 border border-white/30">
+          <div className="mt-6 border border-zinc-800 p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-semibold mb-1">🎁 Invite Friends, Get Free Months</h2>
-                <p className="text-gray-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
-                <div className="flex items-center gap-3">
+                <h2 className="text-xs font-bold uppercase tracking-widest mb-1">Invite Friends, Get Free Months</h2>
+                <p className="text-zinc-400 text-sm mb-4">Share your link — get £10 credit per referral</p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                   <input
                     type="text"
                     readOnly
                     value={`https://agentbot.raveculture.xyz/ref/${instance?.userId}`}
-                    className="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-300 w-64"
+                    className="bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm text-zinc-400 w-full sm:w-64 font-mono focus:outline-none"
                     placeholder="Referral link"
                     title="Referral link"
                   />
                   <button
                     onClick={() => navigator.clipboard.writeText(`https://agentbot.raveculture.xyz/ref/${instance?.userId}`)}
-                    className="bg-white text-black hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-semibold"
+                    className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors whitespace-nowrap"
                   >
                     Copy
                   </button>
                 </div>
               </div>
-              <div className="hidden md:block text-5xl">🎁</div>
             </div>
           </div>
         </div>
-      </main>
+        </main>
+      </div>
     </div>
   )
 }
@@ -917,13 +1000,13 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
       
       <aside className={`
         fixed md:static inset-y-0 left-0 z-50
-        w-64 bg-gray-900 border-r border-gray-800 flex flex-col
+        w-64 bg-zinc-950 border-r border-zinc-900 flex flex-col font-mono
         transform transition-transform duration-200 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <button
           onClick={onToggle}
-          className="md:hidden absolute top-4 right-4 p-2 text-gray-400 hover:text-white rounded-lg hover:bg-gray-800 transition-colors"
+          className="md:hidden absolute top-4 right-4 p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
           aria-label="Close sidebar"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -932,45 +1015,52 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
         </button>
 
         <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
-          <div className="space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={onToggle}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  pathname === item.href || pathname.startsWith(item.href + '/')
-                    ? 'bg-white/20 text-white' 
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                }`}
-              >
-                <span>{item.icon}</span>
-                <span className="font-medium">{item.label}</span>
-              </Link>
-            ))}
-          </div>
+          {navSections.map((section, i) => (
+            <div key={section.label} className={i > 0 ? 'mt-4' : ''}>
+              <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 px-4 mb-1.5">
+                {section.label}
+              </div>
+              <div className="space-y-0.5">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={onToggle}
+                    className={`flex items-center gap-2.5 px-4 py-2 text-xs transition-colors ${
+                      pathname === item.href || pathname.startsWith(item.href + '/')
+                        ? 'bg-zinc-900 text-white'
+                        : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                    }`}
+                  >
+                    <span className="text-[10px] w-4 text-left opacity-60">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
 
-          <Link href="/billing" onClick={onToggle} className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-            <div className="text-sm text-gray-400 mb-1">Your Plan</div>
-            <div className="text-xl font-bold capitalize">{plan || 'Underground'}</div>
+          <Link href="/billing" onClick={onToggle} className="block mt-8 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
+            <div className="text-xl font-bold capitalize">{plan || 'Solo'}</div>
           </Link>
         </nav>
 
-        <div className="p-4 border-t border-gray-800">
+        <div className="p-4 border-t border-zinc-900">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">
+            <div className="w-10 h-10 bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-white">
               {userName.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-medium truncate">{userName}</div>
-              <div className="text-sm text-blue-400">Sign up</div>
+              <div className="font-medium truncate text-sm">{userName}</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Sign up</div>
             </div>
           </div>
           <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white transition-colors"
+            onClick={() => customSignOut()}
+            className="w-full flex items-center justify-center gap-2 border border-zinc-800 px-4 py-2 text-sm text-zinc-500 hover:text-white hover:border-zinc-600 transition-colors"
           >
-            <span>🚪</span> Sign Out
+            Sign Out
           </button>
         </div>
       </aside>
@@ -982,10 +1072,10 @@ function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: { u
 export default function Dashboard() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center h-screen bg-black">
-        <div className="text-center">
-          <div className="text-5xl mb-4 animate-pulse">🦞</div>
-          <p className="text-gray-400">Loading...</p>
+      <div className="flex items-center justify-center h-screen bg-black font-mono">
+        <div className="text-left">
+          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
+          <p className="text-zinc-400 text-sm">Loading...</p>
         </div>
       </div>
     }>

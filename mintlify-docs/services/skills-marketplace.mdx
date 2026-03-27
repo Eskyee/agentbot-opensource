@@ -1,0 +1,178 @@
+---
+title: "Skills Marketplace"
+description: "Extend your crew with music-specific AI capabilities"
+---
+
+# Agent Skills Marketplace
+
+**Extend your agents with music-specific capabilities.** From artwork generation to catalog analysis.
+
+## Overview
+
+The Skills Marketplace lets you equip your agents with specialized capabilities designed for music operations. Each skill is a modular AI capability that integrates with your agent workflows.
+
+## Available Skills
+
+<CardGroup cols={2}>
+
+<Card title="Visual Synthesizer" icon="image">
+Auto-generate release-ready promotional art and video thumbnails using Stable Diffusion XL.
+
+**Capabilities:**
+- Album cover generation
+- Social media assets (Instagram, Telegram, Discord)
+- Video thumbnails
+- Merch mockups
+
+**Use case:** "Generate 5 Instagram story templates for my new release"
+</Card>
+
+<Card title="Track Archaeologist" icon="search">
+Deep catalog digging via BlockDB similarity search. Find tracks that match any audio fingerprint.
+
+**Capabilities:**
+- Similar sound detection
+- Sample clearance research
+- Influencer tracking
+- Catalog gap analysis
+
+**Use case:** "Find 10 tracks similar to this demo that were released in the last 6 months"
+</Card>
+
+<Card title="Setlist Oracle" icon="list-music">
+Analyze BPM, key, and energy curves across your entire catalog to build perfect DJ sets.
+
+**Capabilities:**
+- Energy flow analysis
+- Harmonic mixing suggestions
+- Crowd reading integration
+- Set pacing optimization
+
+**Use case:** "Build a 2-hour closing set that starts at 120 BPM and peaks at 138"
+</Card>
+
+<Card title="Groupie Manager" icon="users">
+Fan segmentation, lifecycle tracking, and automated merch drop campaigns.
+
+**Capabilities:**
+- Fan persona mapping
+- Purchase behavior prediction
+- Automated email/SMS campaigns
+- Churn prediction
+
+**Use case:** "Send a personalized promo to everyone who bought tickets but didn't buy merch"
+</Card>
+
+<Card title="Royalty Tracker" icon="coins">
+Track streaming royalties across Spotify, Apple Music, Beatport with automatic split calculations.
+
+**Capabilities:**
+- Multi-platform royalty aggregation
+- Automatic split calculations
+- USDC settlement ready
+- Historical trend analysis
+
+**Use case:** "Show me this quarter's streaming revenue by platform"
+</Card>
+
+<Card title="Demo Submitter" icon="send">
+Submit demos to labels and Base FM for airplay consideration with AI pitch optimization.
+
+**Capabilities:**
+- Label matching algorithm
+- Pitch optimization
+- A&R feedback analysis
+- Submission tracking
+
+**Use case:** "Submit my demo to labels that play dark techno"
+</Card>
+
+<Card title="Event Ticketing" icon="ticket">
+Sell tickets with USDC payments on Base via x402 protocol. Built-in payment processing.
+
+**Capabilities:**
+- x402 USDC payments
+- Multiple ticket tiers (GA, VIP, Early Bird)
+- Automatic confirmation
+- Refund processing
+
+**Use case:** "Create a ticket for my next warehouse event"
+</Card>
+
+<Card title="Event Scheduler" icon="calendar">
+Schedule events across Telegram, Discord, WhatsApp, Email with recurring support.
+
+**Capabilities:**
+- Multi-channel broadcast
+- Recurring events (daily/weekly/monthly)
+- Timezone support
+- RSVP tracking
+
+**Use case:** "Schedule a weekly newsletter every Monday at 6pm"
+</Card>
+
+<Card title="Venue Finder" icon="building">
+Find and book venues worldwide. Filter by city, capacity, price, and amenities.
+
+**Capabilities:**
+- Global venue database (UK, Europe, US, Asia)
+- Capacity filtering
+- Price comparison
+- Direct contact integration
+
+**Use case:** "Find a venue in London for 500 people under £2000"
+</Card>
+
+<Card title="Festival Finder" icon="sparkles">
+Discover festivals globally, compare lineups, and get personalized recommendations.
+
+**Capabilities:**
+- Festival search by genre/country
+- Lineup comparison
+- Budget recommendations
+- UK and Europe specialists
+
+**Use case:** "Find techno festivals in the UK under £350"
+</Card>
+
+</CardGroup>
+
+## Installing Skills
+
+```javascript
+// Install a skill for your agent
+const agent = await agentbot.agents.get('my-label-bot');
+
+// Add Visual Synthesizer
+await agent.skills.install('visual-synthesizer');
+
+// Now your agent can generate images
+const artwork = await agent.generate.artwork({
+  style: 'techno',
+  mood: 'dark-industrial',
+  format: 'instagram-story'
+});
+```
+
+## Custom Skills
+
+Need something specific? Build your own:
+
+```javascript
+// Create a custom skill
+await agentbot.skills.create({
+  name: 'My Custom Skill',
+  description: 'Analyzes track mix quality',
+  handler: async (audioBuffer) => {
+    // Your custom logic
+    return { mixQuality: 'professional', issues: [] };
+  },
+  triggers: ['analyze-mix', 'check-mix']
+});
+```
+
+## Pricing
+
+Skills are included in all tiers. Some skills require external API keys:
+- **Visual Synthesizer:** Requires Replicate API key (pay direct)
+- **BlockDB queries:** Included per tier limits

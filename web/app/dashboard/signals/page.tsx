@@ -1,22 +1,24 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Radio, MessageSquare, ThumbsUp, ExternalLink, Filter } from 'lucide-react'
+import { useState } from 'react';
+import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
+import { SectionHeader } from '@/app/components/shared/SectionHeader';
+import StatusPill from '@/app/components/shared/StatusPill';
 
-type Platform = 'all' | 'reddit' | 'twitter' | 'hacker-news' | 'discord'
-type Relevance = 'all' | 'high' | 'medium' | 'low'
+type Platform = 'all' | 'reddit' | 'twitter' | 'hacker-news' | 'discord';
+type Relevance = 'all' | 'high' | 'medium' | 'low';
 
 interface Signal {
-  id: string
-  platform: Exclude<Platform, 'all'>
-  author: string
-  content: string
-  url: string
-  upvotes: number
-  comments: number
-  date: string
-  relevance: Exclude<Relevance, 'all'>
-  tags: string[]
+  id: string;
+  platform: Exclude<Platform, 'all'>;
+  author: string;
+  content: string;
+  url: string;
+  upvotes: number;
+  comments: number;
+  date: string;
+  relevance: Exclude<Relevance, 'all'>;
+  tags: string[];
 }
 
 const SIGNALS: Signal[] = [
@@ -40,7 +42,7 @@ const SIGNALS: Signal[] = [
   },
   {
     id: '4', platform: 'discord', author: 'basefm_listener',
-    content: 'Using Agentbot for my DJ set management is 🔥 — it tracks bookings, prepares set lists based on venue vibe, and even handles WhatsApp replies while I\'m in the booth.',
+    content: 'Using Agentbot for my DJ set management — it tracks bookings, prepares set lists based on venue vibe, and even handles WhatsApp replies while I\'m in the booth.',
     url: '#', upvotes: 156, comments: 28, date: '2026-03-12',
     relevance: 'high', tags: ['dj', 'testimonial'],
   },
@@ -68,113 +70,123 @@ const SIGNALS: Signal[] = [
     url: '#', upvotes: 89, comments: 14, date: '2026-03-09',
     relevance: 'medium', tags: ['fleet', 'ux'],
   },
-]
+];
 
-const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string; bg: string }> = {
-  reddit:       { label: 'Reddit',       color: 'text-orange-400', bg: 'bg-orange-900/20 border-orange-800/40' },
-  twitter:      { label: 'Twitter/X',    color: 'text-sky-400',    bg: 'bg-sky-900/20 border-sky-800/40' },
-  'hacker-news': { label: 'HN',          color: 'text-yellow-400', bg: 'bg-yellow-900/20 border-yellow-800/40' },
-  discord:      { label: 'Discord',      color: 'text-purple-400', bg: 'bg-purple-900/20 border-purple-800/40' },
-}
-
-const RELEVANCE_COLOR: Record<Exclude<Relevance, 'all'>, string> = {
-  high:   'text-green-400 bg-green-900/20 border-green-800',
-  medium: 'text-yellow-400 bg-yellow-900/20 border-yellow-800',
-  low:    'text-gray-400 bg-gray-800 border-gray-700',
-}
+const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
+  reddit:        { label: 'Reddit',  color: 'text-orange-400' },
+  twitter:       { label: 'X',       color: 'text-sky-400' },
+  'hacker-news': { label: 'HN',     color: 'text-yellow-400' },
+  discord:       { label: 'Discord', color: 'text-blue-400' },
+};
 
 export default function SignalsPage() {
-  const [platform, setPlatform] = useState<Platform>('all')
-  const [relevance, setRelevance] = useState<Relevance>('all')
+  const [platform, setPlatform] = useState<Platform>('all');
+  const [relevance, setRelevance] = useState<Relevance>('all');
 
   const filtered = SIGNALS
     .filter(s => platform === 'all' || s.platform === platform)
     .filter(s => relevance === 'all' || s.relevance === relevance)
-    .sort((a, b) => b.upvotes - a.upvotes)
+    .sort((a, b) => b.upvotes - a.upvotes);
 
   return (
-    <div className="mt-[4rem] min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-800 flex items-center gap-3">
-        <Radio className="h-5 w-5 text-pink-400" />
-        <h1 className="text-xl font-bold tracking-tight">Practitioner Signals</h1>
-        <span className="text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full px-3 py-0.5">{filtered.length} signals</span>
-      </div>
+    <DashboardShell>
+      <DashboardHeader
+        title="Signals"
+        icon={
+          <svg className="w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.348 14.651a3.75 3.75 0 010-5.303m5.304 0a3.75 3.75 0 010 5.303m-7.425 2.122a6.75 6.75 0 010-9.546m9.546 0a6.75 6.75 0 010 9.546M5.106 18.894c-3.808-3.808-3.808-9.98 0-13.789m13.788 0c3.808 3.808 3.808 9.981 0 13.79M12 12h.008v.007H12V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+          </svg>
+        }
+        count={filtered.length}
+      />
 
-      <div className="px-6 py-6 space-y-5">
+      <DashboardContent>
         {/* Filters */}
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="flex items-center gap-2">
-            <Filter className="h-3.5 w-3.5 text-gray-500" />
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">Platform</span>
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-px mb-4">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 mr-3 self-center">Platform</span>
+            {(['all', 'reddit', 'twitter', 'hacker-news', 'discord'] as Platform[]).map(p => (
+              <button
+                key={p}
+                onClick={() => setPlatform(p)}
+                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border transition-colors ${
+                  platform === p
+                    ? 'bg-white text-black border-white'
+                    : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-white'
+                }`}
+              >
+                {p === 'hacker-news' ? 'HN' : p}
+              </button>
+            ))}
           </div>
-          {(['all', 'reddit', 'twitter', 'hacker-news', 'discord'] as Platform[]).map(p => (
-            <button
-              key={p}
-              onClick={() => setPlatform(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
-                platform === p
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-700'
-              }`}
-            >
-              {p === 'hacker-news' ? 'HN' : p}
-            </button>
-          ))}
-          <div className="ml-4 flex items-center gap-2">
-            <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">Relevance</span>
+          <div className="flex flex-wrap gap-px">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 mr-3 self-center">Relevance</span>
+            {(['all', 'high', 'medium', 'low'] as Relevance[]).map(r => (
+              <button
+                key={r}
+                onClick={() => setRelevance(r)}
+                className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border transition-colors ${
+                  relevance === r
+                    ? 'bg-white text-black border-white'
+                    : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-white'
+                }`}
+              >
+                {r}
+              </button>
+            ))}
           </div>
-          {(['all', 'high', 'medium', 'low'] as Relevance[]).map(r => (
-            <button
-              key={r}
-              onClick={() => setRelevance(r)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
-                relevance === r
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-700'
-              }`}
-            >
-              {r}
-            </button>
-          ))}
         </div>
 
-        {/* Signals */}
-        <div className="space-y-3">
+        {/* Signals grid */}
+        <div className="space-y-px bg-zinc-800">
           {filtered.map(signal => {
-            const pmeta = PLATFORM_META[signal.platform]
+            const pmeta = PLATFORM_META[signal.platform];
             return (
-              <div key={signal.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
-                <div className="flex items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    {/* Meta row */}
-                    <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${pmeta.bg} ${pmeta.color}`}>{pmeta.label}</span>
-                      <span className="text-[10px] text-gray-500 font-mono">{signal.author}</span>
-                      <span className="text-[10px] text-gray-600 font-mono ml-auto">{signal.date}</span>
-                    </div>
-                    {/* Content */}
-                    <p className="text-sm text-gray-200 leading-relaxed mb-3">&ldquo;{signal.content}&rdquo;</p>
-                    {/* Tags */}
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span className="flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5" />{signal.upvotes.toLocaleString()}</span>
-                        <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" />{signal.comments}</span>
-                      </div>
-                      <div className="flex gap-1.5 ml-2 flex-wrap">
-                        {signal.tags.map(t => (
-                          <span key={t} className="text-[10px] text-gray-500 bg-gray-800 border border-gray-700 rounded px-1.5 py-0.5">{t}</span>
-                        ))}
-                      </div>
-                      <span className={`ml-auto text-[10px] font-semibold border rounded px-2 py-0.5 ${RELEVANCE_COLOR[signal.relevance]}`}>{signal.relevance}</span>
-                    </div>
+              <div key={signal.id} className="bg-black p-5">
+                {/* Meta row */}
+                <div className="flex items-center gap-3 mb-3">
+                  <span className={`text-[10px] font-bold uppercase tracking-widest ${pmeta.color}`}>
+                    {pmeta.label}
+                  </span>
+                  <span className="text-xs text-zinc-500 font-mono">{signal.author}</span>
+                  <span className="text-[10px] text-zinc-700 font-mono ml-auto">{signal.date}</span>
+                </div>
+
+                {/* Content */}
+                <p className="text-sm text-zinc-400 leading-relaxed mb-4">
+                  &ldquo;{signal.content}&rdquo;
+                </p>
+
+                {/* Footer */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 text-[10px] text-zinc-600 uppercase tracking-widest">
+                    <span>{signal.upvotes.toLocaleString()} upvotes</span>
+                    <span>{signal.comments} replies</span>
                   </div>
+                  <div className="flex gap-1 ml-auto">
+                    {signal.tags.map(t => (
+                      <span key={t} className="text-[10px] text-zinc-600 border border-zinc-800 px-1.5 py-0.5 uppercase tracking-widest">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <StatusPill
+                    status={signal.relevance === 'high' ? 'active' : signal.relevance === 'medium' ? 'idle' : 'offline'}
+                    label={signal.relevance}
+                    size="sm"
+                  />
                 </div>
               </div>
-            )
+            );
           })}
         </div>
-      </div>
-    </div>
-  )
+
+        {filtered.length === 0 && (
+          <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
+            <p className="text-zinc-600 text-xs">No signals match your filters.</p>
+          </div>
+        )}
+      </DashboardContent>
+    </DashboardShell>
+  );
 }

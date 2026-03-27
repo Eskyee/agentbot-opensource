@@ -1,0 +1,130 @@
+---
+title: Resend email inbox
+description: "Receive inbound emails via Resend webhooks"
+---
+
+# Resend email inbox
+
+Agentbot can receive inbound emails through a [Resend](https://resend.com) webhook. Emails from approved senders are processed and forwarded to your agent for handling.
+
+## How it works
+
+1. A user sends an email to your Resend inbox address
+2. Resend forwards the email to `POST /api/webhooks/resend`
+3. Agentbot verifies the webhook signature, checks the sender against an allowlist, and applies rate limiting
+4. Approved emails are processed and made available to your agent
+
+## Setup
+
+<Steps>
+  <Step title="Create a Resend webhook">
+    In the [Resend dashboard](https://resend.com/webhooks), create a webhook pointing to:
+
+    ```
+    https://agentbot.raveculture.xyz/api/webhooks/resend
+    ```
+
+    Subscribe to the `email.received` event type.
+  </Step>
+  <Step title="Configure environment variables">
+    Add the following environment variables to your deployment:
+
+    | Variable | Required | Description |
+    |----------|----------|-------------|
+    | `RESEND_API_KEY` | Yes | Your Resend API key |
+    | `RESEND_WEBHOOK_SECRET` | Yes | Webhook signing secret from the Resend dashboard |
+    | `ALLOWED_SENDERS` | No | Comma-separated list of approved sender email addresses. Defaults to the platform owner's addresses. |
+    | `OWNER_EMAIL` | No | Email address for security notifications |
+  </Step>
+  <Step title="Test the integration">
+    Send an email from one of the allowed sender addresses to your Resend inbox. Check the agent logs to confirm it was received and processed.
+  </Step>
+</Steps>
+
+## Webhook endpoint
+
+```http
+POST /api/webhooks/resend
+```
+
+Receives inbound email events from Resend. This endpoint verifies the webhook signature using Svix headers and enforces a strict sender allowlist.
+
+<Warning>This endpoint is intended to be called by Resend only. You must configure the `RESEND_WEBHOOK_SECRET` environment variable for signature verification. When the secret is not configured, the endpoint returns `500`.</Warning>
+
+### Headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `svix-id` | Yes | Unique message identifier |
+| `svix-timestamp` | Yes | Message timestamp |
+| `svix-signature` | Yes | Webhook signature for verification |
+
+### Signature verification
+
+The endpoint verifies the webhook payload using the Resend SDK's built-in signature verification. Requests with invalid or missing signatures are acknowledged with `200` to prevent Resend from retrying.
+
+### Handled event types
+
+| Event | Behavior |
+|-------|----------|
+| `email.received` | Validates sender against the allowlist, applies rate limiting, fetches full email content, and forwards to the agent for processing. |
+| Other events | Acknowledged and logged. No further processing. |
+
+### Response
+
+The endpoint always returns `200` to prevent Resend from retrying delivery.
+
+```json
+{
+  "received": true,
+  "action": "processed"
+}
+```
+
+| `action` value | Meaning |
+|----------------|---------|
+| `processed` | Email passed all checks and was forwarded to the agent |
+| `rejected` | Sender is not on the allowlist |
+| `rate_limited` | Sender exceeded the rate limit |
+| `fetch_error` | Email content could not be retrieved from Resend |
+
+## Security
+
+### Sender allowlist
+
+Only emails from addresses listed in the `ALLOWED_SENDERS` environment variable are processed. All other emails are rejected and logged for audit. This is a strict allowlist — there is no wildcard or domain-level matching.
+
+### Rate limiting
+
+Each allowed sender is limited to **10 emails per hour**. Emails that exceed this limit are acknowledged but not processed.
+
+### Content sanitization
+
+Email bodies are sanitized before processing:
+
+- Script tags and HTML markup are stripped
+- Body text is truncated to **5,000 characters**
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Webhook returns 500">
+
+Verify that the `RESEND_WEBHOOK_SECRET` environment variable is set. The endpoint cannot verify signatures without it.
+
+</Accordion>
+
+<Accordion title="Emails are rejected">
+
+Check that the sender's email address is included in `ALLOWED_SENDERS`. Addresses are matched in a case-insensitive manner.
+
+</Accordion>
+
+<Accordion title="Emails are rate limited">
+
+The limit is 10 emails per sender per hour. Wait for the rate limit window to reset or adjust the sending frequency.
+
+</Accordion>
+
+</AccordionGroup>

@@ -1,0 +1,163 @@
+---
+title: "AI Models & Pricing"
+description: "Available AI models on Agentbot with transparent pricing. BYOK — pay providers directly, zero markup."
+---
+
+## Default Model: MiMo-V2-Pro
+
+**MiMo-V2-Pro** is Xiaomi's flagship foundation model and the default model for all Agentbot deployments.
+
+- **1T+ parameters** — Exceptional reasoning and generation quality
+- **1M context length** — Entire codebases in context, no chunking needed
+- **#1 in Programming** — Top-ranked in standard benchmarks
+- **Built for Agents** — Deeply optimized for agentic workflows
+- **100% uptime** — Reliable Xiaomi infrastructure
+
+### MiMo-V2-Pro Pricing
+
+| Tier | Input | Output | Cache Read |
+|------|-------|--------|------------|
+| ≤256K tokens | $1/M | $3/M | $0.20/M |
+| >256K tokens | $2/M | $6/M | $0.40/M |
+
+### Specs
+
+| Spec | Value |
+|------|-------|
+| Total Context | 1.05M tokens |
+| Max Output | 131.1K tokens |
+| Parameters | 1T+ total |
+| Latency | 2.8s |
+| Throughput | 34 tps |
+| Provider | Xiaomi (via OpenRouter) |
+| Released | March 18, 2026 |
+
+### Benchmark Rankings
+
+| Benchmark | Rank |
+|-----------|------|
+| Programming | #1 |
+| Academia | #18 |
+| Legal | #21 |
+| SEO | #32 |
+| Roleplay | #43 |
+
+---
+
+## Supported Models
+
+Agentbot supports 300+ models via OpenRouter. BYOK (Bring Your Own Key) — you pay providers directly with zero markup.
+
+### Recommended Models
+
+| Model | Input | Output | Best For |
+|-------|-------|--------|----------|
+| **MiMo-V2-Pro** | $1/M | $3/M | Default — agents, coding, long context |
+| Claude Sonnet 4 | $3/M | $15/M | Complex reasoning, analysis |
+| GPT-4o | $2.5/M | $10/M | General purpose, vision |
+| Gemini 2.5 Flash | $0.15/M | $0.60/M | Fast, cost-effective |
+| DeepSeek R1 | $0.55/M | $2.19/M | Reasoning, math |
+
+### Free Models
+
+| Model | Cost | Notes |
+|-------|------|-------|
+| Gemini 2.0 Flash | Free | 150 RPM limit |
+| Gemma 3N | Free | Good for testing |
+
+### Full Pricing Table
+
+| Model | Input (per 1K tokens) | Output (per 1K tokens) |
+|-------|----------------------|------------------------|
+| Gemini 2.0 Flash | Free | Free |
+| Groq Llama 3 | £0.0002 | £0.0002 |
+| Gemini 1.5 Flash | £0.0001 | £0.0005 |
+| MiMo-V2-Pro | $1/M | $3/M |
+| GPT-4o Mini | £0.0003 | £0.0012 |
+| Claude 3 Haiku | £0.0002 | £0.0010 |
+| GPT-4o | £0.0022 | £0.0088 |
+| Claude Sonnet 4 | $3/M | $15/M |
+| DeepSeek R1 | $0.55/M | $2.19/M |
+
+---
+
+## Plan Model Access
+
+Different plans unlock different model sets:
+
+| Plan | Models Available |
+|------|-----------------|
+| Solo (£29) | MiMo-V2-Pro, GPT-4o Mini, Gemini Flash, Claude 3.5 Sonnet |
+| Collective (£69) | + GPT-4o, GPT-4 Turbo, Claude 3 Opus |
+| Label (£149) | + DeepSeek R1, extended models |
+| Network (£499) | All models (wildcard access) |
+
+---
+
+## BYOK (Bring Your Own Key)
+
+Agentbot is BYOK — you connect your own API keys from AI providers. We charge zero markup on model usage.
+
+### Supported Providers
+
+- **OpenRouter** — 300+ models, one key
+- **Anthropic** — Direct Claude access
+- **OpenAI** — Direct GPT access
+- **Google** — Direct Gemini access
+- **Ollama** — Local models, free
+
+### Getting an OpenRouter Key
+
+1. Go to [openrouter.ai](https://openrouter.ai)
+2. Create an account
+3. Go to Keys → Create Key
+4. Add credits (minimum $5)
+5. Copy key to Agentbot dashboard
+
+### Key Security
+
+- API keys are encrypted at rest
+- Never shared with third parties
+- Can be rotated at any time
+- Deleted on account removal
+
+---
+
+## Model Selection
+
+### From Dashboard
+
+1. Go to Settings → Models
+2. Select your preferred model
+3. Your agent uses it for all new conversations
+
+### From Config
+
+```json
+{
+  "models": {
+    "default": "openrouter/xiaomi/mimo-v2-pro",
+    "fallbacks": ["openrouter/anthropic/claude-sonnet-4"]
+  }
+}
+```
+
+### Per-Conversation
+
+Override the default model for specific conversations via the chat interface.
+
+---
+
+## FAQ
+
+**Q: Why MiMo-V2-Pro as default?**
+A: Best balance of quality, context length (1M), and cost. #1 in programming benchmarks, purpose-built for agents.
+
+**Q: Can I use a different default?**
+A: Yes — change it in Settings → Models anytime.
+
+**Q: Do you mark up model prices?**
+A: No. Zero markup. You pay providers directly at their rates.
+
+**Q: What if my model goes down?**
+A: Fallback models automatically kick in. Configure fallbacks in your agent settings.

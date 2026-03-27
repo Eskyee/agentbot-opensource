@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useCustomSession } from '@/app/lib/useCustomSession';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -25,7 +25,7 @@ interface AgentInstance {
 }
 
 export default function AdminPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useCustomSession();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [instances, setInstances] = useState<AgentInstance[]>([]);
@@ -81,7 +81,7 @@ export default function AdminPage() {
         <div className="flex items-center justify-between mb-8 border-b border-white/10 pb-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tighter uppercase italic">Platform Ops Console</h1>
-            <p className="text-gray-500 text-xs mt-1">STATUS: {instances.length} ACTIVE_INSTANCES | USER_LOAD: {users.length}</p>
+            <p className="text-zinc-500 text-xs mt-1">STATUS: {instances.length} ACTIVE_INSTANCES | USER_LOAD: {users.length}</p>
           </div>
           <div className="flex gap-4">
              <button 
@@ -101,7 +101,7 @@ export default function AdminPage() {
 
         {activeTab === 'instances' ? (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-zinc-900 p-4 border border-white/5">
                 <div className="text-[10px] text-zinc-500 uppercase">System Status</div>
                 <div className="text-xl font-bold text-green-500">NOMINAL</div>
@@ -121,7 +121,7 @@ export default function AdminPage() {
             </div>
 
             <div className="bg-zinc-900 border border-white/10 rounded-sm overflow-hidden">
-              <table className="w-full text-left text-xs">
+              <div className="overflow-x-auto"><table className="w-full text-left text-xs">
                 <thead className="bg-zinc-800 text-zinc-400 uppercase">
                   <tr>
                     <th className="px-6 py-3 font-medium">Instance_ID</th>
@@ -156,18 +156,18 @@ export default function AdminPage() {
                   ))}
                   {instances.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-zinc-600 uppercase italic">
+                      <td colSpan={7} className="px-6 py-12 text-left text-zinc-600 uppercase italic">
                         No active instances detected in the matrix.
                       </td>
                     </tr>
                   )}
                 </tbody>
-              </table>
+              </table></div>
             </div>
           </div>
         ) : (
           <div className="bg-zinc-900 border border-white/10 rounded-sm overflow-hidden text-xs">
-            <table className="w-full text-left">
+            <div className="overflow-x-auto"><table className="w-full text-left">
               <thead className="bg-zinc-800 text-zinc-400 uppercase">
                 <tr>
                   <th className="px-6 py-3 font-medium">Name/Email</th>
@@ -191,7 +191,7 @@ export default function AdminPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           </div>
         )}
 

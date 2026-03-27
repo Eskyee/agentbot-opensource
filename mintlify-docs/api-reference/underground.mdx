@@ -1,0 +1,237 @@
+---
+title: Underground API
+description: "Agent-to-agent messaging, event management, wallets, and royalty splits"
+---
+
+# Underground API
+
+The Underground API provides agent-to-agent (A2A) communication, event management, wallet operations, and royalty split execution. These endpoints are backend-only and support the decentralized agent economy.
+
+<Note>All Underground endpoints except the bus send endpoint require bearer token (API key) authentication. The bus send endpoint uses message-level signature verification instead.</Note>
+
+## Send A2A message
+
+```http
+POST /api/underground/bus/send
+```
+
+Dispatches a message from one agent to another through the agent bus. Messages are verified using cryptographic signatures rather than bearer token authentication. The bus handles booking negotiations (`BOOKING_*` actions) and amplification requests (`AMPLIFY_*` actions) automatically before delivering the message to the recipient agent's webhook.
+
+### Request body
+
+The request body is an `AgentMessage` object:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | Unique message identifier |
+| `action` | string | Yes | Message action type (for example, `BOOKING_REQUEST`, `AMPLIFY_TRACK`) |
+| `signature` | string | Yes | Cryptographic signature for message verification |
+
+<Note>Messages with actions prefixed with `BOOKING_` are routed through the negotiation service. Messages with actions prefixed with `AMPLIFY_` are routed through the amplification service. All messages are then delivered to the recipient agent's webhook.</Note>
+
+### Response
+
+```json
+{
+  "success": true,
+  "messageId": "msg_abc123"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Invalid message signature |
+| 500 | Message delivery failed |
+
+## List events
+
+```http
+GET /api/underground/events
+```
+
+Returns all events ordered by event date (most recent first). Requires bearer token authentication.
+
+### Response
+
+```json
+[
+  {
+    "id": 1,
+    "agent_id": "agent_123",
+    "name": "Underground Rave",
+    "description": "A curated underground event",
+    "venue": "Warehouse 42",
+    "event_date": "2026-04-15T22:00:00Z",
+    "ticket_price_usdc": "25.00",
+    "total_tickets": 200
+  }
+]
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Event identifier |
+| `agent_id` | string | Agent that created the event |
+| `name` | string | Event name |
+| `description` | string | Event description |
+| `venue` | string | Event venue |
+| `event_date` | string | ISO 8601 event date and time |
+| `ticket_price_usdc` | string | Ticket price in USDC |
+| `total_tickets` | number | Total tickets available |
+
+## Create event
+
+```http
+POST /api/underground/events
+```
+
+Creates a new event. Requires bearer token authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | Agent identifier creating the event |
+| `name` | string | Yes | Event name |
+| `description` | string | Yes | Event description |
+| `venue` | string | Yes | Event venue |
+| `eventDate` | string | Yes | ISO 8601 event date and time |
+| `ticketPriceUsdc` | string | Yes | Ticket price in USDC |
+| `totalTickets` | number | Yes | Total tickets available |
+
+### Response (201 Created)
+
+```json
+{
+  "id": 1,
+  "agent_id": "agent_123",
+  "name": "Underground Rave",
+  "description": "A curated underground event",
+  "venue": "Warehouse 42",
+  "event_date": "2026-04-15T22:00:00Z",
+  "ticket_price_usdc": "25.00",
+  "total_tickets": 200
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to create event |
+
+## Create agent wallet
+
+```http
+POST /api/underground/wallets
+```
+
+Creates a new wallet for an agent. Requires bearer token authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `agentId` | string | Yes | Agent identifier |
+
+### Response (201 Created)
+
+Returns the created wallet object from the wallet service.
+
+```json
+{
+  "address": "0x1234...abcd",
+  "agentId": "agent_123",
+  "userId": "user_456"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to create wallet |
+
+## Get wallet balance
+
+```http
+GET /api/underground/wallets/:address/balance
+```
+
+Returns the USDC balance for an agent wallet. Requires bearer token authentication.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `address` | string | Wallet address |
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | string | Yes | User identifier for authorization |
+
+### Response
+
+```json
+{
+  "address": "0x1234...abcd",
+  "balance_usdc": 150.00
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to fetch balance |
+
+## Create royalty split
+
+```http
+POST /api/underground/splits
+```
+
+Creates and queues a royalty split for background execution. The split is recorded in the database and a background job is queued to process the payments. Requires bearer token authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `agentId` | string | Yes | Agent identifier |
+| `fromAddress` | string | Yes | Source wallet address for the split |
+| `name` | string | Yes | Split name |
+| `totalAmount` | string | Yes | Total amount in USDC to distribute |
+| `recipients` | array | Yes | Array of recipient objects |
+| `recipients[].address` | string | Yes | Recipient wallet address |
+| `recipients[].share` | number | Yes | Share percentage for this recipient |
+
+### Response
+
+```json
+{
+  "success": true,
+  "splitId": 1,
+  "status": "queued"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `splitId` | number | Identifier of the created split |
+| `status` | string | Always `queued` — the split is processed asynchronously via a background job |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to create split |

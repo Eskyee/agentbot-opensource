@@ -1,16 +1,23 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Static export for demo/Vercel deployment (no API routes needed)
-  output: process.env.NEXT_PUBLIC_DEMO_MODE === 'true' ? 'export' : 'standalone',
-  images: {
-    unoptimized: true,
-  },
-  // Turbopack config for Next.js 16
-  turbopack: {
-    root: __dirname,
-  },
+  poweredByHeader: false,
+  output: 'standalone',
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
+  async redirects() {
+    return [
+      {
+        source: '/auth/login',
+        destination: '/login',
+        permanent: false,
+      },
+      {
+        source: '/auth/:path*',
+        destination: '/login',
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
@@ -55,14 +62,8 @@ const nextConfig = {
             value: 'camera=(), microphone=(), geolocation=()',
           },
           {
-            // Allow Base Account popup (keys.coinbase.com) to communicate back.
-            // 'same-origin' breaks the popup; 'same-origin-allow-popups' is recommended.
             key: 'Cross-Origin-Opener-Policy',
             value: 'same-origin-allow-popups',
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload',
           },
         ],
       },

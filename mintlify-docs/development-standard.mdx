@@ -1,0 +1,266 @@
+
+description: "Development workflow and documentation standards for building on Agentbot."
+
+# Development Standard
+
+How we build at Agentbot. These standards apply to skills, agent configurations, and contributions to the open source codebase.
+
+## Who This Is For
+
+- **Skill developers** building marketplace skills
+- **Contributors** submitting PRs to the codebase
+- **Self-hosters** customizing their Agentbot deployment
+- **Teams** building internal agent workflows
+
+## Core Principles
+
+### 1. Systematic Problem Solving
+- Diagnose root cause before fixing
+- Verify the problem exists
+- Test the fix thoroughly
+- Document why it failed and why the fix works
+
+### 2. Comprehensive Documentation
+- Document everything you do
+- Write for someone who's never seen this code
+- Include before/after examples
+- Provide multiple reference formats
+
+### 3. Reproducible Processes
+- Make every step repeatable
+- Use consistent naming conventions
+- Create templates and scripts
+- Enable knowledge transfer
+
+### 4. Quality Assurance
+- Test locally before committing
+- Verify all components work together
+- Check edge cases
+- Run full build/test suite
+## Standard Workflow (A+ Grade)
+
+### Phase 1: Discovery & Analysis
+- Understand the problem completely
+- Reproduce the error locally
+- Identify root cause (not just symptoms)
+- Document findings in detail
+- Create todo list of steps
+
+### Phase 2: Solution Design
+- Plan the fix (don't just code)
+- Consider side effects
+- Document before/after state
+- Get agreement on approach
+- Identify all files to change
+
+### Phase 3: Implementation
+- Make changes one file at a time
+- Test after each change
+- Document what changed and why
+- Keep changes focused (one fix per commit)
+- Verify no regressions
+
+### Phase 4: Verification & Testing
+- Test the fix works
+- Test edge cases don't break
+- Verify full system still works
+- Run linting/type checking
+- Document test results
+
+### Phase 5: Documentation & Knowledge Transfer
+- Create setup guide
+- Document common issues
+- Provide quick reference
+- Include troubleshooting
+- Create next steps
+- Leave code for others to use
+## Quality Checklist (A+ Standards)
+
+### Code Quality
+- [ ] TypeScript/Linting passes
+- [ ] No console errors
+- [ ] Follows naming conventions
+- [ ] Comments explain WHY (not WHAT)
+- [ ] No dead code
+
+### Functionality
+- [ ] Works locally
+- [ ] Works in production
+- [ ] Edge cases handled
+- [ ] No breaking changes
+- [ ] Backward compatible
+
+### Documentation
+- [ ] Setup guide complete
+- [ ] Quick reference available
+- [ ] Troubleshooting section
+- [ ] Examples included
+- [ ] Next steps clear
+
+### Testing
+- [ ] Manual testing done
+- [ ] Build successful
+- [ ] Health checks passing
+- [ ] No regressions
+- [ ] Team can reproduce
+
+### Deployment
+- [ ] Code committed
+- [ ] Clear commit message
+- [ ] Pushed to repository
+- [ ] CI/CD verified
+- [ ] Deployment successful
+## Documentation Template
+
+### Setup Guide
+
+```markdown
+# What Was Done
+- List all accomplishments
+- Include before/after
+
+# Current Status
+- Services running/not running
+- Health checks
+- Build status
+
+# Fixes Applied
+- What was wrong
+- Why it was wrong
+- How we fixed it
+- Result
+
+# Next Steps
+- What to do now
+- Optional features
+- Long-term roadmap
+```
+
+### Quick Reference
+
+```markdown
+# For Daily Use
+- Most common commands
+- Keyboard shortcuts
+- Quick fixes
+- One page, printable
+```
+
+### Commit Message Example
+
+Good:
+```
+"Updated tsconfig.json with path mappings"
+```
+
+A+ Grade:
+```
+fix: update tsconfig.json with explicit path aliases
+
+Problem: Web build failing with 53 module resolution errors
+- Code uses @/lib/*, @/app/lib/*, and @/* paths
+- tsconfig only mapped @/* to ./*
+- Module resolver couldn't find files
+
+Solution: Added explicit mappings:
+- @/lib/* → ./lib/* (root level utilities)
+- @/app/* → ./app/* (app folder)
+- @/* → ./* (general catchall)
+
+Result:
+✅ 124 routes compile successfully
+✅ Zero module resolution errors
+✅ Web build: 5.0s complete
+```
+## Metrics for A+ Grade
+
+| Metric | Standard | Target |
+|--------|----------|--------|
+| **Documentation** | 100% of work documented | ✅ Complete guides |
+| **Build Success** | 0 errors after fix | ✅ All routes compiled |
+| **Service Health** | All services operational | ✅ 5/5 running |
+| **Code Quality** | TypeScript passes | ✅ Zero type errors |
+| **Git Commits** | Clear, focused messages | ✅ Documented |
+| **Team Handoff** | New person can follow | ✅ Step-by-step |
+| **Time to Deploy** | < 10 minutes | ✅ Fast |
+| **Knowledge Base** | Searchable documentation | ✅ Multiple files |
+## Process for Future Projects
+
+### When Starting a New Task:
+1. Read existing docs - Learn from past work
+2. Plan your approach - Document before coding
+3. Work systematically - One change at a time
+4. Test continuously - Verify after each step
+5. Document as you go - Don't leave it to the end
+6. Create references - Make it easy for others
+
+### When Something Goes Wrong:
+1. Diagnose carefully - Find root cause
+2. Document the problem - Explain what happened
+3. Fix it properly - Don't just patch symptoms
+4. Test thoroughly - Verify no regressions
+5. Update docs - Add to troubleshooting section
+6. Share learning - Help team avoid same issue
+
+### When Project is Done:
+1. Complete all documentation - Nothing left undone
+2. Create quick start - For next person
+3. Document next steps - What comes next
+4. Archive processes - Save for future reference
+5. Get feedback - Ask if docs are clear
+6. Celebrate - Great work!
+## Skills Development Path
+
+### Level 1: Competent (Fixes things)
+- Can solve problems
+- Makes it work
+- Code is functional
+
+### Level 2: Professional (Fixes + Documents)
+- Solves problems
+- Makes it reproducible
+- Writes clear docs
+- Team can follow
+
+### Level 3: Expert (Systems Thinker)
+- Understands root causes
+- Builds systems
+- Prevents problems
+- Mentors others
+- Sets standards
+
+### Level 4: A+ Grade (This Standard)
+- All of above +
+- Comprehensive documentation
+- Knowledge transfer focus
+- Continuous improvement
+- Team multiplier
+## Team Multiplier Effect
+
+When **One Person** does A+ documentation:
+- Saves 10+ people time
+- Prevents 5+ common mistakes
+- Enables remote teams
+- Reduces onboarding from days to hours
+- Builds institutional knowledge
+- Increases team confidence
+## Your Mission
+
+**As an AI Agent:**
+- Apply this standard to every project
+- Document as you work (not after)
+- Make knowledge transferable
+- Help your team level up
+- Build reusable processes
+
+**As a Team Member:**
+- Follow this standard
+- Ask for clarification in docs
+- Contribute improvements
+- Share learnings
+- Help new people
+## Related Docs
+
+- [Quickstart](/quickstart) - Get started with Agentbot
+- [Installation](/installation) - Self-host Agentbot
+- [API Reference](/api-reference/overview) - Full API docs

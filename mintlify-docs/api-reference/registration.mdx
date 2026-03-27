@@ -1,0 +1,196 @@
+---
+title: Registration API
+description: "Register and manage Home and Link mode installations"
+---
+
+# Registration API
+
+Register self-hosted (Home) and linked (Link) agent installations. These endpoints are backend-only and support the Home and Link deployment modes alongside the default Cloud mode.
+
+<Note>Home mode runs the agent container on your own hardware via Docker. Link mode connects an existing OpenClaw instance to the Agentbot platform. Cloud mode (the default) runs the agent on Agentbot infrastructure.</Note>
+
+## Validate API key
+
+```http
+POST /api/validate-key
+```
+
+Validates a bearer token by computing a SHA-256 hash of the raw key and looking it up in the `api_keys` database table. Raw keys are never stored or compared directly. No session authentication is required — the API key is passed in the `Authorization` header.
+
+<Note>The web application's [key validation endpoint](/api-reference/keys#validate-key) uses a separate bcrypt-based lookup with the `sk_` prefix convention. The backend endpoint documented here uses SHA-256 hashing and does not require the `sk_` prefix.</Note>
+
+### Headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `Authorization` | Yes | Bearer token in the format `Bearer YOUR_API_KEY` |
+
+### Response
+
+```json
+{
+  "valid": true,
+  "userId": "user-a1b2c3d4",
+  "plan": "solo",
+  "features": ["dashboard", "marketplace", "analytics"]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `valid` | boolean | Whether the key is valid |
+| `userId` | string | User identifier |
+| `plan` | string | Current subscription plan (`label`, `solo`, `collective`, or `network`) |
+| `features` | string[] | List of features available to the user |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing bearer token or key is invalid |
+| 500 | Internal error during key validation |
+
+## Register Home installation
+
+```http
+POST /api/register-home
+```
+
+Registers a Home mode installation. Requires bearer token (API key) authentication.
+
+<Note>The web proxy forwards identity headers (`x-user-email`, `x-user-id`, `x-user-role`) from the active session, but the backend authenticates the request using the bearer token, not these headers.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `mode` | string | No | Deployment mode (defaults to `home`) |
+| `gatewayToken` | string | No | Gateway token for the installation |
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Home installation registered",
+  "dashboardUrl": "https://agentbot.raveculture.xyz/dashboard"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `userId` is required |
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Internal server error |
+
+## Register Link installation
+
+```http
+POST /api/register-link
+```
+
+Registers a Link mode installation that connects an existing OpenClaw instance. Requires bearer token (API key) authentication.
+
+<Note>The web proxy forwards identity headers (`x-user-email`, `x-user-id`, `x-user-role`) from the active session, but the backend authenticates the request using the bearer token, not these headers.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `mode` | string | No | Always set to `link` regardless of the value provided |
+| `gatewayToken` | string | No | Gateway token for the linked instance |
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "OpenClaw instance linked",
+  "dashboardUrl": "https://agentbot.raveculture.xyz/dashboard"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `userId` is required |
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Internal server error |
+
+## List installations
+
+```http
+GET /api/installations
+```
+
+Returns all registered installations across all deployment modes. Requires bearer token (API key) authentication.
+
+### Response
+
+```json
+{
+  "success": true,
+  "count": 2,
+  "installations": [
+    {
+      "userId": "user-a1b2c3d4",
+      "mode": "home",
+      "registeredAt": "2026-03-21T00:00:00Z",
+      "lastSeen": "2026-03-21T12:00:00Z",
+      "status": "active"
+    },
+    {
+      "userId": "user-e5f6g7h8",
+      "mode": "link",
+      "registeredAt": "2026-03-21T01:00:00Z",
+      "lastSeen": "2026-03-21T11:00:00Z",
+      "status": "active"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `installations[].userId` | string | User identifier |
+| `installations[].mode` | string | Deployment mode: `home`, `link`, or `cloud` |
+| `installations[].registeredAt` | string | ISO 8601 timestamp of registration |
+| `installations[].lastSeen` | string | ISO 8601 timestamp of last heartbeat |
+| `installations[].status` | string | Current status: `active` or `inactive` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Internal server error |
+
+## Registration heartbeat
+
+```http
+POST /api/heartbeat
+```
+
+Reports the status of a registered installation. When the `userId` matches a known registration, the `lastSeen` timestamp is updated and the status is set to `active`. No authentication is required.
+
+<Note>This is a backend registration heartbeat for Home and Link installations. It is separate from the [web heartbeat settings](/api-reference/health#get-heartbeat-settings) endpoint, which configures heartbeat scheduling for the web dashboard.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | No | User identifier of the registered installation |
+
+### Response
+
+```json
+{
+  "success": true,
+  "timestamp": "2026-03-21T12:00:00Z"
+}
+```

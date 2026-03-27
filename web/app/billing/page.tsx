@@ -2,62 +2,68 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
+import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
-import CoinbaseWalletButton from '../components/CoinbaseWallet'
+import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 
-const navItems = [
-  { icon: '🤖', label: 'Agents', href: '/agents', active: false },
-  { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
-  { icon: '💳', label: 'Billing', href: '/billing', active: true },
-  { icon: '⚙️', label: 'Account', href: '/settings', active: false },
+const plans = [
+  {
+    id: 'solo',
+    name: 'Solo',
+    specs: '1 Agent · MiMo V2 Pro',
+    price: 29,
+    period: 'mo',
+    features: [
+      { label: 'Telegram channel', included: true },
+      { label: 'Use your own AI key', included: true },
+      { label: 'A2A Bus Access', included: true },
+      { label: 'Basic Analytics', included: true },
+      { label: 'Priority support', included: false },
+      { label: 'White-glove staging', included: false },
+    ],
+  },
+  {
+    id: 'collective',
+    name: 'Collective',
+    specs: '3 Agents · Llama 3.3',
+    price: 69,
+    period: 'mo',
+    popular: true,
+    features: [
+      { label: 'Everything in Solo', included: true },
+      { label: 'Royalty Split Engine', included: true },
+      { label: 'Mission Control Graph', included: true },
+      { label: 'Telegram + WhatsApp', included: true },
+      { label: 'Priority support', included: true },
+      { label: 'White-glove staging', included: false },
+    ],
+  },
+  {
+    id: 'label',
+    name: 'Label',
+    specs: 'Unlimited · DeepSeek R1',
+    price: 149,
+    period: 'mo',
+    features: [
+      { label: 'Everything in Collective', included: true },
+      { label: 'Priority A2A Routing', included: true },
+      { label: '24/7 Signal Guard', included: true },
+      { label: 'White-glove staging', included: true },
+      { label: 'Custom integrations', included: true },
+      { label: 'Dedicated account manager', included: true },
+    ],
+  },
 ]
 
-function BillingSidebar({ userName, className = '' }: { userName: string; className?: string }) {
-  return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
-      <nav className="flex-1 p-4">
-        <div className="space-y-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                item.active 
-                  ? 'bg-white/20 text-white' 
-                  : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-              }`}
-            >
-              <span>{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-
-        <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-          <div className="text-sm text-blue-400 mb-1">Manage</div>
-        </Link>
-      </nav>
-
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-black">
-            {userName.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div className="font-medium">{userName}</div>
-            <div className="text-sm text-blue-400">Sign up</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  )
-}
-
 export default function BillingPage() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useCustomSession()
   const router = useRouter()
-  const [currentPlan, setCurrentPlan] = useState('underground')
+  const pathname = usePathname()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [currentPlan, setCurrentPlan] = useState('solo')
+  const [subscriptionStatus, setSubscriptionStatus] = useState('inactive')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -66,340 +72,198 @@ export default function BillingPage() {
     }
   }, [status, router])
 
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
-
   useEffect(() => {
-    const fetchBillingData = async () => {
+    const fetchBilling = async () => {
       if (!session?.user?.id) return
       try {
-        const res = await fetch(`/api/instance/${session.user.id}`)
+        const res = await fetch('/api/billing')
         if (res.ok) {
           const data = await res.json()
-          setCurrentPlan(data.plan || 'underground')
+          setCurrentPlan(data.plan || 'solo')
+          setSubscriptionStatus(data.subscriptionStatus || 'inactive')
         }
-      } catch (error) {
-        console.error('Failed to fetch billing data:', error)
+      } catch (err) {
+        console.error('Billing fetch error:', err)
       } finally {
         setLoading(false)
       }
     }
-    fetchBillingData()
+    fetchBilling()
   }, [session])
 
-  const plans = [
-    {
-      id: 'underground',
-      name: 'Underground',
-      specs: '1 Agent · Mistral 7B',
-      price: 29,
-      priceId: 'underground',
-      features: ['Telegram channel', 'Use your own AI key', 'A2A Bus Access', 'Basic Analytics'],
-    },
-    {
-      id: 'collective',
-      name: 'Collective',
-      specs: '3 Agents · Llama 3.3',
-      price: 69,
-      priceId: 'collective',
-      features: ['Royalty Split Engine', 'Mission Control Graph', 'Telegram + WhatsApp', 'Priority support'],
-      popular: true,
-    },
-    {
-      id: 'label',
-      name: 'Label',
-      specs: 'Unlimited · DeepSeek R1',
-      price: 199,
-      priceId: 'label',
-      features: ['Priority A2A Routing', '24/7 Signal Guard', 'White-glove staging', 'Custom integrations'],
-    },
-  ]
+  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'User'
 
-  const buyPlan = async (priceId: string) => {
-    try {
-      // Use GET request to Stripe checkout route
-      window.location.href = `/api/stripe/checkout?plan=${priceId}`
-    } catch (error) {
-      console.error('Failed to initiate checkout:', error)
-      alert('Failed to start checkout')
-    }
+  const buyPlan = (priceId: string) => {
+    window.location.href = `/api/stripe/checkout?plan=${priceId}`
   }
 
-  const connectWallet = () => {
-    alert('Coinbase Wallet integration coming soon!')
-  }
-
-  const contactSales = () => {
-    window.location.href = 'mailto:sales@agentbot.com?subject=Custom Infrastructure Inquiry'
-  }
-
-  if (status === 'loading' || status === 'unauthenticated') {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-gray-400">Loading…</div>
+      <div className="flex items-center justify-center h-screen bg-black font-mono">
+        <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
       </div>
     )
   }
 
-   return (
-     <div className="min-h-screen bg-black text-white">
-       {/* Mobile Sidebar */}
-       <div className="md:hidden">
-         <BillingSidebar userName={userName} className="mb-6" />
-       </div>
+  return (
+    <div className="flex min-h-screen bg-black">
+      <DashboardSidebar
+        userName={userName}
+        plan={currentPlan}
+        isOpen={sidebarOpen}
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+      />
 
-       <main className="px-4 sm:px-6 py-8">
-         <div className="max-w-4xl mx-auto">
-           <h1 className="text-2xl sm:text-3xl font-bold mb-6">Billing</h1>
+      <div className="flex-1 flex flex-col">
+        {/* Top Navbar */}
+        <header className="sticky top-0 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold uppercase tracking-tighter">☆ Billing</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <a href="/dashboard" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-zinc-400 transition-colors">
+              Dashboard
+            </a>
+          </div>
+        </header>
 
-           {loading ? (
-             <div className="text-center py-6 text-gray-400">Loading...</div>
-           ) : (
-             <React.Fragment>
-               {/* API Keys */}
-               <div className="mb-4">
-                 <h2 className="text-lg font-semibold mb-3">AI API Keys</h2>
-                 <div className="rounded-xl border border-gray-800 bg-gray-900/50 p-4">
-                   <div className="flex items-center gap-3 mb-3">
-                     <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                       <span className="text-xl">🔑</span>
-                     </div>
-                     <div>
-                       <div className="font-medium">Bring Your Own API Key</div>
-                       <div className="text-sm text-gray-400">Pay directly to AI providers - no markup</div>
-                     </div>
-                   </div>
-                   <p className="text-sm text-gray-400 mb-2">
-                     Users provide their own API keys from OpenRouter, Groq, Anthropic, or OpenAI. 
-                     You get the best rates directly from the source. No credit system needed.
-                   </p>
-                   <a href="/settings" className="w-full text-center rounded-lg bg-white text-black px-4 py-2 text-sm font-medium hover:bg-gray-200">
-                     Configure API Keys
-                   </a>
-                 </div>
-               </div>
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-4xl mx-auto">
+            <Breadcrumbs />
 
-               {/* USDC on Base */}
-               <div className="mb-4">
-                 <h2 className="text-lg font-semibold mb-3">Pay with USDC</h2>
-                 <div className="rounded-xl border border-gray-800 bg-gradient-to-r from-blue-900/30 to-purple-900/30 p-4">
-                   <div className="flex items-center justify-between mb-3">
-                     <div className="flex items-center gap-3">
-                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                         <span className="text-xl">💵</span>
-                       </div>
-                       <div>
-                         <div className="font-medium">USDC on Base</div>
-                         <div className="text-sm text-gray-400">Instant, low-fee payments</div>
-                       </div>
-                     </div>
-                     <div className="text-right">
-                       <div className="text-lg font-bold">0% fees</div>
-                       <div className="text-sm text-gray-500">via Coinbase</div>
-                     </div>
-                   </div>
-                   <p className="text-sm text-gray-400 mb-2">
-                     Pay with USDC on Base for instant settlement and near-zero fees. 
-                     Connect your wallet to get started.
-                   </p>
-                   <div className="flex gap-2">
-                     <button 
-                       onClick={connectWallet}
-                       className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-sm font-medium hover:from-blue-600 hover:to-purple-700"
-                     >
-                       Connect Wallet
-                     </button>
-                     <a 
-                       href="https://commerce.coinbase.com" 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       className="w-full text-center rounded-lg border border-gray-700 text-sm font-medium hover:bg-gray-800"
-                     >
-                       Learn More
-                     </a>
-                   </div>
-                 </div>
-               </div>
-
-               {/* Machines / Subscriptions */}
-               <div className="mb-4">
-                 <h2 className="text-lg font-semibold mb-3">Machines</h2>
-                 <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-3 mb-3">
-                   <div className="text-sm text-gray-400">0 of 1 in use</div>
-                 </div>
-
-                 <div className="space-y-3">
-                   {plans.map((plan) => (
-                     <div
-                       key={plan.id}
-                       className={`relative rounded-lg border p-3 ${
-                         plan.popular 
-                           ? 'border-white bg-white/5' 
-                           : 'border-gray-800 bg-gray-900/50'
-                       }`}
-                     >
-                       {plan.popular && (
-                         <span className="absolute -top-2 left-2 bg-white text-black text-xs px-2 py-1 rounded">
-                           POPULAR
-                         </span>
-                       )}
-                       <div className="flex items-center justify-between">
-                         <div>
-                           <div className="flex items-center gap-2">
-                             <h3 className="font-medium text-base">{plan.name}</h3>
-                             {currentPlan === plan.id && (
-                               <span className="text-xs bg-green-500/20 text-green-400 px-1 py-0.5 rounded">Current</span>
-                             )}
-                           </div>
-                           <div className="text-sm text-gray-400">{plan.specs}</div>
-                           <div className="text-xs text-gray-500 mt-1">
-                             £{plan.price}/mo
-                           </div>
-                         </div>
-                         <div className="flex items-center gap-2">
-                           <select className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm" title="Select quantity">
-                             <option>1</option>
-                             <option>2</option>
-                             <option>3</option>
-                           </select>
-                           <button 
-                             onClick={() => buyPlan(plan.priceId)}
-                             className={`w-full mt-2 rounded-lg px-4 py-2 font-medium ${
-                               currentPlan === plan.id 
-                                 ? 'bg-gray-800 text-gray-400' 
-                                 : 'bg-white hover:bg-gray-200 text-black'
-                             }`}>
-                             {currentPlan === plan.id ? 'Current' : 'Buy'}
-                           </button>
-                         </div>
-                       </div>
-                       <div className="flex gap-2 mt-2">
-                         {plan.features.map((f, index) => (
-                           <span key={`${f}-${index}`} className="inline-block text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded mr-1 mb-1">
-                             {f}
-                           </span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Enterprise Add-ons */}
-                <div className="mt-8">
-                  <h2 className="text-xl font-bold mb-4">Enterprise Add-ons</h2>
-                  <p className="text-sm text-gray-400 mb-4">Supercharge your agents with enterprise integrations</p>
-                  
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">🔐 Audit Logs</h3>
-                        <span className="text-sm font-bold">+£199/mo</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-3">Full traceability of every agent action & decision</p>
-                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
-                        Add to Plan
-                      </button>
+            {/* Current Plan Card */}
+            <div className="mb-8">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Current Plan</span>
+              <div className="border border-zinc-800 p-6 mt-2">
+                {loading ? (
+                  <div className="animate-pulse h-20 bg-zinc-900" />
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-2xl font-bold uppercase tracking-tighter">
+                        {plans.find(p => p.id === currentPlan)?.name || 'Solo'}
+                      </h2>
+                      <p className="text-zinc-500 text-sm mt-1">
+                        {plans.find(p => p.id === currentPlan)?.specs || '1 Agent · Mistral 7B'}
+                      </p>
                     </div>
-
-                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">💬 Slack Integration</h3>
-                        <span className="text-sm font-bold">+£149/mo</span>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold tracking-tighter">
+                        £{plans.find(p => p.id === currentPlan)?.price || 29}
+                        <span className="text-lg text-zinc-500">/mo</span>
                       </div>
-                      <p className="text-xs text-gray-400 mb-3">Agents work inside your Slack workspace</p>
-                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
-                        Add to Plan
-                      </button>
-                    </div>
-
-                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">☁️ Salesforce Connector</h3>
-                        <span className="text-sm font-bold">+£349/mo</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-3">Sync leads, contacts, and opportunities automatically</p>
-                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
-                        Add to Plan
-                      </button>
-                    </div>
-
-                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">🔌 API Access</h3>
-                        <span className="text-sm font-bold">+£249/mo</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-3">Programmatic access to your agents via REST API</p>
-                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
-                        Add to Plan
-                      </button>
-                    </div>
-
-                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">🎯 Custom Integration</h3>
-                        <span className="text-sm font-bold">+£499/mo</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-3">We build a custom connector for your tools</p>
-                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
-                        Request Quote
-                      </button>
-                    </div>
-
-                    <div className="border border-gray-800 rounded-lg p-4 bg-gray-900/30">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium">👤 Dedicated Account Manager</h3>
-                        <span className="text-sm font-bold">+£399/mo</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mb-3">Priority support & personalized onboarding</p>
-                      <button className="w-full rounded bg-gray-800 py-2 text-xs font-medium hover:bg-gray-700">
-                        Add to Plan
-                      </button>
-                    </div>
-
-                    <div className="border-2 border-purple-500 rounded-lg p-4 bg-purple-500/10 col-span-full">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-medium text-purple-400 text-lg">🚀 Full Enterprise Suite</h3>
-                        <span className="text-lg font-bold text-purple-400">£4,999/mo</span>
-                      </div>
-                      <p className="text-sm text-gray-400 mb-2">Everything enterprise:</p>
-                      <ul className="text-xs text-gray-300 mb-2 space-y-1">
-                        <li>✓ Unlimited AI Agents with hierarchical task delegation</li>
-                        <li>✓ Enterprise SSO/SAML & Role-based access control (RBAC)</li>
-                        <li>✓ Credential isolation & zero-trust security</li>
-                        <li>✓ Full audit logging & compliance tooling</li>
-                        <li>✓ Pre-built connectors: Salesforce, Cisco, Google Cloud, Adobe, CrowdStrike</li>
-                        <li>✓ Tool use framework for external APIs</li>
-                        <li>✓ Hardware agnostic (NVIDIA, AMD, Intel support)</li>
-                        <li>✓ 24/7 Priority support & SLA guarantee</li>
-                        <li>✓ Mission Control dashboard & analytics</li>
-                      </ul>
-                      <p className="text-xs text-gray-500 mb-4">Matches NemoClaw Enterprise spec — but we manage everything for you</p>
-                      <button className="w-full rounded bg-purple-600 py-3 text-sm font-bold hover:bg-purple-500">
-                        Contact Sales
-                      </button>
+                      <span className={`text-[10px] uppercase tracking-widest px-2 py-1 ${
+                        subscriptionStatus === 'active'
+                          ? 'bg-emerald-500/20 text-emerald-400'
+                          : 'bg-amber-500/20 text-amber-400'
+                      }`}>
+                        {subscriptionStatus === 'active' ? 'Active' : 'Unpaid'}
+                      </span>
                     </div>
                   </div>
-                </div>
+                )}
+              </div>
+            </div>
 
-                {/* Need custom */}
-               <div className="mt-4">
-                 <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-4 text-center">
-                   <h3 className="font-medium mb-2">Need custom infrastructure?</h3>
-                   <p className="text-sm text-gray-400 mb-2">
-                     Volume discounts, dedicated support, and custom integrations.
-                   </p>
-                   <button 
-                     onClick={contactSales}
-                     className="w-full rounded-lg border border-gray-700 px-4 py-2 text-sm font-medium hover:bg-gray-800"
-                   >
-                     Contact Sales
-                   </button>
-                 </div>
-               </div>
-             </React.Fragment>
-           )}
-         </div>
-       </main>
-     </div>
-   );
+            {/* Plan Features */}
+            <div className="mb-8">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Your Features</span>
+              <div className="border border-zinc-800 divide-y divide-zinc-800 mt-2">
+                {(plans.find(p => p.id === currentPlan)?.features || plans[0].features).map((f, i) => (
+                  <div key={i} className="p-4 flex items-center justify-between">
+                    <span className="text-sm text-zinc-300">{f.label}</span>
+                    <span className={`text-xs ${f.included ? 'text-emerald-400' : 'text-zinc-600'}`}>
+                      {f.included ? '✓ Included' : '—'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Payment Methods */}
+            <div className="mb-8">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Payment Methods</span>
+              <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 mt-2">
+                <div className="border border-zinc-800 p-4">
+                  <div className="text-sm font-bold mb-1">Stripe</div>
+                  <p className="text-zinc-500 text-xs mb-3">Pay with card. Instant activation.</p>
+                  <a
+                    href="/api/stripe/checkout?plan=solo"
+                    className="block w-full text-left bg-white text-black px-4 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                  >
+                    Pay with Card
+                  </a>
+                </div>
+                <div className="border border-zinc-800 p-4">
+                  <div className="text-sm font-bold mb-1">Tempo Wallet</div>
+                  <p className="text-zinc-500 text-xs mb-3">Pay with USDC. On-chain settlement.</p>
+                  <a
+                    href="/dashboard/wallet"
+                    className="block w-full text-left border border-zinc-700 px-4 py-2 text-xs font-bold uppercase tracking-widest hover:border-zinc-500 transition-colors"
+                  >
+                    Open Wallet
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Upgrade Plans */}
+            <div>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600">Upgrade</span>
+              <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-2">
+                {plans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className={`border p-6 ${
+                      plan.popular ? 'border-white' : 'border-zinc-800'
+                    }`}
+                  >
+                    {plan.popular && (
+                      <span className="text-[9px] uppercase tracking-widest text-white bg-white/10 px-2 py-0.5 mb-3 inline-block">
+                        Popular
+                      </span>
+                    )}
+                    <h3 className="text-lg font-bold uppercase tracking-tighter">{plan.name}</h3>
+                    <p className="text-zinc-500 text-xs mt-1">{plan.specs}</p>
+                    <div className="text-2xl font-bold tracking-tighter mt-3">
+                      £{plan.price}<span className="text-sm text-zinc-500">/mo</span>
+                    </div>
+                    <ul className="mt-4 space-y-2">
+                      {plan.features.filter(f => f.included).map((f, i) => (
+                        <li key={i} className="text-xs text-zinc-400 flex items-center gap-2">
+                          <span className="text-emerald-400">✓</span> {f.label}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => buyPlan(plan.id)}
+                      disabled={currentPlan === plan.id && subscriptionStatus === 'active'}
+                      className={`w-full mt-4 px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
+                        currentPlan === plan.id && subscriptionStatus === 'active'
+                          ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                          : plan.popular
+                          ? 'bg-white text-black hover:bg-zinc-200'
+                          : 'border border-zinc-700 hover:border-zinc-500'
+                      }`}
+                    >
+                      {currentPlan === plan.id && subscriptionStatus === 'active' ? 'Current Plan' : 'Upgrade'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  )
 }

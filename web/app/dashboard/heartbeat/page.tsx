@@ -1,6 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Activity, Clock, Wifi } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import { EmptyState } from '@/app/components/shared/EmptyState'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 interface Agent {
   id: string
@@ -20,12 +28,49 @@ export default function HeartbeatPage() {
     const fetchHeartbeat = async () => {
       try {
         setLoading(true)
-        const response = await fetch('/api/heartbeat')
-        if (!response.ok) {
-          throw new Error('Failed to fetch heartbeat')
+        const agentsRes = await fetch('/api/agents')
+        if (!agentsRes.ok) throw new Error('Failed to fetch agents')
+        const agentsData = await agentsRes.json()
+        const agentList = agentsData.agents || []
+
+        if (agentList.length === 0) {
+          setAgents([])
+          setError(null)
+          return
         }
-        const data = await response.json()
-        setAgents(data.agents || [])
+
+        const agentsWithHeartbeat = await Promise.all(
+          agentList.map(async (agent: any) => {
+            try {
+              const hbRes = await fetch(`/api/heartbeat?agentId=${agent.id}`)
+              const hbData = hbRes.ok ? await hbRes.json() : null
+              const hb = hbData?.heartbeat || {}
+              return {
+                id: agent.id,
+                name: agent.name || agent.id,
+                status: (agent.status === 'running' || agent.status === 'active') ? 'active' as const
+                  : agent.status === 'stopped' ? 'stopped' as const
+                  : 'error' as const,
+                port: agent.websocketUrl ? parseInt(new URL(agent.websocketUrl).port) || 443 : 0,
+                lastHeartbeat: hb.lastHeartbeat
+                  ? new Date(hb.lastHeartbeat).toLocaleString()
+                  : 'Never',
+                uptime: hb.enabled ? `Every ${hb.frequency}` : 'Disabled',
+              }
+            } catch {
+              return {
+                id: agent.id,
+                name: agent.name || agent.id,
+                status: 'error' as const,
+                port: 0,
+                lastHeartbeat: 'Error',
+                uptime: 'Unknown',
+              }
+            }
+          })
+        )
+
+        setAgents(agentsWithHeartbeat)
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')
@@ -36,76 +81,95 @@ export default function HeartbeatPage() {
     }
 
     fetchHeartbeat()
-    const interval = setInterval(fetchHeartbeat, 5000) // Poll every 5 seconds
+    const interval = setInterval(fetchHeartbeat, 10000)
     return () => clearInterval(interval)
   }, [])
 
-  if (loading && agents.length === 0) {
-    return (
-      <div className="min-h-screen bg-black text-white p-8">
-        <h1 className="text-3xl font-bold mb-8">Agent Heartbeat Monitor</h1>
-        <div className="text-gray-400">Loading...</div>
-      </div>
-    )
-  }
+  const statusCounts = agents.reduce(
+    (acc, a) => {
+      acc[a.status] = (acc[a.status] || 0) + 1
+      return acc
+    },
+    {} as Record<string, number>
+  )
 
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-2">Agent Heartbeat Monitor</h1>
-        <p className="text-gray-400 mb-8">Real-time status of all deployed agents</p>
+    <DashboardShell>
+      <DashboardHeader
+        title="Heartbeat Monitor"
+        icon={<Activity className="h-5 w-5 text-blue-400" />}
+        count={agents.length}
+      />
 
+      <DashboardContent className="space-y-6">
+        {/* Status summary */}
+        {agents.length > 0 && (
+          <div className="flex gap-4">
+            <StatusPill status="active" label={`${statusCounts['active'] || 0} Active`} size="sm" />
+            <StatusPill status="idle" label={`${statusCounts['stopped'] || 0} Stopped`} size="sm" />
+            <StatusPill status="error" label={`${statusCounts['error'] || 0} Error`} size="sm" />
+          </div>
+        )}
+
+        {/* Error banner */}
         {error && (
-          <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-8">
-            <p className="text-red-300">Error: {error}</p>
+          <div className="border border-red-800 bg-zinc-950 p-4 text-red-400 text-xs">
+            Error: {error}
           </div>
         )}
 
-        {agents.length === 0 ? (
-          <div className="text-gray-400">No agents running yet</div>
-        ) : (
-          <div className="grid gap-4">
-            {agents.map((agent) => (
-              <div
-                key={agent.id}
-                className="border border-gray-700 rounded-lg p-4 bg-gray-900/50 hover:bg-gray-900 transition"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="text-lg font-semibold">{agent.name || agent.id}</h3>
-                    <p className="text-sm text-gray-400">ID: {agent.id}</p>
+        {/* Loading */}
+        {loading && agents.length === 0 && (
+          <EmptyState
+            icon={<Activity className="h-8 w-8 text-zinc-600 animate-pulse" />}
+            title="Loading heartbeat data…"
+          />
+        )}
+
+        {/* Agent list */}
+        {!loading && agents.length === 0 && !error && (
+          <EmptyState
+            icon={<Wifi className="h-8 w-8 text-zinc-600" />}
+            title="No agents running yet"
+            description="Deploy an agent to see its heartbeat status"
+          />
+        )}
+
+        {agents.length > 0 && (
+          <div className="space-y-px bg-zinc-800">
+            {agents.map((agent) => {
+              const statusMap = { active: 'active' as const, stopped: 'idle' as const, error: 'error' as const }
+              return (
+                <div key={agent.id} className="bg-zinc-950 border border-zinc-800 p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-sm font-bold uppercase tracking-tight">{agent.name || agent.id}</h3>
+                      <p className="text-[10px] text-zinc-600 font-mono mt-0.5">ID: {agent.id}</p>
+                    </div>
+                    <StatusPill status={statusMap[agent.status]} size="sm" />
                   </div>
-                  <div
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      agent.status === 'active'
-                        ? 'bg-green-900/30 text-green-300'
-                        : agent.status === 'stopped'
-                          ? 'bg-yellow-900/30 text-yellow-300'
-                          : 'bg-red-900/30 text-red-300'
-                    }`}
-                  >
-                    {agent.status}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Port</div>
+                      <div className="text-xs text-zinc-300 font-mono">{agent.port}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Uptime</div>
+                      <div className="text-xs text-zinc-300 font-mono">{agent.uptime}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> Last Pulse
+                      </div>
+                      <div className="text-xs text-zinc-300 font-mono">{agent.lastHeartbeat}</div>
+                    </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <p className="text-gray-500">Port</p>
-                    <p className="text-white">{agent.port}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Uptime</p>
-                    <p className="text-white">{agent.uptime}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-500">Last Heartbeat</p>
-                    <p className="text-white">{agent.lastHeartbeat}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
-      </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

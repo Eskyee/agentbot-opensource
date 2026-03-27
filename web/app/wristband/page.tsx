@@ -27,7 +27,7 @@ export default function WristbandPage() {
               live streams, token-gated community channels, and exclusive artist drops.
             </p>
 
-            <div className="grid grid-cols-2 gap-8 pt-8 border-t border-zinc-900">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-zinc-900">
               <div className="space-y-2">
                 <span className="text-zinc-600 text-[10px] uppercase block">Network</span>
                 <span className="text-white text-sm font-bold uppercase">Base Mainnet</span>

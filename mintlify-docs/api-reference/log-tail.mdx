@@ -1,0 +1,129 @@
+---
+title: Live log tail API
+description: "Stream agent gateway logs in real-time via Server-Sent Events — no SSH needed"
+---
+
+# Live log tail API
+
+<Info>The live log tail API is planned for a future release. The endpoints described on this page are not yet available. This page documents the intended specification for reference.</Info>
+
+Stream agent gateway logs directly to the browser using Server-Sent Events (SSE). No SSH access needed — see what your agent is doing in real-time from the dashboard.
+
+## Stream Logs
+
+```http
+GET /api/logs/:agentId/stream
+```
+
+Opens an SSE connection that streams log output from the agent's gateway container.
+
+### Response
+
+```
+event: line
+data: {"type":"connected","agentId":"user_123"}
+
+event: line
+data: {"type":"line","text":"[Gateway] Starting OpenClaw..."}
+
+event: line
+data: {"type":"line","text":"[Gateway] Listening on port 18789"}
+
+event: line
+data: {"type":"exit","code":0}
+```
+
+### Event Types
+
+| Type | Description |
+|------|-------------|
+| `connected` | SSE connection established |
+| `line` | New log line from the gateway |
+| `exit` | Gateway process exited |
+
+### Client Example
+
+```javascript
+const eventSource = new EventSource('/api/logs/user_123/stream');
+
+eventSource.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'line') {
+    console.log(data.text);
+  } else if (data.type === 'exit') {
+    console.log(`Gateway exited with code ${data.code}`);
+    eventSource.close();
+  }
+};
+
+eventSource.onerror = () => {
+  console.log('Connection lost, reconnecting...');
+};
+```
+
+## Get Log History
+
+```http
+GET /api/logs/:agentId/history
+```
+
+Returns recent log lines without opening a streaming connection.
+
+### Response
+
+```json
+{
+  "agentId": "user_123",
+  "lines": [
+    "[Gateway] Starting OpenClaw...",
+    "[Gateway] Listening on port 18789"
+  ],
+  "streaming": true,
+  "clients": 2
+}
+```
+
+## Stop Log Stream
+
+```http
+POST /api/logs/:agentId/stop
+```
+
+Stops the log stream and disconnects all clients.
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+## List Active Streams
+
+```http
+GET /api/logs/active
+```
+
+Returns all currently active log streams.
+
+### Response
+
+```json
+{
+  "streams": [
+    {
+      "agentId": "user_123",
+      "clients": 2,
+      "lines": 150
+    }
+  ]
+}
+```
+
+## Behavior
+
+- **Buffer:** Last 500 lines kept in memory
+- **Grace period:** 30 seconds after last client disconnects before stopping the stream
+- **Auto-reconnect:** Clients can reconnect and receive buffered lines
+- **No auth required** for SSE connections (authentication is handled at the dashboard level)

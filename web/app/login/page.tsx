@@ -1,128 +1,159 @@
-'use client'
+"use client";
+import React, { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
+import { useCustomSession } from '@/app/lib/useCustomSession'
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
+  ssr: false,
+  loading: () => <div className="h-11 w-44 bg-zinc-800 animate-pulse" />,
+});
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [loginError, setLoginError] = useState('')
-  const router = useRouter()
+function LoginForm() {
+  const { data: session, status } = useCustomSession()
+  const searchParams = useSearchParams()
+  const error = searchParams.get('error')
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      if (error === 'OAuthCallback') {
+        setLoginError('Authentication failed. Please try again.')
+      } else if (error === 'OAuthAccountNotLinked') {
+        setLoginError('This email is already associated with another account.')
+      } else if (error === 'AccessDenied') {
+        setLoginError('Access denied. Please try again.')
+      } else {
+        setLoginError(decodeURIComponent(error))
+      }
+    }
+  }, [error])
+
+  useEffect(() => {
+    if (session && status === 'authenticated') {
+      window.location.href = '/dashboard'
+    }
+  }, [session, status])
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setLoginError('')
-
-    const result = await signIn('credentials', {
-      redirect: false,
-      email,
-      password,
-    })
-
-    setLoading(false)
-
-    if (result?.error) {
-      setLoginError(result.error)
-    } else {
-      router.push('/dashboard')
+    e.preventDefault();
+    setLoading(true);
+    setLoginError("");
+    
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      setLoading(false);
+      if (data?.error) {
+        setLoginError(data.error);
+      } else if (data?.ok) {
+        window.location.href = "/dashboard";
+      }
+    } catch {
+      setLoading(false);
+      setLoginError("Login failed. Please try again.");
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-800">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block text-4xl mb-4" aria-hidden="true">🦞</Link>
-          <h1 className="text-2xl font-bold">Log in to Agentbot</h1>
-        </div>
+    <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+      <div className="mb-8">
+        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Authentication</div>
+        <h1 className="text-2xl font-bold tracking-tighter uppercase">Welcome to Agentbot</h1>
+        <p className="text-zinc-500 text-xs mt-2">One click to sign in</p>
+      </div>
 
+      <div className="mb-4">
+        <SignInWithBase callbackUrl="/dashboard" />
+      </div>
+
+      <div className="flex flex-col gap-3">
         <button
-          onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
-          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-black font-medium py-3 px-4 rounded-lg transition-colors"
+          type="button"
+          className="w-full border border-zinc-800 text-white text-xs font-bold uppercase tracking-widest py-3 px-4 flex items-center justify-center gap-2 transition-colors hover:border-zinc-600"
+          onClick={() => window.location.href = '/api/auth/google'}
         >
-          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-          </svg>
-          Continue with GitHub
+          <svg width="18" height="18" viewBox="0 0 48 48"><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#4285F4"/><path d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z" fill="#34A853"/><path d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z" fill="#FBBC05"/></svg>
+          Continue with Google
         </button>
+      </div>
 
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-700"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-gray-900 text-gray-500">or</span>
-          </div>
-        </div>
-
-        <details className="mt-6">
-          <summary className="text-center text-gray-400 text-sm cursor-pointer hover:text-white">
-            Sign in with email instead
-          </summary>
-          <form className="mt-4 space-y-4" onSubmit={handleCredentialsLogin}>
-            <div>
-              <label htmlFor="email" className="sr-only">Email</label>
-              <input
-                id="email"
-                type="email"
-                placeholder="Email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-white"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">Password</label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-white"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full rounded-lg bg-green-500 hover:bg-green-400 py-3 font-bold text-black"
-              disabled={loading}
-            >
-              Continue
-            </button>
-            <div className="text-center">
-              <Link href="/forgot-password" className="text-sm text-gray-300 hover:text-white">
+      <details className="mt-4">
+        <summary className="text-zinc-500 text-xs uppercase tracking-widest cursor-pointer hover:text-white">
+          Sign in with email instead
+        </summary>
+        <form className="mt-4 space-y-4" onSubmit={handleCredentialsLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
+          />
+          <div>
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
+            />
+            <div className="mt-2">
+              <Link href="/forgot-password" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors">
                 Forgot password?
               </Link>
             </div>
-          </form>
-        </details>
-
-        <div className="mt-4 text-center">
-          <Link href="/forgot-password" className="text-sm text-gray-300 hover:text-white">
-            Forgot password?
-          </Link>
-        </div>
-
-        {loginError && (
-          <div 
-            role="alert" 
-            aria-live="polite"
-            className="mt-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center"
-          >
-            {loginError}
           </div>
-        )}
+          <button
+            type="submit"
+            className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            disabled={loading}
+          >
+            Continue
+          </button>
+        </form>
+      </details>
 
-        <p className="mt-6 text-center text-gray-500 text-xs">
-          By continuing, you agree to Agentbot's Terms
-        </p>
+      {loginError && (
+        <div className="mt-4 p-3 border border-red-500/30 text-red-400 text-xs">
+          {loginError}
+        </div>
+      )}
+
+      <p className="mt-6 text-zinc-600 text-[10px] uppercase tracking-widest">
+        By continuing, you agree to Agentbot&apos;s Terms
+      </p>
+    </div>
+  );
+}
+
+function LoginFormFallback() {
+  return (
+    <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
+      <h1 className="text-2xl font-bold mb-6 tracking-tighter uppercase">Log in to Agentbot</h1>
+      <div className="animate-pulse space-y-5">
+        <div className="h-10 bg-zinc-800"></div>
+        <div className="h-10 bg-zinc-800"></div>
+        <div className="h-12 bg-zinc-800"></div>
       </div>
     </div>
-  )
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-blue-500/30 font-mono">
+      <Suspense fallback={<LoginFormFallback />}>
+        <LoginForm />
+      </Suspense>
+    </main>
+  );
 }

@@ -1,0 +1,73 @@
+---
+title: Invite API
+description: "Generate and validate invite codes for platform access"
+---
+
+# Invite API
+
+Generate and validate invite codes for gating access to the Agentbot platform. These endpoints are backend-only.
+
+<Note>Invite codes are now persisted in the database and survive server restarts. Code generation requires internal API key authentication to prevent invite flooding. Code validation remains public.</Note>
+
+## Generate invite code
+
+```http
+POST /api/invite/generate
+```
+
+Generates a new invite code. Requires internal API key authentication via the `Authorization: Bearer <INTERNAL_API_KEY>` header.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing or invalid internal API key |
+| 500 | Failed to generate invite code |
+
+### Response
+
+```json
+{
+  "code": "a1b2c3d4e5f6"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | string | A 12-character hex string generated from 6 random bytes |
+
+## Validate invite code
+
+```http
+POST /api/invite/validate
+```
+
+Validates and consumes an invite code. The operation is atomic — only one concurrent request can successfully consume a given code. Once validated, the code is marked as used and cannot be reused. No authentication required.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `code` | string | Yes | The invite code to validate |
+
+### Response (valid)
+
+```json
+{
+  "valid": true
+}
+```
+
+### Response (invalid)
+
+```json
+{
+  "valid": false
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Code is missing, invalid, or already used |

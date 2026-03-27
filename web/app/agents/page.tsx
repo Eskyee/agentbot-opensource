@@ -2,70 +2,70 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
-
-const navItems = [
-  { icon: '🤖', label: 'Agents', href: '/agents', active: true },
-  { icon: '🛒', label: 'Marketplace', href: '/marketplace', active: false },
-  { icon: '💳', label: 'Billing', href: '/billing', active: false },
-  { icon: '⚙️', label: 'Account', href: '/settings', active: false },
-]
-
-function AgentsSidebar({ userName, className = '' }: { userName: string; className?: string }) {
-  return (
-    <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
-      <nav className="flex-1 p-4">
-        <div className="space-y-1">
-          {navItems.map((item) => (
-            <Link key={item.label} href={item.href} className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${item.active ? 'bg-white/20 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
-              <span>{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-        </div>
-        <Link href="/billing" className="block mt-8 p-4 bg-gray-800 rounded-xl hover:bg-gray-700 transition-colors">
-          <div className="text-sm text-blue-400 mb-1">View Plans</div>
-        </Link>
-      </nav>
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold">{userName.charAt(0).toUpperCase()}</div>
-          <div>
-            <div className="font-medium">{userName}</div>
-            <div className="text-sm text-blue-400">Sign up</div>
-          </div>
-        </div>
-      </div>
-    </aside>
-  )
-}
+import { useCustomSession } from '@/app/lib/useCustomSession'
 
 export default function AgentsPage() {
-  const { data: session } = useSession()
+  const { data: session } = useCustomSession()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Mobile Sidebar */}
-      <div className="md:hidden">
-        <AgentsSidebar userName={userName} className="mb-6" />
-      </div>
+    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+      <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
+        {/* Hero */}
+        <div className="space-y-8 max-w-2xl">
+          <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
+            Agent Builder
+          </div>
 
-      <main className="px-4 sm:px-6 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Agent Builder</h1>
-          <p className="text-lg sm:text-xl text-gray-400 mb-6">Create your own AI agent</p>
-          
-          <div className="bg-gray-900 rounded-2xl p-6 sm:p-8 border border-gray-800 text-center">
-            <div className="text-4xl sm:text-5xl mb-3">🤖</div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Coming Soon</h2>
-            <p className="text-sm sm:text-base text-gray-400 mb-5">Agent builder is under development</p>
-            <Link href="/dashboard" className="w-full sm:w-auto inline-block bg-white text-black hover:bg-gray-200 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold">
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
+            Build Your <br />
+            <span className="text-zinc-700">AI Agent</span>
+          </h1>
+
+          <p className="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed">
+            The Agent Builder is under active development. Design, configure, and deploy
+            autonomous AI agents directly from your dashboard — no infrastructure required.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8 border-t border-zinc-900">
+            <div className="space-y-2">
+              <span className="text-zinc-600 text-[10px] uppercase tracking-widest block">Status</span>
+              <span className="text-white text-sm font-bold uppercase">Coming Soon</span>
+            </div>
+            <div className="space-y-2">
+              <span className="text-zinc-600 text-[10px] uppercase tracking-widest block">Signed In As</span>
+              <span className="text-white text-sm font-bold uppercase">{userName}</span>
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <Link
+              href="/dashboard"
+              className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            >
               Go to Dashboard
+            </Link>
+            <Link
+              href="/marketplace"
+              className="border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+            >
+              Browse Marketplace
             </Link>
           </div>
         </div>
-      </main>
-    </div>
-  );
+
+        {/* Footer */}
+        <div className="mt-32 pt-12 border-t border-zinc-900 flex flex-col md:flex-row justify-between gap-8">
+          <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
+            Agentbot Platform
+          </div>
+          <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
+            <Link href="/marketplace" className="hover:text-blue-500 transition-colors">Marketplace</Link>
+            <Link href="/token" className="hover:text-blue-500 transition-colors">Token</Link>
+            <Link href="/partner" className="hover:text-blue-500 transition-colors">Partner</Link>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
 }

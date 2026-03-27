@@ -1,0 +1,792 @@
+---
+title: Authentication API
+description: "Authentication API endpoints for user management and identity verification"
+---
+
+# Authentication API
+
+Manage user authentication, password resets, wallet sign-in, Farcaster identity, and token gating.
+
+## Auth middleware
+
+The backend uses two authentication patterns depending on the endpoint.
+
+### API key authentication (backend core endpoints)
+
+Endpoints such as `/api/deployments`, `/api/openclaw/instances`, and per-agent lifecycle routes require a shared API key passed as a bearer token. The key is compared against the configured `INTERNAL_API_KEY` using a timing-safe comparison.
+
+```bash
+curl -X GET https://backend.example.com/api/openclaw/instances \
+  -H "Authorization: Bearer YOUR_INTERNAL_API_KEY"
+```
+
+| HTTP status | Error | Description |
+|-------------|-------|-------------|
+| 401 | `Unauthorized` | Missing or invalid API key |
+| 403 | `Forbidden` | API key does not match |
+
+### Standalone auth middleware (`requireAuth`)
+
+Routes that are not mounted through the main API key middleware can use the standalone `requireAuth` middleware. This performs the same timing-safe Bearer token verification against `INTERNAL_API_KEY` and can be applied to individual route handlers. See [Security — Auth middleware](/security#auth-middleware) for an overview of both middleware functions.
+
+| HTTP status | Error | Description |
+|-------------|-------|-------------|
+| 401 | `Unauthorized` | Missing `Authorization` header or missing `Bearer` prefix |
+| 403 | `Forbidden` | Token does not match `INTERNAL_API_KEY` |
+| 500 | `Server misconfigured` | `INTERNAL_API_KEY` is not set |
+
+### Header-based authentication (AI routes)
+
+The AI chat endpoint (`/api/ai/chat`) reads user context from request headers rather than verifying a token. The following headers are used:
+
+| Header | Type | Description |
+|--------|------|-------------|
+| `x-user-email` | string | User email address |
+| `x-user-id` | string | User ID (defaults to `anonymous` if missing) |
+| `x-user-role` | string | User role |
+
+<Warning>The AI route middleware does not reject unauthenticated requests. It reads the headers and always passes the request through. Access control is enforced by the plan middleware, which checks `x-user-plan` and `x-stripe-subscription-id`.</Warning>
+
+### Admin middleware
+
+Endpoints that require admin access check the `x-user-email` header against the `ADMIN_EMAILS` environment variable. The comparison is **case-insensitive** — both the configured emails and the request email are normalized to lowercase before matching.
+
+| HTTP status | Error code | Description |
+|-------------|------------|-------------|
+| 403 | `ADMIN_REQUIRED` | Endpoint requires admin privileges |
+
+### Session authentication (web API)
+
+Most web API endpoints use cookie-based session authentication. The platform issues an `agentbot-session` cookie upon sign-in that persists for 30 days. After successful authentication, the middleware sets the database-level user context for RLS. All subsequent queries in that request are automatically scoped to the authenticated user's data. See [Security](/security#row-level-security) for details.
+
+You can retrieve the current session at any time using the [Get session](#get-session) endpoint and end it using the [Sign out](#sign-out) endpoint.
+
+## Sign up
+
+```http
+POST /api/register
+```
+
+Protected by bot detection. Automated or non-browser requests may be rejected.
+
+<Note>Registration does not create a session. After a successful sign-up, the client must call [`POST /api/auth/login`](#sign-in) to authenticate.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | User email address |
+| `password` | string | Yes | Password (minimum 8 characters) |
+| `name` | string | No | Display name (defaults to email if omitted) |
+| `referralCode` | string | No | Alphanumeric referral code that may include hyphens (max 20 characters). Case-insensitive. Both the new user and the referrer receive credit when a valid code is provided. |
+
+### Response
+
+```json
+{
+  "id": "user_123",
+  "email": "user@example.com",
+  "name": "John Doe"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Email and password required, invalid email format, password too short, or invalid referral code |
+| 403 | Request blocked by bot detection |
+| 409 | User already exists |
+| 429 | Too many requests |
+
+## Sign in
+
+```http
+POST /api/auth/login
+```
+
+Authenticates a user with email and password. On success, creates a database-backed session and sets the `agentbot-session` cookie.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | User email address (case-insensitive) |
+| `password` | string | Yes | User password |
+
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword"
+}
+```
+
+### Response
+
+```json
+{
+  "ok": true,
+  "user": {
+    "id": "user_123",
+    "name": "John Doe"
+  }
+}
+```
+
+A `Set-Cookie` header is included with the `agentbot-session` token. The cookie is `HttpOnly`, `SameSite=Lax`, scoped to `/`, and expires after 30 days.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing email or password |
+| 401 | Invalid email or password |
+| 500 | Login failed |
+
+<Note>This endpoint replaced the previous NextAuth credentials callback (`/api/auth/callback/credentials`). If you are migrating from an older integration, update your sign-in requests to use `/api/auth/login`.</Note>
+
+## Get session
+
+```http
+GET /api/auth/session
+```
+
+Returns the current authenticated user based on the `agentbot-session` cookie. No request body is required — the session token is read from the cookie automatically.
+
+### Response (authenticated)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `user.id` | string | User ID |
+| `user.name` | string | Display name |
+| `user.email` | string | Email address |
+| `user.isAdmin` | boolean | Whether the user has admin privileges. Defaults to `false` when not set. |
+
+```json
+{
+  "user": {
+    "id": "user_123",
+    "name": "John Doe",
+    "email": "user@example.com",
+    "isAdmin": false
+  }
+}
+```
+
+### Response (unauthenticated or expired)
+
+```json
+{
+  "user": null
+}
+```
+
+<Note>This endpoint always returns `200`. Check whether `user` is `null` to determine authentication status.</Note>
+
+## Sign out
+
+```http
+POST /api/auth/signout
+```
+
+Ends the current session by deleting the session record from the database and clearing the `agentbot-session` cookie. No request body is required.
+
+### Response
+
+```json
+{
+  "ok": true
+}
+```
+
+<Note>This endpoint always returns `200` even if no active session exists.</Note>
+
+## OAuth sign in
+
+OAuth providers support automatic account linking. If a user with the same email address already exists, the OAuth account is linked to the existing user on first sign-in. This lets users who originally signed up with email and password add an OAuth login without creating a duplicate account.
+
+### GitHub
+
+```http
+GET /api/auth/github
+```
+
+Redirects to GitHub OAuth flow. Requires `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` to be configured.
+
+### Google
+
+```http
+GET /api/auth/google
+```
+
+Redirects to Google OAuth consent screen. Requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to be configured.
+
+The flow requests the `openid`, `email`, and `profile` scopes with offline access. After the user grants consent, Google redirects back to the callback endpoint below.
+
+If `GOOGLE_CLIENT_ID` is not set, the endpoint redirects to `/login?error=GoogleNotConfigured`.
+
+#### Callback
+
+```http
+GET /api/auth/google/callback
+```
+
+Handles the OAuth authorization code exchange. This endpoint is called by Google after the user grants consent — you do not call it directly.
+
+On success the endpoint:
+1. Exchanges the authorization code for an access token.
+2. Fetches the user's email and name from the Google userinfo API.
+3. Creates a new user if no account with that email exists (automatic account linking applies when a matching email is found).
+4. Creates a session and sets the `agentbot-session` cookie.
+5. Redirects to `/dashboard`.
+
+#### Errors
+
+The callback redirects to `/login` with an `error` query parameter instead of returning JSON:
+
+| Error value | Description |
+|-------------|-------------|
+| `GoogleAuthFailed` | No authorization code received from Google |
+| `GoogleTokenFailed` | Code-to-token exchange failed |
+| `GoogleNoEmail` | Google account has no email address |
+| `GoogleAuthError` | Unexpected server error during authentication |
+
+## Cross-Account Protection receiver
+
+```http
+POST /api/security/risc
+```
+
+Receives security event tokens from Google via the [Cross-Account Protection (RISC)](https://developers.google.com/identity/protocols/risc) protocol. This is the primary receiver for Google security events. It validates the SET JWT, deduplicates events, and takes targeted action depending on the event type.
+
+<Warning>This endpoint is intended to be called by Google's RISC infrastructure, not by application clients. You do not need to call it directly.</Warning>
+
+### Request body
+
+The request body is a raw [SET (Security Event Token)](https://datatracker.ietf.org/doc/html/rfc8417) JWT string. The JWT payload contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `iss` | string | Issuer — must be `https://accounts.google.com/` |
+| `aud` | string | Audience — must match a configured `GOOGLE_CLIENT_ID` |
+| `jti` | string | Unique event identifier used for deduplication |
+| `events` | object | Map of event URIs to event data. Each event may include `subject.sub` (Google subject ID), `subject.email`, and `reason`. |
+
+### Token validation
+
+The endpoint validates the incoming JWT before processing:
+
+1. Checks the issuer is `https://accounts.google.com/`
+2. Checks the audience matches one of the configured Google client IDs
+3. Fetches Google's signing keys from the RISC well-known configuration endpoint (keys are cached for 24 hours)
+4. Matches the signing key by the `kid` header claim
+
+If validation fails, the endpoint returns `400`.
+
+### Event deduplication
+
+Events are deduplicated using the `jti` claim. Each processed event is stored in the `risc_events` table. If an event with the same `jti` has already been processed, it is acknowledged but not acted on again.
+
+### Supported event types
+
+| Event URI | Action taken |
+|-----------|-------------|
+| `https://schemas.openid.net/secevent/risc/event-type/account-disabled` | When `reason` is `hijacking`: disables Google Sign-in for the user and invalidates all sessions. Otherwise: invalidates all sessions. |
+| `https://schemas.openid.net/secevent/risc/event-type/account-enabled` | Re-enables Google Sign-in for the user |
+| `https://schemas.openid.net/secevent/risc/event-type/sessions-revoked` | Invalidates all active sessions for the user |
+| `https://schemas.openid.net/secevent/oauth/event-type/tokens-revoked` | Revokes stored OAuth refresh tokens and invalidates all sessions |
+| `https://schemas.openid.net/secevent/risc/event-type/account-credential-change-required` | Logged for security monitoring (no automated action) |
+| `https://schemas.openid.net/secevent/risc/event-type/verification` | Acknowledged — used during RISC setup to verify the endpoint |
+
+Users are matched by Google subject ID (`sub`) or email address.
+
+### Response
+
+Returns `202 Accepted` with an empty body on success. Event processing continues asynchronously after the response is sent.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Empty request body or invalid/unverifiable JWT (bad format, wrong issuer, wrong audience, or unknown signing key) |
+| 500 | Internal error |
+
+### Health check
+
+```http
+GET /api/security/risc
+```
+
+Returns the endpoint status and list of supported event types.
+
+```json
+{
+  "status": "ok",
+  "endpoint": "/api/security/risc",
+  "description": "Google RISC (Cross-Account Protection) receiver",
+  "events_supported": [
+    "account-disabled",
+    "account-enabled",
+    "sessions-revoked",
+    "tokens-revoked",
+    "account-credential-change-required",
+    "verification"
+  ]
+}
+```
+
+<Note>For details on how RISC fits into the platform security model and how to configure it in Google Cloud Console, see [Security — Google RISC Protocol](/security#google-risc-protocol).</Note>
+
+## Google RISC webhook (legacy)
+
+```http
+POST /api/auth/google/risc
+```
+
+Receives security event notifications from Google via the [RISC (Risk Incident Sharing and Collaboration)](https://developers.google.com/identity/protocols/risc) protocol. This is the legacy endpoint — new integrations should use [`POST /api/security/risc`](#cross-account-protection-receiver) instead, which adds token validation, event deduplication, and more granular event handling.
+
+<Warning>This endpoint is intended to be called by Google's RISC infrastructure, not by application clients. You do not need to call it directly.</Warning>
+
+### Request body
+
+The request body is a raw [SET (Security Event Token)](https://datatracker.ietf.org/doc/html/rfc8417) JWT string. The JWT payload contains:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `iss` | string | Issuer (Google) |
+| `sub` | string | Subject identifier — the user's email address |
+| `events` | object | Map of event URIs to event data |
+
+### Supported event types
+
+| Event URI | Action taken |
+|-----------|-------------|
+| `https://schemas.openid.net/secevent/risc/event-type/account-compromised` | Revokes all sessions for the affected user |
+| `https://schemas.openid.net/secevent/risc/event-type/account-disabled` | Revokes all sessions for the affected user |
+| `https://schemas.openid.net/secevent/risc/event-type/account-enabled` | No action taken — sessions are recreated on next login |
+| `https://schemas.openid.net/secevent/risc/event-type/sessions-revoked` | Revokes all active sessions for the user |
+| `https://schemas.openid.net/secevent/risc/event-type/identifier-changed` | Revokes all sessions to force re-authentication |
+
+Users are matched by email address.
+
+### Response
+
+```json
+{
+  "received": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid JWT format (token does not have three parts) |
+| 500 | Internal error processing the security event |
+
+<Note>For details on how RISC fits into the platform security model and how to configure it in Google Cloud Console, see [Security — Google RISC Protocol](/security#google-risc-protocol).</Note>
+
+## Wallet sign in (SIWE)
+
+```http
+POST /api/wallet-auth
+```
+
+Sign in using an Ethereum wallet via [Sign-In with Ethereum (SIWE)](https://eips.ethereum.org/EIPS/eip-4361). This flow is designed for Base smart wallets and supports ERC-6492 signature verification for pre-deployed wallets.
+
+<Note>This endpoint replaced the previous NextAuth wallet callback (`/api/auth/callback/wallet`). If you are migrating from an older integration, update your wallet sign-in requests to use `/api/wallet-auth`.</Note>
+
+### How it works
+
+1. The client requests a nonce from [`GET /api/auth/nonce`](#get-nonce).
+2. The client opens the Base Account SDK popup and requests a SIWE signature on Base Mainnet.
+3. The wallet address, SIWE message, and signature are sent to `POST /api/wallet-auth`.
+4. The server verifies the signature using viem (which handles ERC-6492 for smart wallets).
+5. If no account exists for the wallet address, a new user is created automatically.
+6. If an account with the same wallet-derived email already exists, the wallet is linked to the existing account.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `address` | string | Yes | Ethereum wallet address (0x-prefixed) |
+| `message` | string | Yes | The full SIWE message string |
+| `signature` | string | Yes | The wallet signature of the SIWE message (0x-prefixed) |
+
+### Response
+
+```json
+{
+  "ok": true,
+  "user": {
+    "id": "user_123",
+    "name": "Wallet:0xaBcD...eF12"
+  }
+}
+```
+
+A `Set-Cookie` header is included with the `agentbot-session` token. The cookie is `HttpOnly`, `SameSite=Lax`, scoped to `/`, and expires after 30 days.
+
+### Account linking
+
+When a wallet signs in, the system checks for an existing user by the wallet-derived email address (`<address>@wallet.agentbot`). If a matching user is found, the wallet is linked to that existing account. This prevents duplicate accounts and lets users access the same data regardless of which sign-in method they use.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing address, message, or signature |
+| 401 | Invalid signature |
+| 500 | Auth failed |
+
+## Get nonce
+
+```http
+GET /api/auth/nonce
+```
+
+```http
+POST /api/auth/nonce
+```
+
+Generates a random nonce for use in SIWE message construction. Both `GET` and `POST` methods return the same response.
+
+### Response
+
+```json
+{
+  "nonce": "a1b2c3d4e5f6..."
+}
+```
+
+## Get current user
+
+```http
+GET /api/settings
+```
+
+Requires session authentication. Returns the current user profile.
+
+### Response
+
+```json
+{
+  "id": "user_123",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "plan": "solo",
+  "credits": 0,
+  "twoFactorEnabled": false
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | User not found |
+
+## Update profile
+
+You can update your profile using either `POST` or `PATCH`.
+
+```http
+POST /api/settings
+```
+
+### Request body (POST)
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | New display name |
+| `email` | string | No | New email address (must be unique) |
+
+### Errors (POST)
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid email format |
+| 401 | Unauthorized |
+| 409 | Email address already in use |
+
+```http
+PATCH /api/settings
+```
+
+### Request body (PATCH)
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | New display name |
+| `notifications` | object | No | Notification preferences |
+
+## Change password
+
+```http
+POST /api/settings/password
+```
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `currentPassword` | string | Yes | Current password |
+| `newPassword` | string | Yes | New password (minimum 8 characters) |
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Current and new password required, or password must be at least 8 characters |
+| 401 | Unauthorized or current password incorrect |
+| 404 | User not found |
+
+## Forgot password
+
+```http
+POST /api/auth/forgot-password
+```
+
+Protected by bot detection. Rate-limited per IP address. Always returns the same response regardless of whether the email exists, to prevent user enumeration.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `email` | string | Yes | Account email address |
+
+### Response
+
+```json
+{
+  "message": "If an account exists, a reset link has been sent"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Email is required, invalid email format, or email service validation error |
+| 403 | Request blocked by bot detection |
+| 429 | Too many requests |
+| 500 | Internal server error |
+
+## Reset password
+
+```http
+POST /api/auth/reset-password
+```
+
+Rate-limited per IP address.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `token` | string | Yes | Reset token from the email link |
+| `password` | string | Yes | New password (minimum 6 characters). Note: sign-up and password change endpoints enforce a minimum of 8 characters. |
+
+### Response
+
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Token and password are required, password too short (minimum 6 characters), or invalid/expired token |
+| 404 | User not found |
+| 429 | Too many requests |
+
+## Farcaster authentication
+
+### Verify Farcaster identity
+
+```http
+POST /api/auth/farcaster/verify
+```
+
+```http
+GET /api/auth/farcaster/verify
+```
+
+The `GET` method returns endpoint metadata. The `POST` method verifies a Farcaster ID token and optionally checks `$RAVE` token gating on Base.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fidToken` | string | Yes | Farcaster ID token |
+| `address` | string | No | Ethereum address for token gating check |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "sessionToken": "base64-encoded-session",
+  "address": "0x...",
+  "message": "Farcaster verification successful",
+  "tokenGated": true,
+  "accessLevel": "premium"
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing Farcaster ID token |
+| 403 | Token gating failed (insufficient `$RAVE` balance). Response includes `required`, `minBalance` fields |
+| 500 | Verification failed |
+
+### Refresh Farcaster token
+
+```http
+POST /api/auth/farcaster/refresh
+```
+
+```http
+GET /api/auth/farcaster/refresh
+```
+
+The `GET` method returns endpoint metadata.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `refreshToken` | string | Yes | Base64-encoded refresh token |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "sessionToken": "base64-new-session",
+  "expiresIn": 86400,
+  "message": "Token refreshed successfully"
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing refresh token |
+| 401 | Invalid refresh token |
+| 500 | Token refresh failed |
+
+## Token gating
+
+### Verify token access (POST)
+
+```http
+POST /api/auth/token-gating/verify
+```
+
+Checks whether a wallet holds sufficient `$RAVE` tokens on Base mainnet.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fid` | string | Yes | Farcaster ID |
+| `address` | string | Yes | Ethereum address (0x-prefixed, 42 characters) |
+
+#### Response
+
+```json
+{
+  "fid": "12345",
+  "address": "0x...",
+  "hasAccess": true,
+  "tokenGated": true,
+  "minBalance": "1000000000000000000",
+  "token": "RAVE",
+  "chain": "base",
+  "message": "User has sufficient $RAVE balance",
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing fid or address, or invalid Ethereum address |
+| 500 | Verification failed |
+
+### Verify token access (GET)
+
+```http
+GET /api/auth/token-gating/verify?address=0x...
+```
+
+#### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `address` | string | Yes | Ethereum address (0x-prefixed, 42 characters) |
+
+#### Response
+
+```json
+{
+  "address": "0x...",
+  "hasAccess": true,
+  "tokenGated": true,
+  "minBalance": "1000000000000000000",
+  "token": "RAVE",
+  "chain": "base",
+  "contractAddress": "0x6EE72eEDEfBa8937Ec8c36dEd9B8c1ef9ca7A3db",
+  "rpcEndpoint": "https://mainnet.base.org"
+}
+```
+
+## Webhook events
+
+| Event | Description |
+|-------|-------------|
+| `user.created` | New user registered |
+| `user.updated` | Profile updated |
+| `user.deleted` | Account deleted |
+
+### Google RISC events (Cross-Account Protection)
+
+The following inbound events are processed by the [`POST /api/security/risc`](#cross-account-protection-receiver) endpoint when received from Google:
+
+| Event | Description |
+|-------|-------------|
+| `account-disabled` | The Google account was disabled. If the reason is `hijacking`, Google Sign-in is disabled for the user and all sessions are invalidated. Otherwise, sessions are invalidated. |
+| `account-enabled` | The Google account was re-enabled. Google Sign-in is re-enabled for the user. |
+| `sessions-revoked` | Google revoked the user's sessions. All local sessions are invalidated. |
+| `tokens-revoked` | Google revoked the user's OAuth tokens. Stored refresh tokens are deleted and all sessions are invalidated. |
+| `account-credential-change-required` | Google flagged the account for a credential change. Logged for monitoring. |
+| `verification` | Sent by Google during RISC setup to verify the endpoint is reachable. |
+
+### Google RISC events (legacy)
+
+The following inbound events are processed by the [`POST /api/auth/google/risc`](#google-risc-webhook-legacy) endpoint when received from Google:
+
+| Event | Description |
+|-------|-------------|
+| `account-compromised` | Google detected the account may be compromised. All sessions are revoked. |
+| `account-disabled` | The Google account was disabled. All sessions are revoked. |
+| `account-enabled` | The Google account was re-enabled. No action taken — sessions are recreated on next login. |
+| `sessions-revoked` | Google revoked the user's sessions. All local sessions are revoked. |
+| `identifier-changed` | The user's email or identifier changed on Google. All sessions are revoked to force re-authentication. |

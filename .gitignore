@@ -18,6 +18,7 @@ agentbot-worker/dist/
 .env.prodcheck
 .env.production
 .env.vercel
+.env.example
 .env.security
 .env.frontend
 .env.development.local
@@ -32,8 +33,6 @@ agentbot-backend/.env
 agentbot-backend/.env.local
 **/.env
 **/.env.*
-# Exception: .env.example is safe to commit (no real secrets)
-!.env.example
 
 # Logs
 npm-debug.log*
@@ -80,3 +79,18 @@ service-account-key.json
 test-results/
 playwright-report/
 playwright-results/
+
+# AI tool directories (symlinks, not project content)
+.factory/
+.kiro/
+.mux/
+.trae/
+.claude/skills/
+.claude/worktrees/
+.agents/skills/
+skills-lock.json
+
+# Local env files (never commit)
+.env.local
+web/.env.local
+agentbot-backend/.env.local

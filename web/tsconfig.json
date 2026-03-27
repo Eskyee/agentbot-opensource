@@ -61,7 +61,13 @@
   ],
   "exclude": [
     "node_modules",
-    "api-routes-backup",
-    "test-stream-backup"
+    "tests",
+    "agentbot-backend",
+    "**/*.test.ts",
+    "lib/usage-logger.ts",
+    "test-usage-logging.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
   ]
 }

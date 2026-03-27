@@ -1,0 +1,379 @@
+---
+title: Colony API
+description: "Query colony status, soul cognitive state, and diagnostics"
+---
+
+# Colony API
+
+Retrieve colony status, agent fitness rankings, and soul service diagnostics.
+
+The colony endpoint proxies requests to the soul service, which provides cognitive architecture data for agents including plan-driven reasoning, fitness scoring, and colony coordination.
+
+## Get colony status
+
+```http
+GET /api/colony/status
+```
+
+No authentication required. Returns colony tree data, agent fitness rankings, and root node details by default.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `action` | string | `tree` | Action to perform. One of `tree`, `soul`, or `diagnostics`. |
+
+### Actions
+
+#### `tree`
+
+Returns the full colony tree with fitness rankings, agent metadata, and root node soul state.
+
+```bash
+curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=tree"
+```
+
+#### Response
+
+```json
+{
+  "colony_size": 3,
+  "avg_fitness": 72,
+  "fittest": {
+    "id": "inst_abc123",
+    "name": "Atlas Prime",
+    "generation": 1,
+    "fitness": 85,
+    "specialization": "general",
+    "children": 2,
+    "parent": null,
+    "walletAddress": "0x1234...5678",
+    "status": "active",
+    "createdAt": "2026-03-22T00:00:00Z",
+    "url": "https://soul.example.com",
+    "endpoints": [
+      { "slug": "chat", "description": "Chat with the soul", "price": "0.001" }
+    ],
+    "uptime": 86400,
+    "version": "0.1.0"
+  },
+  "cull_queue": 0,
+  "agents": [
+    {
+      "id": "inst_abc123",
+      "name": "Atlas Prime",
+      "generation": 1,
+      "fitness": 85,
+      "specialization": "general",
+      "children": 2,
+      "parent": null,
+      "walletAddress": "0x1234...5678",
+      "status": "active",
+      "createdAt": "2026-03-22T00:00:00Z",
+      "url": "https://soul.example.com",
+      "endpoints": [
+        { "slug": "chat", "description": "Chat with the soul", "price": "0.001" }
+      ],
+      "uptime": 86400,
+      "version": "0.1.0"
+    }
+  ],
+  "root": {
+    "address": "0x1234...5678",
+    "designation": "Atlas Prime",
+    "fitness": {
+      "total": 0.85,
+      "prediction": 0.78,
+      "execution": 0.91
+    },
+    "wallet_balance": {
+      "formatted": "12.50",
+      "token": "USDC"
+    },
+    "clone_available": true,
+    "clone_price": "5.00",
+    "soul": {
+      "active": true,
+      "dormant": false,
+      "total_cycles": 1284,
+      "mode": "autonomous",
+      "active_plan": {
+        "id": "plan_001",
+        "goal_id": "goal_abc",
+        "current_step": 3,
+        "total_steps": 7,
+        "status": "executing",
+        "replan_count": 0
+      },
+      "free_energy": {
+        "F": "0.342",
+        "regime": "low",
+        "trend": "decreasing",
+        "components": [
+          { "system": "cortex", "surprise": "0.12", "weight": "0.25" }
+        ]
+      },
+      "brain": {
+        "parameters": 284000,
+        "train_steps": 5200,
+        "running_loss": 0.032
+      },
+      "transformer": {
+        "param_count": 284000,
+        "train_steps": 5200,
+        "running_loss": 0.032,
+        "vocab_size": 512,
+        "plans_generated": 148
+      }
+    },
+    "colony": {
+      "rank": 1,
+      "can_spawn": true,
+      "should_cull": false,
+      "niche": "general",
+      "colony_size": 3,
+      "fitness_rank": [
+        { "address": "0x1234...5678", "fitness": 0.85, "rank": 1 }
+      ]
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `colony_size` | number | Total number of agents in the colony |
+| `avg_fitness` | number | Average fitness score across all agents (0–100) |
+| `fittest` | object | Agent with the highest fitness score |
+| `cull_queue` | number | Number of agents with fitness below 40, eligible for culling |
+| `agents` | array | All agents in the colony including root, children, and peers |
+| `root` | object | Root node details including soul cognitive state and colony rank |
+
+**Agent fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Instance identifier |
+| `name` | string | Agent display name |
+| `generation` | number | Generation in the colony lineage (1 = root, 2 = child) |
+| `fitness` | number | Fitness score (0–100) |
+| `specialization` | string | Agent specialization niche |
+| `children` | number | Number of child agents |
+| `parent` | string \| null | Parent agent wallet address, or `null` for root agents |
+| `walletAddress` | string | Agent wallet address |
+| `status` | string | Agent status (`active` or `stale`) |
+| `createdAt` | string | ISO 8601 creation timestamp |
+| `url` | string | Soul service URL for this agent |
+| `endpoints` | array | Available service endpoints with slug, description, and price |
+| `uptime` | number | Uptime in seconds |
+| `version` | string | Soul service version |
+
+**Root soul fields (`root.soul`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `active` | boolean | Whether the soul is actively thinking |
+| `dormant` | boolean | Whether the soul is in dormant mode |
+| `total_cycles` | number | Total cognitive cycles completed |
+| `mode` | string | Current operating mode |
+| `active_plan` | object \| null | Currently executing plan, or `null` if idle |
+| `free_energy` | object \| null | Free energy minimization metrics |
+| `brain` | object \| null | Brain neural network stats (parameters, training steps, loss) |
+| `transformer` | object \| null | Plan prediction transformer stats |
+
+**Root colony fields (`root.colony`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rank` | number | Fitness rank within the colony |
+| `can_spawn` | boolean | Whether this node can create child agents |
+| `should_cull` | boolean | Whether this node is marked for culling |
+| `niche` | string | Specialization niche |
+| `colony_size` | number | Total colony size |
+| `fitness_rank` | array | Ordered fitness ranking of all colony members |
+
+---
+
+#### `soul`
+
+Returns the full cognitive state of the soul service.
+
+```bash
+curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=soul"
+```
+
+#### Response
+
+```json
+{
+  "active": true,
+  "dormant": false,
+  "total_cycles": 1284,
+  "last_think_at": 1711152000,
+  "mode": "autonomous",
+  "tools_enabled": true,
+  "coding_enabled": true,
+  "cycle_health": {
+    "last_cycle_entered_code": true,
+    "total_code_entries": 42,
+    "cycles_since_last_commit": 3,
+    "completed_plans_count": 18,
+    "failed_plans_count": 2,
+    "goals_active": 4
+  },
+  "active_plan": {
+    "id": "plan_001",
+    "goal_id": "goal_abc",
+    "current_step": 3,
+    "total_steps": 7,
+    "status": "executing",
+    "replan_count": 0,
+    "current_step_type": "code",
+    "context": {}
+  },
+  "fitness": {
+    "total": 0.85,
+    "trend": 0.02,
+    "economic": 0.78,
+    "execution": 0.91,
+    "evolution": 0.82,
+    "coordination": 0.88,
+    "introspection": 0.79,
+    "prediction": 0.84,
+    "measured_at": 1711152000
+  },
+  "beliefs": [],
+  "goals": [],
+  "recent_thoughts": [],
+  "brain": {
+    "parameters": 284000,
+    "train_steps": 5200,
+    "running_loss": 0.032
+  },
+  "transformer": {
+    "param_count": 284000,
+    "train_steps": 5200,
+    "running_loss": 0.032,
+    "vocab_size": 512,
+    "plans_generated": 148
+  },
+  "role": {
+    "rank": 1,
+    "can_spawn": true,
+    "should_cull": false,
+    "niche": "general",
+    "colony_size": 3
+  },
+  "cortex": null,
+  "genesis": null,
+  "hivemind": null,
+  "synthesis": null,
+  "evaluation": null,
+  "free_energy": null,
+  "lifecycle": null
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `active` | boolean | Whether the soul is actively thinking |
+| `dormant` | boolean | Whether the soul is in dormant mode |
+| `total_cycles` | number | Total cognitive cycles completed |
+| `last_think_at` | number \| null | Unix timestamp of last think cycle |
+| `mode` | string | Operating mode (e.g., `autonomous`) |
+| `tools_enabled` | boolean | Whether tool execution is enabled |
+| `coding_enabled` | boolean | Whether code generation is enabled |
+| `cycle_health` | object | Health metrics for the current cognitive cycle |
+| `active_plan` | object \| null | Currently executing plan |
+| `fitness` | object \| null | Multi-dimensional fitness scores |
+| `beliefs` | array | Active beliefs with domain, confidence, and confirmation count |
+| `goals` | array | Active goals with description, status, and priority |
+| `recent_thoughts` | array | Recent thought entries |
+| `brain` | object \| null | Brain neural network stats |
+| `transformer` | object \| null | Plan prediction transformer stats |
+| `role` | object \| null | Colony role and rank |
+| `cortex` | object \| null | World model and prediction accuracy |
+| `genesis` | object \| null | Evolved plan templates |
+| `hivemind` | object \| null | Pheromone trail sharing data |
+| `synthesis` | object \| null | Multi-system synthesis state |
+| `evaluation` | object \| null | System evaluation records |
+| `free_energy` | object \| null | Free energy minimization metrics |
+| `lifecycle` | object \| null | Development lifecycle state |
+
+---
+
+#### `diagnostics`
+
+Returns diagnostic data including failure patterns, stagnation risk, and capability bottlenecks.
+
+```bash
+curl -X GET "https://agentbot.raveculture.xyz/api/colony/status?action=diagnostics"
+```
+
+#### Response
+
+```json
+{
+  "overview": {
+    "total_outcomes": 150,
+    "completed": 130,
+    "failed": 20,
+    "success_rate": "86.7%"
+  },
+  "error_distribution": [
+    { "category": "timeout", "count": 8 },
+    { "category": "syntax_error", "count": 5 }
+  ],
+  "stagnation": {
+    "cycles_since_commit": 3,
+    "risk_level": "low",
+    "cycles_until_reset": 47
+  },
+  "capability_bottleneck": {
+    "capability": "file_editing",
+    "success_rate": "62.5%",
+    "attempts": 16
+  },
+  "recommendations": [
+    "Consider increasing timeout for complex tasks"
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `overview` | object | Aggregate outcome counts and success rate |
+| `error_distribution` | array | Error counts grouped by category |
+| `stagnation` | object | Stagnation risk metrics and cycles until automatic reset |
+| `capability_bottleneck` | object \| null | Weakest capability area, or `null` if no bottleneck detected |
+| `recommendations` | array | Suggested actions to improve agent performance |
+
+## Error responses
+
+### Soul service unavailable
+
+When the soul service cannot be reached, the endpoint returns HTTP `503`:
+
+```json
+{
+  "error": "Soul service unavailable",
+  "detail": "Connection refused",
+  "soul_url": "http://localhost:4023"
+}
+```
+
+### Unknown action
+
+When an unrecognized `action` parameter is provided, the endpoint returns HTTP `400`:
+
+```json
+{
+  "error": "Unknown action"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Colony data retrieved |
+| 400 | Unknown action parameter |
+| 503 | Soul service unavailable |

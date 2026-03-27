@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { Cpu, Star, ExternalLink, Radio, Shield, Zap, Layers, TrendingUp } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import StatusPill from '@/app/components/shared/StatusPill'
 
 type Category = 'all' | 'models' | 'infra' | 'security' | 'protocols' | 'tools'
 
@@ -77,18 +83,18 @@ const ITEMS: TechItem[] = [
 ]
 
 const CATEGORY_META: Record<Category, { label: string; icon: React.ElementType; color: string }> = {
-  all:       { label: 'All',       icon: Layers,    color: 'text-gray-400' },
-  models:    { label: 'Models',    icon: Cpu,        color: 'text-purple-400' },
+  all:       { label: 'All',       icon: Layers,    color: 'text-zinc-400' },
+  models:    { label: 'Models',    icon: Cpu,        color: 'text-blue-400' },
   infra:     { label: 'Infra',     icon: Zap,        color: 'text-blue-400' },
   security:  { label: 'Security',  icon: Shield,     color: 'text-red-400' },
   protocols: { label: 'Protocols', icon: Radio,      color: 'text-green-400' },
   tools:     { label: 'Tools',     icon: TrendingUp, color: 'text-yellow-400' },
 }
 
-const IMPACT_COLOR = {
-  high:   'text-red-400 bg-red-900/20 border-red-800/40',
-  medium: 'text-yellow-400 bg-yellow-900/20 border-yellow-800/40',
-  low:    'text-green-400 bg-green-900/20 border-green-800/40',
+const IMPACT_STATUS = {
+  high: 'error' as const,
+  medium: 'idle' as const,
+  low: 'active' as const,
 }
 
 export default function TechUpdatesPage() {
@@ -105,20 +111,19 @@ export default function TechUpdatesPage() {
     })
 
   return (
-    <div className="mt-[4rem] min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-800 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Radio className="h-5 w-5 text-green-400" />
-          <h1 className="text-xl font-bold tracking-tight">Tech Updates</h1>
-          <span className="text-xs text-gray-500 bg-gray-900 border border-gray-700 rounded-full px-3 py-0.5">{ITEMS.length} items</span>
-        </div>
-        <span className="text-xs text-gray-500 font-mono">Updated 2026-03-14</span>
-      </div>
+    <DashboardShell>
+      <DashboardHeader
+        title="Tech Updates"
+        icon={<Radio className="h-5 w-5 text-green-400" />}
+        count={ITEMS.length}
+        action={
+          <span className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">Updated 2026-03-14</span>
+        }
+      />
 
-      <div className="px-6 py-6 space-y-5">
+      <DashboardContent className="space-y-5">
         {/* Category filter */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-px bg-zinc-800">
           {(Object.keys(CATEGORY_META) as Category[]).map(cat => {
             const meta = CATEGORY_META[cat]
             const Icon = meta.icon
@@ -126,10 +131,10 @@ export default function TechUpdatesPage() {
               <button
                 key={cat}
                 onClick={() => setActive(cat)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   active === cat
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-700'
+                    ? 'bg-zinc-950 border border-zinc-700 text-white'
+                    : 'bg-zinc-950 border border-zinc-800 text-zinc-600 hover:text-zinc-300 hover:border-zinc-600'
                 }`}
               >
                 <Icon className={`h-3.5 w-3.5 ${active === cat ? 'text-white' : meta.color}`} />
@@ -140,31 +145,29 @@ export default function TechUpdatesPage() {
         </div>
 
         {/* Items */}
-        <div className="space-y-3">
+        <div className="space-y-px bg-zinc-800">
           {filtered.map(item => {
             const catMeta = CATEGORY_META[item.category]
             const CatIcon = catMeta.icon
             return (
-              <div key={item.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5 flex gap-4">
+              <div key={item.id} className="bg-zinc-950 border border-zinc-800 p-5 flex gap-4">
                 <CatIcon className={`h-4 w-4 mt-1 shrink-0 ${catMeta.color}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3 mb-1.5">
-                    <h3 className="text-sm font-semibold text-white leading-tight">{item.title}</h3>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-tight leading-tight">{item.title}</h3>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className={`text-[10px] font-medium border rounded px-2 py-0.5 ${IMPACT_COLOR[item.impact]}`}>
-                        {item.impact}
-                      </span>
+                      <StatusPill status={IMPACT_STATUS[item.impact]} label={item.impact} size="sm" />
                       <button onClick={() => toggleStar(item.id)} className="transition-colors">
-                        <Star className={`h-4 w-4 ${starred.has(item.id) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-600 hover:text-gray-400'}`} />
+                        <Star className={`h-4 w-4 ${starred.has(item.id) ? 'text-yellow-400 fill-yellow-400' : 'text-zinc-700 hover:text-zinc-400'}`} />
                       </button>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-400 leading-relaxed mb-3">{item.summary}</p>
-                  <div className="flex items-center gap-3 text-[10px] text-gray-500">
+                  <p className="text-xs text-zinc-500 leading-relaxed mb-3">{item.summary}</p>
+                  <div className="flex items-center gap-3 text-[10px] text-zinc-600">
                     <span className="font-mono">{item.date}</span>
                     <span>·</span>
                     <span>{item.source}</span>
-                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="ml-auto flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors">
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="ml-auto flex items-center gap-1 text-zinc-400 hover:text-white transition-colors uppercase tracking-widest font-bold">
                       View <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>
@@ -173,7 +176,7 @@ export default function TechUpdatesPage() {
             )
           })}
         </div>
-      </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

@@ -1,0 +1,167 @@
+---
+title: Troubleshooting
+description: "Common issues and how to fix them."
+---
+
+# Troubleshooting
+
+Common issues when building, deploying, and running Agentbot agents.
+
+## Installation Issues
+
+<AccordionGroup>
+
+<Accordion icon="bug" title="npm install fails with peer dependency errors">
+
+```bash
+npm install --legacy-peer-deps
+```
+
+Agentbot uses React 19 which some packages haven't updated for yet. The `--legacy-peer-deps` flag resolves most conflicts.
+
+</Accordion>
+
+<Accordion icon="bug" title="Prisma generate fails">
+
+```bash
+npx prisma generate
+```
+
+Prisma client must be generated before build. If you see `@prisma/client did not initialize`, run the generate command manually.
+
+</Accordion>
+
+<Accordion icon="bug" title="Port 3000 already in use">
+
+```bash
+lsof -i :3000
+kill -9 <PID>
+```
+
+Or use a different port:
+
+```bash
+PORT=3001 npm run dev
+```
+
+</Accordion>
+
+</AccordionGroup>
+
+## Deployment Issues
+
+<AccordionGroup>
+
+<Accordion icon="bug" title="Vercel build fails with module not found">
+
+Check that all imports use the `@/` alias correctly. The `@/` prefix maps to the `web/` directory. Common mistake:
+
+```typescript
+// ❌ Wrong
+import { auth } from '../../../lib/auth'
+
+// ✅ Right
+import { auth } from '@/app/lib/auth'
+```
+
+</Accordion>
+
+<Accordion icon="bug" title="Render deploy fails — health check timeout">
+
+The health check at `/health` must respond within 60 seconds. Common causes:
+
+- Database connection string is wrong (check `DATABASE_URL`)
+- Redis isn't reachable (check `REDIS_URL`)
+- Missing environment variables causing startup crash
+
+Check Render logs for the actual error.
+
+</Accordion>
+
+<Accordion icon="bug" title="Environment variables not loading">
+
+Agentbot reads env vars at startup. After changing them:
+
+- **Vercel:** Redeploy from dashboard or `vercel --prod`
+- **Render:** Service auto-restarts on env change
+- **Local:** Restart the dev server (`npm run dev`)
+
+</Accordion>
+
+</AccordionGroup>
+
+## Agent Issues
+
+<AccordionGroup>
+
+<Accordion icon="bug" title="Agent not responding to messages">
+
+1. Check agent status: `GET /api/agents/{id}`
+2. Verify the channel token (Telegram/Discord/WhatsApp) is valid
+3. Check the agent container logs
+4. Ensure the AI provider API key is set and has credits
+
+</Accordion>
+
+<Accordion icon="bug" title="Agent running out of memory">
+
+Each agent has a memory limit based on plan:
+
+| Plan | Memory |
+|------|--------|
+| Solo | 2GB |
+| Collective | 4GB |
+| Label | 8GB |
+| Network | 16GB |
+
+If you're hitting limits, check for memory leaks in custom skills or upgrade your plan.
+
+</Accordion>
+
+<Accordion icon="bug" title="Skills not loading">
+
+```bash
+# List installed skills
+GET /api/agents/{id}/skills
+
+# Reinstall a skill
+POST /api/agents/{id}/skills
+{ "skillId": "weather" }
+```
+
+Skills are loaded at agent startup. If a skill fails to load, the agent will start without it and log the error.
+
+</Accordion>
+
+</AccordionGroup>
+
+## Billing Issues
+
+<AccordionGroup>
+
+<Accordion icon="bug" title="Stripe checkout returns 410 Gone">
+
+The legacy `/api/checkout` endpoint is deprecated. Use:
+
+```http
+GET /api/stripe/checkout?plan=solo
+```
+
+</Accordion>
+
+<Accordion icon="bug" title="BYOK not working">
+
+1. Verify your API key is valid (test it with curl)
+2. Check the provider name matches exactly: `openrouter`, `anthropic`, `openai`, `google`, `groq`
+3. Ensure the key has credits/quota remaining
+4. Disable and re-enable BYOK from the billing dashboard
+
+</Accordion>
+
+</AccordionGroup>
+
+## Getting Help
+
+- **Discord:** [discord.gg/eskyee](https://discord.gg/eskyee) — Community support
+- **GitHub Issues:** [Eskyee/agentbot-opensource](https://github.com/Eskyee/agentbot-opensource/issues) — Bug reports
+- **GitHub Discussions:** [Eskyee/agentbot-opensource/discussions](https://github.com/Eskyee/agentbot-opensource/discussions) — Questions and ideas

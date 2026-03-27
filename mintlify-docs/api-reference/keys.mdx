@@ -1,0 +1,167 @@
+---
+title: API keys
+description: "Create and manage API keys for programmatic access"
+---
+
+# API keys
+
+Create and manage API keys for authenticating with the Agentbot API. All endpoints require session authentication.
+
+## List keys
+
+```http
+GET /api/keys
+```
+
+### Response
+
+```json
+{
+  "keys": [
+    {
+      "id": "key_123",
+      "name": "Production Key",
+      "keyPreview": "sk_abc1234...",
+      "createdAt": "2026-03-01T00:00:00Z",
+      "lastUsed": "2026-03-19T00:00:00Z"
+    }
+  ]
+}
+```
+
+## Create key
+
+```http
+POST /api/keys
+```
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Key name (max 64 characters) |
+
+### Response (201 Created)
+
+```json
+{
+  "id": "key_456",
+  "name": "Production Key",
+  "key": "sk_a1b2c3d4e5f6...",
+  "createdAt": "2026-03-19T00:00:00Z"
+}
+```
+
+<Warning>The raw API key is only returned once at creation time. Store it securely — it cannot be retrieved again. The key is stored as a bcrypt hash in the database.</Warning>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Name required or name too long (max 64 characters) |
+| 401 | Unauthorized |
+| 500 | Failed to create key |
+
+## Get key
+
+```http
+GET /api/keys/:id
+```
+
+Requires ownership of the key.
+
+### Response
+
+```json
+{
+  "id": "key_123",
+  "name": "Production Key",
+  "keyPreview": "sk_abc1234...",
+  "createdAt": "2026-03-01T00:00:00Z",
+  "lastUsed": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Key not found |
+
+## Delete key
+
+```http
+DELETE /api/keys/:id
+```
+
+Requires ownership of the key.
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Key not found |
+
+## Validate key
+
+<Info>The `POST /api/keys/validate` endpoint is planned for a future release. API key validation is currently available through the backend endpoint [`POST /api/validate-key`](/api-reference/registration#validate-api-key), which uses SHA-256 hash comparison.</Info>
+
+The following specification describes the intended web-side validation endpoint:
+
+```http
+POST /api/keys/validate
+```
+
+Verifies an API key against its bcrypt hash in the database and returns the associated user information. No session authentication is required.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `apiKey` | string | Yes | The full API key. Must start with the `sk_` prefix. |
+
+### Response
+
+```json
+{
+  "valid": true,
+  "userId": "user-a1b2c3d4",
+  "email": "user@example.com",
+  "plan": "solo",
+  "subscriptionStatus": "active",
+  "features": ["dashboard", "marketplace", "analytics"]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `valid` | boolean | Whether the key is valid |
+| `userId` | string | User identifier |
+| `email` | string | User email address |
+| `plan` | string | Current subscription plan (`solo`, `collective`, `label`, or `network`) |
+| `subscriptionStatus` | string | Stripe subscription status (for example, `active`, `past_due`, `canceled`) |
+| `features` | string[] | List of features available to the user |
+
+### How it works
+
+1. The key prefix (first 10 characters) is used for a fast database lookup.
+2. Candidate keys matching the prefix are compared using `bcrypt.compare` against the stored hash.
+3. On match, the user's profile and subscription information are returned.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing or non-string `apiKey` in the request body |
+| 401 | Key does not start with `sk_` or no matching key found |
+| 500 | Validation failed due to a server error |

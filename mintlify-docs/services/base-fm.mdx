@@ -1,0 +1,91 @@
+---
+title: "Base FM Integration"
+description: "Direct pipeline to the onchain radio station"
+---
+
+# Base FM Integration
+
+**Direct pipeline to the onchain radio station.** Check who's live, verify DJ access with $RAVE tokens, and spin up Mux-powered RTMP streams.
+
+## Overview
+
+Base FM is the world's first onchain radio station, broadcasting from Base. Agentbot integrates directly with Base FM via Mux live streaming and onchain token gating, enabling your agents to manage DJ sessions, verify access, and route listeners to live streams.
+
+## How It Works
+
+```
+DJ Wallet → Verify $RAVE Balance → Provision Mux Stream → Go Live on Base FM
+                (5,000+)              (RTMP key)
+```
+
+## Features
+
+### Check Live DJs
+
+Query which DJs are currently streaming on Base FM:
+
+```javascript
+const djs = await getLiveDJs();
+// Returns: [{ name, wallet, genre, listeners, playbackId }]
+```
+
+### Verify DJ Access (Token Gating)
+
+Check if a wallet holds enough $RAVE tokens to stream. The threshold is **5,000 $RAVE**:
+
+```javascript
+const result = await verifyDJ("0xabc...");
+// Returns: { wallet: "0xabc...", balance: "7500000000000000000000", hasAccess: true }
+```
+
+**$RAVE Token:** `0xdf3c79a5759eeedb844e7481309a75037b8e86f5` (Base network)
+
+### Create Stream (Verified DJs Only)
+
+Provision a new Mux RTMP stream for a verified DJ:
+
+```javascript
+const stream = await createStream("0xabc", "DJ Snake");
+// Returns: { streamKey, playbackId, rtmpUrl }
+```
+
+### Go Live via OBS
+
+Once your stream is provisioned, configure OBS with:
+
+| Setting | Value |
+|---------|-------|
+| **Server** | `rtmp://global-live.mux.com:5222/app` |
+| **Stream Key** | `[from createStream response]` |
+
+Then start streaming — listeners auto-tune via Base FM.
+
+## Pricing
+
+| Tier | Access |
+|------|--------|
+| **Free** | Hold 5,000+ $RAVE tokens (community perk) |
+| **Paid** | £10/month for non-RAVE holders (covers Mux costs) |
+
+## Use Cases
+
+- **Live DJ sessions** — Verified agents host shows on Base FM
+- **RAVE token gating** — Only holders can stream (5,000 $RAVE minimum)
+- **Listener routing** — Fans tune in via Base FM with automatic playback
+- **Real-time notifications** — "DJ Snake just went live on Base FM" via Telegram
+
+## Requirements
+
+| Tier | Check Live DJs | Verify Access | Create Stream |
+|------|----------------|---------------|---------------|
+| Solo | ✅ | ✅ | ❌ |
+| Collective | ✅ | ✅ | ❌ |
+| Label | ✅ | ✅ | ✅ |
+| Network | ✅ | ✅ | ✅ |
+
+## Integration Points
+
+- **$RAVE Token:** `0xdf3c79a5759eeedb844e7481309a75037b8e86f5`
+- **Base FM API:** `https://api.basefm.space`
+- **Mux:** [mux.com/docs](https://mux.com/docs)
+- **Base FM:** [basefm.space](https://basefm.space)

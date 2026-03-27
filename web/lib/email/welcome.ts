@@ -104,7 +104,7 @@ function getWelcomeEmailHTML(name: string): string {
               <p style="font-size: 14px; line-height: 1.6; color: #999; margin: 0 0 16px;">
                 • <a href="https://agentbot.raveculture.xyz/docs" style="color: #8b5cf6; text-decoration: none;">Documentation</a><br>
                 • <a href="https://agentbot.raveculture.xyz/blog" style="color: #8b5cf6; text-decoration: none;">Blog & Tutorials</a><br>
-                • Email: <a href="mailto:rbasefm@icloud.com" style="color: #8b5cf6; text-decoration: none;">rbasefm@icloud.com</a>
+                • Email: <a href="mailto:YOUR_ADMIN_EMAIL_2" style="color: #8b5cf6; text-decoration: none;">YOUR_ADMIN_EMAIL_2</a>
               </p>
 
               <p style="font-size: 16px; line-height: 1.6; color: #999; margin: 32px 0 0;">

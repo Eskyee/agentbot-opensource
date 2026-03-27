@@ -3,6 +3,12 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AgentVerificationPanel } from '@/app/components/VerificationBadge'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
+import { SectionHeader } from '@/app/components/shared/SectionHeader'
 
 interface InstanceData {
   userId: string
@@ -40,9 +46,9 @@ function VerifyContent() {
 
   if (loading) {
     return (
-      <div className="animate-pulse">
-        <div className="h-8 bg-gray-800 rounded w-1/3 mb-8"></div>
-        <div className="h-64 bg-gray-900 rounded-xl"></div>
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 bg-zinc-800 w-1/3"></div>
+        <div className="h-64 bg-zinc-900 border border-zinc-800"></div>
       </div>
     )
   }
@@ -58,8 +64,8 @@ function VerifyContent() {
           verificationType={instance?.verificationType}
         />
       ) : (
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
-          <p className="text-gray-400">
+        <div className="border border-zinc-800 bg-zinc-950 p-6">
+          <p className="text-zinc-500 text-xs">
             No agent found. Deploy an agent first to verify it.
           </p>
         </div>
@@ -69,40 +75,60 @@ function VerifyContent() {
 }
 
 export default function VerifyPage() {
-  return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Verify Your Agent</h1>
-          <p className="text-gray-400">
-            Link your agent to an onchain identity to prove a real human is behind it.
-          </p>
-        </div>
+  const ShieldIcon = () => (
+    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="square" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+    </svg>
+  )
 
-        <div className="mb-8 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
-          <h2 className="text-lg font-semibold mb-2 text-blue-400">Why verify?</h2>
-          <ul className="space-y-2 text-sm text-gray-300">
-            <li>• <strong>Trust</strong> - Users know a real person runs this agent</li>
-            <li>• <strong>Reputation</strong> - Build onchain reputation that travels with you</li>
-            <li>• <strong>Stand out</strong> - Verified agents get a special badge in chats</li>
-          </ul>
+  return (
+    <DashboardShell>
+      <DashboardHeader
+        title="Verify Your Agent"
+        icon={<ShieldIcon />}
+      />
+
+      <DashboardContent className="max-w-4xl space-y-6">
+        <SectionHeader
+          label="Identity"
+          title="Onchain Verification"
+          description="Link your agent to an onchain identity to prove a real human is behind it."
+        />
+
+        <div className="border border-zinc-800 bg-zinc-950 p-6">
+          <h2 className="text-sm font-bold tracking-tight uppercase mb-4">Why verify?</h2>
+          <div className="space-y-px bg-zinc-800">
+            {[
+              { label: 'Trust', desc: 'Users know a real person runs this agent' },
+              { label: 'Reputation', desc: 'Build onchain reputation that travels with you' },
+              { label: 'Stand out', desc: 'Verified agents get a special badge in chats' },
+            ].map((item) => (
+              <div key={item.label} className="bg-zinc-950 p-4 flex items-start gap-3">
+                <div className="w-1 h-1 bg-blue-400 mt-1.5 flex-shrink-0" />
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider">{item.label}</span>
+                  <span className="text-xs text-zinc-500 ml-2">— {item.desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <Suspense fallback={
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-800 rounded w-1/3 mb-8"></div>
-            <div className="h-64 bg-gray-900 rounded-xl"></div>
+            <div className="h-8 bg-zinc-800 w-1/3 mb-8"></div>
+            <div className="h-64 bg-zinc-900 border border-zinc-800"></div>
           </div>
         }>
           <VerifyContent />
         </Suspense>
 
-        <div className="mt-8 text-center">
-          <a href="/dashboard" className="text-blue-400 hover:text-blue-300">
+        <div className="pt-4">
+          <a href="/dashboard" className="text-[10px] text-zinc-500 hover:text-white uppercase tracking-widest font-bold">
             ← Back to Dashboard
           </a>
         </div>
-      </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }

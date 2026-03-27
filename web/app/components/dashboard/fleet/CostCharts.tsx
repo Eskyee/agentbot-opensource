@@ -115,7 +115,7 @@ export default function CostCharts() {
         <div className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-text-secondary" />
           <h3 className="text-sm font-medium text-text-primary">
-            Cost &amp; Token Trends
+            Cost & Token Trends
           </h3>
         </div>
         <div className="flex rounded-md border border-border overflow-hidden text-xs">

@@ -1,0 +1,77 @@
+
+description: "Connect your agent to Discord"
+
+# Discord Integration
+
+Connect your Agentbot agent to Discord servers.
+
+## Setup
+
+### Step 1: Create Application
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **New Application**
+3. Name your bot
+
+### Step 2: Create Bot
+
+1. Go to **Bot** in sidebar
+2. Click **Reset Token** to get your token
+3. Enable **Message Content Intent**
+4. Save
+
+### Step 3: Invite Bot
+
+1. Go to **OAuth2 → URL Generator**
+2. Select scopes: `bot`
+3. Select permissions:
+   - Send Messages
+   - Read Message History
+   - Embed Links
+4. Copy the generated URL and open it
+
+### Step 4: Connect to Agentbot
+
+1. Go to **Settings → Integrations → Discord**
+2. Paste your bot token
+3. Click **Connect**
+
+## Bot Permissions
+
+Required permissions:
+
+```
+- Send Messages
+- Read Message History  
+- Use Slash Commands
+- Embed Links
+- Attach Files
+```
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| /help | Show help |
+| /status | Agent status |
+| /chat | Start DM conversation |
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion icon="error" title="Bot offline">
+
+- Check token is correct
+- Ensure bot is in your server
+
+</Accordion>
+
+<Accordion icon="error" title="Not responding to messages">
+
+- Enable **Message Content Intent** in developer portal
+- Make sure bot has required permissions
+
+</Accordion>
+
+</AccordionGroup>

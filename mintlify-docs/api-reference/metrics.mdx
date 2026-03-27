@@ -1,0 +1,292 @@
+---
+title: Metrics API
+description: "Endpoints for retrieving agent performance metrics and music industry analytics"
+---
+
+# Metrics API
+
+Retrieve agent performance data, historical metrics, and music industry analytics.
+
+## Base URL
+
+```
+https://agentbot.raveculture.xyz/api/metrics
+```
+
+## Platform metrics
+
+```http
+GET /api/metrics
+```
+
+<Note>This endpoint is served by the web application, not the backend API service. It is not available on the backend base URL.</Note>
+
+Returns platform-wide metrics including agent counts, message volumes, deployment stats, uptime, performance, and storage usage. Requires bearer token (API key) authentication.
+
+<Warning>The `messages`, `performance`, and `storage.used` fields currently return randomized mock data. Agent and deployment counts are retrieved from the database. A future release will connect all fields to real telemetry.</Warning>
+
+### Response
+
+```json
+{
+  "metrics": {
+    "agents": {
+      "total": 4,
+      "active": 4,
+      "inactive": 0,
+      "failed": 0
+    },
+    "messages": {
+      "today": 12500,
+      "thisWeek": 87000,
+      "thisMonth": 350000
+    },
+    "deployments": {
+      "total": 4,
+      "successful": 4,
+      "failed": 0
+    },
+    "uptime": {
+      "platformUptime": 99.9,
+      "averageAgentUptime": 98.5
+    },
+    "performance": {
+      "averageResponseTime": 450,
+      "successRate": "98.50",
+      "errorRate": "1.50"
+    },
+    "storage": {
+      "used": 180,
+      "total": 1024,
+      "percentUsed": 35
+    }
+  },
+  "timestamp": "2026-03-19T12:00:00Z",
+  "status": "ok"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `metrics.agents.total` | number | Total number of agents |
+| `metrics.agents.active` | number | Currently running agents |
+| `metrics.agents.inactive` | number | Stopped agents |
+| `metrics.agents.failed` | number | Agents in a failed state |
+| `metrics.messages.today` | number | Messages processed today |
+| `metrics.messages.thisWeek` | number | Messages processed this week |
+| `metrics.messages.thisMonth` | number | Messages processed this month |
+| `metrics.deployments.total` | number | Total deployments |
+| `metrics.deployments.successful` | number | Successful deployments |
+| `metrics.deployments.failed` | number | Failed deployments |
+| `metrics.uptime.platformUptime` | number | Platform uptime percentage |
+| `metrics.uptime.averageAgentUptime` | number | Average agent uptime percentage |
+| `metrics.performance.averageResponseTime` | number | Average response time in milliseconds |
+| `metrics.performance.successRate` | string | Success rate percentage |
+| `metrics.performance.errorRate` | string | Error rate percentage |
+| `metrics.storage.used` | number | Storage used in MB |
+| `metrics.storage.total` | number | Total storage in MB |
+| `metrics.storage.percentUsed` | number | Storage usage percentage |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to fetch metrics. The error response includes an empty `metrics` object alongside the `error` field: `{ "error": "Failed to fetch metrics", "metrics": {} }` |
+
+## Historical metrics
+
+<Note>The per-user metrics endpoints below are served by the backend API service, not the web application. They are available at the backend base URL, which may differ from the web API base URL depending on your deployment.</Note>
+
+```http
+GET /api/metrics/:userId/historical
+```
+
+Requires bearer token authentication. Returns time-series metrics for an agent over a specified time range. Data is sourced from the `container_metrics` database table, aggregated by hour. If no database history exists for the requested range, the endpoint falls back to a single live container sample.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | string | ID of the user whose agent metrics to retrieve |
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `range` | string | `24h` | Time range for metrics. Options: `24h`, `7d`, `30d` |
+
+### Response
+
+```json
+{
+  "userId": "user_123",
+  "timeRange": "24h",
+  "metrics": [
+    {
+      "timestamp": "2026-03-18T12:00:00Z",
+      "cpu": 15.3,
+      "memory": 42.1,
+      "messages": 85,
+      "errors": 2
+    }
+  ],
+  "averages": {
+    "cpu": 18,
+    "memory": 45,
+    "messages": 72,
+    "errors": 3
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | User ID for the metrics |
+| `timeRange` | string | Requested time range |
+| `metrics` | array | Array of metric data points |
+| `metrics[].timestamp` | string | ISO 8601 timestamp for the data point |
+| `metrics[].cpu` | number | CPU usage percentage (0–100) |
+| `metrics[].memory` | number | Memory usage percentage (0–100) |
+| `metrics[].messages` | number | Messages processed in the period |
+| `metrics[].errors` | number | Errors in the period |
+| `averages.cpu` | number | Average CPU usage over the time range |
+| `averages.memory` | number | Average memory usage over the time range |
+| `averages.messages` | number | Average messages per period |
+| `averages.errors` | number | Average errors per period |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 403 | Forbidden — invalid API key |
+| 500 | Failed to fetch historical metrics |
+
+## Performance metrics
+
+```http
+GET /api/metrics/:userId/performance
+```
+
+Requires bearer token authentication. Returns current real-time performance data for an agent.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | string | ID of the user whose agent performance to retrieve |
+
+### Response
+
+```json
+{
+  "cpu": 15.3,
+  "memory": 42.1,
+  "errorRate": 1.2,
+  "responseTime": 0
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cpu` | number | Current CPU usage percentage (0–100) |
+| `memory` | number | Current memory usage percentage (0–100) |
+| `errorRate` | number | Error rate percentage calculated from agent logs |
+| `responseTime` | number | Response time in milliseconds. Currently always returns `0` — real instrumentation is not yet implemented. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 403 | Forbidden — invalid API key |
+| 500 | Failed to fetch performance data |
+
+## Metrics summary
+
+```http
+GET /api/metrics/:userId/summary
+```
+
+Requires bearer token authentication. Returns a music industry analytics summary for an agent, including revenue, bookings, fan engagement, streaming stats, and active skills.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | string | ID of the user whose metrics summary to retrieve |
+
+### Response
+
+```json
+{
+  "revenue": {
+    "month": "$0.00",
+    "total": "$0.00",
+    "change": "+0%"
+  },
+  "bookings": {
+    "completed": 0,
+    "pending": 0,
+    "conversion": "0%"
+  },
+  "fans": {
+    "total": 0,
+    "active": 0,
+    "growth": "+0%",
+    "segmentation": {
+      "superfans": 0,
+      "casual": 0,
+      "new": 0
+    }
+  },
+  "streams": {
+    "monthlyListeners": 0,
+    "monthlyStreams": 0,
+    "growth": "+0%"
+  },
+  "skills": {
+    "active": 0,
+    "total": 0,
+    "growth": "+0%"
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `revenue.month` | string | Revenue for the current month |
+| `revenue.total` | string | Total lifetime revenue |
+| `revenue.change` | string | Month-over-month revenue change |
+| `bookings.completed` | number | Number of completed bookings |
+| `bookings.pending` | number | Number of pending bookings |
+| `bookings.conversion` | string | Booking conversion rate |
+| `fans.total` | number | Total fan count |
+| `fans.active` | number | Active fans |
+| `fans.growth` | string | Fan growth rate |
+| `fans.segmentation.superfans` | number | Number of superfans |
+| `fans.segmentation.casual` | number | Number of casual fans |
+| `fans.segmentation.new` | number | Number of new fans |
+| `streams.monthlyListeners` | number | Monthly listener count |
+| `streams.monthlyStreams` | number | Monthly stream count |
+| `streams.growth` | string | Streaming growth rate |
+| `skills.active` | number | Number of active skills |
+| `skills.total` | number | Total skills available |
+| `skills.growth` | string | Skills adoption growth rate |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 403 | Forbidden — invalid API key |
+| 500 | Failed to fetch metrics summary |

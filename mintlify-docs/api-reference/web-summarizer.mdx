@@ -1,0 +1,214 @@
+---
+title: Web summarizer API
+description: "Summarize and extract structured data from any web page"
+---
+
+# Web summarizer API
+
+The web summarizer service lets you extract summaries and structured data from any publicly accessible URL. It returns page titles, descriptions, headings, paragraphs, links, images, and Open Graph metadata.
+
+No authentication is required. The service runs as a standalone deployment separate from the main Agentbot API.
+
+## Base URL
+
+```
+https://<your-web-summarizer-host>
+```
+
+<Note>The web summarizer runs as an independent service on port `3100` by default. Replace the base URL with your deployment's address.</Note>
+
+## Service info
+
+```http
+GET /
+```
+
+Returns service metadata and available endpoints.
+
+### Response
+
+```json
+{
+  "service": "Agentbot Web Summarizer",
+  "description": "Summarize and extract data from any URL",
+  "endpoints": {
+    "POST /api/summarize": "Extract title, description, headings, key content — { url }",
+    "POST /api/extract": "Extract all links, images, meta tags — { url }"
+  },
+  "payment": {
+    "network": "base",
+    "currency": "USDC",
+    "payTo": "0x9Fc073659284575850614f6286158803F0526Bc2",
+    "note": "x402 gating coming soon"
+  }
+}
+```
+
+## Health check
+
+```http
+GET /health
+```
+
+No authentication required.
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "service": "agentbot-web-summarizer",
+  "version": "1.0.0"
+}
+```
+
+## Summarize a URL
+
+```http
+POST /api/summarize
+```
+
+Fetches the given URL and extracts a content summary including the page title, meta description, headings, key paragraphs, and word count.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | yes | The URL to summarize |
+
+```bash
+curl -X POST https://<your-web-summarizer-host>/api/summarize \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com"}'
+```
+
+### Response
+
+```json
+{
+  "url": "https://example.com",
+  "title": "Example Domain",
+  "description": "This domain is for use in illustrative examples.",
+  "headings": ["Example Domain"],
+  "paragraphs": [
+    "This domain is for use in illustrative examples in documents."
+  ],
+  "wordCount": 28,
+  "fetchedAt": "2026-03-22T19:00:00.000Z"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | string | The URL that was summarized |
+| `title` | string | Page title from the `<title>` tag, falling back to the first `<h1>` |
+| `description` | string | Meta description from `<meta name="description">` or `<meta property="og:description">` |
+| `headings` | string[] | Deduplicated list of `h1`, `h2`, and `h3` headings (max 20) |
+| `paragraphs` | string[] | Deduplicated key content paragraphs extracted from `<p>`, `<article>`, and common content selectors (max 10) |
+| `wordCount` | number | Approximate word count of the full page body text |
+| `fetchedAt` | string | ISO 8601 timestamp of when the URL was fetched |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `url` field is missing from the request body |
+| 500 | The target URL could not be fetched or parsed |
+
+### Error response
+
+```json
+{
+  "error": "url required"
+}
+```
+
+## Extract links, images, and metadata
+
+```http
+POST /api/extract
+```
+
+Fetches the given URL and extracts all links, images, and Open Graph / Twitter Card metadata.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | yes | The URL to extract data from |
+
+```bash
+curl -X POST https://<your-web-summarizer-host>/api/extract \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com"}'
+```
+
+### Response
+
+```json
+{
+  "url": "https://example.com",
+  "links": [
+    {
+      "href": "https://www.iana.org/domains/example",
+      "text": "More information..."
+    }
+  ],
+  "images": [
+    {
+      "src": "https://example.com/logo.png",
+      "alt": "Example logo"
+    }
+  ],
+  "meta": {
+    "og:title": "Example Domain",
+    "og:description": "This domain is for use in illustrative examples.",
+    "description": "This domain is for use in illustrative examples."
+  },
+  "fetchedAt": "2026-03-22T19:00:00.000Z"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `url` | string | The URL that was extracted from |
+| `links` | object[] | Deduplicated list of links found on the page (max 50) |
+| `links[].href` | string | Resolved absolute URL of the link |
+| `links[].text` | string | Link text, truncated to 100 characters |
+| `images` | object[] | Deduplicated list of images found on the page (max 20) |
+| `images[].src` | string | Resolved absolute image URL |
+| `images[].alt` | string | Image alt text, truncated to 100 characters |
+| `meta` | object | Open Graph (`og:*`), Twitter Card (`twitter:*`), and `description` meta tags |
+| `fetchedAt` | string | ISO 8601 timestamp of when the URL was fetched |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `url` field is missing from the request body |
+| 500 | The target URL could not be fetched or parsed |
+
+### Error response
+
+```json
+{
+  "error": "url required"
+}
+```
+
+## Fetch behavior
+
+All URL fetching uses the following defaults:
+
+| Setting | Value |
+|---------|-------|
+| User-Agent | `Agentbot-WebSummarizer/1.0` |
+| Timeout | 10 seconds |
+| Redirects | Followed automatically |
+| Accepted content | `text/html`, `application/xhtml+xml` |
+
+If the target URL returns a non-2xx HTTP status, the service responds with a `500` error containing the upstream status code in the error message.
