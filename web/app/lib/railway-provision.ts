@@ -18,12 +18,13 @@ const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:
  *
  * OpenClaw Gateway hardcodes loopback (127.0.0.1:18789). Railway's load balancer
  * needs the container to accept on PORT (Railway injects this). This Node.js one-liner:
- *   1. Spawns `openclaw gateway --allow-unconfigured` in the background
- *   2. After 3s starts a TCP proxy: PORT → 127.0.0.1:18789
+ *   1. Writes /tmp/oc.json config with allowedOrigins: ['*'] so the Control UI works from any browser origin
+ *   2. Spawns `openclaw gateway --config /tmp/oc.json` in the background
+ *   3. After 3s starts a TCP proxy: PORT → 127.0.0.1:18789
  * No shell operators, no quoting issues — pure Node.js.
  */
 const OPENCLAW_START_CMD =
-  `node -e "const{spawn}=require('child_process');const p=spawn('openclaw',['gateway','--allow-unconfigured'],{stdio:'inherit'});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
+  `node -e "const{spawn}=require('child_process');const fs=require('fs');fs.writeFileSync('/tmp/oc.json',JSON.stringify({gateway:{trustedProxies:['127.0.0.1'],controlUi:{allowedOrigins:['*']}}}));const p=spawn('openclaw',['gateway','--config','/tmp/oc.json'],{stdio:'inherit'});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
 
 function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
