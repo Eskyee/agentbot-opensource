@@ -30,7 +30,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen bg-black pt-14">
+    <div className="flex min-h-screen bg-black font-mono pt-14">
       <DashboardSidebar
         userName={session?.user?.name || session?.user?.email?.split('@')[0] || 'User'}
         plan="Solo"
