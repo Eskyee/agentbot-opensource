@@ -18,9 +18,9 @@ const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:
  *
  * OpenClaw Gateway binds to loopback (127.0.0.1:18789). Railway's load balancer
  * needs the container to accept on PORT (Railway injects this). This Node.js one-liner:
- *   1. Writes ~/.openclaw/openclaw.json with gateway.mode:'local', trustedProxies, and
+ *   1. Writes /tmp/openclaw.json with gateway.mode:'local', trustedProxies, and
  *      controlUi.allowedOrigins:['*'] so any browser origin can connect to the Control UI
- *   2. Spawns `openclaw gateway` (reads the config file automatically)
+ *   2. Spawns `openclaw gateway` with OPENCLAW_CONFIG_PATH=/tmp/openclaw.json
  *   3. After 3s starts a TCP proxy: PORT → 127.0.0.1:18789
  *
  * Notes:

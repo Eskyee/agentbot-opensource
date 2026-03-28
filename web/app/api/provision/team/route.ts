@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto'
 
@@ -58,32 +59,36 @@ export async function POST(req: NextRequest) {
   const internalKey = process.env.INTERNAL_API_KEY?.trim()
 
   if (backendUrl && internalKey) {
-    // Fire-and-forget: spawn N agents in background (don't block the response)
-    Promise.allSettled(
-      Array.from({ length: agentCount }, (_, i) =>
-        fetch(`${backendUrl}/api/provision`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${internalKey}`,
-            'X-User-Email': session.user?.email ?? '',
-            'X-User-Id': session.user?.id ?? '',
-          },
-          body: JSON.stringify({
-            userId: `${teamId}-agent-${i + 1}`,
-            plan,
-            email: session.user?.email,
-            autoProvision: true,
-            agentType: 'business',
-            teamId,
-            templateKey,
-          }),
-          signal: AbortSignal.timeout(15_000),
-        }).catch(err =>
-          console.error(`[Provision/Team] Agent ${i + 1} provision error:`, err)
+    // Use after() so provisioning completes after the response is sent.
+    // Without after(), Vercel serverless may kill the function before the
+    // fire-and-forget fetches resolve.
+    after(async () => {
+      await Promise.allSettled(
+        Array.from({ length: agentCount }, (_, i) =>
+          fetch(`${backendUrl}/api/provision`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${internalKey}`,
+              'X-User-Email': session.user?.email ?? '',
+              'X-User-Id': session.user?.id ?? '',
+            },
+            body: JSON.stringify({
+              userId: `${teamId}-agent-${i + 1}`,
+              plan,
+              email: session.user?.email,
+              autoProvision: true,
+              agentType: 'business',
+              teamId,
+              templateKey,
+            }),
+            signal: AbortSignal.timeout(15_000),
+          }).catch(err =>
+            console.error(`[Provision/Team] Agent ${i + 1} provision error:`, err)
+          )
         )
       )
-    ).catch(() => {})
+    })
   }
 
   return NextResponse.json({
