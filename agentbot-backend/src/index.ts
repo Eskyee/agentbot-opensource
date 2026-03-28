@@ -10,7 +10,8 @@ import provisionRouter from './routes/provision';
 import teamProvisionRouter from './routes/team-provision';
 import registrationRouter from './routes/registration';
 import agentsRouter from './routes/agents';
-import openclawRouter from './routes/openclaw';
+import openclawRouter, { proxy as openclawProxy } from './routes/openclaw';
+import http from 'http';
 import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
 import AIProviderService from './services/ai-provider';
 import { startScheduler, stopScheduler } from './scheduler';
@@ -1164,11 +1165,26 @@ const checkProvisioning = async () => {
 let dockerAvailable = false;
 checkProvisioning().then(available => { dockerAvailable = available; });
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+
+// WebSocket proxy for OpenClaw Control UI
+server.on('upgrade', (req, socket, head) => {
+  const match = req.url?.match(/^\/api\/openclaw\/proxy\/([a-zA-Z0-9_-]+)(\/.*)?$/);
+  if (match) {
+    const agentId = match[1];
+    const target = `http://agentbot-agent-${agentId}.railway.internal:18789`;
+    const proxiedReq = Object.assign({}, req, { url: match[2] || '/' });
+    openclawProxy.ws(proxiedReq as http.IncomingMessage, socket, head, { target });
+  } else {
+    socket.destroy();
+  }
+});
+
+server.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
-  // Note: startScheduler() is called after initDatabase() resolves (above) — not here
+  console.log('OpenClaw proxy: /api/openclaw/proxy/:agentId/*');
 
   if (process.env.NODE_ENV === 'production') {
     startAutoUpdater();

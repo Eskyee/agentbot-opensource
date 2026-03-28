@@ -4,15 +4,44 @@
  * GET /api/openclaw/version    — Runtime version + image info
  * GET /api/openclaw/instances  — List all running containers
  * GET /api/openclaw/instances/:id/stats — Per-container live stats
+ * ALL /api/openclaw/proxy/:agentId/* — Transparent HTTP+WS proxy to Railway internal
  *
- * Extracted from index.ts. All endpoints require auth.
+ * The proxy route forwards requests to agentbot-agent-{agentId}.railway.internal:18789
+ * so the OpenClaw Control UI is accessible without exposing the container publicly.
+ * No auth required on the proxy itself — OpenClaw's own token auth handles that.
  */
 import { Router, Request, Response } from 'express';
 import { promises as fs } from 'fs';
 import path from 'path';
+import httpProxy from 'http-proxy';
 import { runCommand } from '../utils';
 
 const router = Router();
+
+// ── OpenClaw proxy — forwards to Railway internal DNS ──────────────────────
+const proxy = httpProxy.createProxyServer({ ws: true, changeOrigin: true });
+
+proxy.on('error', (err, _req, res) => {
+  console.error('[OpenClaw proxy] error:', err.message);
+  if (res && 'writeHead' in res) {
+    (res as Response).writeHead(502);
+    (res as Response).end('OpenClaw instance unreachable');
+  }
+});
+
+/**
+ * Proxy all HTTP requests for /api/openclaw/proxy/:agentId/* to the Railway internal address.
+ * WebSocket upgrades are handled separately in index.ts (see server.on('upgrade')).
+ */
+router.use('/proxy/:agentId', (req: Request, res: Response) => {
+  const agentId = req.params.agentId.replace(/[^a-zA-Z0-9_-]/g, '');
+  const target = `http://agentbot-agent-${agentId}.railway.internal:18789`;
+  // Rewrite path: strip /api/openclaw/proxy/:agentId prefix
+  req.url = req.url.replace(/^\/[^/]+/, '') || '/';
+  proxy.web(req, res, { target });
+});
+
+export { proxy };
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
