@@ -402,7 +402,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black font-mono pt-14">
+    <div className="flex min-h-screen bg-black font-mono">
       <DashboardSidebar
         userName={userName}
         credits={credits}

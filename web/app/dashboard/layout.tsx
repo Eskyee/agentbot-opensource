@@ -26,7 +26,7 @@ export default function DashboardLayout({
 
   return (
     <SidebarContext.Provider value={{ isOpen: sidebarOpen, toggle: () => setSidebarOpen(!sidebarOpen) }}>
-      <div className="flex min-h-screen bg-black font-mono pt-14">
+      <div className="flex min-h-screen bg-black font-mono">
         <DashboardSidebar
           userName={session?.user?.name || session?.user?.email?.split('@')[0] || 'User'}
           plan="Solo"
