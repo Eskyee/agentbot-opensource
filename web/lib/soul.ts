@@ -146,9 +146,9 @@ export interface InstanceInfo {
     parent_address: string | null;
     parent_url: string | null;
     created_at: string;
-  };
-  endpoints: Array<{ slug: string; description: string; price: string }>;
-  fitness: { total: number; prediction: number; execution: number };
+  } | null;
+  endpoints: Array<{ slug: string; description: string; price: string }> | null;
+  fitness: { total: number; prediction: number; execution: number } | null;
   children: Array<{
     id: number;
     instance_id: string;
@@ -157,7 +157,7 @@ export interface InstanceInfo {
     status: string;
     branch: string;
     created_at: number;
-  }>;
+  }> | null;
   children_count: number;
   peer_count: number;
   clone_available: boolean;
@@ -176,7 +176,7 @@ export interface Siblings {
     url: string;
     status: string;
     endpoints: Array<{ slug: string; description: string; price: string }>;
-  }>;
+  }> | null;
 }
 
 export interface ColonyStatus {

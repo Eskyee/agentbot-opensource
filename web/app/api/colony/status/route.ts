@@ -82,7 +82,10 @@ export async function GET(request: Request) {
 
         // Build lineage tree from instance info + children
         // identity may be null if the node hasn't registered yet — use safe fallbacks
-        const identity = instanceInfo.identity;
+        const identity = instanceInfo.identity ?? null;
+        const childNodes = instanceInfo.children ?? [];
+        const siblingNodes = siblings.siblings ?? [];
+
         const agents = [
           {
             id: identity?.instance_id ?? 'borg-root',
@@ -92,15 +95,15 @@ export async function GET(request: Request) {
             specialization: 'general',
             children: instanceInfo.children_count,
             parent: identity?.parent_address ?? null,
-            walletAddress: identity?.address ?? null,
+            walletAddress: identity?.address ?? '0x0000000000000000000000000000000000000000',
             status: 'active' as const,
             createdAt: identity?.created_at ?? new Date().toISOString(),
             url: SOUL_URL,
-            endpoints: instanceInfo.endpoints,
+            endpoints: instanceInfo.endpoints ?? [],
             uptime: instanceInfo.uptime_seconds,
             version: instanceInfo.version,
           },
-          ...instanceInfo.children.map((child) => ({
+          ...childNodes.map((child) => ({
             id: child.instance_id,
             name: `Clone-${child.instance_id.slice(0, 8)}`,
             generation: 2,
@@ -116,7 +119,7 @@ export async function GET(request: Request) {
             uptime: 0,
             version: 'unknown',
           })),
-          ...siblings.siblings
+          ...siblingNodes
             .filter((s) => identity ? s.instance_id !== identity.instance_id : true)
             .map((sibling) => ({
               id: sibling.instance_id,
@@ -130,7 +133,7 @@ export async function GET(request: Request) {
               status: sibling.status as 'active' | 'stale',
               createdAt: '',
               url: sibling.url,
-              endpoints: sibling.endpoints,
+              endpoints: sibling.endpoints ?? [],
               uptime: 0,
               version: 'unknown',
             })),
@@ -141,7 +144,9 @@ export async function GET(request: Request) {
           avg_fitness: Math.round(
             agents.reduce((sum, a) => sum + a.fitness, 0) / Math.max(agents.length, 1)
           ),
-          fittest: agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0]),
+          fittest: agents.length > 0
+            ? agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0])
+            : null,
           cull_queue: agents.filter((a) => a.fitness < 40).length,
           agents,
           root: {
