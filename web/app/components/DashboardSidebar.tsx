@@ -148,17 +148,17 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
           </svg>
         </button>
 
-        <nav className="flex-1 p-4 overflow-y-auto pt-16 md:pt-4">
+        <nav className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4">
           {navSections.map((section, i) => (
             <div key={section.label} className={i > 0 ? 'mt-4' : ''}>
-              <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 px-4 mb-1.5">
+              <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 pl-10 pr-4 mb-1.5">
                 {section.label}
               </div>
               <div className="space-y-0.5">
                 {section.items.map((item) => {
                   const isExternal = 'external' in item && item.external
                   const isActive = !isExternal && (pathname === item.href || pathname.startsWith(item.href + '/'))
-                  const cls = `flex items-center gap-2.5 px-4 py-2 text-xs transition-colors ${
+                  const cls = `flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
                     isActive
                       ? 'bg-zinc-900 text-white'
                       : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
@@ -189,7 +189,7 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
               href={openclawUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="block mt-6 border border-blue-500/30 bg-blue-500/5 p-4 hover:border-blue-500/50 transition-colors"
+              className="block mx-4 mt-6 border border-blue-500/30 bg-blue-500/5 p-4 hover:border-blue-500/50 transition-colors"
             >
               <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-1">OpenClaw</div>
               <div className="text-sm font-bold flex items-center gap-2">
@@ -199,14 +199,14 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
           ) : (
             <a
               href="/onboard?mode=deploy"
-              className="block mt-6 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
+              className="block mx-4 mt-6 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
             >
               <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">OpenClaw</div>
               <div className="text-sm font-bold text-zinc-500">Deploy Now</div>
             </a>
           )}
 
-          <Link href="/billing" onClick={onToggle} className="block mt-4 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
+          <Link href="/billing" onClick={onToggle} className="block mx-4 mt-4 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
             <div className="text-xl font-bold capitalize">{plan || 'Solo'}</div>
           </Link>
