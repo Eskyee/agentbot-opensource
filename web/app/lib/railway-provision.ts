@@ -133,9 +133,17 @@ export async function provisionOnRailway(
     }
   `, { serviceId, environmentId })
 
-  console.log(`[RailwayProvision] Deploy triggered → ${url}`)
+  // Use the agentbot-prod backend as a proxy so OpenClaw is accessible without
+  // needing the container to bind to 0.0.0.0 (it binds loopback by design).
+  // Railway internal DNS: agentbot-agent-{agentId}.railway.internal:18789
+  const backendUrl = process.env.BACKEND_API_URL?.trim().replace(/\/api$/, '') || ''
+  const proxyUrl = backendUrl
+    ? `${backendUrl}/api/openclaw/proxy/${agentId}/`
+    : url  // fallback to Railway URL if backend URL unknown
 
-  return { agentId, url, serviceId, status: 'deploying' }
+  console.log(`[RailwayProvision] Deploy triggered → proxy: ${proxyUrl}`)
+
+  return { agentId, url: proxyUrl, serviceId, status: 'deploying' }
 }
 
 /** Returns true if Railway env vars are present so direct provisioning can be used. */
