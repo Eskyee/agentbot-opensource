@@ -1,4 +1,7 @@
+'use client'
+
 import { cn } from '@/lib/utils'
+import { useSidebar } from '@/app/dashboard/sidebar-context'
 
 interface DashboardShellProps {
   children: React.ReactNode
@@ -28,18 +31,30 @@ export function DashboardHeader({
   action,
   className,
 }: DashboardHeaderProps) {
+  const { toggle } = useSidebar()
+
   return (
     <div
       className={cn(
-        'px-4 sm:px-6 py-4 sm:py-5 border-b border-zinc-800 flex items-center justify-between gap-3 overflow-hidden',
+        'sticky top-14 z-30 bg-zinc-950 px-4 sm:px-6 py-3 sm:py-4 border-b border-zinc-900 flex items-center justify-between gap-3 overflow-hidden',
         className
       )}
     >
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
+        {/* Mobile hamburger — opens sidebar from context */}
+        <button
+          onClick={toggle}
+          className="md:hidden p-1.5 -ml-1 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+          aria-label="Open menu"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         {icon}
-        <h1 className="text-base sm:text-xl font-bold tracking-tight font-mono truncate">{title}</h1>
+        <h1 className="text-sm sm:text-base font-bold tracking-tight font-mono uppercase truncate">{title}</h1>
         {count !== undefined && (
-          <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5 font-mono">
+          <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 px-2 py-0.5 font-mono">
             {count}
           </span>
         )}
