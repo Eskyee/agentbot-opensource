@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Cpu, Star, ExternalLink, Radio, Shield, Zap, Layers, TrendingUp } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Cpu, Star, ExternalLink, Radio, Shield, Zap, Layers, TrendingUp, RefreshCw } from 'lucide-react'
 import {
   DashboardShell,
   DashboardHeader,
@@ -9,7 +9,7 @@ import {
 } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
 
-type Category = 'all' | 'models' | 'infra' | 'security' | 'protocols' | 'tools'
+type Category = 'all' | 'models' | 'infra' | 'security' | 'protocols' | 'tools' | 'openclaw'
 
 interface TechItem {
   id: string
@@ -22,6 +22,29 @@ interface TechItem {
   impact: 'high' | 'medium' | 'low'
   starred?: boolean
 }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+interface SoulData {
+  root?: {
+    soul?: {
+      free_energy?: { F?: number; regime?: string }
+      total_cycles?: number
+      active_plan?: {
+        goals?: Array<{ id?: string; description?: string; status?: string }>
+        recent_outcomes?: Array<{ id?: string; description?: string; result?: string }>
+      }
+      brain?: {
+        params?: number
+        steps?: number
+        loss?: number
+        transformer?: { params?: number; steps?: number }
+      }
+    }
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+const OPENCLAW_URL = 'https://tempo-x402-production.up.railway.app/dashboard'
 
 const ITEMS: TechItem[] = [
   {
@@ -83,12 +106,13 @@ const ITEMS: TechItem[] = [
 ]
 
 const CATEGORY_META: Record<Category, { label: string; icon: React.ElementType; color: string }> = {
-  all:       { label: 'All',       icon: Layers,    color: 'text-zinc-400' },
-  models:    { label: 'Models',    icon: Cpu,        color: 'text-blue-400' },
-  infra:     { label: 'Infra',     icon: Zap,        color: 'text-blue-400' },
-  security:  { label: 'Security',  icon: Shield,     color: 'text-red-400' },
-  protocols: { label: 'Protocols', icon: Radio,      color: 'text-green-400' },
-  tools:     { label: 'Tools',     icon: TrendingUp, color: 'text-yellow-400' },
+  all:       { label: 'All',       icon: Layers,     color: 'text-zinc-400' },
+  models:    { label: 'Models',    icon: Cpu,         color: 'text-blue-400' },
+  infra:     { label: 'Infra',     icon: Zap,         color: 'text-blue-400' },
+  security:  { label: 'Security',  icon: Shield,      color: 'text-red-400' },
+  protocols: { label: 'Protocols', icon: Radio,       color: 'text-green-400' },
+  tools:     { label: 'Tools',     icon: TrendingUp,  color: 'text-yellow-400' },
+  openclaw:  { label: 'OpenClaw',  icon: Cpu,         color: 'text-purple-400' },
 }
 
 const IMPACT_STATUS = {
@@ -97,11 +121,156 @@ const IMPACT_STATUS = {
   low: 'active' as const,
 }
 
+function fScoreToImpact(f: number | undefined): 'high' | 'medium' | 'low' {
+  if (f === undefined) return 'low'
+  if (f > 0.5) return 'high'
+  if (f > 0.2) return 'medium'
+  return 'low'
+}
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function buildOpenClawItems(soulData: SoulData | null, fetchError: boolean): TechItem[] {
+  if (fetchError) {
+    return [{
+      id: 'oc-error',
+      title: 'Soul Data — Fetch Error',
+      summary: 'Failed to retrieve OpenClaw soul data from /api/colony/status. Check connectivity and retry.',
+      category: 'openclaw',
+      date: today(),
+      source: 'Borg Soul',
+      url: OPENCLAW_URL,
+      impact: 'high',
+    }]
+  }
+
+  if (!soulData) {
+    return Array.from({ length: 3 }, (_, i) => ({
+      id: `oc-skeleton-${i}`,
+      title: i === 0 ? 'Loading soul data...' : i === 1 ? 'Loading neural core...' : 'Loading goals...',
+      summary: '\u2588'.repeat(40 + i * 10),
+      category: 'openclaw' as Category,
+      date: today(),
+      source: 'Borg Soul',
+      url: OPENCLAW_URL,
+      impact: 'low' as const,
+    }))
+  }
+
+  const soul = soulData.root?.soul
+  const fe = soul?.free_energy
+  const brain = soul?.brain
+  const plan = soul?.active_plan
+  const items: TechItem[] = []
+
+  // Fitness score
+  items.push({
+    id: 'oc-fitness',
+    title: 'Borg Soul — Fitness Score',
+    summary: `F=${fe?.F ?? 'loading'} | ${fe?.regime ?? ''} | ${soul?.total_cycles ?? 0} cycles`,
+    category: 'openclaw',
+    date: today(),
+    source: 'Borg Soul',
+    url: OPENCLAW_URL,
+    impact: fScoreToImpact(fe?.F),
+  })
+
+  // Neural core / brain metrics
+  if (brain) {
+    const brainSummary = [
+      brain.params != null ? `params=${brain.params}` : null,
+      brain.steps != null ? `steps=${brain.steps}` : null,
+      brain.loss != null ? `loss=${brain.loss}` : null,
+      brain.transformer?.params != null ? `tx_params=${brain.transformer.params}` : null,
+      brain.transformer?.steps != null ? `tx_steps=${brain.transformer.steps}` : null,
+    ].filter(Boolean).join(' | ')
+
+    items.push({
+      id: 'oc-brain',
+      title: 'Neural Core',
+      summary: brainSummary || 'No brain metrics available',
+      category: 'openclaw',
+      date: today(),
+      source: 'Borg Soul',
+      url: OPENCLAW_URL,
+      impact: 'medium',
+    })
+  }
+
+  // Active goals
+  if (plan?.goals && plan.goals.length > 0) {
+    plan.goals.forEach((goal, i) => {
+      items.push({
+        id: `oc-goal-${i}`,
+        title: `Goal: ${goal.description ?? `#${i + 1}`}`,
+        summary: `Status: ${goal.status ?? 'unknown'}`,
+        category: 'openclaw',
+        date: today(),
+        source: 'Borg Soul',
+        url: OPENCLAW_URL,
+        impact: goal.status === 'active' ? 'high' : 'medium',
+      })
+    })
+  }
+
+  // Recent outcomes
+  if (plan?.recent_outcomes && plan.recent_outcomes.length > 0) {
+    plan.recent_outcomes.forEach((outcome, i) => {
+      items.push({
+        id: `oc-outcome-${i}`,
+        title: `Outcome: ${outcome.description ?? `#${i + 1}`}`,
+        summary: `Result: ${outcome.result ?? 'pending'}`,
+        category: 'openclaw',
+        date: today(),
+        source: 'Borg Soul',
+        url: OPENCLAW_URL,
+        impact: outcome.result === 'success' ? 'high' : 'low',
+      })
+    })
+  }
+
+  return items
+}
+
 export default function TechUpdatesPage() {
   const [active, setActive] = useState<Category>('all')
   const [starred, setStarred] = useState<Set<string>>(new Set(ITEMS.filter(i => i.starred).map(i => i.id)))
+  const [soulData, setSoulData] = useState<SoulData | null>(null)
+  const [soulError, setSoulError] = useState(false)
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
 
-  const filtered = ITEMS.filter(i => active === 'all' || i.category === active)
+  const fetchSoulData = useCallback(async () => {
+    try {
+      setSoulError(false)
+      const res = await fetch('/api/colony/status?action=tree')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      setSoulData(data)
+      setLastRefresh(new Date())
+    } catch {
+      setSoulError(true)
+      setSoulData(null)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (active === 'openclaw') {
+      fetchSoulData()
+      const interval = setInterval(fetchSoulData, 60_000)
+      return () => clearInterval(interval)
+    }
+  }, [active, fetchSoulData])
+
+  const openClawItems = active === 'openclaw' ? buildOpenClawItems(soulData, soulError) : []
+
+  const filtered =
+    active === 'openclaw'
+      ? openClawItems
+      : ITEMS.filter(i => active === 'all' || i.category === active)
+
+  const itemCount = active === 'openclaw' ? openClawItems.length : ITEMS.length
 
   const toggleStar = (id: string) =>
     setStarred(prev => {
@@ -115,9 +284,16 @@ export default function TechUpdatesPage() {
       <DashboardHeader
         title="Tech Updates"
         icon={<Radio className="h-5 w-5 text-green-400" />}
-        count={ITEMS.length}
+        count={itemCount}
         action={
-          <span className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">Updated 2026-03-14</span>
+          active === 'openclaw' && lastRefresh ? (
+            <span className="flex items-center gap-1.5 text-[10px] text-zinc-600 font-mono uppercase tracking-widest">
+              <RefreshCw className="h-3 w-3" />
+              Last refresh {lastRefresh.toLocaleTimeString()}
+            </span>
+          ) : (
+            <span className="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">Updated 2026-03-14</span>
+          )
         }
       />
 
@@ -149,12 +325,13 @@ export default function TechUpdatesPage() {
           {filtered.map(item => {
             const catMeta = CATEGORY_META[item.category]
             const CatIcon = catMeta.icon
+            const isSkeleton = item.id.startsWith('oc-skeleton')
             return (
-              <div key={item.id} className="bg-zinc-950 border border-zinc-800 p-5 flex gap-4">
+              <div key={item.id} className={`bg-zinc-950 border border-zinc-800 p-5 flex gap-4 ${isSkeleton ? 'animate-pulse' : ''}`}>
                 <CatIcon className={`h-4 w-4 mt-1 shrink-0 ${catMeta.color}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-3 mb-1.5">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-tight leading-tight">{item.title}</h3>
+                    <h3 className={`text-sm font-bold uppercase tracking-tight leading-tight ${isSkeleton ? 'text-zinc-700' : 'text-white'}`}>{item.title}</h3>
                     <div className="flex items-center gap-2 shrink-0">
                       <StatusPill status={IMPACT_STATUS[item.impact]} label={item.impact} size="sm" />
                       <button onClick={() => toggleStar(item.id)} className="transition-colors">
@@ -162,7 +339,7 @@ export default function TechUpdatesPage() {
                       </button>
                     </div>
                   </div>
-                  <p className="text-xs text-zinc-500 leading-relaxed mb-3">{item.summary}</p>
+                  <p className={`text-xs leading-relaxed mb-3 ${isSkeleton ? 'text-zinc-800 select-none' : 'text-zinc-500'}`}>{item.summary}</p>
                   <div className="flex items-center gap-3 text-[10px] text-zinc-600">
                     <span className="font-mono">{item.date}</span>
                     <span>·</span>

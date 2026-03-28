@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import {
   DashboardShell,
   DashboardHeader,
@@ -9,19 +10,106 @@ import {
 } from '@/app/components/shared/DashboardShell'
 import { SectionHeader } from '@/app/components/shared/SectionHeader'
 
+interface AgentFile {
+  id: string
+  filename?: string
+  name?: string
+  size: number
+  mimeType?: string
+  agentId?: string
+  createdAt?: string
+}
+
+interface Agent {
+  id: string
+  name: string
+  status?: string
+}
+
+interface Toast {
+  message: string
+  type: 'success' | 'error'
+}
+
+function getMimeBadge(mimeType?: string): string {
+  if (!mimeType) return 'FILE'
+  const lower = mimeType.toLowerCase()
+  if (lower.includes('pdf')) return 'PDF'
+  if (lower.includes('mp3') || lower.includes('mpeg') || lower.includes('audio')) return 'MP3'
+  if (lower.includes('mp4') || lower.includes('video')) return 'MP4'
+  if (lower.includes('wav')) return 'WAV'
+  if (lower.includes('flac')) return 'FLAC'
+  if (lower.includes('image/png')) return 'PNG'
+  if (lower.includes('image/jpeg') || lower.includes('image/jpg')) return 'JPG'
+  if (lower.includes('image/gif')) return 'GIF'
+  if (lower.includes('image/webp')) return 'WEBP'
+  if (lower.includes('image')) return 'IMG'
+  if (lower.includes('json')) return 'JSON'
+  if (lower.includes('text')) return 'TXT'
+  if (lower.includes('zip') || lower.includes('compressed')) return 'ZIP'
+  if (lower.includes('csv')) return 'CSV'
+  return 'FILE'
+}
+
+function badgeColor(badge: string): string {
+  switch (badge) {
+    case 'PDF': return 'bg-red-900/50 text-red-400 border-red-800'
+    case 'MP3': case 'WAV': case 'FLAC': return 'bg-purple-900/50 text-purple-400 border-purple-800'
+    case 'MP4': return 'bg-blue-900/50 text-blue-400 border-blue-800'
+    case 'PNG': case 'JPG': case 'GIF': case 'WEBP': case 'IMG': return 'bg-green-900/50 text-green-400 border-green-800'
+    case 'JSON': case 'TXT': case 'CSV': return 'bg-yellow-900/50 text-yellow-400 border-yellow-800'
+    case 'ZIP': return 'bg-orange-900/50 text-orange-400 border-orange-800'
+    default: return 'bg-zinc-800 text-zinc-400 border-zinc-700'
+  }
+}
+
 export default function FilesPage() {
-  const [files, setFiles] = useState<any[]>([])
+  const [files, setFiles] = useState<AgentFile[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('')
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(true)
   const [storageLimit, setStorageLimit] = useState(10)
+  const [toast, setToast] = useState<Toast | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchFiles()
-    fetchStorageLimit()
+  const showToast = useCallback((message: string, type: 'success' | 'error') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
   }, [])
 
-  const fetchStorageLimit = async () => {
+  const fetchAgents = useCallback(async () => {
+    try {
+      const res = await fetch('/api/agents')
+      if (res.ok) {
+        const data = await res.json()
+        const agentList: Agent[] = data.agents || data || []
+        setAgents(agentList)
+        if (agentList.length > 0 && !selectedAgentId) {
+          setSelectedAgentId(agentList[0].id)
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch agents:', e)
+    }
+  }, [selectedAgentId])
+
+  const fetchFiles = useCallback(async () => {
+    try {
+      const res = await fetch('/api/files')
+      if (res.ok) {
+        const data = await res.json()
+        setFiles(data.files || [])
+      }
+    } catch (e) {
+      console.error('Failed to fetch files:', e)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const fetchStorageLimit = useCallback(async () => {
     try {
       const res = await fetch('/api/user/storage')
       if (res.ok) {
@@ -29,72 +117,107 @@ export default function FilesPage() {
         setStorageLimit(data.storageLimit || 10)
       }
     } catch (e) {
-      console.error(e)
+      console.error('Failed to fetch storage limit:', e)
     }
-  }
+  }, [])
 
-  const fetchFiles = async () => {
-    try {
-      const res = await fetch('/api/files?agentId=default')
-      const data = await res.json()
-      setFiles(data.files || [])
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
+  useEffect(() => {
+    fetchAgents()
+    fetchFiles()
+    fetchStorageLimit()
+  }, [fetchAgents, fetchFiles, fetchStorageLimit])
 
   const uploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
+    if (!selectedAgentId) {
+      showToast('Select an agent before uploading.', 'error')
+      return
+    }
+
     setUploading(true)
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('agentId', 'default')
+    formData.append('agentId', selectedAgentId)
 
     try {
       const res = await fetch('/api/files', {
         method: 'POST',
-        body: formData
+        body: formData,
       })
-      
+
       if (!res.ok) {
         const error = await res.json()
         if (error.error?.includes('not running')) {
-          alert('Your agent is not running. Start it first from the dashboard.')
+          showToast('Your agent is not running. Start it first from the dashboard.', 'error')
         } else {
-          alert(error.error || 'Upload failed')
+          showToast(error.error || 'Upload failed', 'error')
         }
+      } else {
+        showToast('File uploaded successfully', 'success')
       }
-      
-      fetchFiles()
+
+      await fetchFiles()
     } catch (e) {
-      console.error(e)
+      console.error('Upload error:', e)
+      showToast('Upload failed. Please try again.', 'error')
     } finally {
       setUploading(false)
+      e.target.value = ''
+    }
+  }
+
+  const deleteFile = async (fileId: string, fileName: string) => {
+    const confirmed = window.confirm(`Delete "${fileName}"? This cannot be undone.`)
+    if (!confirmed) return
+
+    setDeletingId(fileId)
+    try {
+      const res = await fetch('/api/files', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId }),
+      })
+
+      if (res.ok) {
+        setFiles((prev) => prev.filter((f) => f.id !== fileId))
+        showToast('File deleted', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'Delete failed', 'error')
+      }
+    } catch (e) {
+      console.error('Delete error:', e)
+      showToast('Delete failed. Please try again.', 'error')
+    } finally {
+      setDeletingId(null)
     }
   }
 
   const upgradeStorage = async () => {
-    const res = await fetch('/api/stripe/storage-upgrade', {
-      method: 'POST'
-    })
-    
-    if (res.ok) {
-      const { url } = await res.json()
-      if (url) {
-        router.push(url)
+    try {
+      const res = await fetch('/api/stripe/storage-upgrade', {
+        method: 'POST',
+      })
+
+      if (res.ok) {
+        const { url } = await res.json()
+        if (url) {
+          router.push(url)
+        } else {
+          showToast('Upgrade not available', 'error')
+        }
       } else {
-        alert('Upgrade not available')
+        showToast('Failed to create checkout session', 'error')
       }
-    } else {
-      alert('Failed to create checkout session')
+    } catch (e) {
+      console.error('Upgrade error:', e)
+      showToast('Something went wrong', 'error')
     }
   }
 
-  const totalSize = files.reduce((acc: number, f: any) => acc + (f.size || 0), 0)
+  const totalSize = files.reduce((acc, f) => acc + (f.size || 0), 0)
   const usedGB = (totalSize / (1024 * 1024 * 1024)).toFixed(2)
 
   const FileIcon = () => (
@@ -115,6 +238,31 @@ export default function FilesPage() {
     </svg>
   )
 
+  // No agents state
+  if (!loading && agents.length === 0) {
+    return (
+      <DashboardShell>
+        <DashboardHeader
+          title="Agent Files"
+          icon={<FileIcon />}
+          count={0}
+        />
+        <DashboardContent className="max-w-6xl space-y-6">
+          <div className="border border-zinc-800 bg-zinc-950 py-16 text-center">
+            <p className="text-zinc-400 text-sm font-bold uppercase tracking-widest">No agents</p>
+            <p className="text-zinc-600 text-xs mt-2 uppercase tracking-widest">Deploy one first to manage files</p>
+            <Link
+              href="/marketplace"
+              className="inline-block mt-6 bg-white text-black py-3 px-6 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200"
+            >
+              Browse Marketplace
+            </Link>
+          </div>
+        </DashboardContent>
+      </DashboardShell>
+    )
+  }
+
   return (
     <DashboardShell>
       <DashboardHeader
@@ -122,10 +270,25 @@ export default function FilesPage() {
         icon={<FileIcon />}
         count={files.length}
         action={
-          <label className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-4 cursor-pointer flex items-center gap-2">
-            {uploading ? 'Uploading...' : <><UploadIcon /> Upload File</>}
-            <input type="file" onChange={uploadFile} className="hidden" disabled={uploading} />
-          </label>
+          <div className="flex items-center gap-3">
+            {agents.length > 0 && (
+              <select
+                value={selectedAgentId}
+                onChange={(e) => setSelectedAgentId(e.target.value)}
+                className="bg-zinc-900 border border-zinc-700 text-white text-xs font-bold uppercase tracking-widest py-3 px-3 appearance-none cursor-pointer focus:outline-none focus:border-zinc-500"
+              >
+                {agents.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.name || agent.id}
+                  </option>
+                ))}
+              </select>
+            )}
+            <label className="bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 px-4 cursor-pointer flex items-center gap-2">
+              {uploading ? 'Uploading...' : <><UploadIcon /> Upload File</>}
+              <input type="file" onChange={uploadFile} className="hidden" disabled={uploading} />
+            </label>
+          </div>
         }
       />
 
@@ -133,8 +296,21 @@ export default function FilesPage() {
         <SectionHeader
           label="Storage"
           title="Agent Files"
-          description="Upload files for your agent to access"
+          description="Upload files for your agents to access"
         />
+
+        {/* Toast notification */}
+        {toast && (
+          <div
+            className={`border p-4 text-xs font-bold uppercase tracking-widest ${
+              toast.type === 'success'
+                ? 'border-green-800 bg-green-950 text-green-400'
+                : 'border-red-800 bg-red-950 text-red-400'
+            }`}
+          >
+            {toast.message}
+          </div>
+        )}
 
         {/* Storage bar */}
         <div className="border border-zinc-800 bg-zinc-950 p-6">
@@ -146,7 +322,7 @@ export default function FilesPage() {
             <div className="text-right">
               <div className="text-[10px] uppercase tracking-widest text-zinc-600">{storageLimit === 10 ? 'Free Tier' : 'Pro Plan'}</div>
               {storageLimit === 10 && (
-                <button 
+                <button
                   onClick={upgradeStorage}
                   className="text-[10px] text-blue-400 mt-1 hover:text-blue-300 uppercase tracking-widest font-bold"
                 >
@@ -156,8 +332,8 @@ export default function FilesPage() {
             </div>
           </div>
           <div className="bg-zinc-800 h-1">
-            <div 
-              className="bg-white h-1" 
+            <div
+              className="bg-white h-1"
               style={{ width: `${Math.min((totalSize / (storageLimit * 1024 * 1024 * 1024)) * 100, 100)}%` }}
             />
           </div>
@@ -172,17 +348,44 @@ export default function FilesPage() {
           </div>
         ) : (
           <div className="space-y-px bg-zinc-800">
-            {files.map((file: any, i: number) => (
-              <div key={i} className="bg-zinc-950 p-4 flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-bold tracking-tight uppercase">{file.filename || file.name}</div>
-                  <div className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest">{(file.size / 1024).toFixed(2)} KB</div>
+            {files.map((file) => {
+              const badge = getMimeBadge(file.mimeType)
+              const fileName = file.filename || file.name || 'Unnamed'
+              return (
+                <div key={file.id} className="bg-zinc-950 p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 border ${badgeColor(badge)}`}>
+                      {badge}
+                    </span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold tracking-tight uppercase">{fileName}</span>
+                        <a
+                          href={`/api/files?download=${file.id}`}
+                          className="text-zinc-500 hover:text-white text-sm"
+                          title="Download"
+                        >
+                          ↓
+                        </a>
+                      </div>
+                      <div className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest">
+                        {(file.size / 1024).toFixed(2)} KB
+                        {file.agentId && (
+                          <span className="ml-3 text-zinc-600">Agent: {file.agentId}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteFile(file.id, fileName)}
+                    disabled={deletingId === file.id}
+                    className="text-red-400 hover:text-red-300 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <TrashIcon /> {deletingId === file.id ? 'Deleting...' : 'Delete'}
+                  </button>
                 </div>
-                <button className="text-red-400 hover:text-red-300 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
-                  <TrashIcon /> Delete
-                </button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </DashboardContent>

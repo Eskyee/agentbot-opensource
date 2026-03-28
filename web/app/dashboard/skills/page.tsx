@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Wrench, Star, Download, ExternalLink } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Wrench, Star, Download, CheckCircle, AlertCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import {
   DashboardShell,
   DashboardHeader,
@@ -13,35 +13,107 @@ import {
 import { AgentCard } from '@/app/components/shared/AgentCard'
 import { EmptyState } from '@/app/components/shared/EmptyState'
 
-const CATEGORIES = [
-  'all',
-  'music',
-  'events',
-  'creative',
-  'marketing',
-  'finance',
-  'channels',
-  'productivity',
-]
+interface Skill {
+  id: string
+  name: string
+  description: string
+  category: string
+  rating: number
+  downloads: number
+  author: string
+  featured?: boolean
+}
+
+interface Agent {
+  id: string
+  name: string
+  model: string
+  status: string
+}
 
 export default function SkillsPage() {
-  const [skills, setSkills] = useState<any[]>([])
+  const [skills, setSkills] = useState<Skill[]>([])
+  const [categories, setCategories] = useState<string[]>(['all'])
   const [category, setCategory] = useState('all')
+  const [agents, setAgents] = useState<Agent[]>([])
+  const [selectedAgentId, setSelectedAgentId] = useState<string>('')
+  const [installedSkillIds, setInstalledSkillIds] = useState<Set<string>>(
+    new Set()
+  )
+  const [installingId, setInstallingId] = useState<string | null>(null)
 
+  // Fetch agents on mount
+  useEffect(() => {
+    fetch('/api/agents')
+      .then((r) => r.json())
+      .then((data) => {
+        const agentList: Agent[] = data.agents || []
+        setAgents(agentList)
+        if (agentList.length > 0) {
+          setSelectedAgentId(agentList[0].id)
+        }
+      })
+      .catch(() => {
+        setAgents([])
+      })
+  }, [])
+
+  // Fetch skills + categories whenever category filter changes
   useEffect(() => {
     fetch(`/api/skills?category=${category}`)
       .then((r) => r.json())
-      .then((d) => setSkills(d.skills || []))
+      .then((data) => {
+        setSkills(data.skills || [])
+        if (data.categories && Array.isArray(data.categories)) {
+          const cats: string[] = data.categories.filter(
+            (c: string) => c !== 'all'
+          )
+          setCategories(['all', ...cats])
+        }
+      })
+      .catch(() => {
+        setSkills([])
+      })
   }, [category])
 
-  const installSkill = async (skillId: string) => {
-    await fetch('/api/skills', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ skillId, agentId: 'default' }),
-    })
-    alert('Skill installed!')
-  }
+  const installSkill = useCallback(
+    async (skillId: string) => {
+      if (!selectedAgentId) {
+        toast.error('Select an agent before installing skills')
+        return
+      }
+
+      if (installedSkillIds.has(skillId)) {
+        toast.info('This skill is already installed')
+        return
+      }
+
+      setInstallingId(skillId)
+
+      try {
+        const res = await fetch('/api/skills', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ skillId, agentId: selectedAgentId }),
+        })
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}))
+          throw new Error(errData.error || 'Failed to install skill')
+        }
+
+        setInstalledSkillIds((prev) => new Set(prev).add(skillId))
+        toast.success('Skill installed!')
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to install skill'
+        toast.error(message)
+      } finally {
+        setInstallingId(null)
+      }
+    },
+    [selectedAgentId, installedSkillIds]
+  )
 
   return (
     <DashboardShell>
@@ -51,9 +123,40 @@ export default function SkillsPage() {
       />
 
       <DashboardContent className="max-w-7xl space-y-6">
+        {/* Agent selector + no-agent banner */}
+        {agents.length === 0 ? (
+          <div className="flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+            <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
+            <p className="text-sm text-amber-300">
+              Select an agent to install skills
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <label
+              htmlFor="agent-select"
+              className="text-sm font-medium text-zinc-400"
+            >
+              Install to:
+            </label>
+            <select
+              id="agent-select"
+              value={selectedAgentId}
+              onChange={(e) => setSelectedAgentId(e.target.value)}
+              className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {agents.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.name || agent.id}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Category filters */}
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Badge
               key={cat}
               variant={category === cat ? 'default' : 'outline'}
@@ -78,35 +181,58 @@ export default function SkillsPage() {
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {skills.map((skill: any) => (
-              <AgentCard key={skill.id}>
-                {skill.featured && (
-                  <Badge
-                    variant="outline"
-                    className="mb-3 border-blue-500/30 text-blue-400 text-[10px] uppercase tracking-widest"
+            {skills.map((skill) => {
+              const isInstalled = installedSkillIds.has(skill.id)
+              const isInstalling = installingId === skill.id
+
+              return (
+                <AgentCard key={skill.id}>
+                  <div className="flex items-start gap-2 mb-2">
+                    {skill.featured && (
+                      <Badge
+                        variant="outline"
+                        className="border-blue-500/30 text-blue-400 text-[10px] uppercase tracking-widest"
+                      >
+                        Featured
+                      </Badge>
+                    )}
+                    {isInstalled && (
+                      <Badge
+                        variant="outline"
+                        className="border-green-500/30 text-green-400 text-[10px] uppercase tracking-widest"
+                      >
+                        <CheckCircle className="mr-1 h-3 w-3" />
+                        Installed
+                      </Badge>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold mb-2">{skill.name}</h3>
+                  <p className="text-sm text-zinc-400 mb-4">
+                    {skill.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-xs text-zinc-500 mb-4">
+                    <span className="flex items-center gap-1">
+                      <Star className="h-3 w-3" /> {skill.rating}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Download className="h-3 w-3" /> {skill.downloads}
+                    </span>
+                    <span>by {skill.author}</span>
+                  </div>
+                  <Button
+                    className="w-full bg-white text-black hover:bg-zinc-200 text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isInstalled || isInstalling || !selectedAgentId}
+                    onClick={() => installSkill(skill.id)}
                   >
-                    Featured
-                  </Badge>
-                )}
-                <h3 className="text-lg font-bold mb-2">{skill.name}</h3>
-                <p className="text-sm text-zinc-400 mb-4">{skill.description}</p>
-                <div className="flex items-center gap-4 text-xs text-zinc-500 mb-4">
-                  <span className="flex items-center gap-1">
-                    <Star className="h-3 w-3" /> {skill.rating}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Download className="h-3 w-3" /> {skill.downloads}
-                  </span>
-                  <span>by {skill.author}</span>
-                </div>
-                <Button
-                  className="w-full bg-white text-black hover:bg-zinc-200 text-xs font-bold uppercase tracking-widest"
-                  onClick={() => installSkill(skill.id)}
-                >
-                  Install
-                </Button>
-              </AgentCard>
-            ))}
+                    {isInstalling
+                      ? 'Installing...'
+                      : isInstalled
+                        ? 'Installed'
+                        : 'Install'}
+                  </Button>
+                </AgentCard>
+              )
+            })}
           </div>
         )}
       </DashboardContent>

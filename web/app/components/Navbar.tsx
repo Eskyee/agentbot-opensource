@@ -54,7 +54,6 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="/dashboard/x402" current={pathname}>x402</NavLink>
               <NavLink href="https://tempo-x402-production.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
@@ -122,7 +121,6 @@ export default function Navbar() {
               <>
                 <MobileSection label="Navigate">
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                  <MobileLink href="/dashboard/x402" onClick={closeMenu}>x402 Payments</MobileLink>
                   <MobileLink href="https://tempo-x402-production.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
