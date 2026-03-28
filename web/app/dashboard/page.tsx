@@ -236,7 +236,9 @@ function DashboardContent() {
       if (data.error) {
         setError(data.error)
       } else {
-        setInstance({ ...data, botUsername, gatewayToken: tokenData.gatewayToken || undefined })
+        // Prefer the Railway URL stored in DB over the legacy localhost subdomain
+        const url = tokenData.openclawUrl || data.url
+        setInstance({ ...data, url, botUsername, gatewayToken: tokenData.gatewayToken || undefined })
         fetchStats(userId)
       }
     } catch (e) {

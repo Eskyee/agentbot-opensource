@@ -71,11 +71,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'agentId required' }, { status: 400 })
     }
 
-    // Verify agent belongs to user
-    const agent = await prisma.agent.findFirst({
-      where: { id: agentId, userId: session.user.id },
-    })
-    if (!agent) {
+    // Verify agent belongs to user — check both agent table (legacy Docker)
+    // and the User.openclawInstanceId (Railway-provisioned agents)
+    const [agentRow, userRow] = await Promise.all([
+      prisma.agent.findFirst({ where: { id: agentId, userId: session.user.id } }),
+      prisma.user.findFirst({ where: { id: session.user.id, openclawInstanceId: agentId } }),
+    ])
+    if (!agentRow && !userRow) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 

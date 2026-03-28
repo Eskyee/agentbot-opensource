@@ -10,164 +10,204 @@ import {
 import { EmptyState } from '@/app/components/shared/EmptyState'
 import StatusPill from '@/app/components/shared/StatusPill'
 
-interface Agent {
-  id: string
-  name: string
-  status: 'active' | 'stopped' | 'error'
-  port: number
-  lastHeartbeat: string
-  uptime: string
+interface HeartbeatSettings {
+  frequency: string
+  enabled: boolean
+  lastHeartbeat: string | null
+  nextHeartbeat: string | null
+}
+
+const FREQS = ['1h', '3h', '6h', '12h', 'off']
+
+function formatRelative(iso: string | null): string {
+  if (!iso) return 'Never'
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
+}
+
+function formatNext(iso: string | null, enabled: boolean): string {
+  if (!enabled) return 'Disabled'
+  if (!iso) return '—'
+  const diff = new Date(iso).getTime() - Date.now()
+  if (diff <= 0) return 'Soon'
+  const mins = Math.floor(diff / 60000)
+  if (mins < 60) return `${mins}m`
+  const hrs = Math.floor(mins / 60)
+  return `${hrs}h`
 }
 
 export default function HeartbeatPage() {
-  const [agents, setAgents] = useState<Agent[]>([])
+  const [agentId, setAgentId] = useState<string | null>(null)
+  const [hb, setHb] = useState<HeartbeatSettings | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Load agent instance + heartbeat settings
   useEffect(() => {
-    const fetchHeartbeat = async () => {
-      try {
-        setLoading(true)
-        const agentsRes = await fetch('/api/agents')
-        if (!agentsRes.ok) throw new Error('Failed to fetch agents')
-        const agentsData = await agentsRes.json()
-        const agentList = agentsData.agents || []
+    let cancelled = false
 
-        if (agentList.length === 0) {
-          setAgents([])
-          setError(null)
+    const load = async () => {
+      try {
+        // Get the user's OpenClaw instance ID
+        const res = await fetch('/api/user/openclaw')
+        if (!res.ok) throw new Error('Failed to load instance')
+        const data = await res.json()
+        const id = data.openclawInstanceId as string | null
+
+        if (!id) {
+          if (!cancelled) { setLoading(false) }
           return
         }
 
-        const agentsWithHeartbeat = await Promise.all(
-          agentList.map(async (agent: any) => {
-            try {
-              const hbRes = await fetch(`/api/heartbeat?agentId=${agent.id}`)
-              const hbData = hbRes.ok ? await hbRes.json() : null
-              const hb = hbData?.heartbeat || {}
-              return {
-                id: agent.id,
-                name: agent.name || agent.id,
-                status: (agent.status === 'running' || agent.status === 'active') ? 'active' as const
-                  : agent.status === 'stopped' ? 'stopped' as const
-                  : 'error' as const,
-                port: agent.websocketUrl ? parseInt(new URL(agent.websocketUrl).port) || 443 : 0,
-                lastHeartbeat: hb.lastHeartbeat
-                  ? new Date(hb.lastHeartbeat).toLocaleString()
-                  : 'Never',
-                uptime: hb.enabled ? `Every ${hb.frequency}` : 'Disabled',
-              }
-            } catch {
-              return {
-                id: agent.id,
-                name: agent.name || agent.id,
-                status: 'error' as const,
-                port: 0,
-                lastHeartbeat: 'Error',
-                uptime: 'Unknown',
-              }
-            }
-          })
-        )
+        if (!cancelled) setAgentId(id)
 
-        setAgents(agentsWithHeartbeat)
-        setError(null)
+        // Get heartbeat settings for this instance
+        const hbRes = await fetch(`/api/heartbeat?agentId=${id}`)
+        if (hbRes.ok) {
+          const hbData = await hbRes.json()
+          if (!cancelled) setHb(hbData.heartbeat || null)
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-        setAgents([])
+        if (!cancelled) setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
 
-    fetchHeartbeat()
-    const interval = setInterval(fetchHeartbeat, 10000)
-    return () => clearInterval(interval)
+    load()
+    const interval = setInterval(load, 30_000)
+    return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
-  const statusCounts = agents.reduce(
-    (acc, a) => {
-      acc[a.status] = (acc[a.status] || 0) + 1
-      return acc
-    },
-    {} as Record<string, number>
-  )
+  const setFrequency = async (freq: string) => {
+    if (!agentId || saving) return
+    setSaving(true)
+    try {
+      const res = await fetch('/api/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agentId,
+          frequency: freq === 'off' ? '3h' : freq,
+          enabled: freq !== 'off',
+        }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setHb(data.heartbeat)
+      }
+    } catch {
+      setError('Failed to save heartbeat settings')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const activeFreq = hb?.enabled === false ? 'off' : (hb?.frequency || '3h')
 
   return (
     <DashboardShell>
       <DashboardHeader
         title="Heartbeat Monitor"
-        icon={<Activity className="h-5 w-5 text-blue-400" />}
-        count={agents.length}
+        icon={<Activity className="h-5 w-5 text-zinc-500" />}
       />
 
-      <DashboardContent className="space-y-6">
-        {/* Status summary */}
-        {agents.length > 0 && (
-          <div className="flex gap-4">
-            <StatusPill status="active" label={`${statusCounts['active'] || 0} Active`} size="sm" />
-            <StatusPill status="idle" label={`${statusCounts['stopped'] || 0} Stopped`} size="sm" />
-            <StatusPill status="error" label={`${statusCounts['error'] || 0} Error`} size="sm" />
-          </div>
-        )}
-
-        {/* Error banner */}
+      <DashboardContent className="space-y-px max-w-2xl">
+        {/* Error */}
         {error && (
           <div className="border border-red-800 bg-zinc-950 p-4 text-red-400 text-xs">
-            Error: {error}
+            {error}
           </div>
         )}
 
         {/* Loading */}
-        {loading && agents.length === 0 && (
+        {loading && (
           <EmptyState
             icon={<Activity className="h-8 w-8 text-zinc-600 animate-pulse" />}
             title="Loading heartbeat data…"
           />
         )}
 
-        {/* Agent list */}
-        {!loading && agents.length === 0 && !error && (
+        {/* No agent deployed */}
+        {!loading && !agentId && !error && (
           <EmptyState
             icon={<Wifi className="h-8 w-8 text-zinc-600" />}
-            title="No agents running yet"
-            description="Deploy an agent to see its heartbeat status"
+            title="No agent deployed yet"
+            description="Deploy your OpenClaw agent to monitor its heartbeat"
           />
         )}
 
-        {agents.length > 0 && (
-          <div className="space-y-px bg-zinc-800">
-            {agents.map((agent) => {
-              const statusMap = { active: 'active' as const, stopped: 'idle' as const, error: 'error' as const }
-              return (
-                <div key={agent.id} className="bg-zinc-950 border border-zinc-800 p-5">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h3 className="text-sm font-bold uppercase tracking-tight">{agent.name || agent.id}</h3>
-                      <p className="text-[10px] text-zinc-600 font-mono mt-0.5">ID: {agent.id}</p>
-                    </div>
-                    <StatusPill status={statusMap[agent.status]} size="sm" />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Port</div>
-                      <div className="text-xs text-zinc-300 font-mono">{agent.port}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Uptime</div>
-                      <div className="text-xs text-zinc-300 font-mono">{agent.uptime}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> Last Pulse
-                      </div>
-                      <div className="text-xs text-zinc-300 font-mono">{agent.lastHeartbeat}</div>
-                    </div>
-                  </div>
+        {/* Heartbeat card */}
+        {agentId && hb && (
+          <>
+            {/* Status row */}
+            <div className="border border-zinc-800 bg-zinc-950 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest mb-1">Agent Pulse</p>
+                  <p className="text-[10px] text-zinc-600 font-mono">{agentId}</p>
                 </div>
-              )
-            })}
-          </div>
+                <StatusPill
+                  status={hb.enabled ? 'active' : 'idle'}
+                  label={hb.enabled ? 'On schedule' : 'Paused'}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1">
+                    <Clock className="h-3 w-3" /> Last seen
+                  </div>
+                  <div className="text-sm text-zinc-300">{formatRelative(hb.lastHeartbeat)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Next in</div>
+                  <div className="text-sm text-zinc-300">{formatNext(hb.nextHeartbeat, hb.enabled)}</div>
+                </div>
+              </div>
+
+              {/* Frequency selector */}
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Frequency</div>
+                <div className="flex gap-2 flex-wrap">
+                  {FREQS.map((freq) => (
+                    <button
+                      key={freq}
+                      onClick={() => setFrequency(freq)}
+                      disabled={saving}
+                      className={`border px-4 py-2 text-[10px] uppercase tracking-widest transition-colors disabled:opacity-50 ${
+                        activeFreq === freq
+                          ? 'bg-white text-black border-white'
+                          : 'border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+                      }`}
+                    >
+                      {freq}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Credits */}
+            <div className="border border-zinc-800 bg-zinc-950 p-6">
+              <div className="flex justify-between text-xs mb-3">
+                <span className="text-zinc-400 uppercase tracking-widest">Daily heartbeat pool</span>
+                <span className="text-zinc-400">200 of 200 remaining</span>
+              </div>
+              <div className="h-1.5 bg-zinc-800 overflow-hidden">
+                <div className="h-full bg-white" style={{ width: '0%' }} />
+              </div>
+              <p className="text-[10px] text-zinc-600 mt-2">
+                Separate from your daily credits — heartbeats never eat into your quota.
+              </p>
+            </div>
+          </>
         )}
       </DashboardContent>
     </DashboardShell>
