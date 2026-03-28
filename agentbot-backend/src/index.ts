@@ -717,6 +717,9 @@ app.use('/api/provision', authenticate, provisionRouter);
 app.use('/api/provision/team', authenticate, teamProvisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
 app.use('/api/agents', authenticate, agentsRouter);
+// OpenClaw proxy routes are public — OpenClaw's own token/password auth handles access control
+app.use('/api/openclaw/proxy', openclawRouter);
+// All other openclaw management routes require backend auth
 app.use('/api/openclaw', authenticate, openclawRouter);
 app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
 
