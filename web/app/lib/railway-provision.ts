@@ -13,6 +13,18 @@
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:latest'
 
+/**
+ * OpenClaw TCP proxy start command.
+ *
+ * OpenClaw Gateway hardcodes loopback (127.0.0.1:18789). Railway's load balancer
+ * needs the container to accept on PORT (Railway injects this). This Node.js one-liner:
+ *   1. Spawns `openclaw gateway --allow-unconfigured` in the background
+ *   2. After 3s starts a TCP proxy: PORT → 127.0.0.1:18789
+ * No shell operators, no quoting issues — pure Node.js.
+ */
+const OPENCLAW_START_CMD =
+  `node -e "const{spawn}=require('child_process');const p=spawn('openclaw',['gateway','--allow-unconfigured'],{stdio:'inherit'});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
+
 function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
@@ -25,9 +37,7 @@ function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
     INTERNAL_API_KEY:       process.env.INTERNAL_API_KEY       || '',
     WALLET_ENCRYPTION_KEY:  process.env.WALLET_ENCRYPTION_KEY  || '',
     NODE_ENV:               'production',
-    PORT:                   '18789',    // OpenClaw Gateway listens on 18789
-    OPENCLAW_GATEWAY_BIND:  '0.0.0.0', // bind to all interfaces so Railway can proxy
-    OPENCLAW_BIND:          '0.0.0.0', // fallback bind key
+    // PORT is injected by Railway — the TCP proxy listens here and forwards to 18789
   }
 }
 
@@ -99,6 +109,18 @@ export async function provisionOnRailway(
   const serviceId = created.serviceCreate.id
   console.log(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
 
+  // 1b. Set start command — TCP proxy bridges PORT → openclaw loopback 18789
+  await railwayGql(`
+    mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+      serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+    }
+  `, {
+    serviceId,
+    environmentId,
+    input: { startCommand: OPENCLAW_START_CMD },
+  })
+  console.log(`[RailwayProvision] Start command set for ${serviceId}`)
+
   // 2. Inject env vars
   const variables = getAgentEnvVars(agentId, plan)
   await railwayGql(`
@@ -133,17 +155,11 @@ export async function provisionOnRailway(
     }
   `, { serviceId, environmentId })
 
-  // Use the agentbot-prod backend as a proxy so OpenClaw is accessible without
-  // needing the container to bind to 0.0.0.0 (it binds loopback by design).
-  // Railway internal DNS: agentbot-agent-{agentId}.railway.internal:18789
-  const backendUrl = process.env.BACKEND_API_URL?.trim().replace(/\/api$/, '') || ''
-  const proxyUrl = backendUrl
-    ? `${backendUrl}/api/openclaw/proxy/${agentId}/`
-    : url  // fallback to Railway URL if backend URL unknown
+  // The container runs a TCP proxy (PORT → 127.0.0.1:18789) so the Railway
+  // public domain is directly accessible. No backend proxy needed.
+  console.log(`[RailwayProvision] Deploy triggered → url: ${url}`)
 
-  console.log(`[RailwayProvision] Deploy triggered → proxy: ${proxyUrl}`)
-
-  return { agentId, url: proxyUrl, serviceId, status: 'deploying' }
+  return { agentId, url, serviceId, status: 'deploying' }
 }
 
 /** Returns true if Railway env vars are present so direct provisioning can be used. */
