@@ -25,7 +25,9 @@ function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
     INTERNAL_API_KEY:       process.env.INTERNAL_API_KEY       || '',
     WALLET_ENCRYPTION_KEY:  process.env.WALLET_ENCRYPTION_KEY  || '',
     NODE_ENV:               'production',
-    PORT:                   '3001',
+    PORT:                   '18789',    // OpenClaw Gateway listens on 18789
+    OPENCLAW_GATEWAY_BIND:  '0.0.0.0', // bind to all interfaces so Railway can proxy
+    OPENCLAW_BIND:          '0.0.0.0', // fallback bind key
   }
 }
 
