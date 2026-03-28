@@ -225,13 +225,18 @@ function DashboardContent() {
 
   const fetchInstance = async (userId: string, botUsername: string) => {
     try {
-      const res = await fetch(`/api/instance/${userId}`)
+      // Fetch instance data and gateway token in parallel
+      const [res, tokenRes] = await Promise.all([
+        fetch(`/api/instance/${userId}`),
+        fetch('/api/user/openclaw'),
+      ])
       const data = await res.json()
-      
+      const tokenData = await tokenRes.json().catch(() => ({}))
+
       if (data.error) {
         setError(data.error)
       } else {
-        setInstance({ ...data, botUsername })
+        setInstance({ ...data, botUsername, gatewayToken: tokenData.gatewayToken || undefined })
         fetchStats(userId)
       }
     } catch (e) {
@@ -643,6 +648,20 @@ function DashboardContent() {
                   <span>Open OpenClaw UI</span>
                   <span>→</span>
                 </a>
+                {instance?.gatewayToken && (
+                  <div className="border border-zinc-800 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Gateway Token</p>
+                    <div className="flex items-center gap-2">
+                      <code className="text-[11px] text-zinc-400 font-mono truncate flex-1">{instance.gatewayToken}</code>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(instance.gatewayToken!)}
+                        className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors shrink-0"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {instance?.botUsername && (
                   <a
                     href={`https://t.me/${instance?.botUsername}`}

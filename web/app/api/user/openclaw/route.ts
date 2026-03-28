@@ -16,6 +16,8 @@ export async function GET() {
   return NextResponse.json({
     openclawUrl: user?.openclawUrl || null,
     openclawInstanceId: user?.openclawInstanceId || null,
+    // Gateway token is the same for all agents (platform-level auth)
+    gatewayToken: process.env.OPENCLAW_GATEWAY_TOKEN || null,
   })
 }
 
