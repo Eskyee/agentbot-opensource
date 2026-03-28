@@ -2,23 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto'
 import { prisma } from '@/app/lib/prisma'
+import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provision'
 
 /**
- * Legacy provision proxy — forwards provisioning requests to the agentbot backend.
+ * Provision route — creates an OpenClaw agent container for the authenticated user.
  *
- * SECURITY PATTERNS APPLIED (web/api/agents/provision/route.ts template):
+ * Strategy (in order):
+ *   1. Try the agentbot backend Express service (BACKEND_API_URL) — legacy path.
+ *   2. If backend is unreachable or returns an error, fall back to provisioning
+ *      directly via Railway GraphQL API (RAILWAY_API_KEY / RAILWAY_PROJECT_ID /
+ *      RAILWAY_ENVIRONMENT_ID must be set in Vercel env vars for this to work).
  *
- *  1. NextAuth session gate: callers must have an authenticated session.
- *     Previously the session was read for the email only — a missing session
- *     would silently proceed as an anonymous request.
- *
- *  2. DB subscription check: verifies subscriptionStatus = 'active' in Prisma
- *     before forwarding to the backend, matching the pattern in /api/agents/provision.
- *     Admin emails bypass subscription enforcement.
- *
- *  3. INTERNAL_API_KEY forwarded: backend /api/provision requires Bearer auth.
- *     The previous code omitted the Authorization header, so all calls would have
- *     been rejected by the backend's outer Bearer-token middleware.
+ * Security:
+ *   - Session required; admin emails bypass subscription check.
+ *   - Never trusts body email for auth — session email only.
+ *   - INTERNAL_API_KEY forwarded to backend for its Bearer-token gate.
  */
 
 export async function POST(request: NextRequest) {
@@ -115,78 +113,116 @@ export async function POST(request: NextRequest) {
     const urls = [backendUrl, fallbackUrl].filter(Boolean) as string[]
     const internalKey = process.env.INTERNAL_API_KEY?.trim()
 
-    if (!internalKey) {
-      console.error('[Provision] INTERNAL_API_KEY not configured — cannot reach backend')
-      return NextResponse.json({
-        success: false,
-        error: 'Provisioning service misconfigured. Contact support.',
-      }, { status: 503 })
-    }
-
     let lastError: string | null = null
 
-    for (const baseUrl of urls) {
-      try {
-        console.log(`[Provision] Trying ${baseUrl}/api/provision`)
-        const res = await fetch(`${baseUrl}/api/provision`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // Bearer token required by backend outer auth middleware
-            'Authorization': `Bearer ${internalKey}`,
-            // Trusted user context headers (read by authenticate() middleware)
-            'X-User-Email': userEmail,
-            'X-User-Id': userId,
-          },
-          body: JSON.stringify(legacyPayload),
-          signal: AbortSignal.timeout(15000),
-        })
+    // ── Path 1: Try backend Express service ──────────────────────────────────
+    if (internalKey && urls.length > 0) {
+      for (const baseUrl of urls) {
+        try {
+          console.log(`[Provision] Trying backend ${baseUrl}/api/provision`)
+          const res = await fetch(`${baseUrl}/api/provision`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${internalKey}`,
+              'X-User-Email': userEmail,
+              'X-User-Id': userId,
+            },
+            body: JSON.stringify(legacyPayload),
+            signal: AbortSignal.timeout(15_000),
+          })
 
-        const data = await res.json() as {
-          success?: boolean;
-          error?: string;
-          userId?: string;
-          subdomain?: string;
-          url?: string;
-          streamKey?: string;
-          liveStreamId?: string;
-        }
+          // Guard against HTML error pages from proxy/load-balancer
+          const contentType = res.headers.get('content-type') || ''
+          if (!contentType.includes('application/json')) {
+            lastError = `Backend returned non-JSON response (${res.status})`
+            console.error(`[Provision] Backend at ${baseUrl} returned HTML/non-JSON — skipping`)
+            continue
+          }
 
-        if (data.success) {
-          // Fire-and-forget alert — don't block provisioning response
-          import('@/app/lib/alerts').then(({ alertNewProvision }) => {
-            alertNewProvision(data.userId || agentId, legacyPayload.plan || 'solo').catch(() => {})
-          }).catch(() => {})
+          const data = await res.json() as {
+            success?: boolean;
+            error?: string;
+            userId?: string;
+            subdomain?: string;
+            url?: string;
+            streamKey?: string;
+            liveStreamId?: string;
+          }
 
-          // Persist OpenClaw URL to user record for reliable sidebar access
-          if (data.url && userId && userId !== 'admin') {
-            prisma.user.update({
-              where: { id: userId },
-              data: {
-                openclawUrl: data.url,
-                openclawInstanceId: data.userId || agentId,
-              },
-            }).catch((err: unknown) => {
-              console.error('[Provision] Failed to save openclawUrl to user:', err)
+          if (data.success) {
+            import('@/app/lib/alerts').then(({ alertNewProvision }) => {
+              alertNewProvision(data.userId || agentId, legacyPayload.plan || 'solo').catch(() => {})
+            }).catch(() => {})
+
+            if (data.url && userId && userId !== 'admin') {
+              prisma.user.update({
+                where: { id: userId },
+                data: {
+                  openclawUrl: data.url,
+                  openclawInstanceId: data.userId || agentId,
+                },
+              }).catch((err: unknown) => {
+                console.error('[Provision] Failed to save openclawUrl:', err)
+              })
+            }
+
+            return NextResponse.json({
+              success: true,
+              userId: data.userId || agentId,
+              subdomain: data.subdomain,
+              url: data.url,
+              streamKey: data.streamKey,
+              liveStreamId: data.liveStreamId,
             })
           }
 
-          return NextResponse.json({
-            success: true,
-            userId: data.userId || agentId,
-            subdomain: data.subdomain,
-            url: data.url,
-            streamKey: data.streamKey,
-            liveStreamId: data.liveStreamId,
+          lastError = data.error || `Backend returned ${res.status}`
+          console.error(`[Provision] Backend error from ${baseUrl}:`, lastError)
+        } catch (err: unknown) {
+          lastError = err instanceof Error ? err.message : 'Connection failed'
+          console.error(`[Provision] Failed to reach ${baseUrl}:`, lastError)
+        }
+      }
+    } else {
+      console.warn('[Provision] No backend URL or INTERNAL_API_KEY — skipping backend path')
+    }
+
+    // ── Path 2: Direct Railway provisioning ──────────────────────────────────
+    if (isRailwayConfigured()) {
+      try {
+        console.log(`[Provision] Falling back to direct Railway provisioning for ${agentId}`)
+        const result = await provisionOnRailway(agentId, legacyPayload.plan)
+
+        import('@/app/lib/alerts').then(({ alertNewProvision }) => {
+          alertNewProvision(agentId, legacyPayload.plan || 'solo').catch(() => {})
+        }).catch(() => {})
+
+        if (userId && userId !== 'admin') {
+          prisma.user.update({
+            where: { id: userId },
+            data: {
+              openclawUrl: result.url,
+              openclawInstanceId: result.agentId,
+            },
+          }).catch((err: unknown) => {
+            console.error('[Provision] Failed to save openclawUrl (Railway path):', err)
           })
         }
 
-        lastError = data.error || `Backend returned ${res.status}`
-        console.error(`[Provision] Backend error from ${baseUrl}:`, lastError)
-      } catch (err: unknown) {
-        lastError = err instanceof Error ? err.message : 'Connection failed'
-        console.error(`[Provision] Failed to reach ${baseUrl}:`, lastError)
+        return NextResponse.json({
+          success: true,
+          userId: result.agentId,
+          url: result.url,
+          status: result.status,
+        })
+      } catch (railwayErr: unknown) {
+        const msg = railwayErr instanceof Error ? railwayErr.message : 'Railway provision failed'
+        console.error('[Provision] Railway direct provision failed:', msg)
+        lastError = msg
       }
+    } else {
+      console.warn('[Provision] Railway env vars not configured — cannot fall back to direct provision')
     }
 
     return NextResponse.json({
