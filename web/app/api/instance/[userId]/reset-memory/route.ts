@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { verifyInstanceOwnership } from '../../_auth'
 
 
 export async function POST(
@@ -9,8 +9,7 @@ export async function POST(
 ) {
   const BACKEND_API_URL = getBackendApiUrl()
   const { userId } = await params
-  const session = await getAuthSession()
-  if (!session?.user?.id || session.user.id !== userId) {
+  if (!(await verifyInstanceOwnership(userId))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
   const INTERNAL_API_KEY = getInternalApiKey()

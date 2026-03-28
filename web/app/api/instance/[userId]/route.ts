@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getInternalApiKey, getBackendApiUrl } from '../../lib/api-keys'
+import { verifyInstanceOwnership } from '../_auth'
 
 
 export async function GET(
@@ -10,10 +10,8 @@ export async function GET(
   const BACKEND_API_URL = getBackendApiUrl()
   const INTERNAL_API_KEY = getInternalApiKey()
   const { userId } = await params
-  
-  // Authorization: Verify session user matches requested userId
-  const session = await getAuthSession()
-  if (!session?.user?.id || session.user.id !== userId) {
+
+  if (!(await verifyInstanceOwnership(userId))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
   
