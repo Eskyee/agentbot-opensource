@@ -12,9 +12,9 @@ const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
 const SERVICE_ID = 'd1e08bb6-f184-4fe1-9024-14a744c94531'
 const ENVIRONMENT_ID = '9a06ed95-b9c4-4d84-acc0-fbe1d49d6274'
 
-// The correct start command: writes config file then starts openclaw with it
+// Writes ~/.openclaw/openclaw.json with mode:'local', trustedProxies, allowedOrigins then starts openclaw
 const START_CMD =
-  `node -e "const{spawn}=require('child_process');const fs=require('fs');fs.writeFileSync('/tmp/oc.json',JSON.stringify({gateway:{trustedProxies:['127.0.0.1'],controlUi:{allowedOrigins:['*']}}}));const p=spawn('openclaw',['gateway','--config','/tmp/oc.json'],{stdio:'inherit'});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
+  `node -e "const{spawn}=require('child_process');const fs=require('fs');fs.writeFileSync('/tmp/openclaw.json',JSON.stringify({gateway:{mode:'local',bind:'loopback',trustedProxies:['127.0.0.1'],controlUi:{allowedOrigins:['*']}}}));const p=spawn('openclaw',['gateway'],{stdio:'inherit',env:{...process.env,OPENCLAW_CONFIG_PATH:'/tmp/openclaw.json'}});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
 
 async function railwayGql(query: string, variables: Record<string, unknown>) {
   const key = process.env.RAILWAY_API_KEY
@@ -25,6 +25,7 @@ async function railwayGql(query: string, variables: Record<string, unknown>) {
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
+      'User-Agent': 'railway-cli/4.30.4',
     },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
