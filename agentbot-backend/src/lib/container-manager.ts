@@ -1,34 +1,40 @@
 /**
- * Agentbot Container Manager — Render API Edition
+ * Agentbot Container Manager — Railway API Edition
  *
- * Instead of local Docker, provisions agents as Render services.
- * Each agent = a new Render web service running ghcr.io/openclaw/openclaw.
+ * Provisions OpenClaw agents as Railway services (Docker image).
+ * Each agent = a new Railway service running ghcr.io/openclaw/openclaw.
  *
- * Requires: RENDER_API_KEY env var (from https://dashboard.render.com/account/api-tokens)
+ * Requires env vars:
+ *   RAILWAY_API_KEY       — Railway API token (from railway.app/account/tokens)
+ *   RAILWAY_PROJECT_ID    — Railway project ID
+ *   RAILWAY_ENVIRONMENT_ID — Railway environment ID (usually "production")
  */
 
-const RENDER_API = 'https://api.render.com/v1';
+const RAILWAY_API = 'https://backboard.railway.app/graphql/v2';
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.24';
 
-// Plan → Render instance type
-const PLAN_TO_INSTANCE: Record<string, string> = {
-  solo: 'starter',
-  collective: 'standard',
-  label: 'pro',
-  network: 'pro_plus',
+// Plan → CPU (millicores) + Memory (MB)
+const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }> = {
+  solo:       { cpuMillicores: 1000, memoryMB: 2048 },
+  collective: { cpuMillicores: 2000, memoryMB: 4096 },
+  label:      { cpuMillicores: 4000, memoryMB: 8192 },
+  network:    { cpuMillicores: 8000, memoryMB: 16384 },
 };
 
 // Env vars to inject into each agent container
 function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
-    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || '',
-    AGENTBOT_USER_ID: userId,
-    AGENTBOT_PLAN: plan,
-    AGENTBOT_API_URL: process.env.BACKEND_API_URL || 'https://agentbot-api.onrender.com',
-    DATABASE_URL: process.env.DATABASE_URL || '',
-    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
-    INTERNAL_API_KEY: process.env.INTERNAL_API_KEY || '',
-    WALLET_ENCRYPTION_KEY: process.env.WALLET_ENCRYPTION_KEY || '',
+    OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',
+    AGENTBOT_USER_ID:       userId,
+    AGENTBOT_PLAN:          plan,
+    AGENTBOT_API_URL:       process.env.BACKEND_API_URL        || '',
+    DATABASE_URL:           process.env.DATABASE_URL           || '',
+    OPENROUTER_API_KEY:     process.env.OPENROUTER_API_KEY     || '',
+    INTERNAL_API_KEY:       process.env.INTERNAL_API_KEY       || '',
+    WALLET_ENCRYPTION_KEY:  process.env.WALLET_ENCRYPTION_KEY  || '',
+    NODE_ENV:               'production',
+    PORT:                   '3001',
   };
 }
 
@@ -43,244 +49,263 @@ export interface ContainerResult {
 
 export type PlanType = 'solo' | 'collective' | 'label' | 'network';
 
-/**
- * Get Render API headers
- */
-function getHeaders(): Record<string, string> {
-  const apiKey = process.env.RENDER_API_KEY;
-  if (!apiKey) throw new Error('RENDER_API_KEY not configured');
-  return {
-    'Authorization': `Bearer ${apiKey}`,
-    'Content-Type': 'application/json',
-  };
+// ---------------------------------------------------------------------------
+// Railway GraphQL helper
+// ---------------------------------------------------------------------------
+
+function getApiKey(): string {
+  const key = process.env.RAILWAY_API_KEY;
+  if (!key) throw new Error('RAILWAY_API_KEY not configured');
+  return key;
 }
 
+async function railwayGql<T = any>(
+  query: string,
+  variables: Record<string, unknown> = {}
+): Promise<T> {
+  const res = await fetch(RAILWAY_API, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${getApiKey()}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.timeout(30000),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Railway API ${res.status}: ${text}`);
+  }
+
+  const json = await res.json() as { data?: T; errors?: { message: string }[] };
+  if (json.errors?.length) {
+    throw new Error(`Railway GQL error: ${json.errors.map(e => e.message).join(', ')}`);
+  }
+  return json.data as T;
+}
+
+// ---------------------------------------------------------------------------
+// Public API (same interface as the old Render edition)
+// ---------------------------------------------------------------------------
+
 /**
- * Check if Render API is available (non-throwing).
+ * Check if Railway API is reachable (non-throwing).
+ * Kept as isDockerReady() for backward compat with callers.
  */
 export async function isDockerReady(): Promise<boolean> {
-  // Kept for backward compat — "Docker ready" now means "Render API ready"
   try {
-    const res = await fetch(`${RENDER_API}/services?limit=1`, {
-      headers: getHeaders(),
-      signal: AbortSignal.timeout(5000),
-    });
-    return res.ok;
+    await railwayGql('{ me { id } }');
+    return true;
   } catch {
     return false;
   }
 }
 
 /**
- * Create a new agent service on Render (Docker-backed)
+ * Create a new OpenClaw agent service on Railway.
  */
 export async function createContainer(
   userId: string,
   plan: PlanType = 'solo'
 ): Promise<ContainerResult> {
-  const ownerId = process.env.RENDER_OWNER_ID;
-  const envId = process.env.RENDER_ENV_ID || 'evm-d6vh19h5pdvs738le6bg';
+  const projectId     = process.env.RAILWAY_PROJECT_ID;
+  const environmentId = process.env.RAILWAY_ENVIRONMENT_ID;
+  if (!projectId)     throw new Error('RAILWAY_PROJECT_ID not configured');
+  if (!environmentId) throw new Error('RAILWAY_ENVIRONMENT_ID not configured');
 
-  if (!ownerId) throw new Error('RENDER_OWNER_ID not configured');
+  const serviceName = `agentbot-agent-${userId}`;
 
-  const envVars = [
-    { key: 'NODE_ENV', value: 'production' },
-    { key: 'PORT', value: '3001' },
-    ...Object.entries(getAgentEnvVars(userId, plan)).map(([key, value]) => ({
-      key,
-      value,
-    })),
-  ];
-
-  const body = {
-    type: 'web_service',
-    name: `agentbot-agent-${userId}`,
-    ownerId,
-    repo: 'https://github.com/Eskyee/agentbot',
-    branch: 'main',
-    rootDir: 'agentbot-backend',
-    autoDeploy: 'no',
-    serviceDetails: {
-      env: 'docker',
-      envSpecificDetails: {
-        dockerfilePath: 'Dockerfile',
-        dockerContext: '.',
-      },
-      plan: PLAN_TO_INSTANCE[plan] || 'starter',
-      region: 'oregon',
-      numInstances: 1,
+  // 1. Create the service
+  const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
+    mutation ServiceCreate($input: ServiceCreateInput!) {
+      serviceCreate(input: $input) { id name }
+    }
+  `, {
+    input: {
+      projectId,
+      name: serviceName,
+      source: { image: OPENCLAW_IMAGE },
     },
-    envVars,
-  };
-
-  const requestBody = JSON.stringify(body);
-
-  const res = await fetch(`${RENDER_API}/services`, {
-    method: 'POST',
-    headers: getHeaders(),
-    body: requestBody,
-    signal: AbortSignal.timeout(30000),
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    console.error(`[ContainerManager/Render] Failed to create service for ${userId}: ${res.status} — ${err}`);
-    throw new Error(`Render API error ${res.status}: ${err}`);
-  }
+  const serviceId = created.serviceCreate.id;
+  console.log(`[ContainerManager/Railway] Created service ${serviceId} (${serviceName}) for ${userId}`);
 
-  const data = await res.json() as any;
-  const service = data.service;
+  // 2. Inject env vars
+  const variables = getAgentEnvVars(userId, plan);
+  await railwayGql(`
+    mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+      variableCollectionUpsert(input: $input)
+    }
+  `, {
+    input: { projectId, environmentId, serviceId, variables },
+  });
 
-  console.log(`[ContainerManager/Render] Created service ${service.id} for ${userId}`);
+  // 3. Deploy
+  await railwayGql(`
+    mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+      serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+    }
+  `, { serviceId, environmentId });
 
   return {
-    container: service.name,
-    status: service.suspended === 'not_suspended' ? 'running' : 'stopped',
-    serviceId: service.id,
-    url: `https://${service.name}.onrender.com`,
-    startedAt: service.createdAt,
+    container: serviceName,
+    status: 'deploying',
+    serviceId,
+    url: `https://${serviceName}.up.railway.app`,
+    startedAt: new Date().toISOString(),
   };
 }
 
 /**
- * Start a suspended service
+ * Restart a service (redeploy latest).
  */
 export async function startContainer(userId: string): Promise<ContainerResult> {
+  const environmentId = process.env.RAILWAY_ENVIRONMENT_ID;
+  if (!environmentId) throw new Error('RAILWAY_ENVIRONMENT_ID not configured');
+
   const serviceId = await getServiceIdByName(`agentbot-agent-${userId}`);
-  if (!serviceId) throw new Error(`No service found for user ${userId}`);
+  if (!serviceId) throw new Error(`No Railway service found for user ${userId}`);
 
-  const res = await fetch(`${RENDER_API}/services/${serviceId}/resume`, {
-    method: 'POST',
-    headers: getHeaders(),
-    signal: AbortSignal.timeout(15000),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Render resume error ${res.status}: ${err}`);
-  }
+  await railwayGql(`
+    mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+      serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+    }
+  `, { serviceId, environmentId });
 
   return { container: `agentbot-agent-${userId}`, status: 'running', serviceId };
 }
 
 /**
- * Suspend a service (saves money, keeps data)
+ * Railway has no built-in "suspend". This is a no-op — return stopped status.
+ * To actually stop usage, delete the service instead.
  */
 export async function pauseContainer(userId: string): Promise<ContainerResult> {
   const serviceId = await getServiceIdByName(`agentbot-agent-${userId}`);
-  if (!serviceId) throw new Error(`No service found for user ${userId}`);
-
-  const res = await fetch(`${RENDER_API}/services/${serviceId}/suspend`, {
-    method: 'POST',
-    headers: getHeaders(),
-    signal: AbortSignal.timeout(15000),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Render suspend error ${res.status}: ${err}`);
-  }
-
-  return { container: `agentbot-agent-${userId}`, status: 'suspended', serviceId };
+  return { container: `agentbot-agent-${userId}`, status: 'suspended', serviceId: serviceId || undefined };
 }
 
 /**
- * Delete a service
+ * Delete a Railway service.
  */
 export async function destroyContainer(
   userId: string,
   _backup: boolean = true
 ): Promise<ContainerResult> {
   const serviceId = await getServiceIdByName(`agentbot-agent-${userId}`);
-  if (!serviceId) throw new Error(`No service found for user ${userId}`);
+  if (!serviceId) return { container: `agentbot-agent-${userId}`, status: 'destroyed' };
 
-  const res = await fetch(`${RENDER_API}/services/${serviceId}`, {
-    method: 'DELETE',
-    headers: getHeaders(),
-    signal: AbortSignal.timeout(15000),
-  });
-
-  if (!res.ok && res.status !== 404) {
-    const err = await res.text();
-    throw new Error(`Render delete error ${res.status}: ${err}`);
-  }
+  await railwayGql(`
+    mutation ServiceDelete($id: String!) {
+      serviceDelete(id: $id)
+    }
+  `, { id: serviceId });
 
   return { container: `agentbot-agent-${userId}`, status: 'destroyed' };
 }
 
 /**
- * Get service status
+ * Get the status of a user's service.
  */
 export async function getContainerStatus(userId: string): Promise<ContainerResult> {
   const serviceId = await getServiceIdByName(`agentbot-agent-${userId}`);
   if (!serviceId) return { container: `agentbot-agent-${userId}`, status: 'not_found' };
 
-  const res = await fetch(`${RENDER_API}/services/${serviceId}`, {
-    headers: getHeaders(),
-    signal: AbortSignal.timeout(10000),
-  });
+  try {
+    const data = await railwayGql<{
+      service: {
+        id: string;
+        name: string;
+        serviceInstances: {
+          edges: Array<{
+            node: {
+              latestDeployment: { id: string; status: string; url?: string } | null;
+            };
+          }>;
+        };
+      };
+    }>(`
+      query ServiceById($id: String!) {
+        service(id: $id) {
+          id name
+          serviceInstances {
+            edges {
+              node {
+                latestDeployment { id status url }
+              }
+            }
+          }
+        }
+      }
+    `, { id: serviceId });
 
-  if (!res.ok) {
+    const instance  = data.service.serviceInstances.edges[0]?.node;
+    const deployment = instance?.latestDeployment;
+    const deployStatus = deployment?.status?.toLowerCase() || 'unknown';
+
+    // Railway deployment statuses: DEPLOYING, SUCCESS, FAILED, CRASHED, SLEEPING
+    let status = 'unknown';
+    if (deployStatus === 'success')               status = 'running';
+    else if (deployStatus === 'failed' || deployStatus === 'crashed') status = 'error';
+    else if (deployStatus === 'deploying')         status = 'deploying';
+    else if (deployStatus === 'sleeping')          status = 'suspended';
+    else                                           status = deployStatus;
+
+    return {
+      container: data.service.name,
+      status,
+      serviceId,
+      url: deployment?.url,
+    };
+  } catch {
     return { container: `agentbot-agent-${userId}`, status: 'error', serviceId };
   }
-
-  const data = await res.json() as any;
-  const service = data.service || data;
-
-  let status = 'unknown';
-  if (service.suspended === 'suspended') status = 'suspended';
-  else if (service.serviceDetails?.buildStatus === 'build_failed') status = 'error';
-  else status = 'running';
-
-  return {
-    container: service.name,
-    status,
-    serviceId: service.id,
-    url: service.serviceDetails?.url,
-  };
 }
 
 /**
- * List all agent services
+ * List all agentbot agent services in the project.
  */
 export async function listContainers(): Promise<string> {
-  const res = await fetch(`${RENDER_API}/services?limit=100&type=web_service`, {
-    headers: getHeaders(),
-    signal: AbortSignal.timeout(10000),
-  });
+  const projectId = process.env.RAILWAY_PROJECT_ID;
+  if (!projectId) throw new Error('RAILWAY_PROJECT_ID not configured');
 
-  if (!res.ok) throw new Error(`Render list error: ${res.status}`);
+  const data = await railwayGql<{
+    project: {
+      services: {
+        edges: Array<{ node: { id: string; name: string } }>;
+      };
+    };
+  }>(`
+    query ProjectServices($projectId: String!) {
+      project(id: $projectId) {
+        services { edges { node { id name } } }
+      }
+    }
+  `, { projectId });
 
-  const data = await res.json() as any[];
-  const agents = data.filter((s: any) => s.service?.name?.startsWith('agentbot-agent-'));
+  const agents = data.project.services.edges
+    .map(e => e.node)
+    .filter(s => s.name.startsWith('agentbot-agent-'));
 
-  return JSON.stringify(agents.map((s: any) => ({
-    name: s.service.name,
-    id: s.service.id,
-    status: s.service.suspended,
-    url: s.service.serviceDetails?.url,
-    plan: s.service.serviceDetails?.plan,
-  })), null, 2);
+  return JSON.stringify(agents, null, 2);
 }
 
 /**
- * Build image — no-op on Render (auto-built from Dockerfile)
+ * Build image — no-op on Railway (auto-built from Docker image tag).
  */
 export async function buildImage(): Promise<string> {
-  return 'Render auto-builds from Dockerfile. No manual build needed.';
+  return 'Railway auto-pulls from the Docker image. No manual build needed.';
 }
 
 /**
- * Health check for a user's agent
+ * Health check for a user's agent.
  */
 export async function checkHealth(userId: string): Promise<boolean> {
   try {
-    const status = await getContainerStatus(userId);
-    if (status.status !== 'running' || !status.url) return false;
-
-    const res = await fetch(`${status.url}/healthz`, {
-      signal: AbortSignal.timeout(5000),
-    });
+    const s = await getContainerStatus(userId);
+    if (s.status !== 'running' || !s.url) return false;
+    const res = await fetch(`${s.url}/healthz`, { signal: AbortSignal.timeout(5000) });
     return res.ok;
   } catch {
     return false;
@@ -288,34 +313,29 @@ export async function checkHealth(userId: string): Promise<boolean> {
 }
 
 /**
- * Resume on activity
+ * Resume on activity — redeploy if not running.
  */
 export async function resumeOnActivity(userId: string): Promise<ContainerResult> {
-  const status = await getContainerStatus(userId);
-  if (status.status === 'suspended') {
-    return startContainer(userId);
-  }
-  return status;
+  const s = await getContainerStatus(userId);
+  if (s.status !== 'running') return startContainer(userId);
+  return s;
 }
 
 /**
- * Idle auto-pause timers
+ * Idle auto-pause timers (Railway doesn't suspend, so we just track idle time).
  */
 const idleTimers: Map<string, NodeJS.Timeout> = new Map();
 
-export function resetIdleTimer(
-  userId: string,
-  idleMinutes: number = 30
-): void {
+export function resetIdleTimer(userId: string, idleMinutes: number = 30): void {
   const existing = idleTimers.get(userId);
   if (existing) clearTimeout(existing);
 
   const timer = setTimeout(async () => {
     try {
       await pauseContainer(userId);
-      console.log(`[ContainerManager/Render] Auto-suspended idle agent for ${userId}`);
+      console.log(`[ContainerManager/Railway] Idle agent paused for ${userId}`);
     } catch (err: any) {
-      console.error(`[ContainerManager/Render] Failed to suspend ${userId}:`, err.message);
+      console.error(`[ContainerManager/Railway] Failed to pause ${userId}:`, err.message);
     }
     idleTimers.delete(userId);
   }, idleMinutes * 60 * 1000);
@@ -323,20 +343,30 @@ export function resetIdleTimer(
   idleTimers.set(userId, timer);
 }
 
-/**
- * Look up a Render service ID by name
- */
+// ---------------------------------------------------------------------------
+// Internal helpers
+// ---------------------------------------------------------------------------
+
 async function getServiceIdByName(name: string): Promise<string | null> {
-  const res = await fetch(`${RENDER_API}/services?limit=100&type=web_service`, {
-    headers: getHeaders(),
-    signal: AbortSignal.timeout(10000),
-  });
+  const projectId = process.env.RAILWAY_PROJECT_ID;
+  if (!projectId) return null;
 
-  if (!res.ok) return null;
+  try {
+    const data = await railwayGql<{
+      project: { services: { edges: Array<{ node: { id: string; name: string } }> } };
+    }>(`
+      query ProjectServices($projectId: String!) {
+        project(id: $projectId) {
+          services { edges { node { id name } } }
+        }
+      }
+    `, { projectId });
 
-  const data = await res.json() as any[];
-  const match = data.find((s: any) => s.service?.name === name);
-  return match?.service?.id || null;
+    const match = data.project.services.edges.find(e => e.node.name === name);
+    return match?.node.id || null;
+  } catch {
+    return null;
+  }
 }
 
 export default {

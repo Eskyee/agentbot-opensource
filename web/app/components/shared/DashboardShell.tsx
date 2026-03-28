@@ -36,7 +36,7 @@ export function DashboardHeader({
   return (
     <div
       className={cn(
-        'sticky top-14 z-30 bg-zinc-950 px-4 sm:px-6 py-3 sm:py-4 border-b border-zinc-900 flex items-center justify-between gap-3 overflow-hidden',
+        'sticky top-0 z-30 bg-zinc-950 px-4 sm:px-6 py-3 sm:py-4 border-b border-zinc-900 flex items-center justify-between gap-3 overflow-hidden',
         className
       )}
     >
