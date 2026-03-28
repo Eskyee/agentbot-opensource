@@ -107,14 +107,30 @@ export async function provisionOnRailway(
     input: { projectId, environmentId, serviceId, variables },
   })
 
-  // 3. Trigger deploy
+  // 3. Generate public domain (must happen before deploy)
+  let url = `https://${serviceName}.up.railway.app`
+  try {
+    const domainResult = await railwayGql<{
+      serviceDomainCreate: { domain: string }
+    }>(`
+      mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
+        serviceDomainCreate(input: $input) { domain }
+      }
+    `, { input: { serviceId, environmentId } })
+    const domain = domainResult.serviceDomainCreate.domain
+    url = domain.startsWith('http') ? domain : `https://${domain}`
+    console.log(`[RailwayProvision] Domain generated: ${url}`)
+  } catch (domainErr) {
+    console.warn(`[RailwayProvision] Domain generation failed, using default URL:`, domainErr)
+  }
+
+  // 4. Trigger deploy
   await railwayGql(`
     mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
       serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
     }
   `, { serviceId, environmentId })
 
-  const url = `https://${serviceName}.up.railway.app`
   console.log(`[RailwayProvision] Deploy triggered → ${url}`)
 
   return { agentId, url, serviceId, status: 'deploying' }
