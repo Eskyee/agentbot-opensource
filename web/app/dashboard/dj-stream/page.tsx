@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
-import { injected } from 'wagmi/connectors'
+import { coinbaseWallet } from 'wagmi/connectors'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 import { SectionHeader } from '@/app/components/shared/SectionHeader'
 import StatusPill from '@/app/components/shared/StatusPill'
@@ -22,12 +22,7 @@ export default function DJStreamPage() {
   const [djName, setDjName] = useState('DJ Escaba')
 
   const handleConnect = () => {
-    if (typeof window === 'undefined') return
-    if (!window.ethereum) {
-      setError('No wallet found. Install MetaMask or Coinbase Wallet.')
-      return
-    }
-    connect({ connector: injected() })
+    connect({ connector: coinbaseWallet({ appName: 'Agentbot', preference: 'smartWalletOnly' }) })
   }
 
   useEffect(() => {
@@ -115,7 +110,7 @@ export default function DJStreamPage() {
                   Connect Wallet
                 </button>
                 <p className="mt-4 text-zinc-600 text-[10px] uppercase tracking-widest">
-                  Base network · MetaMask or Coinbase Wallet
+                  Base network · Coinbase Smart Wallet
                 </p>
               </div>
             ) : (
