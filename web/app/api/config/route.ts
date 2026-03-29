@@ -8,16 +8,28 @@ const SETTING_KEY = 'openclaw_config'
 const BACKUP_KEY  = 'openclaw_config_backups'
 
 // Default config matching the official OpenClaw schema.
-// Stored per-user in UserSetting and applied to the container on restart.
+// Field paths per CLI Setup Reference (outputs and internals):
+//   agents.defaults.model / agents.defaults.workspace
+//   tools.profile
+//   gateway.* (bind, auth)
+//   session.dmScope / session.resetTriggers
+//   channels.*
+//   skills.install.nodeManager
 const DEFAULT_CONFIG = {
   logging: { level: 'info' },
-  agent: {
-    model: 'anthropic/claude-opus-4-5',
-    workspace: '~/.openclaw/workspace',
-    thinkingDefault: 'auto',
-    timeoutSeconds: 1800,
-    // Heartbeat disabled by default — enable once setup is trusted
-    heartbeat: { every: '0m' },
+  agents: {
+    defaults: {
+      model: 'anthropic/claude-opus-4-5',
+      workspace: '~/.openclaw/workspace',
+    },
+  },
+  tools: {
+    // 'coding' for collective+ plans, 'messaging' for solo
+    profile: 'coding',
+  },
+  gateway: {
+    bind: 'lan',
+    auth: { mode: 'token' },
   },
   channels: {
     whatsapp: {
@@ -29,9 +41,12 @@ const DEFAULT_CONFIG = {
     webchat:  { enabled: true  },
   },
   session: {
-    scope: 'per-sender',
+    // per-channel-peer = each sender gets their own session (official default)
+    dmScope: 'per-channel-peer',
     resetTriggers: ['/new', '/reset'],
-    reset: { mode: 'daily', atHour: 4, idleMinutes: 10080 },
+  },
+  skills: {
+    install: { nodeManager: 'npm' },
   },
 }
 

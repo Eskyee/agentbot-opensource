@@ -189,13 +189,13 @@ function DashboardContent() {
         setError(data.error)
       } else {
         // Prefer the Railway URL stored in DB over the legacy localhost subdomain
-        const url = tokenData.openclawUrl || data.url
+        // Trim trailing slash to prevent // double-slash in constructed URLs
+        const url = (tokenData.openclawUrl || data.url || '').replace(/\/$/, '')
         const gatewayToken = tokenData.gatewayToken || undefined
-        // Control UI reads both gatewayUrl and token from URL query/hash.
-        // gatewayUrl prevents the onboarding redirect that eats the token.
-        // Docs: https://docs.openclaw.ai/web/control-ui
-        const controlUiUrl = gatewayToken
-          ? `${url}/?gatewayUrl=${encodeURIComponent(`wss://${new URL(url).host}`)}&token=${encodeURIComponent(gatewayToken)}`
+        // Control UI auto-connects via hash: /#token=<token>&gatewayUrl=<wss url>
+        // Using hash (not query string) avoids server-side redirect stripping params.
+        const controlUiUrl = gatewayToken && url
+          ? `${url}/#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(url).host}`)}`
           : url
         setInstance({ ...data, url, botUsername, gatewayToken, controlUiUrl })
         fetchStats(userId)
