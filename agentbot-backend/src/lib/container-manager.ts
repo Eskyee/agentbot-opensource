@@ -26,6 +26,8 @@ function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
     OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',
+    // Gateway listens on 18789 by default — Railway HTTP proxy must route here
+    OPENCLAW_GATEWAY_PORT:  '18789',
     AGENTBOT_USER_ID:       userId,
     AGENTBOT_PLAN:          plan,
     AGENTBOT_API_URL:       process.env.BACKEND_API_URL        || '',
@@ -34,7 +36,8 @@ function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
     INTERNAL_API_KEY:       process.env.INTERNAL_API_KEY       || '',
     WALLET_ENCRYPTION_KEY:  process.env.WALLET_ENCRYPTION_KEY  || '',
     NODE_ENV:               'production',
-    PORT:                   '3001',
+    // Railway HTTP proxy port — must match OPENCLAW_GATEWAY_PORT
+    PORT:                   '18789',
   };
 }
 
@@ -45,6 +48,8 @@ export interface ContainerResult {
   startedAt?: string;
   serviceId?: string;
   url?: string;
+  /** Auto-connect Control UI URL with token embedded in fragment (never sent to server) */
+  controlUiUrl?: string;
 }
 
 export type PlanType = 'solo' | 'collective' | 'label' | 'network';
@@ -142,18 +147,44 @@ export async function createContainer(
     input: { projectId, environmentId, serviceId, variables },
   });
 
-  // 3. Deploy
+  // 3. Set start command — disable device pairing before starting gateway.
+  //    Each user has their own isolated container, so device auth is unnecessary.
+  //    Token auth (OPENCLAW_GATEWAY_TOKEN) still protects the gateway.
+  await railwayGql(`
+    mutation ServiceInstanceUpdate($input: ServiceInstanceUpdateInput!) {
+      serviceInstanceUpdate(input: $input)
+    }
+  `, {
+    input: {
+      serviceId,
+      environmentId,
+      startCommand: 'sh -c \'openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true --strict-json 2>/dev/null; node dist/index.js gateway --bind lan --port 18789\'',
+    },
+  });
+  console.log(`[ContainerManager/Railway] Set startCommand with device auth disabled for ${serviceName}`);
+
+  // 4. Deploy
   await railwayGql(`
     mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
       serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
     }
   `, { serviceId, environmentId });
 
+  const serviceUrl = `https://${serviceName}.up.railway.app`;
+  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || '';
+
+  // Control UI auto-connect URL — token in fragment (never sent to server)
+  // OpenClaw UI reads #token=... from URL fragment on load
+  const controlUiUrl = gatewayToken
+    ? `${serviceUrl}/#token=${encodeURIComponent(gatewayToken)}`
+    : serviceUrl;
+
   return {
     container: serviceName,
     status: 'deploying',
     serviceId,
-    url: `https://${serviceName}.up.railway.app`,
+    url: serviceUrl,
+    controlUiUrl,
     startedAt: new Date().toISOString(),
   };
 }
