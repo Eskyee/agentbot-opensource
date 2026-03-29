@@ -58,9 +58,10 @@ export default function SkillsPage() {
       })
   }, [])
 
-  // Fetch skills + categories whenever category filter changes
+  // Fetch skills + categories whenever category filter or agent changes
   useEffect(() => {
-    fetch(`/api/skills?category=${category}`)
+    const agentParam = selectedAgentId ? `&agentId=${selectedAgentId}` : ''
+    fetch(`/api/skills?category=${category}${agentParam}`)
       .then((r) => r.json())
       .then((data) => {
         setSkills(data.skills || [])
@@ -70,11 +71,15 @@ export default function SkillsPage() {
           )
           setCategories(['all', ...cats])
         }
+        // Pre-load which skills are already installed
+        if (Array.isArray(data.installedSkillIds)) {
+          setInstalledSkillIds(new Set(data.installedSkillIds))
+        }
       })
       .catch(() => {
         setSkills([])
       })
-  }, [category])
+  }, [category, selectedAgentId])
 
   const installSkill = useCallback(
     async (skillId: string) => {
@@ -128,7 +133,10 @@ export default function SkillsPage() {
           <div className="flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
             <AlertCircle className="h-4 w-4 shrink-0 text-amber-400" />
             <p className="text-sm text-amber-300">
-              Select an agent to install skills
+              You need an agent before installing skills.{' '}
+              <a href="/onboard" className="underline text-amber-200 hover:text-white">
+                Deploy your first agent →
+              </a>
             </p>
           </div>
         ) : (

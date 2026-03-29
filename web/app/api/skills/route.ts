@@ -32,11 +32,11 @@ const DEFAULT_SKILLS = [
   { name: 'Festival Finder', description: 'Discover festivals globally, compare lineups, get UK and Europe recommendations.', category: 'events', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
 ]
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Ensure skills are seeded in the database.
  * Runs once on first request; subsequent calls are a no-op.
-
-export const dynamic = 'force-dynamic';
  */
 async function ensureSkillsSeeded() {
   const count = await prisma.skill.count()
@@ -52,6 +52,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
   const featured = searchParams.get('featured')
+  const agentId = searchParams.get('agentId')
+
+  // Resolve session once — used to include installed skill IDs in response
+  const session = await getAuthSession()
 
   try {
     await ensureSkillsSeeded()
@@ -60,30 +64,46 @@ export async function GET(request: Request) {
     if (category && category !== 'all') where.category = category
     if (featured === 'true') where.featured = true
 
-    const skills = await prisma.skill.findMany({
-      where,
-      orderBy: [{ featured: 'desc' }, { downloads: 'desc' }],
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        category: true,
-        author: true,
-        downloads: true,
-        rating: true,
-        featured: true,
-      },
-    })
+    const [skills, categories] = await Promise.all([
+      prisma.skill.findMany({
+        where,
+        orderBy: [{ featured: 'desc' }, { downloads: 'desc' }],
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          author: true,
+          downloads: true,
+          rating: true,
+          featured: true,
+        },
+      }),
+      prisma.skill.findMany({
+        distinct: ['category'],
+        select: { category: true },
+      }),
+    ])
 
-    const categories = await prisma.skill.findMany({
-      distinct: ['category'],
-      select: { category: true },
-    })
+    // Return which skills are already installed for this user+agent combo
+    let installedSkillIds: string[] = []
+    if (session?.user?.id) {
+      const installed = await prisma.installedSkill.findMany({
+        where: {
+          userId: session.user.id,
+          ...(agentId ? { agentId } : {}),
+          enabled: true,
+        },
+        select: { skillId: true },
+      })
+      installedSkillIds = installed.map(i => i.skillId)
+    }
 
     return NextResponse.json({
       skills,
       categories: categories.map(c => c.category),
       featured: skills.filter(s => s.featured),
+      installedSkillIds,
     })
   } catch (error) {
     console.error('Skills fetch error:', error)
@@ -92,7 +112,7 @@ export async function GET(request: Request) {
     if (category && category !== 'all') skills = skills.filter(s => s.category === category)
     if (featured === 'true') skills = skills.filter(s => s.featured)
     const categories = [...new Set(DEFAULT_SKILLS.map(s => s.category))]
-    return NextResponse.json({ skills, categories, featured: skills.filter(s => s.featured) })
+    return NextResponse.json({ skills, categories, featured: skills.filter(s => s.featured), installedSkillIds: [] })
   }
 }
 
