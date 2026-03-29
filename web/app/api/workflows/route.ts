@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import { authOptions } from '@/app/lib/auth'
 import { prisma } from '@/app/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
@@ -14,7 +15,7 @@ export async function GET() {
       where: { userId: session.user.id },
       include: {
         nodes: {
-          select: { id: true, type: true, position: true },
+          select: { id: true, type: true, config: true, position: true },
         },
       },
       orderBy: { updatedAt: 'desc' },

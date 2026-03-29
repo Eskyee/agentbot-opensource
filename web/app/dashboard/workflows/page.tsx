@@ -59,15 +59,16 @@ export default function WorkflowsPage() {
     fetchWorkflows()
   }, [fetchWorkflows])
 
-  const createWorkflow = async () => {
-    if (!newName.trim()) return
+  const createWorkflow = async (nameOverride?: string) => {
+    const workflowName = (nameOverride ?? newName).trim()
+    if (!workflowName) return
     setCreating(true)
     setError('')
     try {
       const res = await fetch('/api/workflows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName.trim() }),
+        body: JSON.stringify({ name: workflowName }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -358,10 +359,7 @@ export default function WorkflowsPage() {
               ].map(t => (
                 <button
                   key={t.name}
-                  onClick={async () => {
-                    setNewName(t.name)
-                    setTimeout(createWorkflow, 100)
-                  }}
+                  onClick={() => createWorkflow(t.name)}
                   className="bg-black p-4 text-left hover:bg-zinc-950 transition-colors"
                 >
                   <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">{t.type}</span>
