@@ -190,8 +190,9 @@ function DashboardContent() {
         // Prefer the Railway URL stored in DB over the legacy localhost subdomain
         const url = tokenData.openclawUrl || data.url
         const gatewayToken = tokenData.gatewayToken || undefined
-        // Build auto-connect URL: token in #fragment (never sent to server)
-        const controlUiUrl = gatewayToken ? `${url}/#token=${encodeURIComponent(gatewayToken)}` : url
+        // Build auto-connect URL: token in query param (survives SPA redirects to /chat)
+        // Also in #fragment for security-conscious browsers — query param takes priority
+        const controlUiUrl = gatewayToken ? `${url}/?token=${encodeURIComponent(gatewayToken)}#token=${encodeURIComponent(gatewayToken)}` : url
         setInstance({ ...data, url, botUsername, gatewayToken, controlUiUrl })
         fetchStats(userId)
       }
