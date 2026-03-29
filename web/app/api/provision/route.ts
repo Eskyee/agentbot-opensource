@@ -106,6 +106,8 @@ export async function POST(request: NextRequest) {
       apiKey,
       plan: plan || 'solo',
       email: userEmail,
+      autoProvision: autoProvision || false,
+      agentType: agentType || 'creative',
     }
 
     const backendUrl = process.env.BACKEND_API_URL?.trim()

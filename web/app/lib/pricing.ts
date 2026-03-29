@@ -10,11 +10,10 @@ export const PRICING_TIERS = {
     period: 'month',
     description: 'For bedroom producers',
     features: [
-      '1 Creative Agent thread (chat only)',
-      'Shared cluster resources',
-      'Telegram channel',
+      '1 Creative Agent thread',
+      'Audience engagement (Telegram)',
+      'Opportunity discovery',
       'Use your own AI key',
-      'No business automation',
     ],
     limits: {
       agents: 1,

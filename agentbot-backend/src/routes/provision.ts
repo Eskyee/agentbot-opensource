@@ -105,6 +105,8 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       plan = 'free',
       email: bodyEmail, // user email from body
       stripeSubscriptionId, // from Stripe checkout
+      autoProvision = false, // true = container-only deploy, channel setup later
+      agentType = 'creative',
     } = req.body;
 
     // Also check header for email (set by auth middleware)
@@ -118,8 +120,8 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       });
     }
 
-    // Validation
-    if (!telegramToken && !discordBotToken && !whatsappToken) {
+    // Validation — channel token required unless auto-provisioning (container-only deploy)
+    if (!autoProvision && agentType !== 'business' && !telegramToken && !discordBotToken && !whatsappToken) {
       return res.status(400).json({
         success: false,
         error: 'At least one channel token required (telegramToken, discordBotToken, or whatsappToken)',

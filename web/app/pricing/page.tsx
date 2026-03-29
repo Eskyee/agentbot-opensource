@@ -11,7 +11,7 @@ const plans = [
     id: 'solo',
     name: 'Solo',
     price: '29',
-    features: ['1 Creative Agent thread', 'Fan engagement (Telegram)', 'BlockDB queries for A&R'],
+    features: ['1 Creative Agent thread', 'Audience engagement (Telegram)', 'Opportunity discovery'],
     popular: false,
   },
   {
