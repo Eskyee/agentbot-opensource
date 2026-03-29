@@ -545,3 +545,18 @@ model wallets {
 
   @@index([agent_id], map: "idx_wallets_agent_id")
 }
+
+// Agent-to-Agent Bridge — private message bus for Atlas coordination
+model bridge_messages {
+  id         String   @id @default(cuid())
+  sender     String   // "atlas-main", "atlas-agentbot", "eskyee"
+  channel    String   @default("general") // general, tasks, alerts
+  content    String   @db.Text
+  priority   String   @default("normal") // normal, urgent, fyi
+  read_by    String[] @default([])
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([channel], map: "idx_bridge_channel")
+  @@index([sender], map: "idx_bridge_sender")
+  @@index([created_at], map: "idx_bridge_created")
+}
