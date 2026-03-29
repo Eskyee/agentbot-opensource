@@ -206,7 +206,7 @@ export default function WorkflowsPage() {
                   onKeyDown={e => e.key === 'Enter' && createWorkflow()}
                 />
                 <button
-                  onClick={createWorkflow}
+                  onClick={() => createWorkflow()}
                   disabled={creating || !newName.trim()}
                   className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
                 >
