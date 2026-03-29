@@ -40,3 +40,4 @@ export async function GET(request: Request) {
     )
   }
 }
+// bridge auth env var trigger
