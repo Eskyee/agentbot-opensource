@@ -158,7 +158,7 @@ export async function createContainer(
     input: {
       serviceId,
       environmentId,
-      startCommand: 'sh -c \'openclaw config set gateway.controlUi.dangerouslyDisableDeviceAuth true --strict-json 2>/dev/null; openclaw config set gateway.http.endpoints.chatCompletions.enabled true --strict-json 2>/dev/null; node dist/index.js gateway --bind lan --port 18789\'',
+      startCommand: 'sh -c \'node dist/index.js config set gateway.mode \'"\'local\'"\' --strict-json 2>/dev/null; node dist/index.js config set gateway.controlUi.dangerouslyDisableDeviceAuth true --strict-json 2>/dev/null; node dist/index.js config set gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback true --strict-json 2>/dev/null; node dist/index.js config set gateway.http.endpoints.chatCompletions.enabled true --strict-json 2>/dev/null; node dist/index.js gateway --bind lan --port 18789\'',
     },
   });
   console.log(`[ContainerManager/Railway] Set startCommand with device auth disabled for ${serviceName}`);
