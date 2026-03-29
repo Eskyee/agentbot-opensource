@@ -51,6 +51,7 @@ export const navSections = [
   {
     label: 'Platform',
     items: [
+      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Borg Soul', href: 'https://tempo-x402-production.up.railway.app/dashboard', icon: '⬢', external: true },
       { label: 'Debug Console', href: '/dashboard/debug', icon: '▷' },
       { label: 'Config Editor', href: '/dashboard/config', icon: '◈' },
