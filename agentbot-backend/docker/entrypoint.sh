@@ -55,7 +55,7 @@ ONBOARD_CMD="openclaw onboard --non-interactive \
   --auth-choice ${AUTH_CHOICE} \
   --secret-input-mode plaintext \
   --gateway-port ${GATEWAY_PORT} \
-  --gateway-bind loopback \
+  --gateway-bind lan \
   --skip-skills"
 
 # Add provider-specific flags
@@ -134,4 +134,4 @@ fi
 echo "[$(date)] Starting gateway..."
 
 # Run gateway
-exec node dist/index.js gateway --bind loopback --port "${GATEWAY_PORT}"
+exec node dist/index.js gateway --bind lan --port "${GATEWAY_PORT}"
