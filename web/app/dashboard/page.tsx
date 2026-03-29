@@ -58,6 +58,11 @@ function DashboardContent() {
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState('')
   const [credits, setCredits] = useState(0)
+  const [dashboardStats, setDashboardStats] = useState<{
+    agents: { active: number; total: number; limit: number; newToday: number }
+    skills: { installed: number }
+    tasks: { total: number }
+  } | null>(null)
   const [heartbeatCredits, setHeartbeatCredits] = useState(200)
   const [heartbeatFreq, setHeartbeatFreq] = useState('3h')
   const [lastSeen, setLastSeen] = useState<string | null>(null)
@@ -66,13 +71,7 @@ function DashboardContent() {
   const [tasks, setTasks] = useState<{id: string; title: string; status: string; type: string}[]>([])
   const [signingOut, setSigningOut] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; status: string}[]>([
-    { id: '1', action: 'Agent online', agent: 'Atlas', time: '2 min ago', status: 'green' },
-    { id: '2', action: 'Calendar sync completed', agent: 'Atlas', time: '8 min ago', status: 'blue' },
-    { id: '3', action: 'WhatsApp session started', agent: 'Atlas', time: '22 min ago', status: 'blue' },
-    { id: '4', action: 'Skill installed', agent: 'Atlas', time: '1 hour ago', status: 'zinc' },
-    { id: '5', action: 'Uptime check passed', agent: 'Watchtower', time: '1 hour ago', status: 'green' },
-  ])
+  const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; status: string}[]>([])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -147,6 +146,7 @@ function DashboardContent() {
       
       fetchInstance(userId, botUsername)
       fetchCredits()
+      fetchDashboardStats()
     })(); // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams, session])
 
@@ -157,6 +157,18 @@ function DashboardContent() {
       setCredits(data.credits || 0)
     } catch (e) {
       console.error('Failed to fetch credits:', e)
+    }
+  }
+
+  const fetchDashboardStats = async () => {
+    try {
+      const res = await fetch('/api/dashboard/stats')
+      if (res.ok) {
+        const data = await res.json()
+        setDashboardStats(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch dashboard stats:', e)
     }
   }
 
@@ -394,29 +406,38 @@ function DashboardContent() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Active Agents</span>
               </div>
-              <div className="text-3xl font-bold">1<span className="text-lg text-zinc-500 font-normal">/6</span></div>
-              <div className="text-xs text-green-400 mt-1">+2 today</div>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Token Spend</span>
+              <div className="text-3xl font-bold">
+                {dashboardStats?.agents.active ?? 0}
+                <span className="text-lg text-zinc-500 font-normal">/{dashboardStats?.agents.limit ?? 1}</span>
               </div>
-              <div className="text-3xl font-bold">£12.40</div>
-              <div className="text-xs text-green-400 mt-1">+8.2% this month</div>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions</span>
-              </div>
-              <div className="text-3xl font-bold">11</div>
-              <div className="text-xs text-zinc-500 mt-1">active now</div>
+              {(dashboardStats?.agents.newToday ?? 0) > 0 && (
+                <div className="text-xs text-green-400 mt-1">+{dashboardStats?.agents.newToday} today</div>
+              )}
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Skills</span>
               </div>
-              <div className="text-3xl font-bold">8<span className="text-lg text-zinc-500 font-normal">/14</span></div>
-              <div className="text-xs text-blue-500 mt-1">+2 this week</div>
+              <div className="text-3xl font-bold">
+                {dashboardStats?.skills.installed ?? 0}
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">installed</div>
+            </div>
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Tasks</span>
+              </div>
+              <div className="text-3xl font-bold">
+                {dashboardStats?.tasks.total ?? 0}
+              </div>
+              <div className="text-xs text-zinc-500 mt-1">scheduled</div>
+            </div>
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Plan</span>
+              </div>
+              <div className="text-3xl font-bold capitalize">{instance?.plan || 'free'}</div>
+              <div className="text-xs text-zinc-500 mt-1">tier</div>
             </div>
           </div>
 
@@ -425,28 +446,28 @@ function DashboardContent() {
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">CPU</span>
-                <span className="text-zinc-500 text-sm">{stats?.cpu || '34%'}</span>
+                <span className="text-zinc-500 text-sm">{stats?.cpu || '—'}</span>
               </div>
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-white" style={{ width: stats?.cpu || '34%' }} />
+                <div className="h-full bg-white" style={{ width: stats?.cpu || '0%' }} />
               </div>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Memory</span>
-                <span className="text-zinc-500 text-sm">{stats?.memory || '62%'}</span>
+                <span className="text-zinc-500 text-sm">{stats?.memory || '—'}</span>
               </div>
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-blue-500" style={{ width: stats?.memory || '62%' }} />
+                <div className="h-full bg-blue-500" style={{ width: stats?.memory || '0%' }} />
               </div>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Disk</span>
-                <span className="text-zinc-500 text-sm">45%</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Health</span>
+                <span className={`text-sm ${stats?.health === 'healthy' ? 'text-green-400' : 'text-zinc-500'}`}>{stats?.health || '—'}</span>
               </div>
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-white" style={{ width: '45%' }} />
+                <div className={`h-full ${stats?.health === 'healthy' ? 'bg-green-400' : 'bg-zinc-600'}`} style={{ width: stats?.health === 'healthy' ? '100%' : '0%' }} />
               </div>
             </div>
           </div>
@@ -509,7 +530,7 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
-                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || '2026.2.26'}</dd>
+                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || '2026.3.24'}</dd>
                 </div>
                 <div>
                   <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>

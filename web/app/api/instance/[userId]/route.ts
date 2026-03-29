@@ -30,14 +30,16 @@ export async function GET(
     }
 
     if (!response.ok || !data) {
+      // Construct Railway URL from userId (agentbot-agent-{userId}-production.up.railway.app)
+      const railwayUrl = `https://agentbot-agent-${userId}-production.up.railway.app`;
       return NextResponse.json({
         userId,
         status: 'unknown',
         startedAt: new Date().toISOString(),
-        subdomain: `${userId}.agents.localhost`,
-        url: `https://${userId}.agents.localhost`,
+        subdomain: `agentbot-agent-${userId}-production.up.railway.app`,
+        url: railwayUrl,
         plan: 'free',
-        openclawVersion: '2026.2.17'
+        openclawVersion: '2026.3.24'
       }, { status: response.status || 502 })
     }
 
@@ -45,20 +47,20 @@ export async function GET(
       userId,
       status: data.status === 'active' ? 'running' : (data.status || 'unknown'),
       startedAt: data.startedAt || new Date().toISOString(),
-      subdomain: data.subdomain || `${userId}.agents.localhost`,
-      url: data.url || `https://${userId}.agents.localhost`,
+      subdomain: data.subdomain || `agentbot-agent-${userId}-production.up.railway.app`,
+      url: data.url || `https://agentbot-agent-${userId}-production.up.railway.app`,
       plan: data.plan || 'free',
-      openclawVersion: data.openclawVersion || '2026.2.17'
+      openclawVersion: data.openclawVersion || '2026.3.24'
     })
   } catch (error) {
     return NextResponse.json({
       userId,
       status: 'unknown',
       startedAt: new Date().toISOString(),
-      subdomain: `${userId}.agents.localhost`,
-      url: `https://${userId}.agents.localhost`,
+      subdomain: `agentbot-agent-${userId}-production.up.railway.app`,
+      url: `https://agentbot-agent-${userId}-production.up.railway.app`,
       plan: 'free',
-      openclawVersion: '2026.2.17'
+      openclawVersion: '2026.3.24'
     }, { status: 500 })
   }
 }
