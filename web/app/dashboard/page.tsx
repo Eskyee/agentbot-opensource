@@ -10,6 +10,7 @@ import WalletCard from '@/app/components/WalletCard'
 import AIModelCard from '@/app/components/AIModelCard'
 import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
 import HelpChat from '@/app/components/HelpChat'
+import AgentChat from '@/app/components/AgentChat'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 
 // Helper to convert percent string to Tailwind width class
@@ -495,6 +496,11 @@ function DashboardContent() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Agent Chat */}
+          <div className="mb-8">
+            <AgentChat agentName={instance?.subdomain} />
           </div>
 
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
