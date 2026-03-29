@@ -1,6 +1,6 @@
 #!/bin/sh
 # Agentbot OpenClaw Agent Container Entrypoint (Official Image)
-# Uses ghcr.io/openclaw/openclaw:2026.3.22
+# Uses ghcr.io/openclaw/openclaw:2026.3.28
 # Runs openclaw onboard --non-interactive for proper setup
 set -e
 
@@ -81,7 +81,7 @@ if [ ! -f "${HOME}/.openclaw/openclaw.json" ]; then
     mkdir -p "${HOME}/.openclaw"
     cat > "${HOME}/.openclaw/openclaw.json" << EOF
 {
-  "gateway": { "port": ${GATEWAY_PORT}, "bind": "loopback" },
+  "gateway": { "port": ${GATEWAY_PORT}, "bind": "lan", "trustedProxies": ["127.0.0.1", "10.0.0.0/8", "100.64.0.0/10", "172.16.0.0/12", "192.168.0.0/16"], "controlUi": { "allowedOrigins": ["*"], "dangerouslyDisableDeviceAuth": true, "dangerouslyAllowHostHeaderOriginFallback": true } },
   "auth": { "method": "token", "token": "${GATEWAY_TOKEN}" }
 }
 EOF
