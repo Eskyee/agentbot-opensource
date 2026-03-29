@@ -131,7 +131,7 @@ export default function FleetPage() {
                 </div>
                 <div>
                   <div className="text-sm font-bold tracking-tight uppercase">{selectedAgent.name}</div>
-                  <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{selectedAgent.type}</div>
+                  <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{selectedAgent.role ?? selectedAgent.type}</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-px bg-zinc-800 text-[10px]">

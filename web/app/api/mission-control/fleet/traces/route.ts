@@ -34,15 +34,45 @@ export async function GET() {
     return NextResponse.json([]);
   }
 
-  const traces: any[] = [];
+  // Parse a duration string like "42ms", "1.2s", "0.3m" into milliseconds
+  function parseDurationMs(dur: string): number | null {
+    if (!dur || dur === '—') return null;
+    if (dur.endsWith('ms')) return parseFloat(dur);
+    if (dur.endsWith('s')) return parseFloat(dur) * 1000;
+    if (dur.endsWith('m')) return parseFloat(dur) * 60_000;
+    return null;
+  }
+
+  // Build an AgentTask-shaped object from a raw trace
+  function toAgentTask(raw: {
+    id: string; label: string; agent: string;
+    status: string; duration: string; startedAt: string; tokens: number | null;
+  }) {
+    const durationMs = parseDurationMs(raw.duration);
+    const isFinished = raw.status !== 'running';
+    const completedAt = (isFinished && durationMs !== null)
+      ? new Date(new Date(raw.startedAt).getTime() + durationMs).toISOString()
+      : null;
+    return {
+      id: raw.id,
+      status: raw.status === 'success' ? 'completed' : raw.status,
+      description: raw.label,
+      startedAt: raw.startedAt,
+      completedAt,
+      tokensUsed: raw.tokens ?? 0,
+      costUSD: 0,
+      model: raw.agent,
+    };
+  }
+
+  const rawTraces: any[] = [];
   const now = Date.now();
 
   live.forEach(({ designation, status }, si) => {
     // Active plan steps
     if (status.active_plan) {
-      traces.push({
+      rawTraces.push({
         id: `trace-plan-${si}`,
-        type: 'plan',
         label: `plan: ${status.active_plan.current_step_type ?? 'step'} (${status.active_plan.current_step}/${status.active_plan.total_steps})`,
         agent: designation,
         status: 'running',
@@ -54,13 +84,13 @@ export async function GET() {
 
     // Recent thoughts
     status.recent_thoughts?.forEach((thought: any, ti: number) => {
-      traces.push({
+      const durationStr = `${(100 + Math.random() * 300).toFixed(0)}ms`;
+      rawTraces.push({
         id: `trace-thought-${si}-${ti}`,
-        type: thought.type === 'plan' ? 'inference' : thought.type === 'belief' ? 'monitor' : 'tool_call',
         label: `${thought.type}: ${thought.content?.slice(0, 60) ?? '—'}`,
         agent: designation,
         status: 'success',
-        duration: `${(100 + Math.random() * 300).toFixed(0)}ms`,
+        duration: durationStr,
         startedAt: new Date((thought.created_at ?? now / 1000) * 1000 - ti * 3000).toISOString(),
         tokens: thought.type === 'plan' ? Math.floor(200 + Math.random() * 600) : null,
       });
@@ -68,9 +98,8 @@ export async function GET() {
 
     // Free energy components as system traces
     status.free_energy?.components?.forEach((comp: any, ci: number) => {
-      traces.push({
+      rawTraces.push({
         id: `trace-fe-${si}-${ci}`,
-        type: 'monitor',
         label: `${comp.system}: surprise=${comp.surprise}, contribution=${comp.contribution}`,
         agent: designation,
         status: 'success',
@@ -81,9 +110,8 @@ export async function GET() {
     });
 
     // Cycle count as a system status trace
-    traces.push({
+    rawTraces.push({
       id: `trace-cycles-${si}`,
-      type: 'monitor',
       label: `cycle ${status.total_cycles} complete — mode: ${status.mode}, regime: ${status.free_energy?.regime ?? '—'}`,
       agent: designation,
       status: status.dormant ? 'idle' : 'success',
@@ -93,8 +121,9 @@ export async function GET() {
     });
   });
 
-  // Sort by recency
-  traces.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+  // Sort by recency, transform to AgentTask shape
+  rawTraces.sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+  const tasks = rawTraces.slice(0, 20).map(toAgentTask);
 
-  return NextResponse.json(traces.slice(0, 20));
+  return NextResponse.json(tasks);
 }
