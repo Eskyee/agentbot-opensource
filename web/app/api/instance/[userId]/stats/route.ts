@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 import { verifyInstanceOwnership } from '../../_auth'
 
+const OPENCLAW_IMAGE_VERSION = '2026.3.24'
 
 export async function GET(
   request: NextRequest,
@@ -13,57 +14,72 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
   const INTERNAL_API_KEY = getInternalApiKey()
-  
+
+  // Try backend API first
   try {
     const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${INTERNAL_API_KEY}`
-      }
+      headers: { Authorization: `Bearer ${INTERNAL_API_KEY}` },
+      signal: AbortSignal.timeout(5000),
     })
 
-    let data: any = null
-    try {
-      data = await response.json()
-    } catch (parseError) {
-      console.error('Failed to parse stats response JSON', parseError)
+    if (response.ok) {
+      const data = await response.json()
       return NextResponse.json({
         userId,
-        cpu: '0%',
-        memory: '0MB',
-        status: 'unknown',
-        error: 'Invalid stats payload from backend'
-      }, { status: 502 })
-    }
-
-    if (!response.ok) {
-      return NextResponse.json({
-        userId,
-        cpu: data?.cpu || '0%',
-        memory: data?.memory || '0MB',
+        cpu: data?.cpu || 'unknown',
+        memory: data?.memory || 'unknown',
         status: data?.status || 'unknown',
-        error: data?.error || 'Failed to fetch instance stats'
-      }, { status: response.status || 502 })
+        plan: data?.plan || 'free',
+        openclawVersion: data?.openclawVersion || OPENCLAW_IMAGE_VERSION,
+        health: data?.health || 'unknown',
+        uptime: data?.uptime,
+        messages: data?.messages,
+        errors: data?.errors,
+      })
     }
+  } catch {
+    // Backend unavailable — fall through to Railway agent health check
+  }
+
+  // Fallback: check the agent's own Railway container for health
+  const railwayUrl = `https://agentbot-agent-${userId}-production.up.railway.app`
+  try {
+    const healthRes = await fetch(`${railwayUrl}/healthz`, {
+      signal: AbortSignal.timeout(5000),
+    })
+    const healthData = await healthRes.json().catch(() => null)
+    const isHealthy = healthRes.ok && healthData?.ok === true
+
+    // Try readyz too
+    let isReady = false
+    try {
+      const readyRes = await fetch(`${railwayUrl}/readyz`, {
+        signal: AbortSignal.timeout(3000),
+      })
+      const readyData = await readyRes.json().catch(() => null)
+      isReady = readyRes.ok && readyData?.ready === true
+    } catch { /* not critical */ }
 
     return NextResponse.json({
       userId,
-      cpu: data?.cpu || 'unknown',
-      memory: data?.memory || 'unknown',
-      status: data?.status || 'unknown',
-      plan: data?.plan || 'free',
-      openclawVersion: data?.openclawVersion || 'unknown'
+      status: isHealthy ? 'running' : 'unreachable',
+      health: isHealthy ? (isReady ? 'healthy' : 'degraded') : 'unreachable',
+      cpu: isHealthy ? '—' : '0%',
+      memory: isHealthy ? '—' : '0MB',
+      uptime: isHealthy ? 'active' : 'unknown',
+      openclawVersion: OPENCLAW_IMAGE_VERSION,
     })
-  } catch (error) {
-    console.error('Stats route error', error)
+  } catch {
+    // Both backend and agent unreachable
     return NextResponse.json({
       userId,
       cpu: '0%',
       memory: '0MB',
       status: 'unknown',
-      error: 'Stats service unavailable'
-    }, { status: 500 })
+      health: 'unreachable',
+      error: 'Stats service unavailable',
+    })
   }
 }
-
 
 export const dynamic = 'force-dynamic';
