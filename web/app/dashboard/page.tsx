@@ -588,17 +588,22 @@ function DashboardContent() {
                   <span>→</span>
                 </a>
                 {instance?.gatewayToken && (
-                  <div className="border border-zinc-800 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Gateway Token</p>
-                    <div className="flex items-center gap-2">
-                      <code className="text-[11px] text-zinc-400 font-mono truncate flex-1">{instance.gatewayToken}</code>
+                  <div className="border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] uppercase tracking-widest text-blue-400">Pairing Code</p>
                       <button
-                        onClick={() => navigator.clipboard.writeText(instance.gatewayToken!)}
-                        className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors shrink-0"
+                        onClick={() => {
+                          navigator.clipboard.writeText(instance.gatewayToken!)
+                          .then(() => alert('Pairing code copied!'))
+                          .catch(() => alert('Copy failed — select the code and copy manually.'))
+                        }}
+                        className="text-[10px] uppercase tracking-widest bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 px-2 py-0.5 transition-colors shrink-0"
                       >
                         Copy
                       </button>
                     </div>
+                    <code className="text-[11px] text-zinc-300 font-mono break-all block mb-2">{instance.gatewayToken}</code>
+                    <p className="text-[10px] text-zinc-500 leading-relaxed">When OpenClaw asks for a pairing code, paste this. Click &ldquo;Open OpenClaw UI&rdquo; above, then enter this code to log in.</p>
                   </div>
                 )}
                 {instance?.botUsername && (
