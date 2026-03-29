@@ -150,7 +150,7 @@ export default function MemoryPage() {
     try {
       // Fetch both agent memory and system memory in parallel
       const [agentRes, systemEntries] = await Promise.all([
-        fetch('/api/memory?agentId=default').then(r => r.ok ? r.json() : null).catch(() => null),
+        fetch('/api/memory?agentId=all').then(r => r.ok ? r.json() : null).catch(() => null),
         fetchSystemMemories(),
       ])
 

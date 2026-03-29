@@ -12,20 +12,24 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const agentId = searchParams.get('agentId')
 
-    if (!agentId) {
-      return NextResponse.json({ error: 'agentId query param required' }, { status: 400 })
-    }
+    // agentId=all (or omitted) returns all memories for the user across all agents
+    const fetchAll = !agentId || agentId === 'all'
 
-    // Ownership check: ensure the agent belongs to this user
-    const agent = await prisma.agent.findFirst({
-      where: { id: agentId, userId: session.user.id }
-    })
-    if (!agent) {
-      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    if (!fetchAll) {
+      // Ownership check: ensure the specific agent belongs to this user
+      const agent = await prisma.agent.findFirst({
+        where: { id: agentId, userId: session.user.id }
+      })
+      if (!agent) {
+        return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+      }
     }
 
     const memories = await prisma.agentMemory.findMany({
-      where: { userId: session.user.id, agentId },
+      where: {
+        userId: session.user.id,
+        ...(fetchAll ? {} : { agentId }),
+      },
       orderBy: { updatedAt: 'desc' },
     })
 
