@@ -1,4 +1,39 @@
 import { NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+import { prisma } from '@/app/lib/prisma'
+
+export const dynamic = 'force-dynamic'
+
+const SETTING_KEY = 'openclaw_config'
+const BACKUP_KEY  = 'openclaw_config_backups'
+
+// Default config matching the official OpenClaw schema.
+// Stored per-user in UserSetting and applied to the container on restart.
+const DEFAULT_CONFIG = {
+  logging: { level: 'info' },
+  agent: {
+    model: 'anthropic/claude-opus-4-5',
+    workspace: '~/.openclaw/workspace',
+    thinkingDefault: 'auto',
+    timeoutSeconds: 1800,
+    // Heartbeat disabled by default — enable once setup is trusted
+    heartbeat: { every: '0m' },
+  },
+  channels: {
+    whatsapp: {
+      // Security: add your phone number to restrict who can message the agent
+      allowFrom: [],
+    },
+    telegram: { enabled: false },
+    discord:  { enabled: false },
+    webchat:  { enabled: true  },
+  },
+  session: {
+    scope: 'per-sender',
+    resetTriggers: ['/new', '/reset'],
+    reset: { mode: 'daily', atHour: 4, idleMinutes: 10080 },
+  },
+}
 
 interface ConfigBackup {
   id: string
@@ -6,43 +41,59 @@ interface ConfigBackup {
   config: Record<string, unknown>
 }
 
-let currentConfig: Record<string, unknown> = {
-  version: '2026.3.23',
-  model: {
-    default: 'openrouter/auto',
-    fallbacks: ['openrouter/anthropic/claude-3.5-sonnet'],
-  },
-  channels: {
-    telegram: { enabled: true },
-    discord: { enabled: false },
-    webchat: { enabled: true },
-  },
-  memory: { maxEntries: 1000, ttlDays: 90 },
-  cron: { heartbeatIntervalMinutes: 30 },
-  safety: { maxTokensPerDay: 100000, allowedDomains: [] },
+async function getConfig(userId: string): Promise<Record<string, unknown>> {
+  const setting = await prisma.userSetting.findUnique({
+    where: { userId_key: { userId, key: SETTING_KEY } },
+  })
+  if (!setting) return DEFAULT_CONFIG
+  try { return JSON.parse(setting.value) } catch { return DEFAULT_CONFIG }
 }
 
-let backups: ConfigBackup[] = [
-  {
-    id: 'bkp_initial',
-    timestamp: '2026-03-27T10:00:00Z',
-    config: JSON.parse(JSON.stringify(currentConfig)),
-  },
-]
+async function saveConfigToDb(userId: string, config: Record<string, unknown>) {
+  await prisma.userSetting.upsert({
+    where: { userId_key: { userId, key: SETTING_KEY } },
+    update: { value: JSON.stringify(config) },
+    create: { userId, key: SETTING_KEY, value: JSON.stringify(config) },
+  })
+}
+
+async function getBackups(userId: string): Promise<ConfigBackup[]> {
+  const setting = await prisma.userSetting.findUnique({
+    where: { userId_key: { userId, key: BACKUP_KEY } },
+  })
+  if (!setting) return []
+  try { return JSON.parse(setting.value) } catch { return [] }
+}
+
+async function saveBackupsToDb(userId: string, backups: ConfigBackup[]) {
+  const trimmed = backups.slice(0, 10)
+  await prisma.userSetting.upsert({
+    where: { userId_key: { userId, key: BACKUP_KEY } },
+    update: { value: JSON.stringify(trimmed) },
+    create: { userId, key: BACKUP_KEY, value: JSON.stringify(trimmed) },
+  })
+}
 
 export async function GET() {
+  const session = await getAuthSession()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const [config, backups] = await Promise.all([
+    getConfig(session.user.id),
+    getBackups(session.user.id),
+  ])
+
   return NextResponse.json({
-    config: currentConfig,
-    backups: backups.map(b => ({
-      id: b.id,
-      timestamp: b.timestamp,
-      // Don't send full config in list — only on restore
-    })),
+    config,
+    backups: backups.map(b => ({ id: b.id, timestamp: b.timestamp })),
   })
 }
 
 export async function POST(req: Request) {
   try {
+    const session = await getAuthSession()
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const body = await req.json()
     const { config } = body
 
@@ -57,25 +108,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Config is not valid JSON' }, { status: 400 })
     }
 
+    const [currentConfig, existingBackups] = await Promise.all([
+      getConfig(session.user.id),
+      getBackups(session.user.id),
+    ])
+
     // Create backup of current config before saving
     const backup: ConfigBackup = {
       id: `bkp_${Date.now()}`,
       timestamp: new Date().toISOString(),
       config: JSON.parse(JSON.stringify(currentConfig)),
     }
-    backups.unshift(backup)
+    const newBackups = [backup, ...existingBackups].slice(0, 10)
 
-    // Keep last 10 backups
-    if (backups.length > 10) backups = backups.slice(0, 10)
-
-    // Save new config
-    currentConfig = config
+    await Promise.all([
+      saveConfigToDb(session.user.id, config),
+      saveBackupsToDb(session.user.id, newBackups),
+    ])
 
     return NextResponse.json({
       success: true,
-      config: currentConfig,
+      config,
       backupId: backup.id,
-      backups: backups.map(b => ({ id: b.id, timestamp: b.timestamp })),
+      backups: newBackups.map(b => ({ id: b.id, timestamp: b.timestamp })),
     })
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
@@ -84,6 +139,9 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const session = await getAuthSession()
+    if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
     const body = await req.json()
     const { backupId } = body
 
@@ -91,7 +149,12 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: 'Missing backupId' }, { status: 400 })
     }
 
-    const backup = backups.find(b => b.id === backupId)
+    const [currentConfig, existingBackups] = await Promise.all([
+      getConfig(session.user.id),
+      getBackups(session.user.id),
+    ])
+
+    const backup = existingBackups.find(b => b.id === backupId)
     if (!backup) {
       return NextResponse.json({ error: 'Backup not found' }, { status: 404 })
     }
@@ -102,17 +165,19 @@ export async function PUT(req: Request) {
       timestamp: new Date().toISOString(),
       config: JSON.parse(JSON.stringify(currentConfig)),
     }
-    backups.unshift(preRestoreBackup)
-    if (backups.length > 10) backups = backups.slice(0, 10)
+    const newBackups = [preRestoreBackup, ...existingBackups].slice(0, 10)
+    const restoredConfig = JSON.parse(JSON.stringify(backup.config))
 
-    // Restore
-    currentConfig = JSON.parse(JSON.stringify(backup.config))
+    await Promise.all([
+      saveConfigToDb(session.user.id, restoredConfig),
+      saveBackupsToDb(session.user.id, newBackups),
+    ])
 
     return NextResponse.json({
       success: true,
-      config: currentConfig,
+      config: restoredConfig,
       restoredFrom: backupId,
-      backups: backups.map(b => ({ id: b.id, timestamp: b.timestamp })),
+      backups: newBackups.map(b => ({ id: b.id, timestamp: b.timestamp })),
     })
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
