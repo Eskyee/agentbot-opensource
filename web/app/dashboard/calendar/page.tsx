@@ -18,9 +18,16 @@ function CalendarPageContent() {
   const [currentDate, setCurrentDate] = useState(new Date())
 
   useEffect(() => {
+    // Check if already connected via OAuth callback param
     if (searchParams.get('connected') === 'true') {
       setConnected(true)
+      return
     }
+    // Check actual connection status on mount (persisted token in DB)
+    fetch('/api/calendar?action=status')
+      .then(r => r.json())
+      .then(data => { if (data.connected) setConnected(true) })
+      .catch(() => {})
   }, [searchParams])
 
   const connectCalendar = async () => {

@@ -111,6 +111,15 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
 
+  if (action === 'status') {
+    const session = await getAuthSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ connected: false });
+    }
+    const tokens = await getTokens(session.user.id);
+    return NextResponse.json({ connected: !!tokens });
+  }
+
   if (action === 'auth') {
     const session = await getAuthSession();
     if (!session?.user?.id) {

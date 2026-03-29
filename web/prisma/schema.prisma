@@ -35,6 +35,7 @@ model User {
   apiKeys               ApiKey[]
   calendarToken         CalendarToken?
   installedSkills       InstalledSkill[]
+  pairedDevices         PairedDevice[]
   referredByUser        Referral?        @relation("Referred")
   referrals             Referral[]       @relation("Referrer")
   scheduledTasks        ScheduledTask[]
@@ -283,6 +284,22 @@ model CalendarToken {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model PairedDevice {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  ip        String
+  status    String   @default("pending") // pending | approved | denied | revoked
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, status])
 }
 
 model agent_registrations {
