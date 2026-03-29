@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 /**
  * Agentbot Container Manager — Railway API Edition
  *
@@ -147,9 +149,39 @@ export async function createContainer(
     input: { projectId, environmentId, serviceId, variables },
   });
 
-  // 3. Set start command — disable device pairing before starting gateway.
+  // 3. Set start command — write config file directly, then start gateway.
   //    Each user has their own isolated container, so device auth is unnecessary.
   //    Token auth (OPENCLAW_GATEWAY_TOKEN) still protects the gateway.
+  //    Uses config file approach (not config set CLI) — proven working on Railway.
+  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || crypto.randomBytes(32).toString('hex');
+  const startCmd = [
+    'sh -c \'',
+    'mkdir -p /home/node/.openclaw && ',
+    'cat > /home/node/.openclaw/openclaw.json << \'OPENCLAW_CONFIG\'',
+    JSON.stringify({
+      gateway: {
+        mode: 'local',
+        bind: 'lan',
+        auth: { mode: 'token', token: gatewayToken },
+        trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
+        controlUi: {
+          allowedOrigins: ['*'],
+          dangerouslyDisableDeviceAuth: true,
+          dangerouslyAllowHostHeaderOriginFallback: true,
+        },
+        http: { endpoints: { chatCompletions: { enabled: true } } },
+      },
+      agents: {
+        defaults: {
+          model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        },
+      },
+    }),
+    'OPENCLAW_CONFIG',
+    '&& exec openclaw gateway',
+    '\'',
+  ].join(' ');
+
   await railwayGql(`
     mutation ServiceInstanceUpdate($input: ServiceInstanceUpdateInput!) {
       serviceInstanceUpdate(input: $input)
@@ -158,7 +190,7 @@ export async function createContainer(
     input: {
       serviceId,
       environmentId,
-      startCommand: 'sh -c \'node dist/index.js config set gateway.mode \'"\'local\'"\' --strict-json 2>/dev/null; node dist/index.js config set gateway.controlUi.dangerouslyDisableDeviceAuth true --strict-json 2>/dev/null; node dist/index.js config set gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback true --strict-json 2>/dev/null; node dist/index.js config set gateway.http.endpoints.chatCompletions.enabled true --strict-json 2>/dev/null; node dist/index.js gateway --bind lan --port 18789\'',
+      startCommand: startCmd,
     },
   });
   console.log(`[ContainerManager/Railway] Set startCommand for ${serviceName}`);
@@ -194,9 +226,9 @@ export async function createContainer(
   const serviceUrl = serviceDomain?.domain
     ? `https://${serviceDomain.domain}`
     : `https://${serviceName}.up.railway.app`;
-  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || '';
 
   // Control UI auto-connect URL — gatewayUrl + token via query params
+  // Uses the per-user gatewayToken (generated above, written to config file)
   // Prevents the Control UI onboarding redirect from eating the token
   const controlUiUrl = gatewayToken
     ? `${serviceUrl}/?gatewayUrl=${encodeURIComponent(`wss://${serviceDomain?.domain || `${serviceName}.up.railway.app`}`)}&token=${encodeURIComponent(gatewayToken)}`

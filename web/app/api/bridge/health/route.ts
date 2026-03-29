@@ -1,8 +1,19 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+const BRIDGE_SECRET = process.env.BRIDGE_SECRET
+
+function verifyAuth(request: Request): boolean {
+  if (!BRIDGE_SECRET) return true
+  const provided = request.headers.get('x-bridge-secret')
+  return provided === BRIDGE_SECRET
+}
+
 // GET /api/bridge/health — bridge status
-export async function GET() {
+export async function GET(request: Request) {
+  if (!verifyAuth(request)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+  }
   try {
     // Quick DB check
     const count = await prisma.bridge_messages.count()
