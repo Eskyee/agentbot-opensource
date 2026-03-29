@@ -54,24 +54,33 @@ export default function HeartbeatPage() {
 
     const load = async () => {
       try {
-        // Get the user's OpenClaw instance ID
-        const res = await fetch('/api/user/openclaw')
-        if (!res.ok) throw new Error('Failed to load instance')
-        const data = await res.json()
-        const id = data.openclawInstanceId as string | null
+        // Prefer the OpenClaw instance ID; fall back to first Prisma agent
+        let id: string | null = null
+
+        const [openclawRes, agentsRes] = await Promise.all([
+          fetch('/api/user/openclaw').then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/api/agents').then(r => r.ok ? r.json() : null).catch(() => null),
+        ])
+
+        id = openclawRes?.openclawInstanceId || agentsRes?.agents?.[0]?.id || null
 
         if (!id) {
-          if (!cancelled) { setLoading(false) }
+          if (!cancelled) setLoading(false)
           return
         }
 
         if (!cancelled) setAgentId(id)
 
-        // Get heartbeat settings for this instance
+        // Get heartbeat settings for this agent (show defaults if none saved yet)
         const hbRes = await fetch(`/api/heartbeat?agentId=${id}`)
-        if (hbRes.ok) {
-          const hbData = await hbRes.json()
-          if (!cancelled) setHb(hbData.heartbeat || null)
+        const hbData = hbRes.ok ? await hbRes.json() : null
+        if (!cancelled) {
+          setHb(hbData?.heartbeat ?? {
+            frequency: '3h',
+            enabled: true,
+            lastHeartbeat: null,
+            nextHeartbeat: null,
+          })
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : 'Unknown error')
