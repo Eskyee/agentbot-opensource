@@ -523,7 +523,7 @@ describe('Input validation — Docker image & volume names', () => {
   const VOLUME_RE = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 
   it('IMAGE_REGEX allows valid image references', () => {
-    expect(IMAGE_RE.test('ghcr.io/openclaw/openclaw:2026.3.24')).toBe(true);
+    expect(IMAGE_RE.test('ghcr.io/openclaw/openclaw:2026.3.28')).toBe(true);
     expect(IMAGE_RE.test('nginx:latest')).toBe(true);
     expect(IMAGE_RE.test('ubuntu')).toBe(true);
   });

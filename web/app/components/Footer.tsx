@@ -43,7 +43,7 @@ export default function Footer() {
               </div>
               <span className="text-zinc-800 text-[10px]">|</span>
               <span className="text-[10px] uppercase tracking-widest text-zinc-700">
-                OpenClaw v2026.3.23
+                OpenClaw v2026.3.28
               </span>
             </div>
           </div>
