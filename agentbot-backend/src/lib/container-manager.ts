@@ -161,22 +161,45 @@ export async function createContainer(
       startCommand: 'sh -c \'node dist/index.js config set gateway.mode \'"\'local\'"\' --strict-json 2>/dev/null; node dist/index.js config set gateway.controlUi.dangerouslyDisableDeviceAuth true --strict-json 2>/dev/null; node dist/index.js config set gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback true --strict-json 2>/dev/null; node dist/index.js config set gateway.http.endpoints.chatCompletions.enabled true --strict-json 2>/dev/null; node dist/index.js gateway --bind lan --port 18789\'',
     },
   });
-  console.log(`[ContainerManager/Railway] Set startCommand with device auth disabled for ${serviceName}`);
+  console.log(`[ContainerManager/Railway] Set startCommand for ${serviceName}`);
 
-  // 4. Deploy
+  // 4. Create service domain with targetPort 18789 (routes Railway HTTP proxy to Gateway)
+  //    Without this, Railway's proxy defaults to port 3000 and the Gateway is unreachable.
+  const domainRes = await railwayGql(`
+    mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
+      serviceDomainCreate(input: $input) {
+        id
+        domain
+        targetPort
+      }
+    }
+  `, {
+    input: {
+      serviceId,
+      environmentId,
+      targetPort: 18789,
+    },
+  });
+  const serviceDomain = domainRes?.serviceDomainCreate;
+  console.log(`[ContainerManager/Railway] Created domain: ${serviceDomain?.domain} → port ${serviceDomain?.targetPort}`);
+
+  // 5. Deploy
   await railwayGql(`
     mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
       serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
     }
   `, { serviceId, environmentId });
 
-  const serviceUrl = `https://${serviceName}.up.railway.app`;
+  // Use the Railway-provided domain (with targetPort: 18789)
+  const serviceUrl = serviceDomain?.domain
+    ? `https://${serviceDomain.domain}`
+    : `https://${serviceName}.up.railway.app`;
   const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || '';
 
-  // Control UI auto-connect URL — token in fragment (never sent to server)
-  // OpenClaw UI reads #token=... from URL fragment on load
+  // Control UI auto-connect URL — gatewayUrl + token via query params
+  // Prevents the Control UI onboarding redirect from eating the token
   const controlUiUrl = gatewayToken
-    ? `${serviceUrl}/#token=${encodeURIComponent(gatewayToken)}`
+    ? `${serviceUrl}/?gatewayUrl=${encodeURIComponent(`wss://${serviceDomain?.domain || `${serviceName}.up.railway.app`}`)}&token=${encodeURIComponent(gatewayToken)}`
     : serviceUrl;
 
   return {
