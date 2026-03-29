@@ -40,6 +40,8 @@ interface InstanceData {
   openclawVersion?: string
   botUsername?: string
   gatewayToken?: string
+  /** Auto-connect URL with token in #fragment */
+  controlUiUrl?: string
   verified?: boolean
   verificationType?: string | null
   attestationUid?: string | null
@@ -187,7 +189,10 @@ function DashboardContent() {
       } else {
         // Prefer the Railway URL stored in DB over the legacy localhost subdomain
         const url = tokenData.openclawUrl || data.url
-        setInstance({ ...data, url, botUsername, gatewayToken: tokenData.gatewayToken || undefined })
+        const gatewayToken = tokenData.gatewayToken || undefined
+        // Build auto-connect URL: token in #fragment (never sent to server)
+        const controlUiUrl = gatewayToken ? `${url}/#token=${encodeURIComponent(gatewayToken)}` : url
+        setInstance({ ...data, url, botUsername, gatewayToken, controlUiUrl })
         fetchStats(userId)
       }
     } catch (e) {
@@ -600,7 +605,7 @@ function DashboardContent() {
               </h2>
               <div className="space-y-3">
                 <a
-                  href={instance?.url}
+                  href={instance?.controlUiUrl || instance?.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
@@ -609,22 +614,22 @@ function DashboardContent() {
                   <span>→</span>
                 </a>
                 {instance?.gatewayToken && (
-                  <div className="border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+                  <div className="border border-zinc-800 px-4 py-3">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[10px] uppercase tracking-widest text-blue-400">Pairing Code</p>
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-600">Gateway Token</p>
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(instance.gatewayToken!)
-                          .then(() => alert('Pairing code copied!'))
-                          .catch(() => alert('Copy failed — select the code and copy manually.'))
+                          .then(() => alert('Token copied!'))
+                          .catch(() => alert('Copy failed — select and copy manually.'))
                         }}
-                        className="text-[10px] uppercase tracking-widest bg-blue-500/20 hover:bg-blue-500/40 text-blue-300 px-2 py-0.5 transition-colors shrink-0"
+                        className="text-[10px] uppercase tracking-widest bg-zinc-800 hover:bg-zinc-700 text-zinc-400 px-2 py-0.5 transition-colors shrink-0"
                       >
                         Copy
                       </button>
                     </div>
-                    <code className="text-[11px] text-zinc-300 font-mono break-all block mb-2">{instance.gatewayToken}</code>
-                    <p className="text-[10px] text-zinc-500 leading-relaxed">When OpenClaw asks for a pairing code, paste this. Click &ldquo;Open OpenClaw UI&rdquo; above, then enter this code to log in.</p>
+                    <code className="text-[11px] text-zinc-500 font-mono break-all block">••••••••••••</code>
+                    <p className="text-[10px] text-zinc-600 mt-2">Auto-connects when you click &ldquo;Open OpenClaw UI&rdquo; above. Paste manually if connecting from a different device.</p>
                   </div>
                 )}
                 {instance?.botUsername && (
