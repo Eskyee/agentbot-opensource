@@ -58,6 +58,7 @@ export const navSections = [
       { label: 'Cost Tracking', href: '/dashboard/cost', icon: '$' },
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '♥' },
       { label: 'Heartbeat', href: '/dashboard/heartbeat', icon: '♡' },
+      { label: 'Maintenance', href: '/dashboard/maintenance', icon: '⚙' },
       { label: 'API Keys', href: '/dashboard/keys', icon: '⚿' },
     ]
   },
