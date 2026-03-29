@@ -1,38 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { getBankrApiKey } from '@/app/api/user/bankr-key/route'
 
 export const dynamic = 'force-dynamic';
 
 const BANKR_API_URL = process.env.BANKR_API_URL || 'https://api.bankr.bot';
-const BANKR_API_KEY = process.env.BANKR_API_KEY;
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'raveculture@icloud.com').split(',').map(e => e.trim().toLowerCase());
 
 export async function GET(req: NextRequest) {
   const session = await getAuthSession();
-  
-  if (!session?.user?.email) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!ADMIN_EMAILS.includes(session.user.email.toLowerCase())) {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
+  // User's own key takes precedence; fall back to platform key
+  const apiKey = (await getBankrApiKey(session.user.id)) || process.env.BANKR_API_KEY || null;
+
+  if (!apiKey) {
+    return NextResponse.json({ error: 'No Bankr API key configured', needsKey: true }, { status: 503 });
   }
 
   const { searchParams } = new URL(req.url);
   const chains = searchParams.get('chains') || 'base,polygon,mainnet,solana,unichain';
 
-  if (!BANKR_API_KEY) {
-    return NextResponse.json(
-      { error: 'Bankr API not configured' },
-      { status: 503 }
-    );
-  }
-
   try {
     const res = await fetch(`${BANKR_API_URL}/agent/balances?chains=${chains}`, {
-      headers: {
-        'X-API-Key': BANKR_API_KEY,
-      },
+      headers: { 'X-API-Key': apiKey },
     });
 
     if (!res.ok) {

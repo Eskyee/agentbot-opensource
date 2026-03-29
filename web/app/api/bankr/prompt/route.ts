@@ -1,28 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { getBankrApiKey } from '@/app/api/user/bankr-key/route'
 
 export const dynamic = 'force-dynamic';
 
 const BANKR_API_URL = process.env.BANKR_API_URL || 'https://api.bankr.bot';
-const BANKR_API_KEY = process.env.BANKR_API_KEY;
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || 'raveculture@icloud.com').split(',').map(e => e.trim().toLowerCase());
 
-async function requireAdmin() {
-  const session = await getAuthSession();
-  if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email.toLowerCase())) {
-    return null;
-  }
-  return session;
+async function resolveKey(userId: string): Promise<string | null> {
+  return (await getBankrApiKey(userId)) || process.env.BANKR_API_KEY || null;
 }
 
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin();
-  if (!session) {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!BANKR_API_KEY) {
-    return NextResponse.json({ error: 'Bankr API not configured' }, { status: 503 });
+  const apiKey = await resolveKey(session.user.id);
+  if (!apiKey) {
+    return NextResponse.json({ error: 'No Bankr API key configured', needsKey: true }, { status: 503 });
   }
 
   try {
@@ -32,7 +28,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(`${BANKR_API_URL}/agent/prompt`, {
       method: 'POST',
       headers: {
-        'X-API-Key': BANKR_API_KEY,
+        'X-API-Key': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ prompt, ...(threadId && { threadId }) }),
@@ -47,9 +43,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await requireAdmin();
-  if (!session) {
-    return NextResponse.json({ error: 'Admin only' }, { status: 403 });
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const apiKey = await resolveKey(session.user.id);
+  if (!apiKey) {
+    return NextResponse.json({ error: 'No Bankr API key configured', needsKey: true }, { status: 503 });
   }
 
   const { searchParams } = new URL(req.url);
@@ -59,13 +60,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'jobId required' }, { status: 400 });
   }
 
-  if (!BANKR_API_KEY) {
-    return NextResponse.json({ error: 'Bankr API not configured' }, { status: 503 });
-  }
-
   try {
     const res = await fetch(`${BANKR_API_URL}/agent/job/${jobId}`, {
-      headers: { 'X-API-Key': BANKR_API_KEY },
+      headers: { 'X-API-Key': apiKey },
     });
     const data = await res.json();
     return NextResponse.json(data);
