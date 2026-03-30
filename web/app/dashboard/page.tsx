@@ -235,8 +235,11 @@ function DashboardContent() {
         const sharedGatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
         const url = sharedGatewayUrl.replace(/\/$/, '')
         const gatewayToken = tokenData.gatewayToken || undefined
-        // Control UI connects via session param: /chat?session=main
-        const controlUiUrl = `${url}/chat?session=main`
+        // Control UI auto-connects via hash fragment — token + gateway URL
+        // Hash is never sent to server, so it's safe to embed the token
+        const controlUiUrl = gatewayToken
+          ? `${url}/chat?session=main#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(url).host}`)}`
+          : `${url}/chat?session=main`
         setInstance({ ...data, url, botUsername, gatewayToken, controlUiUrl })
         fetchStats(userId)
       }
