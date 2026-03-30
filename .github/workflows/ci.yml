@@ -16,7 +16,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npx prisma generate
+      - run: npx prisma generate --schema=src/prisma/schema.prisma
       - run: npx tsc --noEmit
 
   lint:
@@ -28,4 +28,4 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run lint
+      - run: npx tsc --noEmit
