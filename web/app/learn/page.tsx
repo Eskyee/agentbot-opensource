@@ -166,15 +166,26 @@ export default function LearnPage() {
           </div>
           <p className="text-zinc-500 text-xs mb-6 max-w-md">Power user? Go deep. Swarms, skills, workflows, payments, and production scale.</p>
 
-          <Link href="/learn/advanced" className="group block border border-zinc-800 p-8 hover:border-zinc-600 transition-colors">
-            <h3 className="text-xl font-bold tracking-tighter uppercase mb-3 group-hover:text-white transition-colors">Advanced Guides →</h3>
-            <p className="text-zinc-400 text-sm mb-4">Multi-agent swarms, x402 payments, autonomous trading, production hardening, ACP sessions, streaming, and more.</p>
-            <div className="flex flex-wrap gap-2">
-              {['Swarms', 'Payments', 'Trading', 'Security', 'Streaming', 'ACP'].map(tag => (
-                <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1">{tag}</span>
-              ))}
-            </div>
-          </Link>
+          <div className="grid gap-px bg-zinc-800 sm:grid-cols-2">
+            <Link href="/learn/advanced" className="group block bg-black p-8 hover:bg-zinc-950 transition-colors">
+              <h3 className="text-lg font-bold tracking-tighter uppercase mb-3 group-hover:text-white transition-colors">Advanced Guides →</h3>
+              <p className="text-zinc-400 text-sm mb-4">Multi-agent swarms, x402 payments, autonomous trading, production hardening, ACP sessions, streaming.</p>
+              <div className="flex flex-wrap gap-2">
+                {['Swarms', 'Payments', 'Trading', 'Security', 'Streaming'].map(tag => (
+                  <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1">{tag}</span>
+                ))}
+              </div>
+            </Link>
+            <Link href="/learn/developers" className="group block bg-black p-8 hover:bg-zinc-950 transition-colors">
+              <h3 className="text-lg font-bold tracking-tighter uppercase mb-3 group-hover:text-white transition-colors">For Developers →</h3>
+              <p className="text-zinc-400 text-sm mb-4">APIs, SDKs, code examples, architecture docs, open source repos. Build on Agentbot.</p>
+              <div className="flex flex-wrap gap-2">
+                {['API', 'SDKs', 'x402', 'Open Source', 'Architecture'].map(tag => (
+                  <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1">{tag}</span>
+                ))}
+              </div>
+            </Link>
+          </div>
         </section>
 
         {/* OpenClaw Docs */}
