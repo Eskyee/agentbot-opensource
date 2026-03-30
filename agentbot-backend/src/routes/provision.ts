@@ -16,9 +16,8 @@ import { Pool } from 'pg';
 
 const router = Router();
 
-// Admin/tester emails (bypass Stripe)
+// Admin emails (bypass Stripe)
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-const TESTER_EMAILS = (process.env.TESTER_EMAILS || '').split(',').filter(Boolean);
 const KILL_SWITCH = process.env.KILL_SWITCH === 'true';
 
 // Plan limits — matches pricing page (Solo £29, Collective £69, Label £149, Network £499)
@@ -148,20 +147,18 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
     const planConfig = PLAN_LIMITS[plan];
 
-    // Payment enforcement — disabled for testing, frontend handles payment
-    // TODO: Re-enable after verifying ADMIN_EMAILS on Render
-    /* if (planConfig.stripeRequired) {
+    // Payment enforcement — only admins bypass, everyone else pays
+    if (planConfig.stripeRequired) {
       const isAdmin = email && ADMIN_EMAILS.includes(email);
-      const isTester = email && TESTER_EMAILS.includes(email);
 
-      if (!isAdmin && !isTester && !stripeSubscriptionId) {
+      if (!isAdmin && !stripeSubscriptionId) {
         return res.status(402).json({
           success: false,
           error: 'Active subscription required. Subscribe at /pricing',
           code: 'PAYMENT_REQUIRED',
         });
       }
-    } */
+    }
 
     // Free plan: NO FREE TIER — everyone pays
     if (plan === 'free') {
