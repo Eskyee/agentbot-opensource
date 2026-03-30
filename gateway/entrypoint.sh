@@ -1,9 +1,9 @@
 #!/bin/sh
 # OpenClaw Gateway Entrypoint for Railway
-# Based on docs/openclaw-railway-deployment.md
 set -e
 
 GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 16)}"
+LISTEN_PORT="${PORT:-8080}"
 
 mkdir -p /home/node/.openclaw
 
@@ -12,6 +12,7 @@ cat > /home/node/.openclaw/openclaw.json << CONFIG
   "gateway": {
     "mode": "local",
     "bind": "lan",
+    "port": ${LISTEN_PORT},
     "auth": {
       "mode": "token",
       "token": "${GATEWAY_TOKEN}"
@@ -34,4 +35,5 @@ cat > /home/node/.openclaw/openclaw.json << CONFIG
 CONFIG
 
 echo "Gateway token: ${GATEWAY_TOKEN}"
-exec openclaw gateway
+echo "Listening on port: ${LISTEN_PORT}"
+exec openclaw gateway --port "${LISTEN_PORT}"
