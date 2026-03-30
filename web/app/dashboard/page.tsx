@@ -496,29 +496,31 @@ function DashboardContent() {
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">CPU</span>
-                <span className="text-zinc-500 text-sm">{stats?.cpu || '—'}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Gateway</span>
+                <span className={`text-sm ${gatewayStatus?.health === 'healthy' ? 'text-green-400' : 'text-zinc-500'}`}>
+                  {gatewayStatus?.health === 'healthy' ? 'Online' : 'Checking...'}
+                </span>
               </div>
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-white" style={{ width: stats?.cpu || '0%' }} />
+                <div className={`h-full ${gatewayStatus?.health === 'healthy' ? 'bg-green-400' : 'bg-zinc-600'}`} style={{ width: gatewayStatus?.health === 'healthy' ? '100%' : '0%' }} />
               </div>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Memory</span>
-                <span className="text-zinc-500 text-sm">{stats?.memory || '—'}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions</span>
+                <span className="text-zinc-500 text-sm">{gatewayStatus?.sessions.active ?? 0} active</span>
               </div>
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                <div className="h-full bg-blue-500" style={{ width: stats?.memory || '0%' }} />
+                <div className="h-full bg-blue-500" style={{ width: `${Math.min((gatewayStatus?.sessions.active ?? 0) * 20, 100)}%` }} />
               </div>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Health</span>
-                <span className={`text-sm ${stats?.health === 'healthy' ? 'text-green-400' : 'text-zinc-500'}`}>{stats?.health || '—'}</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Cron Jobs</span>
+                <span className="text-zinc-500 text-sm">{gatewayStatus?.cron.enabled ?? 0} running</span>
               </div>
               <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                <div className={`h-full ${stats?.health === 'healthy' ? 'bg-green-400' : 'bg-zinc-600'}`} style={{ width: stats?.health === 'healthy' ? '100%' : '0%' }} />
+                <div className="h-full bg-white" style={{ width: `${Math.min((gatewayStatus?.cron.enabled ?? 0) * 10, 100)}%` }} />
               </div>
             </div>
           </div>
@@ -597,57 +599,32 @@ function DashboardContent() {
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Stats & Health
+                Gateway Status
               </h2>
               <dl className="space-y-3">
                 <div className="flex justify-between">
-                  <dt className="text-zinc-500">CPU</dt>
-                  <dd className="text-zinc-400 font-mono">{stats?.cpu || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">Memory</dt>
-                  <dd className="text-zinc-400 font-mono">{stats?.memory || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">Uptime</dt>
-                  <dd className="text-zinc-400 font-mono">{stats?.uptime || 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">Messages</dt>
-                  <dd className="text-zinc-400 font-mono">{stats?.messages ?? 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">Errors</dt>
-                  <dd className="text-zinc-400 font-mono">{stats?.errors ?? 'N/A'}</dd>
-                </div>
-                <div className="flex justify-between">
                   <dt className="text-zinc-500">Health</dt>
-                  <dd className={`font-mono ${stats?.health === 'healthy' ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {stats?.health || 'N/A'}
+                  <dd className={`font-mono ${gatewayStatus?.health === 'healthy' ? 'text-green-400' : 'text-yellow-400'}`}>
+                    {gatewayStatus?.health || 'checking...'}
                   </dd>
                 </div>
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">Sessions</dt>
+                  <dd className="text-zinc-400 font-mono">{gatewayStatus?.sessions.active ?? 0} active / {gatewayStatus?.sessions.total ?? 0} total</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">Cron Jobs</dt>
+                  <dd className="text-zinc-400 font-mono">{gatewayStatus?.cron.enabled ?? 0} enabled / {gatewayStatus?.cron.total ?? 0} total</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">Model</dt>
+                  <dd className="text-zinc-400 font-mono text-xs">mimo-v2-pro</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">Version</dt>
+                  <dd className="font-mono text-zinc-400">2026.3.28</dd>
+                </div>
               </dl>
-              
-              <div className="mt-4 space-y-3">
-                <div>
-                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
-                    <span>CPU</span>
-                    <span>{stats?.cpu || '0%'}</span>
-                  </div>
-                  <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                    <div className={`h-full bg-white ${getBarWidthClass(stats?.cpu)}`} />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
-                    <span>Memory</span>
-                    <span>{stats?.memory || '0%'}</span>
-                  </div>
-                  <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                    <div className={`h-full bg-blue-500 ${getBarWidthClass(stats?.memory)}`} />
-                  </div>
-                </div>
-              </div>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
