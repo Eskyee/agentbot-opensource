@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback, startTransition, Suspense } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useSearchParams } from "next/navigation";
@@ -21,17 +21,15 @@ function LoginForm() {
 
   useEffect(() => {
     if (error) {
-      let message: string
       if (error === 'OAuthCallback') {
-        message = 'Authentication failed. Please try again.'
+        setLoginError('Authentication failed. Please try again.')
       } else if (error === 'OAuthAccountNotLinked') {
-        message = 'This email is already associated with another account.'
+        setLoginError('This email is already associated with another account.')
       } else if (error === 'AccessDenied') {
-        message = 'Access denied. Please try again.'
+        setLoginError('Access denied. Please try again.')
       } else {
-        message = decodeURIComponent(error)
+        setLoginError(decodeURIComponent(error))
       }
-      startTransition(() => setLoginError(message))
     }
   }, [error])
 
@@ -41,11 +39,11 @@ function LoginForm() {
     }
   }, [session, status])
 
-  const handleCredentialsLogin = useCallback(async (e: React.FormEvent) => {
+  const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    startTransition(() => setLoginError(""));
-
+    setLoginError("");
+    
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -55,27 +53,15 @@ function LoginForm() {
       const data = await res.json();
       setLoading(false);
       if (data?.error) {
-        startTransition(() => setLoginError(data.error));
+        setLoginError(data.error);
       } else if (data?.ok) {
         window.location.href = "/dashboard";
       }
     } catch {
       setLoading(false);
-      startTransition(() => setLoginError("Login failed. Please try again."));
+      setLoginError("Login failed. Please try again.");
     }
-  }, [email, password]);
-
-  const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-  }, []);
-
-  const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
-  }, []);
-
-  const handleGoogleLogin = useCallback(() => {
-    window.location.href = '/api/auth/google';
-  }, []);
+  };
 
   return (
     <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8">
@@ -93,7 +79,7 @@ function LoginForm() {
         <button
           type="button"
           className="w-full border border-zinc-800 text-white text-xs font-bold uppercase tracking-widest py-3 px-4 flex items-center justify-center gap-2 transition-colors hover:border-zinc-600"
-          onClick={handleGoogleLogin}
+          onClick={() => window.location.href = '/api/auth/google'}
         >
           <svg width="18" height="18" viewBox="0 0 48 48"><path d="M44.5 20H24v8.5h11.7C34.7 33.2 30.1 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z" fill="#4285F4"/><path d="M6.3 14.7l6.6 4.8C14.5 16.1 18.8 13 24 13c2.7 0 5.2.9 7.2 2.5l6.4-6.4C34.2 6.2 29.4 4 24 4c-7.2 0-13.3 4.1-16.2 10.7z" fill="#34A853"/><path d="M24 44c5.1 0 9.8-1.7 13.4-4.7l-6.2-5.1C29.2 35.7 26.7 36 24 36c-6.1 0-10.7-2.8-11.7-7.5H6.3C9.2 39.9 15.3 44 24 44z" fill="#FBBC05"/></svg>
           Continue with Google
@@ -109,7 +95,7 @@ function LoginForm() {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={handleEmailChange}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
           />
           <div>
@@ -117,7 +103,7 @@ function LoginForm() {
               type="password"
               placeholder="Password"
               value={password}
-              onChange={handlePasswordChange}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
             />
             <div className="mt-2">

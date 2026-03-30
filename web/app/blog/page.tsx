@@ -1,14 +1,6 @@
 import Link from 'next/link';
-import { BlogClient } from './BlogClient';
 
 const blogPosts = [
-  {
-    slug: 'openclaw-march-2026-roundup',
-    date: '30 March 2026',
-    title: 'OpenClaw in March: Tool Gates, Grok Search, Image Gen, and Why It Matters',
-    excerpt: 'Three releases in March (3.23, 3.24, 3.28). Tool approval gates, native Grok search, MiniMax image gen, ACP channel binds. What Agentbot users actually get.',
-    tags: ["Feature", "OpenClaw", "March 2026"]
-  },
   {
     slug: 'pre-launch-hardening-2026-03-30',
     date: '30 March 2026',
@@ -374,8 +366,30 @@ export default function BlogPage() {
           </Link>
         </div>
 
-        {/* Blog Posts — client-paginated for INP */}
-        <BlogClient posts={blogPosts} />
+        {/* Blog Posts - List style */}
+        <div>
+          {blogPosts.map((post) => (
+            <article key={post.title} className="border-t border-zinc-900 py-8 group">
+              <div className="flex items-center gap-4 mb-3">
+                <p className="text-[10px] uppercase tracking-widest text-zinc-600">{post.date}</p>
+                <div className="flex gap-3">
+                  {post.tags.map((tag) => (
+                    <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-600">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <h2 className="text-xl font-bold tracking-tighter uppercase leading-tight mb-2 group-hover:text-zinc-400 transition-colors">{post.title}</h2>
+              <p className="text-zinc-400 text-sm leading-relaxed mb-3 max-w-2xl">
+                {post.excerpt}
+              </p>
+              <Link href={`/blog/posts/${post.slug}`} className="text-zinc-400 hover:text-white text-xs uppercase tracking-widest">
+                Read more
+              </Link>
+            </article>
+          ))}
+        </div>
 
         {/* Upcoming Features */}
         <div className="mt-20 border-t border-zinc-900 pt-12">
