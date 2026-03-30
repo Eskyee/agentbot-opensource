@@ -4,27 +4,43 @@
  * Provisions a multi-agent team for Collective/Label tiers.
  * Body: { plan: "collective"|"label", templateKey?: string, customAgents?: AgentConfig[] }
  * 
- * Requires authenticated session. Returns teamId + per-agent provision results.
+ * Requires authenticated session and active subscription (or admin).
+ * Returns teamId + per-agent provision results.
  */
 
 import { Router } from 'express'
+import { authenticate } from '../middleware/auth'
 import { provisionTeam, TEAM_TEMPLATES, TEMPLATE_CATEGORIES, generateTeamYAML, type TeamConfig } from '../lib/team-provisioning'
 
 const router = Router()
 
-router.post('/', async (req, res) => {
+// Admin emails (bypass Stripe)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+
+router.post('/', authenticate, async (req, res) => {
   try {
     const userId = (req as any).userId
     if (!userId) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
 
-    const { plan, templateKey = 'dev_team', customAgents } = req.body
+    const { plan, templateKey = 'dev_team', stripeSubscriptionId, customAgents } = req.body
 
     if (!plan || !['collective', 'label', 'network'].includes(plan)) {
       return res.status(400).json({
         error: 'Team provisioning requires collect, label, or network plan',
         available_templates: Object.keys(TEAM_TEMPLATES),
+      })
+    }
+
+    // Payment enforcement — only admins bypass, everyone else needs subscription
+    const email = (req as any).userEmail as string
+    const isAdmin = email && ADMIN_EMAILS.includes(email.toLowerCase())
+
+    if (!isAdmin && !stripeSubscriptionId) {
+      return res.status(402).json({
+        error: 'Active subscription required. Subscribe at /pricing',
+        code: 'PAYMENT_REQUIRED',
       })
     }
 

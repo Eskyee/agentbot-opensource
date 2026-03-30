@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { after } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 
 /**
@@ -46,6 +47,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'templateKey is required' }, { status: 400 })
   }
 
+  // Look up stripeSubscriptionId from DB (set by Stripe webhook on checkout)
+  let stripeSubscriptionId: string | null = null
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { stripeSubscriptionId: true, subscriptionStatus: true },
+    })
+    stripeSubscriptionId = dbUser?.stripeSubscriptionId ?? null
+
+    // Enforce active subscription (admin bypass handled by backend)
+    if (!stripeSubscriptionId && dbUser?.subscriptionStatus !== 'active') {
+      return NextResponse.json(
+        { error: 'Active subscription required. Please purchase a plan first.' },
+        { status: 402 }
+      )
+    }
+  } catch (err) {
+    console.warn('[Provision/Team] Failed to look up stripeSubscriptionId:', err)
+  }
+
   const teamId = `team-${crypto.randomBytes(6).toString('hex')}`
   const agentCount = PLAN_AGENT_COUNTS[plan]
 
@@ -77,6 +98,7 @@ export async function POST(req: NextRequest) {
               userId: `${teamId}-agent-${i + 1}`,
               plan,
               email: session.user?.email,
+              stripeSubscriptionId,
               autoProvision: true,
               agentType: 'business',
               teamId,

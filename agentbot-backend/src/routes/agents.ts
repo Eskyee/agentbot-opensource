@@ -10,8 +10,12 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
 import { runCommand } from '../utils';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
+
+// Admin emails (bypass payment)
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 
 // --- Types ---
 
@@ -247,9 +251,22 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 // Create agent (metadata only — no container)
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', authenticate, async (req: Request, res: Response) => {
   const { name, config } = req.body as { name?: string; config?: Record<string, unknown> };
   if (!name?.trim()) { res.status(400).json({ error: 'Name required' }); return; }
+
+  // Payment enforcement — admins bypass, everyone else needs subscription
+  const email = (req as any).userEmail as string
+  const isAdmin = email && ADMIN_EMAILS.includes(email.toLowerCase())
+  const stripeSubscriptionId = config?.stripeSubscriptionId as string | undefined
+
+  if (!isAdmin && !stripeSubscriptionId) {
+    res.status(402).json({
+      error: 'Active subscription required. Subscribe at /pricing',
+      code: 'PAYMENT_REQUIRED',
+    });
+    return;
+  }
 
   try {
     await fs.mkdir(path.join(DATA_DIR, 'agents'), { recursive: true });

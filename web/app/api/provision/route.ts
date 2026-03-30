@@ -17,6 +17,7 @@ import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provi
  *   - Session required; admin emails bypass subscription check.
  *   - Never trusts body email for auth — session email only.
  *   - INTERNAL_API_KEY forwarded to backend for its Bearer-token gate.
+ *   - stripeSubscriptionId looked up from DB (set by Stripe webhook on checkout).
  */
 
 export async function POST(request: NextRequest) {
@@ -96,6 +97,20 @@ export async function POST(request: NextRequest) {
 
     const agentId = crypto.randomBytes(8).toString('hex')
 
+    // Look up stripeSubscriptionId from DB (set by Stripe webhook on checkout)
+    let stripeSubscriptionId: string | null = null
+    if (userId && userId !== 'admin') {
+      try {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { stripeSubscriptionId: true, subscriptionStatus: true },
+        })
+        stripeSubscriptionId = dbUser?.stripeSubscriptionId ?? null
+      } catch (err) {
+        console.warn('[Provision] Failed to look up stripeSubscriptionId from DB:', err)
+      }
+    }
+
     const legacyPayload = {
       userId: agentId,
       telegramToken,
@@ -106,6 +121,7 @@ export async function POST(request: NextRequest) {
       apiKey,
       plan: plan || 'solo',
       email: userEmail,
+      stripeSubscriptionId,
       autoProvision: autoProvision || false,
       agentType: agentType || 'creative',
     }
