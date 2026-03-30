@@ -118,6 +118,10 @@ CONFIG
 # Create workspace directory
 mkdir -p /home/node/.openclaw/workspace
 
+# Lock down permissions
+chmod 600 /home/node/.openclaw/openclaw.json
+chmod 700 /home/node/.openclaw
+
 echo "Gateway token: ${GATEWAY_TOKEN}"
 echo "Listening on port: ${LISTEN_PORT}"
 echo "API URL: ${AGENTBOT_API_URL}"
