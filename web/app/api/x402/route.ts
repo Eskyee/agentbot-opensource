@@ -8,7 +8,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
  * Provides colony membership, fitness scoring, and dynamic pricing.
  */
 
-const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://openclaw-gateway-production-ad37.up.railway.app'
+const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
 
 export async function POST(request: NextRequest) {
   try {

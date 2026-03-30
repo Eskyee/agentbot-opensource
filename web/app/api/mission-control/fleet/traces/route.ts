@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
 const SOUL_URLS = [
-  'https://openclaw-gateway-production-ad37.up.railway.app',
+  'https://openclaw-gw-ui-production.up.railway.app',
 ];
 
 export const dynamic = 'force-dynamic';

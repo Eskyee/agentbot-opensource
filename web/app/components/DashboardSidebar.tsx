@@ -52,7 +52,7 @@ export const navSections = [
     label: 'Platform',
     items: [
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
-      { label: 'Borg Soul', href: 'https://openclaw-gateway-production-ad37.up.railway.app/dashboard', icon: '⬢', external: true },
+      { label: 'Borg Soul', href: 'https://openclaw-gw-ui-production.up.railway.app/dashboard', icon: '⬢', external: true },
       { label: 'Debug Console', href: '/dashboard/debug', icon: '▷' },
       { label: 'Config Editor', href: '/dashboard/config', icon: '◈' },
       { label: 'Devices', href: '/dashboard/devices', icon: '◉' },

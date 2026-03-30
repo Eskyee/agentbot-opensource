@@ -54,7 +54,7 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="https://openclaw-gateway-production-ad37.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
+              <NavLink href="https://openclaw-gw-ui-production.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
               <NavLink href="https://docs.agentbot.raveculture.xyz" current={pathname}>Docs</NavLink>
@@ -63,7 +63,7 @@ export default function Navbar() {
             <>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
               <NavLink href="/why" current={pathname}>Why</NavLink>
-              <NavLink href="https://openclaw-gateway-production-ad37.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
+              <NavLink href="https://openclaw-gw-ui-production.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
               <NavLink href="/demo" current={pathname}>Demo</NavLink>
@@ -121,7 +121,7 @@ export default function Navbar() {
               <>
                 <MobileSection label="Navigate">
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                  <MobileLink href="https://openclaw-gateway-production-ad37.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
+                  <MobileLink href="https://openclaw-gw-ui-production.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="https://docs.agentbot.raveculture.xyz" onClick={closeMenu}>Docs</MobileLink>
@@ -144,7 +144,7 @@ export default function Navbar() {
                 <MobileSection label="Explore">
                   <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
-                  <MobileLink href="https://openclaw-gateway-production-ad37.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
+                  <MobileLink href="https://openclaw-gw-ui-production.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agent Templates</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/demo" onClick={closeMenu}>Try Demo</MobileLink>
