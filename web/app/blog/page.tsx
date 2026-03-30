@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'pre-launch-hardening-2026-03-30',
+    date: '30 March 2026',
+    title: 'Pre-Launch Hardening: Full Payment Enforcement & Code Audit',
+    excerpt: 'Full code audit across the provisioning pipeline. 5 critical payment gaps found and fixed. Every endpoint locked down before D-1 launch.',
+    tags: ["Security", "Payment", "Launch"]
+  },
+  {
     slug: 'openclaw-v2026-3-24',
     date: '26 March 2026',
     title: 'Agentbot Now Runs OpenClaw v2026.3.24',
