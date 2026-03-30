@@ -159,6 +159,7 @@ export async function createContainer(
     'mkdir -p /home/node/.openclaw && ',
     'cat > /home/node/.openclaw/openclaw.json << \'OPENCLAW_CONFIG\'',
     JSON.stringify({
+      env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
       gateway: {
         mode: 'local',
         bind: 'lan',
