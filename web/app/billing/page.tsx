@@ -5,8 +5,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
-import { Breadcrumbs } from '@/app/components/Breadcrumbs'
+import dynamic from 'next/dynamic'
+
+const DashboardSidebar = dynamic(() => import('@/app/components/DashboardSidebar').then(m => m.DashboardSidebar), { ssr: true })
+const Breadcrumbs = dynamic(() => import('@/app/components/Breadcrumbs').then(m => ({ default: m.Breadcrumbs })), { ssr: false })
 
 const plans = [
   {

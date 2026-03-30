@@ -6,12 +6,15 @@ import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
-import WalletCard from '@/app/components/WalletCard'
-import AIModelCard from '@/app/components/AIModelCard'
-import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
-import HelpChat from '@/app/components/HelpChat'
-import AgentChat from '@/app/components/AgentChat'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import dynamic from 'next/dynamic'
+
+const WalletCard = dynamic(() => import('@/app/components/WalletCard'), { ssr: false, loading: () => <div className="h-32 bg-zinc-900 border border-zinc-800 animate-pulse" /> })
+const AIModelCard = dynamic(() => import('@/app/components/AIModelCard'), { ssr: false, loading: () => <div className="h-32 bg-zinc-900 border border-zinc-800 animate-pulse" /> })
+const AgentVerifiedBadge = dynamic(() => import('@/app/components/VerificationBadge').then(m => m.AgentVerifiedBadge), { ssr: false })
+const AgentVerificationPanel = dynamic(() => import('@/app/components/VerificationBadge').then(m => m.AgentVerificationPanel), { ssr: false })
+const HelpChat = dynamic(() => import('@/app/components/HelpChat'), { ssr: false })
+const AgentChat = dynamic(() => import('@/app/components/AgentChat'), { ssr: false, loading: () => <div className="h-64 bg-zinc-900 border border-zinc-800 animate-pulse" /> })
+const DashboardSidebar = dynamic(() => import('@/app/components/DashboardSidebar').then(m => m.DashboardSidebar), { ssr: true })
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
