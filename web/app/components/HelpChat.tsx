@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 
 interface Message {
   id: string
@@ -8,7 +8,7 @@ interface Message {
   content: string
 }
 
-export default function HelpChat() {
+export default memo(function HelpChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -150,4 +150,4 @@ export default function HelpChat() {
       )}
     </>
   )
-}
+})

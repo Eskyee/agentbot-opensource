@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 
 interface WalletData {
@@ -9,7 +9,7 @@ interface WalletData {
   network: string
 }
 
-export default function WalletCard() {
+export default memo(function WalletCard() {
   const { data: session } = useCustomSession()
   const [wallet, setWallet] = useState<WalletData | null>(null)
   const [loading, setLoading] = useState(false)
@@ -98,4 +98,4 @@ export default function WalletCard() {
       )}
     </div>
   )
-}
+})

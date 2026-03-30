@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 
 interface Message {
   id: string
@@ -8,7 +8,7 @@ interface Message {
   content: string
 }
 
-export default function AgentChat({ agentName }: { agentName?: string }) {
+export default memo(function AgentChat({ agentName }: { agentName?: string }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -159,4 +159,4 @@ export default function AgentChat({ agentName }: { agentName?: string }) {
       </div>
     </div>
   )
-}
+})

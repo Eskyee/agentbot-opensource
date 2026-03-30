@@ -6,7 +6,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -92,7 +92,7 @@ interface DashboardSidebarProps {
   onToggle: () => void
 }
 
-export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: DashboardSidebarProps) {
+export const DashboardSidebar = memo(function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: DashboardSidebarProps) {
   const pathname = usePathname()
   const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
 
@@ -239,4 +239,4 @@ export function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle
       </aside>
     </>
   )
-}
+})

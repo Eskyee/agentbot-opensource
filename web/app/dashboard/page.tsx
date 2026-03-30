@@ -1,17 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, startTransition, lazy, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams, usePathname } from 'next/navigation'
-import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
-import WalletCard from '@/app/components/WalletCard'
-import AIModelCard from '@/app/components/AIModelCard'
-import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
-import HelpChat from '@/app/components/HelpChat'
-import AgentChat from '@/app/components/AgentChat'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+
+// Lazy-load non-critical dashboard sections
+const WalletCard = lazy(() => import('@/app/components/WalletCard'))
+const AIModelCard = lazy(() => import('@/app/components/AIModelCard'))
+const HelpChat = lazy(() => import('@/app/components/HelpChat'))
+const AgentChat = lazy(() => import('@/app/components/AgentChat'))
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -53,7 +53,7 @@ function DashboardContent() {
   const pathname = usePathname()
   const { data: session, status } = useCustomSession()
   const router = useRouter()
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
+  const userName = useMemo(() => session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in', [session?.user?.name, session?.user?.email])
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
   const [stats, setStats] = useState<{ cpu: string; memory: string; uptime?: string; messages?: number; errors?: number; health?: string } | null>(null)
@@ -155,7 +155,7 @@ function DashboardContent() {
     })(); // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams, session])
 
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     try {
       const res = await fetch('/api/credits')
       const data = await res.json()
@@ -163,26 +163,24 @@ function DashboardContent() {
     } catch (e) {
       console.error('Failed to fetch credits:', e)
     }
-  }
+  }, [])
 
-  const fetchDashboardStats = async () => {
-    try {
-      const res = await fetch('/api/dashboard/stats')
-      if (res.ok) {
-        const data = await res.json()
-        setDashboardStats(data)
-      }
-    } catch (e) {
-      console.error('Failed to fetch dashboard stats:', e)
-    }
-    // Also fetch real gateway status
-    try {
-      const res = await fetch('/api/gateway/status')
-      if (res.ok) {
-        const data = await res.json()
-        setGatewayStatus(data)
-        if (data.cron?.jobs) {
-          setTasks(data.cron.jobs.map((j: any) => ({
+  const fetchDashboardStats = useCallback(async () => {
+    // Fire all 4 API calls in parallel instead of sequentially
+    const [statsRes, gatewayRes, channelsRes, heartbeatRes] = await Promise.all([
+      fetch('/api/dashboard/stats').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/gateway/status').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/channels').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('/api/heartbeat').then(r => r.ok ? r.json() : null).catch(() => null),
+    ])
+
+    // Batch non-urgent state updates in a transition to avoid blocking interactions
+    startTransition(() => {
+      if (statsRes) setDashboardStats(statsRes)
+      if (gatewayRes) {
+        setGatewayStatus(gatewayRes)
+        if (gatewayRes.cron?.jobs) {
+          setTasks(gatewayRes.cron.jobs.map((j: any) => ({
             id: j.id,
             title: j.name,
             status: j.enabled ? 'active' : 'paused',
@@ -190,35 +188,17 @@ function DashboardContent() {
           })))
         }
       }
-    } catch (e) {
-      console.error('Failed to fetch gateway status:', e)
-    }
-    // Fetch real channel status
-    try {
-      const res = await fetch('/api/channels')
-      if (res.ok) {
-        const data = await res.json()
-        setGatewayChannels(data.channels || [])
-      }
-    } catch (e) {
-      console.error('Failed to fetch channels:', e)
-    }
-    // Fetch real heartbeat
-    try {
-      const res = await fetch('/api/heartbeat')
-      if (res.ok) {
-        const data = await res.json()
-        if (data.frequency) setHeartbeatFreq(data.frequency)
-        if (data.enabled !== undefined) {
-          setHeartbeatFreq(data.enabled ? (data.frequency || '30m') : 'Off')
+      if (channelsRes) setGatewayChannels(channelsRes.channels || [])
+      if (heartbeatRes) {
+        if (heartbeatRes.frequency) setHeartbeatFreq(heartbeatRes.frequency)
+        if (heartbeatRes.enabled !== undefined) {
+          setHeartbeatFreq(heartbeatRes.enabled ? (heartbeatRes.frequency || '30m') : 'Off')
         }
       }
-    } catch (e) {
-      console.error('Failed to fetch heartbeat:', e)
-    }
-  }
+    })
+  }, [])
 
-  const fetchInstance = async (userId: string, botUsername: string) => {
+  const fetchInstance = useCallback(async (userId: string, botUsername: string) => {
     try {
       // Fetch instance data and gateway token in parallel
       const [res, tokenRes] = await Promise.all([
@@ -248,9 +228,9 @@ function DashboardContent() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchStats = async (userId: string) => {
+  const fetchStats = useCallback(async (userId: string) => {
     try {
       const res = await fetch(`/api/instance/${userId}/stats`)
       const data = await res.json()
@@ -265,9 +245,9 @@ function DashboardContent() {
         })
       }
     } catch {}
-  }
+  }, [])
 
-  const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
+  const performAction = useCallback(async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
     if (!instance) return
     setActionLoading(action)
     
@@ -292,9 +272,9 @@ function DashboardContent() {
     } finally {
       setActionLoading('')
     }
-  }
+  }, [instance, fetchInstance])
 
-  const fetchToken = async () => {
+  const fetchToken = useCallback(async () => {
     if (!instance) return ''
     try {
       const res = await fetch(`/api/instance/${instance.userId}/token`)
@@ -307,9 +287,9 @@ function DashboardContent() {
       console.error('Failed to fetch token:', e)
     }
     return ''
-  }
+  }, [instance])
 
-  const handleCopyToken = async () => {
+  const handleCopyToken = useCallback(async () => {
     let token = instance?.gatewayToken
     if (!token) {
       token = await fetchToken()
@@ -334,7 +314,7 @@ function DashboardContent() {
         document.body.removeChild(textArea)
       }
     }
-  }
+  }, [instance, fetchToken])
 
    if (loading) {
      return (
@@ -404,11 +384,15 @@ function DashboardContent() {
   const isRunning = instance.status === 'running'
   const startedAt = instance.startedAt
 
-  const activityDotColor = (s: string) => {
-    if (s === 'green') return 'bg-green-400'
-    if (s === 'blue') return 'bg-blue-500'
-    return 'bg-zinc-500'
-  }
+  const activityDotColor = useMemo(() => {
+    const colors: Record<string, string> = { green: 'bg-green-400', blue: 'bg-blue-500' }
+    return (s: string) => colors[s] || 'bg-zinc-500'
+  }, [])
+
+  const filteredTasks = useMemo(
+    () => tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab),
+    [tasks, activeTaskTab]
+  )
 
   return (
     <div className="flex min-h-screen bg-black font-mono">
@@ -544,9 +528,11 @@ function DashboardContent() {
             </div>
           </div>
 
-          {/* Agent Chat */}
+          {/* Agent Chat — lazy-loaded */}
           <div className="mb-8">
-            <AgentChat agentName={instance?.subdomain} />
+            <Suspense fallback={<div className="bg-zinc-900 border border-zinc-800 flex items-center justify-center" style={{ height: '400px' }}><span className="text-zinc-600 text-xs animate-pulse">Loading chat...</span></div>}>
+              <AgentChat agentName={instance?.subdomain} />
+            </Suspense>
           </div>
 
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -791,7 +777,7 @@ function DashboardContent() {
                     No cron jobs configured
                   </div>
                 ) : (
-                  tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab).map((task) => (
+                  filteredTasks.map((task) => (
                     <div key={task.id} className="flex items-center justify-between border border-zinc-800 px-4 py-2">
                       <div>
                         <span className="text-sm text-zinc-400">{task.title}</span>
@@ -934,8 +920,12 @@ function DashboardContent() {
               </div>
             </div>
 
-            <WalletCard />
-            <AIModelCard plan={instance?.plan || 'free'} />
+            <Suspense fallback={<div className="bg-zinc-900 border border-zinc-800 p-6 animate-pulse"><div className="h-4 w-24 bg-zinc-800 rounded mb-4" /><div className="h-8 w-32 bg-zinc-800 rounded" /></div>}>
+              <WalletCard />
+            </Suspense>
+            <Suspense fallback={<div className="bg-zinc-900 border border-zinc-800 p-6 animate-pulse"><div className="h-4 w-32 bg-zinc-800 rounded mb-4" /><div className="h-2 w-full bg-zinc-800 rounded" /></div>}>
+              <AIModelCard plan={instance?.plan || 'free'} />
+            </Suspense>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
@@ -1001,7 +991,9 @@ function DashboardContent() {
         </div>
         </main>
       </div>
-      <HelpChat />
+      <Suspense fallback={null}>
+        <HelpChat />
+      </Suspense>
     </div>
   )
 }
