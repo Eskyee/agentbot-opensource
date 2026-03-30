@@ -3,6 +3,13 @@ import { BlogClient } from './BlogClient';
 
 const blogPosts = [
   {
+    slug: 'openclaw-march-2026-roundup',
+    date: '30 March 2026',
+    title: 'OpenClaw in March: Tool Gates, Grok Search, Image Gen, and Why It Matters',
+    excerpt: 'Three releases in March (3.23, 3.24, 3.28). Tool approval gates, native Grok search, MiniMax image gen, ACP channel binds. What Agentbot users actually get.',
+    tags: ["Feature", "OpenClaw", "March 2026"]
+  },
+  {
     slug: 'pre-launch-hardening-2026-03-30',
     date: '30 March 2026',
     title: 'Pre-Launch Hardening: Full Payment Enforcement & Code Audit',
