@@ -115,8 +115,12 @@ cat > /home/node/.openclaw/openclaw.json << CONFIG
 }
 CONFIG
 
-# Create workspace directory
-mkdir -p /home/node/.openclaw/workspace
+# Create workspace directory with starter files
+mkdir -p /home/node/.openclaw/workspace/memory
+[ -f /home/node/.openclaw/workspace/MEMORY.md ] || echo "# MEMORY.md" > /home/node/.openclaw/workspace/MEMORY.md
+[ -f /home/node/.openclaw/workspace/TODO.md ] || echo "# TODO.md" > /home/node/.openclaw/workspace/TODO.md
+[ -f /home/node/.openclaw/workspace/USER.md ] || echo "# USER.md" > /home/node/.openclaw/workspace/USER.md
+[ -f /home/node/.openclaw/workspace/SOUL.md ] || echo "# SOUL.md" > /home/node/.openclaw/workspace/SOUL.md
 
 # Lock down permissions
 chmod 600 /home/node/.openclaw/openclaw.json
