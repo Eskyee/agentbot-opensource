@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 
 const PLAN_CONFIG: Record<string, { credits: number; reasoning: number; model: string }> = {
   solo:       { credits: 20000000,  reasoning: 0,   model: 'llama3.3:latest' },
@@ -10,7 +10,7 @@ const PLAN_CONFIG: Record<string, { credits: number; reasoning: number; model: s
 }
 const DEFAULT_CONFIG = { credits: 5000000, reasoning: 0, model: 'llama3.3:latest' }
 
-export default function AIModelCard({ plan }: { plan: string }) {
+export default memo(function AIModelCard({ plan }: { plan: string }) {
   const config = useMemo(() => PLAN_CONFIG[plan] ?? DEFAULT_CONFIG, [plan])
 
   const usedCredits = 1250000
@@ -83,4 +83,4 @@ export default function AIModelCard({ plan }: { plan: string }) {
       </div>
     </div>
   )
-}
+})
