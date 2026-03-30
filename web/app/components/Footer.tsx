@@ -16,7 +16,7 @@ export default function Footer() {
       }
     }
     checkStatus();
-    const interval = setInterval(checkStatus, 60000);
+    const interval = setInterval(checkStatus, 300000); // Every 5 min (was 60s)
     return () => clearInterval(interval);
   }, []);
 
