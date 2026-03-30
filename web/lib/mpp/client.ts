@@ -17,8 +17,7 @@
  */
 
 import { privateKeyToAccount } from 'viem/accounts';
-import { createWalletClient, http, parseUnits, type Address } from 'viem';
-import { tempo, tempoTestnet } from './tempo';
+import { type Address } from 'viem';
 
 // MPP challenge from 402 response
 interface MppChallenge {
@@ -176,18 +175,7 @@ async function signMppTransaction(
     timestamp: Date.now(),
   };
 
-  // In production with viem/tempo:
-  // const client = createWalletClient({
-  //   account,
-  //   chain: testnet ? tempoTestnet : tempo,
-  //   transport: http(),
-  // }).extend(tempoActions());
-  //
-  // const hash = await client.token.transferSync({
-  //   token: challenge.currency as Address,
-  //   to: challenge.recipient as Address,
-  //   amount: parseUnits(challenge.amount, 6),
-  // });
+  // TODO: Replace manual encoding with viem/tempo signing once SDK is stable
   
   // Encode as hex with Tempo transaction type marker (0x76)
   const encoder = new TextEncoder();

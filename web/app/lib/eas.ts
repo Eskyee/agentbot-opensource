@@ -51,18 +51,7 @@ export interface VerificationResult {
 export async function verifyEASAttestation(request: VerificationRequest): Promise<VerificationResult> {
   const { walletAddress, network = 'sepolia', schemaUid } = request
   
-  // In production, this would be an actual JSON-RPC call to an Ethereum node
-  // or use the EAS SDK to query attestations
-  
-  // Example of what the verification would look like:
-  // const eas = new EAS(EAS_CONTRACTS[network])
-  // const attestations = await eas.getAttestations({
-  //   schema: schemaUid || HUMAN_VERIFICATION_SCHEMA_UID[network],
-  //   recipient: walletAddress,
-  // })
-  
-  // For now, return a placeholder response
-  // The actual implementation would depend on the EAS SDK version
+  // TODO: Implement actual EAS SDK verification via JSON-RPC
   
   console.log(`[EAS] Verifying attestation for ${walletAddress} on ${network}`)
   

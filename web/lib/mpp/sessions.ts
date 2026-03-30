@@ -14,24 +14,9 @@
  * Based on Tempo MPP pay-as-you-go model.
  */
 
-import { createPublicClient, createWalletClient, http, parseUnits, formatUnits, type Address } from 'viem'
-import { privateKeyToAccount } from 'viem/accounts'
-import { tempo, tempoTestnet } from 'viem/chains'
-import { tempoActions } from 'viem/tempo'
+import { type Address } from 'viem'
 
-// Config
-const useTestnet = process.env.TEMPO_TESTNET === 'true'
-const chain = useTestnet ? tempoTestnet : tempo
-const rpcUrl = useTestnet
-  ? 'https://rpc.moderato.tempo.xyz'
-  : 'https://rpc.tempo.xyz'
-
-// Operator wallet
-const OPERATOR_KEY = process.env.TEMPO_FEE_PAYER_KEY as `0x${string}` | undefined
-const OPERATOR_ADDRESS = '0xd8fd0e1dce89beaab924ac68098ddb17613db56f' as Address
-
-// pathUSD
-const PATH_USD = '0x20c0000000000000000000000000000000000000' as Address
+// Session config (on-chain settlement config — TODO: implement with viem/tempo)
 
 // Session config
 const SESSION_CONFIG = {
@@ -188,20 +173,7 @@ export async function settleSession(sessionId: string): Promise<{ success: boole
     const total = session.vouchers.reduce((sum, v) => sum + parseFloat(v.amount), 0)
     console.log(`[Session] Settling ${session.vouchers.length} vouchers worth $${total}`)
 
-    // In production: batch transfer from user's deposit to operator
-    // For now: log the settlement
-    // TODO: Use viem/tempo batch transfer
-    // const client = createWalletClient({
-    //   account: privateKeyToAccount(OPERATOR_KEY!),
-    //   chain,
-    //   transport: http(rpcUrl),
-    // }).extend(tempoActions())
-    //
-    // const hash = await client.token.transferSync({
-    //   token: PATH_USD,
-    //   to: OPERATOR_ADDRESS,
-    //   amount: parseUnits(total.toFixed(6), 6),
-    // })
+    // TODO: Use viem/tempo batch transfer for on-chain settlement
 
     // Clear settled vouchers
     const settledCount = session.vouchers.length

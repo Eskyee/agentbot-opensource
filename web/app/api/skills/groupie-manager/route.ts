@@ -64,12 +64,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Demo mode - no auth required for now (would use getServerSession in production)
-    // const session = await getAuthSession();
-    // if (!session?.user?.id) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
-
     const body = await request.json();
     const { action, ...data } = body;
 

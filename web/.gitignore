@@ -24,6 +24,8 @@ yarn-error.log*
 # Local env files
 .env*.local
 .env
+.env.check
+.env.recoverycheck
 
 # Vercel
 .vercel
