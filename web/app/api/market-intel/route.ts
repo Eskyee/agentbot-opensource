@@ -56,7 +56,7 @@ async function fetchAISignals(): Promise<MarketSignal[]> {
 
   // Check real infrastructure status
   try {
-    const agentRes = await fetch('https://agentbot-api.onrender.com/health', { signal: AbortSignal.timeout(5000) })
+    const agentRes = await fetch('https://agentbot-prod-production.up.railway.app/health', { signal: AbortSignal.timeout(5000) })
     const agentBody = await agentRes.json()
     if (agentBody.status === 'ok') {
       signals.push({

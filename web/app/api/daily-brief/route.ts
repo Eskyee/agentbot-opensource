@@ -6,7 +6,7 @@ interface HealthCheck {
 }
 
 const HEALTH_CHECKS: HealthCheck[] = [
-  { name: 'Agentbot API', url: 'https://agentbot-api.onrender.com/health' },
+  { name: 'Agentbot API', url: 'https://agentbot-prod-production.up.railway.app/health' },
   { name: 'Agentbot Web', url: 'https://agentbot.raveculture.xyz' },
   { name: 'x402 Gateway', url: 'https://x402-gateway-production.up.railway.app/health' },
   { name: 'Tempo Soul', url: 'https://openclaw-gw-ui-production.up.railway.app/health' },
