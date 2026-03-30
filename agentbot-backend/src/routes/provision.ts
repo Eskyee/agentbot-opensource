@@ -33,16 +33,12 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /** Returns the number of active agents for this email+plan combination from the DB. */
 async function getAgentCount(email: string, plan: string): Promise<number> {
-  try {
-    const result = await pool.query(
-      `SELECT COUNT(*) AS cnt FROM agent_registrations
-       WHERE user_id = $1 AND status = 'active'`,
-      [email]
-    );
-    return parseInt(result.rows[0]?.cnt ?? '0', 10);
-  } catch {
-    return 0; // fail open — let provisioning proceed if DB is unreachable
-  }
+  const result = await pool.query(
+    `SELECT COUNT(*) AS cnt FROM agent_registrations
+     WHERE user_id = $1 AND status = 'active'`,
+    [email]
+  );
+  return parseInt(result.rows[0]?.cnt ?? '0', 10);
 }
 
 // Simple in-memory Mux mock (in production, would use real Mux API)
