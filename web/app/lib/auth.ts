@@ -9,7 +9,12 @@ import { SiweMessage } from "siwe";
 import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 
-const viemClient = createPublicClient({ chain: base, transport: http('https://api.developer.coinbase.com/rpc/v1/base/e729d6f2-8b2c-4f78-8c20-49c281e377ed') });
+const coinbaseRpcUrl = process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY
+  ? `https://api.developer.coinbase.com/rpc/v1/base/${process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY}`
+  : undefined;
+const viemClient = coinbaseRpcUrl
+  ? createPublicClient({ chain: base, transport: http(coinbaseRpcUrl) })
+  : createPublicClient({ chain: base, transport: http() });
 
 const providers: ReturnType<typeof CredentialsProvider>[] = [];
 
@@ -99,18 +104,23 @@ providers.push(
           return null;
         }
 
-        // For smart wallets (ERC-1271), trust the client-side signing
-        // The wallet itself verified the user via biometrics/passkey
-        // Server verification of ERC-1271 requires on-chain isValidSignature call
-        // which is expensive. We trust the signature since it was signed client-side.
-        console.log(`[Auth] Smart wallet signature accepted for ${typedAddress}`);
-        const valid = true;
-
-        if (!valid) {
-          console.log(`[Auth] SIWE verification failed for ${typedAddress}`);
+        // Verify the signature matches the claimed address using viem
+        try {
+          const { verifyMessage } = await import('viem');
+          const valid = await verifyMessage({
+            address: typedAddress,
+            message,
+            signature: credentials.signature as `0x${string}`,
+          });
+          if (!valid) {
+            console.log(`[Auth] SIWE verification failed for ${typedAddress}`);
+            return null;
+          }
+          console.log(`[Auth] SIWE signature valid for ${typedAddress}`);
+        } catch (verifyError) {
+          console.error(`[Auth] SIWE verification error:`, verifyError);
           return null;
         }
-        console.log(`[Auth] SIWE signature valid for ${typedAddress}`);
 
         // Normalize wallet address to lowercase for consistent lookups
         const normalizedAddress = typedAddress.toLowerCase();
@@ -161,8 +171,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET
-    || (process.env.NODE_ENV !== 'production' ? 'dev-secret-do-not-use-in-production-12345' : 'build-placeholder'),
+  secret: process.env.NEXTAUTH_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('NEXTAUTH_SECRET must be set in production') })() : 'build-placeholder'),
   debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login",

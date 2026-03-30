@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 
 interface CustomSession {
   user: {
@@ -9,54 +9,36 @@ interface CustomSession {
   };
 }
 
-// Module-level cache — session is fetched once, shared across all components
-let cachedSession: CustomSession | null = null;
-let cachedStatus: 'loading' | 'authenticated' | 'unauthenticated' = 'loading';
-let fetchPromise: Promise<void> | null = null;
-const listeners = new Set<(session: CustomSession | null, status: typeof cachedStatus) => void>();
-
-async function fetchSessionOnce() {
-  if (fetchPromise) return fetchPromise;
-  fetchPromise = (async () => {
-    try {
-      const res = await fetch('/api/auth/session');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.user) {
-          cachedSession = data;
-          cachedStatus = 'authenticated';
-        } else {
-          cachedStatus = 'unauthenticated';
-        }
-      } else {
-        cachedStatus = 'unauthenticated';
-      }
-    } catch {
-      cachedStatus = 'unauthenticated';
-    }
-    // Notify all subscribers
-    listeners.forEach(fn => fn(cachedSession, cachedStatus));
-  })();
-  return fetchPromise;
-}
-
 export function useCustomSession() {
-  const [session, setSession] = useState<CustomSession | null>(cachedSession);
-  const [status, setStatus] = useState<typeof cachedStatus>(cachedStatus);
+  const [session, setSession] = useState<CustomSession | null>(null);
+  const [status, setStatus] = useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
 
   useEffect(() => {
-    const listener = (s: CustomSession | null, st: typeof cachedStatus) => {
-      setSession(prev => prev === s ? prev : s);
-      setStatus(prev => prev === st ? prev : st);
-    };
-    listeners.add(listener);
-
-    // Only fetch if not already resolved
-    if (cachedStatus === 'loading') {
-      fetchSessionOnce();
+    let cancelled = false;
+    async function fetchSession() {
+      try {
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled) {
+            if (data.user) {
+              setSession(data);
+              setStatus('authenticated');
+            } else {
+              setStatus('unauthenticated');
+            }
+          }
+        } else if (!cancelled) {
+          setStatus('unauthenticated');
+        }
+      } catch {
+        if (!cancelled) {
+          setStatus('unauthenticated');
+        }
+      }
     }
-
-    return () => { listeners.delete(listener); };
+    fetchSession();
+    return () => { cancelled = true; };
   }, []);
 
   return { data: session, status };

@@ -27,6 +27,7 @@ type AgentMetadata = {
   agentId: string;
   createdAt: string;
   plan: string;
+  ownerEmail?: string;
   aiProvider?: string;
   port?: number;
   subdomain?: string;
@@ -85,6 +86,28 @@ const PLAN_AGENT_LIMITS: Record<string, number> = {
   label: 10,
   network: 999999, // unlimited
 };
+
+// --- Ownership Check ---
+
+/**
+ * Verifies the requesting user owns the agent.
+ * Requires the agent metadata to have ownerEmail set.
+ * Admins bypass ownership checks.
+ */
+async function assertOwnership(req: Request, res: Response, agentId: string): Promise<AgentMetadata | null> {
+  const metadata = await readAgentMetadata(agentId);
+  if (!metadata) {
+    res.status(404).json({ error: 'Agent not found' });
+    return null;
+  }
+  const email = (req as any).userEmail as string;
+  const isAdmin = email && ADMIN_EMAILS.includes(email.toLowerCase());
+  if (!isAdmin && metadata.ownerEmail && metadata.ownerEmail.toLowerCase() !== (email || '').toLowerCase()) {
+    res.status(403).json({ error: 'Forbidden — you do not own this agent' });
+    return null;
+  }
+  return metadata;
+}
 
 // DB-backed agent count
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -309,6 +332,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
       plan: (config?.plan as string) || 'free',
       aiProvider: (config?.aiProvider as string) || 'openrouter',
       subdomain, status: 'pending', config: config || {},
+      ownerEmail: email,
     };
     await writeAgentMetadata(metadata);
 

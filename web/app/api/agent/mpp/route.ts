@@ -92,8 +92,7 @@ export async function POST(request: NextRequest) {
         agentId,
         companyId,
         address: wallet.address,
-        privateKey: wallet.privateKey,
-        message: 'Store this private key securely - it cannot be recovered!',
+        message: 'Wallet created. Private key stored server-side — it cannot be recovered!',
       });
     }
 
