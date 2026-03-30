@@ -1,0 +1,12 @@
+{
+  "name": "agentbot-opensource",
+  "private": true,
+  "scripts": {
+    "build": "cd web && NEXT_PUBLIC_DEMO_MODE=true next build",
+    "dev": "cd web && next dev",
+    "install": "cd web && npm install"
+  },
+  "dependencies": {
+    "next": "16.2"
+  }
+}
