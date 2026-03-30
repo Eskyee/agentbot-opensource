@@ -166,19 +166,15 @@ export default function LearnPage() {
           </div>
           <p className="text-zinc-500 text-xs mb-6 max-w-md">Power user? Go deep. Swarms, skills, workflows, payments, and production scale.</p>
 
-          <div className="grid gap-px bg-zinc-800 sm:grid-cols-2 lg:grid-cols-3">
-            {advancedGuides.map((guide) => (
-              <Link
-                key={guide.title}
-                href={guide.href}
-                className="bg-black p-5 hover:bg-zinc-950 transition-colors group"
-              >
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 block">{guide.label}</span>
-                <h3 className="text-sm font-bold tracking-tight mb-1 group-hover:text-white transition-colors">{guide.title}</h3>
-                <p className="text-xs text-zinc-500">{guide.description}</p>
-              </Link>
-            ))}
-          </div>
+          <Link href="/learn/advanced" className="group block border border-zinc-800 p-8 hover:border-zinc-600 transition-colors">
+            <h3 className="text-xl font-bold tracking-tighter uppercase mb-3 group-hover:text-white transition-colors">Advanced Guides →</h3>
+            <p className="text-zinc-400 text-sm mb-4">Multi-agent swarms, x402 payments, autonomous trading, production hardening, ACP sessions, streaming, and more.</p>
+            <div className="flex flex-wrap gap-2">
+              {['Swarms', 'Payments', 'Trading', 'Security', 'Streaming', 'ACP'].map(tag => (
+                <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1">{tag}</span>
+              ))}
+            </div>
+          </Link>
         </section>
 
         {/* OpenClaw Docs */}
