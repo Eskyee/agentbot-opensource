@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 const BRIDGE_SECRET = process.env.BRIDGE_SECRET
 
 function verifyAuth(request: Request): boolean {
-  if (!BRIDGE_SECRET) return true // no secret = no auth (dev mode)
+  if (!BRIDGE_SECRET) return false // no secret = reject (fail closed)
   const provided = request.headers.get('x-bridge-secret')
   return provided === BRIDGE_SECRET
 }
