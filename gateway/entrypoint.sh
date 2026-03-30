@@ -95,6 +95,12 @@ cat > /home/node/.openclaw/openclaw.json << CONFIG
       "maxEntries": 500
     }
   },
+  "channels": {
+    "telegram": { "enabled": false, "dmPolicy": "pairing" },
+    "discord": { "enabled": false, "dmPolicy": "pairing" },
+    "whatsapp": { "enabled": false, "dmPolicy": "pairing" },
+    "webchat": { "enabled": true }
+  },
   "cron": {
     "enabled": true,
     "maxConcurrentRuns": 2,

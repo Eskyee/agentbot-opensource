@@ -174,8 +174,27 @@ export async function createContainer(
       },
       agents: {
         defaults: {
+          workspace: '/home/node/.openclaw/workspace',
           model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+          heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
         },
+      },
+      channels: {
+        telegram: { enabled: false, dmPolicy: 'pairing' },
+        discord: { enabled: false, dmPolicy: 'pairing' },
+        whatsapp: { enabled: false, dmPolicy: 'pairing' },
+        webchat: { enabled: true },
+      },
+      cron: { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+      session: {
+        scope: 'per-sender',
+        reset: { mode: 'daily', atHour: 4 },
+        maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
+      },
+      tools: {
+        profile: 'coding',
+        exec: { backgroundMs: 10000, timeoutSec: 1800 },
+        web: { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
       },
     }),
     'OPENCLAW_CONFIG',
