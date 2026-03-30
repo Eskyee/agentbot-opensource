@@ -114,16 +114,12 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /** Returns the number of active agents for this email from the DB. */
 async function getAgentCount(email: string): Promise<number> {
-  try {
-    const result = await pool.query(
-      `SELECT COUNT(*) AS cnt FROM agent_registrations
-       WHERE user_id = $1 AND status = 'active'`,
-      [email]
-    );
-    return parseInt(result.rows[0]?.cnt ?? '0', 10);
-  } catch {
-    return 0; // fail open
-  }
+  const result = await pool.query(
+    `SELECT COUNT(*) AS cnt FROM agent_registrations
+     WHERE user_id = $1 AND status = 'active'`,
+    [email]
+  );
+  return parseInt(result.rows[0]?.cnt ?? '0', 10);
 }
 
 // --- Helpers ---
@@ -345,7 +341,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
   }
 });
 
-// Get single agent
+// Get single agent — ownership check if ownerEmail is set
 router.get('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const containerName = getContainerName(id);
@@ -354,6 +350,17 @@ router.get('/:id', async (req: Request, res: Response) => {
       containerStatus(containerName), readAgentMetadata(id), getContainerRuntimeVersion(containerName),
     ]);
     if (!runtime && !metadata) { res.status(404).json({ error: 'Agent not found' }); return; }
+
+    // Ownership check — if ownerEmail is set, verify the requesting user
+    if (metadata?.ownerEmail) {
+      const email = (req as any).userEmail as string;
+      const isAdmin = email && ADMIN_EMAILS.includes(email.toLowerCase());
+      if (!isAdmin && metadata.ownerEmail.toLowerCase() !== (email || '').toLowerCase()) {
+        res.status(403).json({ error: 'Forbidden — you do not own this agent' });
+        return;
+      }
+    }
+
     res.json({
       id, status: runtime?.status || 'stopped',
       startedAt: runtime?.startedAt || metadata?.createdAt || new Date().toISOString(),
@@ -371,13 +378,13 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Update agent
+// Update agent — ownership check
 router.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const safeId = sanitizeAgentId(id);
   try {
-    const metadata = await readAgentMetadata(safeId);
-    if (!metadata) { res.status(404).json({ error: 'Agent not found' }); return; }
+    const metadata = await assertOwnership(req, res, safeId);
+    if (!metadata) return;
     const { plan, aiProvider, config } = req.body as {
       plan?: string; aiProvider?: string; config?: Record<string, unknown>;
     };
@@ -391,12 +398,14 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Delete agent
+// Delete agent — ownership check
 router.delete('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const safeId = sanitizeAgentId(id);
-  const containerName = getContainerName(safeId);
   try {
+    const metadata = await assertOwnership(req, res, safeId);
+    if (!metadata) return;
+    const containerName = getContainerName(safeId);
     try { await runCommand('docker', ['stop', containerName]); } catch { /* may already be stopped */ }
     try { await runCommand('docker', ['rm', containerName]); } catch { /* may not exist */ }
     await withLock(async () => {
@@ -431,8 +440,8 @@ router.get('/:id/verification', async (req: Request, res: Response) => {
 
 router.post('/:id/verify', async (req: Request, res: Response) => {
   try {
-    const existing = await readAgentMetadata(req.params.id);
-    if (!existing) { res.status(404).json({ error: 'Agent not found' }); return; }
+    const existing = await assertOwnership(req, res, req.params.id);
+    if (!existing) return;
     const { verificationType, verified, attestationUid, verifierAddress, metadata } = req.body;
     existing.verified = verified;
     existing.verificationType = verificationType;
@@ -449,8 +458,8 @@ router.post('/:id/verify', async (req: Request, res: Response) => {
 
 router.delete('/:id/verify', async (req: Request, res: Response) => {
   try {
-    const existing = await readAgentMetadata(req.params.id);
-    if (!existing) { res.status(404).json({ error: 'Agent not found' }); return; }
+    const existing = await assertOwnership(req, res, req.params.id);
+    if (!existing) return;
     existing.verified = false;
     existing.verificationType = undefined;
     existing.attestationUid = undefined;
@@ -464,9 +473,11 @@ router.delete('/:id/verify', async (req: Request, res: Response) => {
   }
 });
 
-// Lifecycle endpoints
+// Lifecycle endpoints — ownership check
 router.post('/:id/start', async (req: Request, res: Response) => {
   try {
+    const metadata = await assertOwnership(req, res, req.params.id);
+    if (!metadata) return;
     await runCommand('docker', ['start', getContainerName(req.params.id)]);
     res.json({ success: true, status: 'active' });
   } catch (error: unknown) {
@@ -476,6 +487,8 @@ router.post('/:id/start', async (req: Request, res: Response) => {
 
 router.post('/:id/stop', async (req: Request, res: Response) => {
   try {
+    const metadata = await assertOwnership(req, res, req.params.id);
+    if (!metadata) return;
     await runCommand('docker', ['stop', getContainerName(req.params.id)]);
     res.json({ success: true, status: 'stopped' });
   } catch (error: unknown) {
@@ -486,6 +499,8 @@ router.post('/:id/stop', async (req: Request, res: Response) => {
 router.post('/:id/restart', async (req: Request, res: Response) => {
   const containerName = getContainerName(req.params.id);
   try {
+    const metadata = await assertOwnership(req, res, req.params.id);
+    if (!metadata) return;
     const healResult = await healLegacyModelInContainer(containerName);
     await runCommand('docker', ['restart', containerName]);
     const openclawVersion = await getContainerRuntimeVersion(containerName);
@@ -497,12 +512,14 @@ router.post('/:id/restart', async (req: Request, res: Response) => {
 
 router.post('/:id/update', async (req: Request, res: Response) => {
   const containerName = getContainerName(req.params.id);
-  const requestedImage = typeof req.body?.image === 'string' ? req.body.image.trim() : '';
-  const targetImage = requestedImage || OPENCLAW_IMAGE;
-
-  if (!isValidDockerImage(targetImage)) { res.status(400).json({ error: 'Invalid docker image value' }); return; }
-
   try {
+    const metadata = await assertOwnership(req, res, req.params.id);
+    if (!metadata) return;
+    const requestedImage = typeof req.body?.image === 'string' ? req.body.image.trim() : '';
+    const targetImage = requestedImage || OPENCLAW_IMAGE;
+
+    if (!isValidDockerImage(targetImage)) { res.status(400).json({ error: 'Invalid docker image value' }); return; }
+
     const inspect = await getContainerInspect(containerName);
     const backupPath = await backupContainerData(containerName, inspect);
     const oldImage = inspect.Config.Image;
@@ -525,8 +542,8 @@ router.post('/:id/update', async (req: Request, res: Response) => {
 
 router.get('/:id/token', async (req: Request, res: Response) => {
   try {
-    const metadata = await readAgentMetadata(req.params.id);
-    if (!metadata) { res.status(404).json({ error: 'Agent not found' }); return; }
+    const metadata = await assertOwnership(req, res, req.params.id);
+    if (!metadata) return;
     if (!metadata.gatewayToken) {
       metadata.gatewayToken = randomBytes(32).toString('hex');
       await writeAgentMetadata(metadata);
@@ -540,6 +557,8 @@ router.get('/:id/token', async (req: Request, res: Response) => {
 router.post('/:id/repair', async (req: Request, res: Response) => {
   const containerName = getContainerName(req.params.id);
   try {
+    const metadata = await assertOwnership(req, res, req.params.id);
+    if (!metadata) return;
     const inspect = await getContainerInspect(containerName);
     const oldImage = inspect.Config.Image;
     await healLegacyModelInContainer(containerName);
@@ -555,6 +574,8 @@ router.post('/:id/repair', async (req: Request, res: Response) => {
 router.post('/:id/reset-memory', async (req: Request, res: Response) => {
   const containerName = getContainerName(req.params.id);
   try {
+    const metadata = await assertOwnership(req, res, req.params.id);
+    if (!metadata) return;
     const mount = (await getContainerInspect(containerName)).Mounts.find((m) => m.Destination === '/home/node/.openclaw');
     if (!mount) { res.status(500).json({ error: 'Could not find data mount' }); return; }
     if (mount.Type === 'volume' && mount.Name) {
