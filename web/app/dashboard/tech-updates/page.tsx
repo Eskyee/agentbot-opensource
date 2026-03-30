@@ -44,7 +44,7 @@ interface SoulData {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-const OPENCLAW_URL = 'https://tempo-x402-production.up.railway.app/dashboard'
+const OPENCLAW_URL = 'https://openclaw-gateway-production-ad37.up.railway.app/dashboard'
 
 const ITEMS: TechItem[] = [
   {

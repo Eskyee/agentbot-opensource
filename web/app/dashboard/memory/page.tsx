@@ -92,7 +92,7 @@ async function fetchSystemMemories(): Promise<MemoryEntry[]> {
   const checks = [
     { name: 'Agentbot API', url: 'https://agentbot-api.onrender.com/health', icon: Server },
     { name: 'x402 Gateway', url: 'https://x402-gateway-production.up.railway.app/health', icon: Zap },
-    { name: 'Tempo Soul', url: 'https://tempo-x402-production.up.railway.app/health', icon: Cpu },
+    { name: 'Tempo Soul', url: 'https://openclaw-gateway-production-ad37.up.railway.app/health', icon: Cpu },
     { name: 'Borg-0', url: 'https://borg-0-production.up.railway.app/health', icon: Shield },
   ]
 

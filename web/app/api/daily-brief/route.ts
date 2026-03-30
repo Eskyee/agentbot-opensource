@@ -9,7 +9,7 @@ const HEALTH_CHECKS: HealthCheck[] = [
   { name: 'Agentbot API', url: 'https://agentbot-api.onrender.com/health' },
   { name: 'Agentbot Web', url: 'https://agentbot.raveculture.xyz' },
   { name: 'x402 Gateway', url: 'https://x402-gateway-production.up.railway.app/health' },
-  { name: 'Tempo Soul', url: 'https://tempo-x402-production.up.railway.app/health' },
+  { name: 'Tempo Soul', url: 'https://openclaw-gateway-production-ad37.up.railway.app/health' },
   { name: 'Borg-0', url: 'https://borg-0-production.up.railway.app/health' },
 ]
 

@@ -85,7 +85,7 @@ async function fetchAISignals(): Promise<MarketSignal[]> {
 
   // Check tempo-x402 soul
   try {
-    const soulRes = await fetch('https://tempo-x402-production.up.railway.app/health', { signal: AbortSignal.timeout(5000) })
+    const soulRes = await fetch('https://openclaw-gateway-production-ad37.up.railway.app/health', { signal: AbortSignal.timeout(5000) })
     if (soulRes.ok) {
       const soulBody = await soulRes.json()
       signals.push({
