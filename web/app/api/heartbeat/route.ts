@@ -1,25 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-
-const HEARTBEAT_KEY = 'heartbeat_settings'
+import { invokeGatewayTool } from '@/app/lib/gateway-proxy'
 
 /**
  * GET /api/heartbeat?agentId=xxx
- * Get heartbeat settings for an agent
+ * Get heartbeat settings — tries gateway first, falls back to DB.
  */
 export async function GET(req: NextRequest) {
   const session = await getAuthSession()
-
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // Try gateway first
+  const gwResult = await invokeGatewayTool('cron', { action: 'list' }, session.user.id)
+  if (gwResult.ok) {
+    const data = typeof gwResult.result === 'string' ? JSON.parse(gwResult.result) : gwResult.result
+    const jobs = Array.isArray(data) ? data : data?.jobs || data?.result || []
+    const heartbeatJob = jobs.find((j: any) =>
+      j.name?.toLowerCase().includes('heartbeat') || j.id?.includes('heartbeat')
+    )
+    if (heartbeatJob) {
+      return NextResponse.json({
+        source: 'gateway',
+        enabled: heartbeatJob.enabled !== false,
+        frequency: heartbeatJob.schedule?.everyMs
+          ? `${Math.round(heartbeatJob.schedule.everyMs / 3600000)}h`
+          : heartbeatJob.schedule?.expr || 'unknown',
+        nextRun: heartbeatJob.nextRun || null,
+        lastRun: heartbeatJob.lastRun || null,
+      })
+    }
+  }
+
+  // Fallback: read from DB
   const { searchParams } = new URL(req.url)
   const agentId = searchParams.get('agentId')
-
   if (!agentId) {
-    return NextResponse.json({ error: 'agentId required' }, { status: 400 })
+    return NextResponse.json({ source: 'db', enabled: false, message: 'No agentId provided' })
   }
 
   try {
@@ -28,145 +47,112 @@ export async function GET(req: NextRequest) {
         userId_agentId_key: {
           userId: session.user.id,
           agentId,
-          key: HEARTBEAT_KEY,
+          key: 'heartbeat_settings',
         },
       },
     })
 
     if (!memory) {
-      // Return defaults if no settings saved yet
       return NextResponse.json({
-        heartbeat: {
-          frequency: '3h',
-          enabled: true,
-          lastHeartbeat: null,
-          nextHeartbeat: null,
-        },
+        source: 'db',
+        enabled: true,
+        frequency: '30m',
+        message: 'Using defaults — gateway heartbeat not configured',
       })
     }
 
-    const settings = JSON.parse(memory.value)
-    return NextResponse.json({ heartbeat: settings })
+    return NextResponse.json({
+      source: 'db',
+      ...JSON.parse(memory.value),
+    })
   } catch (error) {
-    console.error('Heartbeat fetch error:', error)
     return NextResponse.json({ error: 'Failed to fetch heartbeat settings' }, { status: 500 })
   }
 }
 
 /**
- * POST /api/heartbeat
- * Update heartbeat settings for an agent
+ * PUT /api/heartbeat
+ * Update heartbeat — writes to gateway via cron, falls back to DB.
  */
-export async function POST(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const session = await getAuthSession()
-
   if (!session?.user?.email || !session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const body = await req.json()
+  const { agentId, enabled, frequency } = body
+
+  // Convert frequency to ms
+  const freqMs: Record<string, number> = {
+    '1h': 3600000,
+    '2h': 7200000,
+    '3h': 10800000,
+    '6h': 21600000,
+    '12h': 43200000,
+    '30m': 1800000,
+  }
+
+  // Try updating on gateway
+  if (enabled && frequency && freqMs[frequency]) {
+    const gwResult = await invokeGatewayTool('cron', {
+      action: 'add',
+      job: {
+        name: 'Heartbeat',
+        schedule: { kind: 'every', everyMs: freqMs[frequency] },
+        payload: {
+          kind: 'systemEvent',
+          text: 'Heartbeat check — review emails, calendar, and recent activity.',
+        },
+        enabled: true,
+      },
+    }, session.user.id)
+
+    if (gwResult.ok) {
+      return NextResponse.json({
+        success: true,
+        source: 'gateway',
+        enabled,
+        frequency,
+      })
+    }
+  }
+
+  // Fallback: save to DB
+  if (!agentId) {
+    return NextResponse.json({ error: 'agentId required' }, { status: 400 })
+  }
+
   try {
-    const { agentId, frequency, enabled } = await req.json()
-
-    if (!agentId) {
-      return NextResponse.json({ error: 'agentId required' }, { status: 400 })
-    }
-
-    // Verify agent belongs to user — check both agent table (legacy Docker)
-    // and the User.openclawInstanceId (Railway-provisioned agents)
-    const [agentRow, userRow] = await Promise.all([
-      prisma.agent.findFirst({ where: { id: agentId, userId: session.user.id } }),
-      prisma.user.findFirst({ where: { id: session.user.id, openclawInstanceId: agentId } }),
-    ])
-    if (!agentRow && !userRow) {
-      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
-    }
-
-    // Parse frequency to milliseconds for nextHeartbeat calculation
-    const freqMs = parseFrequency(frequency || '3h')
-    const now = new Date()
-
-    const settings = {
-      frequency: frequency || '3h',
-      enabled: enabled !== false,
-      lastHeartbeat: now.toISOString(),
-      nextHeartbeat: new Date(now.getTime() + freqMs).toISOString(),
-      lastUpdated: now.toISOString(),
-    }
-
     await prisma.agentMemory.upsert({
       where: {
         userId_agentId_key: {
           userId: session.user.id,
           agentId,
-          key: HEARTBEAT_KEY,
+          key: 'heartbeat_settings',
         },
       },
-      update: { value: JSON.stringify(settings) },
+      update: {
+        value: JSON.stringify({ enabled, frequency }),
+        updatedAt: new Date(),
+      },
       create: {
         userId: session.user.id,
         agentId,
-        key: HEARTBEAT_KEY,
-        value: JSON.stringify(settings),
+        key: 'heartbeat_settings',
+        value: JSON.stringify({ enabled, frequency }),
       },
     })
 
-    return NextResponse.json({ heartbeat: settings })
-  } catch (error) {
-    console.error('Heartbeat update error:', error)
-    return NextResponse.json({ error: 'Heartbeat update failed' }, { status: 500 })
-  }
-}
-
-/**
- * DELETE /api/heartbeat
- * Reset heartbeat settings for an agent
- */
-export async function DELETE(req: NextRequest) {
-  const session = await getAuthSession()
-
-  if (!session?.user?.email || !session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  try {
-    const { agentId } = await req.json()
-
-    if (!agentId) {
-      return NextResponse.json({ error: 'agentId required' }, { status: 400 })
-    }
-
-    await prisma.agentMemory.deleteMany({
-      where: {
-        userId: session.user.id,
-        agentId,
-        key: HEARTBEAT_KEY,
-      },
+    return NextResponse.json({
+      success: true,
+      source: 'db',
+      enabled,
+      frequency,
     })
-
-    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Heartbeat reset error:', error)
-    return NextResponse.json({ error: 'Heartbeat reset failed' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to update heartbeat settings' }, { status: 500 })
   }
 }
 
-/**
- * Parse frequency string to milliseconds
- */
-function parseFrequency(freq: string): number {
-  const match = freq.match(/^(\d+)(m|h|d)$/)
-  if (!match) return 3 * 60 * 60 * 1000 // default 3h
-
-  const value = parseInt(match[1], 10)
-  const unit = match[2]
-
-  switch (unit) {
-    case 'm': return value * 60 * 1000
-    case 'h': return value * 60 * 60 * 1000
-    case 'd': return value * 24 * 60 * 60 * 1000
-    default: return 3 * 60 * 60 * 1000
-  }
-}
-
-
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'

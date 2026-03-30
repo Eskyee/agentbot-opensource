@@ -201,7 +201,7 @@ export default function ColonyPage() {
   const action = (
     <div className="flex flex-wrap gap-2">
       <a
-        href="https://openclaw-gateway-production-ad37.up.railway.app/dashboard"
+        href="https://openclaw-gw-ui-production.up.railway.app/dashboard"
         target="_blank"
         rel="noopener noreferrer"
         className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors"
@@ -269,7 +269,7 @@ export default function ColonyPage() {
                 Retry
               </button>
               <a
-                href="https://openclaw-gateway-production-ad37.up.railway.app/dashboard"
+                href="https://openclaw-gw-ui-production.up.railway.app/dashboard"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2"

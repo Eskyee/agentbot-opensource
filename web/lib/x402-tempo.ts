@@ -20,7 +20,7 @@ export const TEMPO_CHAIN = {
 } as const;
 
 // x402 Gateway config
-export const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://openclaw-gateway-production-ad37.up.railway.app';
+export const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app';
 export const CLONE_PRICE = '1.0'; // pathUSD
 
 export interface CloneRequest {

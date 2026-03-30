@@ -75,6 +75,8 @@ function DashboardContent() {
   const [signingOut, setSigningOut] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; status: string}[]>([])
+  const [gatewayChannels, setGatewayChannels] = useState<{name: string; provider: string; status: string; messages: number}[]>([])
+  const [gatewayStatus, setGatewayStatus] = useState<{health: string; sessions: {total: number; active: number}; cron: {total: number; enabled: number}} | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -173,6 +175,47 @@ function DashboardContent() {
     } catch (e) {
       console.error('Failed to fetch dashboard stats:', e)
     }
+    // Also fetch real gateway status
+    try {
+      const res = await fetch('/api/gateway/status')
+      if (res.ok) {
+        const data = await res.json()
+        setGatewayStatus(data)
+        if (data.cron?.jobs) {
+          setTasks(data.cron.jobs.map((j: any) => ({
+            id: j.id,
+            title: j.name,
+            status: j.enabled ? 'active' : 'paused',
+            type: 'scheduled',
+          })))
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch gateway status:', e)
+    }
+    // Fetch real channel status
+    try {
+      const res = await fetch('/api/channels')
+      if (res.ok) {
+        const data = await res.json()
+        setGatewayChannels(data.channels || [])
+      }
+    } catch (e) {
+      console.error('Failed to fetch channels:', e)
+    }
+    // Fetch real heartbeat
+    try {
+      const res = await fetch('/api/heartbeat')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.frequency) setHeartbeatFreq(data.frequency)
+        if (data.enabled !== undefined) {
+          setHeartbeatFreq(data.enabled ? (data.frequency || '30m') : 'Off')
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch heartbeat:', e)
+    }
   }
 
   const fetchInstance = async (userId: string, botUsername: string) => {
@@ -194,11 +237,8 @@ function DashboardContent() {
         const sharedGatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
         const url = (tokenData.openclawUrl || data.url || sharedGatewayUrl).replace(/\/$/, '')
         const gatewayToken = tokenData.gatewayToken || undefined
-        // Control UI auto-connects via hash: /#token=<token>&gatewayUrl=<wss url>
-        // Using hash (not query string) avoids server-side redirect stripping params.
-        const controlUiUrl = gatewayToken && url
-          ? `${url}/#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(url).host}`)}`
-          : url
+        // Control UI connects via session param: /chat?session=main
+        const controlUiUrl = `${url}/chat?session=main`
         setInstance({ ...data, url, botUsername, gatewayToken, controlUiUrl })
         fetchStats(userId)
       }
@@ -416,15 +456,13 @@ function DashboardContent() {
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Active Agents</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Active Sessions</span>
               </div>
               <div className="text-3xl font-bold">
-                {dashboardStats?.agents.active ?? 0}
-                <span className="text-lg text-zinc-500 font-normal">/{dashboardStats?.agents.limit ?? 1}</span>
+                {gatewayStatus?.sessions.active ?? dashboardStats?.agents.active ?? 0}
+                <span className="text-lg text-zinc-500 font-normal">/{gatewayStatus?.sessions.total ?? dashboardStats?.agents.limit ?? 1}</span>
               </div>
-              {(dashboardStats?.agents.newToday ?? 0) > 0 && (
-                <div className="text-xs text-green-400 mt-1">+{dashboardStats?.agents.newToday} today</div>
-              )}
+              <div className="text-xs text-zinc-500 mt-1">live from gateway</div>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
@@ -437,12 +475,12 @@ function DashboardContent() {
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Tasks</span>
+                <span className="text-[10px] uppercase tracking-widest text-zinc-600">Cron Jobs</span>
               </div>
               <div className="text-3xl font-bold">
-                {dashboardStats?.tasks.total ?? 0}
+                {gatewayStatus?.cron.enabled ?? dashboardStats?.tasks.total ?? 0}
               </div>
-              <div className="text-xs text-zinc-500 mt-1">scheduled</div>
+              <div className="text-xs text-zinc-500 mt-1">{gatewayStatus?.cron.total ?? 0} total</div>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="flex items-center justify-between mb-2">
@@ -752,10 +790,10 @@ function DashboardContent() {
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Tasks
+                Tasks & Cron
               </h2>
               <div className="flex gap-2 mb-4 overflow-x-auto">
-                {['all', 'recurring', 'chat', 'scheduled', 'completed'].map((tab) => (
+                {['all', 'active', 'paused'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTaskTab(tab)}
@@ -769,43 +807,20 @@ function DashboardContent() {
                   </button>
                 ))}
               </div>
-              <div className="mb-4">
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={taskInput}
-                    onChange={(e) => setTaskInput(e.target.value)}
-                    placeholder="Tell your agent what to do..."
-                    className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2 text-sm focus:outline-none focus:border-zinc-600"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && taskInput.trim()) {
-                        setTasks([...tasks, { id: Date.now().toString(), title: taskInput, status: 'pending', type: 'chat' }])
-                        setTaskInput('')
-                      }
-                    }}
-                  />
-                  <button className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-                    Send
-                  </button>
-                </div>
-                <div className="flex gap-2 mt-3 flex-wrap">
-                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Research</button>
-                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Draft email</button>
-                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Market update</button>
-                  <button className="border border-zinc-800 px-3 py-1.5 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Write a post</button>
-                </div>
-              </div>
               <div className="space-y-2">
                 {tasks.length === 0 ? (
                   <div className="py-8 text-zinc-500 text-sm">
-                    No tasks yet
+                    No cron jobs configured
                   </div>
                 ) : (
                   tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab).map((task) => (
                     <div key={task.id} className="flex items-center justify-between border border-zinc-800 px-4 py-2">
-                      <span className="text-sm text-zinc-400">{task.title}</span>
+                      <div>
+                        <span className="text-sm text-zinc-400">{task.title}</span>
+                        <span className="text-[10px] text-zinc-600 ml-2">{task.type}</span>
+                      </div>
                       <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 ${
-                        task.status === 'completed' ? 'text-green-400' : 'text-yellow-400'
+                        task.status === 'active' ? 'text-green-400' : task.status === 'paused' ? 'text-yellow-400' : 'text-zinc-500'
                       }`}>
                         {task.status}
                       </span>
@@ -813,26 +828,38 @@ function DashboardContent() {
                   ))
                 )}
               </div>
+              {gatewayStatus && (
+                <div className="mt-3 text-[10px] text-zinc-600">
+                  Gateway: {gatewayStatus.health} · {gatewayStatus.sessions.active} active sessions
+                </div>
+              )}
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
                 Heartbeat
               </h2>
-              <p className="text-sm text-zinc-400 mb-4">Your agent&apos;s pulse. See when it last checked in and control how often it does.</p>
+              <p className="text-sm text-zinc-400 mb-4">Your agent&apos;s periodic check-in. Controls how often it reviews emails, calendar, and activity.</p>
               
               <div className="flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-green-400"></span>
-                <span className="text-sm text-zinc-400">On schedule</span>
+                <span className={`w-2 h-2 rounded-full ${heartbeatFreq !== 'Off' ? 'bg-green-400' : 'bg-zinc-600'}`}></span>
+                <span className="text-sm text-zinc-400">{heartbeatFreq !== 'Off' ? `Every ${heartbeatFreq}` : 'Disabled'}</span>
               </div>
               
               <div className="mb-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Frequency</div>
                 <div className="flex gap-2 flex-wrap">
-                  {['1h', '3h', '6h', '12h', 'Off'].map((freq) => (
+                  {['30m', '1h', '3h', '6h', '12h', 'Off'].map((freq) => (
                     <button
                       key={freq}
-                      onClick={() => setHeartbeatFreq(freq)}
+                      onClick={() => {
+                        setHeartbeatFreq(freq)
+                        fetch('/api/heartbeat', {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ enabled: freq !== 'Off', frequency: freq }),
+                        })
+                      }}
                       className={`border px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors ${
                         heartbeatFreq === freq
                           ? 'bg-white text-black border-white'
@@ -847,26 +874,13 @@ function DashboardContent() {
               
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Last seen</div>
-                  <div className="text-sm text-zinc-400">{lastSeen || 'Just now'}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Status</div>
+                  <div className="text-sm text-zinc-400">{gatewayStatus?.health === 'healthy' ? 'Gateway online' : 'Checking...'}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Next in</div>
-                  <div className="text-sm text-zinc-400">
-                    {heartbeatFreq === 'Off' ? '—' : heartbeatFreq}
-                  </div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions</div>
+                  <div className="text-sm text-zinc-400">{gatewayStatus?.sessions.active ?? 0} active</div>
                 </div>
-              </div>
-              
-              <div className="border border-zinc-800 p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-zinc-400">Daily heartbeat pool</span>
-                  <span className="text-zinc-400">{heartbeatCredits} of 200 remaining</span>
-                </div>
-                <div className="h-1.5 bg-zinc-800 overflow-hidden">
-                  <div className="h-full bg-white" style={{ width: `${(200 - heartbeatCredits) / 2}%` }} />
-                </div>
-                <div className="text-[10px] text-zinc-600 mt-2">Separate from your daily credits — heartbeats never eat into your quota.</div>
               </div>
             </div>
 
@@ -875,20 +889,32 @@ function DashboardContent() {
                 Active Skills
               </h2>
               <div className="space-y-2">
-                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
-                  <span className="text-zinc-400">Web Scraping</span>
-                  <span className="w-2 h-2 rounded-full bg-green-400" />
-                </div>
-                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
-                  <span className="text-zinc-400">Email</span>
-                  <span className="w-2 h-2 rounded-full bg-green-400" />
-                </div>
-                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
-                  <span className="text-zinc-400">Calendar</span>
-                  <span className="w-2 h-2 rounded-full bg-green-400" />
-                </div>
+                {dashboardStats?.skills.installed ? (
+                  <>
+                    <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                      <span className="text-zinc-400">Exec</span>
+                      <span className="w-2 h-2 rounded-full bg-green-400" />
+                    </div>
+                    <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                      <span className="text-zinc-400">Web Search</span>
+                      <span className="w-2 h-2 rounded-full bg-green-400" />
+                    </div>
+                    <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                      <span className="text-zinc-400">Memory</span>
+                      <span className="w-2 h-2 rounded-full bg-green-400" />
+                    </div>
+                    <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                      <span className="text-zinc-400">Cron</span>
+                      <span className="w-2 h-2 rounded-full bg-green-400" />
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-4 text-zinc-500 text-sm">
+                    No skills loaded — gateway may be starting up
+                  </div>
+                )}
                 <a href="/marketplace" className="block text-sm text-zinc-400 hover:text-white mt-3 transition-colors">
-                  + Add more skills
+                  + Browse skills marketplace
                 </a>
               </div>
             </div>
@@ -898,21 +924,35 @@ function DashboardContent() {
                 Channels
               </h2>
               <div className="space-y-2">
-                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
-                  <span className="text-zinc-400">Telegram</span>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-400" />
-                    <span className="text-[10px] uppercase tracking-widest text-zinc-500">Connected</span>
+                {gatewayChannels.length > 0 ? gatewayChannels.map((ch) => (
+                  <div key={ch.provider} className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                    <span className="text-zinc-400">{ch.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${ch.status === 'connected' ? 'bg-green-400' : ch.status === 'not-configured' ? 'bg-zinc-600' : 'bg-yellow-400'}`} />
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-500">
+                        {ch.status === 'connected' ? `${ch.messages} msgs` : ch.status.replace('-', ' ')}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
-                  <span className="text-zinc-400">Discord</span>
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Not connected</span>
-                </div>
-                <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
-                  <span className="text-zinc-400">WhatsApp</span>
-                  <span className="text-[10px] uppercase tracking-widest text-zinc-600">Not connected</span>
-                </div>
+                )) : (
+                  <>
+                    <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                      <span className="text-zinc-400">Telegram</span>
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-600">Loading...</span>
+                    </div>
+                    <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                      <span className="text-zinc-400">Discord</span>
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-600">Loading...</span>
+                    </div>
+                    <div className="flex items-center justify-between border border-zinc-800 px-4 py-2 text-sm">
+                      <span className="text-zinc-400">WhatsApp</span>
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-600">Loading...</span>
+                    </div>
+                  </>
+                )}
+                <a href="/dashboard/channels" className="block text-sm text-zinc-400 hover:text-white mt-3 transition-colors">
+                  + Configure channels
+                </a>
               </div>
             </div>
 
