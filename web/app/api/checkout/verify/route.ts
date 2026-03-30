@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/app/lib/prisma'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 export async function GET(request: NextRequest) {
   const sessionId = request.nextUrl.searchParams.get('session_id')
 
   if (!sessionId) {
     return NextResponse.json({ error: 'Missing session_id' }, { status: 400 })
+  }
+
+  // Require authentication — prevent unauthorized subscription modifications
+  const authSession = await getAuthSession()
+  if (!authSession?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const stripeKey = process.env.STRIPE_SECRET_KEY
@@ -38,10 +45,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Belt-and-suspenders: mark subscription active immediately so provision
-    // doesn't race against the Stripe webhook arriving a few seconds later.
-    // The webhook will also fire and set the same values — idempotent.
+    // Verify the session belongs to the authenticated user
     const userId = session.metadata?.userId
+    if (userId && userId !== authSession.user.id) {
+      return NextResponse.json({ error: 'Session does not belong to you' }, { status: 403 })
+    }
+
     if (userId) {
       prisma.user.update({
         where: { id: userId },
