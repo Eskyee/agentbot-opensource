@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
@@ -80,6 +80,12 @@ function DashboardContent() {
   const [activities, setActivities] = useState<{id: string; action: string; agent: string; time: string; status: string}[]>([])
   const [gatewayChannels, setGatewayChannels] = useState<{name: string; provider: string; status: string; messages: number}[]>([])
   const [gatewayStatus, setGatewayStatus] = useState<{health: string; sessions: {total: number; active: number}; cron: {total: number; enabled: number}} | null>(null)
+
+  // Memoize filtered tasks to avoid re-filtering on every render
+  const filteredTasks = useMemo(
+    () => tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab),
+    [tasks, activeTaskTab]
+  )
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -794,7 +800,7 @@ function DashboardContent() {
                     No cron jobs configured
                   </div>
                 ) : (
-                  tasks.filter(t => activeTaskTab === 'all' || t.status === activeTaskTab).map((task) => (
+                  filteredTasks.map((task) => (
                     <div key={task.id} className="flex items-center justify-between border border-zinc-800 px-4 py-2">
                       <div>
                         <span className="text-sm text-zinc-400">{task.title}</span>
