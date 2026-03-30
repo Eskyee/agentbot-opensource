@@ -8,11 +8,7 @@
 export function getInternalApiKey(): string {
   const key = process.env.INTERNAL_API_KEY
   if (!key) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('INTERNAL_API_KEY is not set. Cannot authenticate with backend.')
-    }
-    console.warn('[api-keys] INTERNAL_API_KEY not set — using dev fallback. Set this in production.')
-    return 'dev-secret-key-12345'
+    throw new Error('INTERNAL_API_KEY is not set. Cannot authenticate with backend.')
   }
   return key
 }
