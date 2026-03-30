@@ -189,8 +189,10 @@ function DashboardContent() {
         setError(data.error)
       } else {
         // Prefer the Railway URL stored in DB over the legacy localhost subdomain
+        // Fall back to the shared OpenClaw gateway if user has no provisioned instance
         // Trim trailing slash to prevent // double-slash in constructed URLs
-        const url = (tokenData.openclawUrl || data.url || '').replace(/\/$/, '')
+        const sharedGatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
+        const url = (tokenData.openclawUrl || data.url || sharedGatewayUrl).replace(/\/$/, '')
         const gatewayToken = tokenData.gatewayToken || undefined
         // Control UI auto-connects via hash: /#token=<token>&gatewayUrl=<wss url>
         // Using hash (not query string) avoids server-side redirect stripping params.
