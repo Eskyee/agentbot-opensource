@@ -1,49 +1,42 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { useEffect } from 'react'
+import Link from 'next/link';
 
-export default function GlobalError({
+export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
-  useEffect(() => {
-    console.error('[Global Error]', error)
-  }, [error])
-
   return (
-    <main className="min-h-screen bg-black text-white font-mono flex flex-col items-center justify-center px-6">
-      <div className="text-center max-w-lg">
-        <div className="inline-block px-3 py-1 border border-zinc-800 text-red-500 text-[10px] uppercase tracking-widest mb-8">
-          Something went wrong
-        </div>
-
-        <h1 className="text-[6rem] sm:text-[9rem] font-bold tracking-tighter leading-none text-zinc-800 select-none">
-          500
-        </h1>
-
-        <p className="text-zinc-400 text-sm mt-4 mb-8">
-          An unexpected error occurred. Try again or head back home.
+    <main className="min-h-screen bg-black text-white font-mono flex items-center justify-center px-6">
+      <div className="max-w-md text-center">
+        <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">Error</span>
+        <h1 className="text-2xl font-bold tracking-tighter uppercase mb-4">Something went wrong</h1>
+        <p className="text-zinc-400 text-sm mb-6">
+          This page encountered an error. Try again or go back to the dashboard.
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex gap-3 justify-center">
           <button
             onClick={reset}
-            className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+            className="border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors"
           >
             Try Again
           </button>
           <Link
-            href="/"
-            className="inline-flex items-center justify-center border border-zinc-700 text-zinc-400 px-6 py-3 text-xs font-bold uppercase tracking-widest hover:border-zinc-500 hover:text-white transition-colors"
+            href="/dashboard"
+            className="bg-zinc-800 text-white px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-700 transition-colors"
           >
-            Back to Home
+            Dashboard
           </Link>
         </div>
+        {process.env.NODE_ENV === 'development' && error.message && (
+          <pre className="mt-8 text-left text-xs text-red-400 bg-zinc-950 border border-zinc-800 p-4 overflow-auto max-h-48">
+            {error.message}
+          </pre>
+        )}
       </div>
     </main>
-  )
+  );
 }
