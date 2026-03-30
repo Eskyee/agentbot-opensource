@@ -1,9 +1,14 @@
-# OpenClaw Gateway for Railway — based on deployment docs
-FROM ghcr.io/openclaw/openclaw:2026.3.28
+# OpenClaw Gateway for Railway — npm-based (no private GHCR needed)
+FROM node:22-slim
 
-USER root
+# Install OpenClaw globally
+RUN npm install -g openclaw@2026.3.28
+
+# Copy entrypoint
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && chown node:node /entrypoint.sh
-USER node
+RUN chmod +x /entrypoint.sh
+
+# Run as root for simplicity (Railway containers are ephemeral)
+EXPOSE 8080
 
 ENTRYPOINT ["/entrypoint.sh"]
