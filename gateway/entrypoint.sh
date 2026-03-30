@@ -10,6 +10,9 @@ mkdir -p /home/node/.openclaw
 
 cat > /home/node/.openclaw/openclaw.json << CONFIG
 {
+  "env": {
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+  },
   "gateway": {
     "mode": "local",
     "bind": "lan",
