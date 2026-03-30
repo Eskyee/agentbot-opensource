@@ -1,0 +1,374 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String           @id @default(cuid())
+  name                  String?
+  email                 String?          @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  String           @default("user")
+  storageLimit          Int              @default(10)
+  plan                  String           @default("free")
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  subscriptionEndDate   DateTime?
+  subscriptionStartDate DateTime?
+  subscriptionStatus    String           @default("inactive")
+  openclawUrl           String?
+  openclawInstanceId    String?
+  referralCode          String?          @unique
+  referralCredits       Int              @default(0)
+  referredBy            String?
+  accounts              Account[]
+  agents                Agent[]
+  agentFiles            AgentFile[]
+  agentMemories         AgentMemory[]
+  agentSwarms           AgentSwarm[]
+  apiKeys               ApiKey[]
+  calendarToken         CalendarToken?
+  installedSkills       InstalledSkill[]
+  pairedDevices         PairedDevice[]
+  userSettings          UserSetting[]
+  referredByUser        Referral?        @relation("Referred")
+  referrals             Referral[]       @relation("Referrer")
+  scheduledTasks        ScheduledTask[]
+  sessions              Session[]
+  wallets               Wallet[]
+  workflows             Workflow[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Agent {
+  id              String           @id @default(cuid())
+  userId          String
+  name            String
+  model           String?
+  status          String           @default("pending")
+  websocketUrl    String?
+  config          Json?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  tier            String           @default("free")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files           AgentFile[]
+  memories        AgentMemory[]
+  installedSkills InstalledSkill[]
+  scheduledTasks  ScheduledTask[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([userId, status])
+}
+
+model ScheduledTask {
+  id           String    @id @default(cuid())
+  userId       String
+  agentId      String
+  name         String
+  description  String?
+  cronSchedule String
+  prompt       String
+  enabled      Boolean   @default(true)
+  lastRun      DateTime?
+  nextRun      DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  agent        Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([agentId])
+  @@index([enabled, nextRun])
+}
+
+model AgentMemory {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId, key])
+  @@index([agentId])
+}
+
+model AgentFile {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  filename  String
+  path      String?
+  size      Int
+  mimeType  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  url       String?
+  userEmail String?
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([agentId])
+}
+
+model Skill {
+  id              String           @id @default(cuid())
+  name            String
+  description     String
+  category        String
+  code            String
+  author          String
+  downloads       Int              @default(0)
+  rating          Float            @default(0)
+  featured        Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  installedSkills InstalledSkill[]
+
+  @@index([category])
+  @@index([featured])
+}
+
+model InstalledSkill {
+  id        String   @id @default(cuid())
+  userId    String
+  agentId   String
+  skillId   String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, agentId, skillId])
+  @@index([userId])
+  @@index([agentId])
+}
+
+model AgentSwarm {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  agents      String
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WorkflowNode {
+  id         String   @id @default(cuid())
+  workflowId String
+  type       String
+  config     String
+  position   String
+  createdAt  DateTime @default(now())
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+}
+
+model Workflow {
+  id          String         @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  enabled     Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nodes       WorkflowNode[]
+
+  @@index([userId])
+}
+
+model Wallet {
+  id                  String   @id @default(cuid())
+  userId              String
+  address             String   @unique
+  walletSeedEncrypted String
+  network             String   @default("base-sepolia")
+  walletType          String   @default("cdp")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([address])
+}
+
+model Referral {
+  id              String   @id @default(cuid())
+  referrerId      String
+  referredId      String   @unique
+  referralCode    String
+  discountApplied Boolean  @default(false)
+  referrerReward  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  referred        User     @relation("Referred", fields: [referredId], references: [id])
+  referrer        User     @relation("Referrer", fields: [referrerId], references: [id])
+
+  @@index([referrerId])
+}
+
+model ApiKey {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  keyHash   String    @unique
+  keyPrefix String
+  lastUsed  DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CalendarToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  accessToken  String
+  refreshToken String
+  calendarId   String   @default("primary")
+  timezone     String   @default("UTC")
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PairedDevice {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  ip        String
+  status    String   @default("pending")
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model UserSetting {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+model agent_registrations {
+  user_id       String    @id
+  mode          String    @default("home")
+  gateway_token String?
+  registered_at DateTime? @default(now()) @db.Timestamptz(6)
+  last_seen     DateTime? @default(now()) @db.Timestamptz(6)
+  status        String    @default("active")
+}
+
+model api_keys {
+  id           BigInt    @id @default(autoincrement())
+  key_hash     String    @unique
+  user_id      String
+  plan         String    @default("solo")
+  label        String?
+  revoked      Boolean   @default(false)
+  last_used_at DateTime? @db.Timestamptz(6)
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id], map: "idx_api_keys_user")
+}
+
+model container_metrics {
+  id             BigInt   @id @default(autoincrement())
+  user_id        String
+  container_name String
+  cpu_percent    Decimal? @db.Decimal
+  mem_percent    Decimal? @db.Decimal
+  message_count  Int?     @default(0)
+  error_count    Int?     @default(0)
+  sampled_at     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id, sampled_at(sort: Desc)], map: "idx_container_metrics_user_time")
+}
+
+model invite_codes {
+  code       String    @id
+  used       Boolean   @default(false)
+  used_at    DateTime? @db.Timestamptz(6)
+  created_by String?
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([used], map: "idx_invite_codes_used")
+}
+
+model model_metrics {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  model         String
+  input_tokens  Int?      @default(0)
+  output_tokens Int?      @default(0)
+  cost_usdc     Decimal?  @default(0) @db.Decimal
+  created_at    DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_model_metrics_user")
+}
