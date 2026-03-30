@@ -44,6 +44,15 @@ export async function GET(
 
     const agent = await response.json()
 
+    // Strip sensitive fields before returning to client
+    if (agent?.config) {
+      const { authToken, ...safeConfig } = agent.config
+      agent.config = safeConfig
+    }
+    if (agent?.authToken) {
+      delete agent.authToken
+    }
+
     return NextResponse.json({
       agent,
       status: 'ok',

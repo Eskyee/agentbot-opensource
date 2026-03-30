@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { securityMiddleware, SecurityMiddleware } from './security-middleware'
 import { verifyCSRFToken, generateCSRFToken, CSRFToken } from './csrf'
+import { getAuthSession } from './getAuthSession'
 
 export type SecureRouteHandler = (
   req: NextRequest,
@@ -35,12 +36,16 @@ export function withSecurity(handler: SecureRouteHandler) {
 export function withAuth(handler: SecureRouteHandler) {
   return withSecurity(async (req: NextRequest, context?: { params?: any }) => {
     const ip = SecurityMiddleware.getClientIP(req)
-    
-    // Check for Authorization header or session
+
+    // Check for Authorization header first (API key based auth)
     const authHeader = req.headers.get('authorization')
-    const cookie = req.headers.get('cookie')
-    
-    if (!authHeader && !cookie?.includes('session')) {
+    if (authHeader) {
+      return handler(req, context)
+    }
+
+    // Verify session via getAuthSession (checks DB-backed cookie + NextAuth JWT)
+    const session = await getAuthSession()
+    if (!session?.user?.id) {
       // Record failed auth attempt
       const allowed = SecurityMiddleware.recordFailedAuth(ip)
       if (!allowed) {
@@ -50,13 +55,13 @@ export function withAuth(handler: SecureRouteHandler) {
           { status: 429 }
         )
       }
-      
+
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
-    
+
     // Continue to handler
     return handler(req, context)
   })

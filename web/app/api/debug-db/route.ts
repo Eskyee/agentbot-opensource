@@ -18,9 +18,7 @@ export async function GET() {
   const hasDbUrl = !!process.env.DATABASE_URL
 
   try {
-    await prisma.$connect()
     const userCount = await prisma.user.count()
-    await prisma.$disconnect()
     return NextResponse.json({
       hasDbUrl,
       nodeEnv: process.env.NODE_ENV,

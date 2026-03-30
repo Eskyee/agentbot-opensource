@@ -9,6 +9,11 @@ const AGENTBOT_VERSION = '2026.3.1';
 // Force dynamic — uses getServerSession at runtime
 export const dynamic = 'force-dynamic';
 
+// NOTE: In-memory session storage — state is lost on Vercel cold starts.
+// For production, persist session metadata to the database via Prisma.
+// This is acceptable for ephemeral chat sessions but should not be relied upon
+// for long-lived state. Consider migrating to Redis or Prisma-backed sessions
+// if persistence across cold starts is required.
 const sessions = new Map<string, {
   id: string;
   userId: string;

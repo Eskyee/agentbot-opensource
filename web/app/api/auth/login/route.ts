@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { validateCSRF } from '@/app/lib/csrf';
 
 // In-memory rate limiting for login (per-IP)
 const loginAttempts = new Map<string, { count: number; resetAt: number }>()
@@ -30,6 +31,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: 'Too many login attempts. Try again in 15 minutes.' },
       { status: 429 }
+    )
+  }
+
+  // CSRF validation
+  if (!validateCSRF(req)) {
+    return NextResponse.json(
+      { error: 'Invalid CSRF token' },
+      { status: 403 }
     )
   }
 
