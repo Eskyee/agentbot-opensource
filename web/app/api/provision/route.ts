@@ -258,4 +258,35 @@ export async function POST(request: NextRequest) {
 }
 
 
+// GET /api/provision — signup stats (atlas heartbeat, bridge-secret auth)
+const BRIDGE_SECRET = process.env.BRIDGE_SECRET
+
+export async function GET(request: NextRequest) {
+  if (BRIDGE_SECRET) {
+    const provided = request.headers.get('x-bridge-secret')
+    if (provided !== BRIDGE_SECRET) {
+      return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    }
+  }
+
+  try {
+    const totalUsers = await prisma.user.count()
+    const recentUsers = await prisma.user.findMany({
+      orderBy: { id: 'desc' },
+      take: 5,
+      select: { id: true, email: true, plan: true, subscriptionStatus: true },
+    })
+
+    return NextResponse.json({
+      ok: true,
+      totalUsers,
+      recentUsers,
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.error('[Provision GET] Error:', error)
+    return NextResponse.json({ ok: false, error: 'database error' }, { status: 500 })
+  }
+}
+
 export const dynamic = 'force-dynamic';
