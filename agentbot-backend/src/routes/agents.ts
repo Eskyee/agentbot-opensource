@@ -3,12 +3,16 @@
  *
  * Extracted from index.ts for maintainability.
  * All endpoints require Bearer token authentication (applied at mount in index.ts).
+ *
+ * Payment enforcement: POST / (create) requires active subscription or admin role.
+ * Agent limits: enforced per plan using DB-backed counts.
  */
 import { Router, Request, Response } from 'express';
 import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
+import { Pool } from 'pg';
 import { runCommand } from '../utils';
 import { authenticate } from '../middleware/auth';
 
@@ -73,6 +77,31 @@ const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
   enterprise: { memory: '16g', cpus: '4' },
   white_glove: { memory: '32g', cpus: '8' },
 };
+
+// Plan agent limits — matches pricing tiers
+const PLAN_AGENT_LIMITS: Record<string, number> = {
+  solo: 1,
+  collective: 3,
+  label: 10,
+  network: 999999, // unlimited
+};
+
+// DB-backed agent count
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+/** Returns the number of active agents for this email from the DB. */
+async function getAgentCount(email: string): Promise<number> {
+  try {
+    const result = await pool.query(
+      `SELECT COUNT(*) AS cnt FROM agent_registrations
+       WHERE user_id = $1 AND status = 'active'`,
+      [email]
+    );
+    return parseInt(result.rows[0]?.cnt ?? '0', 10);
+  } catch {
+    return 0; // fail open
+  }
+}
 
 // --- Helpers ---
 

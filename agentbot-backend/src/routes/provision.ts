@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { randomBytes } from 'crypto';
 import { authenticate } from '../middleware/auth';
-import { createContainer, getContainerStatus } from '../lib/container-manager';
+import { createContainer } from '../lib/container-manager';
 import type { PlanType } from '../lib/container-manager';
 import { Pool } from 'pg';
 
