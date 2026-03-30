@@ -51,7 +51,8 @@ const getPlanResources = (plan: string) => {
 const app = express();
 
 // Trust proxy for accurate client IPs behind Render/Vercel load balancers
-app.set('trust proxy', true);
+// Set to 1 (trust only the first proxy hop) to prevent IP spoofing via X-Forwarded-For
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
 
 // Security: strip IIS/Express bypass headers
@@ -135,9 +136,12 @@ app.use('/api/', generalLimiter);
 const PORT = process.env.PORT || 3001;
 
 // API key — refuse to start in production without it
-if (!process.env.INTERNAL_API_KEY && process.env.NODE_ENV === 'production') {
-  console.error('FATAL: INTERNAL_API_KEY must be set in production. Refusing to start.');
-  process.exit(1);
+if (!process.env.INTERNAL_API_KEY) {
+  if (process.env.NODE_ENV === 'production') {
+    console.error('FATAL: INTERNAL_API_KEY must be set in production. Refusing to start.');
+    process.exit(1);
+  }
+  console.warn('WARNING: INTERNAL_API_KEY not set — using dev fallback. Do NOT deploy to production.');
 }
 const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only';
 
@@ -1172,10 +1176,26 @@ checkProvisioning().then(available => { dockerAvailable = available; });
 
 const server = http.createServer(app);
 
-// WebSocket proxy for OpenClaw Control UI
+// WebSocket proxy for OpenClaw Control UI — require token auth
 server.on('upgrade', (req, socket, head) => {
   const match = req.url?.match(/^\/api\/openclaw\/proxy\/([a-zA-Z0-9_-]+)(\/.*)?$/);
   if (match) {
+    // Validate Bearer token before proxying WebSocket upgrades
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith('Bearer ')) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+    const token = auth.substring(7);
+    const tokenBuf = Buffer.from(token);
+    const keyBuf = Buffer.from(API_KEY);
+    if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
     const agentId = match[1];
     const target = `http://agentbot-agent-${agentId}.railway.internal:18789`;
     const proxiedReq = Object.assign({}, req, { url: match[2] || '/' });
