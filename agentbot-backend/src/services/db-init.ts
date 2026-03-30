@@ -114,18 +114,6 @@ CREATE TABLE IF NOT EXISTS bookings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Model metrics (AI usage tracking)
-CREATE TABLE IF NOT EXISTS model_metrics (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
-  agent_id INTEGER REFERENCES agents(id),
-  model TEXT NOT NULL,
-  input_tokens INTEGER DEFAULT 0,
-  output_tokens INTEGER DEFAULT 0,
-  cost_usdc NUMERIC DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- Social amplification
 CREATE TABLE IF NOT EXISTS social_campaigns (
   id SERIAL PRIMARY KEY,
