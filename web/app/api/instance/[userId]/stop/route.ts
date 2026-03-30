@@ -1,37 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
-import { verifyInstanceOwnership } from '../../_auth'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+import { prisma } from '@/app/lib/prisma'
 
+const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+const RAILWAY_TOKEN = process.env.RAILWAY_API_KEY || ''
 
+/**
+ * POST /api/instance/[userId]/stop
+ * Stop (suspend) a Railway service.
+ */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const BACKEND_API_URL = getBackendApiUrl()
-  const { userId } = await params
-  if (!(await verifyInstanceOwnership(userId))) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  const session = await getAuthSession()
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  const INTERNAL_API_KEY = getInternalApiKey()
-  
+
+  const { userId } = await params
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { openclawInstanceId: true },
+  })
+
+  if (!user?.openclawInstanceId) {
+    return NextResponse.json({ success: false, error: 'No instance found' }, { status: 404 })
+  }
+
   try {
-    const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}/stop`, {
+    const res = await fetch(RAILWAY_API, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${INTERNAL_API_KEY}`
-      }
+        'Authorization': `Bearer ${RAILWAY_TOKEN}`,
+      },
+      body: JSON.stringify({
+        query: `mutation ServiceInstanceStop($serviceId: String!, $environmentId: String!) {
+          serviceInstanceStop(serviceId: $serviceId, environmentId: $environmentId)
+        }`,
+        variables: {
+          serviceId: user.openclawInstanceId,
+          environmentId: process.env.RAILWAY_ENVIRONMENT_ID || '',
+        },
+      }),
     })
 
-    if (!response.ok) {
-      return NextResponse.json({ success: false, status: 'error' }, { status: 502 })
+    const data = await res.json()
+    if (data.errors) {
+      return NextResponse.json({ success: false, error: data.errors[0].message }, { status: 502 })
     }
 
     return NextResponse.json({ success: true, status: 'stopped' })
-  } catch (error) {
-    return NextResponse.json({ success: false, status: 'error' }, { status: 500 })
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
 }
-
-
-export const dynamic = 'force-dynamic';
