@@ -46,16 +46,13 @@ export function useCustomSession() {
 
   useEffect(() => {
     const listener = (s: CustomSession | null, st: typeof cachedStatus) => {
-      setSession(s);
-      setStatus(st);
+      setSession(prev => prev === s ? prev : s);
+      setStatus(prev => prev === st ? prev : st);
     };
     listeners.add(listener);
 
-    // If already cached, use it immediately
-    if (cachedStatus !== 'loading') {
-      setSession(cachedSession);
-      setStatus(cachedStatus);
-    } else {
+    // Only fetch if not already resolved
+    if (cachedStatus === 'loading') {
       fetchSessionOnce();
     }
 
