@@ -1,0 +1,5 @@
+export { ComparisonTable } from './ComparisonTable'
+export { SocialProof } from './SocialProof'
+export { UseCases } from './UseCases'
+export { CapabilitiesTicker } from './CapabilitiesTicker'
+export { DemoVideo } from './DemoVideo'
