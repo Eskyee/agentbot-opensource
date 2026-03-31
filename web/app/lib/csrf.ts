@@ -3,10 +3,12 @@
 
 import { createHash, randomBytes } from 'crypto'
 
-const CSRF_SECRET = process.env.CSRF_SECRET || process.env.NEXTAUTH_SECRET || (() => {
-  if (process.env.NODE_ENV === 'production') throw new Error('CSRF_SECRET or NEXTAUTH_SECRET must be set in production');
-  return 'dev-secret-change-in-production';
-})()
+function getCsrfSecret(): string {
+  return process.env.CSRF_SECRET || process.env.NEXTAUTH_SECRET || (() => {
+    if (process.env.NODE_ENV === 'production') throw new Error('CSRF_SECRET or NEXTAUTH_SECRET must be set in production');
+    return 'dev-secret-change-in-production';
+  })();
+}
 const TOKEN_LENGTH = 32
 
 export interface CSRFToken {
@@ -16,7 +18,7 @@ export interface CSRFToken {
 
 function signToken(token: string): string {
   return createHash('sha256')
-    .update(token + CSRF_SECRET)
+    .update(token + getCsrfSecret())
     .digest('hex')
 }
 
