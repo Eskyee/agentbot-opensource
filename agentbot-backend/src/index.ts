@@ -11,6 +11,7 @@ import teamProvisionRouter from './routes/team-provision';
 import registrationRouter from './routes/registration';
 import agentsRouter from './routes/agents';
 import openclawRouter, { proxy as openclawProxy } from './routes/openclaw';
+import orchestrationRouter from './routes/orchestration';
 import http from 'http';
 import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
 import AIProviderService from './services/ai-provider';
@@ -721,6 +722,7 @@ app.use('/api/provision', authenticate, provisionRouter);
 app.use('/api/provision/team', authenticate, teamProvisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
 app.use('/api/agents', authenticate, agentsRouter);
+app.use('/api/orchestration', authenticate, orchestrationRouter);
 // /api/openclaw/proxy/* is public — OpenClaw handles its own auth
 // All other /api/openclaw/* routes require backend bearer token
 app.use('/api/openclaw', (req: Request, res: Response, next: NextFunction) => {
