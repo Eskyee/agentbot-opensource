@@ -24,7 +24,7 @@ const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }
 };
 
 // Env vars to inject into each agent container
-function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
+function getAgentEnvVars(userId: string, plan: string, agentId?: string): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
     OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',
@@ -32,6 +32,7 @@ function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
     OPENCLAW_GATEWAY_PORT:  '18789',
     AGENTBOT_USER_ID:       userId,
     AGENTBOT_PLAN:          plan,
+    AGENTBOT_AGENT_ID:      agentId || userId,
     AGENTBOT_API_URL:       process.env.BACKEND_API_URL        || '',
     DATABASE_URL:           process.env.DATABASE_URL           || '',
     OPENROUTER_API_KEY:     process.env.OPENROUTER_API_KEY     || '',
@@ -40,6 +41,9 @@ function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
     NODE_ENV:               'production',
     // Railway HTTP proxy port — must match OPENCLAW_GATEWAY_PORT
     PORT:                   '18789',
+    // Permission hooks — tiered command classification
+    AGENTBOT_HOOK_ENABLED:  'true',
+    AGENTBOT_PERMISSION_MODE: plan === 'solo' ? 'permissive' : 'strict',
   };
 }
 
