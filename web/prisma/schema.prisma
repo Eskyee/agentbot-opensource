@@ -545,3 +545,25 @@ model wallets {
 
   @@index([agent_id], map: "idx_wallets_agent_id")
 }
+
+// Usage tracking — table already exists from migration 20260323000000_add_usage_logs
+model usage_logs {
+  id            Int       @id @default(autoincrement())
+  user_id       String
+  agent_id      String
+  model         String
+  input_tokens  Int?      @default(0)
+  output_tokens Int?      @default(0)
+  cost_usd      Decimal?  @default(0) @db.Decimal(10, 6)
+  endpoint      String?
+  latency_ms    Int?
+  success       Boolean?  @default(true)
+  error_message String?
+  created_at    DateTime? @default(now())
+
+  @@index([user_id], map: "idx_usage_logs_user_id")
+  @@index([agent_id], map: "idx_usage_logs_agent_id")
+  @@index([created_at], map: "idx_usage_logs_created_at")
+  @@index([user_id, created_at], map: "idx_usage_logs_user_created")
+  @@index([agent_id, created_at], map: "idx_usage_logs_agent_created")
+}

@@ -1,9 +1,9 @@
 /**
- * Usage Logger — records token usage for cost tracking
- * 
- * Console-only for now. TODO: persist to DB when usageLog model
- * is added to Prisma schema.
+ * Usage Logger — records token usage for cost tracking.
+ * Writes to `usage_logs` table (created by migration 20260323000000_add_usage_logs).
+ * Falls back to console on DB error so it never breaks the calling route.
  */
+import { prisma } from '@/app/lib/prisma'
 
 // Model pricing per 1M tokens (input, output) in USD
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
@@ -20,6 +20,11 @@ const MODEL_PRICING: Record<string, { input: number; output: number }> = {
   'deepseek-r1': { input: 0.55, output: 2.19 },
   'qwen-2.5-72b': { input: 0.40, output: 1.20 },
   'mistral-large': { input: 2.0, output: 6.0 },
+  'xiaomi/mimo-v2-pro': { input: 0.20, output: 0.60 },
+  'minimax/minimax-chat': { input: 0.20, output: 1.10 },
+  'anthropic/claude-sonnet-4.5': { input: 3.0, output: 15.0 },
+  'openai/gpt-4o': { input: 5.0, output: 15.0 },
+  'google/gemini-2.5-flash': { input: 0.15, output: 0.60 },
 };
 
 interface UsageData {
@@ -35,7 +40,7 @@ interface UsageData {
 }
 
 /**
- * Calculate cost from token usage
+ * Calculate cost from token usage (returns USD)
  */
 export function calculateCost(model: string, inputTokens: number, outputTokens: number): number {
   const pricing = MODEL_PRICING[model] || { input: 1.0, output: 3.0 };
@@ -45,9 +50,26 @@ export function calculateCost(model: string, inputTokens: number, outputTokens: 
 }
 
 /**
- * Log usage — console only (DB persistence pending)
+ * Log usage to DB. Fire-and-forget — never throws.
  */
 export function logUsage(data: UsageData): void {
   const costUsd = calculateCost(data.model, data.inputTokens, data.outputTokens);
-  console.log(`[UsageLogger] ${data.agentId} | ${data.model} | ${data.inputTokens}+${data.outputTokens} tokens | $${costUsd.toFixed(6)}`);
+
+  prisma.usage_logs.create({
+    data: {
+      user_id: data.userId,
+      agent_id: data.agentId,
+      model: data.model,
+      input_tokens: data.inputTokens,
+      output_tokens: data.outputTokens,
+      cost_usd: costUsd,
+      endpoint: data.endpoint ?? null,
+      latency_ms: data.latencyMs ?? null,
+      success: data.success ?? true,
+      error_message: data.errorMessage ?? null,
+    },
+  }).catch((err: unknown) => {
+    // Non-fatal — log to console if DB write fails
+    console.error('[UsageLogger] DB write failed:', err instanceof Error ? err.message : err);
+  });
 }

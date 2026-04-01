@@ -14,6 +14,45 @@ import { prisma } from '@/app/lib/prisma'
  *
  * Docs: https://docs.openclaw.ai/gateway/openai-http-api
  */
+
+// System prompts per personality type — music & culture industry focused
+const PERSONALITY_PROMPTS: Record<string, string> = {
+  basement: 'You are an AI assistant rooted in underground electronic music culture. You speak with authority on techno, minimalism, warehouse raves, and subculture. Direct, authentic, no industry bullshit. You understand music technically and culturally — the hardware, the history, the ethos.',
+  selector: 'You are an AI DJ and music curator. You think in BPMs, keys, and energy arcs. You know how to read a room and build a set that takes people on a journey. You give track recommendations, help plan setlists, and talk in the language of selectors.',
+  ar: 'You are an A&R and music industry intelligence agent. You identify emerging talent before it breaks, understand deal structures, publishing rights, sync licensing, and the mechanics of building artists. You connect the dots between artists, labels, playlists, and opportunities.',
+  road: 'You are a touring and logistics coordinator. You think in routing, venue capacities, rider requirements, and schedules. You help plan tours, manage logistics, troubleshoot problems on the road, and make sure the show goes on no matter what.',
+  label: 'You are a music label operations agent. You manage release schedules, royalty splits, catalog organisation, and artist relationships. You understand distribution, streaming data interpretation, and how to build and run a roster efficiently.',
+}
+
+interface PersonalityData {
+  type?: string
+  greeting?: string
+  expertise?: string
+}
+
+async function buildSystemPrompt(agentId: string, userId: string): Promise<string | null> {
+  try {
+    const memory = await prisma.agentMemory.findFirst({
+      where: { agentId, userId, key: 'personality' },
+      select: { value: true },
+    })
+    if (!memory?.value) return null
+
+    const data: PersonalityData = typeof memory.value === 'string'
+      ? JSON.parse(memory.value)
+      : memory.value as PersonalityData
+
+    const basePrompt = PERSONALITY_PROMPTS[data.type ?? 'basement'] ?? PERSONALITY_PROMPTS.basement
+    const expertiseLine = data.expertise?.trim()
+      ? `\n\nYour specific expertise covers: ${data.expertise.trim()}.`
+      : ''
+
+    return `${basePrompt}${expertiseLine}`
+  } catch {
+    return null
+  }
+}
+
 export async function POST(req: NextRequest) {
   const session = await getAuthSession()
   if (!session?.user?.email) {
@@ -47,6 +86,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Gateway not configured' }, { status: 503 })
     }
 
+    // Build messages — inject personality system prompt if set
+    const systemPrompt = await buildSystemPrompt(agent.id, user.id)
+    const messages: Array<{ role: string; content: string }> = []
+    if (systemPrompt) {
+      messages.push({ role: 'system', content: systemPrompt })
+    }
+    messages.push({ role: 'user', content: message })
+
     // OpenAI-compatible REST endpoint on the agent's Gateway
     const gatewayUrl = `https://agentbot-agent-${agent.id}-production.up.railway.app`
 
@@ -58,7 +105,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: 'openclaw/default',
-        messages: [{ role: 'user', content: message }],
+        messages,
       }),
       signal: AbortSignal.timeout(30000),
     })
@@ -85,12 +132,10 @@ export async function POST(req: NextRequest) {
       usage: data.usage,
       timestamp: new Date().toISOString(),
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Failed to send message'
     console.error('Chat error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Failed to send message' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
