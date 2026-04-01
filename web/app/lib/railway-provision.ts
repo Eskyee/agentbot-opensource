@@ -11,7 +11,7 @@
  */
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.28'
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.1'
 
 /**
  * OpenClaw TCP proxy start command.
