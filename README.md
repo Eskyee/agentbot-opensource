@@ -5,6 +5,9 @@
 ![CI](https://github.com/Eskyee/agentbot-opensource/actions/workflows/ci.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
+
+[DeepWikiEskyee/agentbot-opensource](https://deepwiki.com/Eskyee/agentbot-opensource/1-agentbot-overview)
+
 ---
 
 ## What is Agentbot?
