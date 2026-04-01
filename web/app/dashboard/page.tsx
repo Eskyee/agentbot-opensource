@@ -8,6 +8,7 @@ import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { TrialBanner } from '@/app/components/TrialBanner'
 
 const WalletCard = dynamic(() => import('@/app/components/WalletCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
 const AIModelCard = dynamic(() => import('@/app/components/AIModelCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
@@ -379,6 +380,7 @@ function DashboardContent() {
       />
 
       <div className="flex-1 flex flex-col">
+        <TrialBanner />
         {/* Top Navbar */}
         <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">

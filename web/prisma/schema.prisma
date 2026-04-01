@@ -27,6 +27,7 @@ model User {
   referralCode          String?          @unique
   referralCredits       Int              @default(0)
   referredBy            String?
+  trialEndsAt           DateTime?
   accounts              Account[]
   agents                Agent[]
   agentFiles            AgentFile[]
@@ -89,16 +90,19 @@ model Agent {
   config          Json?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  tier            String           @default("free")
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  files           AgentFile[]
-  memories        AgentMemory[]
-  installedSkills InstalledSkill[]
-  scheduledTasks  ScheduledTask[]
+  tier                String           @default("free")
+  showcaseOptIn       Boolean          @default(false)
+  showcaseDescription String?
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files               AgentFile[]
+  memories            AgentMemory[]
+  installedSkills     InstalledSkill[]
+  scheduledTasks      ScheduledTask[]
 
   @@index([userId])
   @@index([status])
   @@index([userId, status])
+  @@index([showcaseOptIn])
 }
 
 model ScheduledTask {
