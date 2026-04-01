@@ -729,6 +729,40 @@ app.use('/api/openclaw', (req: Request, res: Response, next: NextFunction) => {
 }, openclawRouter);
 app.use('/api', registrationRouter); // validate-key, register-home, register-link, heartbeat
 
+// Permission system — tiered command classification
+import {
+  preToolUseHook,
+  getPendingForUser,
+  getPendingForAgent,
+  processPermissionDecision,
+} from './middleware/permission-hook';
+
+// GET /api/permissions — list pending requests for user
+app.get('/api/permissions', authenticate, (req: Request, res: Response) => {
+  const userId = req.userId || 'unknown';
+  const agentId = req.query.agentId as string;
+  const pending = agentId
+    ? getPendingForAgent(agentId)
+    : getPendingForUser(userId);
+  res.json({ pending });
+});
+
+// POST /api/permissions — submit decision
+app.post('/api/permissions', authenticate, (req: Request, res: Response) => {
+  const { requestId, decision } = req.body;
+  if (!requestId || !decision) {
+    return res.status(400).json({ error: 'Missing requestId or decision' });
+  }
+  if (!['approve', 'reject', 'approve_always'].includes(decision)) {
+    return res.status(400).json({ error: 'Invalid decision' });
+  }
+  const result = processPermissionDecision(requestId, decision);
+  if (!result) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  res.json({ success: true, requestId, decision, tier: result.tier });
+});
+
 // Health check — includes Docker status for observability
 app.get('/health', async (req: Request, res: Response) => {
   res.json({
