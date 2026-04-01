@@ -11,10 +11,13 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init curl docker-cli bash
 
 COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts || npm install --omit=dev --ignore-scripts
+# Install ALL deps first (tsc is a devDependency needed for build)
+RUN npm ci --ignore-scripts || npm install --ignore-scripts
 
 COPY . .
 RUN npm run build
+# Remove devDependencies after build
+RUN npm prune --production
 
 # Copy provision script
 RUN mkdir -p /app/docker
