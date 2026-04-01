@@ -1,4 +1,11 @@
 import { NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+
+function isAdmin(email: string | null | undefined): boolean {
+  if (!email) return false
+  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+  return adminEmails.includes(email.toLowerCase())
+}
 
 const ALLOWED_COMMANDS = [
   'gateway.restart',
@@ -155,6 +162,12 @@ Components:
 }
 
 export async function POST(req: Request) {
+  // Admin-only — same guard as debug-db and debug-oauth
+  const session = await getAuthSession()
+  if (!session?.user?.email || !isAdmin(session.user.email)) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
   try {
     const body = await req.json()
     const { command, agentId } = body
