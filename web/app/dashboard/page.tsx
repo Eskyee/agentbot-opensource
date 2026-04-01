@@ -6,12 +6,13 @@ import { useSearchParams, usePathname } from 'next/navigation'
 import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
-import WalletCard from '@/app/components/WalletCard'
-import AIModelCard from '@/app/components/AIModelCard'
-import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/VerificationBadge'
-import HelpChat from '@/app/components/HelpChat'
-import AgentChat from '@/app/components/AgentChat'
+import dynamic from 'next/dynamic'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+
+const WalletCard = dynamic(() => import('@/app/components/WalletCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
+const AIModelCard = dynamic(() => import('@/app/components/AIModelCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
+const AgentChat = dynamic(() => import('@/app/components/AgentChat'), { ssr: false })
+const HelpChat = dynamic(() => import('@/app/components/HelpChat'), { ssr: false })
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
