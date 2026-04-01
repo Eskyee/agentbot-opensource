@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
@@ -22,7 +22,10 @@ interface PermissionGateProps {
 export function PermissionGate({ agentId, onRequestHandled }: PermissionGateProps) {
   const [requests, setRequests] = useState<PermissionRequest[]>([])
   const [loading, setLoading] = useState(false)
+  const [connected, setConnected] = useState(false)
+  const wsRef = useRef<WebSocket | null>(null)
 
+  // Fetch pending from REST API (initial load + fallback)
   const fetchPending = useCallback(async () => {
     try {
       const params = agentId ? `?agentId=${agentId}` : ''
@@ -34,11 +37,62 @@ export function PermissionGate({ agentId, onRequestHandled }: PermissionGateProp
     }
   }, [agentId])
 
+  // WebSocket connection for real-time notifications
   useEffect(() => {
+    // Initial fetch
     fetchPending()
-    const interval = setInterval(fetchPending, 5000) // Poll every 5s
-    return () => clearInterval(interval)
-  }, [fetchPending])
+
+    // Connect WebSocket
+    const userId = agentId || 'default'
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const host = window.location.host
+    const wsUrl = `${protocol}//${host}/ws/permissions?userId=${userId}`
+
+    try {
+      const ws = new WebSocket(wsUrl)
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        setConnected(true)
+        console.log('[PermissionGate] WebSocket connected')
+      }
+
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data)
+          if (msg.type === 'permission_request') {
+            setRequests(prev => {
+              // Deduplicate
+              if (prev.find(r => r.id === msg.data.id)) return prev
+              return [...prev, { ...msg.data, timestamp: msg.data.timestamp || Date.now() }]
+            })
+          } else if (msg.type === 'decision_ack') {
+            setRequests(prev => prev.filter(r => r.id !== msg.data.requestId))
+          }
+        } catch (err) {
+          console.error('[PermissionGate] WS parse error:', err)
+        }
+      }
+
+      ws.onclose = () => {
+        setConnected(false)
+        console.log('[PermissionGate] WebSocket disconnected, falling back to polling')
+      }
+
+      ws.onerror = () => {
+        setConnected(false)
+      }
+
+      return () => {
+        ws.close()
+        wsRef.current = null
+      }
+    } catch {
+      // WebSocket not available, fall back to polling
+      const interval = setInterval(fetchPending, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [agentId, fetchPending])
 
   const handleDecision = async (
     requestId: string,

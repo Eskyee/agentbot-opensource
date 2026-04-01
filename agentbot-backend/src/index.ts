@@ -1239,6 +1239,11 @@ server.on('upgrade', (req, socket, head) => {
   }
 });
 
+// Permission WebSocket — real-time approval notifications
+import { setupWebSocket } from './lib/hooks/ws-handler';
+const permissionWss = setupWebSocket(server);
+console.log('[WS] Permission WebSocket registered at /ws/permissions');
+
 server.listen(PORT, () => {
   console.log(`🦞 Agentbot API server running on port ${PORT}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
