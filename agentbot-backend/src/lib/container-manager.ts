@@ -13,7 +13,7 @@ import crypto from 'crypto';
  */
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.28';
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.3.31';
 
 // Plan → CPU (millicores) + Memory (MB)
 const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }> = {
