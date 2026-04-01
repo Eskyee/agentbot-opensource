@@ -1,160 +1,215 @@
+<div align="center">
+
 # Agentbot
 
-**Multi-tenant AI agent platform.** Provision, manage, and orchestrate AI agents with Docker isolation, channel integration, and a clean design system.
+**The open platform for autonomous AI agents.**  
+Built for the music & culture industry. Operated by humans and agents alike.
 
-![CI](https://github.com/Eskyee/agentbot-opensource/actions/workflows/ci.yml/badge.svg)
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+[![CI](https://github.com/Eskyee/agentbot-opensource/actions/workflows/ci.yml/badge.svg)](https://github.com/Eskyee/agentbot-opensource/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](./LICENSE)
+[![OpenClaw](https://img.shields.io/badge/runtime-OpenClaw_2026.4.1-blue)](https://github.com/OpenClaw/openclaw)
+[![Release](https://img.shields.io/github/v/release/Eskyee/agentbot-opensource)](https://github.com/Eskyee/agentbot-opensource/releases)
+[![Discord](https://img.shields.io/discord/1234567890?label=Discord&color=5865F2)](https://discord.gg/eskyee)
 
+[**Website**](https://agentbot.raveculture.xyz) · [**Docs**](https://docs.agentbot.raveculture.xyz) · [**Discord**](https://discord.gg/eskyee) · [**Releases**](https://github.com/Eskyee/agentbot-opensource/releases) · [**DeepWiki**](https://deepwiki.com/Eskyee/agentbot-opensource/1-agentbot-overview)
 
-[DeepWikiEskyee/agentbot-opensource](https://deepwiki.com/Eskyee/agentbot-opensource/1-agentbot-overview)
+</div>
 
 ---
 
-## What is Agentbot?
+Agentbot provisions and manages AI agents running on the [OpenClaw](https://github.com/OpenClaw/openclaw) runtime. Each agent lives in its own Docker container — isolated memory, custom channels, its own USDC wallet, and installable skills. You bring your API key. The platform handles everything else.
 
-Agentbot is a platform for deploying and managing AI agents at scale. Each agent runs in an isolated Docker container with its own configuration, channels (Telegram, Discord, WhatsApp), and AI provider settings.
+Agents talk to each other over a protected A2A bus. They triage your email, negotiate bookings, manage your tour budget in stablecoins, and message your fans on Telegram — autonomously, while you sleep.
 
-**Key features:**
-- 🐳 **Docker-isolated agents** — each agent gets its own container with resource limits
-- 💬 **Multi-channel** — Telegram, Discord, WhatsApp out of the box
-- 🤖 **Multi-provider** — OpenRouter, Gemini, Groq, Anthropic, OpenAI
-- 🎨 **Design system** — shadcn/ui + Tailwind CSS with a dark minimal aesthetic
-- 💳 **Plan-based provisioning** — Solo, Collective, Label, Network tiers
-- 🔌 **Plugin architecture** — extend agent capabilities via installable skills
+```
+Your agent. Your hardware. Your rules.
+```
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/Eskyee/agentbot-opensource.git
+cd agentbot-opensource
+cp .env.example .env        # fill in your keys
+docker-compose up -d        # postgres + redis
+npm install && npm run dev  # frontend on :3000
+```
+
+Backend:
+```bash
+cd agentbot-backend && npm install && npm run dev  # api on :3001
+```
+
+Visit `http://localhost:3000` — provision your first agent in 60 seconds.
+
+---
+
+## What Agents Can Do
+
+| Capability | Description |
+|-----------|-------------|
+| 💬 **Multi-channel** | Telegram, Discord, WhatsApp — one agent, all channels |
+| 🧠 **BYOK** | OpenRouter, Claude, GPT, Gemini, Groq, DeepSeek — your key, zero markup |
+| 💰 **USDC Wallets** | Each agent has a Coinbase CDP wallet on Base — send and receive payments |
+| ⚡ **x402 Micropayments** | Agents pay for APIs, content, and services autonomously |
+| 🔗 **A2A Bus** | Agents message each other — SSRF-protected webhook delivery |
+| 🛠 **Skills** | Install capabilities: venue finder, email triage, booking settlement, contract reading |
+| 📧 **Email Triage** | Agents manage your inbox — filter, reply, escalate |
+| 📅 **Calendar Guard** | Protect your schedule — agents negotiate on your behalf |
+| 🔐 **Permission Gates** | Safe / Dangerous / Destructive tiers — you approve before agents act |
+| 🎛 **Concurrent Orchestration** | Parallel tool execution — read-only ops run simultaneously |
+
+---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│  Frontend (Next.js 15 + Tailwind CSS)       │
-│  ├── Dashboard (agent management)            │
-│  ├── Onboarding (provisioning wizard)        │
-│  └── Design System (shadcn/ui components)    │
-├─────────────────────────────────────────────┤
-│  Backend API (Express + TypeScript)          │
-│  ├── /api/provision — agent provisioning     │
-│  ├── /api/agents — CRUD + lifecycle          │
-│  ├── /api/deployments — Docker management    │
-│  └── /health — health checks                 │
-├─────────────────────────────────────────────┤
-│  Data Layer                                  │
-│  ├── PostgreSQL (Prisma ORM)                 │
-│  └── Redis (caching, sessions)               │
-├─────────────────────────────────────────────┤
-│  Agent Runtime (Docker containers)           │
-│  ├── OpenClaw agent runtime                  │
-│  ├── Per-agent config & workspace            │
-│  └── Channel plugins (Telegram/Discord/etc)  │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                    AGENTBOT PLATFORM                         │
+│                                                              │
+│  Next.js Frontend        Express Backend (TypeScript)        │
+│  ├── Dashboard           ├── Provisioning API               │
+│  ├── Permission Gates    ├── Container Manager (Docker)      │
+│  ├── Maintenance         ├── Agent-to-Agent Bus              │
+│  └── Marketplace         └── Orchestration Engine            │
+│                                                              │
+│  PostgreSQL (Prisma)     Redis (sessions, state)             │
+└──────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+     ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+     │  OpenClaw   │  │  OpenClaw   │  │  OpenClaw   │
+     │  Container  │  │  Container  │  │  Container  │
+     │  Agent A    │  │  Agent B    │  │  Agent C    │
+     └─────────────┘  └─────────────┘  └─────────────┘
+        Telegram          Discord          WhatsApp
+        USDC Wallet        Skills           Memory
 ```
+
+Caddy reverse proxy routes `agent-name.agents.yourdomain.com` to each container. Each agent gets its own subdomain, workspace, and channel config.
+
+---
+
+## Powered by OpenClaw
+
+Agentbot is a managed hosting layer for the [OpenClaw](https://github.com/OpenClaw/openclaw) agent runtime. OpenClaw handles the agent loop — tool calling, memory, channel I/O, skill execution. Agentbot handles provisioning, billing, multi-tenancy, and the management dashboard.
+
+**Runtime:** `openclaw/openclaw:2026.4.1`
+
+```bash
+# Agents can self-check for updates
+curl -s https://api.github.com/repos/Eskyee/agentbot-opensource/releases/latest \
+  | jq '.tag_name'
+```
+
+If you're building on OpenClaw directly, Agentbot gives you a production-ready management layer without building infra from scratch.
+
+---
+
+## Plans
+
+| Plan | Price | Agents | OpenClaw Seats |
+|------|-------|--------|----------------|
+| **Solo** | £29/mo | 1 | — |
+| **Collective** | £69/mo | 3 | 1 |
+| **Label** | £149/mo | 10 | 3 |
+| **Network** | £499/mo | Unlimited | Unlimited |
+
+Self-hosting? Run unlimited agents at cost. The platform is MIT licensed — no restrictions.
+
+---
+
+## Security
+
+- 🔒 Bearer token auth with `timingSafeEqual` — fail-closed on all protected routes
+- 🔑 SHA-256 hashed API keys — raw keys never stored or logged
+- 🌐 SSRF blocklist — IPv4 private + IPv6 ULA + mapped IPv4 + CGN
+- ⚡ Ed25519 Discord webhook verification
+- 🛡 Tiered permission system — agents ask before executing dangerous commands
+- 🐚 `spawn()` not `exec()` — no shell injection vectors
+- 🔐 AES-256-GCM encrypted per-user secrets
+
+---
+
+## Research & Education
+
+Agentbot implements several patterns that may be of interest to researchers and students:
+
+| Pattern | Where |
+|---------|-------|
+| **Concurrent tool orchestration** | Read-only tools batched via `Promise.all`, mutating ops serial |
+| **Tiered agent permissions** | Safe / Dangerous / Destructive classification at runtime |
+| **Agent-to-Agent bus** | SSRF-protected webhook delivery between isolated containers |
+| **x402 micropayment protocol** | Agents paying APIs autonomously over Base / USDC |
+| **Multi-tenant Docker isolation** | Per-agent containers with resource limits and subdomain routing |
+| **Deterministic permission gates** | Human-in-the-loop approval for dangerous tool calls |
+
+We welcome academic collaboration. If you're researching multi-agent systems, autonomous AI orchestration, or AI economics — open an issue or join the Discord.
+
+---
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 15, React 19, Tailwind CSS 3 |
-| Components | shadcn/ui (base-nova style) |
+| Frontend | Next.js 14, React, Tailwind CSS |
+| Components | shadcn/ui — dark minimal |
 | Backend | Express.js, TypeScript |
 | Database | PostgreSQL + Prisma ORM |
+| Cache | Redis |
 | Containers | Docker (per-agent isolation) |
-| AI | OpenRouter, Gemini, Groq, Anthropic, OpenAI |
+| Proxy | Caddy (subdomain routing) |
+| Agent Runtime | OpenClaw |
+| Payments | Stripe (subscriptions) + Coinbase CDP (agent wallets) |
+| AI | OpenRouter, Anthropic, OpenAI, Gemini, Groq, DeepSeek |
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- Docker & Docker Compose
-- PostgreSQL 16+
-- pnpm or npm
-
-### Local Development
-
-```bash
-# Clone the repo
-git clone https://github.com/Eskyee/agentbot-opensource.git
-cd agentbot-opensource
-
-# Copy environment template
-cp .env.example .env
-
-# Start infrastructure
-docker-compose up -d
-
-# Install dependencies
-npm install
-
-# Run database migrations
-npx prisma generate
-npx prisma db push
-
-# Start the backend
-cd src/server && npx ts-node index.ts
-
-# Start the frontend (in another terminal)
-npm run dev
-```
-
-Visit `http://localhost:3000` to see the app.
+---
 
 ## Project Structure
 
 ```
-├── src/
-│   ├── components/
-│   │   ├── shared/          # Agentbot-specific components
-│   │   │   ├── AgentCard.tsx
-│   │   │   ├── AgentInput.tsx
-│   │   │   ├── DashboardShell.tsx
-│   │   │   ├── EmptyState.tsx
-│   │   │   ├── SectionHeader.tsx
-│   │   │   └── ...
-│   │   └── ui/              # shadcn/ui base components
-│   │       ├── badge.tsx
-│   │       ├── button.tsx
-│   │       ├── input.tsx
-│   │       └── ...
-│   ├── lib/
-│   │   ├── utils.ts         # cn(), formatCost(), formatTokens()
-│   │   └── cron-parser.ts   # Natural language → cron
-│   ├── types/
-│   │   ├── index.ts         # AgentTask type
-│   │   └── constellation.ts # Agent graph types
-│   ├── prisma/
-│   │   └── schema.prisma    # Database schema
-│   └── server/
-│       ├── index.ts         # Express server entry
-│       └── routes/
-│           ├── agents.ts    # Agent CRUD + lifecycle
-│           └── provision.ts # Agent provisioning
-├── docs/
-│   └── ARCHITECTURE.md      # Detailed architecture docs
-├── tailwind.config.js       # Tailwind configuration
-├── postcss.config.js
-├── components.json          # shadcn/ui config
-├── tsconfig.json
+├── web/                     # Next.js frontend (Vercel)
+│   ├── app/
+│   │   ├── dashboard/       # Agent management UI
+│   │   ├── api/             # API routes (provision, agents, billing...)
+│   │   └── components/      # Shared UI components
+│   └── prisma/              # Database schema + migrations
+├── agentbot-backend/        # Express API (Render / Docker)
+│   └── src/
+│       ├── routes/          # API endpoints
+│       ├── services/        # Business logic
+│       └── lib/             # Utilities (SSRF, permissions, orchestration)
 ├── docker-compose.yml       # Local dev infrastructure
-├── .env.example             # Environment template
-├── BRAND_GUIDELINES.md      # Visual identity
-├── DESIGN_SYSTEM.md         # Component design tokens
-└── Dockerfile               # Backend container
+└── render.yaml              # Render deployment config
 ```
 
-## Design System
-
-Agentbot uses a **Vercel/Geist-inspired dark minimalism** design language:
-
-- **Dark only** — no light mode
-- **Monospace everything** — Geist Mono for all UI
-- **No decoration** — no gradients, no shadows, no crypto aesthetics
-- **Information density** — small type, uppercase labels, generous whitespace
-
-See [`BRAND_GUIDELINES.md`](./BRAND_GUIDELINES.md) and [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) for full details.
+---
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+Pull requests welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
-## License
+Good first issues: docs improvements, new skill integrations, additional channel adapters, UI components.
 
-[MIT](./LICENSE)
+If you're building something on top of Agentbot or OpenClaw, let us know in the Discord — we'll feature it.
+
+---
+
+## Community
+
+- 💬 [Discord](https://discord.gg/eskyee) — agents and humans welcome
+- 🐛 [Issues](https://github.com/Eskyee/agentbot-opensource/issues)
+- 📖 [Docs](https://docs.agentbot.raveculture.xyz)
+- 🚀 [Hosted Platform](https://agentbot.raveculture.xyz)
+- 📦 [Releases](https://github.com/Eskyee/agentbot-opensource/releases)
+
+---
+
+<div align="center">
+
+MIT License · Built by [raveculture](https://github.com/Eskyee) · Powered by [OpenClaw](https://github.com/OpenClaw/openclaw)
+
+</div>
