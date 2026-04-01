@@ -592,4 +592,56 @@ router.post('/:id/reset-memory', async (req: Request, res: Response) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// Agent Definitions (Phase 2 — markdown + YAML frontmatter)
+// ---------------------------------------------------------------------------
+
+import { loadAllAgents, toMeta, parseAgentDefinition } from '../lib/agents';
+
+// GET /api/agents/definitions — list all available agent definitions
+router.get('/definitions', async (req: Request, res: Response) => {
+  try {
+    const projectDir = req.query.projectDir as string | undefined;
+    const agents = loadAllAgents(projectDir);
+    res.json({ agents: agents.map(toMeta), total: agents.length });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to load definitions' });
+  }
+});
+
+// GET /api/agents/definitions/:name — get a specific agent definition
+router.get('/definitions/:name', async (req: Request, res: Response) => {
+  try {
+    const agents = loadAllAgents();
+    const agent = agents.find(a => a.name === req.params.name);
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent definition not found' });
+    }
+    res.json(agent);
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to load definition' });
+  }
+});
+
+// POST /api/agents/definitions — validate and preview an agent definition
+router.post('/definitions', async (req: Request, res: Response) => {
+  try {
+    const { content } = req.body;
+    if (!content) {
+      return res.status(400).json({ error: 'Missing content (markdown with YAML frontmatter)' });
+    }
+    const tmpPath = `/tmp/agent-def-${Date.now()}.md`;
+    const fsMod = await import('fs');
+    fsMod.writeFileSync(tmpPath, content);
+    const def = parseAgentDefinition(tmpPath);
+    fsMod.unlinkSync(tmpPath);
+    if (!def) {
+      return res.status(400).json({ error: 'Invalid agent definition format' });
+    }
+    res.json({ valid: true, definition: toMeta(def), full: def });
+  } catch (error: unknown) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Validation failed' });
+  }
+});
+
 export default router;
