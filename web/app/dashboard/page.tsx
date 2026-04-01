@@ -12,6 +12,7 @@ import { AgentVerifiedBadge, AgentVerificationPanel } from '@/app/components/Ver
 import HelpChat from '@/app/components/HelpChat'
 import AgentChat from '@/app/components/AgentChat'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { PermissionGate } from '@/app/components/shared/PermissionGate'
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -459,6 +460,9 @@ function DashboardContent() {
 
         <main className="flex-1 overflow-y-auto">
           <div className="p-4 lg:p-8">
+          {/* Permission Gate — shows pending approval requests */}
+          <PermissionGate agentId={instance?.userId} />
+
           {/* Stats Cards */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
