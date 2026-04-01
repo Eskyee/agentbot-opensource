@@ -7,6 +7,7 @@
 
 import { Router, Request, Response } from 'express'
 import { executeConcurrent, partitionBatches, getPartitionStats, type ToolCall } from '../lib/orchestration'
+import { executeTool } from '../lib/orchestration/tool-executor'
 
 const router = Router()
 
@@ -37,17 +38,9 @@ router.post('/batch', async (req: Request, res: Response) => {
     const batches = partitionBatches(tools)
     const stats = getPartitionStats(batches)
 
-    // Execute with concurrent optimization
+    // Execute with concurrent optimization + real tool execution
     const result = await executeConcurrent(tools, async (tool) => {
-      // TODO: Route to actual tool execution service
-      // For now, return mock execution result
-      // In production, this calls the Docker agent or internal tool runner
-      return {
-        toolId: tool.id,
-        toolName: tool.toolName,
-        status: 'executed',
-        timestamp: new Date().toISOString(),
-      }
+      return executeTool(tool.toolName, tool.input)
     })
 
     // Log for monitoring
