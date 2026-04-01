@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'platform-update-april-2026',
+    date: '2 April 2026',
+    title: 'April Update — OpenClaw 2026.4.1, Orchestration Engine & v1.0.0 Open Source',
+    excerpt: 'OpenClaw 2026.4.1 live. Concurrent tool orchestration, tiered permission gates, encrypted per-user keys, maintenance page, dashboard INP fix, and v1.0.0 open source release.',
+    tags: ["Release", "OpenClaw", "Open Source", "Orchestration"]
+  },
+  {
     slug: 'openclaw-v2026-3-24',
     date: '26 March 2026',
     title: 'Agentbot Now Runs OpenClaw v2026.3.24',
