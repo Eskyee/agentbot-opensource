@@ -15,6 +15,11 @@ const AIModelCard = dynamic(() => import('@/app/components/AIModelCard'), { ssr:
 const AgentChat = dynamic(() => import('@/app/components/AgentChat'), { ssr: false })
 const HelpChat = dynamic(() => import('@/app/components/HelpChat'), { ssr: false })
 
+const WalletCard = dynamic(() => import('@/app/components/WalletCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
+const AIModelCard = dynamic(() => import('@/app/components/AIModelCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
+const AgentChat = dynamic(() => import('@/app/components/AgentChat'), { ssr: false })
+const HelpChat = dynamic(() => import('@/app/components/HelpChat'), { ssr: false })
+
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
   if (!percent) return 'w-0';
