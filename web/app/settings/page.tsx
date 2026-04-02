@@ -52,6 +52,11 @@ export default function SettingsPage() {
   const [showcaseAgentId, setShowcaseAgentId] = useState('')
   const [showcaseSaving, setShowcaseSaving] = useState(false)
   const [showcaseSaved, setShowcaseSaved] = useState(false)
+  const [openclawInfo, setOpenclawInfo] = useState<{
+    managed: boolean
+    instanceId: string | null
+    url: string | null
+  } | null>(null)
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -69,6 +74,7 @@ export default function SettingsPage() {
           setEmail(data.email || '')
           setCredits(data.credits || 0)
           setTwoFactorEnabled(data.twoFactorEnabled || false)
+          setOpenclawInfo(data.openclaw || { managed: true, instanceId: null, url: null })
           if (data.notifications) setNotifications(data.notifications)
         }
 
@@ -241,6 +247,48 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 )}
+
+                <div className="border border-zinc-800 bg-zinc-950 p-5">
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <div>
+                      <h2 className="text-sm font-bold uppercase tracking-tight mb-1">OpenClaw Runtime</h2>
+                      <p className="text-[11px] text-zinc-500">
+                        Managed by Agentbot. Users should open their agent from the dashboard, not configure raw OpenClaw URLs manually.
+                      </p>
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest px-2 py-1 border border-emerald-500/30 text-emerald-400">
+                      Managed
+                    </span>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Instance ID</div>
+                      <div className="text-xs font-mono text-zinc-400 break-all">
+                        {openclawInfo?.instanceId || 'Not provisioned yet'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-1">Access</div>
+                      {openclawInfo?.url ? (
+                        <a
+                          href={openclawInfo.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-mono text-blue-400 hover:text-blue-300 break-all"
+                        >
+                          Open managed instance →
+                        </a>
+                      ) : (
+                        <div className="text-xs text-zinc-500">Provisioning required</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 border-t border-zinc-800 pt-4 text-[11px] text-zinc-500">
+                    If you need a custom OpenClaw runtime later, add it as an advanced override. The default user path should stay managed to reduce broken configs and support load.
+                  </div>
+                </div>
               </div>
             )}
 

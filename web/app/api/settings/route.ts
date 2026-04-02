@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
       plan: user.plan,
       credits: user.referralCredits ?? 0,
       twoFactorEnabled: false,
+      openclaw: {
+        managed: true,
+        instanceId: user.openclawInstanceId ?? null,
+        url: user.openclawUrl ?? null,
+      },
     })
   } catch (error) {
     console.error('Settings fetch error:', error)
@@ -55,6 +60,11 @@ export async function PATCH(req: NextRequest) {
       plan: user.plan,
       credits: user.referralCredits ?? 0,
       twoFactorEnabled: false,
+      openclaw: {
+        managed: true,
+        instanceId: user.openclawInstanceId ?? null,
+        url: user.openclawUrl ?? null,
+      },
     })
   } catch (error) {
     console.error('Settings update error:', error)
@@ -99,6 +109,11 @@ export async function POST(req: NextRequest) {
       plan: user.plan,
       credits: user.referralCredits ?? 0,
       twoFactorEnabled: false,
+      openclaw: {
+        managed: true,
+        instanceId: user.openclawInstanceId ?? null,
+        url: user.openclawUrl ?? null,
+      },
     })
   } catch (error) {
     console.error('Settings update error:', error)

@@ -24,28 +24,6 @@ export const navSections = [
       { label: 'Team', href: '/dashboard/team', icon: '⬢' },
       { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
       { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
-      { label: 'Swarms', href: '/dashboard/swarms', icon: '◇' },
-      { label: 'Workflows', href: '/dashboard/workflows', icon: '▹' },
-    ]
-  },
-  {
-    label: 'Intelligence',
-    items: [
-      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '☉' },
-      { label: 'Market Intel', href: '/dashboard/market-intel', icon: '◉' },
-      { label: 'Signals', href: '/dashboard/signals', icon: '⚡' },
-      { label: 'Memory', href: '/dashboard/memory', icon: '◐' },
-      { label: 'Tasks', href: '/dashboard/tasks', icon: '☑' },
-    ]
-  },
-  {
-    label: 'Tools',
-    items: [
-      { label: 'Calendar', href: '/dashboard/calendar', icon: '◌' },
-      { label: 'Files', href: '/dashboard/files', icon: '▣' },
-      { label: 'Skills', href: '/dashboard/skills', icon: '✦' },
-      { label: 'Personality', href: '/dashboard/personality', icon: '◐' },
-      { label: 'Tech Updates', href: '/dashboard/tech-updates', icon: '↻' },
     ]
   },
   {
@@ -53,22 +31,6 @@ export const navSections = [
     items: [
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Borg Soul', href: 'https://tempo-x402-production.up.railway.app/dashboard', icon: '⬢', external: true },
-      { label: 'Debug Console', href: '/dashboard/debug', icon: '▷' },
-      { label: 'Config Editor', href: '/dashboard/config', icon: '◈' },
-      { label: 'Devices', href: '/dashboard/devices', icon: '◉' },
-      { label: 'Cost Tracking', href: '/dashboard/cost', icon: '$' },
-      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '♥' },
-      { label: 'Heartbeat', href: '/dashboard/heartbeat', icon: '♡' },
-      { label: 'Maintenance', href: '/dashboard/maintenance', icon: '⚙' },
-      { label: 'API Keys', href: '/dashboard/keys', icon: '⚿' },
-    ]
-  },
-  {
-    label: 'Media',
-    items: [
-      { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '♫' },
-      { label: 'Trading', href: '/dashboard/trading', icon: '↕' },
-      { label: 'Verify', href: '/dashboard/verify', icon: '✓' },
     ]
   },
   {
@@ -95,6 +57,7 @@ interface DashboardSidebarProps {
 export const DashboardSidebar = memo(function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: DashboardSidebarProps) {
   const pathname = usePathname()
   const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
+  const [openclawLink, setOpenclawLink] = useState<string | null>(null)
 
   useEffect(() => {
     // Use localStorage as a fast first paint, but always refresh from DB
@@ -104,7 +67,9 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
       if (stored) {
         const data = JSON.parse(stored)
         if (data.url) {
-          setOpenclawUrl(String(data.url).replace(/\/$/, ''))
+          const normalizedUrl = String(data.url).replace(/\/$/, '')
+          setOpenclawUrl(normalizedUrl)
+          setOpenclawLink(normalizedUrl)
         }
       }
     } catch {}
@@ -114,7 +79,12 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
       .then(data => {
         if (data.openclawUrl) {
           const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '')
+          const gatewayToken = data.gatewayToken ? String(data.gatewayToken) : ''
+          const autoPairUrl = gatewayToken
+            ? `${normalizedUrl}/chat?session=main#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(normalizedUrl).host}`)}`
+            : normalizedUrl
           setOpenclawUrl(normalizedUrl)
+          setOpenclawLink(autoPairUrl)
           localStorage.setItem('agentbot_instance', JSON.stringify({
             userId: data.openclawInstanceId,
             url: normalizedUrl,
@@ -188,14 +158,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
           {/* OpenClaw Dashboard Link */}
           {openclawUrl ? (
             <a
-              href={openclawUrl}
+              href={openclawLink || openclawUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="block mx-4 mt-6 border border-blue-500/30 bg-blue-500/5 p-4 hover:border-blue-500/50 transition-colors"
             >
               <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-1">OpenClaw</div>
               <div className="text-sm font-bold flex items-center gap-2">
-                Your Dashboard <span className="text-[10px] text-blue-500/60">↗</span>
+                Open Your Agent <span className="text-[10px] text-blue-500/60">↗</span>
               </div>
             </a>
           ) : (
