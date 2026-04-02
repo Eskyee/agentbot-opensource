@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { Registration } from '@/app/lib/webauthx/server'
+import { Registration } from '@/lib/webauthx/server'
 import { passkeyConfig, consumePasskeyChallenge } from '@/app/lib/passkey'
 
 export async function POST(request: Request) {
@@ -45,8 +45,8 @@ export async function POST(request: Request) {
         userId: session.user.id,
         credentialId,
         publicKey: verified.credential.publicKey,
-        signCount: BigInt(verified.credential.signCount ?? 0),
-        transports: verified.credential.transports?.join(','),
+        signCount: BigInt((verified.credential as any).signCount ?? 0),
+        transports: (verified.credential as any).transports?.join(','),
         name: label,
         lastUsedAt: new Date(),
       },

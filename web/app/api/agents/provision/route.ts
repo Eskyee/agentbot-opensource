@@ -20,6 +20,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma';
 import { stripe } from '@/app/lib/stripe';
 import crypto from 'crypto';
+import { isTrialActive } from '@/app/lib/trial-utils'
 
 export const dynamic = 'force-dynamic';
 
@@ -76,10 +77,16 @@ export async function POST(request: NextRequest) {
 
     // Check subscription tier
     const user = await prisma.user.findUnique({
-      where: { id: userId }
+      where: { id: userId },
+      select: {
+        plan: true,
+        subscriptionStatus: true,
+        trialEndsAt: true,
+      },
     });
+    const trialActive = isTrialActive(user?.trialEndsAt)
 
-    if (!isAdmin && (!user || user.subscriptionStatus !== 'active')) {
+    if (!isAdmin && (!user || (!trialActive && user.subscriptionStatus !== 'active'))) {
       return NextResponse.json(
         { error: 'Active subscription required to provision agents' },
         { status: 402 }

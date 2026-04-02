@@ -214,7 +214,7 @@ export default function SkillsPage() {
         icon={<Wrench className="h-5 w-5 text-blue-400" />}
         action={
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
+            <DialogTrigger>
               <Button
                 variant="secondary"
                 size="sm"
@@ -272,7 +272,7 @@ export default function SkillsPage() {
                   />
                 </div>
                 <DialogFooter className="flex items-center justify-end gap-2">
-                  <DialogClose asChild>
+                  <DialogClose>
                     <Button variant="outline" size="sm">
                       Cancel
                     </Button>

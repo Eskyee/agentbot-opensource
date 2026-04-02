@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
-import { Authentication } from '@/app/lib/webauthx/server'
+import { Authentication } from '@/lib/webauthx/server'
 import { passkeyConfig, consumePasskeyChallenge } from '@/app/lib/passkey'
 import { createUserSession, attachSessionCookie } from '@/app/lib/session'
 
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
       challenge,
       origin: passkeyConfig.origin,
       rpId: passkeyConfig.rpId,
-      publicKey: credentialRecord.publicKey,
+      publicKey: credentialRecord.publicKey as `0x${string}`,
     })
 
     if (!valid) {

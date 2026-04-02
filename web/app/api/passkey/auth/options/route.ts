@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
-import { Authentication } from '@/app/lib/webauthx/server'
+import { Authentication } from '@/lib/webauthx/server'
 import { createPasskeyChallenge, passkeyConfig } from '@/app/lib/passkey'
 
 export async function POST(request: Request) {
@@ -33,7 +33,6 @@ export async function POST(request: Request) {
     credentialId: credentials.map((c) => c.credentialId),
     rpId: passkeyConfig.rpId,
     userVerification: 'required',
-    timeout: 60_000,
   })
 
   await createPasskeyChallenge({

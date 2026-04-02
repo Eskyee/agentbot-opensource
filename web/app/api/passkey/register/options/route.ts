@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { Registration } from '@/app/lib/webauthx/server'
+import { Registration } from '@/lib/webauthx/server'
 import { Buffer } from 'buffer'
 import { createPasskeyChallenge, passkeyConfig } from '@/app/lib/passkey'
 
