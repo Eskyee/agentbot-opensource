@@ -1,9 +1,14 @@
 # Secrets Checklist
 
-## Generated Secrets (Copy These Now!)
+> Warning
+> This file previously included a literal secret value. It is now placeholder-only.
+> Real values belong in dashboards, local untracked env files, or a password manager.
+> For current platform ownership, read `docs/CURRENT_PLATFORM_STATE.md`.
+
+## Generated Secrets
 
 ```
-NEXTAUTH_SECRET=7a83b064a94d9e4b53fa0e2ad32259d52f4fcad72425641733b20d13b0228729
+NEXTAUTH_SECRET=<generate-per-environment>
 ```
 
 ---
@@ -16,7 +21,7 @@ NEXTAUTH_SECRET=7a83b064a94d9e4b53fa0e2ad32259d52f4fcad72425641733b20d13b0228729
 - [ ] `OPENROUTER_API_KEY` — Your OpenRouter API key
 
 ### ⚠️ Add These Now
-- [ ] `NEXTAUTH_SECRET` — Use: `7a83b064a94d9e4b53fa0e2ad32259d52f4fcad72425641733b20d13b0228729`
+- [ ] `NEXTAUTH_SECRET` — Use a generated per-environment secret
 
 ### ⏳ Add When Ready (optional features)
 - [ ] `GOOGLE_CLIENT_ID` — From Google Cloud Console
@@ -28,14 +33,14 @@ NEXTAUTH_SECRET=7a83b064a94d9e4b53fa0e2ad32259d52f4fcad72425641733b20d13b0228729
 
 ---
 
-## Render Dashboard (https://dashboard.render.com → agentbot-api → Environment)
+## Backend Dashboard
 
 ### ✅ Already Configured (verify these exist)
 - [ ] `DATABASE_URL` — Same Neon Postgres connection string
 - [ ] `OPENROUTER_API_KEY` — Same key as Vercel
 
 ### ⚠️ Add These Now
-- [ ] `ADMIN_EMAILS` — `djescaba@icloud.com`
+- [ ] `ADMIN_EMAILS` — Set in dashboard env vars, not in source
 
 ### ⏳ Add When Ready (optional features)
 - [ ] `STRIPE_SECRET_KEY` — Same as Vercel
@@ -55,12 +60,12 @@ NEXTAUTH_SECRET=7a83b064a94d9e4b53fa0e2ad32259d52f4fcad72425641733b20d13b0228729
 vercel --prod --yes
 ```
 
-### 2. Render auto-redeploys when env vars change
+### 2. Redeploy or restart the active backend platform after env changes
 
 ### 3. Verify Health
 ```bash
 curl -s https://agentbot.raveculture.xyz/api/health
-curl -s https://agentbot-api.onrender.com/health
+curl -s https://agentbot-prod-production.up.railway.app/health
 ```
 
 ---
@@ -68,7 +73,7 @@ curl -s https://agentbot-api.onrender.com/health
 ## Quick Links
 
 - Vercel Dashboard: https://vercel.com/dashboard
-- Render Dashboard: https://dashboard.render.com
+- Backend platform dashboard: verify against `docs/CURRENT_PLATFORM_STATE.md`
 - Stripe Dashboard: https://dashboard.stripe.com
 - Google Cloud Console: https://console.cloud.google.com
 - GitHub Developer Settings: https://github.com/settings/developers

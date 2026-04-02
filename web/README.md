@@ -42,8 +42,8 @@ Agentbot is an open-source platform for deploying isolated AI agents connected t
 ### Docker (recommended)
 
 ```bash
-git clone https://github.com/Eskyee/agentbot-opensource.git
-cd agentbot-opensource
+git clone https://github.com/Eskyee/agentbot-opensource.git agentbot
+cd agentbot
 cp web/.env.example web/.env   # fill in your values
 docker compose up -d
 ```
@@ -53,8 +53,8 @@ Open http://localhost:3000
 ### Manual
 
 ```bash
-git clone https://github.com/Eskyee/agentbot-opensource.git
-cd agentbot-opensource
+git clone https://github.com/Eskyee/agentbot-opensource.git agentbot
+cd agentbot
 
 # Frontend
 cd web

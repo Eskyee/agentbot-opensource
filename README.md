@@ -24,7 +24,7 @@ Deploy autonomous AI agents in 60 seconds.
 ## Quick Start
 
 ```bash
-git clone https://github.com/Eskyee/agentbot-opensource.git
+git clone https://github.com/Eskyee/agentbot-opensource.git agentbot
 cd agentbot
 cp .env.example .env
 # Edit .env with your API keys

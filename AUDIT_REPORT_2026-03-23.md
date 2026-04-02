@@ -1,5 +1,9 @@
 # Agentbot Platform — Full Smoke Test Report
 
+> Historical snapshot
+> This report reflects the platform state on 2026-03-23 and includes Render-era backend references.
+> Do not treat its platform URLs as current operational truth. Verify against `docs/CURRENT_PLATFORM_STATE.md`.
+
 **Date:** March 23, 2026, 23:00 GMT  
 **Auditor:** Atlas (Automated)  
 **Status:** ✅ ALL SYSTEMS OPERATIONAL

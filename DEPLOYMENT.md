@@ -1,5 +1,12 @@
 # Agentbot Deployment Runbook
 
+> Warning
+> This runbook contains stale Render-era guidance and is not the current source of truth for live platform ownership.
+> Verified current state:
+> - Vercel project `agentbot` uses root directory `web`
+> - Railway project `OpenClaw-Agentbot` runs the linked backend service
+> Read `docs/CURRENT_PLATFORM_STATE.md` and `docs/deploy-workflow.md` before using this file operationally.
+
 ## Table of Contents
 1. [Pre-Deployment Checklist](#pre-deployment-checklist)
 2. [Deployment Process](#deployment-process)
@@ -135,8 +142,7 @@ npx prisma db seed  # if needed
 
 ```bash
 # Test health endpoints
-curl https://agentbot-api.onrender.com/health
-curl https://api.agentbot.raveculture.xyz/health
+curl https://agentbot-prod-production.up.railway.app/health
 curl https://agentbot.raveculture.xyz/api/health
 ```
 
@@ -348,7 +354,7 @@ cd web && npx prisma db push --skip-generate
 - **Neon DB Support:** https://neon.tech/support
 
 ### Monitoring Dashboards
-- **Render:** https://dashboard.render.com
+- **Backend platform:** verify against `docs/CURRENT_PLATFORM_STATE.md`
 - **Vercel:** https://vercel.com/dashboards
 - **GitHub Actions:** https://github.com/Eskyee/agentbot-opensource/actions
 

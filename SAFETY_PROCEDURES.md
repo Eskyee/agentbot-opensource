@@ -1,8 +1,13 @@
 # Agentbot Safety & Recovery Procedures
 
+> Warning
+> This document still assumes Render is the active backend control plane in multiple places.
+> Current verified platform state is tracked in `docs/CURRENT_PLATFORM_STATE.md`.
+> Do not use Render-specific recovery commands here without first confirming the live service target.
+
 ## Emergency Contacts
 - **Primary:** Configure via `ADMIN_EMAILS` env var
-- **Render Dashboard:** https://dashboard.render.com
+- **Backend platform:** verify against `docs/CURRENT_PLATFORM_STATE.md`
 - **GitHub:** https://github.com/Eskyee/agentbot-opensource/issues
 
 ## Emergency Procedures
@@ -81,7 +86,7 @@ render service resume <service-id>
 
 ### Health Checks
 ```bash
-curl https://agentbot-api.onrender.com/health
+curl https://agentbot-prod-production.up.railway.app/health
 curl https://agentbot.raveculture.xyz/api/health
 ```
 

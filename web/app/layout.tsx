@@ -8,10 +8,7 @@ import Footer from "./components/Footer";
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
-import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://agentbot.raveculture.xyz'),
@@ -145,7 +142,7 @@ export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn(GeistSans.variable, GeistMono.variable, "font-sans", geist.variable)}>
+    <html lang="en" className={cn(GeistSans.variable, GeistMono.variable, "font-sans")}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <script

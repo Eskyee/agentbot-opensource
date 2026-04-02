@@ -1,14 +1,21 @@
 # Secrets Configuration Guide
 
+> Warning
+> This file previously contained live secret material and concrete infrastructure values.
+> It is now placeholder-only. Keep real values in dashboard env vars, local untracked env files, or a password manager.
+> For current platform ownership, read `docs/CURRENT_PLATFORM_STATE.md`.
+
 ## Quick Reference
 
-### Generated Secrets (Use These)
+### Generated Secrets
+
+Generate unique values per environment. Do not commit the real outputs.
 
 ```
-NEXTAUTH_SECRET=7a83b064a94d9e4b53fa0e2ad32259d52f4fcad72425641733b20d13b0228729
-JWT_SECRET=R63NBQE+yJsSvS2Ky0yFq+pQnWpqmTPPDJSyV9HJebU=
-INTERNAL_API_KEY=80f679917f665977d0c1950c
-WALLET_ENCRYPTION_KEY=33cd60d7755d60c4242a10c61d58df66
+NEXTAUTH_SECRET=<generate-per-environment>
+JWT_SECRET=<generate-per-environment>
+INTERNAL_API_KEY=<generate-per-environment>
+WALLET_ENCRYPTION_KEY=<generate-per-environment>
 ```
 
 ---
@@ -21,8 +28,8 @@ WALLET_ENCRYPTION_KEY=33cd60d7755d60c4242a10c61d58df66
 
 | Variable | Value | Notes |
 |----------|-------|-------|
-| `DATABASE_URL` | `postgresql://neondb_owner:npg_q0ykQXiZa9BJ@ep-cold-dawn-amxvs08u-pooler.c-5.us-east-1.aws.neon.tech/neondb?channel_binding=require&sslmode=require` | Neon Postgres |
-| `NEXTAUTH_SECRET` | `7a83b064a94d9e4b53fa0e2ad32259d52f4fcad72425641733b20d13b0228729` | Generated above |
+| `DATABASE_URL` | `<production database url>` | Keep only in dashboard or local env |
+| `NEXTAUTH_SECRET` | `<generated secret>` | Generate separately for each environment |
 | `NEXTAUTH_URL` | `https://agentbot.raveculture.xyz` | Production URL |
 | `OPENROUTER_API_KEY` | Your key from openrouter.ai | Get from https://openrouter.ai/keys |
 
@@ -54,17 +61,17 @@ WALLET_ENCRYPTION_KEY=33cd60d7755d60c4242a10c61d58df66
 
 ---
 
-## Render Dashboard Configuration
+## Backend Dashboard Configuration
 
-**URL**: https://dashboard.render.com → agentbot-api → Environment
+Verify the active backend platform in `docs/CURRENT_PLATFORM_STATE.md` before applying these variables.
 
 ### Required Variables
 
 | Variable | Value | Notes |
 |----------|-------|-------|
-| `DATABASE_URL` | Same Neon URL as Vercel | Same database |
+| `DATABASE_URL` | Same production database URL as web | Keep only in dashboard or local env |
 | `OPENROUTER_API_KEY` | Same key as Vercel | Same provider |
-| `ADMIN_EMAILS` | `djescaba@icloud.com` | Admin access |
+| `ADMIN_EMAILS` | `<comma-separated admin emails>` | Configure in env, not in source |
 
 ### Optional Variables
 
@@ -88,8 +95,8 @@ WALLET_ENCRYPTION_KEY=33cd60d7755d60c4242a10c61d58df66
 vercel --prod --yes
 ```
 
-### After adding secrets to Render:
-- Render auto-redeploys when env vars change
+### After adding secrets to the backend platform:
+- Redeploy or restart the backend service as required by the active platform
 - Check deploy logs for errors
 
 ### Test health endpoints:
@@ -98,7 +105,7 @@ vercel --prod --yes
 curl -s https://agentbot.raveculture.xyz/api/health
 
 # Backend
-curl -s https://agentbot-api.onrender.com/health
+curl -s https://agentbot-prod-production.up.railway.app/health
 ```
 
 ---

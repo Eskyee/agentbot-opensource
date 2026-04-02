@@ -2,7 +2,7 @@
 
 ## Me
 raveculture — founder/developer, building agentbot platform.
-Email: djescaba@icloud.com
+Primary contact details are managed outside source control.
 
 ## Projects
 | Name | What |

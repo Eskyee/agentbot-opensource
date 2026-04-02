@@ -1,8 +1,17 @@
 # Agentbot API Guide
 
+> Warning
+> This API guide is stale and should not be used as the current operational or external API source of truth.
+> Known issues:
+> - outdated base URLs
+> - stale Render references
+> - plan data that conflicts with `PLATFORM_RULES.md`
+> - hardcoded admin email examples that should not be treated as canonical
+> Use `docs/CURRENT_PLATFORM_STATE.md`, `PLATFORM_RULES.md`, and the codebase itself for current behavior.
+
 ## Base URLs
-- **API:** `https://agentbot-api.onrender.com`
-- **Web:** `https://agentbot-web.onrender.com`
+- **API:** Verify against current deployment target before use
+- **Web:** `https://agentbot.raveculture.xyz`
 
 ---
 
@@ -51,7 +60,7 @@ POST /api/provision
 
 ### Example (curl)
 ```bash
-curl -X POST https://agentbot-api.onrender.com/api/provision \
+curl -X POST https://<backend-api-base>/api/provision \
   -H "Content-Type: application/json" \
   -d '{"telegramToken":"123:ABC","plan":"solo"}'
 ```
@@ -97,18 +106,18 @@ ffmpeg -f lavfi -i "testsrc=size=1280x720:rate=30" \
 
 **Admin users bypass Stripe payment.**
 
-Admin emails (set in `ADMIN_EMAILS` env var):
-- `eskyjunglelab@gmail.com`
-- `djescaba@icloud.com`
+Admin emails are configured via the `ADMIN_EMAILS` environment variable. Do not hardcode them in source or docs.
 
 ### Header
 ```
-X-User-Email: eskyjunglelab@gmail.com
+X-User-Email: admin@example.com
 ```
 
 ---
 
 ## 5. Plans & Limits
+
+This section is stale. Current plan enforcement lives in `PLATFORM_RULES.md`.
 
 | Feature | Label | Solo | Collective | Network |
 |---------|-------|------|------------|---------|
@@ -122,7 +131,7 @@ X-User-Email: eskyjunglelab@gmail.com
 
 ## 6. Environment Variables
 
-Set these on Render for each service:
+Set these on the active deployment platforms for each service:
 
 ### API Service
 ```
@@ -132,13 +141,13 @@ REDIS_URL=redis://...
 OPENROUTER_API_KEY=sk-...
 MUX_TOKEN_ID=...
 MUX_TOKEN_SECRET=...
-ADMIN_EMAILS=eskyjunglelab@gmail.com
+ADMIN_EMAILS=admin@example.com
 ```
 
 ### Web Service
 ```
 NODE_ENV=production
-BACKEND_API_URL=https://agentbot-api.onrender.com
+BACKEND_API_URL=https://<backend-api-base>
 MUX_TOKEN_ID=...
 MUX_TOKEN_SECRET=...
 ```
@@ -147,7 +156,7 @@ MUX_TOKEN_SECRET=...
 
 ## 7. Dashboard
 
-**https://agentbot-web.onrender.com/dashboard**
+**https://agentbot.raveculture.xyz/dashboard**
 
 - View deployed agents
 - Monitor stream status
@@ -194,9 +203,9 @@ MUX_TOKEN_SECRET=...
 
 ```bash
 # Full example
-curl -X POST https://agentbot-api.onrender.com/api/provision \
+curl -X POST https://<backend-api-base>/api/provision \
   -H "Content-Type: application/json" \
-  -H "X-User-Email: eskyjunglelab@gmail.com" \
+  -H "X-User-Email: admin@example.com" \
   -d '{
     "telegramToken": "YOUR_TELEGRAM_BOT_TOKEN",
     "plan": "solo"

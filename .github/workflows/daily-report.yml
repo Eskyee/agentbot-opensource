@@ -40,7 +40,7 @@ jobs:
           - Backend: Tests passing ✓
           - Database: Neon connected ✓
           
-          GitHub: https://github.com/Eskyee/agentbot"
+          GitHub: https://github.com/Eskyee/agentbot-opensource"
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$REPORT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT

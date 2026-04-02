@@ -27,25 +27,25 @@ jobs:
           
           # Count changed files
           FILES=$(gh pr view $PR_NUM --json files -q '.files | length')
-          
+
           # Build review comment
-          cat > review.md << 'EOF'
+          cat > review.md <<EOF
           ## AI Code Review
 
           ### Summary
           PR: **$TITLE**
-          
+
           ### Changes
           - $FILES files changed
           - See diff for details
-          
+
           ### Checklist
           - [ ] Tests pass
           - [ ] No console errors
           - [ ] Documentation updated if needed
-          
+
           *Reviewed with GitHub Copilot*
           EOF
-          
+
           # Post comment
           gh pr comment $PR_NUM --body-file review.md

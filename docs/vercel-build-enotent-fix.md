@@ -21,16 +21,16 @@ When Vercel's **Root Directory** is set to `web/`, it reads `web/vercel.json` as
 
 ## How to Fix
 
-### Option A: Remove `web/vercel.json` (recommended)
-Keep only the root `vercel.json`. It already handles the `cd web &&` navigation.
+### Option A: Remove `web/vercel.json` (recommended only if Vercel builds from repo root)
+Keep only the root `vercel.json` when your Vercel project builds from the repository root and the root config handles `cd web && ...`.
 
 ```bash
 git rm web/vercel.json
-git commit -m "fix: remove web/vercel.json — root vercel.json handles everything"
+git commit -m "fix: consolidate Vercel config at repo root"
 ```
 
 ### Option B: Remove root `vercel.json`, keep `web/vercel.json`
-If you want `web/` to be self-contained, delete the root one and make sure Root Directory is set to `web` in Vercel dashboard.
+If `web/` is the app root, keep `web/vercel.json` and make sure Root Directory is set to `web` in the Vercel dashboard.
 
 ```bash
 git rm vercel.json
@@ -46,7 +46,7 @@ After fixing:
 
 ## Prevention
 
-- **Never create `web/vercel.json` if root `vercel.json` already handles `cd web && ...` commands**
+- **Match the config location to the actual Vercel Root Directory**
 - If both must exist, their `installCommand` and `buildCommand` must be identical
 - After any `vercel.json` change, verify the next deploy succeeds before merging
 
