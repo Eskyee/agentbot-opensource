@@ -59,6 +59,7 @@ export default function MaintenancePage() {
   const [health, setHealth] = useState<HealthData | null>(null)
   const [loading, setLoading] = useState(true)
   const [restarting, setRestarting] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const [restartMsg, setRestartMsg] = useState<string | null>(null)
   const [showMatrix, setShowMatrix] = useState(false)
   const [showDocker, setShowDocker] = useState(false)
@@ -97,6 +98,31 @@ export default function MaintenancePage() {
       setRestartMsg('Network error — could not reach maintenance endpoint')
     } finally {
       setRestarting(false)
+    }
+  }
+
+  const factoryReset = async () => {
+    if (resetting) return
+    if (!confirm('Factory reset your agent to the stable version (2026.3.28)? This will update the image, reconfigure env vars, and restart. Your data is safe — this only resets the OpenClaw version.')) return
+    setResetting(true)
+    setRestartMsg(null)
+    try {
+      const res = await fetch('/api/openclaw/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'factory-reset' }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setRestartMsg(`Factory reset complete — pinned to ${data.image || '2026.3.28'}. Agent restarting with doctor --fix.`)
+        setTimeout(fetchHealth, 15000)
+      } else {
+        setRestartMsg(`Error: ${data.error || 'Factory reset failed'}`)
+      }
+    } catch {
+      setRestartMsg('Network error — could not reach maintenance endpoint')
+    } finally {
+      setResetting(false)
     }
   }
 
@@ -187,19 +213,35 @@ export default function MaintenancePage() {
           {/* Run Maintenance button */}
           {health && health.status !== 'no_agent' && (
             <div className="pt-4 border-t border-zinc-800">
-              <button
-                onClick={runMaintenance}
-                disabled={restarting}
-                className="bg-white text-black px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
-              >
-                {restarting ? (
-                  <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Restarting…</>
-                ) : (
-                  <><Wrench className="h-3.5 w-3.5" /> Run Maintenance</>
-                )}
-              </button>
-              <p className="text-[10px] text-zinc-600 mt-2">
-                Restarts your agent and automatically runs <span className="font-mono">openclaw doctor --fix</span> on startup — fixes Matrix migration, repairs config, and applies updates.
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={runMaintenance}
+                  disabled={restarting || resetting}
+                  className="bg-white text-black px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                >
+                  {restarting ? (
+                    <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Restarting…</>
+                  ) : (
+                    <><Wrench className="h-3.5 w-3.5" /> Run Maintenance</>
+                  )}
+                </button>
+                <button
+                  onClick={factoryReset}
+                  disabled={restarting || resetting}
+                  className="border border-red-800 text-red-400 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-red-900/20 disabled:opacity-50 transition-colors flex items-center gap-2"
+                >
+                  {resetting ? (
+                    <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Resetting…</>
+                  ) : (
+                    <><AlertTriangle className="h-3.5 w-3.5" /> Factory Reset</>
+                  )}
+                </button>
+              </div>
+              <p className="text-[10px] text-zinc-600 mt-3">
+                <strong>Run Maintenance:</strong> Restarts agent, runs <span className="font-mono">openclaw doctor --fix</span> on startup.
+              </p>
+              <p className="text-[10px] text-zinc-600 mt-1">
+                <strong>Factory Reset:</strong> Pins OpenClaw to stable v2026.3.28, reconfigures env vars, restarts. Use if your agent broke after an update.
               </p>
               {restartMsg && (
                 <div className={`mt-3 border p-3 text-[11px] ${restartMsg.startsWith('Error') ? 'border-red-800 text-red-400' : 'border-green-900 text-green-400'}`}>

@@ -5,6 +5,8 @@ import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 export const dynamic = 'force-dynamic'
 
+const KNOWN_GOOD_IMAGE = 'ghcr.io/openclaw/openclaw:2026.3.28'
+
 async function getOpenClawInfo(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -68,10 +70,11 @@ export async function GET() {
 
 /**
  * POST /api/openclaw/maintenance
- * Triggers a container restart (runs openclaw doctor --fix on startup).
- * Body: { action: 'restart' }
+ * Body: { action: 'restart' | 'factory-reset' }
+ * - restart: restarts container (doctor --fix runs on startup)
+ * - factory-reset: pins to known-good image, reconfigures env, restarts
  */
-export async function POST() {
+export async function POST(request: Request) {
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -86,7 +89,39 @@ export async function POST() {
   const BACKEND_API_URL = getBackendApiUrl()
   const INTERNAL_API_KEY = getInternalApiKey()
 
+  let body: { action?: string } = {}
   try {
+    body = await request.json()
+  } catch {
+    // no body = restart
+  }
+
+  try {
+    if (body.action === 'factory-reset') {
+      // Step 1: Update to known-good image
+      const updateRes = await fetch(`${BACKEND_API_URL}/api/agents/${instanceId}/update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${INTERNAL_API_KEY}`,
+        },
+        body: JSON.stringify({ image: KNOWN_GOOD_IMAGE }),
+        signal: AbortSignal.timeout(120000),
+      })
+
+      if (!updateRes.ok) {
+        const errData = await updateRes.json().catch(() => ({}))
+        return NextResponse.json({ error: 'Factory reset failed during update', details: errData }, { status: 502 })
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Factory reset complete — pinned to ${KNOWN_GOOD_IMAGE}. Agent restarting with doctor --fix.`,
+        image: KNOWN_GOOD_IMAGE,
+      })
+    }
+
+    // Default: restart
     const res = await fetch(`${BACKEND_API_URL}/api/agents/${instanceId}/restart`, {
       method: 'POST',
       headers: {
