@@ -17,6 +17,20 @@ This file is the current operational reference for platform ownership, deploymen
   - Environment: `production`
   - Service: `agentbot-prod`
   - Health URL: `https://agentbot-prod-production.up.railway.app/health`
+- Borg soul:
+  - Platform: Railway
+  - Project: `x402-gw-v2`
+  - Service: `tempo-x402+Borg`
+  - App URL: `https://tempo-x402-production.up.railway.app`
+  - Health URL: `https://tempo-x402-production.up.railway.app/health`
+- x402 gateway:
+  - Platform: Railway
+  - Service URL: `https://x402-gateway-production.up.railway.app`
+  - Health URL: `https://x402-gateway-production.up.railway.app/health`
+- OpenClaw shared UI:
+  - Platform: Railway
+  - Service URL: `https://openclaw-gw-ui-production.up.railway.app`
+  - Health URL: `https://openclaw-gw-ui-production.up.railway.app/health`
 - GitHub repos:
   - Private production repo: `Eskyee/agentbot`
   - Public mirror: `Eskyee/agentbot-opensource`
@@ -25,6 +39,9 @@ This file is the current operational reference for platform ownership, deploymen
 
 - Vercel production responded `HTTP 200` on 2026-04-02.
 - Railway backend health responded `HTTP 200` on 2026-04-02.
+- Borg soul health responded `HTTP 200` on 2026-04-02 after recovery.
+- x402 gateway health responded `HTTP 200` on 2026-04-02.
+- OpenClaw shared UI health responded `HTTP 200` on 2026-04-02.
 
 ## Deployment Rules
 

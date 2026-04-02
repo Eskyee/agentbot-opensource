@@ -90,9 +90,10 @@ It checks for:
 | `web/app/api/partner/route.ts` | `to: ['rbasefm@icloud.com']` → placeholder |
 | `web/app/api/bankr/prompt/route.ts` | fallback email → placeholder |
 | `web/app/api/bankr/balances/route.ts` | fallback email → placeholder |
-| `web/app/components/DashboardSidebar.tsx` | Railway URL → `YOUR_SOUL_SERVICE_URL` |
+| `web/app/components/DashboardSidebar.tsx` | Borg URL → `https://YOUR_BORG_SERVICE_URL` |
 | `web/.env.example` | Real wallet address → `0xYOUR_WALLET_ADDRESS_HERE` |
-| `web/.env.example` | Railway URL → `https://YOUR_SOUL_SERVICE_URL` |
+| `web/.env.example` | x402 gateway URL → `https://YOUR_X402_GATEWAY_URL` |
+| `web/.env.example` | soul URL → `https://YOUR_BORG_SERVICE_URL` |
 
 ---
 
