@@ -10,9 +10,10 @@ SKIP_SERVICE_READINESS="${SKIP_SERVICE_READINESS:-false}"
 SERVICE_HEALTH_URL="${SERVICE_HEALTH_URL:-${AGENTBOT_API_URL%/}/health}"
 export SERVICE_HEALTH_URL
 
-mkdir -p /home/node/.openclaw
+OPENCLAW_HOME="${HOME}/.openclaw"
+mkdir -p "${OPENCLAW_HOME}"
 
-cat > /home/node/.openclaw/openclaw.json << CONFIG
+cat > "${OPENCLAW_HOME}/openclaw.json" << CONFIG
 {
   "env": {
     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
@@ -45,7 +46,7 @@ cat > /home/node/.openclaw/openclaw.json << CONFIG
   },
   "agents": {
     "defaults": {
-      "workspace": "/home/node/.openclaw/workspace",
+      "workspace": "${OPENCLAW_HOME}/workspace",
       "userTimezone": "Europe/London",
       "model": {
         "primary": "openrouter/xiaomi/mimo-v2-pro",
@@ -120,15 +121,15 @@ cat > /home/node/.openclaw/openclaw.json << CONFIG
 CONFIG
 
 # Create workspace directory with starter files
-mkdir -p /home/node/.openclaw/workspace/memory
-[ -f /home/node/.openclaw/workspace/MEMORY.md ] || echo "# MEMORY.md" > /home/node/.openclaw/workspace/MEMORY.md
-[ -f /home/node/.openclaw/workspace/TODO.md ] || echo "# TODO.md" > /home/node/.openclaw/workspace/TODO.md
-[ -f /home/node/.openclaw/workspace/USER.md ] || echo "# USER.md" > /home/node/.openclaw/workspace/USER.md
-[ -f /home/node/.openclaw/workspace/SOUL.md ] || echo "# SOUL.md" > /home/node/.openclaw/workspace/SOUL.md
+mkdir -p "${OPENCLAW_HOME}/workspace/memory"
+[ -f "${OPENCLAW_HOME}/workspace/MEMORY.md" ] || echo "# MEMORY.md" > "${OPENCLAW_HOME}/workspace/MEMORY.md"
+[ -f "${OPENCLAW_HOME}/workspace/TODO.md" ] || echo "# TODO.md" > "${OPENCLAW_HOME}/workspace/TODO.md"
+[ -f "${OPENCLAW_HOME}/workspace/USER.md" ] || echo "# USER.md" > "${OPENCLAW_HOME}/workspace/USER.md"
+[ -f "${OPENCLAW_HOME}/workspace/SOUL.md" ] || echo "# SOUL.md" > "${OPENCLAW_HOME}/workspace/SOUL.md"
 
 # Lock down permissions
-chmod 600 /home/node/.openclaw/openclaw.json
-chmod 700 /home/node/.openclaw
+chmod 600 "${OPENCLAW_HOME}/openclaw.json"
+chmod 700 "${OPENCLAW_HOME}"
 
 wait_for_service() {
   if [ "${SKIP_SERVICE_READINESS}" = "true" ]; then
