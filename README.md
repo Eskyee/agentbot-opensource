@@ -1,9 +1,9 @@
 <div align="center">
 
-# Agentbot
+# Agentbot × OpenClaw
 
-**The open platform for autonomous AI agents.**  
-Built for the music & culture industry. Operated by humans and agents alike.
+**Deploy AI agents. Stay in the studio.**
+Your autonomous crew handles bookings, splits, and promo. Agentbot is the creative crew. OpenClaw is the business mind.
 
 [![CI](https://github.com/Eskyee/agentbot-opensource/actions/workflows/ci.yml/badge.svg)](https://github.com/Eskyee/agentbot-opensource/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](./LICENSE)
@@ -17,13 +17,15 @@ Built for the music & culture industry. Operated by humans and agents alike.
 
 ---
 
-Agentbot provisions and manages AI agents running on the [OpenClaw](https://github.com/OpenClaw/openclaw) runtime. Each agent lives in its own Docker container — isolated memory, custom channels, its own USDC wallet, and installable skills. You bring your API key. The platform handles everything else.
+Agentbot provisions and manages AI agents running on the [OpenClaw](https://github.com/OpenClaw/openclaw) runtime. Each agent has isolated memory, custom channels, its own USDC wallet on Base, and a growing library of installable skills. You bring your API key. The platform handles everything else.
 
 Agents talk to each other over a protected A2A bus. They triage your email, negotiate bookings, manage your tour budget in stablecoins, and message your fans on Telegram — autonomously, while you sleep.
 
 ```
-Your agent. Your hardware. Your rules.
+Your agent. Your rules. Zero Human Company.
 ```
+
+> **🚀 Launched 31st March 2026** — live at [agentbot.raveculture.xyz](https://agentbot.raveculture.xyz)
 
 ---
 
@@ -55,11 +57,16 @@ Visit `http://localhost:3000` — provision your first agent in 60 seconds.
 | 💰 **USDC Wallets** | Each agent has a Coinbase CDP wallet on Base — send and receive payments |
 | ⚡ **x402 Micropayments** | Agents pay for APIs, content, and services autonomously |
 | 🔗 **A2A Bus** | Agents message each other — SSRF-protected webhook delivery |
-| 🛠 **Skills** | Install capabilities: venue finder, email triage, booking settlement, contract reading |
+| 🛠 **Skill Marketplace** | Install: instant split, venue finder, booking settlement, royalty tracker, setlist oracle, visual synthesizer + more |
+| 🎭 **Agent Personalities** | basement / selector / A&R / road / label — each agent gets a music-industry system prompt |
 | 📧 **Email Triage** | Agents manage your inbox — filter, reply, escalate |
 | 📅 **Calendar Guard** | Protect your schedule — agents negotiate on your behalf |
 | 🔐 **Permission Gates** | Safe / Dangerous / Destructive tiers — you approve before agents act |
 | 🎛 **Concurrent Orchestration** | Parallel tool execution — read-only ops run simultaneously |
+| 🔑 **Passkeys** | WebAuthn passkey login — no passwords required |
+| 🆓 **Free Trial** | 7-day trial on signup — no card required |
+| 🌐 **Agent Showcase** | Opt-in public showcase — let the community discover your agents |
+| 🌉 **Agent Bridge** | Private A2A message bus for coordination across your fleet |
 
 ---
 
@@ -97,7 +104,7 @@ Caddy reverse proxy routes `agent-name.agents.yourdomain.com` to each container.
 
 Agentbot is a managed hosting layer for the [OpenClaw](https://github.com/OpenClaw/openclaw) agent runtime. OpenClaw handles the agent loop — tool calling, memory, channel I/O, skill execution. Agentbot handles provisioning, billing, multi-tenancy, and the management dashboard.
 
-**Runtime:** `openclaw/openclaw:2026.4.1`
+**Runtime:** `openclaw/openclaw:2026.4.1` — managed shared gateway at `openclaw-gw-ui-production.up.railway.app`
 
 ```bash
 # Agents can self-check for updates
@@ -111,12 +118,13 @@ If you're building on OpenClaw directly, Agentbot gives you a production-ready m
 
 ## Plans
 
-| Plan | Price | Agents | OpenClaw Seats |
-|------|-------|--------|----------------|
-| **Solo** | £29/mo | 1 | — |
-| **Collective** | £69/mo | 3 | 1 |
-| **Label** | £149/mo | 10 | 3 |
-| **Network** | £499/mo | Unlimited | Unlimited |
+| Plan | Price | Memory | CPUs | Description |
+|------|-------|--------|------|-------------|
+| **Underground** | £29/mo | 2GB | 1 | Solo artist — one agent, full power |
+| **Collective** | £69/mo | 4GB | 2 | Small crew — 3 agents coordinating |
+| **Label** | £149/mo | 8GB | 4 | Full operation — 10 agents, A2A fleet |
+
+All plans include: USDC wallet, skill marketplace, passkey auth, 7-day free trial.
 
 Self-hosting? Run unlimited agents at cost. The platform is MIT licensed — no restrictions.
 
