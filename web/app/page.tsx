@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { ComparisonTable, SocialProof, UseCases, CapabilitiesTicker, DemoVideo, OpenLearning } from '@/app/components/landing'
 import HeroSphere from '@/app/components/HeroSphereClient'
+import { DashboardPreview } from '@/app/components/DashboardPreview'
 
 export default async function Home() {
   const session = await getAuthSession()
@@ -66,6 +67,11 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Dashboard Preview */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-6">
+        <DashboardPreview />
+      </div>
 
       {/* MiniMax */}
       <section className="border-t border-zinc-900">
