@@ -1,4 +1,10 @@
+'use client'
+
+import { useState } from 'react'
+
 export function DemoVideo() {
+  const [loaded, setLoaded] = useState(false)
+
   return (
     <section className="border-t border-zinc-900">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
@@ -14,14 +20,28 @@ export function DemoVideo() {
         </div>
 
         <div className="relative aspect-video bg-zinc-900 border border-zinc-800 overflow-hidden">
-          {/* Replace src with your actual demo video URL */}
-          <iframe
-            src="https://www.youtube.com/embed/VIDEO_ID_HERE"
-            title="Agentbot 60-Second Demo"
-            className="absolute inset-0 w-full h-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          {loaded ? (
+            <iframe
+              src="https://www.youtube.com/embed/VIDEO_ID_HERE?autoplay=1"
+              title="Agentbot 60-Second Demo"
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <button
+              onClick={() => setLoaded(true)}
+              className="absolute inset-0 w-full h-full flex items-center justify-center bg-zinc-900 hover:bg-zinc-800 transition-colors group cursor-pointer"
+              aria-label="Play demo video"
+            >
+              <div className="w-20 h-20 rounded-full bg-white/10 group-hover:bg-white/20 flex items-center justify-center transition-colors">
+                <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <span className="absolute bottom-8 text-zinc-500 text-sm">Click to play</span>
+            </button>
+          )}
         </div>
       </div>
     </section>
