@@ -51,8 +51,8 @@ export default function ShowcaseTrialsLive() {
             countdown starts when you sign up — not when you first use it.
           </p>
           <p className="text-zinc-300 mb-8">
-            After 7 days, pick your plan. Solo ($29/mo), Collective ($69/mo), Label ($149/mo),
-            or Network ($499/mo). Or keep your agent on the free tier with limited capabilities.
+            After 7 days, pick your plan. Solo (£29/mo), Collective (£69/mo), Label (£149/mo),
+            or Network (£499/mo). Or keep your agent on the free tier with limited capabilities.
             Every transaction goes through Stripe — clean, tracked, secure.
           </p>
 

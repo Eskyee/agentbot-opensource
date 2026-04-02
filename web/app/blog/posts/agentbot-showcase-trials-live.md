@@ -17,7 +17,7 @@ We built it in a month. From scratch. On a Mac mini in London.
 
 Every new signup gets a full 7-day trial. No credit card required. Deploy your agent, connect your channels, bring your own API key. The countdown starts when you sign up — not when you first use it.
 
-After 7 days, pick your plan. Solo ($29/mo), Collective ($69/mo), Label ($149/mo), or Network ($499/mo). Or keep your agent on the free tier with limited capabilities.
+After 7 days, pick your plan. Solo (£29/mo), Collective (£69/mo), Label (£149/mo), or Network (£499/mo). Or keep your agent on the free tier with limited capabilities.
 
 ### 🌐 Public Showcase
 
