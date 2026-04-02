@@ -94,6 +94,7 @@ async function main() {
     broken: 0,
     repaired: 0,
     dead: 0,
+    needReprovision: 0,
   }
 
   for (const user of users) {
@@ -150,6 +151,7 @@ async function main() {
   console.log(`   ❌ Broken: ${results.broken}`)
   console.log(`   🔧 Repaired: ${results.repaired}`)
   console.log(`   💀 Dead: ${results.dead}`)
+  console.log(`   🔄 Need Reprovision: ${results.needReprovision}`)
   console.log('========================\n')
 }
 
