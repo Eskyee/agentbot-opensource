@@ -36,12 +36,14 @@ export default function Navbar() {
       <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-900 font-mono">
         <Link href="/" className="flex items-center gap-2" onClick={closeMenu}>
           <Image
-            src="/logo-dark.svg"
+            src="/icons/icon-192x192.png"
             alt="Agentbot"
-            width={120}
-            height={20}
+            width={24}
+            height={24}
             priority
+            className="rounded"
           />
+          <span className="text-xs font-bold uppercase tracking-widest text-white">Agentbot</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-6">
