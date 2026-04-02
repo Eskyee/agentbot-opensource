@@ -98,16 +98,18 @@ async function getUserGateway(userId: string): Promise<{ url: string; token: str
  * Health check the gateway — fast, no tool invocation.
  */
 export async function gatewayHealthcheck(url?: string): Promise<{ ok: boolean; status?: string; error?: string }> {
-  const target = url || GATEWAY_URL
+  const target = (url || GATEWAY_URL).replace(/\/$/, '')
   try {
-    const res = await fetch(`${target}/healthz`, {
-      signal: AbortSignal.timeout(5000),
-    })
-    if (res.ok) {
-      const data = await res.json().catch(() => ({}))
-      return { ok: true, status: data.status || 'healthy' }
+    for (const path of ['/healthz', '/health']) {
+      const res = await fetch(`${target}${path}`, {
+        signal: AbortSignal.timeout(5000),
+      })
+      if (res.ok) {
+        const data = await res.json().catch(() => ({}))
+        return { ok: true, status: data.status || 'healthy' }
+      }
     }
-    return { ok: false, status: `http_${res.status}` }
+    return { ok: false, status: 'http_error' }
   } catch (err: any) {
     return { ok: false, error: err.message }
   }

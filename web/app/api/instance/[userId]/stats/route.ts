@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { gatewayHealthcheck } from '@/app/lib/gateway-proxy'
+import { prisma } from '@/app/lib/prisma'
 
 /**
  * GET /api/instance/[userId]/stats
@@ -11,14 +12,22 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const session = await getAuthSession()
-  if (!session?.user?.email) {
+  if (!session?.user?.email || !session.user.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { userId } = await params
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { openclawInstanceId: true, openclawUrl: true },
+  })
 
-  // Get real health from the shared gateway
-  const health = await gatewayHealthcheck()
+  if (!user?.openclawInstanceId || user.openclawInstanceId !== userId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  // Check the user's actual OpenClaw instance first, not just the shared gateway.
+  const health = await gatewayHealthcheck(user.openclawUrl || undefined)
 
   if (health.ok) {
     return NextResponse.json({

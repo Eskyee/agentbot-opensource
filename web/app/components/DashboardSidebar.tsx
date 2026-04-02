@@ -97,27 +97,27 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
   const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check localStorage first
+    // Use localStorage as a fast first paint, but always refresh from DB
+    // so stale shared-gateway URLs do not linger in the user dashboard.
     try {
       const stored = localStorage.getItem('agentbot_instance')
       if (stored) {
         const data = JSON.parse(stored)
         if (data.url) {
-          setOpenclawUrl(data.url)
-          return
+          setOpenclawUrl(String(data.url).replace(/\/$/, ''))
         }
       }
     } catch {}
-    // Fallback: fetch from DB
+
     fetch('/api/user/openclaw')
       .then(r => r.json())
       .then(data => {
         if (data.openclawUrl) {
-          setOpenclawUrl(data.openclawUrl)
-          // Restore localStorage for future visits
+          const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '')
+          setOpenclawUrl(normalizedUrl)
           localStorage.setItem('agentbot_instance', JSON.stringify({
             userId: data.openclawInstanceId,
-            url: data.openclawUrl,
+            url: normalizedUrl,
           }))
         }
       })

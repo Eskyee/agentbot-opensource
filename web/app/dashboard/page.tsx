@@ -240,17 +240,25 @@ function DashboardContent() {
       if (data.error) {
         setError(data.error)
       } else {
-        // Always use the correct shared gateway URL — override stale DB values
-        const sharedGatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
-        const url = sharedGatewayUrl.replace(/\/$/, '')
+        // Prefer the user's persisted OpenClaw instance URL. Only fall back to the
+        // shared gateway when the user has no instance-specific URL yet.
+        const preferredUrl = tokenData.openclawUrl || data.url
+        const fallbackUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
+        const url = String(preferredUrl || fallbackUrl).replace(/\/$/, '')
         const gatewayToken = tokenData.gatewayToken || undefined
         // Control UI auto-connects via hash fragment — token + gateway URL
         // Hash is never sent to server, so it's safe to embed the token
         const controlUiUrl = gatewayToken
           ? `${url}/chat?session=main#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(url).host}`)}`
           : `${url}/chat?session=main`
-        setInstance({ ...data, url, botUsername, gatewayToken, controlUiUrl })
-        fetchStats(userId)
+        const resolvedUserId = tokenData.openclawInstanceId || data.userId || userId
+        localStorage.setItem('agentbot_instance', JSON.stringify({
+          userId: resolvedUserId,
+          url,
+          botUsername,
+        }))
+        setInstance({ ...data, userId: resolvedUserId, url, botUsername, gatewayToken, controlUiUrl })
+        fetchStats(resolvedUserId)
       }
     } catch (e) {
       setError('Failed to fetch instance')
