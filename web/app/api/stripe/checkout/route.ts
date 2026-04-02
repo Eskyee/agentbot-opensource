@@ -119,6 +119,9 @@ export async function GET(request: NextRequest) {
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${plan}`,
       cancel_url: `${origin}/pricing?cancelled=1`,
       metadata: { plan, source: 'agentbot-web', userId },
+      subscription_data: {
+        trial_period_days: 7,
+      },
     }
     // Pre-fill customer email if logged in — improves conversion
     if (userEmail) {
