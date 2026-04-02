@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'how-we-built-multi-tenant-agent-platform',
+    date: '2 April 2026',
+    title: 'How We Built a Multi-Tenant AI Agent Platform (And Open-Sourced It)',
+    excerpt: 'BYOK infrastructure, OpenClaw gateway, 8 channels, Docker agent containers. How we built a production agent platform and open sourced the architecture.',
+    tags: ['Open Source', 'Multi-Tenant', 'AI Agents', 'Architecture', 'Dev.to']
+  },
+  {
     slug: 'agentbot-showcase-trials-live',
     date: '2 April 2026',
     title: 'Agentbot: Trials Live, Showcase Open, The Future is Deployed',
