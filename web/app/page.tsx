@@ -1,9 +1,16 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import { ComparisonTable, SocialProof, UseCases, CapabilitiesTicker, DemoVideo, OpenLearning } from '@/app/components/landing'
-import HeroSphere from '@/app/components/HeroSphereClient'
-import { DashboardPreview } from '@/app/components/DashboardPreview'
-import { HeroImage } from '@/app/components/HeroImage'
+import dynamic from 'next/dynamic'
+
+const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'), { ssr: false })
+const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
+const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
+const ComparisonTable = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.ComparisonTable })))
+const SocialProof = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.SocialProof })))
+const UseCases = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.UseCases })))
+const CapabilitiesTicker = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
+const DemoVideo = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.DemoVideo })))
+const OpenLearning = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.OpenLearning })))
 
 export default async function Home() {
   const session = await getAuthSession()
