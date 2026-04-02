@@ -208,6 +208,10 @@ export default function DemoPage() {
           <p className="text-zinc-400 text-sm leading-relaxed mt-3 max-w-xl">
             Test AI models directly in your browser. Compare responses side by side.
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 px-4 py-2">
+            <span className="text-green-400 text-xs font-bold uppercase tracking-widest">🎯 7-Day Free Trial</span>
+            <span className="text-green-400/70 text-[10px] uppercase tracking-widest">No credit card required</span>
+          </div>
         </div>
 
         {/* API Key Input - Collapsible */}
@@ -511,7 +515,7 @@ export default function DemoPage() {
             Deploy Your Fleet
           </Link>
           <p className="mt-4 text-[10px] uppercase tracking-widest text-zinc-600">
-            No credit card required.
+            Start with a 7-day free trial. No credit card required.
           </p>
         </div>
       </div>
