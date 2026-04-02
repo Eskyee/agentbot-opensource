@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import HeroSphere from '@/app/components/MorphingHero'
-import { ComparisonTable, SocialProof, UseCases, CapabilitiesTicker, DemoVideo } from '@/app/components/landing'
+import { ComparisonTable, SocialProof, UseCases, CapabilitiesTicker, DemoVideo, OpenLearning } from '@/app/components/landing'
 
 export default async function Home() {
   const session = await getAuthSession()
@@ -226,6 +226,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Open Learning */}
+      <OpenLearning />
 
       {/* Social Proof */}
       <SocialProof />
