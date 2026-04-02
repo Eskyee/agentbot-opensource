@@ -29,6 +29,29 @@ Your agent. Your rules. Zero Human Company.
 
 ---
 
+## Dashboard
+
+```
+┌─────────────────────────────────────────────────────┐
+│  AGENTBOT                              ● CONNECTED   │
+├─────────────────────────────────────────────────────┤
+│  AGENT: basefm-agent                                 │
+│  STATUS: ACTIVE  │  UPTIME: 3d 14h  │  MODEL: auto  │
+│                                                      │
+│  CHANNELS        SKILLS              WALLET          │
+│  ✓ Telegram      12 installed        $247.50 USDC    │
+│  ✓ WhatsApp      ▸ instant-split     Base mainnet    │
+│  ✗ Discord       ▸ venue-finder                      │
+│                  ▸ royalty-tracker   [OPEN AGENT]    │
+│                                                      │
+│  PERSONALITY: basement               TRIAL: 5d left  │
+└─────────────────────────────────────────────────────┘
+```
+
+**[→ Live demo at agentbot.raveculture.xyz](https://agentbot.raveculture.xyz)**
+
+---
+
 ## Quick Start
 
 ```bash
@@ -213,6 +236,7 @@ If you're building something on top of Agentbot or OpenClaw, let us know in the 
 - 📖 [Docs](https://docs.agentbot.raveculture.xyz)
 - 🚀 [Hosted Platform](https://agentbot.raveculture.xyz)
 - 📦 [Releases](https://github.com/Eskyee/agentbot-opensource/releases)
+- 📝 [Changelog](./CHANGELOG.md)
 
 ---
 

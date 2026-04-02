@@ -7,6 +7,6 @@
     "install": "cd web && npm install"
   },
   "dependencies": {
-    "next": "16.2"
+    "next": "^15.2.4"
   }
 }
