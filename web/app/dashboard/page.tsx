@@ -12,7 +12,6 @@ import { PermissionGate } from '@/app/components/shared/PermissionGate'
 import { TrialBanner } from '@/app/components/TrialBanner'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 
-const HelpChat = dynamic(() => import('@/app/components/HelpChat'), { ssr: false })
 
 // Helper to convert percent string to Tailwind width class
 function getBarWidthClass(percent?: string) {
@@ -641,7 +640,6 @@ function DashboardContent() {
         </div>
         </main>
       </div>
-      <HelpChat />
     </div>
   )
 }
