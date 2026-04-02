@@ -4,8 +4,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Radio, DollarSign, Hash, Bot, LayoutGrid, Dna, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { OrganismCanvas } from '@/components/dashboard/constellation/OrganismCanvas';
-import { ExecutionTrace } from '@/components/dashboard/fleet/ExecutionTrace';
+import dynamic from 'next/dynamic';
 import { CloneButton } from '@/app/components/shared/CloneButton';
 import {
   DashboardShell,
@@ -13,6 +12,15 @@ import {
   DashboardContent,
 } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
+
+const OrganismCanvas = dynamic(
+  () => import('@/components/dashboard/constellation/OrganismCanvas').then(m => ({ default: m.OrganismCanvas })),
+  { ssr: false, loading: () => <div className="absolute inset-0 flex items-center justify-center"><div className="animate-pulse text-xs text-zinc-500 uppercase tracking-widest">Loading fleet...</div></div> }
+);
+const ExecutionTrace = dynamic(
+  () => import('@/components/dashboard/fleet/ExecutionTrace').then(m => ({ default: m.ExecutionTrace })),
+  { ssr: false }
+);
 
 export default function FleetPage() {
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'organism'>('organism');

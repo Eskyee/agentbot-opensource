@@ -207,11 +207,39 @@ export default function PersonalityPage() {
 
         {/* Area of expertise */}
         <div className="border border-zinc-800 bg-zinc-950 p-5">
-          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-4">
-            Area of Expertise
+          <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">
+            Expertise
           </h2>
+          <p className="text-[11px] text-zinc-500 mb-4">
+            Define your agent&apos;s specific knowledge. This shapes how it talks and what it knows deeply.
+          </p>
+          {/* Quick-select presets */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {[
+              'UK techno & Berlin clubs',
+              'hip-hop production & beats',
+              'independent artist management',
+              'vinyl curation & DJing',
+              'music sync licensing',
+              'Spotify & streaming strategy',
+              'live events & touring',
+              'music publishing & royalties',
+              'UK drill & grime',
+              'jazz & experimental',
+              'modular synthesis & hardware',
+              'label operations & A&R',
+            ].map((preset) => (
+              <button
+                key={preset}
+                onClick={() => setExpertise(expertise ? `${expertise}, ${preset}` : preset)}
+                className="text-[10px] px-2 py-1 border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white transition-colors uppercase tracking-widest"
+              >
+                {preset}
+              </button>
+            ))}
+          </div>
           <AgentInput
-            placeholder="e.g., customer support, data analysis, content writing"
+            placeholder="e.g., UK techno, Berghain resident sets, Roland hardware"
             value={expertise}
             onChange={(e) => setExpertise(e.target.value)}
           />

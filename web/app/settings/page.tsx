@@ -47,14 +47,20 @@ export default function SettingsPage() {
   const [referralLink, setReferralLink] = useState('')
   const [referralCount, setReferralCount] = useState(0)
   const [referralCredits, setReferralCredits] = useState(0)
+  const [showcaseOptIn, setShowcaseOptIn] = useState(false)
+  const [showcaseDescription, setShowcaseDescription] = useState('')
+  const [showcaseAgentId, setShowcaseAgentId] = useState('')
+  const [showcaseSaving, setShowcaseSaving] = useState(false)
+  const [showcaseSaved, setShowcaseSaved] = useState(false)
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const [settingsRes, agentsRes, referralRes] = await Promise.all([
+        const [settingsRes, agentsRes, referralRes, showcaseRes] = await Promise.all([
           fetch('/api/settings'),
           fetch('/api/agents'),
           fetch('/api/referral'),
+          fetch('/api/agents/showcase'),
         ])
 
         if (settingsRes.ok) {
@@ -76,6 +82,13 @@ export default function SettingsPage() {
           setReferralLink(`https://agentbot.raveculture.xyz/signup?ref=${data.referralCode || ''}`)
           setReferralCount(data.referralCount || 0)
           setReferralCredits(data.creditEarned || 0)
+        }
+
+        if (showcaseRes.ok) {
+          const data = await showcaseRes.json()
+          setShowcaseOptIn(data.showcaseOptIn ?? false)
+          setShowcaseDescription(data.showcaseDescription ?? '')
+          setShowcaseAgentId(data.agentId ?? '')
         }
       } catch (error) {
         console.error('Failed to fetch settings:', error)
@@ -154,12 +167,81 @@ export default function SettingsPage() {
             )}
 
             {activeTab === 'agents' && (
-              <AgentsTab
-                agents={agents}
-                onRename={(id, name) => {
-                  setAgents((prev) => prev.map((a) => (a.id === id ? { ...a, name } : a)))
-                }}
-              />
+              <div className="space-y-6">
+                <AgentsTab
+                  agents={agents}
+                  onRename={(id, name) => {
+                    setAgents((prev) => prev.map((a) => (a.id === id ? { ...a, name } : a)))
+                  }}
+                />
+
+                {showcaseAgentId && (
+                  <div className="border border-zinc-800 bg-zinc-950 p-5">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h2 className="text-sm font-bold uppercase tracking-tight mb-1">Agent Showcase</h2>
+                        <p className="text-[11px] text-zinc-500">List your agent on the public showcase at <a href="/showcase" className="text-purple-400 hover:text-purple-300">/showcase</a></p>
+                      </div>
+                      <button
+                        onClick={() => setShowcaseOptIn(!showcaseOptIn)}
+                        className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                          showcaseOptIn ? 'bg-purple-600' : 'bg-zinc-700'
+                        }`}
+                        role="switch"
+                        aria-checked={showcaseOptIn}
+                      >
+                        <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transform transition-transform ${
+                          showcaseOptIn ? 'translate-x-4' : 'translate-x-0'
+                        }`} />
+                      </button>
+                    </div>
+                    {showcaseOptIn && (
+                      <div className="mt-3">
+                        <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+                          Short bio for the showcase (280 chars max)
+                        </label>
+                        <textarea
+                          value={showcaseDescription}
+                          onChange={(e) => setShowcaseDescription(e.target.value)}
+                          maxLength={280}
+                          rows={2}
+                          placeholder="e.g., Underground techno agent. Curates sets, scouts tracks, runs my Telegram channel."
+                          className="w-full bg-zinc-900 border border-zinc-700 text-white text-xs px-3 py-2 focus:outline-none focus:border-zinc-500 resize-none font-mono"
+                        />
+                        <p className="text-[10px] text-zinc-600 mt-1">{showcaseDescription.length}/280</p>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3 mt-4">
+                      <button
+                        onClick={async () => {
+                          if (!showcaseAgentId) return
+                          setShowcaseSaving(true)
+                          try {
+                            await fetch('/api/agents/showcase', {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ agentId: showcaseAgentId, showcaseOptIn, showcaseDescription }),
+                            })
+                            setShowcaseSaved(true)
+                            setTimeout(() => setShowcaseSaved(false), 2000)
+                          } finally {
+                            setShowcaseSaving(false)
+                          }
+                        }}
+                        disabled={showcaseSaving}
+                        className="text-[10px] uppercase tracking-widest bg-white text-black px-4 py-2 font-bold hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+                      >
+                        {showcaseSaving ? 'Saving...' : showcaseSaved ? 'Saved ✓' : 'Save'}
+                      </button>
+                      {showcaseOptIn && (
+                        <a href="/showcase" target="_blank" rel="noopener noreferrer" className="text-[10px] text-purple-400 hover:text-purple-300 uppercase tracking-widest">
+                          View showcase →
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {activeTab === 'apikeys' && <ApiKeysTab agents={agents} />}

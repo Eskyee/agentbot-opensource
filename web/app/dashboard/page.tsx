@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
+import { TrialBanner } from '@/app/components/TrialBanner'
 
 const WalletCard = dynamic(() => import('@/app/components/WalletCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
 const AIModelCard = dynamic(() => import('@/app/components/AIModelCard'), { ssr: false, loading: () => <div className="bg-zinc-900 border border-zinc-800 h-40 animate-pulse" /> })
@@ -465,6 +466,7 @@ function DashboardContent() {
         </header>
 
         <main className="flex-1 overflow-y-auto">
+          <TrialBanner />
           <div className="p-4 lg:p-8">
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
