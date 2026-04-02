@@ -1246,16 +1246,29 @@ import { setupWebSocket } from './lib/hooks/ws-handler';
 const permissionWss = setupWebSocket(server);
 console.log('[WS] Permission WebSocket registered at /ws/permissions');
 
-server.listen(PORT, () => {
-  console.log(`🦞 Agentbot API server running on port ${PORT}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
-  console.log('OpenClaw proxy: /api/openclaw/proxy/:agentId/*');
+let serverStarted = false;
 
-  if (process.env.NODE_ENV === 'production') {
-    startAutoUpdater();
-  }
-});
+export function startServer() {
+  if (serverStarted) return server;
+
+  server.listen(PORT, () => {
+    console.log(`🦞 Agentbot API server running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
+    console.log('OpenClaw proxy: /api/openclaw/proxy/:agentId/*');
+
+    if (process.env.NODE_ENV === 'production') {
+      startAutoUpdater();
+    }
+  });
+
+  serverStarted = true;
+  return server;
+}
+
+if (require.main === module) {
+  startServer();
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
@@ -1264,5 +1277,6 @@ process.on('SIGTERM', () => {
   process.exit(0);
 });
 
+export { server, permissionWss };
 export default app;
 // Cache bust 1773437272

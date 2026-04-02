@@ -9,11 +9,27 @@ jobs:
   daily-report:
     runs-on: ubuntu-latest
     steps:
+      - name: Check required secrets
+        id: config
+        run: |
+          if [ -n "${{ secrets.VERCEL_TOKEN }}" ] && [ -n "${{ secrets.MAIL_USERNAME }}" ] && [ -n "${{ secrets.MAIL_PASSWORD }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip if secrets are missing
+        if: steps.config.outputs.ready != 'true'
+        run: |
+          echo "Skipping daily report: VERCEL_TOKEN or mail credentials are not configured." >> $GITHUB_STEP_SUMMARY
+
       - name: Get deployment status
+        if: steps.config.outputs.ready == 'true'
         run: |
           echo "Checking recent deployments..." >> $GITHUB_STEP_SUMMARY
 
       - name: Get Vercel deployment info
+        if: steps.config.outputs.ready == 'true'
         id: deployments
         run: |
           echo "Fetching deployment status..."
@@ -22,10 +38,12 @@ jobs:
           echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
 
       - name: Get today's date
+        if: steps.config.outputs.ready == 'true'
         id: date
         run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
       - name: Generate report
+        if: steps.config.outputs.ready == 'true'
         id: report
         run: |
           REPORT="📊 Agentbot Daily Report
@@ -46,6 +64,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Send email report
+        if: steps.config.outputs.ready == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
