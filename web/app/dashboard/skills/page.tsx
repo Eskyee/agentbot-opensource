@@ -1,9 +1,27 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Wrench, Star, Download, CheckCircle, AlertCircle } from 'lucide-react'
+import { useState, useEffect, useCallback, FormEvent } from 'react'
+import {
+  Wrench,
+  Star,
+  Download,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import {
   DashboardShell,
@@ -41,6 +59,11 @@ export default function SkillsPage() {
     new Set()
   )
   const [installingId, setInstallingId] = useState<string | null>(null)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [newSkillName, setNewSkillName] = useState('')
+  const [newSkillDescription, setNewSkillDescription] = useState('')
+  const [newSkillCategory, setNewSkillCategory] = useState('')
+  const [creatingSkill, setCreatingSkill] = useState(false)
 
   // Fetch agents on mount
   useEffect(() => {
@@ -58,28 +81,45 @@ export default function SkillsPage() {
       })
   }, [])
 
-  // Fetch skills + categories whenever category filter or agent changes
-  useEffect(() => {
-    const agentParam = selectedAgentId ? `&agentId=${selectedAgentId}` : ''
-    fetch(`/api/skills?category=${category}${agentParam}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setSkills(data.skills || [])
-        if (data.categories && Array.isArray(data.categories)) {
-          const cats: string[] = data.categories.filter(
-            (c: string) => c !== 'all'
-          )
-          setCategories(['all', ...cats])
-        }
-        // Pre-load which skills are already installed
-        if (Array.isArray(data.installedSkillIds)) {
-          setInstalledSkillIds(new Set(data.installedSkillIds))
-        }
-      })
-      .catch(() => {
-        setSkills([])
-      })
+  const fetchSkills = useCallback(async () => {
+    const params = new URLSearchParams()
+    params.set('category', category)
+    if (selectedAgentId) {
+      params.set('agentId', selectedAgentId)
+    }
+
+    try {
+      const response = await fetch(`/api/skills?${params.toString()}`)
+      if (!response.ok) {
+        throw new Error('Failed to load skills')
+      }
+      const data = await response.json()
+      setSkills(data.skills || [])
+      if (Array.isArray(data.categories)) {
+        const cats: string[] = data.categories.filter(
+          (c: string) => c && c !== 'all'
+        )
+        setCategories(['all', ...cats])
+      } else {
+        setCategories(['all'])
+      }
+
+      if (Array.isArray(data.installedSkillIds)) {
+        setInstalledSkillIds(new Set(data.installedSkillIds))
+      } else {
+        setInstalledSkillIds(new Set())
+      }
+    } catch (error) {
+      console.error('Skills fetch error:', error)
+      setSkills([])
+      setCategories(['all'])
+      setInstalledSkillIds(new Set())
+    }
   }, [category, selectedAgentId])
+
+  useEffect(() => {
+    fetchSkills()
+  }, [fetchSkills])
 
   const installSkill = useCallback(
     async (skillId: string) => {
@@ -120,11 +160,136 @@ export default function SkillsPage() {
     [selectedAgentId, installedSkillIds]
   )
 
+  const handleCreateSkill = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const trimmedName = newSkillName.trim()
+      const trimmedDescription = newSkillDescription.trim()
+      const trimmedCategory = newSkillCategory.trim() || 'custom'
+
+      if (!trimmedName || !trimmedDescription) {
+        toast.error('Name and description are required')
+        return
+      }
+
+      setCreatingSkill(true)
+      try {
+        const response = await fetch('/api/skills/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: trimmedName,
+            description: trimmedDescription,
+            category: trimmedCategory,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to add skill')
+        }
+
+        toast.success('Skill added!')
+        setNewSkillName('')
+        setNewSkillDescription('')
+        setNewSkillCategory('')
+        setCategory('all')
+        setAddDialogOpen(false)
+        await fetchSkills()
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : 'Failed to add skill'
+        toast.error(message)
+      } finally {
+        setCreatingSkill(false)
+      }
+    },
+    [newSkillName, newSkillDescription, newSkillCategory, fetchSkills]
+  )
+
   return (
     <DashboardShell>
       <DashboardHeader
         title="Skill Marketplace"
         icon={<Wrench className="h-5 w-5 text-blue-400" />}
+        action={
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="text-xs font-bold uppercase tracking-wider"
+              >
+                + Add Skill
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-full max-w-md">
+              <form onSubmit={handleCreateSkill} className="space-y-4">
+                <DialogHeader>
+                  <DialogTitle className="text-base font-semibold">
+                    Add a new skill
+                  </DialogTitle>
+                  <DialogDescription>
+                    Describe what the agent should do and assign a category.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2">
+                  <Label htmlFor="skill-name">Skill Name</Label>
+                  <Input
+                    id="skill-name"
+                    value={newSkillName}
+                    onChange={(event) => setNewSkillName(event.target.value)}
+                    placeholder="e.g., Energy Meter"
+                    maxLength={60}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="skill-description">Description</Label>
+                  <textarea
+                    id="skill-description"
+                    value={newSkillDescription}
+                    onChange={(event) =>
+                      setNewSkillDescription(event.target.value)
+                    }
+                    rows={4}
+                    className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm font-mono outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 resize-none"
+                    placeholder="Explain what this skill helps agents do."
+                    required
+                    maxLength={280}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="skill-category">Category</Label>
+                  <Input
+                    id="skill-category"
+                    value={newSkillCategory}
+                    onChange={(event) =>
+                      setNewSkillCategory(event.target.value)
+                    }
+                    placeholder="Productivity, finance, streaming..."
+                    maxLength={40}
+                  />
+                </div>
+                <DialogFooter className="flex items-center justify-end gap-2">
+                  <DialogClose asChild>
+                    <Button variant="outline" size="sm">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    className="uppercase tracking-widest text-xs"
+                    disabled={creatingSkill}
+                  >
+                    {creatingSkill ? 'Saving...' : 'Save Skill'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        }
       />
 
       <DashboardContent className="max-w-7xl space-y-6">
