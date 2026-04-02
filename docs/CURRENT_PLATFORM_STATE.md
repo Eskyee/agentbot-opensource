@@ -29,15 +29,21 @@ This file is the current operational reference for platform ownership, deploymen
   - Health URL: `https://x402-gateway-production.up.railway.app/health`
 - OpenClaw shared UI:
   - Platform: Railway
-  - Service URL: `https://openclaw-gateway-production-ad37.up.railway.app`
-  - Health URL: `https://openclaw-gateway-production-ad37.up.railway.app/health`
+  - Service URL: `https://openclaw-gw-ui-production.up.railway.app`
+  - Health URL: `https://openclaw-gw-ui-production.up.railway.app/health`
 - GitHub repos:
   - Private production repo: `Eskyee/agentbot`
   - Public mirror: `Eskyee/agentbot-opensource`
 
 ## Verified Health
 
-- Vercel production responded `HTTP 200` on 2026-04-02.
+**⚠️ Borg Soul (tempo-x402+Borg) is DOWN** — needs Railway dashboard to clear `startCommand` and fund Tempo gas.
+
+- Vercel production responded `HTTP 200` on 2026-04-02 17:20 BST.
+- Gateway responded `ok, live` on 2026-04-02 17:20 BST.
+- Agentbot API responded `HTTP 200` on 2026-04-02 17:20 BST.
+- x402 Gateway responded `status ok` on 2026-04-02 17:20 BST.
+- Borg Soul: **DOWN** — `startCommand` override + no Tempo gas on wallet `0x3944...`
 - Railway backend health responded `HTTP 200` on 2026-04-02.
 - Borg soul health responded `HTTP 200` on 2026-04-02 after recovery.
 - x402 gateway health responded `HTTP 200` on 2026-04-02.
@@ -72,3 +78,4 @@ The following docs contain stale or mixed-era infra guidance and should be treat
 - Device auth is re-enabled and `dangerouslyAllowHostHeaderOriginFallback` is disabled to close the DNS-rebinding attack vector the previous config exposed.
 - The `gateway/openclaw.json` file is now written with `chmod 600` and the workspace directory uses `chmod 700` so the non-root `node` user is the only one who can read configuration or secrets.
 - A new readiness helper in `gateway/entrypoint.sh` waits for `${AGENTBOT_API_URL}/health` (configurable via `SERVICE_HEALTH_URL`) before launching `openclaw gateway`. Set `SKIP_SERVICE_READINESS=true` to skip the wait during emergency restarts.
+- The dashboard now points to `OPENCLAW_CONTROL_UI_URL` (default `https://openclaw-gw-ui-production.up.railway.app/chat`) with `session=agent:main:main`, so users are directed straight to the chat view that pairs with their token. Overrides can be supplied via the environment variables `OPENCLAW_CONTROL_UI_URL` and `OPENCLAW_CONTROL_UI_SESSION`.
