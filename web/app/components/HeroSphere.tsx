@@ -305,7 +305,7 @@ export default function HeroSphere() {
         posArr[i * 3 + 1] = oy * disp + Math.cos(elapsed * 0.3 + phases[i]) * 0.01 * offsets[i]
         posArr[i * 3 + 2] = oz * disp + Math.sin(elapsed * 0.5 + phases[i] * 1.5) * 0.012 * offsets[i]
 
-        sizeArr[i] = Math.random() * 0.3 + 0.5
+        // Size set once in initialization, skip per-frame random
       }
 
       // Slow color shift — subtle hue cycle
