@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest) {
     data: {
       ...(typeof showcaseOptIn === 'boolean' && { showcaseOptIn }),
       ...(typeof showcaseDescription === 'string' && {
-        showcaseDescription: showcaseDescription.trim().slice(0, 280) || null,
+        showcaseDescription: showcaseDescription.trim().slice(0, 280) || "",
       }),
     },
     select: { showcaseOptIn: true, showcaseDescription: true },

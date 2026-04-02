@@ -564,7 +564,8 @@ model bridge_messages {
   @@index([created_at], map: "idx_bridge_created")
 }
 
-// Usage tracking\model usage_logs {
+// Usage tracking
+model usage_logs {
   id            Int       @id @default(autoincrement())
   user_id       String
   agent_id      String
