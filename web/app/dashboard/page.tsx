@@ -64,6 +64,7 @@ function DashboardContent() {
   const [credits, setCredits] = useState(0)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [gatewayStatus, setGatewayStatus] = useState<{health: string; sessions: {total: number; active: number}; cron: {total: number; enabled: number}} | null>(null)
+  const [statusChecks, setStatusChecks] = useState<{ name: string; status: 'ok' | 'degraded' | 'down'; detail?: string }[]>([])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -139,6 +140,7 @@ function DashboardContent() {
       fetchInstance(userId, botUsername)
       fetchCredits()
       fetchGatewayStatus()
+      fetchStatusChecks()
     })(); // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams, session])
 
@@ -163,6 +165,22 @@ function DashboardContent() {
       console.error('Failed to fetch gateway status:', e)
     }
   }
+
+  const fetchStatusChecks = async () => {
+    try {
+      const res = await fetch('/api/dashboard/health')
+      if (!res.ok) return
+      const body = await res.json()
+      setStatusChecks(body.services || [])
+    } catch {
+      setStatusChecks([{ name: 'Service layer', status: 'down', detail: 'unreachable' }])
+    }
+  }
+
+  useEffect(() => {
+    const interval = setInterval(fetchStatusChecks, 30_000)
+    return () => clearInterval(interval)
+  }, [])
 
   const fetchInstance = async (userId: string, botUsername: string) => {
     try {
@@ -362,6 +380,21 @@ function DashboardContent() {
           <div className="p-4 lg:p-8">
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+            {statusChecks.map((check) => (
+              <div key={check.name} className="border border-zinc-800 bg-zinc-950 p-4 flex items-center justify-between rounded-lg">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600">{check.name}</p>
+                  <p className="text-lg font-mono text-white">
+                    {check.status === 'ok' ? 'Working' : check.status === 'degraded' ? 'Wired, degraded' : 'Down'}
+                  </p>
+                  {check.detail && <p className="text-[10px] text-zinc-500 mt-1">{check.detail}</p>}
+                </div>
+                <span className={`h-3 w-3 rounded-full ${check.status === 'ok' ? 'bg-green-400' : check.status === 'degraded' ? 'bg-yellow-400' : 'bg-red-500'}`} />
+              </div>
+            ))}
+          </div>
 
           {/* Agent Chat */}
           <div className="mb-8">

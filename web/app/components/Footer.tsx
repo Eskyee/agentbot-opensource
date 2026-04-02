@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
+  const [version, setVersion] = useState<string>('v0.0.0');
 
   useEffect(() => {
     async function checkStatus() {
@@ -19,6 +20,21 @@ export default function Footer() {
     const interval = setInterval(checkStatus, 300000); // Every 5 min (was 60s)
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    async function fetchVersion() {
+      try {
+        const res = await fetch('/api/version')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.version) {
+            setVersion(data.version)
+          }
+        }
+      } catch {}
+    }
+    fetchVersion()
+  }, [])
 
   return (
     <footer className="w-full border-t border-zinc-900 bg-black font-mono">
@@ -43,7 +59,7 @@ export default function Footer() {
               </div>
               <span className="text-zinc-800 text-[10px]">|</span>
               <span className="text-[10px] uppercase tracking-widest text-zinc-700">
-                OpenClaw v2026.4.1
+                Agentbot {version}
               </span>
             </div>
           </div>
