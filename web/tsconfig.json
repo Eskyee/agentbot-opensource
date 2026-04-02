@@ -48,6 +48,9 @@
       ],
       "@/components/*": [
         "./app/components/*"
+      ],
+      "@/lib/webauthx/*": [
+        "./lib/webauthx/*"
       ]
     },
     "target": "ES2020"

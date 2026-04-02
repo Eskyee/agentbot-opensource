@@ -10,8 +10,8 @@ import dynamic from 'next/dynamic'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
 import { TrialBanner } from '@/app/components/TrialBanner'
+import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 
-const AgentChat = dynamic(() => import('@/app/components/AgentChat'), { ssr: false })
 const HelpChat = dynamic(() => import('@/app/components/HelpChat'), { ssr: false })
 
 // Helper to convert percent string to Tailwind width class
@@ -65,6 +65,8 @@ function DashboardContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [gatewayStatus, setGatewayStatus] = useState<{health: string; sessions: {total: number; active: number}; cron: {total: number; enabled: number}} | null>(null)
   const [statusChecks, setStatusChecks] = useState<{ name: string; status: 'ok' | 'degraded' | 'down'; detail?: string }[]>([])
+  const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
+  const [healingAttempted, setHealingAttempted] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -177,6 +179,21 @@ function DashboardContent() {
     }
   }
 
+  const healAutoPair = async () => {
+    setHealingAttempted(true)
+    try {
+      const res = await fetch('/api/support/heal-token', { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.healed) {
+          setAutoPairHealth('ready')
+        }
+      }
+    } catch (error) {
+      console.error('Auto Pair heal failed', error)
+    }
+  }
+
   useEffect(() => {
     const interval = setInterval(fetchStatusChecks, 30_000)
     return () => clearInterval(interval)
@@ -198,7 +215,7 @@ function DashboardContent() {
         // Prefer the user's persisted OpenClaw instance URL. Only fall back to the
         // shared gateway when the user has no instance-specific URL yet.
         const preferredUrl = tokenData.openclawUrl || data.url
-        const fallbackUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
+        const fallbackUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
         const url = String(preferredUrl || fallbackUrl).replace(/\/$/, '')
         const gatewayToken = tokenData.gatewayToken || undefined
         // Control UI auto-connects via hash fragment — token + gateway URL
@@ -214,6 +231,11 @@ function DashboardContent() {
         }))
         setInstance({ ...data, userId: resolvedUserId, url, botUsername, gatewayToken, controlUiUrl })
         fetchStats(resolvedUserId)
+        const health = gatewayToken ? 'ready' : 'missing'
+        setAutoPairHealth(health)
+        if (health === 'missing' && !healingAttempted) {
+          healAutoPair()
+        }
       }
     } catch (e) {
       setError('Failed to fetch instance')
@@ -396,11 +418,6 @@ function DashboardContent() {
             ))}
           </div>
 
-          {/* Agent Chat */}
-          <div className="mb-8">
-            <AgentChat agentName={instance?.subdomain} />
-          </div>
-
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
@@ -492,8 +509,33 @@ function DashboardContent() {
                   <span>→</span>
                 </a>
                 <div className="border border-zinc-800 px-4 py-3">
-                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Auto Pairing</p>
-                  <p className="text-[11px] text-zinc-500">The button above opens your agent with the saved gateway token when available. Users should not need to manually copy tokens for the normal flow.</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Auto Pairing</p>
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        autoPairHealth === 'ready'
+                          ? 'bg-green-400'
+                          : autoPairHealth === 'missing'
+                            ? 'bg-yellow-400'
+                            : 'bg-zinc-600 animate-pulse'
+                      }`}
+                    />
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    {autoPairHealth === 'ready' && 'Control UI auto-connects with the stored gateway token.'}
+                    {autoPairHealth === 'missing' && 'No valid gateway token detected — refresh the dashboard or reauthenticate to restore pairing.'}
+                    {autoPairHealth === 'loading' && 'Checking gateway token…'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setAutoPairHealth('loading')
+                      fetchInstance(instance.userId, instance.botUsername || '')
+                    }}
+                    className="mt-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:text-white"
+                  >
+                    Refresh token
+                    <span className="text-[10px] text-zinc-500">↺</span>
+                  </button>
                 </div>
                 {instance?.botUsername && (
                   <a
