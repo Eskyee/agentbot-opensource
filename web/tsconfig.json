@@ -28,6 +28,9 @@
       "@/app/*": [
         "./app/*"
       ],
+      "@/app/lib/*": [
+        "./app/lib/*"
+      ],
       "@/lib/auth": [
         "./lib/auth"
       ],

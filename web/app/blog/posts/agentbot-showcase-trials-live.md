@@ -48,6 +48,12 @@ The agent marketplace is coming. Discovery, hiring, and cross-agent collaboratio
 
 This isn't a product. It's a platform. And it's just getting started.
 
+### 🌍 Community Learning
+
+OpenClaw is the foundation, and we&rsquo;ve opened community learning labs that connect London and the USA.
+Showcase agents are shared experiments—deploy in Agentbot, visit the London studio or the U.S. clubhouse, and swap knowledge
+with other operators. The more we collaborate, the smarter every agent gets.
+
 ---
 
 **Try it:** [agentbot.raveculture.xyz](https://agentbot.raveculture.xyz)  

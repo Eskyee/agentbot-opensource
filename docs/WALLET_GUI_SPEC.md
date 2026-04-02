@@ -1,209 +1,91 @@
-# Tempo Wallet GUI — Agentbot Integration Spec
+# Tempo Wallet Integration Status
 
-## Overview
-Integrate Agentbot with Tempo Wallet (wallet.tempo.xyz) for seamless agent payments. Users authenticate with passkeys, get a USD-denominated wallet, and pay for agent calls via MPP payment sessions. We sponsor gas. No crypto UX friction.
+**Date:** 2026-04-02  
+**Status:** Current implementation audit
 
-## Current State
-- ✅ MPP client (`lib/mpp/client.ts`) — 402 payment flow with Tempo signing
-- ✅ MPP verification (`lib/mpp/config.ts`) — chain verification, pathUSD config
-- ✅ Tempo chain config (`lib/mpp/tempo.ts`) — mainnet (4217) + testnet (42431)
-- ✅ x402 Gateway — agent-to-agent payments on Tempo
-- ✅ viem/tempo in dependencies
-- ❌ No Tempo Wallet integration for end users
-- ❌ No MPP service registration
-- ❌ No fee payer handler
-- ❌ No payment sessions
+## Summary
 
-## Architecture
+Agentbot already has a wallet dashboard, balance APIs, fee payer route, wallet session routes, and wallet top-up/create surfaces in the repo. This is no longer a blank spec. The remaining work is mostly around hardening, persistence, and true end-to-end wallet UX.
 
-### Integration Model
-Agentbot integrates WITH Tempo Wallet. We don't build a custom wallet. Users authenticate via wallet.tempo.xyz passkey flow. We register as an MPP service and handle payments server-side.
+## Implemented
 
-### User Flow
-```
-Sign up → "Connect Tempo Wallet" → Passkey (Face ID/Touch ID) → Wallet created
-→ Top up (card or crypto) → Agent calls → Auto-deduct via MPP → Receipt
-```
+### Dashboard And Wallet APIs
 
-### Components
+- `web/app/dashboard/wallet/page.tsx`
+  - Wallet dashboard exists.
+  - Supports local address connect, balance display, and session open/close UI.
+- `web/app/api/wallet/route.ts`
+  - Reads Tempo balances for known tokens.
+- `web/app/api/wallet/transactions/route.ts`
+  - Wallet transactions API exists.
+- `web/app/api/wallet/address/route.ts`
+  - Wallet address route exists.
+- `web/app/api/wallet/create/route.ts`
+  - Wallet creation route exists.
+- `web/app/api/wallet/top-up/route.ts`
+  - Wallet top-up route exists.
 
-#### 1. MPP Service Registration
-Register Agentbot endpoints in Tempo's service directory so users can discover us via `tempo wallet services`.
+### Payment Sessions
 
-**Service Definition:**
-```json
-{
-  "name": "Agentbot",
-  "description": "AI agent platform — provision, run, and manage agents",
-  "endpoints": [
-    {
-      "url": "https://agentbot.raveculture.xyz/api/v1/gateway",
-      "methods": ["POST"],
-      "pricing": {
-        "agent": "0.05",
-        "generate-text": "0.01",
-        "tts": "0.03",
-        "stt": "0.02"
-      }
-    }
-  ]
-}
-```
+- `web/app/api/wallet/sessions/route.ts`
+  - Create, list, and close MPP sessions.
+- `web/app/api/wallet/sessions/voucher/route.ts`
+  - Voucher route exists.
+- `web/lib/mpp/sessions.ts`
+  - Session model, voucher processing, threshold settlement hooks, and close flow are implemented in memory.
+- `web/lib/mpp/session-fetch.ts`
+  - Session ID handling exists on the client side.
 
-#### 2. Fee Payer Handler
-Drop-in `Handler.feePayer` for Next.js API routes. We sponsor gas for all users.
+### Fee Sponsorship
 
-**File:** `web/app/api/fee-payer/route.ts`
-```ts
-import { Handler } from 'tempo.ts/server'
-import { tempo } from 'viem/chains'
-import { http } from 'viem'
-import { privateKeyToAccount } from 'viem/accounts'
+- `web/app/api/fee-payer/route.ts`
+  - Fee payer handler exists and is auth-gated.
+  - Returns `503` when `TEMPO_FEE_PAYER_KEY` is not configured instead of crashing.
 
-const handler = Handler.feePayer({
-  account: privateKeyToAccount(process.env.TEMPO_FEE_PAYER_KEY as `0x${string}`),
-  chain: tempo,
-  transport: http(),
-})
+## Partially Implemented
 
-export const POST = handler.fetch
-```
+### Wallet Connection UX
 
-#### 3. Wallet Connect Button
-Wagmi passkey connector for "Connect Tempo Wallet" on signup.
+- Current wallet connect is address-based in `web/app/dashboard/wallet/page.tsx`.
+- That is workable for internal/testing flows, but it is not a full passkey Tempo Wallet onboarding experience.
 
-**File:** `web/components/TempoWalletConnect.tsx`
-```ts
-import { useConnect, useConnectors } from 'wagmi'
+### Session Persistence
 
-export function TempoWalletConnect() {
-  const connect = useConnect()
-  const [connector] = useConnectors()
+- `web/lib/mpp/sessions.ts` stores sessions in memory.
+- This is fine for local/dev prototyping and demo flows, but not production-safe.
 
-  return (
-    <button onClick={() => connect.connect({ connector, capabilities: { type: 'sign-up' } })}>
-      Connect Tempo Wallet
-    </button>
-  )
-}
-```
+### Settlement
 
-#### 4. Payment Sessions
-MPP sessions for per-call billing. Off-chain vouchers, sub-100ms, near-zero fees.
+- Voucher accumulation exists.
+- Actual settlement and refund steps are still TODO-backed placeholders in `web/lib/mpp/sessions.ts`.
 
-**Flow:**
-1. User connects wallet → session opened
-2. Agent call → signed voucher deducts from deposit
-3. Session settles on-chain periodically
-4. User can close session to reclaim unused funds
+### Fee Sponsorship
 
-#### 5. Balance Display
-Pull balance from Tempo RPC, show in dashboard.
+- Route exists, but depends on `TEMPO_FEE_PAYER_KEY`.
+- Sponsorship limits, abuse controls, and operator accounting are not fully documented here.
 
-**File:** `web/app/api/wallet/route.ts`
-```ts
-import { createPublicClient, http } from 'viem'
-import { tempo } from 'viem/chains'
+## Missing Or Incomplete
 
-const client = createPublicClient({ chain: tempo, transport: http() })
+- Durable storage for wallet sessions and vouchers
+- Real on-chain settlement and refund logic
+- Full Tempo Wallet passkey onboarding in the product flow
+- Clear top-up and transaction-history UX tied to authoritative backend data
+- Production monitoring around fee payer usage and failed sponsorship attempts
 
-export async function GET(req: Request) {
-  const { address } = await req.json()
-  const userFeeToken = await client.fee.getUserToken({ account: address })
-  const balance = await client.token.getBalance({ account: address, token: userFeeToken.address })
-  return Response.json({ balance, feeToken: userFeeToken })
-}
-```
+## Current Backlog
 
-#### 6. Wallet Dashboard
-**File:** `web/app/dashboard/wallet/page.tsx`
+### Next
 
-```
-┌─────────────────────────────────────────┐
-│  WALLET                                 │
-│  ═════════════════════════════════════  │
-│                                         │
-│  Balance          $12.47 pathUSD        │
-│  Address          0xd8fd...db56f        │
-│  Network          Tempo Mainnet         │
-│                                         │
-│  ┌──────────┐  ┌──────────┐            │
-│  │  TOP UP  │  │  SEND    │            │
-│  └──────────┘  └──────────┘            │
-│                                         │
-│  ─── RECENT ACTIVITY ──────────────     │
-│  -2.00   Agent call (generate-text)     │
-│  +10.00  Top-up (card → pathUSD)       │
-│  -0.05   Agent call (tts)              │
-│                                         │
-└─────────────────────────────────────────┘
-```
+- Move session state out of memory into durable storage.
+- Finish on-chain settlement and refund execution for wallet sessions.
+- Add a proper Tempo Wallet connect/onboarding path instead of raw address entry.
 
-## File Structure
-```
-agentbot/
-├── web/
-│   ├── app/
-│   │   ├── dashboard/
-│   │   │   └── wallet/
-│   │   │       └── page.tsx          # Wallet dashboard
-│   │   └── api/
-│   │       ├── wallet/
-│   │       │   └── route.ts          # Balance + history API
-│   │       └── fee-payer/
-│   │           └── route.ts          # Handler.feePayer
-│   ├── components/
-│   │   ├── TempoWalletConnect.tsx     # Passkey connect button
-│   │   ├── WalletBalance.tsx          # Balance display
-│   │   └── TransactionHistory.tsx     # Activity feed
-│   └── lib/
-│   │   ├── tempo-wallet.ts            # Tempo Wallet client config
-│   │   └── mpp/                       # Existing MPP code ✅
-│   └── wagmi.config.ts                # Add webAuthn connector
-├── docs/
-│   └── WALLET_GUI_SPEC.md             # This file
-```
+### Then
 
-## Implementation Phases
-
-### Phase 1: Fee Payer + Wallet Connect (Day 1)
-- [ ] Add `Handler.feePayer` to API routes
-- [ ] Add webAuthn connector to wagmi config
-- [ ] Create TempoWalletConnect component
-- [ ] Wire into signup flow
-
-### Phase 2: Balance + History API (Day 2)
-- [ ] Wallet balance endpoint (Tempo RPC)
-- [ ] Transaction history from chain
-- [ ] Connect to dashboard
-
-### Phase 3: Payment Sessions (Day 3)
-- [ ] MPP session management
-- [ ] Off-chain voucher signing
-- [ ] Auto-settle on interval
-
-### Phase 4: Dashboard + Top-Up (Day 4)
-- [ ] Wallet dashboard page
-- [ ] Stripe → pathUSD top-up
-- [ ] Transaction history UI
-
-## Dependencies
-- viem/tempo ✅ (already installed)
-- wagmi/tempo (add webAuthn connector)
-- tempo.ts/server (for Handler.feePayer)
-- Stripe (already integrated)
-
-## Security
-- Passkey auth (WebAuthn/P256) — keys in device secure enclave
-- Fee payer key stored server-side, encrypted
-- Rate limiting on fee-payer endpoint
-- Max sponsorship per user per day
-- Payment session deposit limits
+- Improve transaction history quality and source of truth.
+- Add operator-side limits, observability, and abuse protections for fee sponsorship.
 
 ## Notes
-- No native token — everything is USD-denominated
-- pathUSD has 6 decimals (not 18)
-- Tempo supports gas sponsorship at protocol level
-- MPP sessions are off-chain (sub-100ms billing)
-- Service discovery via `tempo wallet services`
-- CLI available: `tempo wallet login/balance/transfer/sessions`
+
+- The old phased spec in this file was inaccurate. Wallet, session, and fee payer primitives already exist in code.
+- This file should now be treated as a status document for the remaining hardening work.

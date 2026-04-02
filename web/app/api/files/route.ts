@@ -33,8 +33,8 @@ export async function GET(req: NextRequest) {
       if (!file.path) {
         return NextResponse.json({ error: 'File path missing' }, { status: 500 })
       }
-      const resolvedPath = path.resolve(file.path)
-      const resolvedUploadDir = path.resolve(UPLOAD_DIR)
+      const resolvedPath = path.resolve(/*turbopackIgnore: true*/ file.path)
+      const resolvedUploadDir = path.resolve(/*turbopackIgnore: true*/ UPLOAD_DIR)
       if (!resolvedPath.startsWith(resolvedUploadDir)) {
         console.error('Path traversal attempt blocked:', file.path)
         return NextResponse.json({ error: 'Invalid file path' }, { status: 403 })
@@ -138,13 +138,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Save file to disk
-    const uploadDir = path.join(UPLOAD_DIR, session.user.id, agentId)
+    const uploadDir = path.join(/*turbopackIgnore: true*/ UPLOAD_DIR, session.user.id, agentId)
     await fs.mkdir(uploadDir, { recursive: true })
 
     // Sanitize filename: reject dotfiles, limit length, strip path traversal
     const baseName = file.name.replace(/^\.+/, '').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 128)
     const safeFilename = baseName || `upload_${Date.now()}`
-    const filePath = path.join(uploadDir, `${Date.now()}_${safeFilename}`)
+    const filePath = path.join(/*turbopackIgnore: true*/ uploadDir, `${Date.now()}_${safeFilename}`)
     const buffer = Buffer.from(await file.arrayBuffer())
     await fs.writeFile(filePath, buffer)
 

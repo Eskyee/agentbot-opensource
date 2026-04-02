@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma';
+import { getTrialCountdown } from '@/app/lib/trial-utils'
 
 export const dynamic = 'force-dynamic';
 
@@ -133,13 +134,22 @@ export async function GET(request: NextRequest) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { plan: true, subscriptionStatus: true, referralCredits: true }
+      select: { plan: true, subscriptionStatus: true, referralCredits: true, trialEndsAt: true }
     });
+
+    const countdown = getTrialCountdown(user?.trialEndsAt)
 
     return NextResponse.json({
       plans: PLANS,
       currentPlan: user?.plan || 'free',
       subscriptionStatus: user?.subscriptionStatus || 'inactive',
+      trial: countdown
+        ? {
+            expired: countdown.expired,
+            daysLeft: countdown.daysLeft,
+            endsAt: countdown.endsAt,
+          }
+        : null,
       byokEnabled: false,
       usage: {
         dailyUnits: 600,

@@ -8,6 +8,7 @@ import {
   DashboardContent,
 } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
+import { DEFAULT_OPENCLAW_GATEWAY_DASHBOARD_URL } from '@/app/lib/openclaw-config'
 
 type Category = 'all' | 'models' | 'infra' | 'security' | 'protocols' | 'tools' | 'openclaw'
 
@@ -23,7 +24,6 @@ interface TechItem {
   starred?: boolean
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 interface SoulData {
   root?: {
     soul?: {
@@ -42,9 +42,8 @@ interface SoulData {
     }
   }
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
-const OPENCLAW_URL = 'https://openclaw-gw-ui-production.up.railway.app/dashboard'
+const OPENCLAW_URL = DEFAULT_OPENCLAW_GATEWAY_DASHBOARD_URL
 
 const ITEMS: TechItem[] = [
   {

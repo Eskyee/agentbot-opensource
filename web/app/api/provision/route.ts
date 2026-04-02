@@ -3,6 +3,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto'
 import { prisma } from '@/app/lib/prisma'
 import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provision'
+import { isTrialActive } from '@/app/lib/trial-utils'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
@@ -74,17 +75,18 @@ export async function POST(request: NextRequest) {
 
     // 3. DB subscription check — admins bypass, everyone else must have active subscription
     if (!isAdmin && userId !== 'admin') {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { subscriptionStatus: true },
-      })
-      if (user?.subscriptionStatus !== 'active') {
-        return NextResponse.json({
-          success: false,
-          error: 'Active subscription required. Please purchase a plan to deploy.',
-        }, { status: 403 })
-      }
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { subscriptionStatus: true, trialEndsAt: true },
+    })
+    const trialActive = isTrialActive(user?.trialEndsAt)
+    if (!trialActive && user?.subscriptionStatus !== 'active') {
+      return NextResponse.json({
+        success: false,
+        error: 'Active subscription required. Please purchase a plan to deploy.',
+      }, { status: 403 })
     }
+  }
 
     // OpenClaw-only deployments (autoProvision or agentType=business) skip channel token requirement
     const isOpenClawDeploy = autoProvision === true || agentType === 'business'

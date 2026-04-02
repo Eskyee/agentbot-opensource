@@ -30,7 +30,7 @@ export const navSections = [
     label: 'Platform',
     items: [
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
-      { label: 'Borg Soul', href: 'https://tempo-x402-production.up.railway.app/dashboard', icon: '⬢', external: true },
+      { label: 'Borg Soul', href: 'https://borg-0-production.up.railway.app/dashboard', icon: '⬢', external: true },
     ]
   },
   {

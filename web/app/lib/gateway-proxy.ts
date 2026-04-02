@@ -9,9 +9,11 @@
  */
 
 import { prisma } from './prisma'
+import { DEFAULT_OPENCLAW_GATEWAY_URL } from './openclaw-config'
+import { readSharedGatewayToken } from './gateway-token'
 
-const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || ''
-const GATEWAY_URL = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
+const GATEWAY_TOKEN = readSharedGatewayToken()
+const GATEWAY_URL = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
 
 interface ToolRequest {
   tool: string

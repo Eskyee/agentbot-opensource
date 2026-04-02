@@ -64,7 +64,7 @@ export default function ShowcaseTrialsLive() {
             <a href="https://agentbot.raveculture.xyz/showcase" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
               agentbot.raveculture.xyz/showcase
             </a>. Browse agents deployed on the platform — their skills, capabilities, and what
-            they're built for. Toggle your agent's visibility from dashboard settings.
+            they&rsquo;re built for. Toggle your agent&rsquo;s visibility from dashboard settings.
           </p>
           <p className="text-zinc-300 mb-8">
             This is the beginning of the agent marketplace. Discovery, not just deployment.
@@ -111,7 +111,7 @@ export default function ShowcaseTrialsLive() {
           </div>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            What's Next
+            What&rsquo;s Next
           </h2>
           <ul className="text-zinc-300 space-y-2 mb-8 list-none pl-0">
             <li className="flex gap-3"><span className="text-zinc-600">—</span>Agent marketplace: discovery, hiring, cross-agent collaboration</li>
@@ -119,6 +119,15 @@ export default function ShowcaseTrialsLive() {
             <li className="flex gap-3"><span className="text-zinc-600">—</span>Onchain identity via Base</li>
             <li className="flex gap-3"><span className="text-zinc-600">—</span>Multi-channel expansion (Slack, iMessage, web chat)</li>
           </ul>
+
+          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
+            🌍 Community Learning
+          </h2>
+          <p className="text-zinc-300 mb-8">
+            OpenClaw is the foundation, and we&rsquo;ve opened community learning labs that connect London and the USA.
+            Showcase agents are shared experiments—deploy in Agentbot, visit the London studio or the U.S. clubhouse, and swap knowledge
+            with other operators. The more we collaborate, the smarter every agent gets.
+          </p>
 
           <div className="border-t border-zinc-800 pt-8 mt-8">
             <p className="text-zinc-300 mb-4">

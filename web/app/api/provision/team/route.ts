@@ -3,6 +3,7 @@ import { after } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
+import { isTrialActive } from '@/app/lib/trial-utils'
 
 /**
  * POST /api/provision/team
@@ -52,12 +53,13 @@ export async function POST(req: NextRequest) {
   try {
     const dbUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { stripeSubscriptionId: true, subscriptionStatus: true },
+      select: { stripeSubscriptionId: true, subscriptionStatus: true, trialEndsAt: true },
     })
     stripeSubscriptionId = dbUser?.stripeSubscriptionId ?? null
 
     // Enforce active subscription (admin bypass handled by backend)
-    if (!stripeSubscriptionId && dbUser?.subscriptionStatus !== 'active') {
+    const trialActive = isTrialActive(dbUser?.trialEndsAt)
+    if (!stripeSubscriptionId && !trialActive && dbUser?.subscriptionStatus !== 'active') {
       return NextResponse.json(
         { error: 'Active subscription required. Please purchase a plan first.' },
         { status: 402 }

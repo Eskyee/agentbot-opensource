@@ -1,7 +1,12 @@
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import HeroSphere from '@/app/components/MorphingHero'
 import { ComparisonTable, SocialProof, UseCases, CapabilitiesTicker, DemoVideo, OpenLearning } from '@/app/components/landing'
+
+const HeroSphere = dynamic(() => import('@/app/components/MorphingHero'), {
+  ssr: false,
+  loading: () => <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full bg-gradient-to-l from-zinc-900/20 to-transparent" />,
+})
 
 export default async function Home() {
   const session = await getAuthSession()

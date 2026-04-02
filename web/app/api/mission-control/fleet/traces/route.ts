@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 
 const SOUL_URLS = [
-  'https://openclaw-gw-ui-production.up.railway.app',
-];
+  DEFAULT_OPENCLAW_GATEWAY_URL,
+]
 
 export const dynamic = 'force-dynamic';
 

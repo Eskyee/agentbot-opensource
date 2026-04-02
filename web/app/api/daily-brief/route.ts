@@ -9,7 +9,7 @@ const HEALTH_CHECKS: HealthCheck[] = [
   { name: 'Agentbot API', url: 'https://agentbot-prod-production.up.railway.app/health' },
   { name: 'Agentbot Web', url: 'https://agentbot.raveculture.xyz' },
   { name: 'x402 Gateway', url: 'https://x402-gateway-production.up.railway.app/health' },
-  { name: 'Tempo Soul', url: 'https://openclaw-gw-ui-production.up.railway.app/health' },
+  { name: 'Tempo Soul', url: 'https://borg-0-production.up.railway.app/health' },
   { name: 'Borg-0', url: 'https://borg-0-production.up.railway.app/health' },
 ]
 
@@ -65,8 +65,8 @@ export async function GET() {
   // Upcoming items
   const upcomingItems: string[] = [
     'Beta launch: March 31, 2026 (v0.1.0-beta.1)',
-    'Render services: 3 active (api, web, worker)',
-    'Railway services: 3 active (x402 gateway, tempo soul, borg-0)',
+    'Vercel serves the web app from the web root',
+    'Railway services active for backend, Borg soul, x402 gateway, and shared OpenClaw UI',
   ]
 
   const brief = [
@@ -101,7 +101,7 @@ export async function GET() {
       title: 'Market Pulse',
       color: 'text-emerald-400',
       items: [
-        'Agentbot active on Render + Railway infrastructure',
+        'Agentbot active on Vercel + Railway infrastructure',
         'x402 protocol integration live',
         'Onchain payment settlement operational',
       ],

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useTransition } from 'react';
 import { useCustomSession } from '@/app/lib/useCustomSession';
 import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch';
 import { Wallet, ExternalLink, Copy, Check } from 'lucide-react';
@@ -49,58 +49,42 @@ export default function WalletPage() {
   const [sessionLoading, setSessionLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [topUpLoading, setTopUpLoading] = useState<number | null>(null);
+  const [addressInput, setAddressInput] = useState('');
+  const [connecting, setConnecting] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
+  // Single init effect: load from localStorage + fetch wallet & session in parallel
   useEffect(() => {
     const stored = localStorage.getItem('tempo_wallet_address');
-    if (stored) {
-      setWalletAddress(stored);
-      setConnected(true);
-    } else {
+    if (!stored) {
       setLoading(false);
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    if (!walletAddress) return;
+    setWalletAddress(stored);
+    setConnected(true);
 
-    async function fetchWallet() {
-      try {
-        const res = await fetch(`/api/wallet?address=${walletAddress}`);
-        if (!res.ok) throw new Error('Failed to fetch wallet');
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        setWallet(data);
-      } catch (err) {
-        console.error('Wallet fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchWallet();
-  }, [walletAddress]);
-
-  useEffect(() => {
-    if (!walletAddress) return;
-
-    async function fetchSession() {
-      try {
-        const res = await fetch(`/api/wallet/sessions?address=${walletAddress}`);
-        const data = await res.json();
-        if (data.sessions?.length > 0) {
-          const active = data.sessions.find((s: Session) => s.status === 'active');
+    // Parallel fetch — both requests fire simultaneously
+    Promise.all([
+      fetch(`/api/wallet?address=${stored}`).then(r => r.json()).catch(() => null),
+      fetch(`/api/wallet/sessions?address=${stored}`).then(r => r.json()).catch(() => null),
+    ]).then(([walletData, sessionData]) => {
+      // Defer non-urgent state updates to not block interactions
+      startTransition(() => {
+        if (walletData && !walletData.error) setWallet(walletData);
+        if (sessionData?.sessions?.length > 0) {
+          const active = sessionData.sessions.find((s: Session) => s.status === 'active');
           if (active) {
             setMppSession(active);
             setSessionId(active.id);
           }
         }
-      } catch (err) {
-        console.error('Session fetch error:', err);
-      }
-    }
-    fetchSession();
-  }, [walletAddress]);
+        setLoading(false);
+      });
+    });
+  }, []);
 
-  async function openSession() {
+  const openSession = useCallback(async () => {
     if (!walletAddress) return;
     setSessionLoading(true);
     try {
@@ -119,9 +103,9 @@ export default function WalletPage() {
     } finally {
       setSessionLoading(false);
     }
-  }
+  }, [walletAddress]);
 
-  async function closeMppSession() {
+  const closeMppSession = useCallback(async () => {
     if (!mppSession) return;
     setSessionLoading(true);
     try {
@@ -138,12 +122,9 @@ export default function WalletPage() {
     } finally {
       setSessionLoading(false);
     }
-  }
+  }, [mppSession]);
 
-  const [addressInput, setAddressInput] = useState('');
-  const [connecting, setConnecting] = useState(false);
-
-  async function handleConnect(e: React.FormEvent) {
+  const handleConnect = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!addressInput.startsWith('0x') || addressInput.length !== 42) return;
 
@@ -162,15 +143,15 @@ export default function WalletPage() {
     } finally {
       setConnecting(false);
     }
-  }
+  }, [addressInput]);
 
-  function handleDisconnect() {
+  const handleDisconnect = useCallback(() => {
     localStorage.removeItem('tempo_wallet_address');
     setWalletAddress(null);
     setConnected(false);
     setWallet(null);
     setAddressInput('');
-  }
+  }, []);
 
   return (
     <DashboardShell>

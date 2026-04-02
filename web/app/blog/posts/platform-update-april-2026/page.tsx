@@ -41,7 +41,6 @@ export default function PlatformUpdateApril2026() {
             performance improvements. Here&apos;s everything that landed.
           </p>
 
-          {/* OpenClaw */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             OpenClaw 2026.4.1
           </h2>
@@ -56,7 +55,6 @@ export default function PlatformUpdateApril2026() {
             page in your dashboard can trigger this automatically.
           </p>
 
-          {/* Orchestration */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             Concurrent Tool Orchestration
           </h2>
@@ -67,9 +65,9 @@ export default function PlatformUpdateApril2026() {
             groups consecutive read-only calls automatically — no config needed.
           </p>
           <div className="bg-zinc-900 border border-zinc-800 p-4 mb-4 text-sm">
-            <p className="text-zinc-400 mb-2">// Before: sequential</p>
+            <p className="text-zinc-400 mb-2">Before: sequential</p>
             <p className="text-zinc-300">read(fileA) → read(fileB) → read(fileC) → write(result)</p>
-            <p className="text-zinc-400 mt-3 mb-2">// Now: parallel where safe</p>
+            <p className="text-zinc-400 mt-3 mb-2">Now: parallel where safe</p>
             <p className="text-zinc-300">Promise.all([read(fileA), read(fileB), read(fileC)]) → write(result)</p>
           </div>
           <p className="text-zinc-300 mb-8">
@@ -77,7 +75,6 @@ export default function PlatformUpdateApril2026() {
             live and wired to real tool execution with directory traversal blocked, 30s timeout, and 100KB output cap.
           </p>
 
-          {/* Permission system */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             Tiered Permission System
           </h2>
@@ -104,7 +101,6 @@ export default function PlatformUpdateApril2026() {
             Fail-closed: if the backend is unreachable, the agent stops rather than proceeding.
           </p>
 
-          {/* Per-user keys */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             Encrypted Per-User API Keys
           </h2>
@@ -114,7 +110,6 @@ export default function PlatformUpdateApril2026() {
             global key if you haven&apos;t set one. Raw keys are never stored or logged.
           </p>
 
-          {/* Maintenance */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             Maintenance Page
           </h2>
@@ -125,7 +120,6 @@ export default function PlatformUpdateApril2026() {
             goes quiet or starts failing health checks.
           </p>
 
-          {/* Performance */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             Dashboard Performance
           </h2>
@@ -138,7 +132,6 @@ export default function PlatformUpdateApril2026() {
             interactions. Expect the INP to drop significantly in Speed Insights over the next few days.
           </p>
 
-          {/* Open source */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             v1.0.0 Open Source Release
           </h2>
@@ -165,7 +158,6 @@ export default function PlatformUpdateApril2026() {
             </code>
           </div>
 
-          {/* What's next */}
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             What&apos;s Next
           </h2>

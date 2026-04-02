@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { readSharedGatewayToken } from '@/app/lib/gateway-token'
+
+const getGatewayToken = () => readSharedGatewayToken()
 
 export async function GET() {
   const session = await getAuthSession()
@@ -17,7 +20,7 @@ export async function GET() {
     openclawUrl: user?.openclawUrl || null,
     openclawInstanceId: user?.openclawInstanceId || null,
     // Gateway token is the same for all agents (platform-level auth)
-    gatewayToken: process.env.OPENCLAW_GATEWAY_TOKEN || null,
+    gatewayToken: getGatewayToken(),
   })
 }
 

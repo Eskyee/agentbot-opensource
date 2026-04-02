@@ -2,7 +2,7 @@
 import React, { useState, useEffect, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { useCustomSession } from '@/app/lib/useCustomSession'
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Authentication } from "@/lib/webauthx/client";
 
@@ -14,6 +14,7 @@ const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), 
 function LoginForm() {
   const { data: session, status } = useCustomSession()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const error = searchParams.get('error')
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,9 +39,9 @@ function LoginForm() {
 
   useEffect(() => {
     if (session && status === 'authenticated') {
-      window.location.href = '/dashboard'
+      router.replace('/dashboard')
     }
-  }, [session, status])
+  }, [session, status, router])
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -11,7 +11,7 @@ import { SoulClient } from '@/lib/soul';
 import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem';
 import { tempo } from 'viem/chains';
 
-const SOUL_URL = process.env.SOUL_SERVICE_URL || 'https://tempo-x402-production.up.railway.app';
+const SOUL_URL = process.env.SOUL_SERVICE_URL || 'https://borg-0-production.up.railway.app';
 
 // Tempo RPC for real wallet balances
 const tempoClient = createPublicClient({

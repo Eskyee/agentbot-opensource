@@ -64,6 +64,7 @@ export default function BillingPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentPlan, setCurrentPlan] = useState('solo')
   const [subscriptionStatus, setSubscriptionStatus] = useState('inactive')
+  const [trialInfo, setTrialInfo] = useState<{ expired: boolean; daysLeft: number; endsAt: string } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -81,6 +82,7 @@ export default function BillingPage() {
           const data = await res.json()
           setCurrentPlan(data.plan || 'solo')
           setSubscriptionStatus(data.subscriptionStatus || 'inactive')
+          setTrialInfo(data.trial || null)
         }
       } catch (err) {
         console.error('Billing fetch error:', err)
@@ -186,11 +188,59 @@ export default function BillingPage() {
                     </span>
                   </div>
                 ))}
-              </div>
             </div>
+          </div>
 
-            {/* Payment Methods */}
-            <div className="mb-8">
+          {/* Trial Status */}
+          <div className="mb-8">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600">Free Trial</span>
+            {trialInfo ? (
+              <div className={`border border-zinc-800 mt-2 p-4 ${trialInfo.expired ? 'bg-red-950 border-red-900' : 'bg-zinc-900'}`}>
+                <div className="text-[12px] uppercase tracking-widest text-zinc-500 mb-2">7-day trial</div>
+                <h3 className="text-lg font-bold uppercase tracking-tighter">
+                  {trialInfo.expired ? 'Trial expired' : `${trialInfo.daysLeft} day${trialInfo.daysLeft === 1 ? '' : 's'} remaining`}
+                </h3>
+                <p className="text-xs text-zinc-400 mt-1">
+                  {trialInfo.expired
+                    ? 'Your trial has ended. Upgrade to a paid plan to keep your agents running.'
+                    : 'We don’t charge until the 7-day trial ends. Upgrade now to save your data and keep the experiment running uninterrupted.'}
+                </p>
+                <p className="text-[10px] uppercase tracking-widest text-zinc-500 mt-2">
+                  Trial ends {new Date(trialInfo.endsAt).toLocaleDateString()}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => buyPlan(currentPlan === 'free' ? 'solo' : currentPlan)}
+                    className="text-xs font-bold uppercase tracking-widest px-4 py-2 bg-white text-black hover:bg-zinc-200 transition-colors"
+                  >
+                    Upgrade now
+                  </button>
+                  {!trialInfo.expired && (
+                    <Link href="/pricing" className="text-xs uppercase tracking-widest text-zinc-400 underline">
+                      View all plans
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="border border-zinc-800 mt-2 p-4 bg-zinc-900">
+                <p className="text-xs text-zinc-400">
+                  Every new signup gets a 7-day trial automatically. Add a card via Stripe before the trial ends to keep your agents active.
+                </p>
+                <div className="mt-3">
+                  <button
+                    onClick={() => buyPlan('solo')}
+                    className="text-xs font-bold uppercase tracking-widest px-4 py-2 bg-white text-black hover:bg-zinc-200 transition-colors"
+                  >
+                    Save my trial
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Payment Methods */}
+          <div className="mb-8">
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">Payment Methods</span>
               <div className="grid gap-4 md:grid-cols-1 sm:grid-cols-2 mt-2">
                 <div className="border border-zinc-800 p-4">

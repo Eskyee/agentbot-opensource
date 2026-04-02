@@ -251,12 +251,13 @@ export async function createContainer(
     ? `https://${serviceDomain.domain}`
     : `https://${serviceName}.up.railway.app`;
 
-  // Control UI auto-connect URL — gatewayUrl + token via query params
-  // Uses the per-user gatewayToken (generated above, written to config file)
-  // Prevents the Control UI onboarding redirect from eating the token
+  const controlUiBase = process.env.OPENCLAW_CONTROL_UI_URL || 'https://openclaw-gw-ui-production.up.railway.app/chat';
+  const controlSession = process.env.OPENCLAW_CONTROL_UI_SESSION || 'agent:main:main';
+  const gatewayUrl = `wss://${serviceDomain?.domain || `${serviceName}.up.railway.app`}`;
+
   const controlUiUrl = gatewayToken
-    ? `${serviceUrl}/?gatewayUrl=${encodeURIComponent(`wss://${serviceDomain?.domain || `${serviceName}.up.railway.app`}`)}&token=${encodeURIComponent(gatewayToken)}`
-    : serviceUrl;
+    ? `${controlUiBase}?session=${encodeURIComponent(controlSession)}&gatewayUrl=${encodeURIComponent(gatewayUrl)}&token=${encodeURIComponent(gatewayToken)}`
+    : controlUiBase;
 
   return {
     container: serviceName,

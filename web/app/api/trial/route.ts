@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { getTrialCountdown } from '@/app/lib/trial-utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,18 +20,26 @@ export async function GET() {
   const isPaid = user.subscriptionStatus === 'active' || user.plan !== 'free'
   if (isPaid) return NextResponse.json({ trial: false, plan: user.plan })
 
-  if (!user.trialEndsAt) return NextResponse.json({ trial: false, plan: 'free' })
+  const countdown = getTrialCountdown(user.trialEndsAt)
+  if (!countdown) {
+    return NextResponse.json({ trial: false, plan: 'free' })
+  }
 
-  const now = new Date()
-  const endsAt = new Date(user.trialEndsAt)
-  const msLeft = endsAt.getTime() - now.getTime()
-  const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24))
-  const expired = msLeft <= 0
+  if (countdown.expired) {
+    return NextResponse.json({
+      trial: true,
+      expired: true,
+      daysLeft: 0,
+      endsAt: countdown.endsAt,
+      plan: 'free',
+    })
+  }
 
   return NextResponse.json({
     trial: true,
-    expired,
-    daysLeft: Math.max(0, daysLeft),
-    endsAt: endsAt.toISOString(),
+    expired: false,
+    daysLeft: countdown.daysLeft,
+    endsAt: countdown.endsAt,
+    plan: 'free',
   })
 }

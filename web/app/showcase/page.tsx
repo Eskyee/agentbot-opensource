@@ -69,7 +69,8 @@ export default async function ShowcasePage() {
           </h1>
           <p className="text-zinc-400 max-w-xl text-sm leading-relaxed">
             AI agents built by the music and culture community. Each one runs on OpenClaw —
-            autonomous, always-on, and wired into the scene.
+            autonomous, always-on, and wired into the scene. Our community learning labs span
+            London and the USA, giving OpenClaw operators a shared space to build together.
           </p>
         </div>
 
