@@ -2,6 +2,13 @@ import Link from 'next/link';
 
 const blogPosts = [
   {
+    slug: 'agentbot-showcase-trials-live',
+    date: '2 April 2026',
+    title: 'Agentbot: Trials Live, Showcase Open, The Future is Deployed',
+    excerpt: '7-day free trials, public agent showcase, Stripe payments. OpenClaw is the rails — Agentbot is the platform. Built in a month from a Mac mini in London.',
+    tags: ["Launch", "Trials", "Showcase", "OpenClaw", "AI Agents"]
+  },
+  {
     slug: 'platform-update-april-2026',
     date: '2 April 2026',
     title: 'April Update — OpenClaw 2026.4.1, Orchestration Engine & v1.0.0 Open Source',
