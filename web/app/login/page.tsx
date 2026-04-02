@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { Authentication } from "@/app/lib/webauthx/client";
 
 const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), {
   ssr: false,
@@ -18,6 +19,8 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [passkeyError, setPasskeyError] = useState("");
 
   useEffect(() => {
     if (error) {
@@ -60,6 +63,54 @@ function LoginForm() {
     } catch {
       setLoading(false);
       setLoginError("Login failed. Please try again.");
+    }
+  };
+
+  const handlePasskeySignIn = async () => {
+    setPasskeyError("");
+
+    const identifier = email.trim().toLowerCase();
+    if (!identifier) {
+      setPasskeyError("Enter your email first to locate a passkey.");
+      return;
+    }
+
+    setPasskeyLoading(true);
+    try {
+      const optionsRes = await fetch('/api/passkey/auth/options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier }),
+      });
+      const optionsPayload = await optionsRes.json();
+      if (!optionsRes.ok) {
+        throw new Error(optionsPayload.error || 'Unable to load passkey options.');
+      }
+
+      const credential = await Authentication.sign({
+        options: optionsPayload.options,
+      });
+
+      const verifyRes = await fetch('/api/passkey/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          response: credential,
+          challenge: optionsPayload.challenge,
+        }),
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.error || 'Passkey verification failed.');
+      }
+
+      window.location.href = "/dashboard";
+    } catch (error) {
+      setPasskeyError(
+        error instanceof Error ? error.message : "Passkey sign-in failed."
+      );
+    } finally {
+      setPasskeyLoading(false);
     }
   };
 
@@ -121,6 +172,32 @@ function LoginForm() {
           </button>
         </form>
       </details>
+
+      <div className="mt-6 flex flex-col gap-3 rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-widest text-zinc-500">Passkey sign-in</p>
+          <span className="text-[10px] text-green-300">Fast & secure</span>
+        </div>
+        <p className="text-zinc-400 text-xs">
+          Enter your email above so we can locate your registered passkeys, then tap
+          the button below and follow the browser prompt.
+        </p>
+        <button
+          type="button"
+          className="w-full border border-zinc-800 bg-white text-black text-xs font-bold uppercase tracking-widest py-3 px-4 flex items-center justify-center gap-2 transition-colors hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={handlePasskeySignIn}
+          disabled={passkeyLoading}
+        >
+          {passkeyLoading ? "Waiting for passkey..." : "Sign in with passkey"}
+        </button>
+        {passkeyError && (
+          <div className="text-xs text-red-400">{passkeyError}</div>
+        )}
+        <p className="text-[10px] text-zinc-600">
+          Need to register a passkey? Sign in normally and visit your dashboard security
+          settings after.
+        </p>
+      </div>
 
       {loginError && (
         <div className="mt-4 p-3 border border-red-500/30 text-red-400 text-xs">

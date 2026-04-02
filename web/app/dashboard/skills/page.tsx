@@ -194,7 +194,7 @@ export default function SkillsPage() {
         setNewSkillDescription('')
         setNewSkillCategory('')
         setCategory('all')
-        setAddDialogOpen(false)
+        setIsAddDialogOpen(false)
         await fetchSkills()
       } catch (err: unknown) {
         const message =

@@ -44,6 +44,8 @@ model User {
   sessions              Session[]
   wallets               Wallet[]
   workflows             Workflow[]
+  passkeyCredentials    PasskeyCredential[]
+  passkeyChallenges     PasskeyChallenge[]
 }
 
 model Account {
@@ -191,6 +193,37 @@ model InstalledSkill {
   @@unique([userId, agentId, skillId])
   @@index([userId])
   @@index([agentId])
+}
+
+model PasskeyCredential {
+  id           String    @id @default(cuid())
+  userId       String
+  credentialId String    @unique
+  publicKey    String
+  transports   String?
+  name         String?
+  signCount    BigInt    @default(0)
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasskeyChallenge {
+  id           String   @id @default(cuid())
+  challenge    String   @unique
+  type         String
+  userId       String?
+  credentialId String?
+  rpId         String
+  origin       String
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@index([userId])
 }
 
 model AgentSwarm {
