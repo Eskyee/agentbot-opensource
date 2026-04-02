@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
 
-const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'), { ssr: false })
+const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
 const ComparisonTable = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.ComparisonTable })))
