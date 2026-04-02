@@ -5,10 +5,9 @@
   "installCommand": "npm install --include=dev",
   "framework": "nextjs",
   "regions": ["lhr1", "iad1"],
-  "rewrites": [],
-  "redirects": [
-    { "source": "/docs", "destination": "https://raveculture.mintlify.app", "permanent": true },
-    { "source": "/docs/:path*", "destination": "https://raveculture.mintlify.app/:path*", "permanent": true }
+  "rewrites": [
+    { "source": "/docs", "destination": "https://raveculture.mintlify.app" },
+    { "source": "/docs/:path*", "destination": "https://raveculture.mintlify.app/:path*" }
   ],
   "headers": [
     {
