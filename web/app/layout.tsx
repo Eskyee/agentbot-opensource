@@ -5,6 +5,7 @@ import { GeistMono } from 'geist/font/mono'
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { StatusBar } from "./components/StatusBar";
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
@@ -150,7 +151,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-black text-white antialiased pt-14 flex flex-col min-h-screen font-sans">
+      <body className="bg-black text-white antialiased pt-14 pb-10 flex flex-col min-h-screen font-sans">
         {/* Skip link for keyboard users */}
         <a
           href="#main-content"
@@ -166,6 +167,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <StatusBar />
           <Toaster theme="dark" position="bottom-right" richColors closeButton />
         </Providers>
       </body>

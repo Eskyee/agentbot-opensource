@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Agentbot — Focus on the Work. Agents Handle the Rest.'
+export const alt = 'Agentbot — Your 24/7 Autonomous Agent Platform'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -10,125 +10,38 @@ export default async function Image() {
     (
       <div
         style={{
-          width: 1200,
-          height: 630,
+          height: '100%',
+          width: '100%',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0a0a14',
+          backgroundColor: '#000000',
+          fontFamily: 'monospace',
           position: 'relative',
-          overflow: 'hidden',
         }}
       >
-        {/* Radial glow behind logo */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -60%)',
-            width: 500,
-            height: 500,
-            background: 'radial-gradient(circle, rgba(107,63,160,0.25) 0%, transparent 70%)',
-            borderRadius: '50%',
-          }}
-        />
+        {/* Grid */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
-        {/* Subtle grid */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage:
-              'linear-gradient(rgba(107,63,160,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(107,63,160,0.08) 1px, transparent 1px)',
-            backgroundSize: '60px 60px',
-          }}
-        />
-
-        {/* Claw icon circle */}
-        <div
-          style={{
-            width: 140,
-            height: 140,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d1a 100%)',
-            border: '2px solid rgba(107,63,160,0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 32,
-            boxShadow: '0 0 40px rgba(0,191,255,0.2), 0 0 80px rgba(107,63,160,0.15)',
-          }}
-        >
-          <span style={{ fontSize: 80 }}>🦞</span>
+        {/* Badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 20px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 100, marginBottom: 32, zIndex: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#22c55e' }} />
+          <span style={{ fontSize: 14, color: '#a1a1aa', letterSpacing: 3, textTransform: 'uppercase' }}>Platform Online</span>
         </div>
 
-        {/* Brand name */}
-        <div
-          style={{
-            fontSize: 80,
-            fontWeight: 800,
-            color: '#ffffff',
-            letterSpacing: '-3px',
-            marginBottom: 16,
-            display: 'flex',
-          }}
-        >
-          Agentbot
-        </div>
+        {/* Title */}
+        <h1 style={{ fontSize: 80, fontWeight: 900, color: '#ffffff', letterSpacing: -3, textTransform: 'uppercase', margin: 0, zIndex: 10 }}>AGENTBOT</h1>
+        <p style={{ fontSize: 22, color: '#71717a', letterSpacing: 6, textTransform: 'uppercase', marginTop: 12, zIndex: 10 }}>Your 24/7 Autonomous Agent Platform</p>
 
-        {/* Tagline */}
-        <div
-          style={{
-            fontSize: 28,
-            color: '#7c6fa0',
-            marginBottom: 48,
-            letterSpacing: '0.5px',
-          }}
-        >
-          Focus on the Work. Agents Handle the Rest.
-        </div>
-
-        {/* Plans row */}
-        <div style={{ display: 'flex', gap: 16 }}>
-          {[
-            { name: 'Solo', price: '£29/mo', glow: '#6b3fa0' },
-            { name: 'Collective', price: '£69/mo', glow: '#00bfff' },
-            { name: 'Label', price: '£149/mo', glow: '#8b5cf6' },
-          ].map((plan) => (
-            <div
-              key={plan.name}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: `1px solid ${plan.glow}50`,
-                borderRadius: 10,
-                padding: '10px 22px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                boxShadow: `0 0 16px ${plan.glow}20`,
-              }}
-            >
-              <span style={{ color: plan.glow, fontSize: 15, fontWeight: 700, letterSpacing: '0.5px' }}>
-                {plan.name}
-              </span>
-              <span style={{ color: '#ffffff', fontSize: 20, fontWeight: 800 }}>{plan.price}</span>
+        {/* Stats */}
+        <div style={{ display: 'flex', gap: 48, marginTop: 48, padding: '16px 40px', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)', zIndex: 10 }}>
+          {[{ l: 'AGENTS', v: '24+' }, { l: 'CHANNELS', v: '8' }, { l: 'UPTIME', v: '99.9%' }, { l: 'OPEN SOURCE', v: '✓' }].map(s => (
+            <div key={s.l} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: '#ffffff' }}>{s.v}</span>
+              <span style={{ fontSize: 10, color: '#52525b', letterSpacing: 3, textTransform: 'uppercase' }}>{s.l}</span>
             </div>
           ))}
-        </div>
-
-        {/* Bottom domain */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 28,
-            color: '#3d3d5c',
-            fontSize: 15,
-            letterSpacing: '1px',
-          }}
-        >
-          agentbot.raveculture.xyz
         </div>
       </div>
     ),
