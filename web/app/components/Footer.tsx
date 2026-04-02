@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
   const [version, setVersion] = useState<string>('v0.0.0');
+  const [openClawVersion, setOpenClawVersion] = useState<string>('loading...');
 
   useEffect(() => {
     async function checkStatus() {
@@ -22,18 +23,23 @@ export default function Footer() {
   }, []);
 
   useEffect(() => {
-    async function fetchVersion() {
+    async function fetchVersions() {
       try {
-        const res = await fetch('/api/version')
-        if (res.ok) {
-          const data = await res.json()
-          if (data.version) {
-            setVersion(data.version)
-          }
+        const [appRes, openClawRes] = await Promise.all([
+          fetch('/api/version'),
+          fetch('/api/openclaw/version'),
+        ])
+        if (appRes.ok) {
+          const data = await appRes.json()
+          if (data.version) setVersion(data.version)
+        }
+        if (openClawRes.ok) {
+          const data = await openClawRes.json()
+          if (data.openclawVersion) setOpenClawVersion(data.openclawVersion)
         }
       } catch {}
     }
-    fetchVersion()
+    fetchVersions()
   }, [])
 
   return (
