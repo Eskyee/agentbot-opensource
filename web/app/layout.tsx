@@ -12,14 +12,14 @@ import { Toaster } from 'sonner'
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://agentbot.raveculture.xyz'),
+  metadataBase: new URL('https://agentbot.sh'),
   title: {
     default: 'Agentbot — Focus on the Work. Agents Handle the Rest.',
     template: '%s | Agentbot',
   },
   description: 'Deploy autonomous AI agents for your creative practice in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol.',
   keywords: ['AI agent deployment', 'autonomous AI agents', 'BYOK AI', 'agent hosting', 'deploy AI agent', 'creative industry AI', 'AI for creators', 'Base blockchain', 'agent orchestration', 'AI infrastructure'],
-  authors: [{ name: 'Agentbot', url: 'https://agentbot.raveculture.xyz' }],
+  authors: [{ name: 'Agentbot', url: 'https://agentbot.sh' }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
   robots: {
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://agentbot.raveculture.xyz',
+    url: 'https://agentbot.sh',
     siteName: 'Agentbot',
     title: 'Agentbot | Focus on the Work. Agents Handle the Rest.',
     description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
@@ -79,7 +79,7 @@ const jsonLd = {
   name: 'Agentbot',
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
-  url: 'https://agentbot.raveculture.xyz',
+  url: 'https://agentbot.sh',
   description: 'Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key and pay wholesale rates.',
   offers: [
     {
