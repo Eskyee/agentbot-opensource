@@ -29,8 +29,8 @@ This file is the current operational reference for platform ownership, deploymen
   - Health URL: `https://x402-gateway-production.up.railway.app/health`
 - OpenClaw shared UI:
   - Platform: Railway
-  - Service URL: `https://openclaw-gw-ui-production.up.railway.app`
-  - Health URL: `https://openclaw-gw-ui-production.up.railway.app/health`
+  - Service URL: `https://openclaw-gateway-production-ad37.up.railway.app`
+  - Health URL: `https://openclaw-gateway-production-ad37.up.railway.app/health`
 - GitHub repos:
   - Private production repo: `Eskyee/agentbot`
   - Public mirror: `Eskyee/agentbot-opensource`
@@ -65,3 +65,10 @@ The following docs contain stale or mixed-era infra guidance and should be treat
 - Never store live secrets in markdown files.
 - Keep real values in dashboard env vars, local untracked env files, or a password manager.
 - Use placeholders in repo docs.
+
+## OpenClaw Gateway Lockdown (2026-04-02)
+
+- The gateway now binds `controlUi.allowedOrigins` to `https://agentbot.raveculture.xyz` via the `CONTROL_UI_ORIGIN` env var instead of `*`. The agent dashboard owns that origin and no other uncontrolled hosts are permitted.
+- Device auth is re-enabled and `dangerouslyAllowHostHeaderOriginFallback` is disabled to close the DNS-rebinding attack vector the previous config exposed.
+- The `gateway/openclaw.json` file is now written with `chmod 600` and the workspace directory uses `chmod 700` so the non-root `node` user is the only one who can read configuration or secrets.
+- A new readiness helper in `gateway/entrypoint.sh` waits for `${AGENTBOT_API_URL}/health` (configurable via `SERVICE_HEALTH_URL`) before launching `openclaw gateway`. Set `SKIP_SERVICE_READINESS=true` to skip the wait during emergency restarts.
