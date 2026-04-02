@@ -39,6 +39,15 @@ const nextConfig = {
         ],
       },
       {
+        source: '/((?!api|dashboard|onboard|login|signup|auth).*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, s-maxage=60, stale-while-revalidate=300',
+          },
+        ],
+      },
+      {
         source: '/:path*',
         headers: [
           {
