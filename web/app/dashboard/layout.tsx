@@ -7,6 +7,7 @@
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { TrialBanner } from '@/app/components/TrialBanner'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { SidebarContext } from './sidebar-context'
 
@@ -35,6 +36,7 @@ export default function DashboardLayout({
         />
 
         <div className="flex-1 flex flex-col min-w-0">
+          <TrialBanner />
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>
