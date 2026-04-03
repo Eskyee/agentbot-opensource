@@ -34,6 +34,12 @@ export default function SupportPlaybook() {
     healthy: boolean
     alertCommand: string
   }[]>([])
+  const [walletMeta, setWalletMeta] = useState<{
+    configured: boolean
+    monitoredAddresses: string[]
+    chain: string
+    threshold: number
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [walletLoading, setWalletLoading] = useState(false)
@@ -64,6 +70,12 @@ export default function SupportPlaybook() {
       })
       .then((data) => {
         setWalletStatuses(data.statuses ?? [])
+        setWalletMeta({
+          configured: Boolean(data.configured),
+          monitoredAddresses: Array.isArray(data.monitoredAddresses) ? data.monitoredAddresses : [],
+          chain: data.chain || 'unknown',
+          threshold: Number(data.threshold || 0),
+        })
       })
       .catch((err) => setError(err.message || 'Failed to load wallet monitor'))
       .finally(() => setWalletLoading(false))
@@ -171,6 +183,32 @@ export default function SupportPlaybook() {
             </button>
           </div>
           <div className="mt-3 grid gap-3">
+            {walletMeta && (
+              <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-500">Monitor config</p>
+                    <p className="text-xs text-zinc-300 mt-1">
+                      {walletMeta.configured
+                        ? `${walletMeta.chain} · threshold ${walletMeta.threshold} pathUSD · ${walletMeta.monitoredAddresses.length} wallet${walletMeta.monitoredAddresses.length === 1 ? '' : 's'}`
+                        : 'No Tempo wallet addresses are configured'}
+                    </p>
+                  </div>
+                </div>
+                {walletMeta.monitoredAddresses.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {walletMeta.monitoredAddresses.map((address) => (
+                      <span
+                        key={address}
+                        className="border border-zinc-800 bg-zinc-900 px-2 py-1 text-[10px] font-mono text-zinc-400"
+                      >
+                        {address}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             {walletStatuses.length ? (
               walletStatuses.map((wallet) => (
                 <div
@@ -194,7 +232,11 @@ export default function SupportPlaybook() {
               ))
             ) : (
               <div className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-6 text-[10px] uppercase tracking-[0.3em] text-zinc-600">
-                {walletLoading ? 'Fetching wallet balances…' : 'No wallet data yet. Check balances to view statuses.'}
+                {walletLoading
+                  ? 'Fetching wallet balances…'
+                  : walletMeta && !walletMeta.configured
+                    ? 'No Tempo wallet configured yet. Set TEMPO_NODE_WALLETS or TEMPO_FEE_PAYER_KEY.'
+                    : 'No wallet data yet. Check balances to view statuses.'}
               </div>
             )}
           </div>

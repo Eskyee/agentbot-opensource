@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { isAdminEmail } from '@/app/lib/admin'
-import { fetchWalletStatuses, getWalletAlertCommand } from '@/app/lib/node-wallet-monitor'
+import { fetchWalletStatuses, getWalletAlertCommand, getWalletMonitorConfig } from '@/app/lib/node-wallet-monitor'
 import { sendSupportAlert } from '@/app/lib/support-alert'
 
 export const dynamic = 'force-dynamic'
@@ -13,6 +13,7 @@ export async function GET() {
   }
 
   const statuses = await fetchWalletStatuses()
+  const config = getWalletMonitorConfig()
   const low = statuses.filter((status) => !status.healthy)
 
   if (low.length > 0) {
@@ -29,6 +30,11 @@ export async function GET() {
       ...status,
       alertCommand: getWalletAlertCommand(status.address),
     })),
+    configured: config.configured,
+    monitoredAddresses: config.addresses,
+    chain: config.chain,
+    rpcUrl: config.rpcUrl,
+    threshold: config.threshold,
     lowCount: low.length,
     timestamp: new Date().toISOString(),
   })

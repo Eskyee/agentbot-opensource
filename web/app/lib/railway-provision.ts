@@ -28,10 +28,10 @@ const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:
  *   - trustedProxies:['127.0.0.1'] trusts the TCP proxy's forwarded headers
  *   - Railway API WAF requires User-Agent: railway-cli/4.30.4 on mutations (see railwayGql)
  */
-const OPENCLAW_START_CMD =
+export const OPENCLAW_START_CMD =
   `node -e "const{spawn}=require('child_process');const fs=require('fs');fs.writeFileSync('/tmp/openclaw.json',JSON.stringify({env:{OPENROUTER_API_KEY:process.env.OPENROUTER_API_KEY},gateway:{mode:'local',bind:'loopback',trustedProxies:['127.0.0.1'],controlUi:{allowedOrigins:['*'],dangerouslyDisableDeviceAuth:true}},agents:{defaults:{workspace:'/home/node/.openclaw/workspace',model:{primary:'openrouter/xiaomi/mimo-v2-pro'},heartbeat:{every:'30m',lightContext:true,isolatedSession:true}}},channels:{telegram:{enabled:false,dmPolicy:'pairing'},discord:{enabled:false,dmPolicy:'pairing'},whatsapp:{enabled:false,dmPolicy:'pairing'},webchat:{enabled:true}},cron:{enabled:true,maxConcurrentRuns:2,sessionRetention:'24h'},session:{scope:'per-sender',reset:{mode:'daily',atHour:4},maintenance:{mode:'warn',pruneAfter:'30d',maxEntries:500}},tools:{profile:'coding',exec:{backgroundMs:10000,timeoutSec:1800},web:{search:{enabled:true},fetch:{enabled:true,maxChars:50000}}}}));const p=spawn('openclaw',['gateway'],{stdio:'inherit',env:{...process.env,OPENCLAW_CONFIG_PATH:'/tmp/openclaw.json'}});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
 
-function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
+export function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
     OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',

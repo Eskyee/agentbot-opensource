@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { getAgentEnvVars, OPENCLAW_START_CMD } from '@/app/lib/railway-provision'
+import { getRailwayEnvironmentId, getRailwayProjectId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +11,7 @@ const KNOWN_GOOD_IMAGE = 'ghcr.io/openclaw/openclaw:2026.4.2'
 async function getOpenClawInfo(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { openclawUrl: true, openclawInstanceId: true },
+    select: { openclawUrl: true, openclawInstanceId: true, plan: true },
   })
   return user
 }
@@ -86,8 +87,12 @@ export async function POST(request: Request) {
   }
 
   const instanceId = info.openclawInstanceId
-  const BACKEND_API_URL = getBackendApiUrl()
-  const INTERNAL_API_KEY = getInternalApiKey()
+  const environmentId = getRailwayEnvironmentId()
+  const projectId = getRailwayProjectId()
+  const railwayService = await resolveRailwayService({
+    agentId: info.openclawInstanceId,
+    openclawUrl: info.openclawUrl,
+  })
 
   let body: { action?: string } = {}
   try {
@@ -98,44 +103,68 @@ export async function POST(request: Request) {
 
   try {
     if (body.action === 'factory-reset') {
-      // Step 1: Update to known-good image
-      const updateRes = await fetch(`${BACKEND_API_URL}/api/agents/${instanceId}/update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${INTERNAL_API_KEY}`,
-        },
-        body: JSON.stringify({ image: KNOWN_GOOD_IMAGE }),
-        signal: AbortSignal.timeout(120000),
-      })
+      await railwayGql(
+        `mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+          serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+        }`,
+        {
+          serviceId: railwayService.id,
+          environmentId,
+          input: {
+            source: { image: KNOWN_GOOD_IMAGE },
+            startCommand: OPENCLAW_START_CMD,
+          },
+        }
+      )
 
-      if (!updateRes.ok) {
-        const errData = await updateRes.json().catch(() => ({}))
-        return NextResponse.json({ error: 'Factory reset failed during update', details: errData }, { status: 502 })
-      }
+      await railwayGql(
+        `mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+          variableCollectionUpsert(input: $input)
+        }`,
+        {
+          input: {
+            projectId,
+            environmentId,
+            serviceId: railwayService.id,
+            variables: getAgentEnvVars(session.user.id, info.plan || 'solo'),
+          },
+        }
+      )
+
+      await railwayGql(
+        `mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+          serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+        }`,
+        {
+          serviceId: railwayService.id,
+          environmentId,
+        }
+      )
 
       return NextResponse.json({
         success: true,
         message: `Factory reset complete — pinned to ${KNOWN_GOOD_IMAGE}. Agent restarting with doctor --fix.`,
         image: KNOWN_GOOD_IMAGE,
+        serviceId: railwayService.id,
       })
     }
 
-    // Default: restart
-    const res = await fetch(`${BACKEND_API_URL}/api/agents/${instanceId}/restart`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${INTERNAL_API_KEY}`,
-      },
-      signal: AbortSignal.timeout(30000),
+    await railwayGql(
+      `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
+        serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
+      }`,
+      {
+        serviceId: railwayService.id,
+        environmentId,
+      }
+    )
+
+    return NextResponse.json({
+      success: true,
+      message: 'Agent restarting — doctor & migrations run on startup',
+      serviceId: railwayService.id,
+      instanceId,
     })
-
-    if (!res.ok) {
-      return NextResponse.json({ error: 'Restart failed', details: res.status }, { status: 502 })
-    }
-
-    return NextResponse.json({ success: true, message: 'Agent restarting — doctor & migrations run on startup' })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })

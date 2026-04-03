@@ -1,23 +1,43 @@
 import { createPublicClient, http } from 'viem'
 import { Address } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
+import { tempo, tempoTestnet } from 'viem/chains'
 
-const RPC_URL = process.env.RPC_URL || 'https://rpc.moderato.tempo.xyz'
+const IS_TESTNET = process.env.TEMPO_TESTNET === 'true'
+const RPC_URL = process.env.RPC_URL || (IS_TESTNET ? 'https://rpc.moderato.tempo.xyz' : 'https://rpc.tempo.xyz')
 const TOKEN_ADDRESS = '0x20c0000000000000000000000000000000000000'
 const TOKEN_DECIMALS = 6
 const THRESHOLD = Number(process.env.NODE_WALLET_THRESHOLD || '100')
 
-const walletList = (
-  process.env.TEMPO_NODE_WALLETS || ''
-)
-  .split(',')
-  .map((value) => value.trim())
-  .filter(Boolean)
-  .map((value) => value as Address)
+function getConfiguredWallets(): Address[] {
+  const configured = (process.env.TEMPO_NODE_WALLETS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean)
+
+  const extraWallets = [
+    process.env.TEMPO_FEE_PAYER_ADDRESS?.trim(),
+    process.env.TEMPO_TREASURY_WALLET?.trim(),
+  ].filter(Boolean) as string[]
+
+  const feePayerKey = process.env.TEMPO_FEE_PAYER_KEY as `0x${string}` | undefined
+  if (feePayerKey) {
+    try {
+      extraWallets.push(privateKeyToAccount(feePayerKey).address)
+    } catch {
+      // ignore malformed private key
+    }
+  }
+
+  return [...new Set([...configured, ...extraWallets].map((value) => value.toLowerCase()))] as Address[]
+}
+
+const walletList = getConfiguredWallets()
 
 const tempoChain = {
-  id: 42431,
-  name: 'Tempo Moderato',
-  network: 'moderato',
+  id: IS_TESTNET ? tempoTestnet.id : tempo.id,
+  name: IS_TESTNET ? tempoTestnet.name : tempo.name,
+  network: IS_TESTNET ? 'moderato' : 'tempo',
   nativeCurrency: { name: 'pathUSD', symbol: 'pathUSD', decimals: TOKEN_DECIMALS },
   rpcUrls: {
     default: { http: [RPC_URL] },
@@ -38,7 +58,18 @@ export interface WalletStatus {
   threshold: number
 }
 
+export function getWalletMonitorConfig() {
+  return {
+    rpcUrl: RPC_URL,
+    threshold: THRESHOLD,
+    addresses: walletList,
+    configured: walletList.length > 0,
+    chain: tempoChain.name,
+  }
+}
+
 export async function fetchWalletStatuses(): Promise<WalletStatus[]> {
+  if (!walletList.length) return []
   return Promise.all(
     walletList.map(async (address) => {
       const balance = await client.readContract({
