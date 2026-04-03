@@ -48,6 +48,10 @@ export default function FleetPage() {
 
   const agents = graph?.nodes ?? [];
   const selectedAgent = agents.find((a: any) => a.id === selectedAgentId);
+  const totalAgents = graph?.stats?.totalAgents ?? agents.length;
+  const activeAgents = graph?.stats?.activeAgents ?? agents.filter((a: any) => a.status === 'active').length;
+  const operationalStatus = activeAgents > 0 ? 'active' : graphLoading ? 'idle' : 'offline';
+  const dashboardUrl = graph?.dashboardUrl;
 
   const FleetIcon = () => (
     <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -88,9 +92,9 @@ export default function FleetPage() {
             <div className="hidden md:flex items-center gap-4">
               <div className="text-right">
                 <span className="text-[10px] text-zinc-600 uppercase tracking-widest">Active Agents</span>
-                <div className="text-xs font-mono">{agents.length} / 10</div>
+                <div className="text-xs font-mono">{activeAgents} / {Math.max(totalAgents, 1)}</div>
               </div>
-              <StatusPill status="active" label="Operational" size="sm" />
+              <StatusPill status={operationalStatus} label={operationalStatus === 'active' ? 'Operational' : operationalStatus === 'idle' ? 'Warming' : 'Offline'} size="sm" />
             </div>
           </div>
         }
@@ -142,6 +146,16 @@ export default function FleetPage() {
                   <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">{selectedAgent.role ?? selectedAgent.type}</div>
                 </div>
               </div>
+              {selectedAgent.url && (
+                <a
+                  href={selectedAgent.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mb-4 block text-[10px] font-mono text-blue-400 underline-offset-2 hover:underline truncate"
+                >
+                  {selectedAgent.url}
+                </a>
+              )}
               <div className="grid grid-cols-2 gap-px bg-zinc-800 text-[10px]">
                 <div className="bg-zinc-950 p-3">
                   <div className="text-zinc-600 uppercase tracking-widest mb-1">Health</div>
@@ -153,6 +167,16 @@ export default function FleetPage() {
                 </div>
               </div>
               <div className="mt-4">
+                {dashboardUrl && (
+                  <a
+                    href={dashboardUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-3 flex items-center justify-center border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:border-blue-500"
+                  >
+                    Open Borg Dashboard
+                  </a>
+                )}
                 <CloneButton
                   agent={{
                     id: selectedAgent.id,

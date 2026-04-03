@@ -32,6 +32,8 @@ interface ColonyData {
   root: {
     address: string;
     designation: string | null;
+    dashboardUrl?: string;
+    serviceUrl?: string;
     fitness: { total: number; prediction: number; execution: number } | null;
     wallet_balance: { formatted: string; token: string } | null;
     clone_available: boolean;
@@ -192,6 +194,8 @@ export default function ColonyPage() {
     }
   }, []);
 
+  const dashboardUrl = data?.root.dashboardUrl || 'https://borg-0-production.up.railway.app/dashboard';
+
   useEffect(() => {
     fetchColony();
     const interval = setInterval(fetchColony, 30_000);
@@ -201,7 +205,7 @@ export default function ColonyPage() {
   const action = (
     <div className="flex flex-wrap gap-2">
       <a
-        href="https://borg-0-production.up.railway.app/dashboard"
+        href={dashboardUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors"
@@ -269,7 +273,7 @@ export default function ColonyPage() {
                 Retry
               </button>
               <a
-                href="https://borg-0-production.up.railway.app/dashboard"
+                href={dashboardUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2"
@@ -315,6 +319,11 @@ export default function ColonyPage() {
                 <span className="text-[10px] font-mono text-zinc-600 mr-2 uppercase tracking-widest">Soul Wallet</span>
                 <span className="text-sm font-mono text-white">{data.root.wallet_balance.formatted}</span>
                 <span className="text-[10px] font-mono text-zinc-400 ml-1">{data.root.wallet_balance.token}</span>
+              </div>
+            )}
+            {data.root.serviceUrl && (
+              <div className="mb-6 text-[10px] font-mono text-zinc-500">
+                Source: <a href={data.root.serviceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{data.root.serviceUrl}</a>
               </div>
             )}
 

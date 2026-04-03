@@ -8,10 +8,19 @@
 import { NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession';
 import { SoulClient } from '@/lib/soul';
+import { DEFAULT_SOUL_DASHBOARD_URL, DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config';
 import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem';
 import { tempo } from 'viem/chains';
 
-const SOUL_URL = process.env.SOUL_SERVICE_URL || 'https://borg-0-production.up.railway.app';
+const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
+const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
+
+function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
+  const value = String(raw ?? '').toLowerCase();
+  if (['active', 'running', 'healthy', 'up', 'ready'].includes(value)) return 'active';
+  if (['culling', 'failed', 'error'].includes(value)) return 'culling';
+  return 'stale';
+}
 
 // Tempo RPC for real wallet balances
 const tempoClient = createPublicClient({
@@ -112,7 +121,7 @@ export async function GET(request: Request) {
             children: 0,
             parent: identity?.address ?? null,
             walletAddress: child.address,
-            status: child.status as 'active' | 'stale',
+            status: normalizeColonyStatus(child.status),
             createdAt: new Date(child.created_at * 1000).toISOString(),
             url: child.url,
             endpoints: [],
@@ -130,7 +139,7 @@ export async function GET(request: Request) {
               children: 0,
               parent: null,
               walletAddress: sibling.address,
-              status: sibling.status as 'active' | 'stale',
+              status: normalizeColonyStatus(sibling.status),
               createdAt: '',
               url: sibling.url,
               endpoints: sibling.endpoints ?? [],
@@ -152,6 +161,8 @@ export async function GET(request: Request) {
           root: {
             address: identity?.address ?? '0x0000000000000000000000000000000000000000',
             designation: instanceInfo.designation,
+            dashboardUrl: SOUL_DASHBOARD_URL,
+            serviceUrl: SOUL_URL,
             fitness: instanceInfo.fitness,
             wallet_balance: identity?.address
               ? await getTempoBalance(identity.address as Address)
@@ -192,6 +203,7 @@ export async function GET(request: Request) {
         error: 'Soul service unavailable',
         detail: error.message,
         soul_url: SOUL_URL,
+        dashboard_url: SOUL_DASHBOARD_URL,
       },
       { status: 503 }
     );

@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
+import { DEFAULT_SOUL_SERVICE_URL, DEFAULT_SOUL_DASHBOARD_URL } from '@/app/lib/openclaw-config'
 
 const SOUL_URLS = [
-  DEFAULT_OPENCLAW_GATEWAY_URL,
+  DEFAULT_SOUL_SERVICE_URL,
 ]
 
 export const dynamic = 'force-dynamic';
+
+function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
+  const value = String(raw ?? '').toLowerCase();
+  if (!value) return 'offline';
+  if (['active', 'running', 'healthy', 'up', 'ready'].includes(value)) return 'active';
+  if (['idle', 'dormant', 'deploying', 'starting', 'warming'].includes(value)) return 'idle';
+  return 'offline';
+}
 
 async function fetchSoulNode(url: string) {
   try {
@@ -34,6 +42,8 @@ export async function GET() {
       edges: [],
       timestamp: new Date().toISOString(),
       source: 'unauthenticated',
+      stats: { totalAgents: 0, activeAgents: 0, idleAgents: 0, offlineAgents: 1 },
+      dashboardUrl: DEFAULT_SOUL_DASHBOARD_URL,
     })
   }
 
@@ -50,6 +60,8 @@ export async function GET() {
       edges: [],
       timestamp: new Date().toISOString(),
       source: 'fallback',
+      stats: { totalAgents: 0, activeAgents: 0, idleAgents: 0, offlineAgents: 1 },
+      dashboardUrl: DEFAULT_SOUL_DASHBOARD_URL,
     });
   }
 
@@ -73,7 +85,7 @@ export async function GET() {
       id: designation,
       name: designation,
       role: isRoot ? 'orchestrator' : info.children_count > 0 ? 'specialist' : 'worker',
-      status: status.dormant ? 'idle' : status.active ? 'active' : 'stale',
+      status: status.dormant ? 'idle' : status.active ? 'active' : 'offline',
       x: isRoot ? 400 : 200 + (i * 200),
       y: isRoot ? 300 : 150 + (i * 100),
       load,
@@ -95,13 +107,14 @@ export async function GET() {
         id: childId,
         name: `Clone-${childId}`,
         role: 'worker',
-        status: child.status === 'running' ? 'active' : 'stale',
+        status: normalizeNodeStatus(child.status),
         x: isRoot ? 200 + (ci * 200) : 400,
         y: isRoot ? 450 : 300,
         load: 30,
         memory: 20,
         fitness: 40,
         walletAddress: child.address,
+        url: child.url,
       });
       edges.push({
         id: `e-${designation}-${childId}`,
@@ -141,11 +154,21 @@ export async function GET() {
     }
   }
 
+  const stats = nodes.reduce((acc, node) => {
+    acc.totalAgents += 1;
+    if (node.status === 'active') acc.activeAgents += 1;
+    else if (node.status === 'idle') acc.idleAgents += 1;
+    else acc.offlineAgents += 1;
+    return acc;
+  }, { totalAgents: 0, activeAgents: 0, idleAgents: 0, offlineAgents: 0 });
+
   return NextResponse.json({
     nodes,
     edges,
     timestamp: new Date().toISOString(),
     source: 'soul',
     nodeCount: live.length,
+    stats,
+    dashboardUrl: DEFAULT_SOUL_DASHBOARD_URL,
   });
 }
