@@ -1,25 +1,23 @@
 {
-  "name": "Agentbot Open Source",
-  "dockerComposeFile": "../docker-compose.yml",
-  "service": "web",
-  "workspaceFolder": "/app",
+  "name": "Agentbot Dev Environment",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/git:1": {}
   },
+  "forwardPorts": [3000, 8080],
+  "postCreateCommand": "npm install && npx prisma generate",
   "customizations": {
     "vscode": {
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "prisma.prisma",
-        "bradlc.vscode-tailwindcss"
+        "prisma.prisma"
       ],
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash"
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
       }
     }
   },
-  "forwardPorts": [3000, 3001, 5432, 6379],
-  "postCreateCommand": "npm install && npx prisma generate"
+  "remoteUser": "node"
 }
