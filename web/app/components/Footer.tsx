@@ -71,12 +71,6 @@ export default function Footer() {
           </div>
           <div className="flex flex-wrap gap-6">
             {[
-              { href: '/why', label: 'Why' },
-              { href: '/pricing', label: 'Pricing' },
-              { href: '/blog', label: 'Blog' },
-              { href: '/news', label: 'News' },
-              { href: '/documentation', label: 'Docs' },
-              { href: '/marketplace', label: 'Marketplace' },
               { href: '/partner', label: 'Partner' },
               { href: '/token', label: '$AGENTBOT' },
               { href: 'https://github.com/Eskyee/agentbot-opensource', label: 'GitHub' },
