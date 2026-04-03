@@ -12,9 +12,10 @@ import { usePathname } from 'next/navigation'
 
 export const navSections = [
   {
-    label: 'Overview',
+    label: 'Runtime',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '◈' },
+      { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
     ]
   },
@@ -27,8 +28,10 @@ export const navSections = [
     ]
   },
   {
-    label: 'Platform',
+    label: 'Operations',
     items: [
+      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '◌' },
+      { label: 'Support', href: '/dashboard/support', icon: '☰' },
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Borg Soul', href: 'https://borg-0-production.up.railway.app/dashboard', icon: '⬢', external: true },
     ]
@@ -57,7 +60,7 @@ interface DashboardSidebarProps {
 export const DashboardSidebar = memo(function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: DashboardSidebarProps) {
   const pathname = usePathname()
   const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
-  const [openclawLink, setOpenclawLink] = useState<string | null>(null)
+  const [gatewayToken, setGatewayToken] = useState<string | null>(null)
 
   useEffect(() => {
     // Use localStorage as a fast first paint, but always refresh from DB
@@ -69,7 +72,6 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
         if (data.url) {
           const normalizedUrl = String(data.url).replace(/\/$/, '')
           setOpenclawUrl(normalizedUrl)
-          setOpenclawLink(normalizedUrl)
         }
       }
     } catch {}
@@ -79,12 +81,9 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
       .then(data => {
         if (data.openclawUrl) {
           const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '')
-          const gatewayToken = data.gatewayToken ? String(data.gatewayToken) : ''
-          const autoPairUrl = gatewayToken
-            ? `${normalizedUrl}/chat?session=main#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(normalizedUrl).host}`)}`
-            : normalizedUrl
+          const nextGatewayToken = data.gatewayToken ? String(data.gatewayToken) : ''
           setOpenclawUrl(normalizedUrl)
-          setOpenclawLink(autoPairUrl)
+          setGatewayToken(nextGatewayToken || null)
           localStorage.setItem('agentbot_instance', JSON.stringify({
             userId: data.openclawInstanceId,
             url: normalizedUrl,
@@ -93,6 +92,34 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
       })
       .catch(() => {})
   }, [])
+
+  const runtimeStatus = openclawUrl ? (gatewayToken ? 'paired' : 'live') : 'undeployed'
+  const runtimeTone = runtimeStatus === 'paired'
+    ? 'text-green-400'
+    : runtimeStatus === 'live'
+      ? 'text-yellow-400'
+      : 'text-zinc-500'
+  const runtimeDot = runtimeStatus === 'paired'
+    ? 'bg-green-400'
+    : runtimeStatus === 'live'
+      ? 'bg-yellow-400'
+      : 'bg-zinc-700'
+  const runtimeHost = openclawUrl ? new URL(openclawUrl).host : null
+  const openclawChatUrl = openclawUrl
+    ? gatewayToken
+      ? `${openclawUrl}/chat?session=main#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(openclawUrl).host}`)}`
+      : `${openclawUrl}/chat?session=main`
+    : null
+  const openclawSkillsUrl = openclawUrl
+    ? gatewayToken
+      ? `${openclawUrl}/skills#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(openclawUrl).host}`)}`
+      : `${openclawUrl}/skills`
+    : null
+  const openclawConfigUrl = openclawUrl
+    ? gatewayToken
+      ? `${openclawUrl}/config#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(openclawUrl).host}`)}`
+      : `${openclawUrl}/config`
+    : null
 
   return (
     <>
@@ -121,6 +148,56 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
         </button>
 
         <nav className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4">
+          <div className="mx-4 mb-5 border border-zinc-800 bg-zinc-950 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600">OpenClaw Runtime</div>
+                <div className={`mt-1 text-xs font-bold uppercase tracking-widest ${runtimeTone}`}>
+                  {runtimeStatus}
+                </div>
+              </div>
+              <span className={`h-2.5 w-2.5 rounded-full ${runtimeDot}`} />
+            </div>
+            <div className="mt-3 space-y-2">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-700">Plan</div>
+              <div className="text-sm font-bold capitalize text-white">{plan || 'Solo'}</div>
+              <div className="text-[10px] font-mono text-zinc-500 break-all">
+                {runtimeHost || 'No agent deployed yet'}
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-4 mb-5">
+            {openclawUrl ? (
+              <div className="space-y-1.5">
+                {[
+                  { label: 'Open Chat', href: openclawChatUrl, icon: '↗' },
+                  { label: 'Open Skills', href: openclawSkillsUrl, icon: '↗' },
+                  { label: 'Open Config', href: openclawConfigUrl, icon: '↗' },
+                ].map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href || openclawUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between border border-blue-500/20 bg-blue-500/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:border-blue-500/50 hover:text-white transition-colors"
+                  >
+                    <span>{item.label}</span>
+                    <span className="text-[10px] text-blue-400/70">{item.icon}</span>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <a
+                href="/onboard?mode=deploy"
+                className="block border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
+              >
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">OpenClaw</div>
+                <div className="text-sm font-bold text-zinc-500">Deploy Now</div>
+              </a>
+            )}
+          </div>
+
           {navSections.map((section, i) => (
             <div key={section.label} className={i > 0 ? 'mt-4' : ''}>
               <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 pl-10 pr-4 mb-1.5">
@@ -154,34 +231,6 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
               </div>
             </div>
           ))}
-
-          {/* OpenClaw Dashboard Link */}
-          {openclawUrl ? (
-            <a
-              href={openclawLink || openclawUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block mx-4 mt-6 border border-blue-500/30 bg-blue-500/5 p-4 hover:border-blue-500/50 transition-colors"
-            >
-              <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-1">OpenClaw</div>
-              <div className="text-sm font-bold flex items-center gap-2">
-                Open Your Agent <span className="text-[10px] text-blue-500/60">↗</span>
-              </div>
-            </a>
-          ) : (
-            <a
-              href="/onboard?mode=deploy"
-              className="block mx-4 mt-6 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors"
-            >
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">OpenClaw</div>
-              <div className="text-sm font-bold text-zinc-500">Deploy Now</div>
-            </a>
-          )}
-
-          <Link href="/billing" onClick={onToggle} className="block mx-4 mt-4 border border-zinc-800 p-4 hover:border-zinc-700 transition-colors">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Your Plan</div>
-            <div className="text-xl font-bold capitalize">{plan || 'Solo'}</div>
-          </Link>
         </nav>
 
         <div className="p-4 border-t border-zinc-900">
