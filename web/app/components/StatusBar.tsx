@@ -10,7 +10,7 @@ interface StatusData {
 
 export function StatusBar() {
   const [status, setStatus] = useState<StatusData>({ agents: 3, online: true, uptime: '99.9%' })
-  const [lastUpdate, setLastUpdate] = useState(new Date())
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -50,7 +50,7 @@ export function StatusBar() {
             <span className="hidden sm:inline whitespace-nowrap font-mono">{status.uptime} uptime</span>
             <span className="hidden md:inline text-zinc-800">·</span>
             <span className="hidden md:inline whitespace-nowrap font-mono text-zinc-600">
-              updated {lastUpdate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+              {lastUpdate ? `updated ${lastUpdate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''}
             </span>
           </div>
           <span className="text-zinc-600 whitespace-nowrap font-mono">
