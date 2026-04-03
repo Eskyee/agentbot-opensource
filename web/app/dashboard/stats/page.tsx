@@ -13,6 +13,27 @@ interface SystemStats {
   errors: number;
   health: 'healthy' | 'degraded' | 'unhealthy';
   timestamp: string;
+  runtime?: {
+    node: string;
+    platform: string;
+    arch: string;
+    heapUsedMb: number;
+    heapTotalMb: number;
+    rssMb: number;
+    externalMb: number;
+  };
+  deployment?: {
+    provider: string;
+    environment: string;
+    region: string | null;
+    deploymentUrl: string | null;
+    commitSha: string | null;
+    commitRef: string | null;
+    commitMessage?: string | null;
+    deploymentId?: string | null;
+    target?: string | null;
+    projectProductionUrl?: string | null;
+  };
 }
 
 export default function StatsPage() {
@@ -175,6 +196,68 @@ export default function StatsPage() {
                 </div>
                 <div className="text-sm font-mono">{new Date(stats.timestamp).toLocaleTimeString()}</div>
                 <div className="text-[10px] text-zinc-600 mt-2">Refreshes every 5s</div>
+              </div>
+            </div>
+
+            {/* Vercel deployment */}
+            <div className="border border-zinc-800 bg-zinc-950 p-6 mb-8">
+              <h2 className="text-sm font-bold tracking-tight uppercase mb-4">Deployment Runtime</h2>
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Provider</div>
+                  <div className="mt-2 text-sm font-mono text-white">{stats.deployment?.provider || 'unknown'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Environment</div>
+                  <div className="mt-2 text-sm font-mono text-white">{stats.deployment?.environment || 'unknown'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Region</div>
+                  <div className="mt-2 text-sm font-mono text-white">{stats.deployment?.region || 'unknown'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Node</div>
+                  <div className="mt-2 text-sm font-mono text-white">{stats.runtime?.node || 'unknown'}</div>
+                </div>
+                <div className="md:col-span-2">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Deployment URL</div>
+                  <div className="mt-2 text-xs font-mono text-zinc-300 break-all">
+                    {stats.deployment?.deploymentUrl || stats.deployment?.projectProductionUrl || 'Unavailable'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Branch</div>
+                  <div className="mt-2 text-sm font-mono text-white">{stats.deployment?.commitRef || 'unknown'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Commit</div>
+                  <div className="mt-2 text-sm font-mono text-white">
+                    {stats.deployment?.commitSha ? stats.deployment.commitSha.slice(0, 7) : 'unknown'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Function memory */}
+            <div className="border border-zinc-800 bg-zinc-950 p-6 mb-8">
+              <h2 className="text-sm font-bold tracking-tight uppercase mb-4">Function Memory</h2>
+              <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="bg-black p-5 border border-zinc-800">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Heap Used</div>
+                  <div className="mt-2 text-2xl font-bold tracking-tight text-cyan-400">{stats.runtime?.heapUsedMb ?? 0} MB</div>
+                </div>
+                <div className="bg-black p-5 border border-zinc-800">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Heap Total</div>
+                  <div className="mt-2 text-2xl font-bold tracking-tight text-blue-400">{stats.runtime?.heapTotalMb ?? 0} MB</div>
+                </div>
+                <div className="bg-black p-5 border border-zinc-800">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">RSS</div>
+                  <div className="mt-2 text-2xl font-bold tracking-tight text-emerald-400">{stats.runtime?.rssMb ?? 0} MB</div>
+                </div>
+                <div className="bg-black p-5 border border-zinc-800">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">External</div>
+                  <div className="mt-2 text-2xl font-bold tracking-tight text-violet-400">{stats.runtime?.externalMb ?? 0} MB</div>
+                </div>
               </div>
             </div>
 

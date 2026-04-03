@@ -18,6 +18,10 @@ function getDeploymentStats() {
     deploymentUrl,
     commitSha: process.env.VERCEL_GIT_COMMIT_SHA || null,
     commitRef: process.env.VERCEL_GIT_COMMIT_REF || null,
+    commitMessage: process.env.VERCEL_GIT_COMMIT_MESSAGE || null,
+    deploymentId: process.env.VERCEL_DEPLOYMENT_ID || null,
+    target: process.env.VERCEL_TARGET_ENV || null,
+    projectProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL || null,
   }
 }
 
@@ -41,6 +45,16 @@ export async function GET() {
     const freeMemory = os.freemem()
     const usedMemory = totalMemory - freeMemory
     const memoryUsage = (usedMemory / totalMemory) * 100
+    const processMemory = process.memoryUsage()
+    const runtime = {
+      node: process.version,
+      platform: process.platform,
+      arch: process.arch,
+      heapUsedMb: Number((processMemory.heapUsed / 1024 / 1024).toFixed(1)),
+      heapTotalMb: Number((processMemory.heapTotal / 1024 / 1024).toFixed(1)),
+      rssMb: Number((processMemory.rss / 1024 / 1024).toFixed(1)),
+      externalMb: Number((processMemory.external / 1024 / 1024).toFixed(1)),
+    }
 
     // Determine health based on metrics
     let health: 'healthy' | 'degraded' | 'unhealthy' = 'healthy'
@@ -59,6 +73,7 @@ export async function GET() {
       health,
       timestamp: new Date().toISOString(),
       deployment: getDeploymentStats(),
+      runtime,
     })
   } catch (error) {
     console.error('Stats error:', error)
@@ -72,6 +87,15 @@ export async function GET() {
         health: 'unhealthy',
         timestamp: new Date().toISOString(),
         deployment: getDeploymentStats(),
+        runtime: {
+          node: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          heapUsedMb: 0,
+          heapTotalMb: 0,
+          rssMb: 0,
+          externalMb: 0,
+        },
       },
       { status: 500 }
     )
