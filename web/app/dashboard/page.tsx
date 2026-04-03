@@ -49,6 +49,13 @@ interface InstanceData {
   verifiedAt?: string | null
 }
 
+function getRuntimeBadge(status?: string) {
+  if (status === 'running') return { label: 'Running', tone: 'text-green-400' }
+  if (status === 'starting') return { label: 'Starting', tone: 'text-yellow-400' }
+  if (status === 'stopped') return { label: 'Stopped', tone: 'text-zinc-400' }
+  return { label: 'Unknown', tone: 'text-zinc-500' }
+}
+
 function DashboardContent() {
   const pathname = usePathname()
   const { data: session, status } = useCustomSession()
@@ -62,7 +69,11 @@ function DashboardContent() {
   const [actionLoading, setActionLoading] = useState('')
   const [credits, setCredits] = useState(0)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [gatewayStatus, setGatewayStatus] = useState<{health: string; sessions: {total: number; active: number}; cron: {total: number; enabled: number}} | null>(null)
+  const [gatewayStatus, setGatewayStatus] = useState<{
+    health: string
+    sessions: { total: number; active: number; available?: boolean; error?: string | null }
+    cron: { total: number; enabled: number; available?: boolean; error?: string | null }
+  } | null>(null)
   const [statusChecks, setStatusChecks] = useState<{ name: string; status: 'ok' | 'degraded' | 'down'; detail?: string }[]>([])
   const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
   const [healingAttempted, setHealingAttempted] = useState(false)
@@ -354,6 +365,19 @@ function DashboardContent() {
 
   const isRunning = instance.status === 'running'
   const startedAt = instance.startedAt
+  const runtimeBadge = getRuntimeBadge(instance.status)
+  const skillsManagerUrl = instance.gatewayToken
+    ? `${instance.url.replace(/\/$/, '')}/skills#token=${encodeURIComponent(instance.gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(instance.url).host}`)}`
+    : `${instance.url.replace(/\/$/, '')}/skills`
+  const configManagerUrl = instance.gatewayToken
+    ? `${instance.url.replace(/\/$/, '')}/config#token=${encodeURIComponent(instance.gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(instance.url).host}`)}`
+    : `${instance.url.replace(/\/$/, '')}/config`
+  const sessionsLabel = gatewayStatus?.sessions?.available
+    ? `${gatewayStatus?.sessions.active ?? 0} active / ${gatewayStatus?.sessions.total ?? 0} total`
+    : 'unavailable'
+  const cronLabel = gatewayStatus?.cron?.available
+    ? `${gatewayStatus?.cron.enabled ?? 0} enabled / ${gatewayStatus?.cron.total ?? 0} total`
+    : 'unavailable'
 
   return (
     <div className="flex min-h-screen bg-black font-mono">
@@ -419,9 +443,17 @@ function DashboardContent() {
 
           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Agent Details
-              </h2>
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-widest">
+                    Agent Runtime
+                  </h2>
+                  <p className="mt-1 text-[11px] text-zinc-500">Live OpenClaw controls and runtime identity</p>
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-widest ${runtimeBadge.tone}`}>
+                  {runtimeBadge.label}
+                </span>
+              </div>
               <dl className="space-y-3">
                 {instance?.botUsername && (
                   <div>
@@ -466,9 +498,12 @@ function DashboardContent() {
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Instance Status
-              </h2>
+              <div className="mb-4">
+                <h2 className="text-xs font-bold uppercase tracking-widest">
+                  Runtime Signals
+                </h2>
+                <p className="mt-1 text-[11px] text-zinc-500">Separate the agent runtime from gateway telemetry so failures are obvious</p>
+              </div>
               <dl className="space-y-3">
                 <div className="flex justify-between">
                   <dt className="text-zinc-500">OpenClaw</dt>
@@ -478,24 +513,36 @@ function DashboardContent() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-zinc-500">State</dt>
-                  <dd className={`font-mono ${isRunning ? 'text-green-400' : 'text-zinc-400'}`}>
+                  <dd className={`font-mono ${runtimeBadge.tone}`}>
                     {instance?.status || 'unknown'}
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-zinc-500">Gateway Sessions</dt>
-                  <dd className="text-zinc-400 font-mono">{gatewayStatus?.sessions.active ?? 0} active / {gatewayStatus?.sessions.total ?? 0} total</dd>
+                  <dd className="text-zinc-400 font-mono">{sessionsLabel}</dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-zinc-500">Cron</dt>
-                  <dd className="text-zinc-400 font-mono">{gatewayStatus?.cron.enabled ?? 0} enabled / {gatewayStatus?.cron.total ?? 0} total</dd>
+                  <dd className="text-zinc-400 font-mono">{cronLabel}</dd>
                 </div>
+                {gatewayStatus?.sessions?.error && !gatewayStatus.sessions.available && (
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions Detail</dt>
+                    <dd className="text-[11px] text-zinc-500">{gatewayStatus.sessions.error}</dd>
+                  </div>
+                )}
+                {gatewayStatus?.cron?.error && !gatewayStatus.cron.available && (
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Cron Detail</dt>
+                    <dd className="text-[11px] text-zinc-500">{gatewayStatus.cron.error}</dd>
+                  </div>
+                )}
               </dl>
             </div>
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Quick Actions
+                OpenClaw Controls
               </h2>
               <div className="space-y-3">
                 <a
@@ -505,6 +552,24 @@ function DashboardContent() {
                   className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                 >
                   <span>Open OpenClaw</span>
+                  <span>→</span>
+                </a>
+                <a
+                  href={skillsManagerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  <span>Open Skills Manager</span>
+                  <span>→</span>
+                </a>
+                <a
+                  href={configManagerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  <span>Open Config</span>
                   <span>→</span>
                 </a>
                 <div className="border border-zinc-800 px-4 py-3">

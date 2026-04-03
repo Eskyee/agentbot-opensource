@@ -35,18 +35,25 @@ export async function GET() {
     cronList = Array.isArray(data) ? data : data?.jobs || data?.result || []
   }
 
+  const sessionsAvailable = sessions.ok
+  const cronAvailable = crons.ok
+
   return NextResponse.json({
     health: health.ok ? 'healthy' : 'unreachable',
     healthDetail: health,
     sessions: {
+      available: sessionsAvailable,
       total: sessionList.length,
       active: sessionList.filter((s: any) => s.status === 'active' || s.lastActivity).length,
       list: sessionList.slice(0, 10),
+      error: sessions.ok ? null : sessions.error || 'unavailable',
     },
     cron: {
+      available: cronAvailable,
       total: cronList.length,
       enabled: cronList.filter((c: any) => c.enabled !== false).length,
       jobs: cronList.slice(0, 10),
+      error: crons.ok ? null : crons.error || 'unavailable',
     },
   })
 }

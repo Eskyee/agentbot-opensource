@@ -1,7 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getInternalApiKey, getBackendApiUrl } from '../../lib/api-keys'
 import { verifyInstanceOwnership } from '../_auth'
+import { prisma } from '@/app/lib/prisma'
 
+const RUNTIME_VERSION = '2026.4.2'
+
+async function probeRuntime(url: string) {
+  const normalized = String(url).replace(/\/$/, '')
+
+  try {
+    const [healthRes, readyRes] = await Promise.allSettled([
+      fetch(`${normalized}/healthz`, {
+        signal: AbortSignal.timeout(5000),
+        cache: 'no-store',
+      }),
+      fetch(`${normalized}/readyz`, {
+        signal: AbortSignal.timeout(4000),
+        cache: 'no-store',
+      }),
+    ])
+
+    const healthOk = healthRes.status === 'fulfilled' && healthRes.value.ok
+    const readyOk = readyRes.status === 'fulfilled' && readyRes.value.ok
+    const healthPayload = healthRes.status === 'fulfilled'
+      ? await healthRes.value.json().catch(() => ({}))
+      : {}
+
+    const runtimeVersion = typeof healthPayload?.version === 'string'
+      ? healthPayload.version
+      : RUNTIME_VERSION
+
+    if (healthOk && readyOk) {
+      return { status: 'running', openclawVersion: runtimeVersion }
+    }
+
+    if (healthOk) {
+      return { status: 'starting', openclawVersion: runtimeVersion }
+    }
+
+    return { status: 'unknown', openclawVersion: runtimeVersion }
+  } catch {
+    return { status: 'unknown', openclawVersion: RUNTIME_VERSION }
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -14,6 +55,12 @@ export async function GET(
   if (!(await verifyInstanceOwnership(userId))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
+
+  const ownedUser = await prisma.user.findFirst({
+    where: { openclawInstanceId: userId },
+    select: { openclawUrl: true },
+  })
+  const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
   
   try {
     const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}`, {
@@ -30,37 +77,45 @@ export async function GET(
     }
 
     if (!response.ok || !data) {
-      // Construct Railway URL from userId (agentbot-agent-{userId}-production.up.railway.app)
-      const railwayUrl = `https://agentbot-agent-${userId}-production.up.railway.app`;
+      const runtime = await probeRuntime(persistedUrl)
       return NextResponse.json({
         userId,
-        status: 'unknown',
+        status: runtime.status,
         startedAt: new Date().toISOString(),
-        subdomain: `agentbot-agent-${userId}-production.up.railway.app`,
-        url: railwayUrl,
+        subdomain: new URL(persistedUrl).host,
+        url: persistedUrl,
         plan: 'free',
-        openclawVersion: '2026.4.2'
+        openclawVersion: runtime.openclawVersion,
       }, { status: response.status || 502 })
     }
 
+    const runtime = await probeRuntime(data.url || persistedUrl)
+    const normalizedStatus = data.status === 'active'
+      ? 'running'
+      : data.status || runtime.status || 'unknown'
+    const resolvedStatus = normalizedStatus === 'unknown' && runtime.status !== 'unknown'
+      ? runtime.status
+      : normalizedStatus
+
     return NextResponse.json({
       userId,
-      status: data.status === 'active' ? 'running' : (data.status || 'unknown'),
+      status: resolvedStatus,
       startedAt: data.startedAt || new Date().toISOString(),
-      subdomain: data.subdomain || `agentbot-agent-${userId}-production.up.railway.app`,
-      url: data.url || `https://agentbot-agent-${userId}-production.up.railway.app`,
+      subdomain: data.subdomain || new URL(persistedUrl).host,
+      url: data.url || persistedUrl,
       plan: data.plan || 'free',
-      openclawVersion: data.openclawVersion || '2026.4.2'
+      openclawVersion: data.openclawVersion || runtime.openclawVersion || RUNTIME_VERSION
     })
   } catch (error) {
+    const runtime = await probeRuntime(persistedUrl)
     return NextResponse.json({
       userId,
-      status: 'unknown',
+      status: runtime.status,
       startedAt: new Date().toISOString(),
-      subdomain: `agentbot-agent-${userId}-production.up.railway.app`,
-      url: `https://agentbot-agent-${userId}-production.up.railway.app`,
+      subdomain: new URL(persistedUrl).host,
+      url: persistedUrl,
       plan: 'free',
-      openclawVersion: '2026.4.2'
+      openclawVersion: runtime.openclawVersion
     }, { status: 500 })
   }
 }

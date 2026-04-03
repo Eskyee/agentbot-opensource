@@ -64,6 +64,7 @@ export default function SkillsPage() {
   const [newSkillDescription, setNewSkillDescription] = useState('')
   const [newSkillCategory, setNewSkillCategory] = useState('')
   const [creatingSkill, setCreatingSkill] = useState(false)
+  const [openclawSkillsUrl, setOpenclawSkillsUrl] = useState<string | null>(null)
 
   // Fetch agents on mount
   useEffect(() => {
@@ -78,6 +79,21 @@ export default function SkillsPage() {
       })
       .catch(() => {
         setAgents([])
+      })
+
+    fetch('/api/user/openclaw')
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data?.openclawUrl) return
+        const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '')
+        const gatewayToken = data.gatewayToken ? String(data.gatewayToken) : ''
+        const pairedSkillsUrl = gatewayToken
+          ? `${normalizedUrl}/skills#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(normalizedUrl).host}`)}`
+          : `${normalizedUrl}/skills`
+        setOpenclawSkillsUrl(pairedSkillsUrl)
+      })
+      .catch(() => {
+        setOpenclawSkillsUrl(null)
       })
   }, [])
 
@@ -293,6 +309,25 @@ export default function SkillsPage() {
       />
 
       <DashboardContent className="max-w-7xl space-y-6">
+        {openclawSkillsUrl && (
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Runtime Skills Manager</div>
+              <p className="mt-1 text-sm text-zinc-300">
+                Open the real OpenClaw skills manager for this agent. This avoids the shared gateway `/skills` page and uses your paired agent session.
+              </p>
+            </div>
+            <a
+              href={openclawSkillsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 border border-blue-500/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:border-blue-400 hover:text-white"
+            >
+              Open Skills Manager
+            </a>
+          </div>
+        )}
+
         {/* Agent selector + no-agent banner */}
         {agents.length === 0 ? (
           <div className="flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 px-4 py-3">
@@ -403,6 +438,16 @@ export default function SkillsPage() {
                         ? 'Installed'
                         : 'Install'}
                   </Button>
+                  {openclawSkillsUrl && (
+                    <a
+                      href={openclawSkillsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 block text-center text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white"
+                    >
+                      Manage in OpenClaw
+                    </a>
+                  )}
                 </AgentCard>
               )
             })}
