@@ -5,10 +5,13 @@
  * Dashboard routes are only accessible to authenticated users.
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { LEGACY_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/app/lib/session';
 
 export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    const sessionToken = request.cookies.get('agentbot-session')?.value;
+    const sessionToken =
+      request.cookies.get(SESSION_COOKIE_NAME)?.value ||
+      request.cookies.get(LEGACY_SESSION_COOKIE_NAME)?.value;
 
     if (!sessionToken) {
       const loginUrl = new URL('/login', request.url);

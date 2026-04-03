@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import crypto from 'crypto';
+import { attachSessionCookie } from '@/app/lib/session';
 
 export async function GET(req: NextRequest) {
   // Handle Google error responses (e.g., user cancelled)
@@ -116,13 +117,7 @@ export async function GET(req: NextRequest) {
 
     // Set cookie and redirect
     const response = NextResponse.redirect(new URL('/dashboard', req.url));
-    response.cookies.set('agentbot-session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 30 * 24 * 60 * 60,
-    });
+    attachSessionCookie(response, sessionToken);
 
     return response;
   } catch (error) {

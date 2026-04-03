@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { getSessionTokenFromCookies } from '@/app/lib/session';
 
 export async function GET(req: NextRequest) {
-  const sessionToken = req.cookies.get('agentbot-session')?.value;
+  const sessionToken = getSessionTokenFromCookies(req.cookies);
   
   if (!sessionToken) {
     return NextResponse.json({ user: null });

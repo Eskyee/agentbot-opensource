@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { prisma } from '@/app/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
+import { getSessionTokenFromCookies } from '@/app/lib/session';
 
 interface AuthSessionUser {
   id: string;
@@ -16,13 +17,13 @@ interface AuthSession {
 
 /**
  * Unified auth session helper.
- * Checks the custom `agentbot-session` cookie first (Prisma Session table),
+ * Checks the custom session cookie first (Prisma Session table),
  * then falls back to NextAuth's JWT-based `getServerSession`.
  */
 export async function getAuthSession(): Promise<AuthSession | null> {
   // 1. Check custom session cookie
   const cookieStore = await cookies();
-  const sessionToken = cookieStore.get('agentbot-session')?.value;
+  const sessionToken = getSessionTokenFromCookies(cookieStore);
 
   if (sessionToken) {
     try {

@@ -3,6 +3,7 @@ import { prisma } from '@/app/lib/prisma';
 import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import crypto from 'crypto';
+import { attachSessionCookie } from '@/app/lib/session';
 
 const viemClient = createPublicClient({ chain: base, transport: http() });
 
@@ -60,13 +61,7 @@ export async function POST(req: NextRequest) {
 
     // Set cookie
     const response = NextResponse.json({ ok: true, user: { id: user.id, name: user.name } });
-    response.cookies.set('agentbot-session', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 30 * 24 * 60 * 60,
-    });
+    attachSessionCookie(response, sessionToken);
 
     return response;
   } catch (error) {

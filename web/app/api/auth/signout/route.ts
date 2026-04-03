@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
+import { clearSessionCookies, getSessionTokenFromCookies } from '@/app/lib/session';
 
 export async function POST(req: NextRequest) {
-  const sessionToken = req.cookies.get('agentbot-session')?.value;
+  const sessionToken = getSessionTokenFromCookies(req.cookies);
 
   if (sessionToken) {
     try {
@@ -13,6 +14,8 @@ export async function POST(req: NextRequest) {
   }
 
   const response = NextResponse.json({ ok: true });
+  clearSessionCookies(response);
+  // Clear NextAuth cookies to prevent stale JWT sessions
   const cookieOpts = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -20,9 +23,6 @@ export async function POST(req: NextRequest) {
     path: '/',
     maxAge: 0,
   };
-  // Clear custom session cookie
-  response.cookies.set('agentbot-session', '', cookieOpts);
-  // Clear NextAuth cookies to prevent stale JWT sessions
   response.cookies.set('next-auth.session-token', '', cookieOpts);
   response.cookies.set('__Secure-next-auth.session-token', '', cookieOpts);
   response.cookies.set('next-auth.callback-url', '', { ...cookieOpts, httpOnly: false });
