@@ -21,9 +21,9 @@ This file is the current operational reference for platform ownership, deploymen
   - Platform: Railway
   - Project: `x402-gw-v2`
   - Service: `tempo-x402+Borg`
-  - App URL: `https://tempo-x402-production.up.railway.app`
+  - App URL: `https://borg-0-production.up.railway.app`
   - Dashboard URL: `https://borg-0-production.up.railway.app/dashboard`
-  - Health URL: `https://tempo-x402-production.up.railway.app/health`
+  - Health URL: `https://borg-0-production.up.railway.app/health`
 - x402 gateway:
   - Platform: Railway
   - Service URL: `https://x402-gateway-production.up.railway.app`
@@ -38,7 +38,7 @@ This file is the current operational reference for platform ownership, deploymen
 
 ## Verified Health
 
-**⚠️ Borg Soul (tempo-x402+Borg) is DOWN** — needs Railway dashboard to clear `startCommand` and fund Tempo gas.
+**⚠️ Historical note:** older docs referenced `tempo-x402-production.up.railway.app`, but the live Borg/soul host in current production is `borg-0-production.up.railway.app`.
 
 - Vercel production responded `HTTP 200` on 2026-04-02 17:20 BST.
 - Gateway responded `ok, live` on 2026-04-02 17:20 BST.
