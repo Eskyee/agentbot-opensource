@@ -45,6 +45,7 @@ export const navSections = [
     label: 'Account',
     items: [
       { label: 'Billing', href: '/billing', icon: '☆' },
+      { label: 'Bankr', href: '/dashboard/trading', icon: '◈' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
       { label: 'Showcase', href: '/showcase', icon: '✧' },
       { label: 'Marketplace', href: '/marketplace', icon: '⬡' },
