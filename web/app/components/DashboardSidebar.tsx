@@ -31,6 +31,8 @@ export const navSections = [
     label: 'Operations',
     items: [
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '◌' },
+      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '☼' },
+      { label: 'Workflows', href: '/dashboard/workflows', icon: '⇄' },
       { label: 'Support', href: '/dashboard/support', icon: '☰' },
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Borg Soul', href: 'https://borg-0-production.up.railway.app/dashboard', icon: '⬢', external: true },
