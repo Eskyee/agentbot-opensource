@@ -7,7 +7,10 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "express": "^4.21.0",
+    "express": "^4.21.2",
     "cheerio": "^1.0.0"
+  },
+  "overrides": {
+    "path-to-regexp": "0.1.13"
   }
 }

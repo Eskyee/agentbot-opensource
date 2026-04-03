@@ -4,7 +4,7 @@ import { WalletService } from './services/wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
 import { NegotiationService } from './services/negotiation'; // Added
 import { AmplificationService } from './services/amplification'; // Added
-import Queue from 'bull';
+import { createClient, type RedisClientType } from 'redis';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,8 +14,29 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Create the split queue instance
-const splitQueue = new Queue('royalty-splits', process.env.REDIS_URL || 'redis://localhost:6379');
+let splitQueueClient: RedisClientType | null = null;
+
+async function getSplitQueueClient(): Promise<RedisClientType> {
+  if (!splitQueueClient) {
+    splitQueueClient = createClient({
+      url: process.env.REDIS_URL || 'redis://localhost:6379',
+    });
+    splitQueueClient.on('error', (error) => {
+      console.error('Royalty split queue redis error:', error);
+    });
+  }
+
+  if (!splitQueueClient.isOpen) {
+    await splitQueueClient.connect();
+  }
+
+  return splitQueueClient;
+}
+
+async function enqueueRoyaltySplitJob(job: Record<string, unknown>): Promise<void> {
+  const client = await getSplitQueueClient();
+  await client.rPush('royalty-splits', JSON.stringify(job));
+}
 
 // Middleware to verify internal API key (Atlas/Frontend only)
 const authenticate = (req: Request, res: Response, next: any) => {
@@ -133,7 +154,7 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
     }
 
     // 3. Queue the background execution
-    await splitQueue.add({
+    await enqueueRoyaltySplitJob({
       splitId,
       userId,
       agentId,

@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { keccak256, toUtf8Bytes, verifyMessage } from 'ethers';
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
@@ -53,14 +53,8 @@ export class AgentBusService {
         payload: message.payload
       };
 
-      const hash = ethers.utils.keccak256(
-        ethers.utils.toUtf8Bytes(JSON.stringify(messageContent))
-      );
-
-      const recoveredAddress = ethers.utils.verifyMessage(
-        hash,
-        message.from.signature
-      );
+      const hash = keccak256(toUtf8Bytes(JSON.stringify(messageContent)));
+      const recoveredAddress = verifyMessage(hash, message.from.signature);
 
       return recoveredAddress.toLowerCase() === message.from.walletAddress.toLowerCase();
     } catch (error) {
