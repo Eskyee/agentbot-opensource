@@ -222,6 +222,14 @@ export default function TradingPage() {
               Bankr API key connected
             </div>
             <div className="flex items-center gap-2">
+              <a
+                href="https://bankr.bot/agents"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Open Profiles
+              </a>
               <button
                 onClick={() => setShowKeyInput(true)}
                 className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors flex items-center gap-1"
@@ -276,6 +284,16 @@ export default function TradingPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  {keyConfigured && (
+                    <a
+                      href="https://bankr.bot/agents"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                    >
+                      Open Agent Profiles
+                    </a>
+                  )}
                   <a
                     href="https://bankr.bot/api"
                     target="_blank"
