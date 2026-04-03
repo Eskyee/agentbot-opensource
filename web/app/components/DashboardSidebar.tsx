@@ -15,6 +15,7 @@ export const navSections = [
     label: 'Runtime',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '◈' },
+      { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
       { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
     ]
