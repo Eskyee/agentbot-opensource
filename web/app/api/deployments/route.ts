@@ -73,5 +73,39 @@ export async function GET() {
   }
 }
 
+export async function POST(request: Request) {
+  const session = await getAuthSession();
+  if (!session?.user?.email) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const body = await request.json().catch(() => ({}));
+    const forwardUrl = new URL('/api/provision', request.url);
+
+    const response = await fetch(forwardUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        cookie: request.headers.get('cookie') || '',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json().catch(() => ({
+      success: false,
+      error: 'Provisioning returned an invalid response',
+    }));
+
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Failed to create deployment:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to create deployment' },
+      { status: 500 }
+    );
+  }
+}
+
 
 export const dynamic = 'force-dynamic';

@@ -6,6 +6,21 @@ let startTime = Date.now()
 let messageCount = 0
 let errorCount = 0
 
+function getDeploymentStats() {
+  const deploymentUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : null
+
+  return {
+    provider: process.env.VERCEL === '1' ? 'vercel' : 'node',
+    environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'unknown',
+    region: process.env.VERCEL_REGION || process.env.FLY_REGION || null,
+    deploymentUrl,
+    commitSha: process.env.VERCEL_GIT_COMMIT_SHA || null,
+    commitRef: process.env.VERCEL_GIT_COMMIT_REF || null,
+  }
+}
+
 export async function GET() {
   const session = await getAuthSession()
   if (!session?.user?.id) {
@@ -43,6 +58,7 @@ export async function GET() {
       errors: errorCount,
       health,
       timestamp: new Date().toISOString(),
+      deployment: getDeploymentStats(),
     })
   } catch (error) {
     console.error('Stats error:', error)
@@ -55,6 +71,7 @@ export async function GET() {
         errors: 1,
         health: 'unhealthy',
         timestamp: new Date().toISOString(),
+        deployment: getDeploymentStats(),
       },
       { status: 500 }
     )

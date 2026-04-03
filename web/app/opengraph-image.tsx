@@ -36,7 +36,7 @@ export default async function Image() {
 
         {/* Stats */}
         <div style={{ display: 'flex', gap: 48, marginTop: 48, padding: '16px 40px', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.03)', zIndex: 10 }}>
-          {[{ l: 'AGENTS', v: '24+' }, { l: 'CHANNELS', v: '8' }, { l: 'UPTIME', v: '99.9%' }, { l: 'OPEN SOURCE', v: '✓' }].map(s => (
+          {[{ l: 'AGENTS', v: '24+' }, { l: 'CHANNELS', v: '8' }, { l: 'UPTIME', v: '99.9%' }, { l: 'OPEN SOURCE', v: 'OSS' }].map(s => (
             <div key={s.l} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
               <span style={{ fontSize: 28, fontWeight: 700, color: '#ffffff' }}>{s.v}</span>
               <span style={{ fontSize: 10, color: '#52525b', letterSpacing: 3, textTransform: 'uppercase' }}>{s.l}</span>

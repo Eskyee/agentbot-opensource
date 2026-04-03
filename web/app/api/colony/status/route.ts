@@ -200,12 +200,37 @@ export async function GET(request: Request) {
   } catch (error: any) {
     return NextResponse.json(
       {
+        colony_size: 0,
+        avg_fitness: 0,
+        fittest: null,
+        cull_queue: 0,
+        agents: [],
+        degraded: true,
         error: 'Soul service unavailable',
         detail: error.message,
-        soul_url: SOUL_URL,
-        dashboard_url: SOUL_DASHBOARD_URL,
+        root: {
+          address: '0x0000000000000000000000000000000000000000',
+          designation: null,
+          dashboardUrl: SOUL_DASHBOARD_URL,
+          serviceUrl: SOUL_URL,
+          fitness: null,
+          wallet_balance: null,
+          clone_available: false,
+          clone_price: '0',
+          soul: {
+            active: false,
+            dormant: false,
+            total_cycles: 0,
+            mode: 'unavailable',
+            active_plan: null,
+            free_energy: null,
+            brain: null,
+            transformer: null,
+          },
+          colony: null,
+        },
       },
-      { status: 503 }
+      { status: 200 }
     );
   }
 }

@@ -35,6 +35,20 @@ function OnboardContent() {
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
   const [showConfetti, setShowConfetti] = useState(false)
+  const [accountStats, setAccountStats] = useState<{
+    agents?: { active: number; total: number; limit: number; newToday: number }
+    skills?: { installed: number }
+    tasks?: { total: number }
+  } | null>(null)
+  const [deploymentStats, setDeploymentStats] = useState<{
+    deployment?: {
+      provider?: string
+      environment?: string
+      region?: string | null
+      deploymentUrl?: string | null
+      commitSha?: string | null
+    }
+  } | null>(null)
 
   // Team mode (for Collective/Label plans)
   const [teamMode, setTeamMode] = useState<'single' | 'team'>('single')
@@ -113,6 +127,31 @@ function OnboardContent() {
       }
     }
     loadVersion()
+  }, [])
+
+  useEffect(() => {
+    const loadPlatformStats = async () => {
+      try {
+        const [dashboardRes, runtimeRes] = await Promise.all([
+          fetch('/api/dashboard/stats'),
+          fetch('/api/stats'),
+        ])
+
+        if (dashboardRes.ok) {
+          const dashboardData = await dashboardRes.json()
+          setAccountStats(dashboardData)
+        }
+
+        if (runtimeRes.ok) {
+          const runtimeData = await runtimeRes.json()
+          setDeploymentStats(runtimeData)
+        }
+      } catch {
+        // Onboarding still works without the snapshot panel.
+      }
+    }
+
+    loadPlatformStats()
   }, [])
 
   const validateToken = async () => {
@@ -805,6 +844,60 @@ function OnboardContent() {
                   </div>
                 </dl>
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="bg-zinc-800 rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Your Account Snapshot</h3>
+                  <dl className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-400">Active Agents</dt>
+                      <dd>
+                        {accountStats?.agents
+                          ? `${accountStats.agents.active}/${accountStats.agents.limit}`
+                          : '—'}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-400">Total Agents</dt>
+                      <dd>{accountStats?.agents?.total ?? '—'}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-400">Installed Skills</dt>
+                      <dd>{accountStats?.skills?.installed ?? '—'}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-400">Scheduled Tasks</dt>
+                      <dd>{accountStats?.tasks?.total ?? '—'}</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div className="bg-zinc-800 rounded-xl p-6">
+                  <h3 className="font-semibold mb-4">Vercel Runtime</h3>
+                  <dl className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-400">Provider</dt>
+                      <dd className="uppercase">{deploymentStats?.deployment?.provider ?? '—'}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-400">Environment</dt>
+                      <dd className="uppercase">{deploymentStats?.deployment?.environment ?? '—'}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-zinc-400">Region</dt>
+                      <dd>{deploymentStats?.deployment?.region ?? 'auto'}</dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-zinc-400">Deployment</dt>
+                      <dd className="truncate font-mono text-xs">
+                        {deploymentStats?.deployment?.commitSha
+                          ? deploymentStats.deployment.commitSha.slice(0, 7)
+                          : 'latest'}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
               
               {error && (
                 <div className="bg-red-500/10 border border-red-500/50 rounded-lg px-4 py-3 text-red-400">
@@ -961,6 +1054,52 @@ function OnboardContent() {
                   <p className="text-[10px] text-zinc-500 mt-4">
                     Bookmark this URL — it&apos;s your OpenClaw control panel.
                   </p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 mb-8 text-left">
+                  <div className="bg-zinc-800 rounded-xl p-6">
+                    <p className="text-sm font-semibold text-zinc-400 mb-4">Account Capacity</p>
+                    <dl className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <dt className="text-zinc-400">Agents Running</dt>
+                        <dd>
+                          {accountStats?.agents
+                            ? `${accountStats.agents.active}/${accountStats.agents.limit}`
+                            : '—'}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-zinc-400">Skills Installed</dt>
+                        <dd>{accountStats?.skills?.installed ?? '—'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-zinc-400">Tasks Scheduled</dt>
+                        <dd>{accountStats?.tasks?.total ?? '—'}</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div className="bg-zinc-800 rounded-xl p-6">
+                    <p className="text-sm font-semibold text-zinc-400 mb-4">Vercel Runtime</p>
+                    <dl className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <dt className="text-zinc-400">Environment</dt>
+                        <dd className="uppercase">{deploymentStats?.deployment?.environment ?? '—'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-zinc-400">Region</dt>
+                        <dd>{deploymentStats?.deployment?.region ?? 'auto'}</dd>
+                      </div>
+                      <div className="flex justify-between">
+                        <dt className="text-zinc-400">Build</dt>
+                        <dd className="font-mono text-xs">
+                          {deploymentStats?.deployment?.commitSha
+                            ? deploymentStats.deployment.commitSha.slice(0, 7)
+                            : 'latest'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
