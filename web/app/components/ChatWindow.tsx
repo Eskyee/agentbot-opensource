@@ -71,7 +71,7 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
       const assistantMessage: Message = {
         id: (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)),
         role: 'assistant',
-        content: (data?.response ?? '(no response)').toString(),
+        content: (data?.reply ?? data?.response ?? '(no response)').toString(),
         timestamp: new Date(),
       }
 

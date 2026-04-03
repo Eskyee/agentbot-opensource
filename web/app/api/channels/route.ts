@@ -78,6 +78,13 @@ export async function GET() {
       lastActive: channelActivity.whatsapp?.lastActive || null,
       messages: channelActivity.whatsapp?.messageCount || 0,
     },
+    {
+      name: 'iMessage',
+      provider: 'imessage',
+      status: channelActivity.imessage ? 'connected' : 'not-configured',
+      lastActive: channelActivity.imessage?.lastActive || null,
+      messages: channelActivity.imessage?.messageCount || 0,
+    },
   ]
 
   return NextResponse.json({

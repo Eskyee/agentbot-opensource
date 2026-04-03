@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { readSharedGatewayToken } from '@/app/lib/gateway-token'
+import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 
 /**
  * Agent Chat — OpenAI-compatible REST proxy to user's Gateway.
@@ -81,7 +83,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No agent deployed' }, { status: 404 })
     }
 
-    const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN
+    const gatewayToken = readSharedGatewayToken()
     if (!gatewayToken) {
       return NextResponse.json({ error: 'Gateway not configured' }, { status: 503 })
     }
@@ -94,8 +96,18 @@ export async function POST(req: NextRequest) {
     }
     messages.push({ role: 'user', content: message })
 
-    // OpenAI-compatible REST endpoint on the agent's Gateway
-    const gatewayUrl = `https://agentbot-agent-${agent.id}-production.up.railway.app`
+    const userGateway = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { openclawUrl: true },
+    })
+
+    // Prefer the persisted instance URL. Only derive a Railway hostname when we
+    // have no saved instance URL yet.
+    const gatewayUrl = String(
+      userGateway?.openclawUrl ||
+      `https://agentbot-agent-${agent.id}-production.up.railway.app` ||
+      DEFAULT_OPENCLAW_GATEWAY_URL
+    ).replace(/\/$/, '')
 
     const response = await fetch(`${gatewayUrl}/v1/chat/completions`, {
       method: 'POST',
@@ -128,6 +140,7 @@ export async function POST(req: NextRequest) {
       message,
       agent: agent.name,
       reply,
+      response: reply,
       model: data.model,
       usage: data.usage,
       timestamp: new Date().toISOString(),
