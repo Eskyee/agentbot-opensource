@@ -23,6 +23,7 @@ export const navSections = [
     label: 'Agents',
     items: [
       { label: 'Team', href: '/dashboard/team', icon: '⬢' },
+      { label: 'Swarms', href: '/dashboard/swarms', icon: '⬣' },
       { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
       { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
     ]
@@ -30,6 +31,7 @@ export const navSections = [
   {
     label: 'Operations',
     items: [
+      { label: 'ClawMerchants', href: '/dashboard/market-intel', icon: '◭' },
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '◌' },
       { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '☼' },
       { label: 'Workflows', href: '/dashboard/workflows', icon: '⇄' },
@@ -43,6 +45,7 @@ export const navSections = [
     items: [
       { label: 'Billing', href: '/billing', icon: '☆' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
+      { label: 'Showcase', href: '/showcase', icon: '✧' },
       { label: 'Marketplace', href: '/marketplace', icon: '⬡' },
     ]
   },
