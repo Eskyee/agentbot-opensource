@@ -46,14 +46,15 @@ export default function CryptoCommunityPage() {
       {/* News Flash — BTCPay Integration */}
       <section className="border-b border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
-          <div className="text-[10px] uppercase tracking-widest text-green-500 mb-4">🚀 Coming Soon</div>
+          <div className="text-[10px] uppercase tracking-widest text-green-500 mb-4">⚡ Now Live</div>
           <div className="border border-green-900/50 bg-green-950/30 p-6 sm:p-10">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tighter uppercase mb-4">Native BTC Payments</h2>
             <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-2xl">
-              We're building <strong className="text-white">btcpayagentbot</strong> — a BTCPay Server plugin that lets your agent accept Bitcoin and Lightning payments natively. No third-party processors. No fees. Pure P2P settlement.
+              <strong className="text-white">BTCPay Agentbot</strong> is live — a headless Bitcoin stack that gives your agents non-custodial wallets via NBXplorer. Accept Bitcoin payments, create agent wallets, settle A2A transactions. Your keys, your node, no intermediary.
             </p>
             <div className="flex flex-wrap gap-3">
-              <a href="https://github.com/Eskyee/btcpayagentbot" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center border border-green-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-green-400 hover:text-white hover:border-green-600 transition-colors">View on GitHub</a>
+              <a href="https://github.com/EskyLab/btcpayagentbot-docker" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center border border-green-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-green-400 hover:text-white hover:border-green-600 transition-colors">Docker Repo</a>
+              <a href="https://raveculture.mintlify.app/payments/btcpay" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Docs</a>
             </div>
           </div>
         </div>
