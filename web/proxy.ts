@@ -7,13 +7,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LEGACY_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME } from '@/app/lib/session';
 
+const NEXTAUTH_SESSION_COOKIE_NAMES = [
+  'next-auth.session-token',
+  '__Secure-next-auth.session-token',
+] as const;
+
 export async function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    const sessionToken =
+    const hasCustomSessionCookie =
       request.cookies.get(SESSION_COOKIE_NAME)?.value ||
       request.cookies.get(LEGACY_SESSION_COOKIE_NAME)?.value;
+    const hasNextAuthSessionCookie = NEXTAUTH_SESSION_COOKIE_NAMES.some(
+      (name) => !!request.cookies.get(name)?.value
+    )
 
-    if (!sessionToken) {
+    if (!hasCustomSessionCookie && !hasNextAuthSessionCookie) {
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('callbackUrl', request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);

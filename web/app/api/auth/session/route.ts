@@ -1,21 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/app/lib/prisma';
-import { getSessionTokenFromCookies } from '@/app/lib/session';
+import { NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession';
 
-export async function GET(req: NextRequest) {
-  const sessionToken = getSessionTokenFromCookies(req.cookies);
-  
-  if (!sessionToken) {
-    return NextResponse.json({ user: null });
-  }
-
+export async function GET() {
   try {
-    const session = await prisma.session.findUnique({
-      where: { sessionToken },
-      include: { user: true },
-    });
-
-    if (!session || session.expires < new Date()) {
+    const session = await getAuthSession()
+    if (!session?.user) {
       return NextResponse.json({ user: null });
     }
 
@@ -24,11 +13,7 @@ export async function GET(req: NextRequest) {
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
-        isAdmin: (() => {
-          const adminEmails = (process.env.ADMIN_EMAILS || '')
-            .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-          return adminEmails.includes((session.user.email || '').toLowerCase());
-        })(),
+        isAdmin: session.user.isAdmin,
       },
     });
   } catch (error) {
