@@ -140,6 +140,31 @@ export default function ViewDocsPage() {
           Everything you need to deploy, operate, and grow your AI agents.
         </p>
 
+        <div className="border border-zinc-800 bg-zinc-950 p-5 mb-10">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Full Docs Site</span>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-zinc-400 max-w-2xl">
+              Need the full documentation experience? Open the dedicated docs site for guides, reference pages, and developer docs at{' '}
+              <a
+                href="https://docs.agentbot.raveculture.xyz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white underline hover:text-zinc-300"
+              >
+                docs.agentbot.raveculture.xyz
+              </a>.
+            </p>
+            <a
+              href="https://docs.agentbot.raveculture.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 transition-colors"
+            >
+              Open developer docs
+            </a>
+          </div>
+        </div>
+
         <div className="mb-10">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-6">What&apos;s New</span>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -236,6 +261,9 @@ export default function ViewDocsPage() {
             <Link href="/blog" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500">
               Blog
             </Link>
+            <a href="https://docs.agentbot.raveculture.xyz" target="_blank" rel="noopener noreferrer" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:text-white hover:border-zinc-500">
+              Dev Docs
+            </a>
             <Link href="/token" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-blue-400 hover:text-white hover:border-zinc-500">
               $AGENTBOT
             </Link>
