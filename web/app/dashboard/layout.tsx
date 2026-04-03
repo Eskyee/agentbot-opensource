@@ -6,10 +6,13 @@
 
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { TrialBanner } from '@/app/components/TrialBanner'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { SidebarContext } from './sidebar-context'
+
+const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'))
 
 export default function DashboardLayout({
   children,
@@ -22,10 +25,11 @@ export default function DashboardLayout({
 
   // Skip layout for main dashboard page (it has its own sidebar)
   if (pathname === '/dashboard') {
-    return <>{children}</>
+    return <WalletProvider>{children}</WalletProvider>
   }
 
   return (
+    <WalletProvider>
     <SidebarContext.Provider value={{ isOpen: sidebarOpen, toggle: () => setSidebarOpen(!sidebarOpen) }}>
       <div className="flex min-h-screen bg-black font-mono">
         <DashboardSidebar
@@ -43,5 +47,6 @@ export default function DashboardLayout({
         </div>
       </div>
     </SidebarContext.Provider>
+    </WalletProvider>
   )
 }

@@ -1,5 +1,8 @@
 import React from 'react';
+import dynamic from 'next/dynamic';
 import DigitalWristband from '@/app/components/DigitalWristband';
+
+const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'))
 
 /**
  * baseFM / RaveCulture — Wristband Page
@@ -41,7 +44,7 @@ export default function WristbandPage() {
 
           {/* Implementation Module */}
           <div className="flex-1 w-full max-w-md">
-            <DigitalWristband />
+            <WalletProvider><DigitalWristband /></WalletProvider>
           </div>
         </div>
 
