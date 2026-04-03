@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.',
 }
 
-export const templates = [
+const templates = [
   {
     name: 'the-strategist',
     role: 'Mission Planning Agent',

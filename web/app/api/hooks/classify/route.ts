@@ -133,6 +133,3 @@ export async function POST(req: NextRequest) {
     requestId,
   })
 }
-
-// Export pending requests for /api/permissions to access
-export { pendingRequests }

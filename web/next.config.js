@@ -1,8 +1,11 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
   async redirects() {
     return [

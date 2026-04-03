@@ -11,35 +11,13 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { authOptions } from '@/app/lib/auth';
 import { prisma } from '@/app/lib/prisma';
 import { encryptToken, decryptToken } from '@/app/lib/token-encryption';
-import crypto from 'crypto';
+import { signOAuthState } from './oauth-state';
 
 export const dynamic = 'force-dynamic';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://agentbot.raveculture.xyz/api/calendar/callback';
-const OAUTH_STATE_SECRET = process.env.CALENDAR_OAUTH_SECRET || process.env.NEXTAUTH_SECRET || 'calendar-state-fallback';
-
-// --- Helpers ---
-
-function signOAuthState(userId: string): string {
-  const payload = Buffer.from(JSON.stringify({ userId, ts: Date.now() })).toString('base64url');
-  const sig = crypto.createHmac('sha256', OAUTH_STATE_SECRET).update(payload).digest('base64url');
-  return `${payload}.${sig}`;
-}
-
-export function verifyOAuthState(state: string): { userId: string; ts: number } | null {
-  try {
-    const [payload, sig] = state.split('.');
-    const expected = crypto.createHmac('sha256', OAUTH_STATE_SECRET).update(payload).digest('base64url');
-    if (sig !== expected) return null;
-    const data = JSON.parse(Buffer.from(payload, 'base64url').toString());
-    if (Date.now() - data.ts > 10 * 60 * 1000) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
 
 // Token storage — Prisma + encryption
 
@@ -63,7 +41,7 @@ async function saveTokens(userId: string, accessToken: string, refreshToken: str
   })
 }
 
-export async function getTokens(userId: string): Promise<{ accessToken: string; refreshToken: string; calendarId: string; timezone: string } | null> {
+async function getTokens(userId: string): Promise<{ accessToken: string; refreshToken: string; calendarId: string; timezone: string } | null> {
   const record = await prisma.calendarToken.findUnique({
     where: { userId },
   })

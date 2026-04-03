@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node_modules/.bin/prisma generate && next build",
-    "start": "next start",
+    "build": "node_modules/.bin/prisma generate && next build --webpack",
+    "start": "node .next/standalone/server.js",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 100",
     "test": "playwright test",
     "test:ui": "playwright test --ui",

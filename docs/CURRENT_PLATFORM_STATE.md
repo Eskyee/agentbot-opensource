@@ -1,6 +1,6 @@
 # Current Platform State
 
-Last verified: 2026-04-02
+Last verified: 2026-04-03
 
 This file is the current operational reference for platform ownership, deployment targets, and verification status. When other docs disagree, treat this file as the source of truth until they are updated.
 
@@ -22,6 +22,7 @@ This file is the current operational reference for platform ownership, deploymen
   - Project: `x402-gw-v2`
   - Service: `tempo-x402+Borg`
   - App URL: `https://tempo-x402-production.up.railway.app`
+  - Dashboard URL: `https://borg-0-production.up.railway.app/dashboard`
   - Health URL: `https://tempo-x402-production.up.railway.app/health`
 - x402 gateway:
   - Platform: Railway
@@ -48,6 +49,14 @@ This file is the current operational reference for platform ownership, deploymen
 - Borg soul health responded `HTTP 200` on 2026-04-02 after recovery.
 - x402 gateway health responded `HTTP 200` on 2026-04-02.
 - OpenClaw shared UI health responded `HTTP 200` on 2026-04-02.
+
+## Dashboard Status Notes (2026-04-03)
+
+- Fleet dashboard data is sourced from `/api/mission-control/fleet/graph`.
+- Colony dashboard data is sourced from `/api/colony/status?action=tree`.
+- The displayed Borg dashboard link should be `https://borg-0-production.up.railway.app/dashboard`.
+- The soul service feed URL may differ from the displayed Borg dashboard URL; do not infer the dashboard link by appending `/dashboard` to the service feed.
+- Local production build for `web/` was verified with `npm run build` on 2026-04-03 after removing invalid Next.js 16 route/page exports and switching the build to webpack.
 
 ## Deployment Rules
 

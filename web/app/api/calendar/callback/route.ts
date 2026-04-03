@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyOAuthState } from '../route'
+import { verifyOAuthState } from '../oauth-state'
 import { prisma } from '@/app/lib/prisma'
 import { encryptToken } from '@/app/lib/token-encryption'
 

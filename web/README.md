@@ -78,6 +78,18 @@ make logs      # Tail logs
 make health    # Check service status
 ```
 
+### Production runtime
+
+This app builds with Next.js `output: 'standalone'`.
+
+```bash
+cd web
+npm run build
+PORT=3000 npm run start
+```
+
+Do not use `next start` directly for production runs of this workspace.
+
 ---
 
 ## Environment Variables
