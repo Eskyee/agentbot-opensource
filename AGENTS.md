@@ -1,20 +1,20 @@
-# AGENTS.md — Developer Guide
+# AGENTS.md — Agentbot Review Guide
 
-This file provides setup and development instructions for working on the Agentbot codebase. It is also used by AI coding assistants (Claude Code, Cursor, etc.) for context.
+This file is the primary review context for AI coding agents, including Vercel Agent Code Review.
+Use it to understand project-specific conventions, production constraints, and common failure modes.
 
 ## Project Structure
 
 ```
 agentbot/
-├── web/                    # Next.js frontend application
-│   ├── app/               # App router pages
-│   ├── components/        # React components
-│   ├── lib/              # Utilities and helpers
-│   └── prisma/            # Database schema
-├── agentbot-backend/      # Express.js backend API
-│   └── src/              # TypeScript source
-├── skills/               # Claude Code skills
-└── mintlify-docs/        # Documentation site
+├── web/                     # Next.js frontend and API routes
+│   ├── app/                 # App Router pages and route handlers
+│   ├── components/          # React components
+│   ├── lib/                 # Shared utilities and helpers
+│   └── prisma/              # Prisma schema and client generation
+├── agentbot-backend/        # Express/TypeScript backend API
+├── docs/                    # Internal state and platform notes
+└── mintlify-docs/           # Public documentation site
 ```
 
 ## Development Commands
@@ -53,6 +53,14 @@ npm run test
 npm run build
 ```
 
+## Runtime Baseline
+
+- `web` uses Next.js 16 and builds with `next build --webpack`
+- Production runtime for `web` is `node .next/standalone/server.js`
+- `web` is deployed on Vercel
+- Some public pages are intentionally `force-dynamic` because they render live platform counts from Prisma
+- Do not reintroduce Turbopack-only assumptions without verifying Vercel build output
+
 ## Environment Setup
 
 Copy `.env.example` to `.env` and configure:
@@ -85,10 +93,11 @@ cd web && npx prisma migrate dev
 
 ## Code Style
 
-- Use ESLint and Prettier
-- Follow existing component patterns in `web/components/`
-- Use TypeScript strictly
-- Zod for validation, Prisma for ORM
+- Prefer TypeScript-first route handlers and server components
+- Keep edits aligned with existing patterns in `web/app/` and `web/components/`
+- Use Zod for validation and Prisma for ORM-backed state
+- Avoid mock data in production routes when real Prisma-backed data exists
+- Prefer server-rendered real metrics over client-only placeholders for public dashboards
 
 ## Key Integrations
 
@@ -98,6 +107,41 @@ cd web && npx prisma migrate dev
 - **Blockchain:** Wagmi/Viem for Base network
 - **AI:** OpenAI, Anthropic via AI SDK
 - **Streaming:** Mux for live video
+
+## Review Priorities
+
+Focus review comments on:
+
+1. Security regressions in auth, webhook verification, bearer-token gates, SSRF protections, or secret handling
+2. Provisioning and agent lifecycle drift between Vercel `web`, Prisma state, and `agentbot-backend`
+3. Public page data integrity — especially stats shown on `/marketplace`, `/demo`, `/dashboard/fleet`, and `/dashboard/colony`
+4. Runtime regressions that break Vercel build/start behavior
+5. Incorrect fallback behavior that hides production failures behind fake success states
+
+## Known Production Constraints
+
+- `web/app/api/provision/route.ts` is a legacy-heavy provisioning path and may succeed without creating a Prisma `Agent` row
+- Public platform stats should distinguish between:
+  - deployed agents: total Prisma `Agent` rows
+  - live agents: agents with status `active` or `running`
+- `User.openclawUrl` is not a substitute for an `Agent` record
+- `/api/deployments` is partially compatibility-oriented and should not become the source of truth for platform metrics
+- Build warnings should be treated seriously when they affect Vercel output, but warning-only noise is secondary to runtime correctness
+
+## Testing Expectations
+
+- For `web`, validate with `npm run build` before merging meaningful changes
+- For route handler changes, prefer verifying the exact affected endpoint or page path
+- For provisioning or dashboard work, confirm both:
+  - the data contract returned by the route
+  - the page that consumes it
+
+## Avoid
+
+- Replacing real counts with hardcoded marketing numbers
+- Reporting auth-protected stats as if they are public platform totals
+- Assuming `active` is the only valid “live” state without checking the current write paths
+- Counting success based only on a passing local render when the Vercel build/runtime contract changed
 
 ## Common Tasks
 
