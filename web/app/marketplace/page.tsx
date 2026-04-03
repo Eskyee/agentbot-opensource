@@ -1,10 +1,13 @@
 import Link from 'next/link'
 import { MarketplaceClient } from '@/app/components/MarketplaceClient'
+import { formatPublicCount, getPublicPlatformStats } from '@/app/lib/public-platform-stats'
 
 export const metadata = {
   title: 'Marketplace — Agentbot',
   description: 'Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.',
 }
+
+export const dynamic = 'force-dynamic'
 
 const templates = [
   {
@@ -45,7 +48,9 @@ const templates = [
   }
 ]
 
-export default function MarketplacePage() {
+export default async function MarketplacePage() {
+  const stats = await getPublicPlatformStats(templates.length)
+
   return (
     <main className="min-h-screen bg-black text-white font-mono">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
@@ -58,6 +63,29 @@ export default function MarketplacePage() {
             Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.
           </p>
         </div>
+
+        <section className="mb-10 sm:mb-12 grid gap-3 grid-cols-2 lg:grid-cols-4">
+          <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Verified Templates</div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.templates)}</div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Ready to deploy</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Live Agents</div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.liveAgents)}</div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Active in fleet</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Showcase Ready</div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.showcaseAgents)}</div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Public signal</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Skills Installed</div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.installedSkills)}</div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Across deployments</div>
+          </div>
+        </section>
 
         <MarketplaceClient templates={templates} />
 
