@@ -247,42 +247,46 @@ function OnboardContent() {
   return (
     <div className="mx-auto max-w-2xl">
       {/* Mode Selector */}
-      {step === 'telegram' && (
-        <div className="mb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-zinc-900 p-2 rounded-xl border border-zinc-800">
+      <div className="mb-8">
+        <div className="mb-3 text-[10px] uppercase tracking-widest text-zinc-600">Choose your path</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              id: 'deploy',
+              title: 'Deploy OpenClaw',
+              desc: 'Launch a managed runtime fast',
+            },
+            {
+              id: 'create',
+              title: 'Custom Agent',
+              desc: 'Build your own agent from scratch',
+            },
+            {
+              id: 'link',
+              title: 'Link Existing',
+              desc: 'Connect an OpenClaw instance you already run',
+            },
+          ].map((option) => (
             <button
-              onClick={() => window.location.href = `/onboard?mode=deploy&plan=${plan}`}
-              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-                mode === 'deploy'
-                  ? 'bg-white text-black'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+              key={option.id}
+              onClick={() => window.location.href = `/onboard?mode=${option.id}&plan=${plan}`}
+              className={`rounded-xl border p-4 text-left transition-colors ${
+                mode === option.id
+                  ? 'border-white bg-white text-black'
+                  : 'border-zinc-800 bg-zinc-900 text-white hover:border-zinc-700 hover:bg-zinc-950'
               }`}
             >
-              Deploy OpenClaw
+              <div className={`text-[10px] uppercase tracking-widest ${mode === option.id ? 'text-black/60' : 'text-zinc-500'}`}>
+                {option.id === 'deploy' ? 'Managed' : option.id === 'create' ? 'Builder' : 'Connect'}
+              </div>
+              <div className="mt-2 text-sm font-bold uppercase tracking-tight">{option.title}</div>
+              <div className={`mt-2 text-xs leading-relaxed ${mode === option.id ? 'text-black/70' : 'text-zinc-400'}`}>
+                {option.desc}
+              </div>
             </button>
-            <button
-              onClick={() => window.location.href = `/onboard?mode=create&plan=${plan}`}
-              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-                mode === 'create'
-                  ? 'bg-white text-black'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-              }`}
-            >
-              Custom Agent
-            </button>
-            <button
-              onClick={() => window.location.href = `/onboard?mode=link&plan=${plan}`}
-              className={`py-3 px-4 rounded-lg text-sm font-medium transition-colors ${
-                mode === 'link'
-                  ? 'bg-white text-black'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-              }`}
-            >
-              Link Existing
-            </button>
-          </div>
+          ))}
         </div>
-      )}
+      </div>
 
       {/* Header */}
       <div className="mb-12">
