@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 
 interface ServiceStatus {
@@ -37,7 +36,6 @@ export default function SupportPlaybook() {
   }[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [walletLoading, setWalletLoading] = useState(false)
 
   const fetchDiagnostics = useCallback(() => {
@@ -77,8 +75,6 @@ export default function SupportPlaybook() {
     }
   }, [status, fetchDiagnostics])
 
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'User'
-
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center h-screen bg-black font-mono">
@@ -88,9 +84,7 @@ export default function SupportPlaybook() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black">
-      <DashboardSidebar userName={userName} plan="solo" isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <div className="flex-1 px-6 py-8">
+      <div className="px-6 py-8">
         <Breadcrumbs />
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -206,6 +200,5 @@ export default function SupportPlaybook() {
           </div>
         </section>
       </div>
-    </div>
   )
 }
