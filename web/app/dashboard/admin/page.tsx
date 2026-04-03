@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { Breadcrumbs } from '@/app/components/Breadcrumbs'
 import { isAdminEmail } from '@/app/lib/admin'
 
@@ -44,8 +43,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'User'
-
   useEffect(() => {
     if (!session?.user?.email || !isAdminEmail(session.user.email)) {
       setError('Admin access required')
@@ -74,10 +71,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-black">
-      <DashboardSidebar userName={userName} plan="solo" isOpen={false} onToggle={() => {}} />
-
-      <div className="flex-1 px-6 py-8">
+      <div className="px-6 py-8">
         <Breadcrumbs />
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -175,6 +169,5 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
-    </div>
   )
 }
