@@ -5,7 +5,7 @@ import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 export const dynamic = 'force-dynamic'
 
-const KNOWN_GOOD_IMAGE = 'ghcr.io/openclaw/openclaw:2026.3.28'
+const KNOWN_GOOD_IMAGE = 'ghcr.io/openclaw/openclaw:2026.4.2'
 
 async function getOpenClawInfo(userId: string) {
   const user = await prisma.user.findUnique({
