@@ -95,3 +95,6 @@ skills-lock.json
 .env.local
 web/.env.local
 agentbot-backend/.env.local
+
+# Local standalone repos
+btcpay-configurator/
