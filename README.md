@@ -2,6 +2,8 @@
 
 **This repo is private production code.**
 
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeibstpvk6pqo23ks3vork3yzr6ns5mdeltkv5snrkpgxn3j6pkgoau" alt="Agentbot" width="900" />
+
 ## 🌟 Open Source Version
 
 Go to: **[github.com/Eskyee/agentbot-opensource](https://github.com/Eskyee/agentbot-opensource)**
