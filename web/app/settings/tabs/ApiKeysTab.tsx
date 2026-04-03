@@ -9,6 +9,7 @@ interface ApiKeysTabProps {
 
 export function ApiKeysTab({ agents }: ApiKeysTabProps) {
   const [apiKeys, setApiKeys] = useState<{ id: string; name: string; key: string; created: string }[]>([])
+  const hasLiveAgent = agents.length > 0
 
   const createApiKey = async () => {
     const name = prompt('Enter a name for this API key:')
@@ -34,7 +35,7 @@ export function ApiKeysTab({ agents }: ApiKeysTabProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <h2 className="text-base sm:text-xl font-semibold">API Keys</h2>
-        {agents.length > 0 && (
+        {hasLiveAgent && (
           <button
             onClick={createApiKey}
             className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
@@ -44,18 +45,18 @@ export function ApiKeysTab({ agents }: ApiKeysTabProps) {
         )}
       </div>
 
-      {agents.length === 0 ? (
+      {!hasLiveAgent ? (
         <div className="border border-zinc-800 bg-zinc-900/50 p-8 sm:p-12 text-left">
-          <div className="text-4xl mb-4">🤖</div>
-          <h3 className="text-base sm:text-lg font-medium mb-2">No Agents Deployed</h3>
+          <div className="text-4xl mb-4">🔑</div>
+          <h3 className="text-base sm:text-lg font-medium mb-2">No Managed Runtime Found</h3>
           <p className="text-zinc-400 text-sm mb-6">
-            API keys are only available once you have a live agent. Deploy your first agent from the marketplace to get started.
+            API keys unlock advanced runtime integrations. Once your managed OpenClaw runtime is provisioned, you can create and rotate keys here.
           </p>
           <Link
-            href="/marketplace"
+            href="/dashboard"
             className="inline-block bg-white text-black px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
           >
-            Go to Marketplace
+            Open Dashboard
           </Link>
         </div>
       ) : (

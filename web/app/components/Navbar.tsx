@@ -55,19 +55,23 @@ export default function Navbar() {
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="https://borg-0-production.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
+              <NavLink href="/news" current={pathname}>News</NavLink>
+              <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
-              <NavLink href="https://docs.agentbot.raveculture.xyz" current={pathname}>Docs</NavLink>
+              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
             </>
           ) : (
             <>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
               <NavLink href="/why" current={pathname}>Why</NavLink>
               <NavLink href="https://borg-0-production.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
+              <NavLink href="/news" current={pathname}>News</NavLink>
+              <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
               <NavLink href="/demo" current={pathname}>Demo</NavLink>
-              <NavLink href="https://docs.agentbot.raveculture.xyz" current={pathname}>Docs</NavLink>
+              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
             </>
           )}
         </div>
@@ -122,9 +126,11 @@ export default function Navbar() {
                 <MobileSection label="Navigate">
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                   <MobileLink href="https://borg-0-production.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
+                  <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
+                  <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="https://docs.agentbot.raveculture.xyz" onClick={closeMenu}>Docs</MobileLink>
+                  <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 </MobileSection>
                 <MobileSection label="Account">
                   {displayName && <div className="text-[10px] text-zinc-600 px-3 py-2 uppercase tracking-widest">{displayName}</div>}
