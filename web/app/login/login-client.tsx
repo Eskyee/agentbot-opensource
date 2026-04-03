@@ -22,6 +22,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [passkeyError, setPasskeyError] = useState("");
+  const [csrfHeader, setCsrfHeader] = useState<string | null>(null);
 
   useEffect(() => {
     if (error) {
@@ -43,15 +44,47 @@ function LoginForm() {
     }
   }, [session, status, router])
 
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadCsrf() {
+      try {
+        const res = await fetch('/api/auth/csrf', { cache: 'no-store' })
+        const data = await res.json()
+        if (!cancelled && data?.header) {
+          setCsrfHeader(data.header)
+        }
+      } catch {
+        if (!cancelled) {
+          setCsrfHeader(null)
+        }
+      }
+    }
+
+    loadCsrf()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setLoginError("");
+
+    if (!csrfHeader) {
+      setLoading(false);
+      setLoginError("Security token unavailable. Refresh and try again.");
+      return;
+    }
     
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': csrfHeader,
+        },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();

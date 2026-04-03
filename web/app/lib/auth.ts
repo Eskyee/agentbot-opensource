@@ -8,6 +8,7 @@ import { prisma } from "@/app/lib/prisma";
 import { SiweMessage } from "siwe";
 import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
+import { consumeWalletNonce } from "@/app/lib/wallet-nonce";
 
 const coinbaseRpcUrl = process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY
   ? `https://api.developer.coinbase.com/rpc/v1/base/${process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY}`
@@ -101,6 +102,12 @@ providers.push(
         const nonceMatch = message.match(/Nonce: (\S+)/);
         if (!nonceMatch) {
           console.log(`[Auth] No nonce in message`);
+          return null;
+        }
+
+        const nonceOk = await consumeWalletNonce(nonceMatch[1]);
+        if (!nonceOk) {
+          console.log(`[Auth] Nonce invalid or already used`);
           return null;
         }
 

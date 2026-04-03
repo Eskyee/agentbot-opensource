@@ -4,6 +4,7 @@ import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import crypto from 'crypto';
 import { attachSessionCookie } from '@/app/lib/session';
+import { consumeWalletNonce } from '@/app/lib/wallet-nonce';
 
 const viemClient = createPublicClient({ chain: base, transport: http() });
 
@@ -29,6 +30,24 @@ export async function POST(req: NextRequest) {
 
     if (!valid) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
+
+    const nonceMatch = typeof message === 'string' ? message.match(/Nonce: (\S+)/) : null
+    const messageAddressMatch = typeof message === 'string'
+      ? message.match(/Wallet: (0x[a-fA-F0-9]{40})/)
+      : null
+
+    if (!nonceMatch) {
+      return NextResponse.json({ error: 'Missing nonce in signed message' }, { status: 400 });
+    }
+
+    if (messageAddressMatch && messageAddressMatch[1].toLowerCase() !== address.toLowerCase()) {
+      return NextResponse.json({ error: 'Signed wallet address mismatch' }, { status: 401 });
+    }
+
+    const nonceOk = await consumeWalletNonce(nonceMatch[1])
+    if (!nonceOk) {
+      return NextResponse.json({ error: 'Invalid or expired nonce' }, { status: 401 });
     }
 
     // Find or create user
