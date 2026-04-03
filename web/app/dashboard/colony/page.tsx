@@ -29,6 +29,9 @@ interface ColonyData {
   fittest: ColonyAgent;
   cull_queue: number;
   agents: ColonyAgent[];
+  degraded?: boolean;
+  error?: string;
+  detail?: string;
   root: {
     address: string;
     designation: string | null;
@@ -195,6 +198,7 @@ export default function ColonyPage() {
   }, []);
 
   const dashboardUrl = data?.root.dashboardUrl || 'https://borg-0-production.up.railway.app/dashboard';
+  const activeAgents = data?.agents.filter((agent) => agent.status === 'active').length ?? 0
 
   useEffect(() => {
     fetchColony();
@@ -294,7 +298,7 @@ export default function ColonyPage() {
               <div className="bg-zinc-950 border border-zinc-800 p-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Colony Size</div>
                 <div className="text-2xl font-bold tracking-tight">{data.colony_size}</div>
-                <div className="text-[10px] text-zinc-600">{data.agents.reduce((sum, a) => sum + a.children, 0)} total clones</div>
+                <div className="text-[10px] text-zinc-600">{activeAgents} agents active</div>
               </div>
               <div className="bg-zinc-950 border border-zinc-800 p-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Avg Fitness</div>
@@ -316,14 +320,22 @@ export default function ColonyPage() {
             {/* Wallet */}
             {data.root.wallet_balance && (
               <div className="inline-block border border-zinc-800 bg-zinc-950 p-3 mb-6">
-                <span className="text-[10px] font-mono text-zinc-600 mr-2 uppercase tracking-widest">Soul Wallet</span>
+                <span className="text-[10px] font-mono text-zinc-600 mr-2 uppercase tracking-widest">
+                  {data.root.designation || 'Borg Soul'}
+                </span>
                 <span className="text-sm font-mono text-white">{data.root.wallet_balance.formatted}</span>
                 <span className="text-[10px] font-mono text-zinc-400 ml-1">{data.root.wallet_balance.token}</span>
               </div>
             )}
             {data.root.serviceUrl && (
-              <div className="mb-6 text-[10px] font-mono text-zinc-500">
-                Source: <a href={data.root.serviceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{data.root.serviceUrl}</a>
+              <div className="mb-6 flex flex-wrap items-center gap-3 text-[10px] font-mono">
+                <span className={data.degraded ? 'text-yellow-500' : 'text-emerald-400'}>
+                  {data.degraded ? 'DEGRADED FEED' : 'LIVE FEED'}
+                </span>
+                <span className="text-zinc-500">
+                  Source: <a href={data.root.serviceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{data.root.serviceUrl}</a>
+                </span>
+                {data.detail ? <span className="text-zinc-600">{data.detail}</span> : null}
               </div>
             )}
 

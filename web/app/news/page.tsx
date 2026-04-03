@@ -54,7 +54,7 @@ const communityUpdates = [
     date: '13 March 2026',
     title: 'New Discord Members Hit 10K',
     excerpt: 'The Claw community is exploding. London chapter launching soon.',
-    url: 'https://discord.gg/openclaw',
+    url: 'https://discord.gg/vTPG4vdV6D',
     type: 'community',
   },
   {
@@ -279,7 +279,7 @@ export default function NewsPage() {
           </p>
           <div className="flex gap-px">
             <a
-              href="https://discord.gg/openclaw"
+              href="https://discord.gg/vTPG4vdV6D"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-white text-black px-6 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"

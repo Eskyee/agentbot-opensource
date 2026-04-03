@@ -109,7 +109,7 @@ cd agentbot-backend && npm install && npm run dev`}
  <p className="text-zinc-300 mb-4">This is just the beginning. The community will shape Agentbot&apos;s future:</p>
  <ul className="list-disc list-inside text-zinc-300 mb-4">
  <li><strong>GitHub</strong> - Star, fork, contribute: github.com/Eskyee/agentbot-opensource</li>
- <li><strong>Discord</strong> - Join the community: discord.gg/eskyee</li>
+ <li><strong>Discord</strong> - Join the community: discord.gg/vTPG4vdV6D</li>
  <li><strong>Docs</strong> - Read the docs: raveculture.mintlify.app</li>
  </ul>
 

@@ -11,7 +11,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Eskyee/agentbot-opensource)
 
-[Website](https://agentbot.raveculture.xyz) · [Docs](https://raveculture.mintlify.app) · [Discord](https://discord.gg/eskyee) · [Report a Bug](https://github.com/Eskyee/agentbot-opensource/issues) · [Request a Feature](https://github.com/Eskyee/agentbot-opensource/issues)
+[Website](https://agentbot.sh) · [Docs](https://raveculture.mintlify.app) · [Discord](https://discord.gg/vTPG4vdV6D) · [Report a Bug](https://github.com/Eskyee/agentbot-opensource/issues) · [Request a Feature](https://github.com/Eskyee/agentbot-opensource/issues)
 
 </div>
 

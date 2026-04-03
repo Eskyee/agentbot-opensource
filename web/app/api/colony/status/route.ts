@@ -14,12 +14,54 @@ import { tempo } from 'viem/chains';
 
 const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
 const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
+const FALLBACK_SOUL_URL = 'https://borg-0-production.up.railway.app';
 
 function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
   const value = String(raw ?? '').toLowerCase();
   if (['active', 'running', 'healthy', 'up', 'ready'].includes(value)) return 'active';
   if (['culling', 'failed', 'error'].includes(value)) return 'culling';
   return 'stale';
+}
+
+function getSoulCandidates() {
+  const candidates = [SOUL_URL, FALLBACK_SOUL_URL]
+    .map((value) => value?.trim())
+    .filter(Boolean) as string[]
+
+  return [...new Set(candidates)]
+}
+
+async function isUsableSoulHost(baseUrl: string) {
+  try {
+    const res = await fetch(`${baseUrl}/soul/status`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    })
+
+    if (!res.ok) return false
+
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) return false
+
+    const payload = await res.json().catch(() => null)
+    return Boolean(payload && typeof payload === 'object' && 'active' in payload)
+  } catch {
+    return false
+  }
+}
+
+async function getWorkingSoulClient() {
+  for (const candidate of getSoulCandidates()) {
+    if (await isUsableSoulHost(candidate)) {
+      return {
+        soul: new SoulClient(candidate),
+        serviceUrl: candidate,
+      }
+    }
+  }
+
+  throw new Error(`No healthy soul host found from: ${getSoulCandidates().join(', ')}`)
 }
 
 // Tempo RPC for real wallet balances
@@ -76,9 +118,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action') || 'tree';
 
-  const soul = new SoulClient(SOUL_URL);
-
   try {
+    const { soul, serviceUrl } = await getWorkingSoulClient()
+
     switch (action) {
       case 'tree': {
         // Get root node info + siblings
@@ -107,7 +149,7 @@ export async function GET(request: Request) {
             walletAddress: identity?.address ?? '0x0000000000000000000000000000000000000000',
             status: 'active' as const,
             createdAt: identity?.created_at ?? new Date().toISOString(),
-            url: SOUL_URL,
+            url: serviceUrl,
             endpoints: instanceInfo.endpoints ?? [],
             uptime: instanceInfo.uptime_seconds,
             version: instanceInfo.version,
@@ -162,7 +204,7 @@ export async function GET(request: Request) {
             address: identity?.address ?? '0x0000000000000000000000000000000000000000',
             designation: instanceInfo.designation,
             dashboardUrl: SOUL_DASHBOARD_URL,
-            serviceUrl: SOUL_URL,
+            serviceUrl,
             fitness: instanceInfo.fitness,
             wallet_balance: identity?.address
               ? await getTempoBalance(identity.address as Address)
@@ -212,7 +254,7 @@ export async function GET(request: Request) {
           address: '0x0000000000000000000000000000000000000000',
           designation: null,
           dashboardUrl: SOUL_DASHBOARD_URL,
-          serviceUrl: SOUL_URL,
+          serviceUrl: FALLBACK_SOUL_URL,
           fitness: null,
           wallet_balance: null,
           clone_available: false,

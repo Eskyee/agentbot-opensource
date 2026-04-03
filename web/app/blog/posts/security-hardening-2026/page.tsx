@@ -279,7 +279,7 @@ export default function SecurityHardeningPost() {
  Questions? Check our{' '}
  <a href="https://docs.agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white">documentation</a>
  {' '}or reach out on{' '}
- <a href="https://discord.gg/clawd" className="text-zinc-400 hover:text-white">Discord</a>.
+ <a href="https://discord.gg/vTPG4vdV6D" className="text-zinc-400 hover:text-white">Discord</a>.
  </p>
  </div>
  </article>

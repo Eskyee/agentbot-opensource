@@ -171,7 +171,7 @@ export default function PlatformUpdateApril2026() {
           <div className="border-t border-zinc-800 pt-8 mt-8">
             <p className="text-zinc-500 text-sm">
               Questions or issues? Join the{' '}
-              <a href="https://discord.gg/eskyee" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              <a href="https://discord.gg/vTPG4vdV6D" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
                 Discord
               </a>{' '}
               or open an{' '}

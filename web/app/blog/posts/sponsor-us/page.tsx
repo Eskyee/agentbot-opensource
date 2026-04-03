@@ -130,7 +130,7 @@ github.com/sponsors/Eskyee
 dev@raveculture.xyz
 
 # Join our Discord
-discord.gg/eskyee`}
+discord.gg/vTPG4vdV6D`}
  </pre>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Thank You</h2>

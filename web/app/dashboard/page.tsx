@@ -628,7 +628,7 @@ function DashboardContent() {
                 <a href="/docs" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Documentation
                 </a>
-                <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                <a href="https://discord.gg/vTPG4vdV6D" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Discord
                 </a>
                 <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">

@@ -146,8 +146,8 @@ export default function ShowcaseTrialsLive() {
                 docs.agentbot.raveculture.xyz
               </a>{' '}
               · Discord:{' '}
-              <a href="https://discord.gg/eskyee" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
-                discord.gg/eskyee
+              <a href="https://discord.gg/vTPG4vdV6D" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+                discord.gg/vTPG4vdV6D
               </a>
             </p>
           </div>
