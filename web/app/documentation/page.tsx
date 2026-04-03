@@ -9,10 +9,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Agentbot Docs — Developer & Operator Guide',
     description: 'Everything you need to deploy, operate, and grow your AI agents. Plans from £29/mo, BYOK, 15+ supported models.',
-    url: buildAppUrl('/docs'),
+    url: buildAppUrl('/documentation'),
   },
   alternates: {
-    canonical: buildAppUrl('/docs'),
+    canonical: buildAppUrl('/documentation'),
   },
 }
 

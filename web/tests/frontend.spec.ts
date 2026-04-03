@@ -19,9 +19,9 @@ test.describe('Agentbot Frontend', () => {
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible();
   });
 
-  test('docs page loads', async ({ page }) => {
-    await page.goto('/docs');
-    await expect(page.getByRole('heading', { name: 'View Docs' })).toBeVisible();
+  test('documentation page loads', async ({ page }) => {
+    await page.goto('/documentation');
+    await expect(page.getByRole('heading', { name: 'Docs' })).toBeVisible();
   });
 
   test('blog page loads', async ({ page }) => {

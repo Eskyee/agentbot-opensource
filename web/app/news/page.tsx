@@ -22,7 +22,7 @@ const communityUpdates = [
     date: 'March 2026',
     title: 'x402 Payments Now Live',
     excerpt: 'Accept USDC on Base. Build paid APIs that agents can pay for automatically.',
-    url: '/docs',
+    url: '/documentation',
     type: 'feature',
   },
   {
@@ -62,7 +62,7 @@ const communityUpdates = [
     date: '13 March 2026',
     title: 'x402 Payments Now Live',
     excerpt: 'Accept USDC on Base. Build paid APIs that agents can pay for automatically.',
-    url: '/docs',
+    url: '/documentation',
     type: 'feature',
   },
   {

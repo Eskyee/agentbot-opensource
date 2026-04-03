@@ -80,7 +80,7 @@ function getWelcomeEmailHTML(name: string): string {
                 <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #999;">
                   Learn how to create custom agents, add skills, and integrate with crypto wallets.
                 </p>
-                <a href="${buildAppUrl('/docs')}" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
+                <a href="${buildAppUrl('/documentation')}" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
                   Read Docs →
                 </a>
               </div>
@@ -103,7 +103,7 @@ function getWelcomeEmailHTML(name: string): string {
               <h2 style="font-size: 20px; font-weight: 600; color: #fff; margin: 32px 0 16px;">Need Help?</h2>
 
               <p style="font-size: 14px; line-height: 1.6; color: #999; margin: 0 0 16px;">
-                • <a href="${buildAppUrl('/docs')}" style="color: #8b5cf6; text-decoration: none;">Documentation</a><br>
+                • <a href="${buildAppUrl('/documentation')}" style="color: #8b5cf6; text-decoration: none;">Documentation</a><br>
                 • <a href="${buildAppUrl('/blog')}" style="color: #8b5cf6; text-decoration: none;">Blog & Tutorials</a><br>
                 • Email: <a href="mailto:rbasefm@icloud.com" style="color: #8b5cf6; text-decoration: none;">rbasefm@icloud.com</a>
               </p>

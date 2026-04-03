@@ -45,7 +45,7 @@ const advancedGuides = [
   {
     title: 'x402 Payments',
     description: 'Accept USDC payments. Build paid APIs for agents.',
-    href: '/docs',
+    href: '/documentation',
     label: 'payments',
   },
   {
@@ -57,7 +57,7 @@ const advancedGuides = [
   {
     title: 'Production Deployment',
     description: 'Security, monitoring, scaling. Run agents at scale.',
-    href: '/docs',
+    href: '/documentation',
     label: 'infra',
   },
   {
