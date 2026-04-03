@@ -244,7 +244,7 @@ export default function KimiDropPost() {
 
  <p className="text-zinc-400 text-sm">
  Want to see the code? Check out our{' '}
- <a href="https://github.com/Eskyee/agentbot" className="text-zinc-400 hover:text-white">GitHub repo</a>
+ <a href="https://github.com/Eskyee/agentbot-opensource" className="text-zinc-400 hover:text-white">GitHub repo</a>
  {' '}or read the{' '}
  <Link href="/blog/posts/major-update-2026" className="text-zinc-400 hover:text-white">full feature announcement</Link>.
  </p>

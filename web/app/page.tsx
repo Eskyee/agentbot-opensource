@@ -30,7 +30,7 @@ export default async function Home() {
               Built for the Creative Industry
             </div>
             <a
-              href="https://github.com/Eskyee/agentbot"
+              href="https://github.com/Eskyee/agentbot-opensource"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white text-[10px] uppercase tracking-widest transition-colors"

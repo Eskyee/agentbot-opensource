@@ -151,7 +151,7 @@ export default function MajorUpdatePost() {
  Questions? Reach out to us on{' '}
  <a href="https://twitter.com/agentbot" className="text-zinc-400 hover:text-white">Twitter</a>
  {' '}or{' '}
- <a href="https://github.com/Eskyee/agentbot" className="text-zinc-400 hover:text-white">GitHub</a>.
+ <a href="https://github.com/Eskyee/agentbot-opensource" className="text-zinc-400 hover:text-white">GitHub</a>.
  </p>
  </div>
  </article>
