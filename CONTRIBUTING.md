@@ -21,15 +21,20 @@ Thank you for your interest in contributing. Here's everything you need to go fr
 ```bash
 git clone https://github.com/Eskyee/agentbot-opensource.git
 cd agentbot-opensource
+npm install
 ```
 
-### 2. Set up environment variables
+### 2. Or open in GitHub Codespaces
+
+Use the repository's checked-in devcontainer in [`.devcontainer/devcontainer.json`](./.devcontainer/devcontainer.json). The container installs dependencies automatically and forwards port `3000`.
+
+### 3. Set up environment variables
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Open `.env.local` and fill in at minimum:
+Open `.env` and fill in at minimum:
 
 | Variable | Where to get it |
 |----------|----------------|
@@ -43,22 +48,22 @@ Open `.env.local` and fill in at minimum:
 
 Everything else is optional for basic local development.
 
-### 3. Start infrastructure
+### 4. Start infrastructure
 
 ```bash
 docker-compose up -d   # starts postgres + redis
 ```
 
-### 4. Set up the database
+### 5. Set up the database
+
+Run the root Prisma commands:
 
 ```bash
-cd web
-npm install
-npx prisma generate
-npx prisma db push     # creates all tables
+npm run db:generate
+npm run db:push       # creates all tables
 ```
 
-### 5. Start the frontend
+### 6. Start the frontend
 
 ```bash
 npm run dev            # runs on http://localhost:3000
@@ -66,7 +71,7 @@ npm run dev            # runs on http://localhost:3000
 
 Visit `http://localhost:3000` — you should see the Agentbot dashboard.
 
-### 6. (Optional) Start the backend API
+### 7. (Optional) Start the backend API
 
 ```bash
 cd agentbot-backend
@@ -80,17 +85,12 @@ npm run dev            # runs on http://localhost:3001
 
 ```
 agentbot-opensource/
-├── web/                     # Next.js 15 frontend (main app)
-│   ├── app/
-│   │   ├── dashboard/       # Agent management UI
-│   │   ├── api/             # API routes
-│   │   └── components/      # UI components
-│   └── prisma/              # Schema + migrations
-├── src/                     # Reference backend (Express)
-│   └── server/
-│       ├── routes/          # API endpoints
-│       ├── services/        # Business logic
-│       └── lib/             # SSRF guard, permissions, container mgmt
+├── .devcontainer/           # GitHub Codespaces configuration
+├── src/                     # Frontend shared code + reference server
+│   ├── components/          # UI components
+│   ├── prisma/              # Schema
+│   └── server/              # Express routes and backend utilities
+├── agentbot-backend/        # Optional backend workspace
 └── docker-compose.yml       # Local postgres + redis
 ```
 
@@ -147,7 +147,7 @@ npm run lint        # currently mirrors CI and runs a strict TS no-emit check
 
 | Area | What to tackle |
 |------|---------------|
-| Skills | Build a new skill route in `web/app/api/skills/` |
+| Skills | Extend skill data flows in `src/prisma/schema.prisma` and the shared UI surfaces |
 | Channels | Add a new channel adapter (Slack, SMS, etc.) |
 | UI | Improve dashboard components |
 | Docs | Expand the docs site |

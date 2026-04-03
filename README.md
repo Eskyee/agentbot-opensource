@@ -56,12 +56,27 @@ Your agent. Your rules. Zero Human Company.
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Eskyee/agentbot-opensource?quickstart=1)
 
+### GitHub Codespaces
+
+1. Open the repository in Codespaces using the badge above.
+2. Wait for the devcontainer to finish `npm install`.
+3. Copy `.env.example` to `.env` and fill in the minimum required values.
+4. Start local services with `docker-compose up -d`.
+5. Run `npm run dev` for the frontend on port `3000`.
+
+Ports `3000` and `8080` are forwarded by the checked-in Codespaces config in [`.devcontainer/devcontainer.json`](./.devcontainer/devcontainer.json).
+
+### Local Setup
+
 ```bash
 git clone https://github.com/Eskyee/agentbot-opensource.git
 cd agentbot-opensource
 cp .env.example .env        # fill in your keys
+npm install
 docker-compose up -d        # postgres + redis
-npm install && npm run dev  # frontend on :3000
+npm run db:generate
+npm run db:push
+npm run dev                 # frontend on :3000
 ```
 
 Backend:
@@ -188,7 +203,7 @@ We welcome academic collaboration. If you're researching multi-agent systems, au
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14, React, Tailwind CSS |
+| Frontend | Next.js 15, React 19, Tailwind CSS |
 | Components | shadcn/ui — dark minimal |
 | Backend | Express.js, TypeScript |
 | Database | PostgreSQL + Prisma ORM |
@@ -204,19 +219,18 @@ We welcome academic collaboration. If you're researching multi-agent systems, au
 ## Project Structure
 
 ```
-├── web/                     # Next.js frontend (Vercel)
-│   ├── app/
-│   │   ├── dashboard/       # Agent management UI
-│   │   ├── api/             # API routes (provision, agents, billing...)
-│   │   └── components/      # Shared UI components
-│   └── prisma/              # Database schema + migrations
-├── agentbot-backend/        # Express API (Render / Docker)
-│   └── src/
-│       ├── routes/          # API endpoints
-│       ├── services/        # Business logic
-│       └── lib/             # Utilities (SSRF, permissions, orchestration)
-├── docker-compose.yml       # Local dev infrastructure
-└── render.yaml              # Render deployment config
+├── .devcontainer/           # GitHub Codespaces / devcontainer setup
+├── src/
+│   ├── components/          # Shared React UI and shadcn primitives
+│   ├── lib/                 # Client-side utilities
+│   ├── prisma/              # Prisma schema
+│   ├── server/              # Reference Express API and routes
+│   ├── styles/              # Global styles
+│   └── types/               # Shared TypeScript types
+├── agentbot-backend/        # Separate backend workspace for local API work
+├── docs/                    # Documentation source
+├── docker-compose.yml       # Local Postgres + Redis
+└── .env.example             # Environment template for local and Codespaces setup
 ```
 
 ---
