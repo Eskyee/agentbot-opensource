@@ -129,9 +129,8 @@ git checkout -b docs/your-improvement     # documentation
 ### Before opening a PR
 
 ```bash
-cd web
 npm run typecheck   # must pass with zero errors
-npm run lint        # must pass
+npm run lint        # currently mirrors CI and runs a strict TS no-emit check
 ```
 
 ### PR checklist
