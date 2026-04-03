@@ -6,6 +6,68 @@ import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provi
 import { isTrialActive } from '@/app/lib/trial-utils'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 
+function normalizeManagedAgentStatus(status?: string): string {
+  if (!status) return 'running'
+  if (status === 'active') return 'running'
+  return status
+}
+
+function getManagedAgentName(agentType?: string): string {
+  return agentType === 'business' ? 'OpenClaw Agent' : 'Agentbot Agent'
+}
+
+async function persistManagedAgent(params: {
+  userId: string
+  agentId: string
+  url?: string
+  aiProvider?: string
+  plan?: string
+  agentType?: string
+  status?: string
+}) {
+  const normalizedStatus = normalizeManagedAgentStatus(params.status)
+  const managedAgentUrl = params.url?.replace(/\/$/, '')
+  const payloadConfig = {
+    managed: true,
+    provisionSource: 'api/provision',
+    agentType: params.agentType || 'creative',
+    plan: params.plan || 'solo',
+    aiProvider: params.aiProvider || 'openrouter',
+    openclawUrl: managedAgentUrl || null,
+  }
+
+  await Promise.all([
+    prisma.user.update({
+      where: { id: params.userId },
+      data: {
+        openclawUrl: managedAgentUrl,
+        openclawInstanceId: params.agentId,
+      },
+    }),
+    prisma.agent.upsert({
+      where: { id: params.agentId },
+      update: {
+        name: getManagedAgentName(params.agentType),
+        model: params.aiProvider || 'openrouter',
+        status: normalizedStatus,
+        websocketUrl: managedAgentUrl,
+        tier: params.plan || 'solo',
+        config: payloadConfig,
+      },
+      create: {
+        id: params.agentId,
+        userId: params.userId,
+        name: getManagedAgentName(params.agentType),
+        model: params.aiProvider || 'openrouter',
+        status: normalizedStatus,
+        websocketUrl: managedAgentUrl,
+        tier: params.plan || 'solo',
+        config: payloadConfig,
+      },
+    }),
+  ])
+}
+
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
  *
@@ -182,14 +244,16 @@ export async function POST(request: NextRequest) {
             }).catch(() => {})
 
             if (data.url && userId && userId !== 'admin') {
-              prisma.user.update({
-                where: { id: userId },
-                data: {
-                  openclawUrl: data.url,
-                  openclawInstanceId: data.userId || agentId,
-                },
+              persistManagedAgent({
+                userId,
+                agentId: data.userId || agentId,
+                url: data.url,
+                aiProvider: legacyPayload.aiProvider,
+                plan: legacyPayload.plan,
+                agentType: legacyPayload.agentType,
+                status: 'running',
               }).catch((err: unknown) => {
-                console.error('[Provision] Failed to save openclawUrl:', err)
+                console.error('[Provision] Failed to persist managed agent:', err)
               })
             }
 
@@ -225,14 +289,16 @@ export async function POST(request: NextRequest) {
         }).catch(() => {})
 
         if (userId && userId !== 'admin') {
-          prisma.user.update({
-            where: { id: userId },
-            data: {
-              openclawUrl: result.url,
-              openclawInstanceId: result.agentId,
-            },
+          persistManagedAgent({
+            userId,
+            agentId: result.agentId,
+            url: result.url,
+            aiProvider: legacyPayload.aiProvider,
+            plan: legacyPayload.plan,
+            agentType: legacyPayload.agentType,
+            status: result.status,
           }).catch((err: unknown) => {
-            console.error('[Provision] Failed to save openclawUrl (Railway path):', err)
+            console.error('[Provision] Failed to persist managed agent (Railway path):', err)
           })
         }
 
