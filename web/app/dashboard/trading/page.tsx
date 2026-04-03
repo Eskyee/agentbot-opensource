@@ -243,6 +243,66 @@ export default function TradingPage() {
           <div className="grid gap-px bg-zinc-800 lg:grid-cols-3">
             {/* Portfolio + Quick Actions */}
             <div className="lg:col-span-2 space-y-px bg-zinc-800">
+              <div className="bg-zinc-950 border border-zinc-800 p-6">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Bankr Agent Profiles</div>
+                    <h2 className="text-sm font-bold tracking-tight uppercase">Public Profile And Project Feed</h2>
+                    <p className="text-[11px] text-zinc-500 mt-2 max-w-2xl leading-relaxed">
+                      Agent Profiles live at <span className="font-mono text-zinc-300">bankr.bot/agents</span>. They showcase your project, token, team, shipped products, fee revenue, and update feed. Creation and approval happen on Bankr today, not inside Agentbot.
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <CheckCircle className="h-5 w-5 text-blue-400" />
+                  </div>
+                </div>
+
+                <div className="grid gap-px bg-zinc-800 sm:grid-cols-3 mb-4">
+                  <div className="bg-zinc-950 p-4">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Step 1</div>
+                    <div className="text-xs font-bold uppercase tracking-tight">Save Your Bankr API Key</div>
+                    <div className="text-[11px] text-zinc-500 mt-2">Your key is now stored per-user and used for balances plus Bankr agent actions.</div>
+                  </div>
+                  <div className="bg-zinc-950 p-4">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Step 2</div>
+                    <div className="text-xs font-bold uppercase tracking-tight">Create Your Profile On Bankr</div>
+                    <div className="text-[11px] text-zinc-500 mt-2">Profiles are created via Bankr CLI, REST API, or your OpenClaw agent with the Bankr skill installed.</div>
+                  </div>
+                  <div className="bg-zinc-950 p-4">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Step 3</div>
+                    <div className="text-xs font-bold uppercase tracking-tight">Wait For Approval</div>
+                    <div className="text-[11px] text-zinc-500 mt-2">Public listing, market cap, and fee-revenue refresh happen after Bankr admin review.</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href="https://bankr.bot/api"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-zinc-700 hover:border-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors"
+                  >
+                    Open Bankr API
+                  </a>
+                  <a
+                    href="https://bankr.bot/agents"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-zinc-700 hover:border-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors"
+                  >
+                    Browse Profiles
+                  </a>
+                  <a
+                    href="https://github.com/BankrBot/skills/tree/main/bankr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border border-zinc-700 hover:border-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors"
+                  >
+                    Install Bankr Skill
+                  </a>
+                </div>
+              </div>
+
               {/* Portfolio */}
               <div className="bg-zinc-950 border border-zinc-800 p-6">
                 <div className="flex items-center justify-between mb-6">
