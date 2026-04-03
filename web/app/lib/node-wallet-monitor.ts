@@ -8,6 +8,8 @@ const RPC_URL = process.env.RPC_URL || (IS_TESTNET ? 'https://rpc.moderato.tempo
 const TOKEN_ADDRESS = '0x20c0000000000000000000000000000000000000'
 const TOKEN_DECIMALS = 6
 const THRESHOLD = Number(process.env.NODE_WALLET_THRESHOLD || '100')
+const OPERATOR_FEE_PAYER_KEY =
+  (process.env.TEMPO_FEE_PAYER_KEY || process.env.MPP_FEE_PAYER_KEY || '') as `0x${string}`
 
 function getConfiguredWallets(): Address[] {
   const configured = (process.env.TEMPO_NODE_WALLETS || '')
@@ -20,10 +22,9 @@ function getConfiguredWallets(): Address[] {
     process.env.TEMPO_TREASURY_WALLET?.trim(),
   ].filter(Boolean) as string[]
 
-  const feePayerKey = process.env.TEMPO_FEE_PAYER_KEY as `0x${string}` | undefined
-  if (feePayerKey) {
+  if (OPERATOR_FEE_PAYER_KEY) {
     try {
-      extraWallets.push(privateKeyToAccount(feePayerKey).address)
+      extraWallets.push(privateKeyToAccount(OPERATOR_FEE_PAYER_KEY).address)
     } catch {
       // ignore malformed private key
     }

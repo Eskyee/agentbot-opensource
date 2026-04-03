@@ -235,7 +235,7 @@ export default function SupportPlaybook() {
                 {walletLoading
                   ? 'Fetching wallet balances…'
                   : walletMeta && !walletMeta.configured
-                    ? 'No Tempo wallet configured yet. Set TEMPO_NODE_WALLETS or TEMPO_FEE_PAYER_KEY.'
+                    ? 'No Tempo wallet configured yet. Set TEMPO_NODE_WALLETS, TEMPO_FEE_PAYER_KEY, or MPP_FEE_PAYER_KEY.'
                     : 'No wallet data yet. Check balances to view statuses.'}
               </div>
             )}
