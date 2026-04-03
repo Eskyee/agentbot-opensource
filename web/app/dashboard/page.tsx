@@ -456,7 +456,7 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
-                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || '2026.3.24'}</dd>
+                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || '2026.4.2'}</dd>
                 </div>
                 <div>
                   <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>

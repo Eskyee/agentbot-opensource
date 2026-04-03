@@ -2,9 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { DEFAULT_SOUL_SERVICE_URL, DEFAULT_SOUL_DASHBOARD_URL } from '@/app/lib/openclaw-config'
 
-const SOUL_URLS = [
-  DEFAULT_SOUL_SERVICE_URL,
-]
+const FALLBACK_SOUL_URL = 'https://borg-0-production.up.railway.app'
 
 export const dynamic = 'force-dynamic';
 
@@ -16,11 +14,39 @@ function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
   return 'offline';
 }
 
+function getSoulCandidates() {
+  const candidates = [DEFAULT_SOUL_SERVICE_URL, FALLBACK_SOUL_URL]
+    .map((value) => value?.trim())
+    .filter(Boolean) as string[]
+
+  return [...new Set(candidates)]
+}
+
+async function isUsableSoulHost(baseUrl: string) {
+  try {
+    const res = await fetch(`${baseUrl}/soul/status`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    })
+
+    if (!res.ok) return false
+
+    const contentType = res.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) return false
+
+    const payload = await res.json().catch(() => null)
+    return Boolean(payload && typeof payload === 'object' && 'active' in payload)
+  } catch {
+    return false
+  }
+}
+
 async function fetchSoulNode(url: string) {
   try {
     const [infoRes, statusRes] = await Promise.all([
-      fetch(`${url}/instance/info`, { signal: AbortSignal.timeout(5000) }),
-      fetch(`${url}/soul/status`, { signal: AbortSignal.timeout(5000) }),
+      fetch(`${url}/instance/info`, { signal: AbortSignal.timeout(5000), cache: 'no-store' }),
+      fetch(`${url}/soul/status`, { signal: AbortSignal.timeout(5000), cache: 'no-store' }),
     ]);
     if (!infoRes.ok || !statusRes.ok) return null;
     const [info, status] = await Promise.all([infoRes.json(), statusRes.json()]);
@@ -28,6 +54,23 @@ async function fetchSoulNode(url: string) {
   } catch {
     return null;
   }
+}
+
+async function getWorkingSoulNode() {
+  for (const candidate of getSoulCandidates()) {
+    if (await isUsableSoulHost(candidate)) {
+      const node = await fetchSoulNode(candidate)
+      if (node) {
+        return {
+          node,
+          serviceUrl: candidate,
+          degraded: candidate !== DEFAULT_SOUL_SERVICE_URL,
+        }
+      }
+    }
+  }
+
+  throw new Error(`No healthy soul host found from: ${getSoulCandidates().join(', ')}`)
 }
 
 export async function GET() {
@@ -42,25 +85,32 @@ export async function GET() {
       edges: [],
       timestamp: new Date().toISOString(),
       source: 'unauthenticated',
-      stats: { totalAgents: 0, activeAgents: 0, idleAgents: 0, offlineAgents: 1 },
+      stats: { totalAgents: 1, activeAgents: 0, idleAgents: 0, offlineAgents: 1 },
       dashboardUrl: DEFAULT_SOUL_DASHBOARD_URL,
     })
   }
 
-  // Fetch all known soul nodes in parallel
-  const soulNodes = await Promise.all(SOUL_URLS.map(fetchSoulNode));
-  const live = soulNodes.filter(Boolean) as Array<{ url: string; info: any; status: any }>;
+  let live: Array<{ url: string; info: any; status: any }> = []
+  let serviceUrl = DEFAULT_SOUL_SERVICE_URL
+  let degraded = false
 
-  if (live.length === 0) {
-    // Fallback: no soul nodes reachable
+  try {
+    const result = await getWorkingSoulNode()
+    live = [result.node]
+    serviceUrl = result.serviceUrl
+    degraded = result.degraded
+  } catch (error: any) {
     return NextResponse.json({
       nodes: [
         { id: 'atlas', name: 'Atlas', role: 'orchestrator', status: 'offline', x: 400, y: 300, load: 0, memory: 0 },
       ],
       edges: [],
       timestamp: new Date().toISOString(),
-      source: 'fallback',
-      stats: { totalAgents: 0, activeAgents: 0, idleAgents: 0, offlineAgents: 1 },
+      source: 'degraded',
+      degraded: true,
+      detail: error?.message ?? 'Soul service unavailable',
+      stats: { totalAgents: 1, activeAgents: 0, idleAgents: 0, offlineAgents: 1 },
+      serviceUrl: FALLBACK_SOUL_URL,
       dashboardUrl: DEFAULT_SOUL_DASHBOARD_URL,
     });
   }
@@ -95,6 +145,8 @@ export async function GET() {
       children: info.children_count,
       endpoints: info.endpoints?.length ?? 0,
       cycles: status.total_cycles,
+      uptime: info.uptime_seconds,
+      version: info.version,
       regime: status.free_energy?.regime,
       freeEnergy: status.free_energy?.F,
       url,
@@ -110,9 +162,9 @@ export async function GET() {
         status: normalizeNodeStatus(child.status),
         x: isRoot ? 200 + (ci * 200) : 400,
         y: isRoot ? 450 : 300,
-        load: 30,
-        memory: 20,
-        fitness: 40,
+        load: 0,
+        memory: 0,
+        fitness: 0,
         walletAddress: child.address,
         url: child.url,
       });
@@ -166,9 +218,11 @@ export async function GET() {
     nodes,
     edges,
     timestamp: new Date().toISOString(),
-    source: 'soul',
+    source: degraded ? 'soul-fallback' : 'soul',
+    degraded,
     nodeCount: live.length,
     stats,
+    serviceUrl,
     dashboardUrl: DEFAULT_SOUL_DASHBOARD_URL,
   });
 }

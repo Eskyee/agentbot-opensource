@@ -39,7 +39,7 @@ export async function GET(
       uptime: 'active',
       messages: null,
       errors: null,
-      openclawVersion: '2026.3.28',
+      openclawVersion: '2026.4.2',
     })
   }
 

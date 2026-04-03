@@ -103,7 +103,7 @@ export default function MaintenancePage() {
 
   const factoryReset = async () => {
     if (resetting) return
-    if (!confirm('Factory reset your agent to the stable version (2026.3.28)? This will update the image, reconfigure env vars, and restart. Your data is safe — this only resets the OpenClaw version.')) return
+    if (!confirm('Factory reset your agent to the stable version (2026.4.2)? This will update the image, reconfigure env vars, and restart. Your data is safe — this only resets the OpenClaw version.')) return
     setResetting(true)
     setRestartMsg(null)
     try {
@@ -114,7 +114,7 @@ export default function MaintenancePage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setRestartMsg(`Factory reset complete — pinned to ${data.image || '2026.3.28'}. Agent restarting with doctor --fix.`)
+        setRestartMsg(`Factory reset complete — pinned to ${data.image || '2026.4.2'}. Agent restarting with doctor --fix.`)
         setTimeout(fetchHealth, 15000)
       } else {
         setRestartMsg(`Error: ${data.error || 'Factory reset failed'}`)
@@ -241,7 +241,7 @@ export default function MaintenancePage() {
                 <strong>Run Maintenance:</strong> Restarts agent, runs <span className="font-mono">openclaw doctor --fix</span> on startup.
               </p>
               <p className="text-[10px] text-zinc-600 mt-1">
-                <strong>Factory Reset:</strong> Pins OpenClaw to stable v2026.3.28, reconfigures env vars, restarts. Use if your agent broke after an update.
+                <strong>Factory Reset:</strong> Pins OpenClaw to stable v2026.4.2, reconfigures env vars, restarts. Use if your agent broke after an update.
               </p>
               {restartMsg && (
                 <div className={`mt-3 border p-3 text-[11px] ${restartMsg.startsWith('Error') ? 'border-red-800 text-red-400' : 'border-green-900 text-green-400'}`}>

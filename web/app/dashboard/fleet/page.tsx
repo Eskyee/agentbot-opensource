@@ -50,8 +50,12 @@ export default function FleetPage() {
   const selectedAgent = agents.find((a: any) => a.id === selectedAgentId);
   const totalAgents = graph?.stats?.totalAgents ?? agents.length;
   const activeAgents = graph?.stats?.activeAgents ?? agents.filter((a: any) => a.status === 'active').length;
-  const operationalStatus = activeAgents > 0 ? 'active' : graphLoading ? 'idle' : 'offline';
+  const idleAgents = graph?.stats?.idleAgents ?? agents.filter((a: any) => a.status === 'idle').length;
+  const operationalStatus = activeAgents > 0 ? 'active' : idleAgents > 0 || graphLoading ? 'idle' : 'offline';
   const dashboardUrl = graph?.dashboardUrl;
+  const serviceUrl = graph?.serviceUrl;
+  const graphDetail = graph?.detail;
+  const graphSourceLabel = graph?.degraded ? 'Fallback feed' : 'Live feed';
 
   const FleetIcon = () => (
     <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -104,6 +108,13 @@ export default function FleetPage() {
       <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Left: Constellation / Graph */}
         <div className="flex-1 min-w-0 relative bg-[#050505]">
+          {serviceUrl && (
+            <div className="absolute left-4 top-4 z-10 max-w-[420px] border border-zinc-800 bg-black/70 px-3 py-2 backdrop-blur">
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">{graphSourceLabel}</div>
+              <div className="mt-1 truncate text-[11px] font-mono text-zinc-300">{serviceUrl}</div>
+              {graphDetail && <div className="mt-1 text-[10px] text-amber-400">{graphDetail}</div>}
+            </div>
+          )}
           {graphLoading ? (
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="animate-pulse text-xs text-zinc-500 uppercase tracking-widest">Loading fleet...</div>
@@ -158,12 +169,20 @@ export default function FleetPage() {
               )}
               <div className="grid grid-cols-2 gap-px bg-zinc-800 text-[10px]">
                 <div className="bg-zinc-950 p-3">
-                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Health</div>
-                  <div className="text-green-400 font-bold">100%</div>
+                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Status</div>
+                  <div className="font-bold uppercase text-white">{selectedAgent.status ?? 'unknown'}</div>
                 </div>
                 <div className="bg-zinc-950 p-3">
-                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Latency</div>
-                  <div className="text-white font-bold">42ms</div>
+                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Fitness</div>
+                  <div className="font-bold text-white">{selectedAgent.fitness != null ? `${selectedAgent.fitness}%` : '—'}</div>
+                </div>
+                <div className="bg-zinc-950 p-3">
+                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Cycles</div>
+                  <div className="font-bold text-white">{selectedAgent.cycles ?? '—'}</div>
+                </div>
+                <div className="bg-zinc-950 p-3">
+                  <div className="text-zinc-600 uppercase tracking-widest mb-1">Endpoints</div>
+                  <div className="font-bold text-white">{selectedAgent.endpoints ?? '—'}</div>
                 </div>
               </div>
               <div className="mt-4">

@@ -1,20 +1,48 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
+import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config'
 
-const SOUL_URLS = [
-  DEFAULT_OPENCLAW_GATEWAY_URL,
-]
+const FALLBACK_SOUL_URL = 'https://borg-0-production.up.railway.app'
 
 export const dynamic = 'force-dynamic';
 
+function getSoulCandidates() {
+  const candidates = [DEFAULT_SOUL_SERVICE_URL, FALLBACK_SOUL_URL]
+    .map((value) => value?.trim())
+    .filter(Boolean) as string[]
+
+  return [...new Set(candidates)]
+}
+
+async function isUsableSoulHost(baseUrl: string) {
+  try {
+    const res = await fetch(`${baseUrl}/soul/status`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(4000),
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return false;
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return false;
+
+    const payload = await res.json().catch(() => null);
+    return Boolean(payload && typeof payload === 'object' && 'active' in payload);
+  } catch {
+    return false;
+  }
+}
+
 async function fetchSoulThoughts(url: string) {
   try {
-    const res = await fetch(`${url}/soul/status`, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return null;
-    const status = await res.json();
-    const designation = 'tempo-x402';
-    return { designation, status };
+    const [statusRes, infoRes] = await Promise.all([
+      fetch(`${url}/soul/status`, { signal: AbortSignal.timeout(5000), cache: 'no-store' }),
+      fetch(`${url}/instance/info`, { signal: AbortSignal.timeout(5000), cache: 'no-store' }),
+    ]);
+    if (!statusRes.ok || !infoRes.ok) return null;
+    const [status, info] = await Promise.all([statusRes.json(), infoRes.json()]);
+    return { designation: info.designation || 'borg-0', status };
   } catch {
     return null;
   }
@@ -28,8 +56,15 @@ export async function GET() {
     return NextResponse.json([])
   }
 
-  const souls = await Promise.all(SOUL_URLS.map(fetchSoulThoughts));
-  const live = souls.filter(Boolean) as Array<{ designation: string; status: any }>;
+  let live: Array<{ designation: string; status: any }> = [];
+  for (const candidate of getSoulCandidates()) {
+    if (!(await isUsableSoulHost(candidate))) continue;
+    const thoughtSource = await fetchSoulThoughts(candidate);
+    if (thoughtSource) {
+      live = [thoughtSource];
+      break;
+    }
+  }
 
   if (live.length === 0) {
     return NextResponse.json([]);

@@ -3,7 +3,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import WebSocket from 'ws'
 
-const GATEWAY_IMAGE_VERSION = '2026.3.31'
+const GATEWAY_IMAGE_VERSION = '2026.4.2'
 
 /**
  * Gateway Chat Proxy

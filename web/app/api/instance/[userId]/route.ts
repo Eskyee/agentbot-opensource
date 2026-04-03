@@ -39,7 +39,7 @@ export async function GET(
         subdomain: `agentbot-agent-${userId}-production.up.railway.app`,
         url: railwayUrl,
         plan: 'free',
-        openclawVersion: '2026.3.31'
+        openclawVersion: '2026.4.2'
       }, { status: response.status || 502 })
     }
 
@@ -50,7 +50,7 @@ export async function GET(
       subdomain: data.subdomain || `agentbot-agent-${userId}-production.up.railway.app`,
       url: data.url || `https://agentbot-agent-${userId}-production.up.railway.app`,
       plan: data.plan || 'free',
-      openclawVersion: data.openclawVersion || '2026.3.31'
+      openclawVersion: data.openclawVersion || '2026.4.2'
     })
   } catch (error) {
     return NextResponse.json({
@@ -60,7 +60,7 @@ export async function GET(
       subdomain: `agentbot-agent-${userId}-production.up.railway.app`,
       url: `https://agentbot-agent-${userId}-production.up.railway.app`,
       plan: 'free',
-      openclawVersion: '2026.3.31'
+      openclawVersion: '2026.4.2'
     }, { status: 500 })
   }
 }

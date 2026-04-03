@@ -2,7 +2,7 @@
 FROM node:22-slim
 
 # Install OpenClaw globally
-RUN npm install -g openclaw@2026.3.28
+RUN npm install -g openclaw@2026.4.2
 
 # Copy entrypoint
 COPY entrypoint.sh /entrypoint.sh
