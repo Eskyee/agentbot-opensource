@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 
 const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
+const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 const CapabilitiesTicker = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
 
 export default async function Home() {
@@ -72,6 +73,11 @@ export default async function Home() {
       {/* Hero Image */}
       <div className="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
         <HeroImage />
+      </div>
+
+      {/* Dashboard Preview */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
+        <DashboardPreview />
       </div>
 
       {/* Value Prop */}
