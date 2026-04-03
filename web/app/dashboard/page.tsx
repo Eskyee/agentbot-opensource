@@ -690,8 +690,16 @@ function DashboardContent() {
                 Help & Support
               </h2>
               <div className="space-y-3 text-sm">
-                <a href="/docs" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                <a href="/documentation" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Documentation
+                </a>
+                <a
+                  href="https://docs.agentbot.raveculture.xyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+                >
+                  Developer Docs
                 </a>
                 <a href="https://discord.gg/vTPG4vdV6D" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Discord
