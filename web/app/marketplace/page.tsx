@@ -71,6 +71,11 @@ export default async function MarketplacePage() {
             <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Ready to deploy</div>
           </div>
           <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Deployed Agents</div>
+            <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.totalAgents)}</div>
+            <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Tracked in platform</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600">Live Agents</div>
             <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.liveAgents)}</div>
             <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-500">Active in fleet</div>

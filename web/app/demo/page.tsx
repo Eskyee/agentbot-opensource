@@ -28,6 +28,10 @@ export default async function DemoPage() {
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-8 sm:py-10">
           <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
             <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Deployed Agents</div>
+              <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.totalAgents)}</div>
+            </div>
+            <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
               <div className="text-[10px] uppercase tracking-widest text-zinc-600">Live Agents</div>
               <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.liveAgents)}</div>
             </div>
@@ -38,10 +42,6 @@ export default async function DemoPage() {
             <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
               <div className="text-[10px] uppercase tracking-widest text-zinc-600">Skills Installed</div>
               <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.installedSkills)}</div>
-            </div>
-            <div className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Verified Templates</div>
-              <div className="mt-2 text-2xl font-bold tracking-tight">{formatPublicCount(stats.templates)}</div>
             </div>
           </div>
         </div>
