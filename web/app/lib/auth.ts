@@ -10,6 +10,17 @@ import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 import { consumeWalletNonce } from "@/app/lib/wallet-nonce";
 
+function getNextAuthSecret(): string {
+  const secret = process.env.NEXTAUTH_SECRET
+  if (secret) return secret
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('NEXTAUTH_SECRET must be set in production')
+  }
+
+  return 'build-placeholder'
+}
+
 const coinbaseRpcUrl = process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY
   ? `https://api.developer.coinbase.com/rpc/v1/base/${process.env.COINBASE_RPC_URL || process.env.COINBASE_API_KEY}`
   : undefined;
@@ -178,7 +189,7 @@ export const authOptions: AuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET || 'build-placeholder',
+  secret: getNextAuthSecret(),
   debug: process.env.NODE_ENV === "development",
   pages: {
     signIn: "/login",

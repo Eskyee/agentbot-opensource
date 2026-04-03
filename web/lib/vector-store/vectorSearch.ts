@@ -8,6 +8,34 @@
 import { prisma } from '@/app/lib/prisma';
 
 const EMBEDDING_DIM = 1536; // text-embedding-3-small dimension
+const ALLOWED_VECTOR_TABLES = new Set(['"Skill"', '"AgentMemory"'])
+const ALLOWED_SELECTS = new Set([
+  '*',
+  'id',
+  'id, name',
+  'id, key, value',
+  'id, name, description',
+])
+const SAFE_WHERE_PATTERN = /^[a-zA-Z0-9_"().=\s'<>\-]+$/
+
+function assertAllowedVectorTable(table: string) {
+  if (!ALLOWED_VECTOR_TABLES.has(table)) {
+    throw new Error(`Unsupported vector search table: ${table}`)
+  }
+}
+
+function assertAllowedSelect(select: string) {
+  if (!ALLOWED_SELECTS.has(select)) {
+    throw new Error(`Unsupported vector search select clause: ${select}`)
+  }
+}
+
+function assertSafeWhereClause(where?: string) {
+  if (!where) return
+  if (!SAFE_WHERE_PATTERN.test(where) || where.includes(';') || where.includes('--')) {
+    throw new Error('Unsafe vector search where clause')
+  }
+}
 
 /**
  * Check if pgvector extension is available in the database.
@@ -43,6 +71,9 @@ export async function similaritySearch(
   } = {}
 ): Promise<Record<string, unknown>[]> {
   const { select = '*', limit = 10, threshold = 0.5 } = options;
+  assertAllowedVectorTable(table)
+  assertAllowedSelect(select)
+  assertSafeWhereClause(options.where)
 
   const vectorStr = `[${embedding.join(',')}]`;
 
@@ -77,6 +108,7 @@ export async function storeEmbedding(
   id: string,
   embedding: number[]
 ): Promise<void> {
+  assertAllowedVectorTable(table)
   const vectorStr = `[${embedding.join(',')}]`;
   await prisma.$executeRawUnsafe(
     `UPDATE ${table} SET embedding = $1::vector WHERE id = $2`,
