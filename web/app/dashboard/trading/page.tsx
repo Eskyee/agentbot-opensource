@@ -53,7 +53,10 @@ export default function TradingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ apiKey: apiKeyInput.trim() }),
       })
-      const data = await res.json()
+      const contentType = res.headers.get('content-type') || ''
+      const data = contentType.includes('application/json')
+        ? await res.json()
+        : { error: await res.text() }
       if (!res.ok) {
         setKeyError(data.error || 'Failed to save key')
       } else {
