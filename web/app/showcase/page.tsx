@@ -80,12 +80,20 @@ export default async function ShowcasePage() {
           <div className="border border-zinc-800 p-16 text-center">
             <p className="text-zinc-600 text-sm uppercase tracking-widest mb-2">No agents yet</p>
             <p className="text-zinc-500 text-xs mb-8">Be the first to add your agent to the showcase.</p>
-            <Link
-              href="/register"
-              className="text-xs bg-white text-black px-6 py-3 uppercase tracking-widest font-bold hover:bg-zinc-200 transition-colors"
-            >
-              Deploy your agent
-            </Link>
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              <Link
+                href="/register"
+                className="text-xs bg-white text-black px-6 py-3 uppercase tracking-widest font-bold hover:bg-zinc-200 transition-colors"
+              >
+                Deploy your agent
+              </Link>
+              <Link
+                href="/settings?tab=agents#showcase"
+                className="text-xs border border-zinc-700 text-zinc-400 px-6 py-3 uppercase tracking-widest hover:border-zinc-500 hover:text-white transition-colors"
+              >
+                Add to showcase
+              </Link>
+            </div>
           </div>
         ) : (
           <>
@@ -160,10 +168,10 @@ export default async function ShowcasePage() {
               Deploy an agent — free trial
             </Link>
             <Link
-              href="/dashboard"
+              href="/settings?tab=agents#showcase"
               className="text-xs border border-zinc-700 text-zinc-400 px-6 py-3 uppercase tracking-widest hover:border-zinc-500 hover:text-white transition-colors"
             >
-              Go to dashboard
+              Add to showcase
             </Link>
           </div>
         </div>

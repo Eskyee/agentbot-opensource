@@ -58,6 +58,22 @@ export default function SettingsPage() {
     instanceId: string | null
     url: string | null
   } | null>(null)
+  const effectiveAgents = agents.length > 0
+    ? agents
+    : openclawInfo?.instanceId
+      ? [{
+          id: openclawInfo.instanceId,
+          name: 'Managed OpenClaw Runtime',
+          status: openclawInfo.url ? 'running' : 'provisioning',
+        }]
+      : []
+
+  useEffect(() => {
+    const requestedTab = new URLSearchParams(window.location.search).get('tab')
+    if (requestedTab && TABS.some((tab) => tab.id === requestedTab)) {
+      setActiveTab(requestedTab)
+    }
+  }, [])
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -176,14 +192,14 @@ export default function SettingsPage() {
             {activeTab === 'agents' && (
               <div className="space-y-6">
                 <AgentsTab
-                  agents={agents}
+                  agents={effectiveAgents}
                   onRename={(id, name) => {
                     setAgents((prev) => prev.map((a) => (a.id === id ? { ...a, name } : a)))
                   }}
                 />
 
                 {showcaseAgentId && (
-                  <div className="border border-zinc-800 bg-zinc-950 p-5">
+                  <div id="showcase" className="border border-zinc-800 bg-zinc-950 p-5 scroll-mt-24">
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h2 className="text-sm font-bold uppercase tracking-tight mb-1">Agent Showcase</h2>
@@ -293,7 +309,7 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {activeTab === 'apikeys' && <ApiKeysTab agents={agents} />}
+            {activeTab === 'apikeys' && <ApiKeysTab agents={effectiveAgents} />}
 
             {activeTab === 'referrals' && (
               <ReferralsTab
