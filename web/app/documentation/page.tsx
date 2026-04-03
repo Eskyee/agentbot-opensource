@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link';
+import { buildAppUrl } from '@/app/lib/app-url'
 
 export const metadata: Metadata = {
   title: 'Docs — Agentbot Developer & Operator Guide',
@@ -8,10 +9,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Agentbot Docs — Developer & Operator Guide',
     description: 'Everything you need to deploy, operate, and grow your AI agents. Plans from £29/mo, BYOK, 15+ supported models.',
-    url: 'https://agentbot.raveculture.xyz/docs',
+    url: buildAppUrl('/docs'),
   },
   alternates: {
-    canonical: 'https://agentbot.raveculture.xyz/docs',
+    canonical: buildAppUrl('/docs'),
   },
 }
 

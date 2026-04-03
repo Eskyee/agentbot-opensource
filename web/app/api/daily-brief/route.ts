@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { APP_URL } from '@/app/lib/app-url'
 
 interface HealthCheck {
   name: string
@@ -7,7 +8,7 @@ interface HealthCheck {
 
 const HEALTH_CHECKS: HealthCheck[] = [
   { name: 'Agentbot API', url: 'https://agentbot-prod-production.up.railway.app/health' },
-  { name: 'Agentbot Web', url: 'https://agentbot.raveculture.xyz' },
+  { name: 'Agentbot Web', url: APP_URL },
   { name: 'x402 Gateway', url: 'https://x402-gateway-production.up.railway.app/health' },
   { name: 'Tempo Soul', url: 'https://borg-0-production.up.railway.app/health' },
   { name: 'Borg-0', url: 'https://borg-0-production.up.railway.app/health' },

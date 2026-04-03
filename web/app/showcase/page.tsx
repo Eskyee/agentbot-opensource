@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { buildAppUrl } from '@/app/lib/app-url'
 
 export const metadata: Metadata = {
   title: 'Agent Showcase — Agentbot',
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Agent Showcase — Agentbot',
     description: 'AI agents for music, culture, and the creative industry. Built on OpenClaw, managed by Agentbot.',
-    url: 'https://agentbot.raveculture.xyz/showcase',
+    url: buildAppUrl('/showcase'),
   },
 }
 
@@ -31,7 +32,7 @@ interface ShowcaseAgent {
 async function getAgents(): Promise<ShowcaseAgent[]> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'}/api/showcase`,
+      buildAppUrl('/api/showcase'),
       { next: { revalidate: 60 } }
     )
     if (!res.ok) return []

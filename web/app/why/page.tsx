@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { buildAppUrl } from '@/app/lib/app-url'
 
 export const metadata: Metadata = {
   title: 'Why Agentbot? — Cloud AI Agents vs Local Setup',
@@ -8,10 +9,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Why Agentbot? Cloud AI Agents vs Local Setup',
     description: 'No hardware. No terminal. 24/7 AI agents with persistent memory, skills, and multi-channel deployment.',
-    url: 'https://agentbot.raveculture.xyz/why',
+    url: buildAppUrl('/why'),
   },
   alternates: {
-    canonical: 'https://agentbot.raveculture.xyz/why',
+    canonical: buildAppUrl('/why'),
   },
 }
 

@@ -12,6 +12,7 @@ import {
   ReferralsTab,
   AgentsTab,
 } from './tabs'
+import { buildAppUrl } from '@/app/lib/app-url'
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: '👤' },
@@ -85,7 +86,7 @@ export default function SettingsPage() {
 
         if (referralRes.ok) {
           const data = await referralRes.json()
-          setReferralLink(`https://agentbot.raveculture.xyz/signup?ref=${data.referralCode || ''}`)
+          setReferralLink(buildAppUrl(`/signup?ref=${data.referralCode || ''}`))
           setReferralCount(data.referralCount || 0)
           setReferralCredits(data.creditEarned || 0)
         }

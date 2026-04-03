@@ -12,4 +12,4 @@ Disallow: /settings/
 Disallow: /reset-password
 Disallow: /forgot-password
 
-Sitemap: https://agentbot.raveculture.xyz/sitemap.xml
+Sitemap: https://agentbot.sh/sitemap.xml

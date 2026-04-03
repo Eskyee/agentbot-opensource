@@ -3,6 +3,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { readSharedGatewayToken } from '@/app/lib/gateway-token'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
+import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 
 /**
  * Agent Chat — OpenAI-compatible REST proxy to user's Gateway.
@@ -59,6 +60,11 @@ export async function POST(req: NextRequest) {
   const session = await getAuthSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const ip = getClientIP(req)
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
   try {

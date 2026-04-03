@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto, { timingSafeEqual } from 'crypto';
+import { buildAppUrl } from '@/app/lib/app-url'
 
 /**
  * WhatsApp Cloud API Webhook Handler
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
     const content = text || `[${messageType} message]`;
 
     const agentResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'}/api/chat`,
+      buildAppUrl('/api/chat'),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -6,6 +6,7 @@
 > - Vercel project `agentbot` uses root directory `web`
 > - Railway project `OpenClaw-Agentbot` runs the linked backend service
 > Read `docs/CURRENT_PLATFORM_STATE.md` and `docs/deploy-workflow.md` before using this file operationally.
+> For active incident and rollback handling, use `docs/INCIDENT_RESPONSE.md`.
 
 ## Table of Contents
 1. [Pre-Deployment Checklist](#pre-deployment-checklist)
@@ -27,7 +28,7 @@
   - [ ] `DATABASE_URL` configured from Render PostgreSQL
   - [ ] OAuth providers configured (Google, GitHub)
   - [ ] Stripe keys configured (Secret + Webhook Secret)
-  - [ ] Custom domain verified: `agentbot.raveculture.xyz`
+  - [ ] Custom domain verified: `agentbot.sh`
 
 - [ ] **Render Dashboard**
   - [ ] Backend secrets configured:
@@ -123,7 +124,7 @@ git push origin main
 
 - [ ] **Vercel Deployment:**
   - [ ] Monitor Vercel dashboard for build logs
-  - [ ] Verify deployment URL: `https://agentbot.raveculture.xyz`
+  - [ ] Verify deployment URL: `https://agentbot.sh`
 
 ### Step 4: Database Initialization (First Deployment Only)
 
@@ -143,7 +144,7 @@ npx prisma db seed  # if needed
 ```bash
 # Test health endpoints
 curl https://agentbot-prod-production.up.railway.app/health
-curl https://agentbot.raveculture.xyz/api/health
+curl https://agentbot.sh/api/health
 ```
 
 Expected response:
@@ -158,7 +159,7 @@ Expected response:
 ### User Flow Testing
 
 - [ ] **Frontend Access**
-  - [ ] Homepage loads: https://agentbot.raveculture.xyz
+  - [ ] Homepage loads: https://agentbot.sh
   - [ ] Authentication works (Google/GitHub OAuth)
   - [ ] Dashboard accessible after login
   - [ ] Resources load (CSS, JS, images)
@@ -398,7 +399,7 @@ For planned downtime > 5 minutes:
 
 ```bash
 # Health check
-curl https://agentbot.raveculture.xyz/api/health
+curl https://agentbot.sh/api/health
 
 # Check Vercel deployments
 npx vercel deployments prod

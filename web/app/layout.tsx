@@ -10,8 +10,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { cn } from "@/lib/utils";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'
+import { APP_URL } from '@/app/lib/app-url'
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

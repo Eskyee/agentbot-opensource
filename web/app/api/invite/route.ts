@@ -4,6 +4,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { SecureRoute } from '@/app/lib/secure-route'
 import { SecurityMiddleware } from '@/app/lib/security-middleware'
+import { buildAppUrl } from '@/app/lib/app-url'
 
 // This endpoint handles sensitive operations
 // Protected with: Auth, Rate Limiting, Injection Prevention, DDoS Protection
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      inviteUrl: `https://agentbot.raveculture.xyz/invite?token=${token}&name=${encodeURIComponent(name)}`,
+      inviteUrl: `${buildAppUrl('/invite')}?token=${token}&name=${encodeURIComponent(name)}`,
       token
     }, { status: 201 })
   } catch (error) {

@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { APP_URL, buildAppUrl } from '@/app/lib/app-url'
 
 export async function sendWelcomeEmail(email: string, name?: string) {
   const resend = new Resend(process.env.RESEND_API_KEY);
@@ -59,7 +60,7 @@ function getWelcomeEmailHTML(name: string): string {
                 <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #999;">
                   Check out agent templates like Rave Event Agent, Community Treasury Agent, and more.
                 </p>
-                <a href="https://agentbot.raveculture.xyz/marketplace" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
+                <a href="${buildAppUrl('/marketplace')}" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
                   View Marketplace →
                 </a>
               </div>
@@ -69,7 +70,7 @@ function getWelcomeEmailHTML(name: string): string {
                 <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #999;">
                   Choose a template, customize it, and deploy to Telegram, Discord, or WhatsApp in under a minute.
                 </p>
-                <a href="https://agentbot.raveculture.xyz/dashboard" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
+                <a href="${buildAppUrl('/dashboard')}" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
                   Go to Dashboard →
                 </a>
               </div>
@@ -79,7 +80,7 @@ function getWelcomeEmailHTML(name: string): string {
                 <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #999;">
                   Learn how to create custom agents, add skills, and integrate with crypto wallets.
                 </p>
-                <a href="https://agentbot.raveculture.xyz/docs" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
+                <a href="${buildAppUrl('/docs')}" style="display: inline-block; margin-top: 12px; color: #8b5cf6; text-decoration: none; font-weight: 600;">
                   Read Docs →
                 </a>
               </div>
@@ -102,8 +103,8 @@ function getWelcomeEmailHTML(name: string): string {
               <h2 style="font-size: 20px; font-weight: 600; color: #fff; margin: 32px 0 16px;">Need Help?</h2>
 
               <p style="font-size: 14px; line-height: 1.6; color: #999; margin: 0 0 16px;">
-                • <a href="https://agentbot.raveculture.xyz/docs" style="color: #8b5cf6; text-decoration: none;">Documentation</a><br>
-                • <a href="https://agentbot.raveculture.xyz/blog" style="color: #8b5cf6; text-decoration: none;">Blog & Tutorials</a><br>
+                • <a href="${buildAppUrl('/docs')}" style="color: #8b5cf6; text-decoration: none;">Documentation</a><br>
+                • <a href="${buildAppUrl('/blog')}" style="color: #8b5cf6; text-decoration: none;">Blog & Tutorials</a><br>
                 • Email: <a href="mailto:rbasefm@icloud.com" style="color: #8b5cf6; text-decoration: none;">rbasefm@icloud.com</a>
               </p>
 
@@ -124,7 +125,7 @@ function getWelcomeEmailHTML(name: string): string {
                 Built by ravers, for ravers. Autonomy over platforms. Always.
               </p>
               <p style="margin: 8px 0 0; font-size: 12px; color: #666;">
-                <a href="https://agentbot.raveculture.xyz" style="color: #8b5cf6; text-decoration: none;">agentbot.raveculture.xyz</a>
+                <a href="${APP_URL}" style="color: #8b5cf6; text-decoration: none;">agentbot.sh</a>
               </p>
             </td>
           </tr>

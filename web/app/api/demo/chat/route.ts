@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
 import { logUsage } from '@/lib/usage-logger'
+import { APP_URL } from '@/app/lib/app-url'
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
@@ -74,7 +75,7 @@ Agentbot deploys OpenClaw (300K+ GitHub stars) to the cloud. Users sign up, choo
 
 ## Embedded Wallets (NEW)
 - Passkey wallets via WebAuthn (Face ID / Touch ID)
-- Domain-bound to agentbot.raveculture.xyz
+- Domain-bound to agentbot.sh
 - No seed phrases, no MetaMask required
 - Gas sponsored by operator wallet
 - Cross-device sync via iCloud Keychain / Google Password Manager
@@ -125,7 +126,7 @@ Be helpful, concise, and demonstrate agent capabilities.`
       headers: {
         'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://agentbot.raveculture.xyz',
+        'HTTP-Referer': APP_URL,
         'X-Title': 'Agentbot Demo'
       },
       body: JSON.stringify({

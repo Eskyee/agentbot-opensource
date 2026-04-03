@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import { prisma } from '@/app/lib/prisma'
 import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provision'
 import { isTrialActive } from '@/app/lib/trial-utils'
+import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
@@ -23,6 +24,11 @@ import { isTrialActive } from '@/app/lib/trial-utils'
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIP(request)
+    if (await isRateLimited(ip)) {
+      return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 })
+    }
+
     // Read body once at the top
     const body = await request.json()
     const {

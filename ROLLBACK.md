@@ -3,6 +3,7 @@
 > Warning
 > This file mixes current Vercel rollback guidance with stale Render rollback guidance.
 > Before following any backend rollback steps, verify the active deployment target in `docs/CURRENT_PLATFORM_STATE.md`.
+> For the current live runbook, use `docs/INCIDENT_RESPONSE.md` first.
 
 ## Overview
 
@@ -34,7 +35,7 @@ This document provides comprehensive rollback procedures for the agentbot platfo
 
 **Verification:**
 ```bash
-curl https://agentbot.raveculture.xyz/api/health
+curl https://agentbot.sh/api/health
 # Should return 200 with previous version
 ```
 
@@ -294,7 +295,7 @@ redis-cli -h redis-host -p 6379
 7. **Verification**
    ```bash
    # Health checks
-   curl https://agentbot.raveculture.xyz/api/health
+   curl https://agentbot.sh/api/health
    curl https://agentbot-prod-production.up.railway.app/health
 
    # User flows test
@@ -319,7 +320,7 @@ redis-cli -h redis-host -p 6379
 After rollback is complete:
 
 ### Frontend
-- [ ] Homepage loads: https://agentbot.raveculture.xyz
+- [ ] Homepage loads: https://agentbot.sh
 - [ ] Login page accessible
 - [ ] Dashboard accessible
 - [ ] No console errors
@@ -377,7 +378,7 @@ cd web && npx prisma migrate status
 cd web && npx prisma migrate resolve --applied "migration_name"
 
 # Health checks
-curl https://agentbot.raveculture.xyz/api/health
+curl https://agentbot.sh/api/health
 curl https://agentbot-prod-production.up.railway.app/health
 
 # View logs
