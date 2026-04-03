@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useCustomSession } from '@/app/lib/useCustomSession'
 import {
   DashboardShell,
   DashboardHeader,
@@ -12,69 +10,46 @@ import { SectionHeader } from '@/app/components/shared/SectionHeader'
 import StatusPill from '@/app/components/shared/StatusPill'
 
 interface AnalyticsData {
-  overview: { totalRevenue: string; totalBookings: number; totalFans: number; totalStreams: number }
-  monthly: { month: string; revenue: number; bookings: number; fans: number; streams: number }[]
-  topSkills: { name: string; usage: number; success: number }[]
-  channels: { name: string; messages: number; engagement: string }[]
-}
-
-const mockAnalytics: AnalyticsData = {
-  overview: { totalRevenue: '$0.00', totalBookings: 0, totalFans: 0, totalStreams: 0 },
-  monthly: [
-    { month: 'Oct', revenue: 0, bookings: 0, fans: 0, streams: 0 },
-    { month: 'Nov', revenue: 0, bookings: 0, fans: 0, streams: 0 },
-    { month: 'Dec', revenue: 0, bookings: 0, fans: 0, streams: 0 },
-    { month: 'Jan', revenue: 0, bookings: 0, fans: 0, streams: 0 },
-    { month: 'Feb', revenue: 0, bookings: 0, fans: 0, streams: 0 },
-    { month: 'Mar', revenue: 0, bookings: 0, fans: 0, streams: 0 },
-  ],
-  topSkills: [
-    { name: 'Web Search', usage: 0, success: 0 },
-    { name: 'Setlist Oracle', usage: 0, success: 0 },
-    { name: 'Visual Synthesizer', usage: 0, success: 0 },
-    { name: 'Groupie Manager', usage: 0, success: 0 },
-  ],
-  channels: [
-    { name: 'Telegram', messages: 0, engagement: '0%' },
-    { name: 'WhatsApp', messages: 0, engagement: '0%' },
-    { name: 'Discord', messages: 0, engagement: '0%' },
-    { name: 'Email', messages: 0, engagement: '0%' },
-  ]
+  overview: {
+    deployedAgents: number
+    liveAgents: number
+    installedSkills: number
+    scheduledTasks: number
+    connectedChannels: number
+    channelMessages: number
+  }
+  trend: { label: string; deployments: number; skills: number; tasks: number }[]
+  topSkills: { name: string; installs: number }[]
+  channels: { name: string; messages: number; lastActive: string | null; status: string }[]
+  source: { gateway: string; sessions: string }
 }
 
 export default function AnalyticsPage() {
-  const { data: session } = useCustomSession()
-  const [data, setData] = useState<AnalyticsData>(mockAnalytics)
-  const [timeRange, setTimeRange] = useState('6m')
+  const [data, setData] = useState<AnalyticsData | null>(null)
+  const [timeRange, setTimeRange] = useState('180')
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const storedData = localStorage.getItem('agentbot_instance')
-    if (!storedData) return
-    const { userId } = JSON.parse(storedData)
-    
     const fetchData = async () => {
+      setLoading(true)
       try {
-        const res = await fetch(`/api/metrics/${userId}/summary`)
+        const res = await fetch(`/api/dashboard/analytics?range=${timeRange}`)
         if (res.ok) {
-          const summary = await res.json()
-          setData(prev => ({
-            ...prev,
-            overview: {
-              totalRevenue: summary.revenue?.total || '$0.00',
-              totalBookings: summary.bookings?.completed || 0,
-              totalFans: summary.fans?.total || 0,
-              totalStreams: summary.streams?.monthlyStreams || 0,
-            }
-          }))
+          setData(await res.json())
         }
       } catch (e) {
         console.error('Failed to fetch analytics:', e)
+      } finally {
+        setLoading(false)
       }
     }
     fetchData()
-  }, [])
+  }, [timeRange])
 
-  const maxMonthlyValue = Math.max(...data.monthly.map(m => m.revenue), 1)
+  const maxTrendValue = Math.max(
+    ...(data?.trend.flatMap((item) => [item.deployments, item.skills, item.tasks]) || [1]),
+    1
+  )
 
   const AnalyticsIcon = () => (
     <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -90,13 +65,18 @@ export default function AnalyticsPage() {
         action={
           <div className="flex items-center gap-3">
             <div className="flex bg-zinc-900 border border-zinc-700">
-              {['1m', '3m', '6m', '1y'].map(range => (
+              {[
+                { label: '30d', value: '30' },
+                { label: '90d', value: '90' },
+                { label: '180d', value: '180' },
+                { label: '1y', value: '365' },
+              ].map(range => (
                 <button
-                  key={range}
-                  onClick={() => setTimeRange(range)}
-                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest ${timeRange === range ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
+                  key={range.value}
+                  onClick={() => setTimeRange(range.value)}
+                  className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest ${timeRange === range.value ? 'bg-white text-black' : 'text-zinc-400 hover:text-white'}`}
                 >
-                  {range}
+                  {range.label}
                 </button>
               ))}
             </div>
@@ -107,17 +87,43 @@ export default function AnalyticsPage() {
       <DashboardContent className="max-w-6xl space-y-8">
         <SectionHeader
           label="Overview"
-          title="Performance Insights"
-          description="Across all your agents and channels"
+          title="Real Account And Runtime Metrics"
+          description="Live platform data from your deployed agents, installed skills, task schedule, and gateway sessions"
         />
 
-        {/* Overview Cards */}
+        {loading && !data && (
+          <div className="border border-zinc-800 bg-zinc-950 p-5 text-xs text-zinc-500">
+            Loading analytics…
+          </div>
+        )}
+
+        {!loading && !data && (
+          <div className="border border-zinc-800 bg-zinc-950 p-5 text-xs text-zinc-500">
+            Analytics data is unavailable right now.
+          </div>
+        )}
+
+        {data && (
+          <>
+        <div className="flex items-center gap-3">
+          <StatusPill
+            status={data.source.gateway === 'live' ? 'active' : 'offline'}
+            label={`Gateway ${data.source.gateway}`}
+            size="sm"
+          />
+          <StatusPill
+            status={data.source.sessions === 'live' ? 'active' : 'idle'}
+            label={`Sessions ${data.source.sessions}`}
+            size="sm"
+          />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-800">
           {[
-            { label: 'Total Revenue', value: data.overview.totalRevenue },
-            { label: 'Total Bookings', value: data.overview.totalBookings },
-            { label: 'Total Fans', value: data.overview.totalFans.toLocaleString() },
-            { label: 'Total Streams', value: data.overview.totalStreams.toLocaleString() },
+            { label: 'Deployed Agents', value: data.overview.deployedAgents.toLocaleString() },
+            { label: 'Live Agents', value: data.overview.liveAgents.toLocaleString() },
+            { label: 'Installed Skills', value: data.overview.installedSkills.toLocaleString() },
+            { label: 'Scheduled Tasks', value: data.overview.scheduledTasks.toLocaleString() },
           ].map((item) => (
             <div key={item.label} className="bg-zinc-950 p-5">
               <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">{item.label}</div>
@@ -126,60 +132,95 @@ export default function AnalyticsPage() {
           ))}
         </div>
 
-        {/* Revenue Chart */}
-        <div className="border border-zinc-800 bg-zinc-950 p-6">
-          <h2 className="text-sm font-bold tracking-tight uppercase mb-6">Revenue Trend</h2>
-          <div className="h-48 flex items-end gap-px bg-zinc-800">
-            {data.monthly.map((m) => (
-              <div key={m.month} className="flex-1 flex flex-col items-center gap-1 bg-zinc-950 py-2">
-                <div className="text-[10px] text-zinc-500 font-mono">${m.revenue}</div>
-                <div
-                  className="w-full bg-green-500 min-h-[4px]"
-                  style={{ height: `${Math.max(2, (m.revenue / maxMonthlyValue) * 100)}%` }}
-                />
-                <div className="text-[10px] text-zinc-500 uppercase">{m.month}</div>
-              </div>
-            ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-zinc-800">
+          <div className="bg-zinc-950 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Connected Channels</div>
+            <div className="text-2xl font-bold tracking-tight">{data.overview.connectedChannels}</div>
+          </div>
+          <div className="bg-zinc-950 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Channel Messages</div>
+            <div className="text-2xl font-bold tracking-tight">{data.overview.channelMessages.toLocaleString()}</div>
           </div>
         </div>
 
-        {/* Skills & Channels */}
+          <div className="border border-zinc-800 bg-zinc-950 p-6">
+          <h2 className="text-sm font-bold tracking-tight uppercase mb-6">Deployment Trend</h2>
+          <div className="h-48 flex items-end gap-px bg-zinc-800">
+            {data.trend.map((m) => (
+              <div key={m.label} className="flex-1 flex flex-col items-center gap-1 bg-zinc-950 py-2">
+                <div className="flex w-full h-full items-end gap-1 px-1">
+                  <div
+                    className="w-full bg-blue-500 min-h-[4px]"
+                    style={{ height: `${Math.max(2, (m.deployments / maxTrendValue) * 100)}%` }}
+                    title={`${m.deployments} deployments`}
+                  />
+                  <div
+                    className="w-full bg-green-500 min-h-[4px]"
+                    style={{ height: `${Math.max(2, (m.skills / maxTrendValue) * 100)}%` }}
+                    title={`${m.skills} skill installs`}
+                  />
+                  <div
+                    className="w-full bg-yellow-500 min-h-[4px]"
+                    style={{ height: `${Math.max(2, (m.tasks / maxTrendValue) * 100)}%` }}
+                    title={`${m.tasks} tasks`}
+                  />
+                </div>
+                <div className="text-[10px] text-zinc-500 font-mono">
+                  {m.deployments}/{m.skills}/{m.tasks}
+                </div>
+                <div className="text-[10px] text-zinc-500 uppercase">{m.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center gap-4 text-[10px] uppercase tracking-widest text-zinc-500">
+            <span className="flex items-center gap-1"><span className="h-2 w-2 bg-blue-500" /> Deployments</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 bg-green-500" /> Skills</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 bg-yellow-500" /> Tasks</span>
+          </div>
+        </div>
+
         <div className="grid gap-px bg-zinc-800 md:grid-cols-2">
-          {/* Top Skills */}
           <div className="bg-zinc-950 p-6">
-            <h2 className="text-sm font-bold tracking-tight uppercase mb-6">Top Skills</h2>
+            <h2 className="text-sm font-bold tracking-tight uppercase mb-6">Top Installed Skills</h2>
             <div className="space-y-4">
+              {data.topSkills.length === 0 && (
+                <div className="text-xs text-zinc-500">No installed skills yet.</div>
+              )}
               {data.topSkills.map(skill => (
                 <div key={skill.name} className="flex items-center justify-between gap-2">
                   <span className="text-xs text-zinc-300 min-w-0 truncate">{skill.name}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-zinc-500">{skill.usage} uses</span>
-                    <div className="w-20 h-1 bg-zinc-800">
-                      <div className="h-full bg-blue-500" style={{ width: `${skill.success}%` }} />
-                    </div>
-                    <span className="text-[10px] text-zinc-400 w-8">{skill.success}%</span>
+                  <div className="flex items-center gap-3 text-[10px] text-zinc-500">
+                    <span>{skill.installs} installs</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Channel Performance */}
           <div className="bg-zinc-950 p-6">
             <h2 className="text-sm font-bold tracking-tight uppercase mb-6">Channel Performance</h2>
             <div className="space-y-px bg-zinc-800">
               {data.channels.map(ch => (
                 <div key={ch.name} className="flex items-center justify-between bg-zinc-950 px-4 py-3">
-                  <span className="text-xs font-bold uppercase tracking-wider">{ch.name}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold uppercase tracking-wider">{ch.name}</span>
+                    <StatusPill
+                      status={ch.status === 'connected' ? 'active' : ch.status === 'unreachable' ? 'error' : 'offline'}
+                      label={ch.status}
+                      size="sm"
+                    />
+                  </div>
                   <div className="flex items-center gap-4 text-[10px]">
                     <span className="text-zinc-500">{ch.messages} msgs</span>
-                    <span className="text-zinc-400">{ch.engagement}</span>
+                    <span className="text-zinc-400">{ch.lastActive ? new Date(ch.lastActive).toLocaleDateString('en-GB') : 'No activity'}</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+        </>
+        )}
       </DashboardContent>
     </DashboardShell>
   )
