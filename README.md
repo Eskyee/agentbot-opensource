@@ -54,6 +54,8 @@ Your agent. Your rules. Zero Human Company.
 
 ## Quick Start
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Eskyee/agentbot-opensource?quickstart=1)
+
 ```bash
 git clone https://github.com/Eskyee/agentbot-opensource.git
 cd agentbot-opensource
