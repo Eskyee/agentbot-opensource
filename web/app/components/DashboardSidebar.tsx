@@ -48,7 +48,6 @@ export const navSections = [
       { label: 'Bankr', href: '/dashboard/trading', icon: '◈' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
       { label: 'Showcase', href: '/showcase', icon: '✧' },
-      { label: 'Marketplace', href: '/marketplace', icon: '⬡' },
     ]
   },
 ]
