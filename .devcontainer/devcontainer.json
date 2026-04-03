@@ -1,11 +1,11 @@
 {
   "name": "Agentbot Dev Environment",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:24",
+  "image": "node:22-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {}
   },
   "forwardPorts": [3000, 8080],
-  "postCreateCommand": "npm install && npx prisma generate",
+  "postCreateCommand": "npm install",
   "customizations": {
     "vscode": {
       "extensions": [
