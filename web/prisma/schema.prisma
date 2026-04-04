@@ -171,12 +171,15 @@ model Skill {
   downloads       Int              @default(0)
   rating          Float            @default(0)
   featured        Boolean          @default(false)
+  mcpConfig       Json?            // MCP (Model Context Protocol) configuration
+  mcpEnabled      Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   installedSkills InstalledSkill[]
 
   @@index([category])
   @@index([featured])
+  @@index([mcpEnabled])
 }
 
 model InstalledSkill {
