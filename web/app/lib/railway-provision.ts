@@ -59,7 +59,7 @@ async function railwayGql<T = unknown>(
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'railway-cli/4.30.4',
+      'Accept': 'application/json',
     },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),

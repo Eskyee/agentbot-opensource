@@ -173,6 +173,9 @@ export default function SettingsPage() {
                   onRename={(id, name) => {
                     setAgents((prev) => prev.map((a) => (a.id === id ? { ...a, name } : a)))
                   }}
+                  onDelete={(id) => {
+                    setAgents((prev) => prev.filter((a) => a.id !== id))
+                  }}
                 />
 
                 {showcaseAgentId && (
