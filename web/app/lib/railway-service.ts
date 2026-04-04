@@ -110,3 +110,12 @@ export async function resolveRailwayService(params: {
 
   return match
 }
+
+export async function deleteRailwayService(serviceId: string): Promise<void> {
+  await railwayGql(
+    `mutation ServiceDelete($serviceId: String!) {
+      serviceDelete(id: $serviceId)
+    }`,
+    { serviceId }
+  )
+}

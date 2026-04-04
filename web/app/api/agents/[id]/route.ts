@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { deleteRailwayService, resolveRailwayService } from '@/app/lib/railway-service'
 
 export async function GET(
   request: Request,
@@ -158,17 +159,15 @@ export async function DELETE(
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
-    // Best-effort: stop and remove the container via backend
+    // Best-effort: delete the Railway service (stops and removes the container permanently)
     try {
-      const API_URL = getBackendApiUrl()
-      const API_KEY = getInternalApiKey()
-      await fetch(`${API_URL}/api/agents/${agentId}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${API_KEY}` },
-        signal: AbortSignal.timeout(30000),
-      })
+      const openclawUrl = ownedAgent
+        ? (ownedAgent as { openclawUrl?: string | null }).openclawUrl ?? undefined
+        : (await prisma.user.findUnique({ where: { id: session.user.id }, select: { openclawUrl: true } }))?.openclawUrl ?? undefined
+      const railwayService = await resolveRailwayService({ agentId, openclawUrl })
+      await deleteRailwayService(railwayService.id)
     } catch {
-      // Non-fatal — backend may be unreachable; proceed with DB cleanup
+      // Non-fatal — Railway service may not exist; proceed with DB cleanup
     }
 
     // Delete Agent row if it exists (cascades to memory, files, skills, etc.)
