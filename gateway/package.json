@@ -1,0 +1,17 @@
+{
+  "name": "agentbot-openclaw-gateway",
+  "version": "1.0.0",
+  "description": "Agentbot OpenClaw gateway wrapper — manages lifecycle, health, persistence",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy": "^1.18.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

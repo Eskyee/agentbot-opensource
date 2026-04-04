@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { getAgentEnvVars, OPENCLAW_START_CMD } from '@/app/lib/railway-provision'
+import { getAgentEnvVars } from '@/app/lib/railway-provision'
 import { getRailwayEnvironmentId, getRailwayProjectId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
 import { DEFAULT_OPENCLAW_IMAGE } from '@/app/lib/openclaw-version'
 import { OPENCLAW_CONTROLS_ENABLED, controlsDisabledResponse } from '@/app/api/instance/_runtime'
@@ -127,7 +127,6 @@ export async function POST(request: Request) {
           environmentId,
           input: {
             source: { image: KNOWN_GOOD_IMAGE },
-            startCommand: OPENCLAW_START_CMD,
           },
         }
       )

@@ -16,10 +16,7 @@ import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.2'
-
-const OPENCLAW_START_CMD =
-  `node -e "const{spawn}=require('child_process');const fs=require('fs');fs.writeFileSync('/tmp/openclaw.json',JSON.stringify({env:{OPENROUTER_API_KEY:process.env.OPENROUTER_API_KEY},gateway:{mode:'local',bind:'loopback',trustedProxies:['127.0.0.1'],controlUi:{allowedOrigins:['*'],dangerouslyDisableDeviceAuth:true}},agents:{defaults:{workspace:'/home/node/.openclaw/workspace',model:{primary:'openrouter/xiaomi/mimo-v2-pro'},heartbeat:{every:'30m',lightContext:true,isolatedSession:true}}},channels:{telegram:{enabled:false,dmPolicy:'pairing'},discord:{enabled:false,dmPolicy:'pairing'},whatsapp:{enabled:false,dmPolicy:'pairing'},webchat:{enabled:true}},cron:{enabled:true,maxConcurrentRuns:2,sessionRetention:'24h'},session:{scope:'per-sender',reset:{mode:'daily',atHour:4},maintenance:{mode:'warn',pruneAfter:'30d',maxEntries:500}},tools:{profile:'coding',exec:{backgroundMs:10000,timeoutSec:1800},web:{search:{enabled:true},fetch:{enabled:true,maxChars:50000}}}}));const p=spawn('openclaw',['gateway'],{stdio:'inherit',env:{...process.env,OPENCLAW_CONFIG_PATH:'/tmp/openclaw.json'}});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/eskyee/agentbot-openclaw:latest'
 
 function getAgentEnvVars(agentId: string, plan: string): Record<string, string> {
   return {
@@ -95,7 +92,7 @@ async function provisionOnRailway(agentId: string, plan: string = 'solo') {
   const serviceId = created.serviceCreate.id
   console.log(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
 
-  // 2. Set start command + plan resource limits
+  // 2. Set resource limits + health check (no start command — image has CMD)
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.solo
   await railwayGql(`
     mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
@@ -104,11 +101,28 @@ async function provisionOnRailway(agentId: string, plan: string = 'solo') {
   `, {
     serviceId, environmentId,
     input: {
-      startCommand: OPENCLAW_START_CMD,
       memoryLimitMb: limits.memoryLimitMb,
       cpuLimit: limits.cpuLimit,
+      healthcheckPath: '/healthz',
+      healthcheckTimeout: 60,
+      restartPolicyType: 'ON_FAILURE',
+      restartPolicyMaxRetries: 10,
     },
   })
+
+  // 2b. Add persistent volume for config/conversations
+  try {
+    await railwayGql(`
+      mutation VolumeCreate($input: VolumeCreateInput!) {
+        volumeCreate(input: $input) { id }
+      }
+    `, {
+      input: { projectId, environmentId, serviceId, mountPath: '/data' },
+    })
+    console.log(`[RailwayProvision] Volume mounted at /data for ${serviceId}`)
+  } catch (volErr) {
+    console.warn(`[RailwayProvision] Volume creation failed (non-fatal):`, volErr)
+  }
 
   // 3. Inject env vars
   const variables = getAgentEnvVars(agentId, plan)

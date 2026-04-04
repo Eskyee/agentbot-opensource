@@ -1,8 +1,12 @@
 /**
  * Railway-direct provisioning — creates OpenClaw agent containers via Railway GraphQL API.
  *
- * Used by /api/provision when the backend Express service is unavailable.
- * Mirrors agentbot-backend/src/lib/container-manager.ts but runs in the Next.js edge/serverless env.
+ * Uses the agentbot gateway wrapper image (gateway/ in repo) which includes:
+ *   - Proper process management with auto-restart and exponential backoff
+ *   - Health endpoint at /healthz for Railway auto-restart
+ *   - HTTP proxy to OpenClaw gateway (no raw TCP proxy hack)
+ *   - Persistent volume at /data for config/conversations
+ *   - Config built from env vars — no inline start command
  *
  * Required env vars (set in Vercel project settings):
  *   RAILWAY_API_KEY         — Railway API token
@@ -11,25 +15,13 @@
  */
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.2'
 
 /**
- * OpenClaw TCP proxy start command.
- *
- * OpenClaw Gateway binds to loopback (127.0.0.1:18789). Railway's load balancer
- * needs the container to accept on PORT (Railway injects this). This Node.js one-liner:
- *   1. Writes /tmp/openclaw.json with gateway.mode:'local', trustedProxies, and
- *      controlUi.allowedOrigins:['*'] so any browser origin can connect to the Control UI
- *   2. Spawns `openclaw gateway` with OPENCLAW_CONFIG_PATH=/tmp/openclaw.json
- *   3. After 3s starts a TCP proxy: PORT → 127.0.0.1:18789
- *
- * Notes:
- *   - No --allow-unconfigured needed since we write gateway.mode:'local' in the config
- *   - trustedProxies:['127.0.0.1'] trusts the TCP proxy's forwarded headers
- *   - No custom User-Agent — railway-cli impersonation causes 403 from Vercel IPs
+ * Gateway wrapper image — built from gateway/ directory in the agentbot repo.
+ * Includes OpenClaw + Express wrapper with health checks, auto-restart, volume support.
+ * The wrapper manages the gateway process — no start command needed.
  */
-export const OPENCLAW_START_CMD =
-  `node -e "const{spawn}=require('child_process');const fs=require('fs');fs.writeFileSync('/tmp/openclaw.json',JSON.stringify({env:{OPENROUTER_API_KEY:process.env.OPENROUTER_API_KEY},gateway:{mode:'local',bind:'loopback',trustedProxies:['127.0.0.1'],controlUi:{allowedOrigins:['*'],dangerouslyDisableDeviceAuth:true}},agents:{defaults:{workspace:'/home/node/.openclaw/workspace',model:{primary:'openrouter/xiaomi/mimo-v2-pro'},heartbeat:{every:'30m',lightContext:true,isolatedSession:true}}},channels:{telegram:{enabled:false,dmPolicy:'pairing'},discord:{enabled:false,dmPolicy:'pairing'},whatsapp:{enabled:false,dmPolicy:'pairing'},webchat:{enabled:true}},cron:{enabled:true,maxConcurrentRuns:2,sessionRetention:'24h'},session:{scope:'per-sender',reset:{mode:'daily',atHour:4},maintenance:{mode:'warn',pruneAfter:'30d',maxEntries:500}},tools:{profile:'coding',exec:{backgroundMs:10000,timeoutSec:1800},web:{search:{enabled:true},fetch:{enabled:true,maxChars:50000}}}}));const p=spawn('openclaw',['gateway'],{stdio:'inherit',env:{...process.env,OPENCLAW_CONFIG_PATH:'/tmp/openclaw.json'}});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/eskyee/agentbot-openclaw:latest'
 
 export function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
@@ -116,7 +108,7 @@ export async function provisionOnRailway(
   const serviceId = created.serviceCreate.id
   console.log(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
 
-  // 1b. Set start command + enforce plan resource limits
+  // 1b. Set resource limits + health check (no start command — image has CMD)
   const planLimits: Record<string, { memoryLimitMb: number; cpuLimit: number }> = {
     underground: { memoryLimitMb: 2048,  cpuLimit: 1 },
     solo:        { memoryLimitMb: 2048,  cpuLimit: 1 },
@@ -133,12 +125,34 @@ export async function provisionOnRailway(
     serviceId,
     environmentId,
     input: {
-      startCommand: OPENCLAW_START_CMD,
       memoryLimitMb: limits.memoryLimitMb,
       cpuLimit: limits.cpuLimit,
+      healthcheckPath: '/healthz',
+      healthcheckTimeout: 60,
+      restartPolicyType: 'ON_FAILURE',
+      restartPolicyMaxRetries: 10,
     },
   })
-  console.log(`[RailwayProvision] Start command set for ${serviceId}`)
+  console.log(`[RailwayProvision] Resource limits + health check set for ${serviceId}`)
+
+  // 1c. Add persistent volume for config/conversations
+  try {
+    await railwayGql(`
+      mutation VolumeCreate($input: VolumeCreateInput!) {
+        volumeCreate(input: $input) { id }
+      }
+    `, {
+      input: {
+        projectId,
+        environmentId,
+        serviceId,
+        mountPath: '/data',
+      },
+    })
+    console.log(`[RailwayProvision] Volume mounted at /data for ${serviceId}`)
+  } catch (volErr) {
+    console.warn(`[RailwayProvision] Volume creation failed (non-fatal):`, volErr)
+  }
 
   // 2. Inject env vars
   const variables = getAgentEnvVars(agentId, plan)
