@@ -61,16 +61,39 @@ interface DashboardSidebarProps {
   userName?: string
   credits?: number
   plan?: string
+  runtimeUrl?: string | null
+  runtimeGatewayToken?: string | null
+  runtimeInstanceId?: string | null
   isOpen: boolean
   onToggle: () => void
 }
 
-export const DashboardSidebar = memo(function DashboardSidebar({ userName, credits = 0, plan, isOpen, onToggle }: DashboardSidebarProps) {
+export const DashboardSidebar = memo(function DashboardSidebar({
+  userName,
+  credits = 0,
+  plan,
+  runtimeUrl,
+  runtimeGatewayToken,
+  runtimeInstanceId,
+  isOpen,
+  onToggle,
+}: DashboardSidebarProps) {
   const pathname = usePathname()
   const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
   const [gatewayToken, setGatewayToken] = useState<string | null>(null)
 
   useEffect(() => {
+    if (runtimeUrl) {
+      const normalizedUrl = String(runtimeUrl).replace(/\/$/, '')
+      setOpenclawUrl(normalizedUrl)
+      setGatewayToken(runtimeGatewayToken || null)
+      localStorage.setItem('agentbot_instance', JSON.stringify({
+        userId: runtimeInstanceId,
+        url: normalizedUrl,
+      }))
+      return
+    }
+
     // Use localStorage as a fast first paint, but always refresh from DB
     // so stale shared-gateway URLs do not linger in the user dashboard.
     try {
@@ -99,7 +122,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
         }
       })
       .catch(() => {})
-  }, [])
+  }, [runtimeGatewayToken, runtimeInstanceId, runtimeUrl])
 
   const runtimeStatus = openclawUrl ? (gatewayToken ? 'paired' : 'live') : 'undeployed'
   const runtimeTone = runtimeStatus === 'paired'

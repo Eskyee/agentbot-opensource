@@ -50,6 +50,14 @@ interface InstanceData {
   verifiedAt?: string | null
 }
 
+interface DashboardBootstrapData {
+  credits: number
+  plan?: string | null
+  openclawUrl?: string | null
+  openclawInstanceId?: string | null
+  gatewayToken?: string | null
+}
+
 function getRuntimeBadge(status?: string) {
   if (status === 'running') return { label: 'Running', tone: 'text-green-400' }
   if (status === 'starting') return { label: 'Starting', tone: 'text-yellow-400' }
@@ -69,6 +77,7 @@ function DashboardContent() {
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState('')
   const [credits, setCredits] = useState(0)
+  const [bootstrap, setBootstrap] = useState<DashboardBootstrapData | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [gatewayStatus, setGatewayStatus] = useState<{
     health: string
@@ -105,6 +114,9 @@ function DashboardContent() {
         setLoading(false)
         return
       }
+
+      fetchGatewayStatus()
+      fetchStatusChecks()
       
       let userId = urlUserId
       let botUsername = ''
@@ -115,7 +127,29 @@ function DashboardContent() {
         botUsername = parsed.botUsername || ''
       }
       
-      // Fallback: fetch from API if no localStorage data
+      // Prefer the canonical OpenClaw record in the DB and hydrate credits at the same time.
+      if (!userId) {
+        try {
+          const bootstrapRes = await fetch('/api/dashboard/bootstrap')
+          const bootstrapData = await bootstrapRes.json()
+          setBootstrap(bootstrapData)
+          setCredits(bootstrapData.credits || 0)
+          if (bootstrapData.openclawInstanceId) {
+            userId = bootstrapData.openclawInstanceId
+            // Also restore localStorage for future visits
+            if (bootstrapData.openclawUrl) {
+              localStorage.setItem('agentbot_instance', JSON.stringify({
+                userId: bootstrapData.openclawInstanceId,
+                url: bootstrapData.openclawUrl,
+              }))
+            }
+          }
+        } catch {}
+      } else {
+        fetchBootstrap()
+      }
+
+      // Legacy fallback for older accounts that still rely on the agents route.
       if (!userId) {
         try {
           const agentsRes = await fetch('/api/agents')
@@ -127,24 +161,6 @@ function DashboardContent() {
         } catch {}
       }
 
-      // Fallback: check DB for OpenClaw instance
-      if (!userId) {
-        try {
-          const openclawRes = await fetch('/api/user/openclaw')
-          const openclawData = await openclawRes.json()
-          if (openclawData.openclawInstanceId) {
-            userId = openclawData.openclawInstanceId
-            // Also restore localStorage for future visits
-            if (openclawData.openclawUrl) {
-              localStorage.setItem('agentbot_instance', JSON.stringify({
-                userId: openclawData.openclawInstanceId,
-                url: openclawData.openclawUrl,
-              }))
-            }
-          }
-        } catch {}
-      }
-
       if (!userId) {
         setError('No instance found. Please deploy first.')
         setLoading(false)
@@ -152,9 +168,6 @@ function DashboardContent() {
       }
       
       fetchInstance(userId, botUsername)
-      fetchCredits()
-      fetchGatewayStatus()
-      fetchStatusChecks()
     })(); // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams, session])
 
@@ -165,6 +178,18 @@ function DashboardContent() {
       setCredits(data.credits || 0)
     } catch (e) {
       console.error('Failed to fetch credits:', e)
+    }
+  }
+
+  const fetchBootstrap = async () => {
+    try {
+      const res = await fetch('/api/dashboard/bootstrap')
+      if (!res.ok) return
+      const data = await res.json()
+      setBootstrap(data)
+      setCredits(data.credits || 0)
+    } catch (e) {
+      console.error('Failed to fetch dashboard bootstrap:', e)
     }
   }
 
@@ -213,23 +238,18 @@ function DashboardContent() {
 
   const fetchInstance = async (userId: string, botUsername: string) => {
     try {
-      // Fetch instance data and gateway token in parallel
-      const [res, tokenRes] = await Promise.all([
-        fetch(`/api/instance/${userId}`),
-        fetch('/api/user/openclaw'),
-      ])
+      const res = await fetch(`/api/instance/${userId}`)
       const data = await res.json()
-      const tokenData = await tokenRes.json().catch(() => ({}))
 
       if (data.error) {
         setError(data.error)
       } else {
         // Prefer the user's persisted OpenClaw instance URL. Only fall back to the
         // shared gateway when the user has no instance-specific URL yet.
-        const preferredUrl = tokenData.openclawUrl || data.url
+        const preferredUrl = bootstrap?.openclawUrl || data.url
         const fallbackUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
         const url = String(preferredUrl || fallbackUrl).replace(/\/$/, '')
-        const gatewayToken = tokenData.gatewayToken || undefined
+        const gatewayToken = bootstrap?.gatewayToken || undefined
         // Control UI auto-connects via hash fragment — token + gateway URL
         // Hash is never sent to server, so it's safe to embed the token
         const controlUiUrl = buildOpenClawControlUrl({
@@ -238,7 +258,7 @@ function DashboardContent() {
           gatewayToken,
           session: 'main',
         })
-        const resolvedUserId = tokenData.openclawInstanceId || data.userId || userId
+        const resolvedUserId = bootstrap?.openclawInstanceId || data.userId || userId
         localStorage.setItem('agentbot_instance', JSON.stringify({
           userId: resolvedUserId,
           url,
@@ -307,12 +327,58 @@ function DashboardContent() {
     }
   }
 
-   if (loading) {
+   if (loading && status === 'authenticated') {
      return (
-       <div className="flex items-center justify-center mt-[4rem] h-[calc(100vh-4rem)] bg-black font-mono">
-         <div className="text-left">
-           <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
-           <p className="text-zinc-400 text-sm">Loading your instance...</p>
+       <div className="flex min-h-screen bg-black font-mono">
+         <DashboardSidebar
+           userName={userName}
+           credits={credits}
+           plan={bootstrap?.plan || instance?.plan}
+           runtimeUrl={bootstrap?.openclawUrl}
+           runtimeGatewayToken={bootstrap?.gatewayToken}
+           runtimeInstanceId={bootstrap?.openclawInstanceId}
+           isOpen={sidebarOpen}
+           onToggle={() => setSidebarOpen(!sidebarOpen)}
+         />
+         <div className="flex-1 flex flex-col">
+           <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
+             <div className="flex items-center gap-4">
+               <button
+                 onClick={() => setSidebarOpen(true)}
+                 className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
+                 aria-label="Open menu"
+               >
+                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                 </svg>
+               </button>
+               <span className="text-sm font-bold uppercase tracking-tighter">◈ Mission Control</span>
+             </div>
+           </header>
+           <main className="flex-1 overflow-y-auto">
+             <div className="p-4 lg:p-8 space-y-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                 {Array.from({ length: 3 }).map((_, i) => (
+                   <div key={i} className="border border-zinc-800 bg-zinc-950 p-4 rounded-lg animate-pulse">
+                     <div className="h-3 w-24 bg-zinc-800 rounded mb-3" />
+                     <div className="h-7 w-32 bg-zinc-900 rounded" />
+                   </div>
+                 ))}
+               </div>
+               <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                 {Array.from({ length: 5 }).map((_, i) => (
+                   <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 animate-pulse">
+                     <div className="h-3 w-28 bg-zinc-800 rounded mb-4" />
+                     <div className="space-y-3">
+                       <div className="h-3 bg-zinc-800 rounded" />
+                       <div className="h-3 bg-zinc-800 rounded w-5/6" />
+                       <div className="h-3 bg-zinc-800 rounded w-3/4" />
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+           </main>
          </div>
        </div>
      )
@@ -398,6 +464,9 @@ function DashboardContent() {
         userName={userName}
         credits={credits}
         plan={instance?.plan}
+        runtimeUrl={instance?.url || bootstrap?.openclawUrl}
+        runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken}
+        runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />

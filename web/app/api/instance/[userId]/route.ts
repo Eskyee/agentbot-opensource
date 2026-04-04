@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getInternalApiKey, getBackendApiUrl } from '../../lib/api-keys'
 import { verifyInstanceOwnership } from '../_auth'
 import { prisma } from '@/app/lib/prisma'
 import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
@@ -47,8 +46,6 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const BACKEND_API_URL = getBackendApiUrl()
-  const INTERNAL_API_KEY = getInternalApiKey()
   const { userId } = await params
 
   if (!(await verifyInstanceOwnership(userId))) {
@@ -57,66 +54,20 @@ export async function GET(
 
   const ownedUser = await prisma.user.findFirst({
     where: { openclawInstanceId: userId },
-    select: { openclawUrl: true },
+    select: { openclawUrl: true, plan: true },
   })
   const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
-  
-  try {
-    const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${INTERNAL_API_KEY}`
-      }
-    })
 
-    let data: any = null
-    try {
-      data = await response.json()
-    } catch {
-      data = null
-    }
-
-    if (!response.ok || !data) {
-      const runtime = await probeRuntime(persistedUrl)
-      return NextResponse.json({
-        userId,
-        status: runtime.status,
-        startedAt: new Date().toISOString(),
-        subdomain: new URL(persistedUrl).host,
-        url: persistedUrl,
-        plan: 'free',
-        openclawVersion: runtime.openclawVersion,
-      }, { status: response.status || 502 })
-    }
-
-    const runtime = await probeRuntime(data.url || persistedUrl)
-    const normalizedStatus = data.status === 'active'
-      ? 'running'
-      : data.status || runtime.status || 'unknown'
-    const resolvedStatus = normalizedStatus === 'unknown' && runtime.status !== 'unknown'
-      ? runtime.status
-      : normalizedStatus
-
-    return NextResponse.json({
-      userId,
-      status: resolvedStatus,
-      startedAt: data.startedAt || new Date().toISOString(),
-      subdomain: data.subdomain || new URL(persistedUrl).host,
-      url: data.url || persistedUrl,
-      plan: data.plan || 'free',
-      openclawVersion: data.openclawVersion || runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION
-    })
-  } catch (error) {
-    const runtime = await probeRuntime(persistedUrl)
-    return NextResponse.json({
-      userId,
-      status: runtime.status,
-      startedAt: new Date().toISOString(),
-      subdomain: new URL(persistedUrl).host,
-      url: persistedUrl,
-      plan: 'free',
-      openclawVersion: runtime.openclawVersion
-    }, { status: 500 })
-  }
+  const runtime = await probeRuntime(persistedUrl)
+  return NextResponse.json({
+    userId,
+    status: runtime.status,
+    startedAt: new Date().toISOString(),
+    subdomain: new URL(persistedUrl).host,
+    url: persistedUrl,
+    plan: ownedUser?.plan || 'free',
+    openclawVersion: runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION,
+  })
 }
 
 
