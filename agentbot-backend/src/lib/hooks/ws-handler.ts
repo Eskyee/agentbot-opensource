@@ -17,7 +17,8 @@
  */
 
 import { Server as HTTPServer } from 'http'
-import WebSocket, { WebSocketServer } from 'ws'
+import WebSocket from 'ws'
+const WebSocketServer = WebSocket.Server
 import { URL } from 'url'
 
 interface WSClient {
@@ -32,7 +33,7 @@ const clients = new Map<string, Set<WSClient>>()
 /**
  * Set up WebSocket server on existing HTTP server
  */
-export function setupWebSocket(server: HTTPServer): WebSocketServer {
+export function setupWebSocket(server: HTTPServer): InstanceType<typeof WebSocketServer> {
   const wss = new WebSocketServer({ server, path: '/ws/permissions' })
 
   wss.on('connection', (ws, req) => {
