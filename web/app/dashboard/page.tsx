@@ -12,6 +12,7 @@ import { PermissionGate } from '@/app/components/shared/PermissionGate'
 import { TrialBanner } from '@/app/components/TrialBanner'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
+import { ensureCompatibility } from '@/app/lib/openclaw-compatibility'
 
 
 // Helper to convert percent string to Tailwind width class
@@ -219,11 +220,31 @@ function DashboardContent() {
   const healAutoPair = async () => {
     setHealingAttempted(true)
     try {
+      // First ensure OpenClaw 2026.4.2 compatibility
+      const compatibility = await fetch('/api/openclaw/ensure-compatibility', { method: 'POST' })
+      if (compatibility.ok) {
+        const compatData = await compatibility.json()
+        if (compatData.fixes?.length > 0) {
+          console.log('Applied compatibility fixes:', compatData.fixes)
+        }
+      }
+
+      // Now heal the token
       const res = await fetch('/api/support/heal-token', { method: 'POST' })
       if (res.ok) {
         const data = await res.json()
         if (data.healed) {
           setAutoPairHealth('ready')
+          // Update instance with new token
+          if (data.token && instance) {
+            const newControlUiUrl = buildOpenClawControlUrl({
+              view: 'chat',
+              gatewayUrl: instance.url,
+              gatewayToken: data.token,
+              session: 'main',
+            })
+            setInstance({ ...instance, gatewayToken: data.token, controlUiUrl: newControlUiUrl })
+          }
         }
       }
     } catch (error) {
