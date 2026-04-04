@@ -21,6 +21,11 @@ import { prisma } from '@/app/lib/prisma';
 import { stripe } from '@/app/lib/stripe';
 import crypto from 'crypto';
 import { isTrialActive } from '@/app/lib/trial-utils'
+import { 
+  deployAgentToGateway, 
+  fetchAgentDataForDeployment,
+  AgentDeployPayload 
+} from '@/app/lib/agent-deploy'
 
 export const dynamic = 'force-dynamic';
 
@@ -116,7 +121,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create agent record
+    // Create agent record with ALL data (skills, memories, files)
     const agent = await prisma.agent.create({
       data: {
         userId,
@@ -128,14 +133,33 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Send provisioning request to OpenClaw Gateway
+    // Send FULL deployment to OpenClaw Gateway (includes skills, memories, files)
     try {
-      const gatewayResponse = await provisionAgentOnGateway(agent.id, {
+      // Fetch complete agent data with relations
+      const agentData = await fetchAgentDataForDeployment(agent.id);
+      
+      // Deploy everything to gateway
+      const deployResult = await deployAgentToGateway({
+        agentId: agent.id,
         userId,
         name: agent.name,
         model: agent.model || 'default',
-        config: agent.config as Record<string, any> || {}
+        config: {
+          ...agentData.config,
+          telegramToken: body.config?.telegramToken,
+          aiProvider: body.model === 'claude-opus-4-6' ? 'anthropic' : (body.config?.aiProvider || 'openrouter'),
+          apiKey: body.config?.apiKey,
+          plan: body.tier || 'free',
+          ownerIds: body.config?.ownerIds,
+        },
+        skills: agentData.skills,
+        memories: agentData.memories,
+        files: agentData.files,
       });
+
+      if (!deployResult.success) {
+        throw new Error(deployResult.error || 'Gateway deployment failed');
+      }
 
       // Update agent status
       await prisma.agent.update({
@@ -144,8 +168,11 @@ export async function POST(request: NextRequest) {
           status: 'running',
           config: {
             ...(agent.config as Record<string, any> || {}),
-            gatewayId: gatewayResponse.gatewayId,
-            authToken: gatewayResponse.token
+            gatewayId: deployResult.gatewayId || `gw-${agent.id}`,
+            deployedAt: deployResult.deployedAt,
+            deployedSkills: deployResult.details?.skillsDeployed || 0,
+            deployedMemories: deployResult.details?.memoriesDeployed || 0,
+            deployedFiles: deployResult.details?.filesDeployed || 0,
           }
         }
       });
@@ -158,7 +185,12 @@ export async function POST(request: NextRequest) {
           status: 'running',
           websocketUrl: agent.websocketUrl,
           model: agent.model,
-          createdAt: agent.createdAt
+          createdAt: agent.createdAt,
+          deployed: {
+            skills: deployResult.details?.skillsDeployed || 0,
+            memories: deployResult.details?.memoriesDeployed || 0,
+            files: deployResult.details?.filesDeployed || 0,
+          }
         }
       }, { status: 201 });
 

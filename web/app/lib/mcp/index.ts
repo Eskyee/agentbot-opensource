@@ -106,7 +106,8 @@ export class McpManager {
       throw new Error(`Skill ${skillId} has no MCP configuration`)
     }
 
-    const config = skill.mcpConfig as McpConfig
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const config = skill.mcpConfig as any as McpConfig
 
     if (!config.enabled) {
       throw new Error(`MCP is disabled for skill ${skillId}`)

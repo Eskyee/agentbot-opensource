@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { deploySkillToAgent, removeSkillFromAgent } from '@/app/lib/agent-deploy'
 
 // Default skills catalog — used as seed data if Skill table is empty
 const DEFAULT_SKILLS = [
@@ -167,6 +168,16 @@ export async function POST(request: Request) {
       data: { downloads: { increment: 1 } },
     })
 
+    // Deploy skill to OpenClaw gateway (don't fail if gateway is down)
+    try {
+      const deployResult = await deploySkillToAgent(agentId, skillId)
+      if (!deployResult.success) {
+        console.warn(`[Skill Install] Gateway deploy warning: ${deployResult.error}`)
+      }
+    } catch (gatewayError) {
+      console.warn('[Skill Install] Gateway deploy failed (will retry on sync):', gatewayError)
+    }
+
     return NextResponse.json({ success: true, installed })
   } catch (error) {
     console.error('Skill install error:', error)
@@ -194,6 +205,13 @@ export async function DELETE(request: Request) {
         skillId,
       },
     })
+
+    // Remove skill from OpenClaw gateway (don't fail if gateway is down)
+    try {
+      await removeSkillFromAgent(agentId, skillId)
+    } catch (gatewayError) {
+      console.warn('[Skill Uninstall] Gateway removal failed:', gatewayError)
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

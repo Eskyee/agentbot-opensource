@@ -70,8 +70,13 @@ const [userData, agentData, gatewayToken, health] = await Promise.all([
 ## Files Changed
 
 ### New Files
-- `app/api/dashboard/data/route.ts` - Single endpoint for all data
+- `app/api/dashboard/data/route.ts` - Single endpoint (Edge Runtime compatible)
 - `app/lib/dashboard-data.ts` - Parallel fetching utilities
+- `app/lib/edge-auth.ts` - Edge-compatible auth (Web Crypto API)
+- `app/lib/edge-db.ts` - Edge-compatible database client
+- `app/api/user/[id]/route.ts` - User data endpoint
+- `app/api/agents/user/[userId]/route.ts` - Agent data endpoint
+- `app/api/registration/token/route.ts` - Token lookup endpoint
 - `app/api/referrals/route.ts` - Referrals API
 
 ### Modified
@@ -80,11 +85,29 @@ const [userData, agentData, gatewayToken, health] = await Promise.all([
 
 ## Vercel Optimizations
 
-### Edge Runtime
+### Edge Runtime (Fixed for Crypto Compatibility)
 ```typescript
 export const runtime = 'edge'
 export const preferredRegion = 'iad1'
 ```
+
+**Edge Runtime Compatibility Layer:**
+Since Edge Runtime doesn't support Node.js `crypto` (required by next-auth), we implemented:
+
+1. **Edge-Compatible Auth** (`app/lib/edge-auth.ts`)
+   - Uses Web Crypto API instead of Node.js crypto
+   - Verifies JWT tokens without next-auth's getServerSession
+   - Supports both NextAuth and custom session cookies
+
+2. **Edge Database Client** (`app/lib/edge-db.ts`)
+   - Uses internal REST API instead of direct Prisma
+   - Parallel query execution via fetch()
+   - No Node.js dependencies
+
+3. **Supporting API Routes**
+   - `/api/user/[id]` - User data endpoint
+   - `/api/agents/user/[userId]` - Agent data endpoint
+   - `/api/registration/token` - Token lookup endpoint
 
 ### Cache Headers
 ```typescript
