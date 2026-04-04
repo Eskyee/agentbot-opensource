@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { readSharedGatewayToken } from '@/app/lib/gateway-token'
 
 export async function GET() {
   const session = await getAuthSession()
@@ -9,9 +8,11 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const [user, openclawUser] = await Promise.all([
+  const userId = session.user.id
+
+  const [user, openclawUser, registration] = await Promise.all([
     prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: {
         referralCredits: true,
         plan: true,
@@ -20,13 +21,20 @@ export async function GET() {
       },
     }),
     prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: {
         openclawUrl: true,
         openclawInstanceId: true,
       },
     }),
+    // Get user's specific gateway token from agent_registrations
+    prisma.$queryRaw<{ gateway_token: string | null }[]>`
+      SELECT gateway_token FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
+    `,
   ])
+
+  // Use user's specific token, fallback to shared token only if needed
+  const userToken = registration[0]?.gateway_token
 
   return NextResponse.json({
     credits: user?.referralCredits ?? 0,
@@ -35,7 +43,7 @@ export async function GET() {
     plan: user?.plan ?? null,
     openclawUrl: openclawUser?.openclawUrl ?? null,
     openclawInstanceId: openclawUser?.openclawInstanceId ?? null,
-    gatewayToken: readSharedGatewayToken() || null,
+    gatewayToken: userToken || null,
   })
 }
 
