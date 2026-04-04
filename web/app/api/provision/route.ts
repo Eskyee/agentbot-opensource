@@ -278,6 +278,70 @@ export async function POST(request: NextRequest) {
       console.warn('[Provision] No backend URL or INTERNAL_API_KEY — skipping backend path')
     }
 
+    // ── Path 1.5: Backend Railway proxy — avoids Vercel→Railway CF block ────
+    // The backend runs on Railway/non-Vercel infra so its requests to Railway
+    // API are not blocked by Cloudflare WAF. Try this before direct API.
+    if (internalKey && urls.length > 0) {
+      for (const baseUrl of urls) {
+        try {
+          console.log(`[Provision] Trying backend Railway proxy ${baseUrl}/api/railway/provision`)
+          const res = await fetch(`${baseUrl}/api/railway/provision`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${internalKey}`,
+            },
+            body: JSON.stringify({ agentId, plan: legacyPayload.plan }),
+            signal: AbortSignal.timeout(60_000),
+          })
+
+          const contentType = res.headers.get('content-type') || ''
+          if (!contentType.includes('application/json')) {
+            lastError = `Backend Railway proxy returned non-JSON (${res.status})`
+            console.error(`[Provision] Backend Railway proxy at ${baseUrl} returned HTML — skipping`)
+            continue
+          }
+
+          const data = await res.json() as {
+            success?: boolean; error?: string; agentId?: string; url?: string; status?: string
+          }
+
+          if (data.success && data.url) {
+            import('@/app/lib/alerts').then(({ alertNewProvision }) => {
+              alertNewProvision(data.agentId || agentId, legacyPayload.plan || 'solo').catch(() => {})
+            }).catch(() => {})
+
+            if (userId && userId !== 'admin') {
+              persistManagedAgent({
+                userId,
+                agentId: data.agentId || agentId,
+                url: data.url!,
+                aiProvider: legacyPayload.aiProvider,
+                plan: legacyPayload.plan,
+                agentType: legacyPayload.agentType,
+                status: (data.status as 'deploying' | 'running') || 'deploying',
+              }).catch((err: unknown) => {
+                console.error('[Provision] Failed to persist managed agent (Railway proxy):', err)
+              })
+            }
+
+            return NextResponse.json({
+              success: true,
+              userId: data.agentId || agentId,
+              url: data.url,
+              status: data.status || 'deploying',
+            })
+          }
+
+          lastError = data.error || `Backend Railway proxy returned ${res.status}`
+          console.error(`[Provision] Backend Railway proxy error from ${baseUrl}:`, lastError)
+        } catch (err: unknown) {
+          lastError = err instanceof Error ? err.message : 'Connection failed'
+          console.error(`[Provision] Failed to reach backend Railway proxy at ${baseUrl}:`, lastError)
+        }
+      }
+    }
+
     // ── Path 2: Direct Railway provisioning ──────────────────────────────────
     if (isRailwayConfigured()) {
       try {
