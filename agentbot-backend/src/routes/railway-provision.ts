@@ -1,9 +1,9 @@
 /**
  * Railway provisioning proxy — forwards provision requests to Railway GraphQL API.
  *
- * This route exists because Vercel serverless functions are blocked by Cloudflare
- * WAF on backboard.railway.app. The backend runs on Railway (or non-Vercel infra)
- * so its outbound requests to Railway API are not blocked.
+ * This route exists because direct calls from Vercel serverless functions to
+ * backboard.railway.app/graphql/v2 return 403. The backend runs on Railway
+ * so its outbound requests to Railway API succeed.
  *
  * POST /api/railway/provision
  *   Body: { agentId, plan, userId }

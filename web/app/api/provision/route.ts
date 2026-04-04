@@ -278,9 +278,8 @@ export async function POST(request: NextRequest) {
       console.warn('[Provision] No backend URL or INTERNAL_API_KEY — skipping backend path')
     }
 
-    // ── Path 1.5: Backend Railway proxy — avoids Vercel→Railway CF block ────
-    // The backend runs on Railway/non-Vercel infra so its requests to Railway
-    // API are not blocked by Cloudflare WAF. Try this before direct API.
+    // ── Path 1.5: Backend Railway proxy — direct Vercel→Railway calls 403 ───
+    // Route through backend (runs on Railway) where the API call succeeds.
     if (internalKey && urls.length > 0) {
       for (const baseUrl of urls) {
         try {
