@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { DEFAULT_OPENCLAW_IMAGE, DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -17,16 +18,16 @@ export async function GET() {
     })
 
     if (!response.ok) {
-      return NextResponse.json({ openclawVersion: '2026.4.2' })
+      return NextResponse.json({ openclawVersion: DEFAULT_OPENCLAW_VERSION, image: DEFAULT_OPENCLAW_IMAGE })
     }
 
     const data = await response.json()
     return NextResponse.json({
-      openclawVersion: data?.openclawVersion || '2026.4.2',
-      image: data?.image,
+      openclawVersion: data?.openclawVersion || DEFAULT_OPENCLAW_VERSION,
+      image: data?.image || DEFAULT_OPENCLAW_IMAGE,
       deployedAt: data?.deployedAt
     })
   } catch {
-    return NextResponse.json({ openclawVersion: '2026.4.2' })
+    return NextResponse.json({ openclawVersion: DEFAULT_OPENCLAW_VERSION, image: DEFAULT_OPENCLAW_IMAGE })
   }
 }

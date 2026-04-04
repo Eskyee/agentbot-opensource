@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getInternalApiKey, getBackendApiUrl } from '../../lib/api-keys'
 import { verifyInstanceOwnership } from '../_auth'
 import { prisma } from '@/app/lib/prisma'
-
-const RUNTIME_VERSION = '2026.4.2'
+import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 
 async function probeRuntime(url: string) {
   const normalized = String(url).replace(/\/$/, '')
@@ -28,7 +27,7 @@ async function probeRuntime(url: string) {
 
     const runtimeVersion = typeof healthPayload?.version === 'string'
       ? healthPayload.version
-      : RUNTIME_VERSION
+      : DEFAULT_OPENCLAW_VERSION
 
     if (healthOk && readyOk) {
       return { status: 'running', openclawVersion: runtimeVersion }
@@ -40,7 +39,7 @@ async function probeRuntime(url: string) {
 
     return { status: 'unknown', openclawVersion: runtimeVersion }
   } catch {
-    return { status: 'unknown', openclawVersion: RUNTIME_VERSION }
+    return { status: 'unknown', openclawVersion: DEFAULT_OPENCLAW_VERSION }
   }
 }
 
@@ -104,7 +103,7 @@ export async function GET(
       subdomain: data.subdomain || new URL(persistedUrl).host,
       url: data.url || persistedUrl,
       plan: data.plan || 'free',
-      openclawVersion: data.openclawVersion || runtime.openclawVersion || RUNTIME_VERSION
+      openclawVersion: data.openclawVersion || runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION
     })
   } catch (error) {
     const runtime = await probeRuntime(persistedUrl)

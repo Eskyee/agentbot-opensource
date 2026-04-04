@@ -33,7 +33,7 @@ function OnboardContent() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ userId: string; subdomain: string; url: string; streamKey?: string; liveStreamId?: string } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
-  const [openclawVersion, setOpenclawVersion] = useState('2026.2.26')
+  const [openclawVersion, setOpenclawVersion] = useState('unknown')
   const [showConfetti, setShowConfetti] = useState(false)
   const [accountStats, setAccountStats] = useState<{
     agents?: { active: number; total: number; limit: number; newToday: number }

@@ -15,6 +15,7 @@ import { spawn } from 'child_process';
 import { Pool } from 'pg';
 import { runCommand } from '../utils';
 import { authenticate } from '../middleware/auth';
+import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION, deriveOpenClawVersionFromImage } from '../lib/openclaw-version';
 
 const router = Router();
 
@@ -59,8 +60,7 @@ type ContainerInspect = {
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.2';
-const OPENCLAW_RUNTIME_VERSION = '2026.4.2';
+const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
 
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
@@ -534,7 +534,14 @@ router.post('/:id/update', async (req: Request, res: Response) => {
       await recreateContainerWithImage(containerName, inspect, oldImage);
       throw e;
     }
-    res.json({ success: true, status: 'active', image: targetImage, previousImage: oldImage, backupPath, openclawVersion: OPENCLAW_RUNTIME_VERSION });
+    res.json({
+      success: true,
+      status: 'active',
+      image: targetImage,
+      previousImage: oldImage,
+      backupPath,
+      openclawVersion: deriveOpenClawVersionFromImage(targetImage),
+    });
   } catch (error: unknown) {
     res.status(500).json({ error: error instanceof Error ? error.message : 'Update failed' });
   }

@@ -9,6 +9,7 @@
 import { useState, useEffect, memo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control'
 
 export const navSections = [
   {
@@ -112,20 +113,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({ userName, credi
       ? 'bg-yellow-400'
       : 'bg-zinc-700'
   const runtimeHost = openclawUrl ? new URL(openclawUrl).host : null
+  const openclawConfigUrl = openclawUrl
+    ? buildOpenClawControlUrl({ view: 'config', gatewayUrl: openclawUrl, gatewayToken })
+    : null
   const openclawChatUrl = openclawUrl
-    ? gatewayToken
-      ? `${openclawUrl}/chat?session=main#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(openclawUrl).host}`)}`
-      : `${openclawUrl}/chat?session=main`
+    ? buildOpenClawControlUrl({ view: 'chat', gatewayUrl: openclawUrl, gatewayToken, session: 'main' })
     : null
   const openclawSkillsUrl = openclawUrl
-    ? gatewayToken
-      ? `${openclawUrl}/skills#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(openclawUrl).host}`)}`
-      : `${openclawUrl}/skills`
-    : null
-  const openclawConfigUrl = openclawUrl
-    ? gatewayToken
-      ? `${openclawUrl}/config#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(openclawUrl).host}`)}`
-      : `${openclawUrl}/config`
+    ? buildOpenClawControlUrl({ view: 'skills', gatewayUrl: openclawUrl, gatewayToken })
     : null
 
   return (

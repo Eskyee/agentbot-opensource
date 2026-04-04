@@ -15,6 +15,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import httpProxy from 'http-proxy';
 import { runCommand } from '../utils';
+import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from '../lib/openclaw-version';
 
 const router = Router();
 
@@ -45,8 +46,7 @@ export { proxy };
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.2';
-const OPENCLAW_RUNTIME_VERSION = '2026.4.2';
+const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
 
 type AgentMetadata = {
   agentId: string;

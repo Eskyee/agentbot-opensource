@@ -1,0 +1,8 @@
+export const DEFAULT_OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.2'
+
+export function deriveOpenClawVersionFromImage(image: string = DEFAULT_OPENCLAW_IMAGE): string {
+  const match = image.match(/:([^:@]+)$/)
+  return match?.[1] || 'unknown'
+}
+
+export const OPENCLAW_RUNTIME_VERSION = deriveOpenClawVersionFromImage()

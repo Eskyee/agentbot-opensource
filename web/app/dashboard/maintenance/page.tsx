@@ -8,6 +8,7 @@ import {
   DashboardContent,
 } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
+import { OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
 
 interface HealthData {
   instanceId?: string
@@ -56,6 +57,7 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function MaintenancePage() {
+  const controlsEnabled = OPENCLAW_CONTROLS_ENABLED
   const [health, setHealth] = useState<HealthData | null>(null)
   const [loading, setLoading] = useState(true)
   const [restarting, setRestarting] = useState(false)
@@ -82,7 +84,7 @@ export default function MaintenancePage() {
   }, [fetchHealth])
 
   const runMaintenance = async () => {
-    if (restarting) return
+    if (restarting || !controlsEnabled) return
     setRestarting(true)
     setRestartMsg(null)
     try {
@@ -102,8 +104,8 @@ export default function MaintenancePage() {
   }
 
   const factoryReset = async () => {
-    if (resetting) return
-    if (!confirm('Factory reset your agent to the stable version (2026.4.2)? This will update the image, reconfigure env vars, and restart. Your data is safe — this only resets the OpenClaw version.')) return
+    if (resetting || !controlsEnabled) return
+    if (!confirm('Factory reset your agent to the configured stable OpenClaw image? This updates the image, rewrites env vars, and restarts the runtime.')) return
     setResetting(true)
     setRestartMsg(null)
     try {
@@ -114,7 +116,7 @@ export default function MaintenancePage() {
       })
       const data = await res.json()
       if (res.ok) {
-        setRestartMsg(`Factory reset complete — pinned to ${data.image || '2026.4.2'}. Agent restarting with doctor --fix.`)
+        setRestartMsg(`Factory reset complete — pinned to ${data.image || 'configured image'}. Agent restarting with doctor --fix.`)
         setTimeout(fetchHealth, 15000)
       } else {
         setRestartMsg(`Error: ${data.error || 'Factory reset failed'}`)
@@ -216,7 +218,7 @@ export default function MaintenancePage() {
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={runMaintenance}
-                  disabled={restarting || resetting}
+                  disabled={restarting || resetting || !controlsEnabled}
                   className="bg-white text-black px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
                 >
                   {restarting ? (
@@ -227,7 +229,7 @@ export default function MaintenancePage() {
                 </button>
                 <button
                   onClick={factoryReset}
-                  disabled={restarting || resetting}
+                  disabled={restarting || resetting || !controlsEnabled}
                   className="border border-red-800 text-red-400 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-red-900/20 disabled:opacity-50 transition-colors flex items-center gap-2"
                 >
                   {resetting ? (
@@ -241,8 +243,13 @@ export default function MaintenancePage() {
                 <strong>Run Maintenance:</strong> Restarts agent, runs <span className="font-mono">openclaw doctor --fix</span> on startup.
               </p>
               <p className="text-[10px] text-zinc-600 mt-1">
-                <strong>Factory Reset:</strong> Pins OpenClaw to stable v2026.4.2, reconfigures env vars, restarts. Use if your agent broke after an update.
+                <strong>Factory Reset:</strong> Pins OpenClaw to the configured stable image, reconfigures env vars, and restarts. Use if your agent broke after an update.
               </p>
+              {!controlsEnabled && (
+                <div className="mt-3 border border-zinc-800 bg-zinc-900/70 p-3 text-[11px] text-zinc-400">
+                  Managed maintenance actions are disabled until the Railway control path is fully verified. Health data above remains live.
+                </div>
+              )}
               {restartMsg && (
                 <div className={`mt-3 border p-3 text-[11px] ${restartMsg.startsWith('Error') ? 'border-red-800 text-red-400' : 'border-green-900 text-green-400'}`}>
                   {restartMsg}

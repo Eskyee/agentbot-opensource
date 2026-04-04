@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import WebSocket from 'ws'
+import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
+import { readSharedGatewayToken } from '@/app/lib/gateway-token'
 
-const GATEWAY_IMAGE_VERSION = '2026.4.2'
+const GATEWAY_IMAGE_VERSION = DEFAULT_OPENCLAW_VERSION
 
 /**
  * Gateway Chat Proxy
@@ -30,10 +32,13 @@ export async function POST(req: NextRequest) {
     // Look up user's agent
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true },
+      select: { id: true, openclawInstanceId: true, openclawUrl: true },
     })
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+    if (!user.openclawInstanceId) {
+      return NextResponse.json({ error: 'No OpenClaw instance found' }, { status: 404 })
     }
 
     const agent = await prisma.agent.findFirst({
@@ -44,25 +49,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No agent found' }, { status: 404 })
     }
 
-    // Get gateway token
-    const tokenRes = await fetch(
-      `${process.env.BACKEND_API_URL}/api/agents/${agent.id}/token`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.INTERNAL_API_KEY}`,
-        },
-      }
-    ).catch(() => null)
-
-    const tokenData = await tokenRes?.json().catch(() => ({}))
-    const gatewayToken = tokenData?.token || process.env.OPENCLAW_GATEWAY_TOKEN
+    const gatewayToken = readSharedGatewayToken() || process.env.OPENCLAW_GATEWAY_TOKEN
 
     if (!gatewayToken) {
       return NextResponse.json({ error: 'No gateway token available' }, { status: 503 })
     }
 
     // Gateway WebSocket URL
-    const gatewayUrl = `wss://agentbot-agent-${agent.id}-production.up.railway.app`
+    const runtimeHost = user.openclawUrl
+      ? new URL(user.openclawUrl).host
+      : `agentbot-agent-${user.openclawInstanceId}-production.up.railway.app`
+    const gatewayUrl = `wss://${runtimeHost}`
 
     // Connect to Gateway and send message, collect response
     const reply = await gatewayChat(gatewayUrl, gatewayToken, message, sessionKey || 'main')
@@ -70,8 +67,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       reply,
-      agentId: agent.id,
-      agentName: agent.name,
+      agentId: user.openclawInstanceId,
+      agentName: agent?.name || user.openclawInstanceId,
     })
   } catch (error) {
     console.error('Gateway chat error:', error)

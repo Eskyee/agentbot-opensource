@@ -30,6 +30,7 @@ import {
 } from '@/app/components/shared/DashboardShell'
 import { AgentCard } from '@/app/components/shared/AgentCard'
 import { EmptyState } from '@/app/components/shared/EmptyState'
+import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control'
 
 interface Skill {
   id: string
@@ -87,9 +88,11 @@ export default function SkillsPage() {
         if (!data?.openclawUrl) return
         const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '')
         const gatewayToken = data.gatewayToken ? String(data.gatewayToken) : ''
-        const pairedSkillsUrl = gatewayToken
-          ? `${normalizedUrl}/skills#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(normalizedUrl).host}`)}`
-          : `${normalizedUrl}/skills`
+        const pairedSkillsUrl = buildOpenClawControlUrl({
+          view: 'skills',
+          gatewayUrl: normalizedUrl,
+          gatewayToken,
+        })
         setOpenclawSkillsUrl(pairedSkillsUrl)
       })
       .catch(() => {
@@ -314,7 +317,7 @@ export default function SkillsPage() {
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Runtime Skills Manager</div>
               <p className="mt-1 text-sm text-zinc-300">
-                Open the real OpenClaw skills manager for this agent. This avoids the shared gateway `/skills` page and uses your paired agent session.
+                Open the real OpenClaw skills manager for this agent through the managed control UI, using your paired runtime session.
               </p>
             </div>
             <a

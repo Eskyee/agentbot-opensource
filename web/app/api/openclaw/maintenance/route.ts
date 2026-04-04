@@ -3,10 +3,12 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getAgentEnvVars, OPENCLAW_START_CMD } from '@/app/lib/railway-provision'
 import { getRailwayEnvironmentId, getRailwayProjectId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { DEFAULT_OPENCLAW_IMAGE } from '@/app/lib/openclaw-version'
+import { OPENCLAW_CONTROLS_ENABLED, controlsDisabledResponse } from '@/app/api/instance/_runtime'
 
 export const dynamic = 'force-dynamic'
 
-const KNOWN_GOOD_IMAGE = 'ghcr.io/openclaw/openclaw:2026.4.2'
+const KNOWN_GOOD_IMAGE = DEFAULT_OPENCLAW_IMAGE
 
 async function getOpenClawInfo(userId: string) {
   const user = await prisma.user.findUnique({
@@ -76,6 +78,10 @@ export async function GET() {
  * - factory-reset: pins to known-good image, reconfigures env, restarts
  */
 export async function POST(request: Request) {
+  if (!OPENCLAW_CONTROLS_ENABLED) {
+    return controlsDisabledResponse()
+  }
+
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

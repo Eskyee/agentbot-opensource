@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { DEFAULT_OPENCLAW_IMAGE } from './openclaw-version';
 
 /**
  * Agentbot Container Manager — Railway API Edition
@@ -13,7 +14,7 @@ import crypto from 'crypto';
  */
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2';
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.1';
+const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
 
 // Plan → CPU (millicores) + Memory (MB)
 const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }> = {
@@ -251,13 +252,15 @@ export async function createContainer(
     ? `https://${serviceDomain.domain}`
     : `https://${serviceName}.up.railway.app`;
 
-  const controlUiBase = process.env.OPENCLAW_CONTROL_UI_URL || 'https://openclaw-gw-ui-production.up.railway.app/chat';
+  const controlUiBase = (process.env.OPENCLAW_CONTROL_UI_URL || 'https://openclaw-gw-ui-production.up.railway.app')
+    .replace(/\/(chat|skills|config)\/?$/, '')
+    .replace(/\/$/, '');
   const controlSession = process.env.OPENCLAW_CONTROL_UI_SESSION || 'agent:main:main';
   const gatewayUrl = `wss://${serviceDomain?.domain || `${serviceName}.up.railway.app`}`;
 
   const controlUiUrl = gatewayToken
-    ? `${controlUiBase}?session=${encodeURIComponent(controlSession)}&gatewayUrl=${encodeURIComponent(gatewayUrl)}&token=${encodeURIComponent(gatewayToken)}`
-    : controlUiBase;
+    ? `${controlUiBase}/chat?session=${encodeURIComponent(controlSession)}#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(gatewayUrl)}`
+    : `${controlUiBase}/chat?session=${encodeURIComponent(controlSession)}`;
 
   return {
     container: serviceName,

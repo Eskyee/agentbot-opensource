@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
 import { gatewayHealthcheck } from '@/app/lib/gateway-proxy'
-import { prisma } from '@/app/lib/prisma'
+import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
+import { getOwnedOpenClawUser } from '@/app/api/instance/_runtime'
 
 /**
  * GET /api/instance/[userId]/stats
@@ -11,20 +11,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const session = await getAuthSession()
-  if (!session?.user?.email || !session.user.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   const { userId } = await params
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { openclawInstanceId: true, openclawUrl: true },
-  })
-
-  if (!user?.openclawInstanceId || user.openclawInstanceId !== userId) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  const owned = await getOwnedOpenClawUser(userId)
+  if ('error' in owned) {
+    return owned.error
   }
+  const { user } = owned
 
   // Check the user's actual OpenClaw instance first, not just the shared gateway.
   const health = await gatewayHealthcheck(user.openclawUrl || undefined)
@@ -39,7 +31,7 @@ export async function GET(
       uptime: 'active',
       messages: null,
       errors: null,
-      openclawVersion: '2026.4.2',
+      openclawVersion: DEFAULT_OPENCLAW_VERSION,
     })
   }
 

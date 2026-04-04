@@ -1,9 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getAuthSession } from '@/app/lib/getAuthSession'
-import { prisma } from '@/app/lib/prisma'
-
-const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
-const RAILWAY_TOKEN = process.env.RAILWAY_API_KEY || ''
+import { NextResponse } from 'next/server'
+import { controlsDisabledResponse, getOwnedOpenClawUser, OPENCLAW_CONTROLS_ENABLED } from '@/app/api/instance/_runtime'
+import { getRailwayEnvironmentId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
 
 /**
  * POST /api/instance/[userId]/repair
@@ -11,24 +8,24 @@ const RAILWAY_TOKEN = process.env.RAILWAY_API_KEY || ''
  * Fixes broken tokens, config corruption, stuck containers.
  */
 export async function POST(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const session = await getAuthSession()
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!OPENCLAW_CONTROLS_ENABLED) {
+    return controlsDisabledResponse()
   }
 
   const { userId } = await params
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { openclawInstanceId: true, plan: true },
-  })
-
-  if (!user?.openclawInstanceId) {
-    return NextResponse.json({ success: false, error: 'No instance found' }, { status: 404 })
+  const owned = await getOwnedOpenClawUser(userId)
+  if ('error' in owned) {
+    return owned.error
   }
+  const { user } = owned
+  const environmentId = getRailwayEnvironmentId()
+  const railwayService = await resolveRailwayService({
+    agentId: user.openclawInstanceId,
+    openclawUrl: user.openclawUrl,
+  })
 
   try {
     // Re-inject all env vars (fixes corrupted/missing vars)
@@ -48,43 +45,29 @@ export async function POST(
 
     // Update env vars on Railway
     const envEntries = Object.entries(variables).map(([name, value]) => ({ name, value }))
-    await fetch(RAILWAY_API, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RAILWAY_TOKEN}`,
-      },
-      body: JSON.stringify({
-        query: `mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
-          variableCollectionUpsert(input: $input)
-        }`,
-        variables: {
-          input: {
-            serviceId: user.openclawInstanceId,
-            environmentId: process.env.RAILWAY_ENVIRONMENT_ID || '',
-            variables: envEntries,
-          },
+    await railwayGql(
+      `mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+        variableCollectionUpsert(input: $input)
+      }`,
+      {
+        input: {
+          serviceId: railwayService.id,
+          environmentId,
+          variables: envEntries,
         },
-      }),
-    })
+      }
+    )
 
     // Restart after env update
-    await fetch(RAILWAY_API, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RAILWAY_TOKEN}`,
-      },
-      body: JSON.stringify({
-        query: `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
-          serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
-        }`,
-        variables: {
-          serviceId: user.openclawInstanceId,
-          environmentId: process.env.RAILWAY_ENVIRONMENT_ID || '',
-        },
-      }),
-    })
+    await railwayGql(
+      `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
+        serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
+      }`,
+      {
+        serviceId: railwayService.id,
+        environmentId,
+      }
+    )
 
     return NextResponse.json({ success: true, status: 'repaired' })
   } catch (err: any) {

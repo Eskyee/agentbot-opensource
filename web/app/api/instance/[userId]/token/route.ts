@@ -1,36 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { NextResponse } from 'next/server'
 import { verifyInstanceOwnership } from '../../_auth'
+import { readSharedGatewayToken } from '@/app/lib/gateway-token'
 
 export async function GET(
-  request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const BACKEND_API_URL = getBackendApiUrl()
   const { userId } = await params
   if (!(await verifyInstanceOwnership(userId))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
-  const INTERNAL_API_KEY = getInternalApiKey()
-  
-  try {
-    const response = await fetch(`${BACKEND_API_URL}/api/agents/${userId}/token`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${INTERNAL_API_KEY}`
-      }
-    })
 
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to get token' }, { status: 502 })
-    }
-
-    const data = await response.json()
-    return NextResponse.json(data)
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to get token' }, { status: 500 })
+  const token = readSharedGatewayToken() || process.env.OPENCLAW_GATEWAY_TOKEN
+  if (!token) {
+    return NextResponse.json({ error: 'No gateway token configured' }, { status: 503 })
   }
+
+  return NextResponse.json({ token })
 }
 
 

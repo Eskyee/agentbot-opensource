@@ -11,6 +11,7 @@ import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
 import { TrialBanner } from '@/app/components/TrialBanner'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
+import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
 
 
 // Helper to convert percent string to Tailwind width class
@@ -77,6 +78,7 @@ function DashboardContent() {
   const [statusChecks, setStatusChecks] = useState<{ name: string; status: 'ok' | 'degraded' | 'down'; detail?: string }[]>([])
   const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
   const [healingAttempted, setHealingAttempted] = useState(false)
+  const controlsEnabled = OPENCLAW_CONTROLS_ENABLED
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -230,9 +232,12 @@ function DashboardContent() {
         const gatewayToken = tokenData.gatewayToken || undefined
         // Control UI auto-connects via hash fragment — token + gateway URL
         // Hash is never sent to server, so it's safe to embed the token
-        const controlUiUrl = gatewayToken
-          ? `${url}/chat?session=main#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(url).host}`)}`
-          : `${url}/chat?session=main`
+        const controlUiUrl = buildOpenClawControlUrl({
+          view: 'chat',
+          gatewayUrl: url,
+          gatewayToken,
+          session: 'main',
+        })
         const resolvedUserId = tokenData.openclawInstanceId || data.userId || userId
         localStorage.setItem('agentbot_instance', JSON.stringify({
           userId: resolvedUserId,
@@ -273,6 +278,10 @@ function DashboardContent() {
 
   const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
     if (!instance) return
+    if (!controlsEnabled) {
+      alert('Managed runtime controls are temporarily disabled while the Railway control path is hardened.')
+      return
+    }
     setActionLoading(action)
     
     try {
@@ -366,12 +375,16 @@ function DashboardContent() {
   const isRunning = instance.status === 'running'
   const startedAt = instance.startedAt
   const runtimeBadge = getRuntimeBadge(instance.status)
-  const skillsManagerUrl = instance.gatewayToken
-    ? `${instance.url.replace(/\/$/, '')}/skills#token=${encodeURIComponent(instance.gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(instance.url).host}`)}`
-    : `${instance.url.replace(/\/$/, '')}/skills`
-  const configManagerUrl = instance.gatewayToken
-    ? `${instance.url.replace(/\/$/, '')}/config#token=${encodeURIComponent(instance.gatewayToken)}&gatewayUrl=${encodeURIComponent(`wss://${new URL(instance.url).host}`)}`
-    : `${instance.url.replace(/\/$/, '')}/config`
+  const skillsManagerUrl = buildOpenClawControlUrl({
+    view: 'skills',
+    gatewayUrl: instance.url,
+    gatewayToken: instance.gatewayToken,
+  })
+  const configManagerUrl = buildOpenClawControlUrl({
+    view: 'config',
+    gatewayUrl: instance.url,
+    gatewayToken: instance.gatewayToken,
+  })
   const sessionsLabel = gatewayStatus?.sessions?.available
     ? `${gatewayStatus?.sessions.active ?? 0} active / ${gatewayStatus?.sessions.total ?? 0} total`
     : 'unavailable'
@@ -488,7 +501,7 @@ function DashboardContent() {
                 </div>
                 <div>
                   <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
-                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || '2026.4.2'}</dd>
+                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || 'unknown'}</dd>
                 </div>
                 <div>
                   <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>
@@ -612,40 +625,51 @@ function DashboardContent() {
                     <span>→</span>
                   </a>
                 )}
-                <button
-                  onClick={() => performAction('update')}
-                  disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                >
-                  <span>Update</span>
-                  {actionLoading === 'update' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↑</span>}
-                </button>
-                <button
-                  onClick={() => performAction('restart')}
-                  disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                >
-                  <span>Restart</span>
-                  {actionLoading === 'restart' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↻</span>}
-                </button>
-                {isRunning ? (
-                  <button
-                    onClick={() => performAction('stop')}
-                    disabled={!!actionLoading}
-                    className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                  >
-                    <span>Stop</span>
-                    {actionLoading === 'stop' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>■</span>}
-                  </button>
+                {controlsEnabled ? (
+                  <>
+                    <button
+                      onClick={() => performAction('update')}
+                      disabled={!!actionLoading}
+                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
+                    >
+                      <span>Update</span>
+                      {actionLoading === 'update' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↑</span>}
+                    </button>
+                    <button
+                      onClick={() => performAction('restart')}
+                      disabled={!!actionLoading}
+                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
+                    >
+                      <span>Restart</span>
+                      {actionLoading === 'restart' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↻</span>}
+                    </button>
+                    {isRunning ? (
+                      <button
+                        onClick={() => performAction('stop')}
+                        disabled={!!actionLoading}
+                        className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                      >
+                        <span>Stop</span>
+                        {actionLoading === 'stop' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>■</span>}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => performAction('start')}
+                        disabled={!!actionLoading}
+                        className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                      >
+                        <span>Start</span>
+                        {actionLoading === 'start' ? <span className="w-2 h-2 rounded-full bg-black animate-pulse" /> : <span>▶</span>}
+                      </button>
+                    )}
+                  </>
                 ) : (
-                  <button
-                    onClick={() => performAction('start')}
-                    disabled={!!actionLoading}
-                    className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
-                  >
-                    <span>Start</span>
-                    {actionLoading === 'start' ? <span className="w-2 h-2 rounded-full bg-black animate-pulse" /> : <span>▶</span>}
-                  </button>
+                  <div className="border border-zinc-800 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Lifecycle Controls</p>
+                    <p className="mt-2 text-[11px] text-zinc-500">
+                      Managed restart, update, start, and stop actions are hidden until the Railway control path is fully verified. Runtime links above stay live.
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -655,33 +679,44 @@ function DashboardContent() {
                 Maintenance
               </h2>
               <div className="space-y-3">
-                <button
-                  onClick={() => performAction('repair')}
-                  disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                >
-                  <div className="text-left">
-                    <div>Repair Agent</div>
-                    <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-600 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
+                {controlsEnabled ? (
+                  <>
+                    <button
+                      onClick={() => performAction('repair')}
+                      disabled={!!actionLoading}
+                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
+                    >
+                      <div className="text-left">
+                        <div>Repair Agent</div>
+                        <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-600 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
+                      </div>
+                      {actionLoading === 'repair' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>→</span>}
+                    </button>
+                    
+                    <button
+                      onClick={() => {
+                        if (confirm('Wipe memory, identity & conversation history? This cannot be undone.')) {
+                          performAction('reset-memory')
+                        }
+                      }}
+                      disabled={!!actionLoading}
+                      className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                    >
+                      <div className="text-left">
+                        <div>Reset Agent Memory</div>
+                        <div className="text-[10px] font-normal normal-case tracking-normal text-red-400/60 mt-1">Wipe memory, identity & conversation history</div>
+                      </div>
+                      {actionLoading === 'reset-memory' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>→</span>}
+                    </button>
+                  </>
+                ) : (
+                  <div className="border border-zinc-800 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Managed Recovery</p>
+                    <p className="mt-2 text-[11px] text-zinc-500">
+                      Repair and memory-reset actions stay hidden until their managed Railway flow is verified end to end.
+                    </p>
                   </div>
-                  {actionLoading === 'repair' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>→</span>}
-                </button>
-                
-                <button
-                  onClick={() => {
-                    if (confirm('Wipe memory, identity & conversation history? This cannot be undone.')) {
-                      performAction('reset-memory')
-                    }
-                  }}
-                  disabled={!!actionLoading}
-                  className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                >
-                  <div className="text-left">
-                    <div>Reset Agent Memory</div>
-                    <div className="text-[10px] font-normal normal-case tracking-normal text-red-400/60 mt-1">Wipe memory, identity & conversation history</div>
-                  </div>
-                  {actionLoading === 'reset-memory' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>→</span>}
-                </button>
+                )}
               </div>
             </div>
 
