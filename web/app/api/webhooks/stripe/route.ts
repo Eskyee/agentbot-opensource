@@ -92,7 +92,12 @@ export async function POST(request: Request) {
             await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
           } catch (err) {
             console.error(`[Webhook] No user found for email ${customerEmail} — skipping to avoid duplicate account`)
-            await sendAlert(`Stripe webhook: no user found for ${customerEmail}, userId missing from metadata`)
+            await sendAlert({
+              title: 'Stripe Webhook Issue',
+              message: `No user found for ${customerEmail} — skipping to avoid duplicate account.`,
+              severity: 'warning',
+              fields: { Email: customerEmail, Issue: 'userId missing from metadata' },
+            })
           }
         } else {
           console.error('[Webhook] No userId or email in checkout session!')
