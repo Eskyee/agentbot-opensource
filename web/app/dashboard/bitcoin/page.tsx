@@ -6,14 +6,14 @@ import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/compone
 import StatusPill from '@/app/components/shared/StatusPill'
 
 type Agent = {
-  id: number
+  id: string
   name: string
   status: string
 }
 
 type BitcoinWallet = {
   id: number
-  agentId: number
+  agentId: string
   label: string | null
   network: string
   createdAt: string
@@ -129,9 +129,15 @@ export default function BitcoinPage() {
         backendRes.json(),
       ])
 
-      setAgents(agentsData.agents || [])
-      setWallets(walletsData || [])
-      setBackendInfo(backendData || null)
+      setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents : [])
+      setWallets(Array.isArray(walletsData) ? walletsData : [])
+      setBackendInfo(backendData && typeof backendData === 'object' ? backendData : null)
+
+      if (!walletsRes.ok) {
+        setError(typeof walletsData?.error === 'string' ? walletsData.error : 'Failed to load Bitcoin wallets')
+      } else if (!backendRes.ok) {
+        setError(typeof backendData?.error === 'string' ? backendData.error : 'Failed to load Bitcoin backend info')
+      }
     } catch (err) {
       console.error('[BitcoinPage] loadData error:', err)
       setError('Failed to load Bitcoin wallet data')
@@ -180,7 +186,7 @@ export default function BitcoinPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agentId: Number(agentId),
+          agentId,
           label: label.trim() || undefined,
           derivationScheme: derivationScheme.trim(),
         }),
