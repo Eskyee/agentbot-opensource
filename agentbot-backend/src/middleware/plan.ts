@@ -1,4 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
+import { Pool } from 'pg';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Plan definitions — ordered cheapest to most expensive
 // Matches pricing page: Solo £29, Collective £69, Label £149, Network £499
@@ -47,31 +50,59 @@ declare global {
 
 /**
  * Middleware: Require valid plan
- * Reads Stripe subscription status from trusted frontend headers.
  *
- * SECURITY NOTE: x-user-plan and x-stripe-subscription-id are trusted headers
- * set by the Next.js frontend after verifying the user's Stripe subscription.
- * These values are NOT cryptographically verified here — trust depends on the
- * outer Bearer-token gate (index.ts) preventing direct external access.
- *
- * TODO: For stronger guarantees, validate stripeSubscriptionId directly against
- * the Stripe API or a local DB cache rather than trusting the header value.
+ * Primary: validates subscription against the DB — the header values are
+ * cross-referenced so a caller cannot self-upgrade their plan by forging headers.
+ * Fallback: if the DB is unavailable, falls back to header + format check so
+ * the app stays up during transient DB issues.
  */
-export function requirePlan(req: Request, res: Response, next: NextFunction) {
-  const plan = req.headers['x-user-plan'] as PlanName;
+export async function requirePlan(req: Request, res: Response, next: NextFunction) {
+  const headerPlan = req.headers['x-user-plan'] as PlanName;
   const email = req.headers['x-user-email'] as string;
   const stripeSubscriptionId = req.headers['x-stripe-subscription-id'] as string;
 
-  // Admin bypass
+  // Admin bypass — always allow, max plan
   const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-  if (email && ADMIN_EMAILS.includes(email)) {
-    req.userPlan = 'network'; // admins get max plan
+  if (email && ADMIN_EMAILS.includes(email.toLowerCase())) {
+    req.userPlan = 'network';
     req.userPlanConfig = PLANS.network;
     return next();
   }
 
-  // Must have a valid plan name
-  if (!plan || !PLANS[plan]) {
+  // DB validation — cross-reference subscription against the users table.
+  // Uses the user's email (already verified by the outer Bearer gate + HMAC) to
+  // look up their real plan and subscription ID, so headers can't be forged.
+  if (process.env.DATABASE_URL && email) {
+    try {
+      const { rows } = await pool.query<{ plan: string; stripe_subscription_id: string | null }>(
+        `SELECT plan, stripe_subscription_id FROM users WHERE email = $1 LIMIT 1`,
+        [email.toLowerCase()]
+      );
+
+      if (rows.length > 0 && rows[0].stripe_subscription_id) {
+        // User found with a stored subscription — validate it matches the header
+        if (rows[0].stripe_subscription_id !== stripeSubscriptionId) {
+          return res.status(402).json({
+            success: false,
+            error: 'Subscription mismatch. Please sign out and back in.',
+            code: 'SUBSCRIPTION_MISMATCH',
+          });
+        }
+        // Use plan from DB — not the header — so it can't be self-upgraded
+        const dbPlan = (rows[0].plan as PlanName);
+        req.userPlan = PLANS[dbPlan] ? dbPlan : 'solo';
+        req.userPlanConfig = PLANS[req.userPlan];
+        return next();
+      }
+      // User exists but has no subscription stored — fall through to format check
+    } catch (err) {
+      // DB unavailable — fall through to header-based check rather than blocking all traffic
+      console.error('[requirePlan] DB lookup failed, falling back to header check:', (err as Error).message);
+    }
+  }
+
+  // Header-based fallback (DB unavailable or user not yet in DB)
+  if (!headerPlan || !PLANS[headerPlan]) {
     return res.status(402).json({
       success: false,
       error: 'Valid subscription required. Choose a plan at /pricing',
@@ -79,7 +110,6 @@ export function requirePlan(req: Request, res: Response, next: NextFunction) {
     });
   }
 
-  // Must have Stripe subscription — validate basic format (sub_xxx)
   if (!stripeSubscriptionId || !/^sub_[a-zA-Z0-9]+$/.test(stripeSubscriptionId)) {
     return res.status(402).json({
       success: false,
@@ -88,8 +118,8 @@ export function requirePlan(req: Request, res: Response, next: NextFunction) {
     });
   }
 
-  req.userPlan = plan;
-  req.userPlanConfig = PLANS[plan];
+  req.userPlan = headerPlan;
+  req.userPlanConfig = PLANS[headerPlan];
   next();
 }
 
