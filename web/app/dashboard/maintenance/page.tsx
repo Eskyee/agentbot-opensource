@@ -63,6 +63,7 @@ export default function MaintenancePage() {
   const [restartMsg, setRestartMsg] = useState<string | null>(null)
   const [showMatrix, setShowMatrix] = useState(false)
   const [showDocker, setShowDocker] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const fetchHealth = useCallback(async () => {
     try {
@@ -123,6 +124,28 @@ export default function MaintenancePage() {
       setRestartMsg('Network error — could not reach maintenance endpoint')
     } finally {
       setResetting(false)
+    }
+  }
+
+  const deleteAgent = async () => {
+    if (deleting) return
+    if (!health?.instanceId) return
+    if (!confirm('Permanently delete your agent? This removes the container and all data. This cannot be undone.')) return
+    setDeleting(true)
+    setRestartMsg(null)
+    try {
+      const res = await fetch(`/api/agents/${health.instanceId}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (res.ok) {
+        setRestartMsg('Agent deleted. Redirecting…')
+        setTimeout(() => { window.location.href = '/dashboard' }, 2000)
+      } else {
+        setRestartMsg(`Error: ${data.error || 'Delete failed'}`)
+      }
+    } catch {
+      setRestartMsg('Network error — could not reach delete endpoint')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -243,6 +266,22 @@ export default function MaintenancePage() {
               <p className="text-[10px] text-zinc-600 mt-1">
                 <strong>Factory Reset:</strong> Pins OpenClaw to stable v2026.3.28, reconfigures env vars, restarts. Use if your agent broke after an update.
               </p>
+              <div className="pt-4 mt-4 border-t border-zinc-800">
+                <button
+                  onClick={deleteAgent}
+                  disabled={restarting || resetting || deleting}
+                  className="border border-red-900 text-red-600 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-red-950 disabled:opacity-50 transition-colors flex items-center gap-2"
+                >
+                  {deleting ? (
+                    <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Deleting…</>
+                  ) : (
+                    <><AlertTriangle className="h-3.5 w-3.5" /> Delete Agent</>
+                  )}
+                </button>
+                <p className="text-[10px] text-zinc-700 mt-2">
+                  <strong>Delete Agent:</strong> Permanently removes the container and all data. Cannot be undone.
+                </p>
+              </div>
               {restartMsg && (
                 <div className={`mt-3 border p-3 text-[11px] ${restartMsg.startsWith('Error') ? 'border-red-800 text-red-400' : 'border-green-900 text-green-400'}`}>
                   {restartMsg}
