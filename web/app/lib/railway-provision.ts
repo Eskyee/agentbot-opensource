@@ -26,7 +26,7 @@ const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:
  * Notes:
  *   - No --allow-unconfigured needed since we write gateway.mode:'local' in the config
  *   - trustedProxies:['127.0.0.1'] trusts the TCP proxy's forwarded headers
- *   - Railway API WAF requires User-Agent: railway-cli/4.30.4 on mutations (see railwayGql)
+ *   - No custom User-Agent — railway-cli impersonation triggers Cloudflare bot block from Vercel IPs
  */
 export const OPENCLAW_START_CMD =
   `node -e "const{spawn}=require('child_process');const fs=require('fs');fs.writeFileSync('/tmp/openclaw.json',JSON.stringify({env:{OPENROUTER_API_KEY:process.env.OPENROUTER_API_KEY},gateway:{mode:'local',bind:'loopback',trustedProxies:['127.0.0.1'],controlUi:{allowedOrigins:['*'],dangerouslyDisableDeviceAuth:true}},agents:{defaults:{workspace:'/home/node/.openclaw/workspace',model:{primary:'openrouter/xiaomi/mimo-v2-pro'},heartbeat:{every:'30m',lightContext:true,isolatedSession:true}}},channels:{telegram:{enabled:false,dmPolicy:'pairing'},discord:{enabled:false,dmPolicy:'pairing'},whatsapp:{enabled:false,dmPolicy:'pairing'},webchat:{enabled:true}},cron:{enabled:true,maxConcurrentRuns:2,sessionRetention:'24h'},session:{scope:'per-sender',reset:{mode:'daily',atHour:4},maintenance:{mode:'warn',pruneAfter:'30d',maxEntries:500}},tools:{profile:'coding',exec:{backgroundMs:10000,timeoutSec:1800},web:{search:{enabled:true},fetch:{enabled:true,maxChars:50000}}}}));const p=spawn('openclaw',['gateway'],{stdio:'inherit',env:{...process.env,OPENCLAW_CONFIG_PATH:'/tmp/openclaw.json'}});p.on('error',e=>console.error('openclaw err:',e));setTimeout(()=>{require('net').createServer(s=>{const c=require('net').connect(18789,'127.0.0.1',()=>{s.pipe(c);c.pipe(s)});c.on('error',()=>s.destroy())}).listen(parseInt(process.env.PORT)||8080,'0.0.0.0',()=>console.log('tcp proxy on port',process.env.PORT||8080))},3000)"`
@@ -59,7 +59,6 @@ async function railwayGql<T = unknown>(
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'railway-cli/4.30.4',
     },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
@@ -116,7 +115,15 @@ export async function provisionOnRailway(
   const serviceId = created.serviceCreate.id
   console.log(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
 
-  // 1b. Set start command — TCP proxy bridges PORT → openclaw loopback 18789
+  // 1b. Set start command + enforce plan resource limits
+  const planLimits: Record<string, { memoryLimitMb: number; cpuLimit: number }> = {
+    underground: { memoryLimitMb: 2048,  cpuLimit: 1 },
+    solo:        { memoryLimitMb: 2048,  cpuLimit: 1 },
+    collective:  { memoryLimitMb: 4096,  cpuLimit: 2 },
+    label:       { memoryLimitMb: 8192,  cpuLimit: 4 },
+    network:     { memoryLimitMb: 16384, cpuLimit: 4 },
+  }
+  const limits = planLimits[plan] ?? planLimits.solo
   await railwayGql(`
     mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
       serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
@@ -124,7 +131,11 @@ export async function provisionOnRailway(
   `, {
     serviceId,
     environmentId,
-    input: { startCommand: OPENCLAW_START_CMD },
+    input: {
+      startCommand: OPENCLAW_START_CMD,
+      memoryLimitMb: limits.memoryLimitMb,
+      cpuLimit: limits.cpuLimit,
+    },
   })
   console.log(`[RailwayProvision] Start command set for ${serviceId}`)
 
