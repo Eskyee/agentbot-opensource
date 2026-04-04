@@ -282,7 +282,7 @@ router.get('/', async (_req: Request, res: Response) => {
       'ps', '-a', '--filter', 'name=openclaw-', '--format', '{{.Names}}|{{.Status}}'
     ]);
     const lines = stdout ? stdout.split('\n') : [];
-    const agents = await Promise.all(lines.filter(Boolean).map(async (line) => {
+    const results = await Promise.allSettled(lines.filter(Boolean).map(async (line) => {
       const [name, statusRaw] = line.split('|');
       const agentId = name.replace('openclaw-', '');
       const metadata = await readAgentMetadata(agentId);
@@ -294,8 +294,11 @@ router.get('/', async (_req: Request, res: Response) => {
         url: `https://${metadata?.subdomain || `${agentId}.${AGENTS_DOMAIN}`}`,
       };
     }));
+    const agents = results
+      .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled')
+      .map(r => r.value);
     res.json(agents);
-  } catch { res.json([]); }
+  } catch (err) { console.error('[Agents] List failed:', err); res.json([]); }
 });
 
 // Create agent (metadata only — no container)
@@ -640,8 +643,12 @@ router.post('/definitions', async (req: Request, res: Response) => {
     const tmpPath = `/tmp/agent-def-${Date.now()}.md`;
     const fsMod = await import('fs');
     fsMod.writeFileSync(tmpPath, content);
-    const def = parseAgentDefinition(tmpPath);
-    fsMod.unlinkSync(tmpPath);
+    let def;
+    try {
+      def = parseAgentDefinition(tmpPath);
+    } finally {
+      fsMod.unlinkSync(tmpPath);
+    }
     if (!def) {
       return res.status(400).json({ error: 'Invalid agent definition format' });
     }

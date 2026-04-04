@@ -49,32 +49,32 @@ case "$AI_PROVIDER" in
     ;;
 esac
 
-# Build onboard command
-ONBOARD_CMD="openclaw onboard --non-interactive \
+# Build onboard command as positional args — no eval, no shell injection risk
+set -- openclaw onboard --non-interactive \
   --mode local \
-  --auth-choice ${AUTH_CHOICE} \
+  --auth-choice "$AUTH_CHOICE" \
   --secret-input-mode plaintext \
-  --gateway-port ${GATEWAY_PORT} \
+  --gateway-port "$GATEWAY_PORT" \
   --gateway-bind lan \
-  --skip-skills"
+  --skip-skills
 
 # Add provider-specific flags
 if [ "$AI_PROVIDER" = "ollama" ]; then
-  ONBOARD_CMD="${ONBOARD_CMD} --accept-risk"
-  [ -n "${AGENTBOT_MODEL_ID:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-model-id ${AGENTBOT_MODEL_ID}"
+  set -- "$@" --accept-risk
+  [ -n "${AGENTBOT_MODEL_ID:-}" ] && set -- "$@" --custom-model-id "$AGENTBOT_MODEL_ID"
 elif [ "$AI_PROVIDER" = "custom" ]; then
-  [ -n "$API_KEY" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-api-key ${API_KEY}"
-  [ -n "${AGENTBOT_CUSTOM_URL:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-base-url ${AGENTBOT_CUSTOM_URL}"
-  [ -n "${AGENTBOT_MODEL_ID:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-model-id ${AGENTBOT_MODEL_ID}"
-  [ -n "${AGENTBOT_COMPAT:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-compatibility ${AGENTBOT_COMPAT}"
+  [ -n "$API_KEY" ] && set -- "$@" --custom-api-key "$API_KEY"
+  [ -n "${AGENTBOT_CUSTOM_URL:-}" ] && set -- "$@" --custom-base-url "$AGENTBOT_CUSTOM_URL"
+  [ -n "${AGENTBOT_MODEL_ID:-}" ] && set -- "$@" --custom-model-id "$AGENTBOT_MODEL_ID"
+  [ -n "${AGENTBOT_COMPAT:-}" ] && set -- "$@" --custom-compatibility "$AGENTBOT_COMPAT"
 elif [ -n "$API_KEY" ] && [ -n "$KEY_FLAG" ]; then
-  ONBOARD_CMD="${ONBOARD_CMD} ${KEY_FLAG} ${API_KEY}"
+  set -- "$@" "$KEY_FLAG" "$API_KEY"
 fi
 
 # Run onboard (skips if config already exists)
 if [ ! -f "${HOME}/.openclaw/openclaw.json" ]; then
   echo "[$(date)] Running first-time onboarding..."
-  eval "$ONBOARD_CMD" || {
+  "$@" || {
     echo "[$(date)] Onboard failed, falling back to manual config..."
     # Fallback: write minimal config
     GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 16)}"

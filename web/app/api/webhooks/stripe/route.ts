@@ -80,8 +80,9 @@ export async function POST(request: Request) {
             }
           }
         } else if (customerEmail) {
-          // No userId — fall back to email
-          console.log(`[Webhook] No userId, falling back to email: ${customerEmail}`)
+          // No userId in metadata — update existing user by email only (never create)
+          // Creating a new user here risks duplicate accounts if metadata is missing
+          console.warn(`[Webhook] No userId in metadata, falling back to email update only: ${customerEmail}`)
           try {
             await prisma.user.update({
               where: { email: customerEmail },
@@ -90,16 +91,8 @@ export async function POST(request: Request) {
             console.log(`[Webhook] Updated user by email ${customerEmail} to plan ${mappedPlan}`)
             await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
           } catch (err) {
-            console.error(`[Webhook] No user found for email ${customerEmail} — creating new user`)
-            try {
-              await prisma.user.create({
-                data: { email: customerEmail, ...subscriptionData },
-              })
-              console.log(`[Webhook] Created new user for ${customerEmail}`)
-              await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
-            } catch (createErr) {
-              console.error(`[Webhook] Failed to create user:`, createErr)
-            }
+            console.error(`[Webhook] No user found for email ${customerEmail} — skipping to avoid duplicate account`)
+            await sendAlert(`Stripe webhook: no user found for ${customerEmail}, userId missing from metadata`)
           }
         } else {
           console.error('[Webhook] No userId or email in checkout session!')

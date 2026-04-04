@@ -124,18 +124,6 @@ CREATE TABLE IF NOT EXISTS bookings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Model metrics (AI usage tracking)
-CREATE TABLE IF NOT EXISTS model_metrics (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
-  agent_id INTEGER REFERENCES agents(id),
-  model TEXT NOT NULL,
-  input_tokens INTEGER DEFAULT 0,
-  output_tokens INTEGER DEFAULT 0,
-  cost_usdc NUMERIC DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- Social amplification
 CREATE TABLE IF NOT EXISTS social_campaigns (
   id SERIAL PRIMARY KEY,
@@ -221,6 +209,12 @@ CREATE TABLE IF NOT EXISTS model_metrics (
   cost_usdc NUMERIC DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add columns missing from old schema (safe on existing DBs)
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS tier TEXT;
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS latency_ms INTEGER;
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS success BOOLEAN;
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS source TEXT;
 
 -- Scheduled tasks (used by inline scheduler in scheduler.ts)
 CREATE TABLE IF NOT EXISTS scheduled_tasks (
