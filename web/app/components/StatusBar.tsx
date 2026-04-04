@@ -3,13 +3,12 @@
 import { useEffect, useState } from 'react'
 
 interface StatusData {
-  agents: number
+  users: number | null
   online: boolean
-  uptime: string
 }
 
 export function StatusBar() {
-  const [status, setStatus] = useState<StatusData>({ agents: 3, online: true, uptime: '99.9%' })
+  const [status, setStatus] = useState<StatusData>({ users: null, online: true })
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
 
   useEffect(() => {
@@ -18,9 +17,8 @@ export function StatusBar() {
         const res = await fetch('/api/health', { cache: 'no-store' })
         const data = await res.json()
         setStatus({
-          agents: data.totalUsers || 3,
+          users: typeof data.totalUsers === 'number' ? data.totalUsers : null,
           online: data.status === 'healthy' || data.status === 'ok',
-          uptime: '99.9%',
         })
         setLastUpdate(new Date())
       } catch {
@@ -45,9 +43,12 @@ export function StatusBar() {
               </span>
             </span>
             <span className="hidden sm:inline text-zinc-800">·</span>
-            <span className="hidden sm:inline whitespace-nowrap font-mono">{status.agents} agents active</span>
-            <span className="hidden sm:inline text-zinc-800">·</span>
-            <span className="hidden sm:inline whitespace-nowrap font-mono">{status.uptime} uptime</span>
+            {status.users !== null && (
+              <>
+                <span className="hidden sm:inline text-zinc-800">·</span>
+                <span className="hidden sm:inline whitespace-nowrap font-mono">{status.users} users</span>
+              </>
+            )}
             <span className="hidden md:inline text-zinc-800">·</span>
             <span className="hidden md:inline whitespace-nowrap font-mono text-zinc-600">
               {lastUpdate ? `updated ${lastUpdate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''}
