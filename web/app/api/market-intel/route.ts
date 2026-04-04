@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from '@/app/lib/platform-urls'
 
 interface CompetitorStatus {
   name: string
@@ -56,7 +57,7 @@ async function fetchAISignals(): Promise<MarketSignal[]> {
 
   // Check real infrastructure status
   try {
-    const agentRes = await fetch('https://agentbot-prod-production.up.railway.app/health', { signal: AbortSignal.timeout(5000) })
+    const agentRes = await fetch(`${AGENTBOT_BACKEND_URL}/health`, { signal: AbortSignal.timeout(5000) })
     const agentBody = await agentRes.json()
     if (agentBody.status === 'ok') {
       signals.push({
@@ -71,7 +72,7 @@ async function fetchAISignals(): Promise<MarketSignal[]> {
 
   // Check x402 ecosystem
   try {
-    const gwRes = await fetch('https://x402-gateway-production.up.railway.app/health', { signal: AbortSignal.timeout(5000) })
+    const gwRes = await fetch(`${X402_GATEWAY_URL}/health`, { signal: AbortSignal.timeout(5000) })
     if (gwRes.ok) {
       signals.push({
         id: 'x402-1',
@@ -85,7 +86,7 @@ async function fetchAISignals(): Promise<MarketSignal[]> {
 
   // Check tempo-x402 soul
   try {
-    const soulRes = await fetch('https://borg-0-production.up.railway.app/health', { signal: AbortSignal.timeout(5000) })
+    const soulRes = await fetch(`${SOUL_SERVICE_URL}/health`, { signal: AbortSignal.timeout(5000) })
     if (soulRes.ok) {
       const soulBody = await soulRes.json()
       signals.push({

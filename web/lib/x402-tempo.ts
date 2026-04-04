@@ -7,6 +7,7 @@
 
 import { createWalletClient, http, parseEther, formatEther, type Address } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
+import { X402_GATEWAY_URL } from '@/app/lib/platform-urls';
 
 // Tempo chain config
 export const TEMPO_CHAIN = {
@@ -19,8 +20,6 @@ export const TEMPO_CHAIN = {
   },
 } as const;
 
-// x402 Gateway config
-export const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://x402-gateway-production.up.railway.app';
 export const CLONE_PRICE = '1.0'; // pathUSD
 
 export interface CloneRequest {

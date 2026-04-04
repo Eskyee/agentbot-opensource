@@ -24,6 +24,7 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
   const [error, setError] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const activeJobRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -34,6 +35,48 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  useEffect(() => {
+    return () => {
+      activeJobRef.current = null
+    }
+  }, [])
+
+  const pollQueuedReply = async (jobId: string) => {
+    activeJobRef.current = jobId
+
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      if (activeJobRef.current !== jobId) return
+
+      const res = await fetch(`/api/jobs/${jobId}`, { cache: 'no-store' })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Queued chat failed')
+      }
+
+      const job = data.job
+      if (job?.status === 'failed') {
+        throw new Error(job.error || 'Queued chat failed')
+      }
+
+      if (job?.status === 'completed' && job?.result?.reply) {
+        const assistantMessage: Message = {
+          id: (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2)),
+          role: 'assistant',
+          content: String(job.result.reply),
+          timestamp: new Date(),
+        }
+
+        setMessages(prev => [...prev, assistantMessage])
+        return
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+    }
+
+    throw new Error('Queued chat timed out')
+  }
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,6 +106,11 @@ export default function ChatWindow({ userId, botUsername, isOpen, onClose }: Cha
       })
 
       const data = await res.json()
+
+      if (res.status === 202 && data?.queued && data?.jobId) {
+        await pollQueuedReply(String(data.jobId))
+        return
+      }
 
       if (!res.ok) {
         throw new Error(data.error || 'Failed to get response')

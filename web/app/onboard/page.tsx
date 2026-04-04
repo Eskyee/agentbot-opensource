@@ -31,7 +31,15 @@ function OnboardContent() {
   const [isValidating, setIsValidating] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [error, setError] = useState('')
-  const [result, setResult] = useState<{ userId: string; subdomain: string; url: string; streamKey?: string; liveStreamId?: string } | null>(null)
+  const [result, setResult] = useState<{
+    userId: string
+    jobId?: string
+    subdomain?: string
+    url: string
+    status?: string
+    streamKey?: string
+    liveStreamId?: string
+  } | null>(null)
   const [botInfo, setBotInfo] = useState<{ username: string } | null>(null)
   const [openclawVersion, setOpenclawVersion] = useState('unknown')
   const [showConfetti, setShowConfetti] = useState(false)
@@ -49,6 +57,8 @@ function OnboardContent() {
       commitSha?: string | null
     }
   } | null>(null)
+  const [runtimeState, setRuntimeState] = useState<'idle' | 'provisioning' | 'running' | 'unreachable'>('idle')
+  const [runtimeMessage, setRuntimeMessage] = useState('')
 
   // Team mode (for Collective/Label plans)
   const [teamMode, setTeamMode] = useState<'single' | 'team'>('single')
@@ -154,6 +164,139 @@ function OnboardContent() {
     loadPlatformStats()
   }, [])
 
+  useEffect(() => {
+    if (mode !== 'deploy' || step !== 'done' || !result?.userId) {
+      return
+    }
+
+    let cancelled = false
+
+    const pollRuntime = async () => {
+      setRuntimeState('provisioning')
+      setRuntimeMessage('Provisioning Railway service and waiting for OpenClaw to boot...')
+
+      for (let attempt = 0; attempt < 45 && !cancelled; attempt += 1) {
+        try {
+          const openclawRes = await fetch('/api/user/openclaw', { cache: 'no-store' })
+          if (openclawRes.ok) {
+            const openclaw = await openclawRes.json()
+            const nextUserId = openclaw.openclawInstanceId || result.userId
+            const nextUrl = openclaw.openclawUrl || result.url
+
+            if (nextUrl || nextUserId) {
+              localStorage.setItem('agentbot_instance', JSON.stringify({
+                userId: nextUserId,
+                url: nextUrl,
+              }))
+              setResult((current) => current ? {
+                ...current,
+                userId: nextUserId,
+                url: nextUrl || current.url,
+              } : current)
+            }
+
+            if (nextUserId) {
+              const statsRes = await fetch(`/api/instance/${nextUserId}/stats`, { cache: 'no-store' })
+              if (statsRes.ok) {
+                const stats = await statsRes.json()
+                if (stats.status === 'running') {
+                  setRuntimeState('running')
+                  setRuntimeMessage('Runtime is live. OpenClaw is ready to use.')
+                  return
+                }
+              }
+            }
+          }
+        } catch {
+          // Keep polling — the runtime may still be coming up.
+        }
+
+        setRuntimeMessage(
+          attempt < 10
+            ? 'Railway service created. Waiting for OpenClaw to finish booting...'
+            : 'OpenClaw is still starting. Mission Control will keep syncing in the background.'
+        )
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      }
+
+      if (!cancelled) {
+        setRuntimeState('unreachable')
+        setRuntimeMessage('Runtime is still booting. You can open Mission Control and check back in a moment.')
+      }
+    }
+
+    pollRuntime()
+
+    return () => {
+      cancelled = true
+    }
+  }, [mode, result?.url, result?.userId, step])
+
+  useEffect(() => {
+    if (!result?.jobId || step !== 'done') {
+      return
+    }
+
+    let cancelled = false
+
+    const pollJob = async () => {
+      for (let attempt = 0; attempt < 45 && !cancelled; attempt += 1) {
+        try {
+          const res = await fetch(`/api/provision/jobs/${result.jobId}`, { cache: 'no-store' })
+          const data = await res.json()
+
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to read provision job')
+          }
+
+          const job = data.job
+          if (job?.status === 'failed') {
+            setRuntimeState('unreachable')
+            setRuntimeMessage(job.error || 'Provisioning failed.')
+            setError(job.error || 'Provisioning failed')
+            return
+          }
+
+          if (job?.status === 'completed' && job?.result?.url) {
+            const nextUrl = String(job.result.url)
+            const nextAgentId = typeof job.result.agentId === 'string'
+              ? job.result.agentId
+              : (job.agentId || result.userId)
+
+            localStorage.setItem('agentbot_instance', JSON.stringify({
+              userId: nextAgentId,
+              url: nextUrl,
+            }))
+
+            setResult((current) => current ? {
+              ...current,
+              jobId: undefined,
+              userId: nextAgentId,
+              url: nextUrl,
+              status: typeof job.result.status === 'string' ? job.result.status : 'deploying',
+            } : current)
+            setRuntimeMessage('Provision job completed. Finalizing runtime readiness...')
+            return
+          }
+
+          setRuntimeState('provisioning')
+          setRuntimeMessage(`Provision job ${job?.status || 'queued'}...`)
+        } catch (jobError) {
+          setRuntimeMessage('Provision job queued. Waiting for backend worker...')
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      }
+    }
+
+    pollJob()
+
+    return () => {
+      cancelled = true
+    }
+  }, [result?.jobId, result?.userId, step])
+
   const validateToken = async () => {
     setIsValidating(true)
     setError('')
@@ -224,14 +367,24 @@ function OnboardContent() {
         setTimeout(() => setShowConfetti(false), 5000)
 
         // Save to localStorage for dashboard
-        localStorage.setItem('agentbot_instance', JSON.stringify({
-          userId: data.userId,
-          botUsername: botInfo?.username,
-          subdomain: data.subdomain,
-          url: data.url,
-          streamKey: data.streamKey,
-          liveStreamId: data.liveStreamId
-        }))
+        if (data.url) {
+          localStorage.setItem('agentbot_instance', JSON.stringify({
+            userId: data.userId,
+            botUsername: botInfo?.username,
+            subdomain: data.subdomain,
+            url: data.url,
+            streamKey: data.streamKey,
+            liveStreamId: data.liveStreamId
+          }))
+        }
+        setRuntimeState(mode === 'deploy' ? 'provisioning' : 'idle')
+        setRuntimeMessage(
+          mode === 'deploy'
+            ? data.jobId
+              ? 'Provision job accepted. Waiting for backend worker...'
+              : 'Provision request accepted. Waiting for runtime status...'
+            : ''
+        )
         setResult(data)
         setStep('done')
       } else {
@@ -1040,7 +1193,11 @@ function OnboardContent() {
             <div className="text-6xl mb-6">🎉</div>
             <h2 className="text-2xl font-bold tracking-tighter uppercase mb-2">You&apos;re Live!</h2>
             <p className="text-sm text-zinc-400 mb-8">
-              {mode === 'deploy' ? 'Your OpenClaw business agent is running.' : 'Your AI assistant is ready to chat.'}
+              {mode === 'deploy'
+                ? runtimeState === 'running'
+                  ? 'Your OpenClaw business agent is running.'
+                  : 'Your managed runtime is provisioning on Railway.'
+                : 'Your AI assistant is ready to chat.'}
             </p>
 
             {mode === 'deploy' ? (
@@ -1049,6 +1206,21 @@ function OnboardContent() {
                   <p className="text-sm font-semibold text-zinc-400 mb-4 flex items-center gap-2">
                     <span className="text-lg">🦞</span> OpenClaw Dashboard
                   </p>
+                  <div className="mb-4 flex items-center justify-between gap-4 border border-zinc-700 bg-black/20 px-3 py-2">
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-500">Runtime Status</span>
+                    <span className={`text-[10px] uppercase tracking-widest ${
+                      runtimeState === 'running'
+                        ? 'text-green-400'
+                        : runtimeState === 'provisioning'
+                          ? 'text-yellow-400'
+                          : 'text-zinc-400'
+                    }`}>
+                      {runtimeState}
+                    </span>
+                  </div>
+                  {runtimeMessage && (
+                    <p className="mb-4 text-xs text-zinc-400">{runtimeMessage}</p>
+                  )}
                   <div>
                     <label className="block text-xs text-zinc-500 uppercase font-bold mb-1">Your Instance URL</label>
                     <p className="text-sm font-mono bg-black/30 p-2 rounded border border-zinc-700 break-all select-all">
@@ -1113,7 +1285,7 @@ function OnboardContent() {
                     rel="noopener noreferrer"
                     className="block w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors text-center"
                   >
-                    Open OpenClaw Dashboard →
+                    {runtimeState === 'running' ? 'Open OpenClaw Dashboard →' : 'Open Runtime URL →'}
                   </a>
                   <a
                     href="/dashboard"

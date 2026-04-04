@@ -4,8 +4,9 @@ import { readSharedGatewayToken } from '@/app/lib/gateway-token'
 import { sendSupportAlert } from '@/app/lib/support-alert'
 import { checkServices } from '@/app/lib/service-health'
 import { prisma } from '@/app/lib/prisma'
+import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 
-const GATEWAY_URL = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
+const GATEWAY_URL = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
 
 export const dynamic = 'force-dynamic'
 

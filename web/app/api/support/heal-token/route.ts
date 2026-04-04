@@ -14,6 +14,7 @@ import {
 } from '@/app/lib/token-manager'
 import { checkServices } from '@/app/lib/service-health'
 import { sendSupportAlert } from '@/app/lib/support-alert'
+import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 
 export async function POST() {
   const session = await getAuthSession()
@@ -26,10 +27,10 @@ export async function POST() {
 
   try {
     // Check gateway health first
-    const gatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'https://openclaw-gw-ui-production.up.railway.app'
+    const gatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
     const health = await checkServices([{ 
       name: 'OpenClaw Gateway', 
-      url: `${gatewayUrl}/health` 
+      url: `${gatewayUrl}/api/status` 
     }])
     const gatewayHealth = health[0]
     const status = gatewayHealth?.status || 'down'

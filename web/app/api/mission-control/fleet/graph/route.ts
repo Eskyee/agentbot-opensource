@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { DEFAULT_SOUL_SERVICE_URL, DEFAULT_SOUL_DASHBOARD_URL } from '@/app/lib/openclaw-config'
 
-const FALLBACK_SOUL_URL = 'https://borg-0-production.up.railway.app'
-
 export const dynamic = 'force-dynamic';
 
 function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
@@ -15,7 +13,7 @@ function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
 }
 
 function getSoulCandidates() {
-  const candidates = [DEFAULT_SOUL_SERVICE_URL, FALLBACK_SOUL_URL]
+  const candidates = [DEFAULT_SOUL_SERVICE_URL]
     .map((value) => value?.trim())
     .filter(Boolean) as string[]
 
@@ -110,7 +108,7 @@ export async function GET() {
       degraded: true,
       detail: error?.message ?? 'Soul service unavailable',
       stats: { totalAgents: 1, activeAgents: 0, idleAgents: 0, offlineAgents: 1 },
-      serviceUrl: FALLBACK_SOUL_URL,
+      serviceUrl: DEFAULT_SOUL_SERVICE_URL,
       dashboardUrl: DEFAULT_SOUL_DASHBOARD_URL,
     });
   }

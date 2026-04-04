@@ -11,6 +11,7 @@ function CheckoutSuccessContent() {
   const [subscription, setSubscription] = useState<{ plan?: string; nextBilling?: string } | null>(null)
 
   const [provisionStatus, setProvisionStatus] = useState<'idle' | 'provisioning' | 'done' | 'failed'>('idle')
+  const [provisionJobId, setProvisionJobId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sessionId) {
@@ -38,6 +39,50 @@ function CheckoutSuccessContent() {
     verifySession()
   }, [sessionId])
 
+  useEffect(() => {
+    if (!provisionJobId) return
+
+    let cancelled = false
+
+    const pollJob = async () => {
+      for (let attempt = 0; attempt < 45 && !cancelled; attempt += 1) {
+        try {
+          const res = await fetch(`/api/provision/jobs/${provisionJobId}`, { cache: 'no-store' })
+          const data = await res.json()
+          if (!res.ok) {
+            throw new Error(data.error || 'Provision job failed')
+          }
+
+          const job = data.job
+          if (job?.status === 'failed') {
+            setProvisionStatus('failed')
+            return
+          }
+
+          if (job?.status === 'completed' && job?.result?.url) {
+            setProvisionStatus('done')
+            localStorage.setItem('agentbot_instance', JSON.stringify({
+              userId: typeof job.result.agentId === 'string' ? job.result.agentId : job.agentId,
+              url: job.result.url,
+            }))
+            setProvisionJobId(null)
+            return
+          }
+        } catch {
+          // keep waiting
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 2000))
+      }
+    }
+
+    pollJob()
+
+    return () => {
+      cancelled = true
+    }
+  }, [provisionJobId])
+
   const autoProvisionOpenClaw = async (plan: string) => {
     setProvisionStatus('provisioning')
     try {
@@ -54,12 +99,16 @@ function CheckoutSuccessContent() {
       })
       const data = await res.json()
       if (data.success) {
-        setProvisionStatus('done')
-        localStorage.setItem('agentbot_instance', JSON.stringify({
-          userId: data.userId,
-          subdomain: data.subdomain,
-          url: data.url,
-        }))
+        if (data.jobId) {
+          setProvisionJobId(data.jobId)
+        } else {
+          setProvisionStatus('done')
+          localStorage.setItem('agentbot_instance', JSON.stringify({
+            userId: data.userId,
+            subdomain: data.subdomain,
+            url: data.url,
+          }))
+        }
       } else {
         setProvisionStatus('failed')
       }
