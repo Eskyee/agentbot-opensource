@@ -129,4 +129,52 @@ export async function PATCH(
   }
 }
 
+/**
+ * DELETE /api/agents/:id
+ * Stops and removes the Docker container, deletes backend metadata, and
+ * removes the Prisma Agent record (cascades to AgentMemory, AgentFile, etc.)
+ */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getAuthSession()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id: agentId } = await params
+
+    // Ownership check
+    const ownedAgent = await prisma.agent.findFirst({
+      where: { id: agentId, userId: session.user.id },
+    })
+    if (!ownedAgent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
+    // Best-effort: stop and remove the Docker container via backend
+    try {
+      const API_URL = getBackendApiUrl()
+      const API_KEY = getInternalApiKey()
+      await fetch(`${API_URL}/api/agents/${agentId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${API_KEY}` },
+        signal: AbortSignal.timeout(30000),
+      })
+    } catch {
+      // Non-fatal — backend may be unreachable; proceed with Prisma deletion
+    }
+
+    // Delete from Prisma (cascades to AgentMemory, AgentFile, AgentSkill, etc.)
+    await prisma.agent.delete({ where: { id: agentId } })
+
+    return NextResponse.json({ success: true, deleted: agentId })
+  } catch (error) {
+    console.error('Failed to delete agent:', error)
+    return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 })
+  }
+}
+
 export const dynamic = 'force-dynamic';
