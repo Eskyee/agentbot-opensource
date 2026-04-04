@@ -146,15 +146,19 @@ export async function DELETE(
 
     const { id: agentId } = await params
 
-    // Ownership check
+    // Ownership check — Agent table row OR openclawInstanceId on User
     const ownedAgent = await prisma.agent.findFirst({
       where: { id: agentId, userId: session.user.id },
     })
-    if (!ownedAgent) {
+    const userOwnsViaInstanceId = !ownedAgent && await prisma.user.findFirst({
+      where: { id: session.user.id, openclawInstanceId: agentId },
+      select: { id: true },
+    })
+    if (!ownedAgent && !userOwnsViaInstanceId) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
-    // Best-effort: stop and remove the Docker container via backend
+    // Best-effort: stop and remove the container via backend
     try {
       const API_URL = getBackendApiUrl()
       const API_KEY = getInternalApiKey()
@@ -164,11 +168,19 @@ export async function DELETE(
         signal: AbortSignal.timeout(30000),
       })
     } catch {
-      // Non-fatal — backend may be unreachable; proceed with Prisma deletion
+      // Non-fatal — backend may be unreachable; proceed with DB cleanup
     }
 
-    // Delete from Prisma (cascades to AgentMemory, AgentFile, AgentSkill, etc.)
-    await prisma.agent.delete({ where: { id: agentId } })
+    // Delete Agent row if it exists (cascades to memory, files, skills, etc.)
+    if (ownedAgent) {
+      await prisma.agent.delete({ where: { id: agentId } })
+    }
+
+    // Always clear openclaw fields on User so they can re-provision
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { openclawInstanceId: null, openclawUrl: null },
+    })
 
     return NextResponse.json({ success: true, deleted: agentId })
   } catch (error) {
