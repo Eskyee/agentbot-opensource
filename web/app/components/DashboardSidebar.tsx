@@ -18,6 +18,7 @@ export const navSections = [
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
       { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
+      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
     ]
   },
   {

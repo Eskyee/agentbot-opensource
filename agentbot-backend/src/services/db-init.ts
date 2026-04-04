@@ -46,6 +46,16 @@ CREATE TABLE IF NOT EXISTS wallets (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS bitcoin_wallets (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  agent_id TEXT NOT NULL,
+  label TEXT,
+  derivation_scheme_encrypted TEXT NOT NULL,
+  network TEXT NOT NULL DEFAULT 'btc',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Events & Treasury
 CREATE TABLE IF NOT EXISTS events (
   id SERIAL PRIMARY KEY,
@@ -244,6 +254,8 @@ CREATE INDEX IF NOT EXISTS idx_royalty_recipients_split_id ON royalty_recipients
 CREATE INDEX IF NOT EXISTS idx_bookings_agent_id ON bookings(agent_id);
 CREATE INDEX IF NOT EXISTS idx_bookings_event_id ON bookings(event_id);
 CREATE INDEX IF NOT EXISTS idx_wallets_agent_id ON wallets(agent_id);
+CREATE INDEX IF NOT EXISTS idx_bitcoin_wallets_user_id ON bitcoin_wallets(user_id);
+CREATE INDEX IF NOT EXISTS idx_bitcoin_wallets_agent_id ON bitcoin_wallets(agent_id);
 CREATE INDEX IF NOT EXISTS idx_social_campaigns_user_id ON social_campaigns(user_id);
 CREATE INDEX IF NOT EXISTS idx_social_campaigns_agent_id ON social_campaigns(agent_id);
 CREATE INDEX IF NOT EXISTS idx_social_amplifications_campaign_id ON social_amplifications(campaign_id);

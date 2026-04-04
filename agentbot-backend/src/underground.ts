@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { Pool } from 'pg';
 import { WalletService } from './services/wallet';
+import { BitcoinWalletService } from './services/bitcoin-wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
 import { NegotiationService } from './services/negotiation'; // Added
 import { AmplificationService } from './services/amplification'; // Added
@@ -147,6 +148,107 @@ router.get('/wallets/:address/balance', authenticate, async (req: Request, res: 
     res.json({ address, balance_usdc: balance });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to fetch balance' });
+  }
+});
+
+/**
+ * --- BITCOIN (HEADLESS BACKEND) ---
+ */
+
+router.get('/bitcoin/backend/info', authenticate, async (_req: Request, res: Response) => {
+  try {
+    const info = await BitcoinWalletService.getBackendInfo();
+    res.json(info);
+  } catch (error: any) {
+    console.error('[Bitcoin] Backend info error:', error.message);
+    res.status(502).json({ error: 'Failed to fetch Bitcoin backend info' });
+  }
+});
+
+router.get('/bitcoin/wallets', authenticate, async (req: Request, res: Response) => {
+  const userId = String((req as any).userId || '');
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+
+  try {
+    const wallets = await BitcoinWalletService.listWallets(userId);
+    res.json(wallets);
+  } catch (error: any) {
+    console.error('[Bitcoin] List wallets error:', error.message);
+    res.status(500).json({ error: 'Failed to list Bitcoin wallets' });
+  }
+});
+
+router.post('/bitcoin/wallets', authenticate, async (req: Request, res: Response) => {
+  const userId = String((req as any).userId || '');
+  const agentId = typeof req.body?.agentId === 'string' ? req.body.agentId : '';
+  const derivationScheme = typeof req.body?.derivationScheme === 'string' ? req.body.derivationScheme : '';
+  const label = typeof req.body?.label === 'string' ? req.body.label : undefined;
+
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+  if (!agentId) {
+    return res.status(400).json({ error: 'agentId is required' });
+  }
+  if (!derivationScheme.trim()) {
+    return res.status(400).json({ error: 'derivationScheme is required' });
+  }
+
+  try {
+    const wallet = await BitcoinWalletService.registerWatchOnlyWallet(userId, agentId, derivationScheme, label);
+    res.status(201).json(wallet);
+  } catch (error: any) {
+    console.error('[Bitcoin] Register wallet error:', error.message);
+    res.status(500).json({ error: 'Failed to register Bitcoin wallet' });
+  }
+});
+
+router.get('/bitcoin/wallets/:walletId/address/unused', authenticate, async (req: Request, res: Response) => {
+  const userId = String((req as any).userId || '');
+  const walletId = Number(req.params.walletId);
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+  if (!Number.isInteger(walletId) || walletId <= 0) {
+    return res.status(400).json({ error: 'walletId must be a positive integer' });
+  }
+
+  try {
+    const address = await BitcoinWalletService.getUnusedAddress(userId, walletId);
+    res.json(address);
+  } catch (error: any) {
+    const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    res.status(status).json({ error: status === 404 ? error.message : 'Failed to derive Bitcoin address' });
+  }
+});
+
+router.get('/bitcoin/wallets/:walletId/balance', authenticate, async (req: Request, res: Response) => {
+  const userId = String((req as any).userId || '');
+  const walletId = Number(req.params.walletId);
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+  if (!Number.isInteger(walletId) || walletId <= 0) {
+    return res.status(400).json({ error: 'walletId must be a positive integer' });
+  }
+
+  try {
+    const balance = await BitcoinWalletService.getBalance(userId, walletId);
+    res.json(balance);
+  } catch (error: any) {
+    const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin balance' });
+  }
+});
+
+router.get('/bitcoin/wallets/:walletId/transactions', authenticate, async (req: Request, res: Response) => {
+  const userId = String((req as any).userId || '');
+  const walletId = Number(req.params.walletId);
+  if (!userId) return res.status(401).json({ error: 'User context required' });
+  if (!Number.isInteger(walletId) || walletId <= 0) {
+    return res.status(400).json({ error: 'walletId must be a positive integer' });
+  }
+
+  try {
+    const transactions = await BitcoinWalletService.getTransactions(userId, walletId);
+    res.json(transactions);
+  } catch (error: any) {
+    const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin transactions' });
   }
 });
 
