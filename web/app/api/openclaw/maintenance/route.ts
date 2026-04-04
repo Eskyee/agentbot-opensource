@@ -86,14 +86,22 @@ export async function POST(request: Request) {
   }
 
   const instanceId = info.openclawInstanceId
-  const BACKEND_API_URL = getBackendApiUrl()
-  const INTERNAL_API_KEY = getInternalApiKey()
 
   let body: { action?: string } = {}
   try {
     body = await request.json()
   } catch {
     // no body = restart
+  }
+
+  let BACKEND_API_URL: string
+  let INTERNAL_API_KEY: string
+  try {
+    BACKEND_API_URL = getBackendApiUrl()
+    INTERNAL_API_KEY = getInternalApiKey()
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Server misconfiguration'
+    return NextResponse.json({ error: message }, { status: 503 })
   }
 
   try {
