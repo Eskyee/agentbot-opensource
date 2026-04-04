@@ -5,6 +5,7 @@ import { GitBranch, Crown, TrendingUp, Zap, RefreshCw, WifiOff, ExternalLink } f
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
 import { SectionHeader } from '@/app/components/shared/SectionHeader';
 import StatusPill from '@/app/components/shared/StatusPill';
+import { SOUL_DASHBOARD_URL } from '@/app/lib/platform-urls';
 
 interface ColonyAgent {
   id: string;
@@ -197,7 +198,7 @@ export default function ColonyPage() {
     }
   }, []);
 
-  const dashboardUrl = data?.root.dashboardUrl || 'https://borg-0-production.up.railway.app/dashboard';
+  const dashboardUrl = data?.root.dashboardUrl || SOUL_DASHBOARD_URL;
   const activeAgents = data?.agents.filter((agent) => agent.status === 'active').length ?? 0
 
   useEffect(() => {

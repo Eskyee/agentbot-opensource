@@ -71,7 +71,7 @@ const PLAN_LIMITS: Record<string, { memoryLimitMb: number; cpuLimit: number }> =
   network: { memoryLimitMb: 16384, cpuLimit: 4 },
 }
 
-async function provisionOnRailway(agentId: string, plan: string = 'solo') {
+export async function provisionOnRailway(agentId: string, plan: string = 'solo') {
   const projectId = process.env.RAILWAY_PROJECT_ID?.trim()
   const environmentId = process.env.RAILWAY_ENVIRONMENT_ID?.trim()
 

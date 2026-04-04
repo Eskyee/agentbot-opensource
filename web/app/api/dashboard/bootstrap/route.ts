@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
 
 export async function GET() {
   const session = await getAuthSession()
@@ -9,6 +10,8 @@ export async function GET() {
   }
 
   const userId = session.user.id
+
+  await maybeAutoSyncManagedRuntimeForUser(userId).catch(() => {})
 
   const [user, openclawUser, registration] = await Promise.all([
     prisma.user.findUnique({

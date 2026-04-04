@@ -15,6 +15,7 @@ export default memo(function AgentChat({ agentName }: { agentName?: string }) {
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const activeJobRef = useRef<string | null>(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -23,6 +24,48 @@ export default memo(function AgentChat({ agentName }: { agentName?: string }) {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    return () => {
+      activeJobRef.current = null
+    }
+  }, [])
+
+  const pollQueuedReply = async (jobId: string) => {
+    activeJobRef.current = jobId
+
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      if (activeJobRef.current !== jobId) return
+
+      const res = await fetch(`/api/jobs/${jobId}`, { cache: 'no-store' })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Queued chat failed')
+      }
+
+      const job = data.job
+      if (job?.status === 'failed') {
+        throw new Error(job.error || 'Queued chat failed')
+      }
+
+      if (job?.status === 'completed' && job?.result?.reply) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: String(job.result.reply),
+          },
+        ])
+        return
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+    }
+
+    throw new Error('Queued chat timed out')
+  }
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return
@@ -46,6 +89,11 @@ export default memo(function AgentChat({ agentName }: { agentName?: string }) {
       })
 
       const data = await res.json()
+
+      if (res.status === 202 && data?.queued && data?.jobId) {
+        await pollQueuedReply(String(data.jobId))
+        return
+      }
 
       if (!res.ok) {
         setError(data.error || 'Failed to send message')

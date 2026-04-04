@@ -2,12 +2,10 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config'
 
-const FALLBACK_SOUL_URL = 'https://borg-0-production.up.railway.app'
-
 export const dynamic = 'force-dynamic';
 
 function getSoulCandidates() {
-  const candidates = [DEFAULT_SOUL_SERVICE_URL, FALLBACK_SOUL_URL]
+  const candidates = [DEFAULT_SOUL_SERVICE_URL]
     .map((value) => value?.trim())
     .filter(Boolean) as string[]
 

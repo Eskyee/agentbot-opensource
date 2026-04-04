@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { APP_URL } from '@/app/lib/app-url'
+import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from '@/app/lib/platform-urls'
 
 interface HealthCheck {
   name: string
@@ -7,11 +8,11 @@ interface HealthCheck {
 }
 
 const HEALTH_CHECKS: HealthCheck[] = [
-  { name: 'Agentbot API', url: 'https://agentbot-prod-production.up.railway.app/health' },
+  { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health` },
   { name: 'Agentbot Web', url: APP_URL },
-  { name: 'x402 Gateway', url: 'https://x402-gateway-production.up.railway.app/health' },
-  { name: 'Tempo Soul', url: 'https://borg-0-production.up.railway.app/health' },
-  { name: 'Borg-0', url: 'https://borg-0-production.up.railway.app/health' },
+  { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health` },
+  { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/health` },
+  { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/health` },
 ]
 
 async function checkHealth(check: HealthCheck): Promise<{ name: string; status: string; detail?: string }> {

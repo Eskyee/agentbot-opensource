@@ -1,6 +1,6 @@
 # Current Platform State
 
-Last verified: 2026-04-03
+Last verified: 2026-04-04
 
 This file is the current operational reference for platform ownership, deployment targets, and verification status. When other docs disagree, treat this file as the source of truth until they are updated.
 
@@ -13,10 +13,10 @@ This file is the current operational reference for platform ownership, deploymen
   - Production URL: `https://agentbot.sh`
 - Backend control plane:
   - Platform: Railway
-  - Project: `OpenClaw-Agentbot`
+  - Project: `motivated-comfort`
   - Environment: `production`
-  - Service: `agentbot-prod`
-  - Health URL: `https://agentbot-prod-production.up.railway.app/health`
+  - Service: `agentbot-backend`
+  - Health URL: `https://agentbot-backend-production.up.railway.app/health`
 - Borg soul:
   - Platform: Railway
   - Project: `x402-gw-v2`
@@ -28,35 +28,44 @@ This file is the current operational reference for platform ownership, deploymen
   - Platform: Railway
   - Service URL: `https://x402-gateway-production.up.railway.app`
   - Health URL: `https://x402-gateway-production.up.railway.app/health`
-- OpenClaw shared UI:
+- OpenClaw managed runtime:
   - Platform: Railway
-  - Service URL: `https://openclaw-gw-ui-production.up.railway.app`
-  - Health URL: `https://openclaw-gw-ui-production.up.railway.app/health`
+  - Project: `motivated-comfort`
+  - Service: `OpenClaw 🦞`
+  - Service URL: `https://openclaw-production-a09d.up.railway.app`
+  - Status URL: `https://openclaw-production-a09d.up.railway.app/api/status`
+- Ollama:
+  - Platform: Railway
+  - Project: `motivated-comfort`
+  - Service: `Ollama`
+- Bitcoin / NBXplorer:
+  - Platform: Railway
+  - Project: `motivated-comfort`
+  - Services: `bitcoind`, `bitcoin-backend`, `Postgres`
+  - Health URL: `https://bitcoin-backend-production-338a.up.railway.app/health`
 - GitHub repos:
   - Private production repo: `Eskyee/agentbot`
   - Public mirror: `Eskyee/agentbot-opensource`
 
 ## Verified Health
 
-**⚠️ Historical note:** older docs referenced `tempo-x402-production.up.railway.app`, but the live Borg/soul host in current production is `borg-0-production.up.railway.app`.
+**⚠️ Historical note:** older docs referenced `tempo-x402-production.up.railway.app`, `agentbot-prod-production.up.railway.app`, and `openclaw-gw-ui-production.up.railway.app`. Those are no longer the current production control-plane targets.
 
-- Vercel production responded `HTTP 200` on 2026-04-02 17:20 BST.
-- Gateway responded `ok, live` on 2026-04-02 17:20 BST.
-- Agentbot API responded `HTTP 200` on 2026-04-02 17:20 BST.
-- x402 Gateway responded `status ok` on 2026-04-02 17:20 BST.
-- Borg Soul: **DOWN** — `startCommand` override + no Tempo gas on wallet `0x3944...`
-- Railway backend health responded `HTTP 200` on 2026-04-02.
-- Borg soul health responded `HTTP 200` on 2026-04-02 after recovery.
-- x402 gateway health responded `HTTP 200` on 2026-04-02.
-- OpenClaw shared UI health responded `HTTP 200` on 2026-04-02.
+- Vercel production responded `HTTP 200` on 2026-04-04.
+- Agentbot backend health responded `HTTP 200` on 2026-04-04.
+- OpenClaw status responded `running: true` on 2026-04-04.
+- `OPENCLAW_VERSION` on Railway was set to `latest` on 2026-04-04.
+- x402 gateway health is still expected at `https://x402-gateway-production.up.railway.app/health`.
+- Bitcoin / NBXplorer stack was recreated on Railway on 2026-04-04; bitcoind is syncing and NBXplorer is reachable, but Bitcoin readiness may lag behind service availability.
 
-## Dashboard Status Notes (2026-04-03)
+## Dashboard Status Notes (2026-04-04)
 
 - Fleet dashboard data is sourced from `/api/mission-control/fleet/graph`.
 - Colony dashboard data is sourced from `/api/colony/status?action=tree`.
 - The displayed Borg dashboard link should be `https://borg-0-production.up.railway.app/dashboard`.
 - The soul service feed URL may differ from the displayed Borg dashboard URL; do not infer the dashboard link by appending `/dashboard` to the service feed.
-- Local production build for `web/` was verified with `npm run build` on 2026-04-03 after removing invalid Next.js 16 route/page exports and switching the build to webpack.
+- Managed runtime provisioning now queues backend jobs instead of doing all Railway work inline in the web request path.
+- Local production build for `web/` was verified with `npm run build` on 2026-04-04 after queue, onboarding, MCP, and runtime-status changes.
 
 ## Deployment Rules
 
@@ -81,10 +90,10 @@ The following docs contain stale or mixed-era infra guidance and should be treat
 - Keep real values in dashboard env vars, local untracked env files, or a password manager.
 - Use placeholders in repo docs.
 
-## OpenClaw Gateway Lockdown (2026-04-02)
+## OpenClaw Gateway Lockdown (2026-04-04)
 
 - The gateway now binds `controlUi.allowedOrigins` to the canonical web origin via the `CONTROL_UI_ORIGIN` env var instead of `*`. Use `https://agentbot.sh` as the primary dashboard origin and keep the old alias only as an explicit compatibility allowlist entry if needed.
 - Device auth is re-enabled and `dangerouslyAllowHostHeaderOriginFallback` is disabled to close the DNS-rebinding attack vector the previous config exposed.
 - The `gateway/openclaw.json` file is now written with `chmod 600` and the workspace directory uses `chmod 700` so the non-root `node` user is the only one who can read configuration or secrets.
 - A new readiness helper in `gateway/entrypoint.sh` waits for `${AGENTBOT_API_URL}/health` (configurable via `SERVICE_HEALTH_URL`) before launching `openclaw gateway`. Set `SKIP_SERVICE_READINESS=true` to skip the wait during emergency restarts.
-- The dashboard now points to `OPENCLAW_CONTROL_UI_URL` (default `https://openclaw-gw-ui-production.up.railway.app/chat`) with `session=agent:main:main`, so users are directed straight to the chat view that pairs with their token. Overrides can be supplied via the environment variables `OPENCLAW_CONTROL_UI_URL` and `OPENCLAW_CONTROL_UI_SESSION`.
+- The current managed runtime host is `https://openclaw-production-a09d.up.railway.app`. Prefer explicit environment overrides for control UI routing and avoid reintroducing old `openclaw-gw-ui-production` defaults.

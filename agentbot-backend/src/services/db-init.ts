@@ -233,6 +233,34 @@ CREATE INDEX IF NOT EXISTS idx_scheduled_tasks_due
   ON scheduled_tasks(status, next_run_at)
   WHERE status = 'pending';
 
+CREATE TABLE IF NOT EXISTS platform_jobs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  agent_id TEXT,
+  lane TEXT NOT NULL DEFAULT 'deploy',
+  job_type TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'queued',
+  priority INTEGER NOT NULL DEFAULT 0,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  max_attempts INTEGER NOT NULL DEFAULT 5,
+  run_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  locked_at TIMESTAMPTZ,
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  error TEXT,
+  payload JSONB NOT NULL DEFAULT '{}',
+  result JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_platform_jobs_status_run_at
+  ON platform_jobs(status, run_at, priority DESC, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_platform_jobs_user_status
+  ON platform_jobs(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_platform_jobs_lane_status
+  ON platform_jobs(lane, status);
+
 -- Indexes for performance
 -- Core FK indexes (prevent full-table scans on joins)
 CREATE INDEX IF NOT EXISTS idx_agents_user_id ON agents(user_id);

@@ -252,7 +252,11 @@ export async function createContainer(
     ? `https://${serviceDomain.domain}`
     : `https://${serviceName}.up.railway.app`;
 
-  const controlUiBase = (process.env.OPENCLAW_CONTROL_UI_URL || 'https://openclaw-gw-ui-production.up.railway.app')
+  const controlUiBase = (
+    process.env.OPENCLAW_CONTROL_UI_URL ||
+    process.env.OPENCLAW_GATEWAY_URL ||
+    'https://openclaw-production-a09d.up.railway.app'
+  )
     .replace(/\/(chat|skills|config)\/?$/, '')
     .replace(/\/$/, '');
   const controlSession = process.env.OPENCLAW_CONTROL_UI_SESSION || 'agent:main:main';

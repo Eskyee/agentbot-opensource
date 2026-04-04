@@ -5,6 +5,7 @@ import { useCustomSession, customSignOut } from "@/app/lib/useCustomSession";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
+import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
 
 export default function Navbar() {
   const { data: session, status } = useCustomSession();
@@ -54,7 +55,7 @@ export default function Navbar() {
           ) : isLoggedIn ? (
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="https://borg-0-production.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
+              <NavLink href={SOUL_DASHBOARD_URL} current={pathname}>Borg</NavLink>
               <NavLink href="/news" current={pathname}>News</NavLink>
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
@@ -65,7 +66,7 @@ export default function Navbar() {
             <>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
               <NavLink href="/why" current={pathname}>Why</NavLink>
-              <NavLink href="https://borg-0-production.up.railway.app/dashboard" current={pathname}>Borg</NavLink>
+              <NavLink href={SOUL_DASHBOARD_URL} current={pathname}>Borg</NavLink>
               <NavLink href="/news" current={pathname}>News</NavLink>
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
@@ -125,7 +126,7 @@ export default function Navbar() {
               <>
                 <MobileSection label="Navigate">
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                  <MobileLink href="https://borg-0-production.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
+                  <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu}>Borg</MobileLink>
                   <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
                   <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
@@ -150,7 +151,7 @@ export default function Navbar() {
                 <MobileSection label="Explore">
                   <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
-                  <MobileLink href="https://borg-0-production.up.railway.app/dashboard" onClick={closeMenu}>Borg</MobileLink>
+                  <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu}>Borg</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agent Templates</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/demo" onClick={closeMenu}>Try Demo</MobileLink>

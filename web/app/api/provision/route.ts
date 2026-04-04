@@ -2,80 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import crypto from 'crypto'
 import { prisma } from '@/app/lib/prisma'
-import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provision'
 import { isTrialActive } from '@/app/lib/trial-utils'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
-
-function normalizeManagedAgentStatus(status?: string): string {
-  if (!status) return 'running'
-  if (status === 'active') return 'running'
-  return status
-}
-
-function getManagedAgentName(agentType?: string): string {
-  return agentType === 'business' ? 'OpenClaw Agent' : 'Agentbot Agent'
-}
-
-async function persistManagedAgent(params: {
-  userId: string
-  agentId: string
-  url?: string
-  aiProvider?: string
-  plan?: string
-  agentType?: string
-  status?: string
-}) {
-  const normalizedStatus = normalizeManagedAgentStatus(params.status)
-  const managedAgentUrl = params.url?.replace(/\/$/, '')
-  const payloadConfig = {
-    managed: true,
-    provisionSource: 'api/provision',
-    agentType: params.agentType || 'creative',
-    plan: params.plan || 'solo',
-    aiProvider: params.aiProvider || 'openrouter',
-    openclawUrl: managedAgentUrl || null,
-  }
-
-  await Promise.all([
-    prisma.user.update({
-      where: { id: params.userId },
-      data: {
-        openclawUrl: managedAgentUrl,
-        openclawInstanceId: params.agentId,
-      },
-    }),
-    prisma.agent.upsert({
-      where: { id: params.agentId },
-      update: {
-        name: getManagedAgentName(params.agentType),
-        model: params.aiProvider || 'openrouter',
-        status: normalizedStatus,
-        websocketUrl: managedAgentUrl,
-        tier: params.plan || 'solo',
-        config: payloadConfig,
-      },
-      create: {
-        id: params.agentId,
-        userId: params.userId,
-        name: getManagedAgentName(params.agentType),
-        model: params.aiProvider || 'openrouter',
-        status: normalizedStatus,
-        websocketUrl: managedAgentUrl,
-        tier: params.plan || 'solo',
-        config: payloadConfig,
-      },
-    }),
-  ])
-}
+import { acquireWorkloadSlot, releaseWorkloadSlot, type WorkloadTicket } from '@/app/lib/workload-gate'
+import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
  *
- * Strategy (in order):
- *   1. Try the agentbot backend Express service (BACKEND_API_URL) — legacy path.
- *   2. If backend is unreachable or returns an error, fall back to provisioning
- *      directly via Railway GraphQL API (RAILWAY_API_KEY / RAILWAY_PROJECT_ID /
- *      RAILWAY_ENVIRONMENT_ID must be set in Vercel env vars for this to work).
+ * Strategy:
+ *   Queue the provisioning job on the backend control plane and return a job ID.
+ *   The backend scheduler performs the Railway API work out of band.
  *
  * Security:
  *   - Session required; admin emails bypass subscription check.
@@ -85,6 +22,7 @@ async function persistManagedAgent(params: {
  */
 
 export async function POST(request: NextRequest) {
+  let workloadTicket: WorkloadTicket | null = null
   try {
     const ip = getClientIP(request)
     if (await isRateLimited(ip)) {
@@ -141,6 +79,20 @@ export async function POST(request: NextRequest) {
     const userEmail = (session!.user!.email || sessionEmail) as string
     const userId = (session!.user!.id || 'admin') as string
 
+    const slot = await acquireWorkloadSlot({
+      lane: 'deploy',
+      userId,
+      ip,
+      cost: autoProvision === true ? 2 : 1,
+    })
+    if (!slot.ok) {
+      return NextResponse.json(
+        { success: false, error: slot.reason, retryAfterSeconds: slot.retryAfterSeconds },
+        { status: 429 }
+      )
+    }
+    workloadTicket = slot.ticket
+
     // 3. DB subscription check — admins bypass, everyone else must have active subscription
     if (!isAdmin && userId !== 'admin') {
     const user = await prisma.user.findUnique({
@@ -183,207 +135,53 @@ export async function POST(request: NextRequest) {
 
     const legacyPayload = {
       userId: agentId,
-      telegramToken,
-      telegramUserId,
-      whatsappToken,
-      discordBotToken,
-      aiProvider: aiProvider || 'openrouter',
-      apiKey,
-      plan: plan || 'solo',
       email: userEmail,
+      agentId,
+      aiProvider: aiProvider || 'openrouter',
+      plan: plan || 'solo',
       stripeSubscriptionId,
       autoProvision: autoProvision || false,
       agentType: agentType || 'creative',
     }
 
-    const backendUrl = process.env.BACKEND_API_URL?.trim()
-    const fallbackUrl = process.env.BACKEND_API_FALLBACK_URL?.trim()
-    const urls = [backendUrl, fallbackUrl].filter(Boolean) as string[]
-    const internalKey = process.env.INTERNAL_API_KEY?.trim()
+    const backendUrl = getBackendApiUrl()
+    const internalKey = getInternalApiKey()
 
-    let lastError: string | null = null
+    const enqueueRes = await fetch(`${backendUrl}/api/platform-jobs/provision`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${internalKey}`,
+      },
+      body: JSON.stringify({
+        ...legacyPayload,
+        userId,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    })
 
-    // ── Path 1: Try backend Express service ──────────────────────────────────
-    if (internalKey && urls.length > 0) {
-      for (const baseUrl of urls) {
-        try {
-          console.log(`[Provision] Trying backend ${baseUrl}/api/provision`)
-          const res = await fetch(`${baseUrl}/api/provision`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${internalKey}`,
-              'X-User-Email': userEmail,
-              'X-User-Id': userId,
-            },
-            body: JSON.stringify(legacyPayload),
-            signal: AbortSignal.timeout(15_000),
-          })
+    const contentType = enqueueRes.headers.get('content-type') || ''
+    const data = contentType.includes('application/json')
+      ? await enqueueRes.json()
+      : { error: 'Provision queue returned non-JSON response' }
 
-          // Guard against HTML error pages from proxy/load-balancer
-          const contentType = res.headers.get('content-type') || ''
-          if (!contentType.includes('application/json')) {
-            lastError = `Backend returned non-JSON response (${res.status})`
-            console.error(`[Provision] Backend at ${baseUrl} returned HTML/non-JSON — skipping`)
-            continue
-          }
-
-          const data = await res.json() as {
-            success?: boolean;
-            error?: string;
-            userId?: string;
-            subdomain?: string;
-            url?: string;
-            streamKey?: string;
-            liveStreamId?: string;
-          }
-
-          if (data.success) {
-            import('@/app/lib/alerts').then(({ alertNewProvision }) => {
-              alertNewProvision(data.userId || agentId, legacyPayload.plan || 'solo').catch(() => {})
-            }).catch(() => {})
-
-            if (data.url && userId && userId !== 'admin') {
-              persistManagedAgent({
-                userId,
-                agentId: data.userId || agentId,
-                url: data.url,
-                aiProvider: legacyPayload.aiProvider,
-                plan: legacyPayload.plan,
-                agentType: legacyPayload.agentType,
-                status: 'running',
-              }).catch((err: unknown) => {
-                console.error('[Provision] Failed to persist managed agent:', err)
-              })
-            }
-
-            return NextResponse.json({
-              success: true,
-              userId: data.userId || agentId,
-              subdomain: data.subdomain,
-              url: data.url,
-              streamKey: data.streamKey,
-              liveStreamId: data.liveStreamId,
-            })
-          }
-
-          lastError = data.error || `Backend returned ${res.status}`
-          console.error(`[Provision] Backend error from ${baseUrl}:`, lastError)
-        } catch (err: unknown) {
-          lastError = err instanceof Error ? err.message : 'Connection failed'
-          console.error(`[Provision] Failed to reach ${baseUrl}:`, lastError)
-        }
-      }
-    } else {
-      console.warn('[Provision] No backend URL or INTERNAL_API_KEY — skipping backend path')
+    if (!enqueueRes.ok || !data?.job?.id) {
+      return NextResponse.json(
+        { success: false, error: data?.error || 'Failed to enqueue provision job' },
+        { status: enqueueRes.status >= 400 ? enqueueRes.status : 502 }
+      )
     }
 
-    // ── Path 1.5: Backend Railway proxy — direct Vercel→Railway calls 403 ───
-    // Route through backend (runs on Railway) where the API call succeeds.
-    if (internalKey && urls.length > 0) {
-      for (const baseUrl of urls) {
-        try {
-          console.log(`[Provision] Trying backend Railway proxy ${baseUrl}/api/railway/provision`)
-          const res = await fetch(`${baseUrl}/api/railway/provision`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${internalKey}`,
-            },
-            body: JSON.stringify({ agentId, plan: legacyPayload.plan }),
-            signal: AbortSignal.timeout(60_000),
-          })
-
-          const contentType = res.headers.get('content-type') || ''
-          if (!contentType.includes('application/json')) {
-            lastError = `Backend Railway proxy returned non-JSON (${res.status})`
-            console.error(`[Provision] Backend Railway proxy at ${baseUrl} returned HTML — skipping`)
-            continue
-          }
-
-          const data = await res.json() as {
-            success?: boolean; error?: string; agentId?: string; url?: string; status?: string
-          }
-
-          if (data.success && data.url) {
-            import('@/app/lib/alerts').then(({ alertNewProvision }) => {
-              alertNewProvision(data.agentId || agentId, legacyPayload.plan || 'solo').catch(() => {})
-            }).catch(() => {})
-
-            if (userId && userId !== 'admin') {
-              persistManagedAgent({
-                userId,
-                agentId: data.agentId || agentId,
-                url: data.url!,
-                aiProvider: legacyPayload.aiProvider,
-                plan: legacyPayload.plan,
-                agentType: legacyPayload.agentType,
-                status: (data.status as 'deploying' | 'running') || 'deploying',
-              }).catch((err: unknown) => {
-                console.error('[Provision] Failed to persist managed agent (Railway proxy):', err)
-              })
-            }
-
-            return NextResponse.json({
-              success: true,
-              userId: data.agentId || agentId,
-              url: data.url,
-              status: data.status || 'deploying',
-            })
-          }
-
-          lastError = data.error || `Backend Railway proxy returned ${res.status}`
-          console.error(`[Provision] Backend Railway proxy error from ${baseUrl}:`, lastError)
-        } catch (err: unknown) {
-          lastError = err instanceof Error ? err.message : 'Connection failed'
-          console.error(`[Provision] Failed to reach backend Railway proxy at ${baseUrl}:`, lastError)
-        }
-      }
-    }
-
-    // ── Path 2: Direct Railway provisioning ──────────────────────────────────
-    if (isRailwayConfigured()) {
-      try {
-        console.log(`[Provision] Falling back to direct Railway provisioning for ${agentId}`)
-        const result = await provisionOnRailway(agentId, legacyPayload.plan)
-
-        import('@/app/lib/alerts').then(({ alertNewProvision }) => {
-          alertNewProvision(agentId, legacyPayload.plan || 'solo').catch(() => {})
-        }).catch(() => {})
-
-        if (userId && userId !== 'admin') {
-          persistManagedAgent({
-            userId,
-            agentId: result.agentId,
-            url: result.url,
-            aiProvider: legacyPayload.aiProvider,
-            plan: legacyPayload.plan,
-            agentType: legacyPayload.agentType,
-            status: result.status,
-          }).catch((err: unknown) => {
-            console.error('[Provision] Failed to persist managed agent (Railway path):', err)
-          })
-        }
-
-        return NextResponse.json({
-          success: true,
-          userId: result.agentId,
-          url: result.url,
-          status: result.status,
-        })
-      } catch (railwayErr: unknown) {
-        const msg = railwayErr instanceof Error ? railwayErr.message : 'Railway provision failed'
-        console.error('[Provision] Railway direct provision failed:', msg)
-        lastError = msg
-      }
-    } else {
-      console.warn('[Provision] Railway env vars not configured — cannot fall back to direct provision')
-    }
-
-    return NextResponse.json({
-      success: false,
-      error: lastError || 'Provisioning service is temporarily unavailable. Please try again later.',
-    }, { status: 502 })
+    return NextResponse.json(
+      {
+        success: true,
+        queued: true,
+        jobId: data.job.id,
+        userId: agentId,
+        status: data.job.status || 'queued',
+      },
+      { status: 202 }
+    )
 
   } catch (error: unknown) {
     console.error('[Provision] Internal error:', error)
@@ -391,6 +189,8 @@ export async function POST(request: NextRequest) {
       success: false,
       error: 'Internal server error',
     }, { status: 500 })
+  } finally {
+    await releaseWorkloadSlot(workloadTicket)
   }
 }
 

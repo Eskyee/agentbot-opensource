@@ -19,7 +19,7 @@
 import { prisma } from '@/app/lib/prisma'
 
 export interface McpConfig {
-  enabled: boolean
+  enabled?: boolean
   name: string
   version: string
   tools: McpTool[]
@@ -31,7 +31,7 @@ export interface McpTool {
   name: string
   description: string
   parameters: Record<string, unknown>
-  handler: string // Function name or endpoint
+  handler?: string // Function name or endpoint
 }
 
 export interface McpResource {
@@ -95,7 +95,7 @@ export class McpManager {
     // Load skill MCP config from database
     const skill = await prisma.skill.findUnique({
       where: { id: skillId },
-      select: { id: true, name: true, mcpConfig: true }
+      select: { id: true, name: true, mcpConfig: true, mcpEnabled: true }
     })
 
     if (!skill) {
@@ -106,10 +106,9 @@ export class McpManager {
       throw new Error(`Skill ${skillId} has no MCP configuration`)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const config = skill.mcpConfig as any as McpConfig
+    const config = normalizeMcpConfig(skill.mcpConfig, skillId)
 
-    if (!config.enabled) {
+    if (!skill.mcpEnabled || config.enabled === false) {
       throw new Error(`MCP is disabled for skill ${skillId}`)
     }
 
@@ -309,6 +308,103 @@ export class McpManager {
 
 // Singleton instance
 export const mcpManager = new McpManager()
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function normalizeMcpTool(value: unknown, skillId: string, index: number): McpTool {
+  if (!isRecord(value)) {
+    throw new Error(`Skill ${skillId} has invalid MCP tool at index ${index}`)
+  }
+
+  const { name, description, parameters, handler } = value
+
+  if (typeof name !== 'string' || name.length === 0) {
+    throw new Error(`Skill ${skillId} has invalid MCP tool name at index ${index}`)
+  }
+
+  if (typeof description !== 'string' || description.length === 0) {
+    throw new Error(`Skill ${skillId} has invalid MCP tool description for ${name}`)
+  }
+
+  if (!isRecord(parameters)) {
+    throw new Error(`Skill ${skillId} has invalid MCP tool parameters for ${name}`)
+  }
+
+  return {
+    name,
+    description,
+    parameters,
+    handler: typeof handler === 'string' ? handler : undefined
+  }
+}
+
+function normalizeMcpResource(value: unknown, skillId: string, index: number): McpResource {
+  if (!isRecord(value)) {
+    throw new Error(`Skill ${skillId} has invalid MCP resource at index ${index}`)
+  }
+
+  const { uri, name, description, mimeType } = value
+
+  if (typeof uri !== 'string' || typeof name !== 'string' || typeof description !== 'string') {
+    throw new Error(`Skill ${skillId} has invalid MCP resource at index ${index}`)
+  }
+
+  return {
+    uri,
+    name,
+    description,
+    mimeType: typeof mimeType === 'string' ? mimeType : undefined
+  }
+}
+
+function normalizeMcpPrompt(value: unknown, skillId: string, index: number): McpPrompt {
+  if (!isRecord(value)) {
+    throw new Error(`Skill ${skillId} has invalid MCP prompt at index ${index}`)
+  }
+
+  const { name, description, template } = value
+
+  if (typeof name !== 'string' || typeof description !== 'string' || typeof template !== 'string') {
+    throw new Error(`Skill ${skillId} has invalid MCP prompt at index ${index}`)
+  }
+
+  return {
+    name,
+    description,
+    template
+  }
+}
+
+function normalizeMcpConfig(rawConfig: unknown, skillId: string): McpConfig {
+  if (!isRecord(rawConfig)) {
+    throw new Error(`Skill ${skillId} has invalid MCP configuration`)
+  }
+
+  const { enabled, name, version, tools, resources, prompts } = rawConfig
+
+  if (typeof name !== 'string' || name.length === 0) {
+    throw new Error(`Skill ${skillId} has invalid MCP name`)
+  }
+
+  if (!Array.isArray(tools)) {
+    throw new Error(`Skill ${skillId} has invalid MCP tools configuration`)
+  }
+
+  return {
+    enabled: typeof enabled === 'boolean' ? enabled : undefined,
+    name,
+    version: typeof version === 'string' && version.length > 0 ? version : '1.0.0',
+    tools: tools.map((tool, index) => normalizeMcpTool(tool, skillId, index)),
+    resources: Array.isArray(resources)
+      ? resources.map((resource, index) => normalizeMcpResource(resource, skillId, index))
+      : undefined,
+    prompts: Array.isArray(prompts)
+      ? prompts.map((prompt, index) => normalizeMcpPrompt(prompt, skillId, index))
+      : undefined
+  }
+}
 
 /**
  * Create MCP configuration for a skill

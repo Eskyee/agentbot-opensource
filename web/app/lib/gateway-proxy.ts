@@ -54,6 +54,10 @@ export async function invokeGatewayTool(
     return { ok: false, error: 'No gateway token configured' }
   }
 
+  if (!url) {
+    return { ok: false, error: 'No gateway URL configured' }
+  }
+
   try {
     const res = await fetch(`${url}/tools/invoke`, {
       method: 'POST',
@@ -101,13 +105,24 @@ async function getUserGateway(userId: string): Promise<{ url: string; token: str
  */
 export async function gatewayHealthcheck(url?: string): Promise<{ ok: boolean; status?: string; error?: string }> {
   const target = (url || GATEWAY_URL).replace(/\/$/, '')
+  if (!target) {
+    return { ok: false, error: 'No gateway URL configured' }
+  }
   try {
-    for (const path of ['/healthz', '/health']) {
+    for (const path of ['/api/status', '/healthz', '/health']) {
       const res = await fetch(`${target}${path}`, {
         signal: AbortSignal.timeout(5000),
       })
       if (res.ok) {
         const data = await res.json().catch(() => ({}))
+        if (path === '/api/status') {
+          const running = data.running === true || data.online === true
+          return {
+            ok: running,
+            status: data.state || (running ? 'running' : 'stopped'),
+            error: running ? undefined : 'Gateway process is not running',
+          }
+        }
         return { ok: true, status: data.status || 'healthy' }
       }
     }

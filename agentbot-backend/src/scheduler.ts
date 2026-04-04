@@ -5,11 +5,13 @@
  */
 
 import { Pool } from 'pg';
+import { processPlatformJobs } from './services/platform-jobs';
 
 const DATABASE_URL = process.env.DATABASE_URL || '';
 const pool = new Pool({ connectionString: DATABASE_URL });
 
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
+let platformJobInterval: ReturnType<typeof setInterval> | null = null;
 
 /**
  * Process scheduled tasks that are due.
@@ -81,20 +83,25 @@ async function processSkillExecutions(): Promise<void> {
  * Call once from the main API process.
  */
 export function startScheduler(): void {
-  if (schedulerInterval) {
+  if (schedulerInterval || platformJobInterval) {
     console.log('[Scheduler] Already running');
     return;
   }
 
-  console.log('[Scheduler] Starting inline task scheduler (every 30s)');
+  console.log('[Scheduler] Starting inline task scheduler (scheduled tasks every 30s, platform jobs every 5s)');
   
   // Run immediately on start, then every 30 seconds
   processScheduledTasks();
+  processPlatformJobs().catch((err) => console.error('[Scheduler] Platform jobs failed:', err));
   
   schedulerInterval = setInterval(async () => {
     await processScheduledTasks();
     await processSkillExecutions();
   }, 30_000);
+
+  platformJobInterval = setInterval(async () => {
+    await processPlatformJobs();
+  }, 5_000);
 }
 
 /**
@@ -104,6 +111,10 @@ export function stopScheduler(): void {
   if (schedulerInterval) {
     clearInterval(schedulerInterval);
     schedulerInterval = null;
-    console.log('[Scheduler] Stopped');
   }
+  if (platformJobInterval) {
+    clearInterval(platformJobInterval);
+    platformJobInterval = null;
+  }
+  console.log('[Scheduler] Stopped');
 }
