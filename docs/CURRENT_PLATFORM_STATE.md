@@ -1,6 +1,6 @@
 # Current Platform State
 
-Last verified: 2026-04-04
+Last verified: 2026-04-05
 
 This file is the current operational reference for platform ownership, deployment targets, and verification status. When other docs disagree, treat this file as the source of truth until they are updated.
 
@@ -41,8 +41,8 @@ This file is the current operational reference for platform ownership, deploymen
 - Bitcoin / NBXplorer:
   - Platform: Railway
   - Project: `motivated-comfort`
-  - Services: `bitcoind`, `bitcoin-backend`, `Postgres`
-  - Health URL: `https://bitcoin-backend-production-338a.up.railway.app/health`
+  - Services: `bitcoind-mainnet`, `bitcoin-backend-mainnet`, `Postgres`
+  - Health URL: `https://bitcoin-backend-mainnet-production.up.railway.app/health`
 - GitHub repos:
   - Private production repo: `Eskyee/agentbot`
   - Public mirror: `Eskyee/agentbot-opensource`
@@ -56,7 +56,9 @@ This file is the current operational reference for platform ownership, deploymen
 - OpenClaw status responded `running: true` on 2026-04-04.
 - `OPENCLAW_VERSION` on Railway was set to `latest` on 2026-04-04.
 - x402 gateway health is still expected at `https://x402-gateway-production.up.railway.app/health`.
-- Bitcoin / NBXplorer stack was recreated on Railway on 2026-04-04; bitcoind is syncing and NBXplorer is reachable, but Bitcoin readiness may lag behind service availability.
+- Bitcoin / NBXplorer now points at the mainnet stack on Railway as of 2026-04-05.
+- `agentbot-backend` now reads `BTC_BACKEND_NBXPLORER_URL=https://bitcoin-backend-mainnet-production.up.railway.app`.
+- The older testnet services (`bitcoind`, `bitcoin-backend`) were taken down and now have `NO DEPLOYMENT` in Railway.
 
 ## Dashboard Status Notes (2026-04-04)
 
