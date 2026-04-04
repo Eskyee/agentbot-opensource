@@ -21,8 +21,16 @@ type BitcoinWallet = {
 
 type BackendInfo = {
   chainHeight?: number
+  bitcoinStatus?: {
+    blocks?: number
+    headers?: number
+    verificationProgress?: number
+    isSynched?: boolean
+  }
   isFullySynched?: boolean
   networkType?: string
+  cryptoCode?: string
+  version?: string
   [key: string]: unknown
 }
 
@@ -91,6 +99,25 @@ function extractTransactions(data: unknown): TransactionItem[] {
   }
 
   return []
+}
+
+function getBackendHeight(info: BackendInfo | null): string {
+  if (!info) return '...'
+  if (typeof info.chainHeight === 'number') return String(info.chainHeight)
+  if (typeof info.bitcoinStatus?.blocks === 'number') return String(info.bitcoinStatus.blocks)
+  return '...'
+}
+
+function getSyncProgress(info: BackendInfo | null): string {
+  const value = info?.bitcoinStatus?.verificationProgress
+  if (typeof value !== 'number') return '...'
+  return `${(value * 100).toFixed(2)}%`
+}
+
+function getBitcoinExplorerBase(info: BackendInfo | null): string {
+  const network = (info?.networkType || '').toLowerCase()
+  if (network.includes('test')) return 'https://mempool.space/testnet'
+  return 'https://mempool.space'
 }
 
 export default function BitcoinPage() {
@@ -244,6 +271,7 @@ export default function BitcoinPage() {
   const syncPill = backendInfo?.isFullySynched
     ? <StatusPill status="active" label="Synced" size="sm" />
     : <StatusPill status="idle" label="Syncing" size="sm" />
+  const explorerBase = getBitcoinExplorerBase(backendInfo)
 
   return (
     <DashboardShell>
@@ -271,16 +299,24 @@ export default function BitcoinPage() {
               {syncPill}
             </div>
 
-            <div className="space-y-2 text-xs text-zinc-500 mb-6">
-              <div className="flex items-center justify-between">
-                <span>Network</span>
-                <span className="font-mono text-zinc-300">{String(backendInfo?.networkType || 'btc')}</span>
+              <div className="space-y-2 text-xs text-zinc-500 mb-6">
+                <div className="flex items-center justify-between">
+                  <span>Network</span>
+                  <span className="font-mono text-zinc-300">{String(backendInfo?.networkType || backendInfo?.cryptoCode || 'btc')}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Chain Height</span>
+                  <span className="font-mono text-zinc-300">{getBackendHeight(backendInfo)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Sync Progress</span>
+                  <span className="font-mono text-zinc-300">{getSyncProgress(backendInfo)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>NBXplorer</span>
+                  <span className="font-mono text-zinc-300">{String(backendInfo?.version || '...')}</span>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span>Chain Height</span>
-                <span className="font-mono text-zinc-300">{String(backendInfo?.chainHeight || '...')}</span>
-              </div>
-            </div>
 
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
@@ -389,7 +425,7 @@ export default function BitcoinPage() {
 
                     {address && (
                       <div className="border border-zinc-900 bg-zinc-950 p-3 mb-3">
-                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Unused Address</div>
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Receive Address</div>
                         <div className="flex items-center gap-2">
                           <code className="text-xs text-zinc-300 break-all flex-1">{address}</code>
                           <button
@@ -402,6 +438,14 @@ export default function BitcoinPage() {
                         {copiedWalletId === wallet.id && (
                           <div className="mt-2 text-[10px] uppercase tracking-widest text-green-400">Copied</div>
                         )}
+                        <a
+                          href={`${explorerBase}/address/${address}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-flex items-center gap-1 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white"
+                        >
+                          View on explorer
+                        </a>
                       </div>
                     )}
 
@@ -418,7 +462,14 @@ export default function BitcoinPage() {
                               <div key={item.txId} className="grid grid-cols-[minmax(0,1fr)_110px_110px] gap-px border-t border-zinc-900 text-xs">
                                 <div className="px-3 py-2">
                                   <div className="font-mono text-zinc-300 break-all">
-                                    {item.txId}
+                                    <a
+                                      href={`${explorerBase}/tx/${item.txId}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="hover:text-white"
+                                    >
+                                      {item.txId}
+                                    </a>
                                   </div>
                                   {item.seenAt && (
                                     <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">

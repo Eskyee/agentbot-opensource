@@ -5,6 +5,7 @@ import { Copy, ExternalLink, Send, Wallet } from 'lucide-react'
 import { useAccount, useConnect, useDisconnect, usePublicClient, useSendTransaction, useSwitchChain, useWriteContract } from 'wagmi'
 import { base } from 'wagmi/chains'
 import { erc20Abi, isAddress, parseEther, parseUnits, type Address } from 'viem'
+import { getPaymentStatus, pay } from '@base-org/account'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { BASE_USDC_ADDRESS } from '@/app/lib/base-wallet'
 import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch'
@@ -44,8 +45,8 @@ type WalletAddressResponse = {
 
 type WalletTransaction = {
   hash: string
+  asset: 'USDC' | 'ETH'
   direction: 'sent' | 'received'
-  symbol: 'USDC'
   amount: string
   amountRaw: string
   from: string
@@ -54,6 +55,7 @@ type WalletTransaction = {
   timestamp: string
   status: 'confirmed'
   explorerUrl: string
+  source: 'token-log' | 'recent-native-scan'
 }
 
 type TransactionsResponse = {
@@ -69,6 +71,16 @@ type Session = {
   vouchers: unknown[]
   status: 'active' | 'settling' | 'closed'
   createdAt: number
+}
+
+type SendState = {
+  mode: 'sponsored' | 'standard'
+  status: 'pending' | 'completed' | 'failed'
+  asset: 'USDC' | 'ETH'
+  hash: string
+  message: string
+  amount: string
+  recipient: string
 }
 
 const TOP_UP_OPTIONS = [5, 10, 25, 50] as const
@@ -107,7 +119,7 @@ export default function WalletPage() {
   const [sendRecipient, setSendRecipient] = useState('')
   const [sendAmount, setSendAmount] = useState('')
   const [sendError, setSendError] = useState<string | null>(null)
-  const [sendHash, setSendHash] = useState<string | null>(null)
+  const [sendState, setSendState] = useState<SendState | null>(null)
   const [isPending, startTransition] = useTransition()
   const [mppSession, setMppSession] = useState<Session | null>(null)
   const [sessionLoading, setSessionLoading] = useState(false)
@@ -222,7 +234,7 @@ export default function WalletPage() {
   async function handleSend(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSendError(null)
-    setSendHash(null)
+    setSendState(null)
 
     if (!isAddress(sendRecipient)) {
       setSendError('Enter a valid Base address.')
@@ -243,27 +255,120 @@ export default function WalletPage() {
       const sender = await ensureConnectedSender()
       const recipient = sendRecipient as Address
       let hash: `0x${string}`
+      let mode: 'sponsored' | 'standard' = 'standard'
 
-      if (sendAsset === 'ETH') {
+      if (sendAsset === 'USDC') {
+        try {
+          const sponsored = await pay({
+            amount: sendAmount,
+            to: recipient,
+            testnet: false,
+          })
+
+          hash = sponsored.id as `0x${string}`
+          mode = 'sponsored'
+          setSendState({
+            mode,
+            status: 'pending',
+            asset: 'USDC',
+            hash,
+            message: 'Gas sponsored. Waiting for Base Pay confirmation.',
+            amount: sendAmount,
+            recipient,
+          })
+
+          try {
+            const startedAt = Date.now()
+            while (Date.now() - startedAt < 30_000) {
+              const status = await getPaymentStatus({ id: hash, testnet: false })
+              if (status.status === 'completed') {
+                setSendState({
+                  mode,
+                  status: 'completed',
+                  asset: 'USDC',
+                  hash,
+                  message: 'Gas sponsored payment confirmed on Base.',
+                  amount: status.amount || sendAmount,
+                  recipient: status.recipient || recipient,
+                })
+                break
+              }
+              if (status.status === 'failed') {
+                setSendState({
+                  mode,
+                  status: 'failed',
+                  asset: 'USDC',
+                  hash,
+                  message: status.reason || 'Sponsored payment failed on Base.',
+                  amount: sendAmount,
+                  recipient,
+                })
+                return
+              }
+              await new Promise((resolve) => setTimeout(resolve, 2_000))
+            }
+          } catch (statusError) {
+            console.warn('[Wallet] Unable to confirm sponsored payment status immediately:', statusError)
+          }
+
+          setSendAmount('')
+          await loadWalletState(sender)
+          return
+        } catch (sponsoredError) {
+          console.warn('[Wallet] Sponsored USDC payment failed, falling back to standard transfer:', sponsoredError)
+          hash = await writeContractAsync({
+            account: sender,
+            chainId: base.id,
+            address: BASE_USDC_ADDRESS,
+            abi: erc20Abi,
+            functionName: 'transfer',
+            args: [recipient, parseUnits(sendAmount, 6)],
+          })
+          setSendState({
+            mode: 'standard',
+            status: 'pending',
+            asset: 'USDC',
+            hash,
+            message: 'Gas sponsorship unavailable. Sent with the connected wallet instead.',
+            amount: sendAmount,
+            recipient,
+          })
+        }
+      } else {
         hash = await sendTransactionAsync({
           account: sender,
           to: recipient,
           value: parseEther(sendAmount),
           chainId: base.id,
         })
-      } else {
-        hash = await writeContractAsync({
-          account: sender,
-          chainId: base.id,
-          address: BASE_USDC_ADDRESS,
-          abi: erc20Abi,
-          functionName: 'transfer',
-          args: [recipient, parseUnits(sendAmount, 6)],
+        setSendState({
+          mode: 'standard',
+          status: 'pending',
+          asset: 'ETH',
+          hash,
+          message: 'ETH transaction submitted on Base.',
+          amount: sendAmount,
+          recipient,
         })
       }
 
       await publicClient.waitForTransactionReceipt({ hash })
-      setSendHash(hash)
+      setSendState((current) => current ? {
+        ...current,
+        status: 'completed',
+        hash,
+        message: current.mode === 'sponsored'
+          ? 'Gas sponsored payment confirmed on Base.'
+          : `${current.asset} transfer confirmed on Base.`,
+      } : {
+        mode,
+        status: 'completed',
+        asset: sendAsset,
+        hash,
+        message: `${sendAsset} transfer confirmed on Base.`,
+        amount: sendAmount,
+        recipient,
+      })
       setSendAmount('')
       await loadWalletState(sender)
     } catch (error) {
@@ -492,6 +597,9 @@ export default function WalletPage() {
                     <p className="mt-3 text-sm text-zinc-400">
                       Connect the same Base wallet you used to sign in. USDC transfers are sent on Base mainnet, and ETH sends remain available for gas transfers.
                     </p>
+                    <p className="mt-2 text-xs uppercase tracking-widest text-emerald-400">
+                      USDC tries gas sponsored send first. No ETH is needed when sponsorship is available.
+                    </p>
 
                     {needsWalletReconnect && (
                       <div className="mt-4 border border-amber-800 bg-amber-950/30 p-3 text-sm text-amber-200">
@@ -556,15 +664,31 @@ export default function WalletPage() {
                       </div>
 
                       {sendError && <p className="text-sm text-red-400">{sendError}</p>}
-                      {sendHash && (
-                        <a
-                          href={`https://basescan.org/tx/${sendHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300"
-                        >
-                          Transfer confirmed on Basescan <ExternalLink className="h-4 w-4" />
-                        </a>
+                      {sendState && (
+                        <div className="border border-zinc-800 bg-black p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-widest text-zinc-600">Last send</p>
+                              <p className="mt-2 text-sm font-medium text-white">{sendState.message}</p>
+                              <p className="mt-1 text-xs text-zinc-500">
+                                {sendState.amount} {sendState.asset} to {formatAddress(sendState.recipient)}
+                              </p>
+                            </div>
+                            <StatusPill
+                              status={sendState.status === 'completed' ? 'active' : sendState.status === 'pending' ? 'idle' : 'error'}
+                              label={sendState.mode === 'sponsored' ? 'Gas sponsored' : 'Standard send'}
+                              size="sm"
+                            />
+                          </div>
+                          <a
+                            href={`https://basescan.org/tx/${sendState.hash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300"
+                          >
+                            View on Basescan <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </div>
                       )}
                     </form>
                   </div>
@@ -588,7 +712,7 @@ export default function WalletPage() {
                   </div>
 
                   <p className="mt-3 text-sm text-zinc-400">
-                    This view indexes recent USDC transfers for your Base address. For full history, open Basescan.
+                    This view indexes recent USDC transfers and a bounded recent scan of native ETH transfers for your Base address. For full history, open Basescan.
                   </p>
 
                   <div className="mt-4 divide-y divide-zinc-800 border border-zinc-800">
@@ -597,10 +721,10 @@ export default function WalletPage() {
                         <div key={transaction.hash} className="flex flex-col gap-2 bg-zinc-950 p-4 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <p className="text-sm font-medium text-white">
-                              {transaction.direction === 'received' ? 'Received' : 'Sent'} {formatAmount(transaction.amount, 2)} {transaction.symbol}
+                              {transaction.direction === 'received' ? 'Received' : 'Sent'} {formatAmount(transaction.amount, 4)} {transaction.asset}
                             </p>
                             <p className="mt-1 text-xs text-zinc-500">
-                              {new Date(transaction.timestamp).toLocaleString()}
+                              {new Date(transaction.timestamp).toLocaleString()} · {transaction.source === 'token-log' ? 'Indexed transfer' : 'Recent native scan'}
                             </p>
                           </div>
                           <a

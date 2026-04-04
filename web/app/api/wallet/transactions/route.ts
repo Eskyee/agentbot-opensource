@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
-import { createPublicClient, formatUnits, http, isAddress, parseAbiItem, type Address } from 'viem'
+import { createPublicClient, formatEther, formatUnits, http, isAddress, parseAbiItem, type Address, type Transaction } from 'viem'
 import { BASE_CHAIN, BASE_RPC_URL, BASE_USDC_ADDRESS, getBaseTxUrl } from '@/app/lib/base-wallet'
 
 const TRANSFER_EVENT = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)')
 const DEFAULT_LIMIT = 10
 const MAX_LIMIT = 25
-const LOOKBACK_BLOCKS = 50_000n
+const USDC_LOOKBACK_BLOCKS = 50_000n
+const ETH_SCAN_MAX_BLOCKS = 180
 
 const client = createPublicClient({
   chain: BASE_CHAIN,
@@ -14,8 +15,8 @@ const client = createPublicClient({
 
 type WalletTransaction = {
   hash: string
+  asset: 'USDC' | 'ETH'
   direction: 'sent' | 'received'
-  symbol: 'USDC'
   amount: string
   amountRaw: string
   from: string
@@ -24,10 +25,54 @@ type WalletTransaction = {
   timestamp: string
   status: 'confirmed'
   explorerUrl: string
+  source: 'token-log' | 'recent-native-scan'
 }
 
 function toAddress(value: string | null): Address | null {
   return value && isAddress(value) ? (value as Address) : null
+}
+
+async function getRecentNativeTransactions(address: Address, limit: number): Promise<WalletTransaction[]> {
+  const currentBlock = await client.getBlockNumber()
+  const target = address.toLowerCase()
+  const results: WalletTransaction[] = []
+
+  for (let offset = 0; offset < ETH_SCAN_MAX_BLOCKS && results.length < limit; offset += 1) {
+    const blockNumber = currentBlock - BigInt(offset)
+    if (blockNumber < 0n) break
+
+    const block = await client.getBlock({
+      blockNumber,
+      includeTransactions: true,
+    })
+
+    for (const tx of block.transactions as Transaction[]) {
+      if (!tx.to || tx.value <= 0n) continue
+
+      const from = tx.from.toLowerCase()
+      const to = tx.to.toLowerCase()
+      if (from !== target && to !== target) continue
+
+      results.push({
+        hash: tx.hash,
+        asset: 'ETH',
+        direction: to === target ? 'received' : 'sent',
+        amount: formatEther(tx.value),
+        amountRaw: tx.value.toString(),
+        from: tx.from,
+        to: tx.to,
+        blockNumber: block.number.toString(),
+        timestamp: new Date(Number(block.timestamp) * 1000).toISOString(),
+        status: 'confirmed',
+        explorerUrl: getBaseTxUrl(tx.hash),
+        source: 'recent-native-scan',
+      })
+
+      if (results.length >= limit) break
+    }
+  }
+
+  return results
 }
 
 export async function GET(request: Request) {
@@ -41,9 +86,9 @@ export async function GET(request: Request) {
 
   try {
     const currentBlock = await client.getBlockNumber()
-    const fromBlock = currentBlock > LOOKBACK_BLOCKS ? currentBlock - LOOKBACK_BLOCKS : 0n
+    const fromBlock = currentBlock > USDC_LOOKBACK_BLOCKS ? currentBlock - USDC_LOOKBACK_BLOCKS : 0n
 
-    const [incomingLogs, outgoingLogs] = await Promise.all([
+    const [incomingLogs, outgoingLogs, nativeTransactions] = await Promise.all([
       client.getLogs({
         address: BASE_USDC_ADDRESS,
         event: TRANSFER_EVENT,
@@ -58,9 +103,10 @@ export async function GET(request: Request) {
         fromBlock,
         toBlock: currentBlock,
       }),
+      getRecentNativeTransactions(address, limit),
     ])
 
-    const merged = [...incomingLogs, ...outgoingLogs]
+    const usdcLogs = [...incomingLogs, ...outgoingLogs]
       .sort((a, b) => {
         if (a.blockNumber === b.blockNumber) {
           return Number((b.logIndex ?? 0) - (a.logIndex ?? 0))
@@ -69,7 +115,7 @@ export async function GET(request: Request) {
       })
       .slice(0, limit)
 
-    const blockNumbers = [...new Set(merged.map((log) => log.blockNumber.toString()))]
+    const blockNumbers = [...new Set(usdcLogs.map((log) => log.blockNumber.toString()))]
     const blocks = await Promise.all(
       blockNumbers.map(async (blockNumber) => {
         const block = await client.getBlock({ blockNumber: BigInt(blockNumber) })
@@ -78,7 +124,7 @@ export async function GET(request: Request) {
     )
     const blockMap = new Map(blocks)
 
-    const transactions: WalletTransaction[] = merged.map((log) => {
+    const usdcTransactions: WalletTransaction[] = usdcLogs.map((log) => {
       const block = blockMap.get(log.blockNumber.toString())
       const from = log.args.from ?? ''
       const to = log.args.to ?? ''
@@ -86,8 +132,8 @@ export async function GET(request: Request) {
 
       return {
         hash: log.transactionHash,
+        asset: 'USDC',
         direction: to.toLowerCase() === address.toLowerCase() ? 'received' : 'sent',
-        symbol: 'USDC',
         amount: formatUnits(value, 6),
         amountRaw: value.toString(),
         from,
@@ -96,17 +142,24 @@ export async function GET(request: Request) {
         timestamp: block ? new Date(Number(block.timestamp) * 1000).toISOString() : new Date(0).toISOString(),
         status: 'confirmed',
         explorerUrl: getBaseTxUrl(log.transactionHash),
+        source: 'token-log',
       }
     })
+
+    const transactions = [...usdcTransactions, ...nativeTransactions]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, limit)
 
     return NextResponse.json({
       address,
       chain: BASE_CHAIN.name,
       chainId: BASE_CHAIN.id,
       currentBlock: currentBlock.toString(),
-      indexedAsset: 'USDC',
-      windowBlocks: LOOKBACK_BLOCKS.toString(),
       transactions,
+      sources: {
+        usdc: `token logs over last ${USDC_LOOKBACK_BLOCKS.toString()} blocks`,
+        eth: `native scan over last ${ETH_SCAN_MAX_BLOCKS} blocks`,
+      },
     })
   } catch (error) {
     console.error('[Wallet Transactions API] Error:', error)
