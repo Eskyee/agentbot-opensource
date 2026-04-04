@@ -77,7 +77,18 @@ if [ ! -f "${HOME}/.openclaw/openclaw.json" ]; then
   "$@" || {
     echo "[$(date)] Onboard failed, falling back to manual config..."
     # Fallback: write minimal config
-    GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 16)}"
+    # Persist gateway token across restarts — regenerating breaks live connections
+GATEWAY_TOKEN_FILE="${HOME}/.openclaw/gateway-token"
+if [ -n "${OPENCLAW_GATEWAY_TOKEN:-}" ]; then
+  GATEWAY_TOKEN="$OPENCLAW_GATEWAY_TOKEN"
+elif [ -f "$GATEWAY_TOKEN_FILE" ]; then
+  GATEWAY_TOKEN="$(cat "$GATEWAY_TOKEN_FILE")"
+else
+  GATEWAY_TOKEN="$(openssl rand -hex 32)"
+  mkdir -p "${HOME}/.openclaw"
+  printf '%s' "$GATEWAY_TOKEN" > "$GATEWAY_TOKEN_FILE"
+  chmod 600 "$GATEWAY_TOKEN_FILE"
+fi
     mkdir -p "${HOME}/.openclaw"
     cat > "${HOME}/.openclaw/openclaw.json" << EOF
 {

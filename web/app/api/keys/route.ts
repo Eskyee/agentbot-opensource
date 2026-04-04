@@ -47,6 +47,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name too long (max 64 chars)' }, { status: 400 })
     }
 
+    // Enforce per-user key cap to prevent sprawl
+    const keyCount = await prisma.apiKey.count({ where: { userId: session.user.id } })
+    if (keyCount >= 10) {
+      return NextResponse.json(
+        { error: 'API key limit reached (max 10 per account). Delete unused keys first.' },
+        { status: 429 }
+      )
+    }
+
     // Generate a cryptographically secure key — returned once, never stored in plaintext
     const rawKey = 'sk_' + crypto.randomBytes(32).toString('hex')
     const keyPrefix = rawKey.substring(0, 10)      // "sk_" + 7 chars shown in UI
