@@ -46,6 +46,7 @@ model User {
   workflows             Workflow[]
   passkeyCredentials    PasskeyCredential[]
   passkeyChallenges     PasskeyChallenge[]
+  notifications         Notification[]
 }
 
 model Account {
