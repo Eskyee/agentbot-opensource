@@ -326,6 +326,23 @@ model CalendarToken {
   @@index([userId])
 }
 
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // achievement | badge | referral | system | agent | message | billing
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  data      Json?    // Additional data (badge info, referral details, etc.)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
 model PairedDevice {
   id        String   @id @default(cuid())
   userId    String
