@@ -1,391 +1,220 @@
 /**
- * Agentbot OpenClaw Gateway Wrapper
+ * openclaw-railway — server.js
  *
- * Manages the OpenClaw gateway process with:
- *  - Auto-config from env vars (no setup wizard needed — agentbot provisions everything)
- *  - Health endpoint for Railway auto-restart
- *  - Process management with exponential backoff restart
- *  - Persistent storage on Railway volume (/data)
- *  - HTTP proxy to OpenClaw gateway for the Control UI
+ * Single entry point. Responsibilities:
+ *  1. Boot Express on PORT (Railway's public port)
+ *  2. If openclaw.json already exists on the volume → launch gateway immediately
+ *  3. Proxy all /ui/* traffic through to openclaw's gateway once it's up
+ *  4. Serve the Setup UI and admin dashboard when needed
+ *  5. Attach terminal WebSocket at /ws/terminal
+ *  6. Push pairing SSE events when pending.json changes
  */
 
 import express from 'express';
 import { createServer } from 'http';
-import { spawn, execFileSync } from 'child_process';
-import { EventEmitter } from 'events';
-import httpProxy from 'http-proxy';
-import net from 'net';
-import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
 
-// ── Config ──────────────────────────────────────────────────────
-const PORT = parseInt(process.env.PORT || '3000', 10);
-const DATA_DIR = process.env.OPENCLAW_DATA_DIR || '/data';
-const OPENCLAW_HOME = path.join(DATA_DIR, '.openclaw');
-const CONFIG_PATH = path.join(OPENCLAW_HOME, 'openclaw.json');
-const GATEWAY_PORT = 18789;
-const GATEWAY_HOST = '127.0.0.1';
-const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || '';
+import { config } from './config/index.js';
+import { gatewayManager } from './services/gatewayManager.js';
+import { pairingService } from './services/pairingService.js';
+import { attachTerminalWebSocket, terminalWss } from './services/terminalService.js';
+import { setupRoutes } from './routes/setup.js';
+import { apiRoutes } from './routes/api.js';
+import { proxyMiddleware } from './middleware/proxy.js';
+import { requestLogger } from './middleware/logger.js';
+import { requireAdminAuth, setAuthCookie, clearAuthCookie } from './middleware/auth.js';
+import { ensureDataDir } from './utils/fs.js';
+import { log } from './utils/log.js';
 
-// ── Logging ─────────────────────────────────────────────────────
-const log = {
-  info: (...args) => console.log(`[${new Date().toISOString()}] INFO`, ...args),
-  warn: (...args) => console.warn(`[${new Date().toISOString()}] WARN`, ...args),
-  error: (...args) => console.error(`[${new Date().toISOString()}] ERROR`, ...args),
-};
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ── Gateway Manager ─────────────────────────────────────────────
-class GatewayManager extends EventEmitter {
-  constructor() {
-    super();
-    this._proc = null;
-    this._state = 'stopped';
-    this._restartCount = 0;
-    this._restartTimer = null;
-    this._logs = [];
-    this._startTime = null;
-
-    this._proxy = httpProxy.createProxyServer({
-      target: `http://${GATEWAY_HOST}:${GATEWAY_PORT}`,
-      changeOrigin: true,
-      xfwd: true,
-      proxyTimeout: 120_000,
-      timeout: 120_000,
-    });
-
-    this._proxy.on('proxyReq', (proxyReq) => {
-      if (GATEWAY_TOKEN) {
-        proxyReq.setHeader('Authorization', `Bearer ${GATEWAY_TOKEN}`);
-      }
-    });
-
-    this._proxy.on('error', (err, _req, res) => {
-      if (res && !res.headersSent) {
-        res.writeHead(502, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Gateway not reachable', detail: err.message }));
-      }
-    });
-  }
-
-  isRunning() { return this._state === 'running'; }
-  getState() { return this._state; }
-  getLogs(n = 100) { return this._logs.slice(-n); }
-  getUptime() { return this._startTime ? Date.now() - this._startTime : 0; }
-
-  async start() {
-    if (this._state === 'running' || this._state === 'starting') return;
-    this._state = 'starting';
-    this._restartCount = 0;
-    this._spawn();
-
-    try {
-      await this._waitForReady();
-      this._state = 'running';
-      this._startTime = Date.now();
-      log.info('OpenClaw gateway is ready');
-    } catch (err) {
-      log.error('Gateway failed to start:', err.message);
-      this._state = 'crashed';
-    }
-  }
-
-  async stop() {
-    if (this._restartTimer) { clearTimeout(this._restartTimer); this._restartTimer = null; }
-    if (this._proc) { this._proc.kill('SIGTERM'); this._proc = null; }
-    this._state = 'stopped';
-    this._startTime = null;
-  }
-
-  async restart() {
-    await this.stop();
-    await new Promise(r => setTimeout(r, 500));
-    await this.start();
-  }
-
-  proxyRequest(req, res) {
-    this._proxy.web(req, res);
-  }
-
-  handleWsUpgrade(req, socket, head) {
-    if (!this.isRunning()) {
-      socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
-      socket.destroy();
-      return;
-    }
-
-    // Raw TCP pipe to gateway — avoids http-proxy WS bugs on Node 22
-    const proxySocket = net.connect(GATEWAY_PORT, GATEWAY_HOST, () => {
-      let raw = `${req.method} ${req.url} HTTP/${req.httpVersion}\r\n`;
-      let hasAuth = false;
-
-      for (let i = 0; i < req.rawHeaders.length; i += 2) {
-        const key = req.rawHeaders[i];
-        const val = req.rawHeaders[i + 1];
-        const lower = key.toLowerCase();
-
-        if (lower === 'host') {
-          raw += `${key}: ${GATEWAY_HOST}:${GATEWAY_PORT}\r\n`;
-        } else if (lower === 'authorization') {
-          hasAuth = true;
-          raw += `${key}: Bearer ${GATEWAY_TOKEN}\r\n`;
-        } else {
-          raw += `${key}: ${val}\r\n`;
-        }
-      }
-
-      if (!hasAuth && GATEWAY_TOKEN) {
-        raw += `Authorization: Bearer ${GATEWAY_TOKEN}\r\n`;
-      }
-      raw += '\r\n';
-
-      proxySocket.write(raw);
-      if (head && head.length > 0) proxySocket.write(head);
-      proxySocket.pipe(socket);
-      socket.pipe(proxySocket);
-    });
-
-    proxySocket.on('error', () => socket.destroy());
-    socket.on('error', () => proxySocket.destroy());
-    socket.on('close', () => proxySocket.destroy());
-    proxySocket.on('close', () => socket.destroy());
-  }
-
-  _spawn() {
-    log.info('Spawning OpenClaw gateway...');
-
-    const args = ['gateway', 'run', '--bind', 'loopback', '--port', String(GATEWAY_PORT), '--allow-unconfigured'];
-    if (GATEWAY_TOKEN) args.push('--auth', 'token', '--token', GATEWAY_TOKEN);
-
-    this._proc = spawn('openclaw', args, {
-      env: { ...process.env, HOME: DATA_DIR, OPENCLAW_STATE_DIR: OPENCLAW_HOME },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-
-    this._proc.stdout.on('data', (d) => d.toString().split('\n').filter(Boolean).forEach(l => this._log('stdout', l)));
-    this._proc.stderr.on('data', (d) => d.toString().split('\n').filter(Boolean).forEach(l => this._log('stderr', l)));
-
-    this._proc.on('exit', (code, signal) => {
-      log.warn(`Gateway exited (code=${code}, signal=${signal})`);
-      this._proc = null;
-      if (this._state !== 'stopped') {
-        this._state = 'crashed';
-        this._scheduleRestart();
-      }
-    });
-
-    this._proc.on('error', (err) => {
-      log.error('Failed to spawn openclaw:', err.message);
-      this._state = 'crashed';
-      this._scheduleRestart();
-    });
-  }
-
-  _scheduleRestart() {
-    const delay = Math.min(2000 * Math.pow(2, this._restartCount), 30_000);
-    this._restartCount++;
-    log.info(`Restart in ${delay}ms (attempt #${this._restartCount})`);
-
-    this._restartTimer = setTimeout(async () => {
-      this._restartTimer = null;
-      this._spawn();
-      try {
-        await this._waitForReady();
-        this._state = 'running';
-        this._startTime = Date.now();
-        log.info('Gateway recovered');
-      } catch {
-        this._scheduleRestart();
-      }
-    }, delay);
-  }
-
-  _waitForReady() {
-    return new Promise((resolve, reject) => {
-      const deadline = Date.now() + 60_000;
-      const poll = () => {
-        if (Date.now() > deadline) return reject(new Error('Gateway not ready after 60s'));
-        const s = new net.Socket();
-        s.setTimeout(500);
-        s.on('connect', () => { s.destroy(); resolve(); });
-        s.on('error', () => { s.destroy(); setTimeout(poll, 500); });
-        s.on('timeout', () => { s.destroy(); setTimeout(poll, 500); });
-        s.connect(GATEWAY_PORT, GATEWAY_HOST);
-      };
-      poll();
-    });
-  }
-
-  _log(stream, line) {
-    const entry = { ts: new Date().toISOString(), stream, line };
-    this._logs.push(entry);
-    if (this._logs.length > 500) this._logs.shift();
-    this.emit('log', entry);
-  }
-}
-
-// ── Config Builder ──────────────────────────────────────────────
-async function writeOpenClawConfig() {
-  await fs.mkdir(OPENCLAW_HOME, { recursive: true });
-  await fs.mkdir(path.join(OPENCLAW_HOME, 'workspace'), { recursive: true });
-
-  const config = {
-    env: {
-      OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
-    },
-    gateway: {
-      mode: 'local',
-      bind: 'loopback',
-      port: GATEWAY_PORT,
-      auth: {
-        mode: GATEWAY_TOKEN ? 'token' : 'none',
-        token: GATEWAY_TOKEN || undefined,
-        rateLimit: { maxAttempts: 10, windowMs: 60000, lockoutMs: 300000 },
-      },
-      trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10'],
-      controlUi: {
-        allowedOrigins: ['*'],
-        dangerouslyDisableDeviceAuth: true,
-      },
-      http: { endpoints: { chatCompletions: { enabled: true } } },
-      reload: { mode: 'hybrid', debounceMs: 300 },
-    },
-    agents: {
-      defaults: {
-        workspace: path.join(OPENCLAW_HOME, 'workspace'),
-        userTimezone: 'Europe/London',
-        model: {
-          primary: 'openrouter/xiaomi/mimo-v2-pro',
-          fallbacks: ['openrouter/anthropic/claude-sonnet-4', 'openrouter/google/gemini-2.5-flash'],
-        },
-        models: {
-          'openrouter/xiaomi/mimo-v2-pro': { alias: 'mimo' },
-          'openrouter/anthropic/claude-sonnet-4': { alias: 'sonnet' },
-          'openrouter/google/gemini-2.5-flash': { alias: 'gemini' },
-        },
-        thinkingDefault: 'low',
-        verboseDefault: 'off',
-        timeoutSeconds: 600,
-        maxConcurrent: 3,
-        heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
-      },
-    },
-    tools: {
-      profile: 'coding',
-      exec: { backgroundMs: 10000, timeoutSec: 1800 },
-      web: { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
-    },
-    session: {
-      scope: 'per-sender',
-      reset: { mode: 'daily', atHour: 4 },
-      maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
-    },
-    channels: {
-      telegram: { enabled: false, dmPolicy: 'pairing' },
-      discord: { enabled: false, dmPolicy: 'pairing' },
-      whatsapp: { enabled: false, dmPolicy: 'pairing' },
-      webchat: { enabled: true },
-    },
-    cron: { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
-    logging: { level: 'info', consoleLevel: 'info', consoleStyle: 'compact' },
-  };
-
-  // Atomic write
-  const tmp = CONFIG_PATH + '.tmp';
-  await fs.writeFile(tmp, JSON.stringify(config, null, 2), 'utf8');
-  await fs.rename(tmp, CONFIG_PATH);
-  log.info('OpenClaw config written to', CONFIG_PATH);
-}
-
-// ── Main ────────────────────────────────────────────────────────
 async function main() {
-  // Verify openclaw binary exists
+  // ── Startup sanity checks ──────────────────────────────────────
   try {
     execFileSync('openclaw', ['--version'], { stdio: 'ignore' });
   } catch {
-    log.error('openclaw binary not found in PATH');
+    log.error('❌ `openclaw` binary not found in PATH.');
+    log.error('   PATH = ' + process.env.PATH);
+    log.error('   Check that node_modules/.bin is in PATH (Dockerfile ENV PATH setting).');
     process.exit(1);
   }
 
-  // Write config from env vars
-  await writeOpenClawConfig();
+  // 1. Ensure all required directories exist on the volume
+  await ensureDataDir();
 
-  const gw = new GatewayManager();
   const app = express();
-  const server = createServer(app);
+  const httpServer = createServer(app);
 
-  app.use(express.json());
+  // ── Middleware ─────────────────────────────────────────────────
+  app.use(express.json({ limit: '2mb' }));
+  app.use(express.urlencoded({ extended: true }));
+  app.use(requestLogger);
 
-  // ── Health check — Railway uses this to detect unhealthy containers ──
-  app.get('/healthz', (_req, res) => {
-    res.json({
-      status: gw.isRunning() ? 'healthy' : gw.getState(),
-      gateway: gw.getState(),
-      uptime: gw.getUptime(),
-      timestamp: new Date().toISOString(),
+  // Static files for wrapper UI (setup/admin pages)
+  // ── Routes ─────────────────────────────────────────────────────
+
+  // Internal management API — always available
+  app.use('/api', apiRoutes);
+
+  // Setup flow routes
+  app.use('/setup', setupRoutes);
+
+  /**
+   * SSE: real-time pairing pending updates
+   * Protected by admin auth.
+   */
+  app.get('/api/pairing/stream', requireAdminAuth, (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    pairingService.getPending().then((pending) => {
+      res.write(`data: ${JSON.stringify({ type: 'pending', pending })}\n\n`);
+    }).catch(() => {});
+
+    const onPendingChanged = (pending) => {
+      res.write(`data: ${JSON.stringify({ type: 'pending', pending })}\n\n`);
+    };
+    const onPairingUpdate = (evt) => {
+      res.write(`data: ${JSON.stringify({ type: 'update', ...evt })}\n\n`);
+    };
+
+    pairingService.on('pendingChanged', onPendingChanged);
+    pairingService.on('pairingUpdate',  onPairingUpdate);
+
+    req.on('close', () => {
+      pairingService.off('pendingChanged', onPendingChanged);
+      pairingService.off('pairingUpdate',  onPairingUpdate);
     });
   });
 
-  // ── Status API — more detail for agentbot dashboard ──
-  app.get('/api/status', (_req, res) => {
-    res.json({
-      online: gw.isRunning(),
-      state: gw.getState(),
-      uptime: gw.getUptime(),
-      logsCount: gw.getLogs().length,
-    });
+  // Root routing — when gateway is running, proxy openclaw UI at /.
+  // When not configured, redirect to /setup.
+  app.get('/', (req, res, next) => {
+    if (gatewayManager.isRunning()) return next(); // fall through to proxy below
+    res.redirect('/setup');
   });
 
-  // ── Logs — last N lines of gateway output ──
-  app.get('/api/logs', (req, res) => {
-    const n = Math.min(parseInt(req.query.lines || '100', 10), 500);
-    res.json({ logs: gw.getLogs(n) });
+  // /ui/* kept for backwards compat — redirect to /
+  app.use('/ui', (req, res) => res.redirect('/' + (req.url || '').replace(/^\//, '')));
+
+  // Login page
+  app.get('/login', (req, res) => {
+    if (!config.WRAPPER_ADMIN_PASSWORD) return res.redirect('/admin');
+    const returnTo = req.query.returnTo || '/admin';
+    res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>OpenClaw Login</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0d0f14;color:#c9d1d9;font-family:'IBM Plex Mono',monospace;
+display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{background:#14181f;border:1px solid #252d3d;border-radius:12px;padding:40px;width:360px}
+h1{font-size:18px;color:#e85d26;margin-bottom:24px;text-align:center}
+label{font-size:12px;color:#6b7688;display:block;margin-bottom:6px}
+input{width:100%;background:#0d0f14;border:1px solid #252d3d;border-radius:7px;
+color:#c9d1d9;font-family:inherit;font-size:13px;padding:9px 12px;outline:none;margin-bottom:16px}
+input:focus{border-color:#e85d26}
+button{width:100%;background:#e85d26;border:none;border-radius:8px;color:white;
+font-family:inherit;font-size:14px;font-weight:600;padding:12px;cursor:pointer}
+button:hover{background:#f0883e}
+.err{color:#f85149;font-size:12px;margin-bottom:12px;text-align:center}</style>
+</head><body><div class="card">
+<h1>🦞 OpenClaw Admin</h1>
+${req.query.err ? '<p class="err">Incorrect password</p>' : ''}
+<form method="POST" action="/login">
+<input type="hidden" name="returnTo" value="${returnTo}">
+<label>Admin Password</label>
+<input type="password" name="password" autofocus placeholder="Enter password">
+<button type="submit">Sign In</button>
+</form></div></body></html>`);
   });
 
-  // ── Gateway control ──
-  app.post('/api/restart', async (_req, res) => {
-    try {
-      await gw.restart();
-      res.json({ ok: true, state: gw.getState() });
-    } catch (err) {
-      res.status(500).json({ ok: false, error: err.message });
+  app.post('/login', express.urlencoded({ extended: false }), (req, res) => {
+    const { password, returnTo = '/admin' } = req.body;
+    if (!config.WRAPPER_ADMIN_PASSWORD || password === config.WRAPPER_ADMIN_PASSWORD) {
+      setAuthCookie(res, password);
+      return res.redirect(returnTo);
     }
+    const r = encodeURIComponent(returnTo);
+    res.redirect(`/login?returnTo=${r}&err=1`);
   });
 
-  // ── Proxy everything else to OpenClaw gateway ──
-  app.use('/', (req, res, next) => {
-    if (gw.isRunning()) {
-      gw.proxyRequest(req, res);
-    } else {
-      res.status(503).json({
-        error: 'OpenClaw gateway is not running',
-        state: gw.getState(),
-        hint: 'The gateway is starting up or has crashed. Check /healthz for status.',
+  app.get('/logout', (req, res) => {
+    clearAuthCookie(res);
+    res.redirect('/login');
+  });
+
+  // Admin dashboard
+  app.get('/admin', requireAdminAuth, async (req, res) => {
+    if (!(await config.isAlreadyConfigured())) {
+      return res.redirect('/setup');
+    }
+    res.sendFile(path.join(__dirname, '../public/admin.html'));
+  });
+
+  // ── Catch-all proxy — MUST be last ────────────────────────────
+  // All our own routes (/api, /setup, /admin, /login, /logout, /ws)
+  // are registered above. Everything else proxies to openclaw gateway.
+  app.use('/', proxyMiddleware);
+
+  // ── WebSocket services ─────────────────────────────────────────
+  // Initialize terminal WSS (registers connection handler, but NOT
+  // an upgrade listener — we use noServer mode).
+  attachTerminalWebSocket(httpServer);
+
+  // Single upgrade handler — routes /ws/terminal to terminal WSS,
+  // everything else to gateway WS proxy. This avoids the ws library's
+  // abortHandshake(400) which would destroy non-terminal sockets.
+  httpServer.on('upgrade', (req, socket, head) => {
+    const url = req.url || '';
+
+    if (url.startsWith('/ws/terminal')) {
+      terminalWss.handleUpgrade(req, socket, head, (ws) => {
+        terminalWss.emit('connection', ws, req);
       });
+      return;
     }
+
+    // Everything else → gateway WS proxy
+    gatewayManager.handleWsUpgrade(req, socket, head);
   });
 
-  // WebSocket upgrade — proxy to gateway
-  server.on('upgrade', (req, socket, head) => {
-    gw.handleWsUpgrade(req, socket, head);
+  // ── Start listening ────────────────────────────────────────────
+  const PORT = config.PORT;
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    log.info(`🦞 openclaw-railway listening on port ${PORT}`);
   });
 
-  server.listen(PORT, '0.0.0.0', () => {
-    log.info(`Agentbot OpenClaw wrapper listening on port ${PORT}`);
-  });
+  // ── Auto-launch if already configured ─────────────────────────
+  if (await config.isAlreadyConfigured()) {
+    log.info('Existing config found — launching OpenClaw gateway automatically...');
+    try {
+      await gatewayManager.start();
+    } catch (err) {
+      log.error('Auto-launch failed:', err.message);
+    }
+  } else {
+    log.info('No config found — serving Setup UI at /setup');
+  }
 
-  // Launch gateway
-  log.info('Starting OpenClaw gateway...');
-  await gw.start();
-
-  // Graceful shutdown
-  const shutdown = async (sig) => {
-    log.info(`${sig} — shutting down`);
-    await gw.stop();
-    server.close(() => process.exit(0));
+  // ── Graceful shutdown ──────────────────────────────────────────
+  const shutdown = async (signal) => {
+    log.info(`Received ${signal} — shutting down...`);
+    await gatewayManager.stop();
+    httpServer.close(() => {
+      log.info('HTTP server closed. Goodbye.');
+      process.exit(0);
+    });
     setTimeout(() => process.exit(1), 10_000).unref();
   };
+
   process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGINT',  () => shutdown('SIGINT'));
 }
 
-main().catch(err => { console.error('Fatal:', err); process.exit(1); });
+main().catch((err) => {
+  console.error('Fatal startup error:', err);
+  process.exit(1);
+});

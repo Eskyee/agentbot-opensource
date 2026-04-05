@@ -1,50 +1,53 @@
 #!/bin/sh
-# OpenClaw Gateway Entrypoint for Railway — Official docs pattern
+# OpenClaw Gateway Entrypoint for Railway — Template-compatible
+# Pre-seeds config + env so server.js auto-launches the gateway
 set -e
 
 GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 32)}"
-LISTEN_PORT="${PORT:-8080}"
-AGENTBOT_API_URL="${AGENTBOT_API_URL:-https://agentbot-backend-production.up.railway.app}"
-CONTROL_UI_ORIGIN="${CONTROL_UI_ORIGIN:-https://agentbot.raveculture.xyz}"
-SKIP_SERVICE_READINESS="${SKIP_SERVICE_READINESS:-false}"
-SERVICE_HEALTH_URL="${SERVICE_HEALTH_URL:-${AGENTBOT_API_URL%/}/health}"
-export SERVICE_HEALTH_URL
+DATA_DIR="${OPENCLAW_DATA_DIR:-/data}"
+OPENCLAW_HOME="${DATA_DIR}/.openclaw"
 
-OPENCLAW_HOME="${HOME}/.openclaw"
 mkdir -p "${OPENCLAW_HOME}"
 
+# Write openclaw.json — server.js configBuilder-compatible format
+# Gateway binds to loopback (server.js proxy is the public face)
 cat > "${OPENCLAW_HOME}/openclaw.json" << CONFIG
 {
-  "env": {
-    "GEMINI_API_KEY": "${GEMINI_API_KEY}",
-    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
-  },
-  "gateway": {
-    "mode": "local",
-    "bind": "lan",
-    "port": ${LISTEN_PORT},
-    "auth": {
-      "mode": "token",
-      "token": "${GATEWAY_TOKEN}"
-    },
-    "trustedProxies": ["127.0.0.1", "10.0.0.0/8", "100.64.0.0/10", "172.16.0.0/12", "192.168.0.0/16"],
-    "controlUi": {
-      "allowedOrigins": ["*"],
-      "dangerouslyDisableDeviceAuth": true,
-      "dangerouslyAllowHostHeaderOriginFallback": true
-    }
-  },
   "agents": {
     "defaults": {
       "model": {
         "primary": "google/gemini-2.5-flash"
-      }
+      },
+      "workspace": "${DATA_DIR}/.openclaw/workspace"
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "port": 18789,
+    "reload": { "mode": "hybrid" },
+    "auth": {
+      "token": "${GATEWAY_TOKEN}"
+    },
+    "trustedProxies": ["127.0.0.1", "::1"],
+    "controlUi": {
+      "allowedOrigins": ["*"],
+      "allowInsecureAuth": true
     }
   }
 }
 CONFIG
 
-echo "Gateway token: ${GATEWAY_TOKEN}"
-echo "Listening on port: ${LISTEN_PORT}"
+# Write .env — API keys go here, not in openclaw.json
+{
+  [ -n "${GEMINI_API_KEY}" ] && echo "GEMINI_API_KEY=${GEMINI_API_KEY}"
+  [ -n "${OPENROUTER_API_KEY}" ] && echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}"
+} > "${OPENCLAW_HOME}/.env"
 
-exec openclaw gateway --port "${LISTEN_PORT}"
+mkdir -p "${OPENCLAW_HOME}/workspace"
+
+echo "Gateway token: ${GATEWAY_TOKEN}"
+echo "Config written to: ${OPENCLAW_HOME}/openclaw.json"
+echo "Starting server..."
+
+exec node src/server.js

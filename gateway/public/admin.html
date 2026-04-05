@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.min.css">
+<style>
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #14181f;
+    --surface2:  #1c2230;
+    --border:    #252d3d;
+    --text:      #c9d1d9;
+    --text-dim:  #6b7688;
+    --accent:    #e85d26;
+    --accent2:   #f0883e;
+    --green:     #3fb950;
+    --yellow:    #d29922;
+    --red:       #f85149;
+    --blue:      #58a6ff;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-sans: 'IBM Plex Sans', sans-serif;
+    --sidebar-w: 220px;
+    --header-h:  52px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    zoom: 1.15;
+    height: calc(100vh / 1.15);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ─────────────────────────────────────── */
+  #header {
+    height: var(--header-h);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    user-select: none;
+  }
+  .logo span { color: var(--text-dim); font-weight: 400; }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .status-dot.running { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.starting { background: var(--yellow); animation: pulse 1s infinite; }
+  .status-dot.crashed  { background: var(--red); }
+  .status-dot.stopped  { background: var(--text-dim); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  #status-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .header-spacer { flex: 1; }
+
+  .header-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .header-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .pairing-badge {
+    display: none;
+    background: var(--accent);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 20px;
+    text-align: center;
+    animation: pulse 1.5s infinite;
+  }
+  .pairing-badge.visible { display: inline-block; }
+
+  /* ── Layout ─────────────────────────────────────── */
+  #layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────── */
+  #sidebar {
+    width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    padding: 12px 0;
+  }
+
+  .nav-group-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 16px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    cursor: pointer;
+    color: var(--text-dim);
+    border-left: 2px solid transparent;
+    transition: all 0.15s;
+    font-size: 13.5px;
+    user-select: none;
+    position: relative;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--text); border-left-color: var(--accent); background: var(--surface2); }
+
+  .nav-icon { font-size: 15px; width: 18px; text-align: center; }
+
+  .nav-badge {
+    position: absolute;
+    right: 14px;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 8px;
+    display: none;
+  }
+  .nav-badge.visible { display: inline-block; animation: pulse 1.5s infinite; }
+
+  /* ── Main content ─────────────────────────────────── */
+  #main {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .panel.active { display: flex; }
+
+  .panel-header {
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .panel-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+  .panel-body.no-pad { padding: 0; }
+
+  /* ── Status panel ─────────────────────────────────── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red   { color: var(--red); }
+  .stat-value.yellow { color: var(--yellow); }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Buttons ─────────────────────────────────────── */
+  .btn {
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .btn:hover   { border-color: var(--accent); color: var(--accent); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .btn.primary:hover { background: var(--accent2); border-color: var(--accent2); color: white; }
+  .btn.danger  { border-color: var(--red); color: var(--red); }
+  .btn.danger:hover { background: var(--red); color: white; }
+  .btn.success { border-color: var(--green); color: var(--green); }
+  .btn.success:hover { background: var(--green); color: #0d0f14; }
+  .btn.sm { padding: 4px 10px; font-size: 11px; }
+
+  /* ── Logs panel ─────────────────────────────────── */
+  #logs-container {
+    flex: 1;
+    overflow-y: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 12px 16px;
+    background: #0a0c10;
+  }
+
+  .log-line {
+    display: flex;
+    gap: 12px;
+    padding: 1px 0;
+    border-bottom: 1px solid transparent;
+  }
+  .log-line:hover { background: rgba(255,255,255,0.02); }
+
+  .log-ts   { color: var(--text-dim); flex-shrink: 0; font-size: 11px; }
+  .log-stream-stdout { color: var(--text); }
+  .log-stream-stderr { color: var(--yellow); }
+  .log-text  { flex: 1; word-break: break-all; white-space: pre-wrap; }
+
+  /* ── Terminal panel ──────────────────────────────── */
+  #terminal-container {
+    flex: 1;
+    background: #0a0c10;
+    overflow: hidden;
+    position: relative;
+  }
+  #xterm-mount {
+    position: absolute;
+    inset: 8px;
+  }
+
+  /* ── Pairing panel ───────────────────────────────── */
+  .pair-section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pair-empty {
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 20px 0;
+  }
+
+  .pair-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pair-card.pending { border-color: var(--yellow); }
+  .pair-card.paired  { border-color: var(--border); }
+
+  .pair-info { flex: 1; }
+  .pair-id   { font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+  .pair-name { font-weight: 500; font-size: 14px; margin-bottom: 3px; }
+  .pair-meta { font-size: 12px; color: var(--text-dim); }
+
+  .pair-actions { display: flex; gap: 8px; }
+
+  /* ── Config panel ────────────────────────────────── */
+  #config-editor {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    background: #0a0c10;
+    color: var(--text);
+    border: none;
+    resize: none;
+    padding: 16px;
+    outline: none;
+    line-height: 1.7;
+    width: 100%;
+  }
+
+  .config-toolbar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  /* ── Toast ───────────────────────────────────────── */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    display: none;
+    z-index: 999;
+    max-width: 360px;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(10px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  #toast.ok  { border-color: var(--green); color: var(--green); }
+  #toast.err { border-color: var(--red);   color: var(--red);   }
+
+  /* ── Scrollbar ───────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  .refresh-spin { animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  .chip.green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .chip.red   { background: rgba(248,81,73,0.15);  color: var(--red); }
+  .chip.yellow { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .chip.blue  { background: rgba(88,166,255,0.15); color: var(--blue); }
+
+  /* ── How to Use panel ──────────────────────────── */
+  .howto-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .howto-step-num {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .howto-step-content { flex: 1; }
+  .howto-step-title {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .howto-step-content p {
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+  .howto-step-content code {
+    background: var(--surface2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--accent2);
+  }
+  .howto-img-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    margin: 12px 0 16px;
+  }
+  .howto-img-block img {
+    max-width: 100%;
+    border-radius: 6px;
+    display: block;
+  }
+  .howto-img-caption {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 8px 8px 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <div class="logo">🦞 openclaw<span>/admin</span></div>
+  <div class="status-dot" id="dot"></div>
+  <div id="status-label">connecting...</div>
+  <div class="header-spacer"></div>
+  <span class="pairing-badge" id="header-pairing-badge">0</span>
+  <a href="/" target="_blank" rel="noopener" class="header-btn" style="background:var(--accent);border-color:var(--accent);color:white;text-decoration:none;font-weight:600;">Open OpenClaw UI</a>
+</div>
+
+<!-- Layout -->
+<div id="layout">
+
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="nav-group-label">Monitor</div>
+    <div class="nav-item active" data-panel="status" onclick="navigate('status')">
+      <span class="nav-icon">◉</span> Status
+    </div>
+    <div class="nav-item" data-panel="logs" onclick="navigate('logs')">
+      <span class="nav-icon">≡</span> Logs
+    </div>
+
+    <div class="nav-group-label" style="margin-top:8px">Manage</div>
+    <div class="nav-item" data-panel="pairing" onclick="navigate('pairing')">
+      <span class="nav-icon">⬡</span> Pairing
+      <span class="nav-badge" id="nav-pairing-badge">0</span>
+    </div>
+    <div class="nav-item" data-panel="terminal" onclick="navigate('terminal')">
+      <span class="nav-icon">$_</span> Terminal
+    </div>
+    <div class="nav-item" data-panel="config" onclick="navigate('config')">
+      <span class="nav-icon">⚙</span> Config
+    </div>
+
+    <div class="nav-group-label" style="margin-top:8px">Navigate</div>
+    <div class="nav-item" onclick="window.open('/', '_blank')">
+      <span class="nav-icon">↗</span> OpenClaw UI
+    </div>
+    <div class="nav-item" onclick="window.location='/setup'">
+      <span class="nav-icon">✎</span> Setup
+    </div>
+
+    <div class="nav-group-label" style="margin-top:8px">Help</div>
+    <div class="nav-item" data-panel="howto" onclick="navigate('howto')">
+      <span class="nav-icon">▶</span> How to Use
+    </div>
+    <div class="nav-item" data-panel="about" onclick="navigate('about')">
+      <span class="nav-icon">ⓘ</span> About
+    </div>
+
+    <div class="nav-group-label" style="margin-top:8px">Data</div>
+    <div class="nav-item" onclick="exportBackup()">
+      <span class="nav-icon">⤓</span> Download Backup
+    </div>
+
+    <div class="nav-group-label" style="margin-top:8px">Danger</div>
+    <div class="nav-item" style="color: var(--yellow);" onclick="resetConfig()">
+      <span class="nav-icon">⊗</span> Reset Config
+    </div>
+    <div class="nav-item" style="color: var(--red);" onclick="factoryReset()">
+      <span class="nav-icon">⊘</span> Full Factory Reset
+    </div>
+  </nav>
+
+  <!-- Panels -->
+  <div id="main">
+
+    <!-- STATUS -->
+    <div class="panel active" id="panel-status">
+      <div class="panel-header">
+        <div class="panel-title">Gateway Status</div>
+        <button class="btn sm" onclick="refreshStatus()">↺ Refresh</button>
+      </div>
+      <div class="panel-body">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Gateway State</div>
+            <div class="stat-value" id="st-state">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Wrapper Uptime</div>
+            <div class="stat-value" id="st-uptime">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Pending Pairs</div>
+            <div class="stat-value" id="st-pairs">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Active Terminal Sessions</div>
+            <div class="stat-value" id="st-terms">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">AI Provider / Model</div>
+            <div class="stat-value" id="st-provider" style="font-size:16px;">—</div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn primary" onclick="gatewayAction('restart')">↺ Restart Gateway</button>
+          <button class="btn danger"  onclick="gatewayAction('stop')">■ Stop Gateway</button>
+          <button class="btn" onclick="navigate('terminal')">$ Open Terminal</button>
+        </div>
+
+        <!-- Gateway token display — shown only when OPENCLAW_GATEWAY_TOKEN is set -->
+        <div id="token-card" style="display:none; margin-top:20px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px 20px;">
+          <div style="font-size:12px; color:var(--text-dim); margin-bottom:8px; font-family:var(--font-mono); letter-spacing:0.05em; text-transform:uppercase;">Gateway Token</div>
+          <div style="font-size:12px; color:var(--text-dim); margin-bottom:10px;">Paste this into the OpenClaw UI login screen when prompted for a Gateway Token.</div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input id="token-value" type="password" readonly
+              style="flex:1; background:var(--bg); border:1px solid var(--border); border-radius:6px;
+                     color:var(--text); font-family:var(--font-mono); font-size:13px; padding:8px 12px; outline:none;"
+              value="">
+            <button class="btn sm" onclick="toggleTokenVisibility()" id="token-toggle-btn" title="Show/hide token">👁</button>
+            <button class="btn sm" onclick="copyToken()" id="token-copy-btn">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="panel" id="panel-logs">
+      <div class="panel-header">
+        <div class="panel-title">Live Logs</div>
+        <span id="logs-status" style="font-size:12px; color: var(--text-dim); font-family: var(--font-mono);">connecting…</span>
+        <div class="panel-subtitle">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="checkbox" id="log-autoscroll" checked> Auto-scroll
+          </label>
+        </div>
+        <button class="btn sm" onclick="clearLogs()">Clear</button>
+        <select id="log-filter" class="btn sm" style="padding:4px 8px" onchange="applyLogFilter()">
+          <option value="">All</option>
+          <option value="stdout">stdout</option>
+          <option value="stderr">stderr</option>
+        </select>
+      </div>
+      <div id="logs-container"></div>
+    </div>
+
+    <!-- TERMINAL -->
+    <div class="panel" id="panel-terminal">
+      <div class="panel-header">
+        <div class="panel-title">Terminal</div>
+        <div style="font-size:12px; color: var(--text-dim); font-family: var(--font-mono);">
+          OpenClaw TUI — interactive terminal
+        </div>
+        <div class="panel-subtitle">
+          <button class="btn sm" onclick="reconnectTerminal()">↺ Reconnect</button>
+        </div>
+      </div>
+      <div id="terminal-container">
+        <div id="xterm-mount"></div>
+      </div>
+    </div>
+
+    <!-- PAIRING -->
+    <div class="panel" id="panel-pairing">
+      <div class="panel-header">
+        <div class="panel-title">Device Pairing</div>
+        <span style="font-size:12px; color: var(--text-dim); font-family: var(--font-mono);" id="pair-live-badge">● live</span>
+        <div class="panel-subtitle">
+          <button class="btn sm" onclick="refreshPairing()">↺ Refresh</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <p class="pair-section-label">Pending Requests</p>
+        <div id="pair-pending-list"><p class="pair-empty">No pending requests.</p></div>
+
+        <p class="pair-section-label" style="margin-top:24px">Paired Devices</p>
+        <div id="pair-paired-list"><p class="pair-empty">No paired devices.</p></div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="panel" id="panel-config">
+      <div class="panel-header">
+        <div class="panel-title">Config Editor</div>
+        <div style="font-size:12px; color: var(--text-dim); font-family: var(--font-mono);">
+          Manually update the OpenClaw config &mdash; ~/.openclaw/openclaw.json &mdash; saved changes trigger hot-reload
+        </div>
+      </div>
+      <textarea id="config-editor" spellcheck="false" placeholder="Loading config..."></textarea>
+      <div class="config-toolbar">
+        <button class="btn primary" onclick="saveConfig()">Save & Hot-Reload</button>
+        <button class="btn" onclick="loadConfig()">↺ Reload from Disk</button>
+        <button class="btn danger" onclick="restartAfterSave()">Save & Restart Gateway</button>
+        <span id="config-status" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); align-self: center; margin-left: auto;"></span>
+      </div>
+    </div>
+
+    <!-- HOW TO USE -->
+    <div class="panel" id="panel-howto">
+      <div class="panel-header">
+        <div class="panel-title">How to Use</div>
+        <div style="font-size:12px; color: var(--text-dim); font-family: var(--font-mono);">
+          Getting started after deployment
+        </div>
+      </div>
+      <div class="panel-body">
+        <div style="max-width:720px;">
+          <h3 style="font-family:var(--font-mono); font-size:16px; color:var(--accent); margin-bottom:20px;">Connecting to OpenClaw after Setup</h3>
+          <p style="color:var(--text-dim); margin-bottom:8px;">Once your Railway deploy is live and the <code>/setup</code> wizard is complete, follow these steps to connect to the OpenClaw UI from your browser.</p>
+          <p style="color:var(--text-dim); margin-bottom:24px;">You are already on the Admin Dashboard &mdash; this is your control panel for managing everything about your OpenClaw instance.</p>
+
+          <div class="howto-img-block">
+            <img src="https://res.cloudinary.com/asset-cloudinary/image/upload/v1774088294/Openclaw_admin_UI_qzsxep.png" alt="OpenClaw Admin Dashboard">
+            <span class="howto-img-caption">The Admin Dashboard &mdash; monitor status, view logs, manage pairing, and more</span>
+          </div>
+
+          <div class="howto-step">
+            <div class="howto-step-num">1</div>
+            <div class="howto-step-content">
+              <div class="howto-step-title">Open the OpenClaw UI</div>
+              <p>Click the <strong>"Open OpenClaw UI"</strong> button in the top-right corner of the admin dashboard, or use the <strong>OpenClaw UI</strong> link in the sidebar. This opens the gateway connection page in a new tab.</p>
+              <div class="howto-img-block">
+                <img src="https://res.cloudinary.com/asset-cloudinary/image/upload/v1774088291/Openclaw_gateway_dlmpb3.png" alt="OpenClaw Gateway connection page">
+                <span class="howto-img-caption">The OpenClaw Gateway connection page</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="howto-step">
+            <div class="howto-step-num">2</div>
+            <div class="howto-step-content">
+              <div class="howto-step-title">Paste the Gateway Token and Connect</div>
+              <p>You will be prompted for a <strong>Gateway Token</strong>. Copy it from the Admin Dashboard's Status panel (under "Gateway Token") or from your <code>OPENCLAW_GATEWAY_TOKEN</code> environment variable. Paste it into the token field and click <strong>Connect</strong>.</p>
+              <div class="howto-img-block">
+                <img src="https://res.cloudinary.com/asset-cloudinary/image/upload/v1774088290/Openclaw_gateway_token_passed_pairing_pending_fa7abr.png" alt="Gateway token entered, pairing pending">
+                <span class="howto-img-caption">After pasting the token and clicking Connect &mdash; a pairing request is sent</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="howto-step">
+            <div class="howto-step-num">3</div>
+            <div class="howto-step-content">
+              <div class="howto-step-title">Approve the Pairing Request</div>
+              <p>Switch back to the <strong>Admin Dashboard</strong> tab and go to the <strong>Pairing</strong> panel in the sidebar. You will see your browser listed under "Pending Requests". Click <strong>Approve</strong> to authorize the device.</p>
+              <div class="howto-img-block">
+                <img src="https://res.cloudinary.com/asset-cloudinary/image/upload/v1774088289/Openclaw_Pairing_UI_spmo3x.png" alt="Pairing panel with pending request">
+                <span class="howto-img-caption">The Pairing panel &mdash; approve the pending request from your browser</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="howto-step">
+            <div class="howto-step-num">4</div>
+            <div class="howto-step-content">
+              <div class="howto-step-title">Go Back to the Gateway and Connect Again</div>
+              <p>Switch back to the <strong>OpenClaw Gateway</strong> tab and click <strong>Connect</strong> again. Now that the pairing is approved, the OpenClaw UI will load and you are ready to start chatting with your AI assistant!</p>
+              <div class="howto-img-block">
+                <img src="https://res.cloudinary.com/asset-cloudinary/image/upload/v1774088288/OpenClaw_UI_after_full_setup_rzkl2x.png" alt="OpenClaw UI fully connected">
+                <span class="howto-img-caption">The OpenClaw UI &mdash; fully connected and ready to use</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; margin-top:32px;">
+            <div style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px;">Tip: Terminal Access</div>
+            <p style="color:var(--text-dim); line-height:1.7; margin-bottom:12px;">
+              You also have full terminal access from the Admin Dashboard. Go to the <strong>Terminal</strong> panel in the sidebar to open an interactive terminal session running inside your container &mdash; useful for running diagnostics like <code>openclaw doctor</code> or managing devices via CLI.
+            </p>
+            <div class="howto-img-block">
+              <img src="https://res.cloudinary.com/asset-cloudinary/image/upload/v1774088288/Openclaw_admin_TUI_elvlpt.png" alt="Admin Terminal">
+              <span class="howto-img-caption">The Admin Terminal &mdash; full PTY access to your container</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="panel" id="panel-about">
+      <div class="panel-header">
+        <div class="panel-title">About</div>
+      </div>
+      <div class="panel-body">
+        <div style="max-width:600px;">
+          <h3 style="font-family:var(--font-mono); font-size:18px; color:var(--accent); margin-bottom:16px;">OpenClaw Admin Panel</h3>
+          <p style="line-height:1.7; margin-bottom:16px;">
+            This admin panel is a lightweight management dashboard for your self-hosted OpenClaw instance on Railway.
+            It lets you monitor the gateway status, stream live logs, manage device pairing, open an interactive terminal,
+            and edit your OpenClaw configuration &mdash; all from the browser, no SSH or CLI required.
+          </p>
+          <p style="line-height:1.7; margin-bottom:24px;">
+            The admin panel is part of the <strong>openclaw-railway-template</strong> &mdash; an Express wrapper that handles
+            process supervision, WebSocket proxying, auth, and a setup wizard so you can deploy OpenClaw on Railway with a single click.
+          </p>
+
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; margin-bottom:16px;">
+            <div style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px;">Issues &amp; Feature Requests</div>
+            <p style="line-height:1.7; margin-bottom:12px;">
+              If you are facing any issues or would like to request additional functionality, please open an issue on GitHub:
+            </p>
+            <a href="https://github.com/praveen-ks-2001/openclaw-railway/issues" target="_blank" rel="noopener"
+               style="display:inline-flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 16px; color:var(--blue); font-family:var(--font-mono); font-size:13px; text-decoration:none; transition:border-color 0.15s;">
+              github.com/praveen-ks-2001/openclaw-railway/issues
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<div id="toast"></div>
+
+<!-- xterm.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-web-links@0.11.0/lib/addon-web-links.min.js"></script>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// Navigation
+// ─────────────────────────────────────────────────────────────────
+function navigate(panel) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item[data-panel]').forEach(n => n.classList.remove('active'));
+
+  const el = document.getElementById('panel-' + panel);
+  if (el) el.classList.add('active');
+
+  const navEl = document.querySelector(`.nav-item[data-panel="${panel}"]`);
+  if (navEl) navEl.classList.add('active');
+
+  // Lazy init
+  if (panel === 'logs'     && !logsInitialized)     initLogs();
+  if (panel === 'terminal') {
+    if (!termInitialized) initTerminal();
+    else if (fitAddon) setTimeout(() => { fitAddon.fit(); sendResize(); }, 50);
+  }
+  if (panel === 'pairing'  && !pairingInitialized)  initPairing();
+  if (panel === 'config'   && !configLoaded)         loadConfig();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Toast
+// ─────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// API helpers
+// ─────────────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const res = await fetch('/api' + path, {
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    ...opts,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Status panel
+// ─────────────────────────────────────────────────────────────────
+async function refreshStatus() {
+  try {
+    const data = await api('/status');
+    const dot   = document.getElementById('dot');
+    const label = document.getElementById('status-label');
+    const stState = document.getElementById('st-state');
+
+    dot.className   = 'status-dot ' + (data.state || 'stopped');
+    label.textContent = data.state || 'unknown';
+    stState.textContent = data.state;
+    stState.className = 'stat-value ' + (data.state === 'running' ? 'green' : data.state === 'crashed' ? 'red' : 'yellow');
+
+    const upSec = Math.floor(data.uptime || 0);
+    document.getElementById('st-uptime').textContent = formatUptime(upSec);
+    document.getElementById('st-terms').textContent = data.terminalSessions ?? '—';
+    document.getElementById('st-provider').textContent = data.aiProvider || '—';
+
+    // Show gateway token card if token is configured
+    const tokenCard = document.getElementById('token-card');
+    const tokenInput = document.getElementById('token-value');
+    if (data.gatewayToken) {
+      tokenCard.style.display = 'block';
+      if (tokenInput.value !== data.gatewayToken) {
+        tokenInput.value = data.gatewayToken;
+      }
+    } else {
+      tokenCard.style.display = 'none';
+    }
+  } catch (e) {
+    document.getElementById('st-state').textContent = 'error';
+  }
+
+  // Also refresh pairing count
+  try {
+    const pd = await api('/pairing/pending');
+    const count = (pd.pending || []).length;
+    document.getElementById('st-pairs').textContent = count;
+    updatePairingBadge(count);
+  } catch {}
+}
+
+function toggleTokenVisibility() {
+  const input = document.getElementById('token-value');
+  const btn = document.getElementById('token-toggle-btn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+async function copyToken() {
+  const val = document.getElementById('token-value').value;
+  if (!val) return;
+  try {
+    await navigator.clipboard.writeText(val);
+    const btn = document.getElementById('token-copy-btn');
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  } catch {
+    toast('Copy failed — try selecting manually', 'err');
+  }
+}
+
+async function gatewayAction(action) {
+  try {
+    await api('/gateway/' + action, { method: 'POST' });
+    toast(`Gateway ${action} sent`, 'ok');
+    setTimeout(refreshStatus, 1000);
+  } catch (e) {
+    toast('Error: ' + e.message, 'err');
+  }
+}
+
+function formatUptime(sec) {
+  if (sec < 60) return sec + 's';
+  if (sec < 3600) return Math.floor(sec / 60) + 'm ' + (sec % 60) + 's';
+  return Math.floor(sec / 3600) + 'h ' + Math.floor((sec % 3600) / 60) + 'm';
+}
+
+// Poll status every 10s
+setInterval(refreshStatus, 10_000);
+refreshStatus();
+
+// Live gateway state SSE
+(function startStateSSE() {
+  const es = new EventSource('/api/events');
+  es.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      const dot   = document.getElementById('dot');
+      const label = document.getElementById('status-label');
+      dot.className     = 'status-dot ' + (data.state || 'stopped');
+      label.textContent = data.state || 'unknown';
+    } catch {}
+  };
+  es.onerror = () => {
+    setTimeout(startStateSSE, 3000);
+    es.close();
+  };
+})();
+
+// ─────────────────────────────────────────────────────────────────
+// Logs panel
+// ─────────────────────────────────────────────────────────────────
+let logsInitialized = false;
+let allLogs = [];
+let logFilter = '';
+
+function initLogs() {
+  logsInitialized = true;
+  startLogsSSE();
+}
+
+function startLogsSSE() {
+  const es = new EventSource('/api/logs/stream');
+  const label = document.getElementById('logs-status');
+
+  es.onopen = () => { label.textContent = '● live'; label.style.color = 'var(--green)'; };
+
+  es.onmessage = (e) => {
+    try {
+      const entry = JSON.parse(e.data);
+      allLogs.push(entry);
+      if (allLogs.length > 2000) allLogs.shift();
+      if (!logFilter || entry.stream === logFilter) {
+        appendLogLine(entry);
+      }
+    } catch {}
+  };
+
+  es.onerror = () => {
+    label.textContent = '○ disconnected';
+    label.style.color = 'var(--red)';
+    setTimeout(startLogsSSE, 3000);
+    es.close();
+  };
+}
+
+function appendLogLine(entry) {
+  const container = document.getElementById('logs-container');
+  const autoscroll = document.getElementById('log-autoscroll').checked;
+
+  const row = document.createElement('div');
+  row.className = 'log-line';
+
+  const ts = document.createElement('span');
+  ts.className = 'log-ts';
+  ts.textContent = entry.ts ? entry.ts.slice(11, 23) : '';
+
+  const text = document.createElement('span');
+  text.className = `log-text log-stream-${entry.stream}`;
+  text.textContent = entry.line;
+
+  row.appendChild(ts);
+  row.appendChild(text);
+  container.appendChild(row);
+
+  // Rolling: remove oldest when over 1000 DOM nodes
+  while (container.children.length > 1000) {
+    container.removeChild(container.firstChild);
+  }
+
+  if (autoscroll) {
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function clearLogs() {
+  document.getElementById('logs-container').innerHTML = '';
+  allLogs = [];
+}
+
+function applyLogFilter() {
+  logFilter = document.getElementById('log-filter').value;
+  document.getElementById('logs-container').innerHTML = '';
+  allLogs.filter(e => !logFilter || e.stream === logFilter).forEach(appendLogLine);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Terminal panel
+// ─────────────────────────────────────────────────────────────────
+let termInitialized = false;
+let term = null;
+let fitAddon = null;
+let termWS = null;
+let termResizeObserver = null;
+
+function initTerminal() {
+  termInitialized = true;
+
+  term = new Terminal({
+    theme: {
+      background:   '#0a0c10',
+      foreground:   '#c9d1d9',
+      cursor:       '#e85d26',
+      selectionBackground: 'rgba(232,93,38,0.3)',
+      black:        '#0d1117',
+      red:          '#f85149',
+      green:        '#3fb950',
+      yellow:       '#d29922',
+      blue:         '#58a6ff',
+      magenta:      '#bc8cff',
+      cyan:         '#39c5cf',
+      white:        '#b1bac4',
+      brightBlack:  '#6e7681',
+      brightRed:    '#ff7b72',
+      brightGreen:  '#56d364',
+      brightYellow: '#e3b341',
+      brightBlue:   '#79c0ff',
+      brightMagenta:'#d2a8ff',
+      brightCyan:   '#56d4dd',
+      brightWhite:  '#f0f6fc',
+    },
+    fontFamily: "'IBM Plex Mono', 'Cascadia Code', 'Fira Code', monospace",
+    fontSize: 13,
+    lineHeight: 1.4,
+    cursorBlink: true,
+    cursorStyle: 'block',
+    scrollback: 5000,
+    allowTransparency: false,
+  });
+
+  fitAddon = new FitAddon.FitAddon();
+  const webLinksAddon = new WebLinksAddon.WebLinksAddon();
+
+  term.loadAddon(fitAddon);
+  term.loadAddon(webLinksAddon);
+
+  const mount = document.getElementById('xterm-mount');
+  term.open(mount);
+  // Delay fit() — the panel must be fully visible for correct dimension calculation
+  setTimeout(() => { fitAddon.fit(); }, 50);
+
+  // Observe container resize
+  termResizeObserver = new ResizeObserver(() => {
+    if (fitAddon) {
+      fitAddon.fit();
+      sendResize();
+    }
+  });
+  termResizeObserver.observe(document.getElementById('terminal-container'));
+
+  term.onData((data) => {
+    if (termWS && termWS.readyState === WebSocket.OPEN) {
+      termWS.send(JSON.stringify({ type: 'input', data }));
+    }
+  });
+
+  connectTerminalWS();
+}
+
+function connectTerminalWS() {
+  if (termWS) {
+    try { termWS.close(); } catch {}
+  }
+
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const url = `${proto}//${location.host}/ws/terminal`;
+
+  termWS = new WebSocket(url);
+
+  termWS.onopen = () => {
+    term.write('\x1b[32m[connected]\x1b[0m\r\n');
+    sendResize();
+  };
+
+  termWS.onmessage = (e) => {
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'output') {
+        term.write(msg.data);
+      } else if (msg.type === 'exit') {
+        term.write(`\r\n\x1b[33m[process exited with code ${msg.code}]\x1b[0m\r\n`);
+      }
+    } catch {}
+  };
+
+  termWS.onclose = (e) => {
+    if (e.code !== 1000) {
+      term.write('\r\n\x1b[31m[disconnected — reconnecting in 3s...]\x1b[0m\r\n');
+      setTimeout(connectTerminalWS, 3000);
+    }
+  };
+
+  termWS.onerror = () => {
+    term.write('\r\n\x1b[31m[WebSocket error]\x1b[0m\r\n');
+  };
+}
+
+function sendResize() {
+  if (termWS && termWS.readyState === WebSocket.OPEN && term) {
+    termWS.send(JSON.stringify({
+      type: 'resize',
+      cols: term.cols,
+      rows: term.rows,
+    }));
+  }
+}
+
+function reconnectTerminal() {
+  const btn = document.querySelector('#panel-terminal .btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+    setTimeout(() => { btn.disabled = false; btn.textContent = '↺ Reconnect'; }, 3000);
+  }
+  if (term) term.write('\r\n\x1b[33m[manual reconnect...]\x1b[0m\r\n');
+  connectTerminalWS();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Pairing panel
+// ─────────────────────────────────────────────────────────────────
+let pairingInitialized = false;
+let pairingSSE = null;
+
+function initPairing() {
+  pairingInitialized = true;
+  refreshPairing();
+  startPairingSSE();
+}
+
+function startPairingSSE() {
+  if (pairingSSE) pairingSSE.close();
+
+  pairingSSE = new EventSource('/api/pairing/stream');
+  const badge = document.getElementById('pair-live-badge');
+
+  pairingSSE.onopen = () => {
+    badge.style.color = 'var(--green)';
+    badge.textContent = '● live';
+  };
+
+  pairingSSE.onmessage = (e) => {
+    try {
+      const evt = JSON.parse(e.data);
+      if (evt.type === 'pending') {
+        renderPendingList(evt.pending);
+        updatePairingBadge((evt.pending || []).length);
+      }
+      if (evt.type === 'update') {
+        // Re-fetch full lists after any approval/rejection
+        refreshPairing();
+        toast(`Device ${evt.action}: ${evt.requestId}`, 'ok');
+      }
+    } catch {}
+  };
+
+  pairingSSE.onerror = () => {
+    badge.style.color = 'var(--red)';
+    badge.textContent = '○ disconnected';
+    setTimeout(startPairingSSE, 4000);
+    pairingSSE.close();
+  };
+}
+
+async function refreshPairing() {
+  const btn = document.querySelector('#panel-pairing .btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Refreshing...'; }
+  try {
+    const [pd, pr] = await Promise.all([
+      api('/pairing/pending'),
+      api('/pairing/paired'),
+    ]);
+    renderPendingList(pd.pending || []);
+    renderPairedList(pr.paired || []);
+    updatePairingBadge((pd.pending || []).length);
+  } catch (e) {
+    toast('Failed to load pairing data: ' + e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↺ Refresh'; }
+  }
+}
+
+function renderPendingList(items) {
+  const el = document.getElementById('pair-pending-list');
+  if (!items || items.length === 0) {
+    el.innerHTML = '<p class="pair-empty">No pending requests.</p>';
+    return;
+  }
+
+  el.innerHTML = items.map(item => {
+    const id = item.id || item.requestId || '?';
+    const name = item.name || item.deviceName || 'Unknown device';
+    const ip   = item.ip || item.remoteIp || '';
+    const ts   = item.createdAt ? new Date(item.createdAt).toLocaleTimeString() : '';
+    const role = item.role || '';
+    const expiresIn = item.expiresAt
+      ? Math.max(0, Math.round((new Date(item.expiresAt) - Date.now()) / 1000))
+      : null;
+
+    return `
+      <div class="pair-card pending" id="pair-${id}">
+        <div class="pair-info">
+          <div class="pair-name">${escHtml(name)} <span class="chip yellow">${escHtml(role)}</span></div>
+          <div class="pair-meta">${escHtml(ip)} ${ts ? '· ' + ts : ''}${expiresIn !== null ? ' · expires in ' + expiresIn + 's' : ''}</div>
+          <div class="pair-id">${escHtml(id)}</div>
+        </div>
+        <div class="pair-actions">
+          <button class="btn success sm" onclick="pairAction('approve','${escHtml(id)}')">✓ Approve</button>
+          <button class="btn danger sm"  onclick="pairAction('reject','${escHtml(id)}')">✗ Reject</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderPairedList(items) {
+  const el = document.getElementById('pair-paired-list');
+  if (!items || items.length === 0) {
+    el.innerHTML = '<p class="pair-empty">No paired devices.</p>';
+    return;
+  }
+
+  el.innerHTML = items.map(item => {
+    const id   = item.id || item.deviceId || '?';
+    const name = item.name || item.deviceName || 'Unknown device';
+    const role = item.role || '';
+    const ts   = item.pairedAt ? new Date(item.pairedAt).toLocaleDateString() : '';
+
+    return `
+      <div class="pair-card paired">
+        <div class="pair-info">
+          <div class="pair-name">${escHtml(name)} <span class="chip blue">${escHtml(role)}</span></div>
+          <div class="pair-meta">Paired: ${escHtml(ts)}</div>
+          <div class="pair-id">${escHtml(id)}</div>
+        </div>
+        <div class="pair-actions">
+          <button class="btn danger sm" onclick="revokeDevice('${escHtml(id)}','${escHtml(role)}')">Revoke</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function pairAction(action, requestId) {
+  const btn = document.querySelectorAll(`#pair-${requestId} button`);
+  btn.forEach(b => b.disabled = true);
+
+  try {
+    await api('/pairing/' + action, {
+      method: 'POST',
+      body: JSON.stringify({ requestId }),
+    });
+    toast(`${action === 'approve' ? 'Approved' : 'Rejected'}: ${requestId}`, 'ok');
+    // The SSE will trigger a refresh; also do immediate refresh
+    setTimeout(refreshPairing, 500);
+  } catch (e) {
+    toast('Failed: ' + e.message, 'err');
+    btn.forEach(b => b.disabled = false);
+  }
+}
+
+async function revokeDevice(deviceId, role) {
+  if (!confirm(`Revoke device ${deviceId} (role: ${role})?`)) return;
+  try {
+    await api('/pairing/revoke', {
+      method: 'POST',
+      body: JSON.stringify({ deviceId, role }),
+    });
+    toast('Device revoked', 'ok');
+    refreshPairing();
+  } catch (e) {
+    toast('Revoke failed: ' + e.message, 'err');
+  }
+}
+
+function updatePairingBadge(count) {
+  const navBadge    = document.getElementById('nav-pairing-badge');
+  const headerBadge = document.getElementById('header-pairing-badge');
+
+  if (count > 0) {
+    navBadge.textContent    = count;
+    navBadge.classList.add('visible');
+    headerBadge.textContent = count;
+    headerBadge.classList.add('visible');
+  } else {
+    navBadge.classList.remove('visible');
+    headerBadge.classList.remove('visible');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Config panel
+// ─────────────────────────────────────────────────────────────────
+let configLoaded = false;
+
+async function loadConfig() {
+  configLoaded = true;
+  const el = document.getElementById('config-editor');
+  const st = document.getElementById('config-status');
+  st.textContent = 'Loading…';
+  try {
+    const data = await api('/config');
+    el.value = JSON.stringify(data.config, null, 2);
+    st.textContent = 'Loaded from disk';
+  } catch (e) {
+    st.textContent = 'Error: ' + e.message;
+    el.value = '// Could not load config: ' + e.message;
+  }
+}
+
+async function saveConfig(thenRestart = false) {
+  const el = document.getElementById('config-editor');
+  const st = document.getElementById('config-status');
+
+  let parsed;
+  try {
+    parsed = JSON.parse(el.value);
+  } catch (e) {
+    toast('JSON parse error: ' + e.message, 'err');
+    return;
+  }
+
+  st.textContent = 'Saving…';
+  try {
+    await api('/config', { method: 'POST', body: JSON.stringify(parsed) });
+    st.textContent = 'Saved ✓ — hot-reload triggered';
+    toast('Config saved. Hot-reloading…', 'ok');
+
+    if (thenRestart) {
+      await gatewayAction('restart');
+    }
+  } catch (e) {
+    st.textContent = 'Save failed';
+    toast('Save failed: ' + e.message, 'err');
+  }
+}
+
+function restartAfterSave() {
+  saveConfig(true);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Backup & Reset
+// ─────────────────────────────────────────────────────────────────
+async function exportBackup() {
+  toast('Preparing backup…', 'ok');
+  try {
+    const res = await fetch('/setup/export', { credentials: 'same-origin' });
+    if (!res.ok) {
+      const text = await res.text();
+      let j;
+      try { j = JSON.parse(text); } catch { j = { error: text }; }
+      toast('Export failed: ' + (j.error || text), 'err');
+      return;
+    }
+
+    const disposition = res.headers.get('content-disposition') || '';
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    const filename = match ? match[1] : 'openclaw-export.zip';
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    toast('Backup downloaded: ' + filename, 'ok');
+  } catch (e) {
+    toast('Export failed: ' + e.message, 'err');
+  }
+}
+
+async function resetConfig() {
+  const confirmed = confirm(
+    'Reset Config\n\n' +
+    'This will stop the gateway and delete your openclaw.json config and .env file.\n\n' +
+    'Your chat history, paired devices, cron jobs, and other data will be preserved.\n\n' +
+    'You will be redirected to the setup wizard to reconfigure.\n\n' +
+    'Continue?'
+  );
+  if (!confirmed) return;
+
+  try {
+    await fetch('/setup/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'config' }),
+    });
+    toast('Config reset. Redirecting to setup…', 'ok');
+    setTimeout(() => { window.location.href = '/setup'; }, 1500);
+  } catch (e) {
+    toast('Reset failed: ' + e.message, 'err');
+  }
+}
+
+async function factoryReset() {
+  const confirmed = confirm(
+    '⚠️ FULL FACTORY RESET ⚠️\n\n' +
+    'This will PERMANENTLY DELETE everything:\n\n' +
+    '• All chat history and conversations\n' +
+    '• All paired devices\n' +
+    '• All cron jobs and schedules\n' +
+    '• All skills, plugins, and memory\n' +
+    '• Gateway config and API keys (.env)\n' +
+    '• Workspace data\n\n' +
+    'This cannot be undone. Consider downloading a backup first.\n\n' +
+    'Are you absolutely sure?'
+  );
+  if (!confirmed) return;
+
+  const doubleConfirm = confirm(
+    'FINAL CONFIRMATION\n\n' +
+    'All data will be wiped and you will start from scratch.\n\n' +
+    'Proceed with full factory reset?'
+  );
+  if (!doubleConfirm) return;
+
+  try {
+    await fetch('/setup/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'full' }),
+    });
+    toast('Full reset complete. Redirecting to setup…', 'ok');
+    setTimeout(() => { window.location.href = '/setup'; }, 1500);
+  } catch (e) {
+    toast('Reset failed: ' + e.message, 'err');
+  }
+}
+</script>
+</body>
+</html>
