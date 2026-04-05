@@ -17,4 +17,4 @@ export const SOUL_SERVICE_URL = trimUrl(
   'https://borg-0-production-08a7.up.railway.app'
 )
 
-export const SOUL_DASHBOARD_URL = `${SOUL_SERVICE_URL}/dashboard`
+export const SOUL_DASHBOARD_URL = '/dashboard/borg'

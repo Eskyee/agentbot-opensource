@@ -10,7 +10,6 @@ import { useState, useEffect, memo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control'
-import { SOUL_DASHBOARD_URL } from '@/app/lib/platform-urls'
 
 export const navSections = [
   {
@@ -41,7 +40,7 @@ export const navSections = [
       { label: 'Workflows', href: '/dashboard/workflows', icon: '⇄' },
       { label: 'Support', href: '/dashboard/support', icon: '☰' },
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
-      { label: 'Borg Soul', href: SOUL_DASHBOARD_URL, icon: '⬢', external: true },
+      { label: 'Borg Soul', href: '/dashboard/borg', icon: '⬢' },
     ]
   },
   {

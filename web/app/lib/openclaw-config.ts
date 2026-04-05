@@ -7,4 +7,4 @@ export const DEFAULT_OPENCLAW_GATEWAY_DASHBOARD_URL = DEFAULT_OPENCLAW_GATEWAY_U
   ? `${DEFAULT_OPENCLAW_GATEWAY_URL}/dashboard`
   : ''
 export const DEFAULT_SOUL_SERVICE_URL = process.env.SOUL_SERVICE_URL || 'https://borg-0-production-08a7.up.railway.app'
-export const DEFAULT_SOUL_DASHBOARD_URL = process.env.SOUL_DASHBOARD_URL || 'https://borg-0-production-08a7.up.railway.app/dashboard'
+export const DEFAULT_SOUL_DASHBOARD_URL = process.env.SOUL_DASHBOARD_URL || '/dashboard/borg'
