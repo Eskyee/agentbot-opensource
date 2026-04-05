@@ -17,7 +17,7 @@ RUN git clone https://github.com/compusophy/tempo-x402.git .
 RUN cargo build --release --package tempo-x402-node
 
 # Runtime stage
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 RUN apt-get update && apt-get install -y \
     ca-certificates \
