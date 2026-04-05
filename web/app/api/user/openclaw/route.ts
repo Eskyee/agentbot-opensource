@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { readSharedGatewayToken } from '@/app/lib/gateway-token'
+import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
 
 const getGatewayToken = () => readSharedGatewayToken()
 
@@ -10,6 +11,8 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  await maybeAutoSyncManagedRuntimeForUser(session.user.id).catch(() => {})
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },

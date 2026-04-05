@@ -46,7 +46,7 @@ export function PermissionGate({ agentId, onRequestHandled }: PermissionGateProp
     const userId = agentId || 'default'
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.host
-    const wsUrl = `${protocol}//${host}/ws/permissions?userId=${userId}`
+    const wsUrl = `${protocol}//${host}/ws/permissions?userId=${encodeURIComponent(userId)}`
 
     try {
       const ws = new WebSocket(wsUrl)

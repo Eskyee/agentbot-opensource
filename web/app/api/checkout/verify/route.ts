@@ -33,15 +33,21 @@ export async function GET(request: NextRequest) {
 
     const subscription = session.subscription as Stripe.Subscription | null
     const plan = session.metadata?.plan || 'solo'
+    const effectiveUserId = session.metadata?.userId || authSession.user.id
 
     // Get next billing date from subscription items
     let nextBilling: string | null = null
+    let subscriptionStatus = 'active'
     if (subscription) {
       const sub = subscription as unknown as Record<string, unknown>
       // Stripe API versions vary — check common field names
       const endTs = (sub.current_period_end ?? sub.billing_cycle_anchor) as number | undefined
       if (endTs) {
         nextBilling = new Date(endTs * 1000).toISOString()
+      }
+      const stripeStatus = typeof sub.status === 'string' ? sub.status : ''
+      if (stripeStatus === 'trialing' || stripeStatus === 'active') {
+        subscriptionStatus = 'active'
       }
     }
 
@@ -51,24 +57,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Session does not belong to you' }, { status: 403 })
     }
 
-    if (userId) {
-      prisma.user.update({
-        where: { id: userId },
-        data: {
-          subscriptionStatus: 'active',
-          plan,
-          stripeCustomerId: (session.customer as string) || undefined,
-        },
-      }).catch((err: unknown) => {
-        console.error('[Checkout Verify] Failed to update user subscription:', err)
-      })
-    }
+    await prisma.user.update({
+      where: { id: effectiveUserId },
+      data: {
+        subscriptionStatus,
+        plan,
+        stripeCustomerId: (session.customer as string) || undefined,
+        stripeSubscriptionId: subscription?.id || undefined,
+        subscriptionStartDate: new Date(),
+      },
+    })
 
     return NextResponse.json({
       plan,
-      status: 'active',
+      status: subscriptionStatus,
       nextBilling,
       customerId: session.customer,
+      subscriptionId: subscription?.id || null,
     })
   } catch (error) {
     console.error('[Checkout Verify] Error:', error)

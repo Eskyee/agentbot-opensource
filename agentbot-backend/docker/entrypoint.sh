@@ -1,6 +1,6 @@
 #!/bin/sh
 # Agentbot OpenClaw Agent Container Entrypoint (Official Image)
-# Uses ghcr.io/openclaw/openclaw:2026.3.28
+# Uses ghcr.io/openclaw/openclaw:2026.4.2
 # Runs openclaw onboard --non-interactive for proper setup
 set -e
 
@@ -49,35 +49,46 @@ case "$AI_PROVIDER" in
     ;;
 esac
 
-# Build onboard command
-ONBOARD_CMD="openclaw onboard --non-interactive \
+# Build onboard command as positional args — no eval, no shell injection risk
+set -- openclaw onboard --non-interactive \
   --mode local \
-  --auth-choice ${AUTH_CHOICE} \
+  --auth-choice "$AUTH_CHOICE" \
   --secret-input-mode plaintext \
-  --gateway-port ${GATEWAY_PORT} \
+  --gateway-port "$GATEWAY_PORT" \
   --gateway-bind lan \
-  --skip-skills"
+  --skip-skills
 
 # Add provider-specific flags
 if [ "$AI_PROVIDER" = "ollama" ]; then
-  ONBOARD_CMD="${ONBOARD_CMD} --accept-risk"
-  [ -n "${AGENTBOT_MODEL_ID:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-model-id ${AGENTBOT_MODEL_ID}"
+  set -- "$@" --accept-risk
+  [ -n "${AGENTBOT_MODEL_ID:-}" ] && set -- "$@" --custom-model-id "$AGENTBOT_MODEL_ID"
 elif [ "$AI_PROVIDER" = "custom" ]; then
-  [ -n "$API_KEY" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-api-key ${API_KEY}"
-  [ -n "${AGENTBOT_CUSTOM_URL:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-base-url ${AGENTBOT_CUSTOM_URL}"
-  [ -n "${AGENTBOT_MODEL_ID:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-model-id ${AGENTBOT_MODEL_ID}"
-  [ -n "${AGENTBOT_COMPAT:-}" ] && ONBOARD_CMD="${ONBOARD_CMD} --custom-compatibility ${AGENTBOT_COMPAT}"
+  [ -n "$API_KEY" ] && set -- "$@" --custom-api-key "$API_KEY"
+  [ -n "${AGENTBOT_CUSTOM_URL:-}" ] && set -- "$@" --custom-base-url "$AGENTBOT_CUSTOM_URL"
+  [ -n "${AGENTBOT_MODEL_ID:-}" ] && set -- "$@" --custom-model-id "$AGENTBOT_MODEL_ID"
+  [ -n "${AGENTBOT_COMPAT:-}" ] && set -- "$@" --custom-compatibility "$AGENTBOT_COMPAT"
 elif [ -n "$API_KEY" ] && [ -n "$KEY_FLAG" ]; then
-  ONBOARD_CMD="${ONBOARD_CMD} ${KEY_FLAG} ${API_KEY}"
+  set -- "$@" "$KEY_FLAG" "$API_KEY"
 fi
 
 # Run onboard (skips if config already exists)
 if [ ! -f "${HOME}/.openclaw/openclaw.json" ]; then
   echo "[$(date)] Running first-time onboarding..."
-  eval "$ONBOARD_CMD" || {
+  "$@" || {
     echo "[$(date)] Onboard failed, falling back to manual config..."
     # Fallback: write minimal config
-    GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-$(openssl rand -hex 16)}"
+    # Persist gateway token across restarts — regenerating breaks live connections
+GATEWAY_TOKEN_FILE="${HOME}/.openclaw/gateway-token"
+if [ -n "${OPENCLAW_GATEWAY_TOKEN:-}" ]; then
+  GATEWAY_TOKEN="$OPENCLAW_GATEWAY_TOKEN"
+elif [ -f "$GATEWAY_TOKEN_FILE" ]; then
+  GATEWAY_TOKEN="$(cat "$GATEWAY_TOKEN_FILE")"
+else
+  GATEWAY_TOKEN="$(openssl rand -hex 32)"
+  mkdir -p "${HOME}/.openclaw"
+  printf '%s' "$GATEWAY_TOKEN" > "$GATEWAY_TOKEN_FILE"
+  chmod 600 "$GATEWAY_TOKEN_FILE"
+fi
     mkdir -p "${HOME}/.openclaw"
     cat > "${HOME}/.openclaw/openclaw.json" << EOF
 {

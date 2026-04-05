@@ -6,13 +6,16 @@ import { useState } from 'react'
 export function AgentsTab({
   agents,
   onRename,
+  onDelete,
 }: {
   agents: { id: string; name: string; status: string }[]
   onRename: (id: string, name: string) => void
+  onDelete?: (id: string) => void
 }) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [saving, setSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState('')
 
   const startEdit = (agent: { id: string; name: string }) => {
@@ -25,6 +28,24 @@ export function AgentsTab({
     setEditingId(null)
     setDraft('')
     setError('')
+  }
+
+  const deleteAgent = async (id: string, name: string) => {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/agents/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        onDelete?.(id)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        alert(data.error || 'Failed to delete agent')
+      }
+    } catch {
+      alert('Network error. Try again.')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   const saveRename = async (id: string) => {
@@ -120,12 +141,21 @@ export function AgentsTab({
                   'text-zinc-500'
                 }`}>{agent.status}</span>
               </div>
-              <button
-                onClick={() => startEdit(agent)}
-                className="border border-zinc-700 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:border-white hover:text-white transition-colors shrink-0"
-              >
-                Rename
-              </button>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => startEdit(agent)}
+                  className="border border-zinc-700 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:border-white hover:text-white transition-colors"
+                >
+                  Rename
+                </button>
+                <button
+                  onClick={() => deleteAgent(agent.id, agent.name)}
+                  disabled={deletingId === agent.id}
+                  className="border border-zinc-700 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:border-red-500 hover:bg-red-950/30 disabled:opacity-50 transition-colors"
+                >
+                  {deletingId === agent.id ? '...' : 'Delete'}
+                </button>
+              </div>
             </div>
           )}
         </div>

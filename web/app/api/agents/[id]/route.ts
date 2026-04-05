@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { deleteRailwayService, resolveRailwayService } from '@/app/lib/railway-service'
 
 export async function GET(
   request: Request,
@@ -126,6 +127,64 @@ export async function PATCH(
   } catch (error) {
     console.error('Failed to rename agent:', error)
     return NextResponse.json({ error: 'Failed to rename agent' }, { status: 500 })
+  }
+}
+
+/**
+ * DELETE /api/agents/:id
+ * Stops and removes the Docker container, deletes backend metadata, and
+ * removes the Prisma Agent record (cascades to AgentMemory, AgentFile, etc.)
+ */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getAuthSession()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id: agentId } = await params
+
+    // Ownership check — Agent table row OR openclawInstanceId on User
+    const ownedAgent = await prisma.agent.findFirst({
+      where: { id: agentId, userId: session.user.id },
+    })
+    const userOwnsViaInstanceId = !ownedAgent && await prisma.user.findFirst({
+      where: { id: session.user.id, openclawInstanceId: agentId },
+      select: { id: true },
+    })
+    if (!ownedAgent && !userOwnsViaInstanceId) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
+    // Best-effort: delete the Railway service (stops and removes the container permanently)
+    try {
+      const openclawUrl = ownedAgent
+        ? (ownedAgent as { openclawUrl?: string | null }).openclawUrl ?? undefined
+        : (await prisma.user.findUnique({ where: { id: session.user.id }, select: { openclawUrl: true } }))?.openclawUrl ?? undefined
+      const railwayService = await resolveRailwayService({ agentId, openclawUrl })
+      await deleteRailwayService(railwayService.id)
+    } catch {
+      // Non-fatal — Railway service may not exist; proceed with DB cleanup
+    }
+
+    // Delete Agent row if it exists (cascades to memory, files, skills, etc.)
+    if (ownedAgent) {
+      await prisma.agent.delete({ where: { id: agentId } })
+    }
+
+    // Always clear openclaw fields on User so they can re-provision
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { openclawInstanceId: null, openclawUrl: null },
+    })
+
+    return NextResponse.json({ success: true, deleted: agentId })
+  } catch (error) {
+    console.error('Failed to delete agent:', error)
+    return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 })
   }
 }
 

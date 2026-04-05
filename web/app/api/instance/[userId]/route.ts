@@ -48,8 +48,15 @@ export async function GET(
 ) {
   const { userId } = await params
 
-  if (!(await verifyInstanceOwnership(userId))) {
+  const ownershipResult = await verifyInstanceOwnership(userId)
+  if (ownershipResult === 'no_session') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
+  if (ownershipResult === 'no_instance') {
+    return NextResponse.json({ error: 'No instance found. Please deploy first.' }, { status: 404 })
+  }
+  if (!ownershipResult) {
+    return NextResponse.json({ error: 'No instance found. Please deploy first.' }, { status: 404 })
   }
 
   const ownedUser = await prisma.user.findFirst({

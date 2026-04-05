@@ -3,18 +3,72 @@
 This file is the primary review context for AI coding agents, including Vercel Agent Code Review.
 Use it to understand project-specific conventions, production constraints, and common failure modes.
 
+## 🆕 Agentbot Advanced Features (New)
+
+Agentbot now includes two powerful systems inspired by Oh My OpenAgent:
+
+### Hashline — Content-Addressed File Editing
+Located in `web/app/lib/hashline/`, this system prevents stale-line errors by using content hashes instead of line numbers.
+
+**Usage for Agents:**
+```typescript
+// Read file with hashes
+import { readWithHashes, formatWithHashes, applyEdit } from '@/app/lib/hashline'
+
+const lines = readWithHashes('/path/to/file.ts')
+const formatted = formatWithHashes(lines)
+// Output: "12#A3| import { x } from 'y'"
+
+// Apply edit by hash (fails if file changed)
+applyEdit('/path/to/file.ts', '12#A3', 'import { z } from "y"')
+```
+
+**API Endpoints:**
+- `GET /api/hashline?path=/path/to/file.ts` — Read file with hashes
+- `POST /api/hashline` — Apply edit by hash reference
+
+**Format:** `lineNumber#hash| content`  
+Example: `15#B7| const x = 5`
+
+### Init-Deep — Hierarchical AGENTS.md Generation
+Located in `web/app/lib/init-deep.ts`, generates scoped context files throughout the project.
+
+**Usage:**
+```bash
+# Generate AGENTS.md for all key directories
+curl -X POST /api/init-deep
+
+# Check which directories have AGENTS.md
+curl /api/init-deep/status
+
+# Dry run to see what would be generated
+curl -X POST /api/init-deep -d '{"dryRun":true}'
+```
+
+**Scoped Context:** Each major directory has its own `AGENTS.md` with:
+- Key files and their purposes
+- Directory-specific conventions
+- Local dependencies and exports
+- Links to parent context
+
+---
+
 ## Project Structure
 
 ```
 agentbot/
 ├── web/                     # Next.js frontend and API routes
 │   ├── app/                 # App Router pages and route handlers
-│   ├── components/          # React components
-│   ├── lib/                 # Shared utilities and helpers
-│   └── prisma/              # Prisma schema and client generation
-├── agentbot-backend/        # Express/TypeScript backend API
-├── docs/                    # Internal state and platform notes
-└── mintlify-docs/           # Public documentation site
+│   │   ├── api/            # API routes (see web/app/api/AGENTS.md)
+│   │   ├── lib/            # Utilities (see web/app/lib/AGENTS.md)
+│   │   │   └── hashline/   # Content-addressed editing system
+│   │   └── ...
+│   ├── components/         # React components
+│   ├── lib/                # Shared utilities
+│   └── prisma/             # Prisma schema
+├── agentbot-backend/       # Express backend API
+├── skills/                 # AI skill definitions
+└── docs/                   # Documentation
 ```
 
 ## Development Commands

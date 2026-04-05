@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from 'next/server'
  * Validates $RAVE token balance for Farcaster users
  */
 
-const RAVE_TOKEN_ADDRESS = '0x6EE72eEDEfBa8937Ec8c36dEd9B8c1ef9ca7A3db'
-const MIN_BALANCE = '1000000000000000000' // 1 RAVE (18 decimals)
-const BASE_RPC = 'https://mainnet.base.org'
+const RAVE_TOKEN_ADDRESS = process.env.TOKEN_GATING_ADDRESS || '0x6EE72eEDEfBa8937Ec8c36dEd9B8c1ef9ca7A3db'
+const MIN_BALANCE = process.env.TOKEN_GATING_MIN_BALANCE || '1000000000000000000' // 1 RAVE (18 decimals)
+const BASE_RPC = process.env.TOKEN_GATING_RPC || 'https://mainnet.base.org'
 
 // Simple ERC20 balance checker
 async function checkTokenBalance(address: string): Promise<boolean> {

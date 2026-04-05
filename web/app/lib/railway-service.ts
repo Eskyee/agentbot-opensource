@@ -29,7 +29,6 @@ export async function railwayGql<T = unknown>(
     headers: {
       Authorization: `Bearer ${getRailwayApiKey()}`,
       'Content-Type': 'application/json',
-      'User-Agent': 'railway-cli/4.30.4',
     },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
@@ -109,4 +108,13 @@ export async function resolveRailwayService(params: {
   }
 
   return match
+}
+
+export async function deleteRailwayService(serviceId: string): Promise<void> {
+  await railwayGql(
+    `mutation ServiceDelete($serviceId: String!) {
+      serviceDelete(id: $serviceId)
+    }`,
+    { serviceId }
+  )
 }

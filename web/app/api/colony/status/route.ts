@@ -14,7 +14,6 @@ import { tempo } from 'viem/chains';
 
 const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
 const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
-const FALLBACK_SOUL_URL = 'https://borg-0-production.up.railway.app';
 
 function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
   const value = String(raw ?? '').toLowerCase();
@@ -24,7 +23,7 @@ function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
 }
 
 function getSoulCandidates() {
-  const candidates = [SOUL_URL, FALLBACK_SOUL_URL]
+  const candidates = [SOUL_URL]
     .map((value) => value?.trim())
     .filter(Boolean) as string[]
 
@@ -254,7 +253,7 @@ export async function GET(request: Request) {
           address: '0x0000000000000000000000000000000000000000',
           designation: null,
           dashboardUrl: SOUL_DASHBOARD_URL,
-          serviceUrl: FALLBACK_SOUL_URL,
+          serviceUrl: SOUL_URL,
           fitness: null,
           wallet_balance: null,
           clone_available: false,

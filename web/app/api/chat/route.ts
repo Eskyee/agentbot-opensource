@@ -4,6 +4,8 @@ import { prisma } from '@/app/lib/prisma'
 import { readSharedGatewayToken } from '@/app/lib/gateway-token'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
+import { acquireWorkloadSlot, releaseWorkloadSlot, type WorkloadTicket } from '@/app/lib/workload-gate'
+import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
 
 /**
  * Agent Chat — OpenAI-compatible REST proxy to user's Gateway.
@@ -57,6 +59,7 @@ async function buildSystemPrompt(agentId: string, userId: string): Promise<strin
 }
 
 export async function POST(req: NextRequest) {
+  let workloadTicket: WorkloadTicket | null = null
   const session = await getAuthSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -89,6 +92,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No agent deployed' }, { status: 404 })
     }
 
+    const slot = await acquireWorkloadSlot({
+      lane: 'chat',
+      userId: user.id,
+      ip,
+      cost: message.length > 1200 ? 3 : message.length > 400 ? 2 : 1,
+    })
+    if (!slot.ok) {
+      return NextResponse.json(
+        { error: slot.reason, retryAfterSeconds: slot.retryAfterSeconds },
+        { status: 429 }
+      )
+    }
+    workloadTicket = slot.ticket
+
     const gatewayToken = readSharedGatewayToken()
     if (!gatewayToken) {
       return NextResponse.json({ error: 'Gateway not configured' }, { status: 503 })
@@ -115,46 +132,41 @@ export async function POST(req: NextRequest) {
       DEFAULT_OPENCLAW_GATEWAY_URL
     ).replace(/\/$/, '')
 
-    const response = await fetch(`${gatewayUrl}/v1/chat/completions`, {
+    const enqueueRes = await fetch(`${getBackendApiUrl()}/api/platform-jobs/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${gatewayToken}`,
+        Authorization: `Bearer ${getInternalApiKey()}`,
       },
       body: JSON.stringify({
-        model: 'openclaw/default',
-        messages,
+        userId: user.id,
+        agentId: agent.id,
+        gatewayUrl,
+        message,
+        systemPrompt,
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(10_000),
     })
 
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '')
-      console.error(`Gateway chat failed (${response.status}):`, errText)
+    const enqueueBody = await enqueueRes.json()
+    if (!enqueueRes.ok || !enqueueBody?.job?.id) {
       return NextResponse.json(
-        { error: `Gateway returned ${response.status}` },
-        { status: response.status >= 500 ? 502 : response.status }
+        { error: enqueueBody?.error || 'Failed to queue chat job' },
+        { status: enqueueRes.status >= 400 ? enqueueRes.status : 502 }
       )
     }
 
-    const data = await response.json()
-    const reply =
-      data.choices?.[0]?.message?.content || 'No response from agent'
-
     return NextResponse.json({
-      id: data.id || 'msg_' + Date.now(),
-      message,
-      agent: agent.name,
-      reply,
-      response: reply,
-      model: data.model,
-      usage: data.usage,
-      timestamp: new Date().toISOString(),
-    })
+      queued: true,
+      jobId: enqueueBody.job.id,
+      status: enqueueBody.job.status || 'queued',
+    }, { status: 202 })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to send message'
     console.error('Chat error:', error)
     return NextResponse.json({ error: message }, { status: 500 })
+  } finally {
+    await releaseWorkloadSlot(workloadTicket)
   }
 }
 

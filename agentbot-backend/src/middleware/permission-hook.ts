@@ -15,6 +15,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express'
+import { randomBytes } from 'crypto'
 import { classifyToolCall } from '../lib/permissions'
 
 // Pending request store (in-memory; replace with Redis in production)
@@ -63,7 +64,7 @@ export function preToolUseHook(
   }
 
   // Dangerous commands queue for approval
-  const requestId = `perm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const requestId = `perm_${Date.now()}_${randomBytes(6).toString('hex')}`
   pendingRequests.set(requestId, {
     id: requestId,
     agentId,

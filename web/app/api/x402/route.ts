@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { X402_GATEWAY_URL } from '@/app/lib/platform-urls'
 
 /**
  * x402-Gateway Integration
@@ -7,8 +8,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
  * Connects Agentbot agents to the x402-Tempo payment gateway.
  * Provides colony membership, fitness scoring, and dynamic pricing.
  */
-
-const X402_GATEWAY_URL = process.env.X402_GATEWAY_URL || 'https://x402-gateway-production.up.railway.app'
 
 export async function POST(request: NextRequest) {
   try {

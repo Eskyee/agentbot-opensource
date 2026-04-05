@@ -7,7 +7,8 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await params
-  if (!(await verifyInstanceOwnership(userId))) {
+  const ownership = await verifyInstanceOwnership(userId)
+  if (ownership !== true) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 

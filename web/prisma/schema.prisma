@@ -46,6 +46,7 @@ model User {
   workflows             Workflow[]
   passkeyCredentials    PasskeyCredential[]
   passkeyChallenges     PasskeyChallenge[]
+  notifications         Notification[]
 }
 
 model Account {
@@ -171,12 +172,15 @@ model Skill {
   downloads       Int              @default(0)
   rating          Float            @default(0)
   featured        Boolean          @default(false)
+  mcpConfig       Json?            // MCP (Model Context Protocol) configuration
+  mcpEnabled      Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   installedSkills InstalledSkill[]
 
   @@index([category])
   @@index([featured])
+  @@index([mcpEnabled])
 }
 
 model InstalledSkill {
@@ -321,6 +325,23 @@ model CalendarToken {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // achievement | badge | referral | system | agent | message | billing
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  data      Json?    // Additional data (badge info, referral details, etc.)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
 }
 
 model PairedDevice {

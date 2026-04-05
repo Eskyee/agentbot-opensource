@@ -18,9 +18,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma';
-import { stripe } from '@/app/lib/stripe';
 import crypto from 'crypto';
 import { isTrialActive } from '@/app/lib/trial-utils'
+import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provision'
+import { 
+  deployAgentToGateway, 
+  fetchAgentDataForDeployment,
+} from '@/app/lib/agent-deploy'
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +47,26 @@ interface AgentConfig {
   websocketUrl: string;
   config: Record<string, any>;
   algorithmMode?: boolean;
+}
+
+function normalizeProvisionPlan(plan?: string | null): string {
+  switch ((plan || '').toLowerCase()) {
+    case 'starter':
+    case 'free':
+    case 'underground':
+    case 'solo':
+      return 'solo'
+    case 'pro':
+    case 'collective':
+      return 'collective'
+    case 'label':
+      return 'label'
+    case 'enterprise':
+    case 'network':
+      return 'network'
+    default:
+      return 'solo'
+  }
 }
 
 /**
@@ -82,6 +106,8 @@ export async function POST(request: NextRequest) {
         plan: true,
         subscriptionStatus: true,
         trialEndsAt: true,
+        openclawUrl: true,
+        openclawInstanceId: true,
       },
     });
     const trialActive = isTrialActive(user?.trialEndsAt)
@@ -99,8 +125,14 @@ export async function POST(request: NextRequest) {
     });
 
     const tierLimits: Record<string, number> = {
+      free: 1,
+      underground: 1,
+      solo: 1,
       starter: 1,
+      collective: 3,
       pro: 3,
+      label: 10,
+      network: 100,
       enterprise: 100
     };
 
@@ -116,36 +148,150 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create agent record
+    const existingRuntimeUrl = user?.openclawUrl?.replace(/\/$/, '') || null
+    const existingRuntimeId = user?.openclawInstanceId || null
+    const requestedPlan = normalizeProvisionPlan(
+      body.tier || (typeof body.config?.tier === 'string' ? body.config.tier : null) || user?.plan || null
+    )
+
+    // Create agent record with ALL data (skills, memories, files)
     const agent = await prisma.agent.create({
       data: {
         userId,
         name: body.name.trim(),
         model: body.model || 'claude-opus-4-6',
         status: 'provisioning',
-        config: body.config || {},
-        websocketUrl: `ws://openclaw-gateway-lqma:10000/agent/${userId}`
+        tier: requestedPlan,
+        config: {
+          ...(body.config || {}),
+          managedRuntime: true,
+          runtimePlan: requestedPlan,
+        },
+        websocketUrl: existingRuntimeUrl,
       }
     });
 
-    // Send provisioning request to OpenClaw Gateway
+    // First deploy for a user: create the managed Railway runtime and persist it.
+    // This is the path the frontend one-click deploy flow needs.
+    if (!existingRuntimeUrl || !existingRuntimeId) {
+      if (!isRailwayConfigured()) {
+        await prisma.agent.update({
+          where: { id: agent.id },
+          data: {
+            status: 'error',
+            config: {
+              ...(agent.config as Record<string, unknown> || {}),
+              error: 'Railway provisioning is not configured',
+            },
+          },
+        })
+
+        return NextResponse.json(
+          { error: 'Managed runtime provisioning is not configured' },
+          { status: 503 }
+        )
+      }
+
+      try {
+        const runtime = await provisionOnRailway(agent.id, requestedPlan)
+
+        await prisma.$transaction([
+          prisma.user.update({
+            where: { id: userId },
+            data: {
+              openclawUrl: runtime.url,
+              openclawInstanceId: runtime.agentId,
+            },
+          }),
+          prisma.agent.update({
+            where: { id: agent.id },
+            data: {
+              status: runtime.status,
+              websocketUrl: runtime.url,
+              config: {
+                ...(agent.config as Record<string, unknown> || {}),
+                runtimeUrl: runtime.url,
+                runtimeServiceId: runtime.serviceId,
+                pendingGatewaySync: true,
+              },
+            },
+          }),
+        ])
+
+        return NextResponse.json({
+          success: true,
+          agent: {
+            id: agent.id,
+            name: agent.name,
+            status: runtime.status,
+            websocketUrl: runtime.url,
+            model: agent.model,
+            createdAt: agent.createdAt,
+            runtime: {
+              instanceId: runtime.agentId,
+              url: runtime.url,
+              serviceId: runtime.serviceId,
+            },
+          },
+        }, { status: 201 })
+      } catch (runtimeError) {
+        await prisma.agent.update({
+          where: { id: agent.id },
+          data: {
+            status: 'error',
+            config: {
+              ...(agent.config as Record<string, unknown> || {}),
+              error: runtimeError instanceof Error ? runtimeError.message : 'Railway provisioning failed',
+            },
+          },
+        })
+
+        throw runtimeError
+      }
+    }
+
+    // Send FULL deployment to OpenClaw Gateway (includes skills, memories, files)
     try {
-      const gatewayResponse = await provisionAgentOnGateway(agent.id, {
+      // Fetch complete agent data with relations
+      const agentData = await fetchAgentDataForDeployment(agent.id);
+      
+      // Deploy everything to gateway
+      const deployResult = await deployAgentToGateway({
+        agentId: agent.id,
         userId,
         name: agent.name,
         model: agent.model || 'default',
-        config: agent.config as Record<string, any> || {}
+        config: {
+          ...agentData.config,
+          telegramToken: body.config?.telegramToken,
+          aiProvider: body.model === 'claude-opus-4-6' ? 'anthropic' : (body.config?.aiProvider || 'openrouter'),
+          apiKey: body.config?.apiKey,
+          plan: body.tier || 'free',
+          ownerIds: body.config?.ownerIds,
+        },
+        skills: agentData.skills,
+        memories: agentData.memories,
+        files: agentData.files,
       });
+
+      if (!deployResult.success) {
+        throw new Error(deployResult.error || 'Gateway deployment failed');
+      }
 
       // Update agent status
       await prisma.agent.update({
         where: { id: agent.id },
         data: { 
           status: 'running',
+          websocketUrl: existingRuntimeUrl,
           config: {
             ...(agent.config as Record<string, any> || {}),
-            gatewayId: gatewayResponse.gatewayId,
-            authToken: gatewayResponse.token
+            gatewayId: deployResult.gatewayId || `gw-${agent.id}`,
+            deployedAt: deployResult.deployedAt,
+            deployedSkills: deployResult.details?.skillsDeployed || 0,
+            deployedMemories: deployResult.details?.memoriesDeployed || 0,
+            deployedFiles: deployResult.details?.filesDeployed || 0,
+            runtimeUrl: existingRuntimeUrl,
           }
         }
       });
@@ -156,9 +302,14 @@ export async function POST(request: NextRequest) {
           id: agent.id,
           name: agent.name,
           status: 'running',
-          websocketUrl: agent.websocketUrl,
+          websocketUrl: existingRuntimeUrl,
           model: agent.model,
-          createdAt: agent.createdAt
+          createdAt: agent.createdAt,
+          deployed: {
+            skills: deployResult.details?.skillsDeployed || 0,
+            memories: deployResult.details?.memoriesDeployed || 0,
+            files: deployResult.details?.filesDeployed || 0,
+          }
         }
       }, { status: 201 });
 

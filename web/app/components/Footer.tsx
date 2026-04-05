@@ -67,6 +67,10 @@ export default function Footer() {
               <span className="text-[10px] uppercase tracking-widest text-zinc-700">
                 Agentbot {version}
               </span>
+              <span className="text-zinc-800 text-[10px]">|</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-700">
+                OpenClaw {openClawVersion}
+              </span>
             </div>
           </div>
           <div className="flex flex-wrap gap-6">

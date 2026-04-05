@@ -31,8 +31,8 @@ const PLAN_LIMITS: Record<string, { agents: number; stripeRequired: boolean }> =
 // DB-backed agent count — survives restarts and horizontal scaling
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-/** Returns the number of active agents for this email+plan combination from the DB. */
-async function getAgentCount(email: string, plan: string): Promise<number> {
+/** Returns the number of active agents for this email from the DB. */
+async function getAgentCount(email: string): Promise<number> {
   const result = await pool.query(
     `SELECT COUNT(*) AS cnt FROM agent_registrations
      WHERE user_id = $1 AND status = 'active'`,
@@ -167,7 +167,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
 
     // Enforce agent limits per plan — backed by DB so restarts don't reset counts
     if (email) {
-      const currentCount = await getAgentCount(email, plan);
+      const currentCount = await getAgentCount(email);
       if (currentCount >= planConfig.agents) {
         return res.status(402).json({
           success: false,

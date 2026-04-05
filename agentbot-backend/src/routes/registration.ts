@@ -146,7 +146,9 @@ router.get('/installations', authenticate, async (req: Request, res: Response) =
     const result = await pool.query(
       `SELECT user_id, mode, registered_at, last_seen, status
        FROM agent_registrations
-       ORDER BY last_seen DESC`
+       WHERE user_id = $1
+       ORDER BY last_seen DESC`,
+      [req.userId]
     );
     res.json({
       success: true,

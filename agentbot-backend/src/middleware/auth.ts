@@ -48,6 +48,9 @@ function verifyUserSignature(
     .createHmac('sha256', HMAC_SECRET)
     .update(payload)
     .digest('hex');
+  // Reject invalid hex or wrong length before calling timingSafeEqual
+  // (timingSafeEqual throws on length mismatch — that exception leaks timing info)
+  if (!/^[0-9a-f]{64}$/i.test(signature)) return false;
   return crypto.timingSafeEqual(
     Buffer.from(expected, 'hex'),
     Buffer.from(signature, 'hex')

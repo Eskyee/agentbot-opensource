@@ -100,11 +100,9 @@ npm audit --json
 
 ## Key Internal Docs
 
-- [DEPLOYMENT.md](./DEPLOYMENT.md)
-- [ROLLBACK.md](./ROLLBACK.md)
+- [docs/CURRENT_PLATFORM_STATE.md](./docs/CURRENT_PLATFORM_STATE.md)
+- [docs/INCIDENT_RESPONSE.md](./docs/INCIDENT_RESPONSE.md)
 - [SECURITY.md](./SECURITY.md)
-- [SECRETS.md](./SECRETS.md)
-- [SECRETS_CHECKLIST.md](./SECRETS_CHECKLIST.md)
 - [PLATFORM_RULES.md](./PLATFORM_RULES.md)
 - [AGENTS.md](./AGENTS.md)
 

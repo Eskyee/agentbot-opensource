@@ -15,6 +15,7 @@ import {
 import { AgentInput, AgentTextarea } from '@/app/components/shared/AgentInput'
 import { EmptyState } from '@/app/components/shared/EmptyState'
 import StatusPill from '@/app/components/shared/StatusPill'
+import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from '@/app/lib/platform-urls'
 
 type MemoryKind = 'fact' | 'decision' | 'note' | 'alert'
 
@@ -90,10 +91,10 @@ async function fetchSystemMemories(): Promise<MemoryEntry[]> {
   const now = new Date().toISOString()
 
   const checks = [
-    { name: 'Agentbot API', url: 'https://agentbot-prod-production.up.railway.app/health', icon: Server },
-    { name: 'x402 Gateway', url: 'https://x402-gateway-production.up.railway.app/health', icon: Zap },
-    { name: 'Tempo Soul', url: 'https://borg-0-production.up.railway.app/health', icon: Cpu },
-    { name: 'Borg-0', url: 'https://borg-0-production.up.railway.app/health', icon: Shield },
+    { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health`, icon: Server },
+    { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health`, icon: Zap },
+    { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/health`, icon: Cpu },
+    { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/health`, icon: Shield },
   ]
 
   for (const check of checks) {

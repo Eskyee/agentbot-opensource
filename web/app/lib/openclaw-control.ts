@@ -33,6 +33,10 @@ export function buildOpenClawControlUrl({
   gatewayToken?: string | null
   session?: string
 }): string {
+  if (!DEFAULT_OPENCLAW_CONTROL_UI_BASE) {
+    return '#'
+  }
+
   const base = `${DEFAULT_OPENCLAW_CONTROL_UI_BASE}/${view}`
   const href = view === 'chat'
     ? `${base}?session=${encodeURIComponent(session)}`

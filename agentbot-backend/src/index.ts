@@ -12,6 +12,8 @@ import registrationRouter from './routes/registration';
 import agentsRouter from './routes/agents';
 import openclawRouter, { proxy as openclawProxy } from './routes/openclaw';
 import orchestrationRouter from './routes/orchestration';
+import railwayProvisionRouter from './routes/railway-provision';
+import platformJobsRouter from './routes/platform-jobs';
 import http from 'http';
 import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
 import AIProviderService from './services/ai-provider';
@@ -25,6 +27,7 @@ import { timingSafeEqual, randomBytes } from 'crypto';
 import rateLimit from 'express-rate-limit';
 import { Pool } from 'pg';
 import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw-version';
+import { buildHealthSummary } from './lib/health-summary';
 
 dotenv.config();
 
@@ -96,7 +99,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.raveculture.xyz,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',');
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.raveculture.xyz,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin only from localhost (server-to-server)
@@ -136,6 +139,7 @@ const aiChatLimiter = rateLimit({
 app.use('/api/', generalLimiter);
 
 const PORT = process.env.PORT || 3001;
+const RUN_MODE = (process.env.AGENTBOT_RUN_MODE || 'all').toLowerCase();
 
 // API key — refuse to start in production without it
 if (!process.env.INTERNAL_API_KEY) {
@@ -723,6 +727,8 @@ app.use('/api/provision/team', authenticate, teamProvisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
 app.use('/api/agents', authenticate, agentsRouter);
 app.use('/api/orchestration', authenticate, orchestrationRouter);
+app.use('/api/railway', railwayProvisionRouter);
+app.use('/api/platform-jobs', authenticate, platformJobsRouter);
 // /api/openclaw/proxy/* is public — OpenClaw handles its own auth
 // All other /api/openclaw/* routes require backend bearer token
 app.use('/api/openclaw', (req: Request, res: Response, next: NextFunction) => {
@@ -767,13 +773,7 @@ app.post('/api/permissions', authenticate, (req: Request, res: Response) => {
 
 // Health check — includes Docker status for observability
 app.get('/health', async (req: Request, res: Response) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    docker: dockerAvailable ? 'available' : 'unavailable',
-    provisioning: dockerAvailable ? 'enabled' : 'disabled',
-    provider: 'render',
-  });
+  res.json(buildHealthSummary({ dockerAvailable }));
 });
 
 // OpenAI-compatible endpoints for RAG/SDK compatibility
@@ -1173,7 +1173,9 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
 initDatabase().then(() => {
   console.log('[DB] Ready');
   // Start scheduler only after schema is confirmed ready — avoids 42P01 race on boot
-  startScheduler();
+  if (RUN_MODE === 'all' || RUN_MODE === 'worker') {
+    startScheduler();
+  }
 }).catch(err => {
   console.error('[DB] Init error:', err.message);
   if (process.env.NODE_ENV === 'production') {
@@ -1252,12 +1254,12 @@ export function startServer() {
   if (serverStarted) return server;
 
   server.listen(PORT, () => {
-    console.log(`🦞 Agentbot API server running on port ${PORT}`);
+    console.log(`🦞 Agentbot API server running on port ${PORT} (mode=${RUN_MODE})`);
     console.log(`Health check: http://localhost:${PORT}/health`);
     console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
     console.log('OpenClaw proxy: /api/openclaw/proxy/:agentId/*');
 
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === 'production' && RUN_MODE !== 'worker') {
       startAutoUpdater();
     }
   });

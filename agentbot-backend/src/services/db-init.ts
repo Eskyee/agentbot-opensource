@@ -124,18 +124,6 @@ CREATE TABLE IF NOT EXISTS bookings (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Model metrics (AI usage tracking)
-CREATE TABLE IF NOT EXISTS model_metrics (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER REFERENCES users(id),
-  agent_id INTEGER REFERENCES agents(id),
-  model TEXT NOT NULL,
-  input_tokens INTEGER DEFAULT 0,
-  output_tokens INTEGER DEFAULT 0,
-  cost_usdc NUMERIC DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
 -- Social amplification
 CREATE TABLE IF NOT EXISTS social_campaigns (
   id SERIAL PRIMARY KEY,
@@ -222,6 +210,12 @@ CREATE TABLE IF NOT EXISTS model_metrics (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Migration: add columns missing from old schema (safe on existing DBs)
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS tier TEXT;
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS latency_ms INTEGER;
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS success BOOLEAN;
+ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS source TEXT;
+
 -- Scheduled tasks (used by inline scheduler in scheduler.ts)
 CREATE TABLE IF NOT EXISTS scheduled_tasks (
   id BIGSERIAL PRIMARY KEY,
@@ -238,6 +232,34 @@ CREATE TABLE IF NOT EXISTS scheduled_tasks (
 CREATE INDEX IF NOT EXISTS idx_scheduled_tasks_due
   ON scheduled_tasks(status, next_run_at)
   WHERE status = 'pending';
+
+CREATE TABLE IF NOT EXISTS platform_jobs (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  agent_id TEXT,
+  lane TEXT NOT NULL DEFAULT 'deploy',
+  job_type TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'queued',
+  priority INTEGER NOT NULL DEFAULT 0,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  max_attempts INTEGER NOT NULL DEFAULT 5,
+  run_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  locked_at TIMESTAMPTZ,
+  started_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  error TEXT,
+  payload JSONB NOT NULL DEFAULT '{}',
+  result JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_platform_jobs_status_run_at
+  ON platform_jobs(status, run_at, priority DESC, created_at ASC);
+CREATE INDEX IF NOT EXISTS idx_platform_jobs_user_status
+  ON platform_jobs(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_platform_jobs_lane_status
+  ON platform_jobs(lane, status);
 
 -- Indexes for performance
 -- Core FK indexes (prevent full-table scans on joins)

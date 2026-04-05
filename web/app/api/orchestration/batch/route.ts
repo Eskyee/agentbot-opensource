@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
 
 interface BatchRequestBody {
   tools: Array<{
@@ -47,12 +48,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Forward to backend orchestration service
-    const backendUrl = process.env.AGENTBOT_API_URL || 'https://agentbot-prod-production.up.railway.app'
+    const backendUrl = getBackendApiUrl()
     const response = await fetch(`${backendUrl}/api/orchestration/batch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.INTERNAL_API_KEY || ''}`,
+        'Authorization': `Bearer ${getInternalApiKey()}`,
       },
       body: JSON.stringify({
         tools: body.tools,

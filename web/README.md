@@ -19,7 +19,7 @@
 
 ## What is Agentbot?
 
-Agentbot is an open-source platform for deploying isolated AI agents connected to Telegram, Discord, and WhatsApp. Each agent runs in its own Docker container (powered by [OpenClaw](https://github.com/raveculture/openclaw)), with its own AI model, skills, and wallet.
+Agentbot is an open-source platform for deploying isolated AI agents connected to Telegram, Discord, and WhatsApp. Managed runtimes are provisioned on Railway and powered by [OpenClaw](https://github.com/raveculture/openclaw), with their own model config, skills, and wallet context.
 
 **You own the infrastructure. We provide the platform.**
 
@@ -144,8 +144,8 @@ Copy `web/.env.example` to `web/.env` and fill in the values. Required fields:
          ▼                 ▼                  ▼
 ┌────────────────┐ ┌───────────────┐ ┌────────────────┐
 │  PostgreSQL    │ │   OpenClaw    │ │  Skills &      │
-│  (Neon)        │ │  Container    │ │  Tools         │
-│                │ │  (Docker)     │ │  Registry      │
+│  (Neon)        │ │  Runtime      │ │  Tools         │
+│                │ │  (Railway)    │ │  Registry      │
 └────────────────┘ └───────────────┘ └────────────────┘
 ```
 
@@ -153,26 +153,26 @@ Copy `web/.env.example` to `web/.env` and fill in the values. Required fields:
 
 ```
 User clicks "Deploy"
-  → Validate bot token
-  → Create Docker container
-  → Pull OpenClaw image
-  → Configure AI model + channels
+  → Stripe checkout / verify
+  → Queue provisioning job
+  → Backend worker provisions Railway runtime
+  → Runtime sync completes
   → Agent live ✅
 ```
 
 ### Agent Container (per-user isolation)
 
 ```
-Docker Container
+Managed Railway Runtime
 ├── OpenClaw runtime
 │   ├── Message handler
 │   ├── Agent core (AI model)
 │   └── Skills (web-search, file-handler, code-runner, ...)
-├── Mounted volume: /home/node/.openclaw
+├── Persistent volume: /home/node/.openclaw
 │   ├── agents/    (configs)
 │   ├── workspace/ (files)
 │   └── logs/
-└── Environment: AI API key, channel tokens
+└── Environment: AI API key, channel tokens, gateway auth
 ```
 
 ---
@@ -259,7 +259,7 @@ Full self-hosting guide: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 **Recommended stack:**
 - Frontend: [Vercel](https://vercel.com) (auto-deploys from `main`)
-- Backend: [Render](https://render.com) or any Docker host
+- Backend: Railway or any Node/Express-compatible host
 - Database: [Neon](https://neon.tech) serverless Postgres
 - Email: [Resend](https://resend.com)
 
