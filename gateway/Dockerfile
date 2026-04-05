@@ -41,7 +41,6 @@ COPY --from=builder /app/node_modules ./node_modules
 
 COPY src/ ./src/
 COPY public/ ./public/
-COPY entrypoint.sh ./
 COPY package.json ./
 
 RUN mkdir -p /data/.openclaw/nodes /data/.openclaw/workspace
@@ -53,8 +52,7 @@ ENV OPENCLAW_DATA_DIR=/data
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
     CMD curl -sf http://localhost:${PORT}/api/status || exit 1
 
-RUN chmod +x entrypoint.sh
-CMD ["sh", "entrypoint.sh"]
+CMD ["node", "src/server.js"]
