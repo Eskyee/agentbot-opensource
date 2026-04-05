@@ -14,9 +14,10 @@
 
 import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
+import { DEFAULT_OPENCLAW_IMAGE } from '../lib/openclaw-version'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/eskyee/agentbot-openclaw:latest'
+const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE
 
 function getAgentEnvVars(agentId: string, plan: string): Record<string, string> {
   return {
