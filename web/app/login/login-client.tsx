@@ -171,18 +171,21 @@ function LoginForm() {
         </button>
       </div>
 
-      <details className="mt-4">
+      <div className="mt-4">
+        <input
+          type="email"
+          placeholder="Email address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
+        />
+      </div>
+
+      <details className="mt-3">
         <summary className="text-zinc-500 text-xs uppercase tracking-widest cursor-pointer hover:text-white">
-          Sign in with email instead
+          Sign in with password instead
         </summary>
         <form className="mt-4 space-y-4" onSubmit={handleCredentialsLogin}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 font-mono"
-          />
           <div>
             <input
               type="password"
@@ -213,8 +216,8 @@ function LoginForm() {
           <span className="text-[10px] text-green-300">Fast & secure</span>
         </div>
         <p className="text-zinc-400 text-xs">
-          Enter your email above so we can locate your registered passkeys, then tap
-          the button below and follow the browser prompt.
+          Enter your email in the field above, then tap the button below and follow the
+          browser prompt to sign in with your passkey.
         </p>
         <button
           type="button"
