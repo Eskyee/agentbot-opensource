@@ -15,6 +15,9 @@ import { tempo } from 'viem/chains';
 const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
 const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
 
+// Known borg-0 public URL — always included as fallback even if env var is stale
+const BORG_0_URL = 'https://borg-0-production-08a7.up.railway.app'
+
 function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
   const value = String(raw ?? '').toLowerCase();
   if (['active', 'running', 'healthy', 'up', 'ready'].includes(value)) return 'active';
@@ -23,7 +26,7 @@ function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
 }
 
 function getSoulCandidates() {
-  const candidates = [SOUL_URL]
+  const candidates = [SOUL_URL, BORG_0_URL]
     .map((value) => value?.trim())
     .filter(Boolean) as string[]
 

@@ -12,8 +12,11 @@ function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
   return 'offline';
 }
 
+// Known borg-0 public URL — always included as fallback even if env var is stale
+const BORG_0_URL = 'https://borg-0-production-08a7.up.railway.app'
+
 function getSoulCandidates() {
-  const candidates = [DEFAULT_SOUL_SERVICE_URL]
+  const candidates = [DEFAULT_SOUL_SERVICE_URL, BORG_0_URL]
     .map((value) => value?.trim())
     .filter(Boolean) as string[]
 
