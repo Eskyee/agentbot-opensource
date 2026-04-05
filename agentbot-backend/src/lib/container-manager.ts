@@ -144,8 +144,55 @@ export async function createContainer(
   const serviceId = created.serviceCreate.id;
   console.log(`[ContainerManager/Railway] Created service ${serviceId} (${serviceName}) for ${userId}`);
 
-  // 2. Inject env vars
-  const variables = getAgentEnvVars(userId, plan);
+  // 2. Build openclaw.json config and inject all env vars in one shot.
+  //    Config is passed as OPENCLAW_CONFIG_JSON env var so the start command
+  //    can write it without shell heredoc quoting issues.
+  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || crypto.randomBytes(32).toString('hex');
+  const openclawConfig = {
+    env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
+    gateway: {
+      mode: 'local',
+      bind: 'lan',
+      auth: { mode: 'token', token: gatewayToken },
+      trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
+      controlUi: {
+        allowedOrigins: ['*'],
+        dangerouslyDisableDeviceAuth: true,
+        dangerouslyAllowHostHeaderOriginFallback: true,
+      },
+      http: { endpoints: { chatCompletions: { enabled: true } } },
+    },
+    agents: {
+      defaults: {
+        workspace: '/home/node/.openclaw/workspace',
+        model: { primary: 'openrouter/google/gemini-flash-1.5' },
+        heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
+      },
+    },
+    channels: {
+      telegram: { enabled: false, dmPolicy: 'pairing' },
+      discord:  { enabled: false, dmPolicy: 'pairing' },
+      whatsapp: { enabled: false, dmPolicy: 'pairing' },
+      webchat:  { enabled: true },
+    },
+    cron:    { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    session: {
+      scope: 'per-sender',
+      reset: { mode: 'daily', atHour: 4 },
+      maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
+    },
+    tools: {
+      profile: 'coding',
+      exec: { backgroundMs: 10000, timeoutSec: 1800 },
+      web:  { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
+    },
+  };
+
+  const variables = {
+    ...getAgentEnvVars(userId, plan),
+    OPENCLAW_CONFIG_JSON: JSON.stringify(openclawConfig),
+  };
+
   await railwayGql(`
     mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
       variableCollectionUpsert(input: $input)
@@ -154,71 +201,29 @@ export async function createContainer(
     input: { projectId, environmentId, serviceId, variables },
   });
 
-  // 3. Set start command — write config file directly, then start gateway.
-  //    Each user has their own isolated container, so device auth is unnecessary.
-  //    Token auth (OPENCLAW_GATEWAY_TOKEN) still protects the gateway.
-  //    Uses config file approach (not config set CLI) — proven working on Railway.
-  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || crypto.randomBytes(32).toString('hex');
-  const startCmd = [
-    'sh -c \'',
-    'mkdir -p /home/node/.openclaw && ',
-    'cat > /home/node/.openclaw/openclaw.json << \'OPENCLAW_CONFIG\'',
-    JSON.stringify({
-      env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
-      gateway: {
-        mode: 'local',
-        bind: 'lan',
-        auth: { mode: 'token', token: gatewayToken },
-        trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
-        controlUi: {
-          allowedOrigins: ['*'],
-          dangerouslyDisableDeviceAuth: true,
-          dangerouslyAllowHostHeaderOriginFallback: true,
-        },
-        http: { endpoints: { chatCompletions: { enabled: true } } },
-      },
-      agents: {
-        defaults: {
-          workspace: '/home/node/.openclaw/workspace',
-          model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
-          heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
-        },
-      },
-      channels: {
-        telegram: { enabled: false, dmPolicy: 'pairing' },
-        discord: { enabled: false, dmPolicy: 'pairing' },
-        whatsapp: { enabled: false, dmPolicy: 'pairing' },
-        webchat: { enabled: true },
-      },
-      cron: { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
-      session: {
-        scope: 'per-sender',
-        reset: { mode: 'daily', atHour: 4 },
-        maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
-      },
-      tools: {
-        profile: 'coding',
-        exec: { backgroundMs: 10000, timeoutSec: 1800 },
-        web: { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
-      },
-    }),
-    'OPENCLAW_CONFIG',
-    '&& exec openclaw gateway',
-    '\'',
-  ].join(' ');
+  // 3. Set start command — reads config from env var (no heredoc quoting issues).
+  //    Single-quoted sh -c body is safe because no single quotes appear inside it.
+  const startCmd = `sh -c 'mkdir -p /home/node/.openclaw && printf "%s" "$OPENCLAW_CONFIG_JSON" > /home/node/.openclaw/openclaw.json && exec openclaw gateway'`;
 
+  const planResources = PLAN_RESOURCES[plan] ?? PLAN_RESOURCES.solo;
+
+  // serviceId and environmentId are top-level mutation arguments, not inside input.
   await railwayGql(`
-    mutation ServiceInstanceUpdate($input: ServiceInstanceUpdateInput!) {
-      serviceInstanceUpdate(input: $input)
+    mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+      serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
     }
   `, {
+    serviceId,
+    environmentId,
     input: {
-      serviceId,
-      environmentId,
       startCommand: startCmd,
+      memoryLimitMb: planResources.memoryMB,
+      cpuLimit: planResources.cpuMillicores / 1000,
+      restartPolicyType: 'ON_FAILURE',
+      restartPolicyMaxRetries: 10,
     },
   });
-  console.log(`[ContainerManager/Railway] Set startCommand for ${serviceName}`);
+  console.log(`[ContainerManager/Railway] Set startCommand + resources for ${serviceName}`);
 
   // 4. Create service domain with targetPort 18789 (routes Railway HTTP proxy to Gateway)
   //    Without this, Railway's proxy defaults to port 3000 and the Gateway is unreachable.
