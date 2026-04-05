@@ -56,3 +56,4 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
     CMD curl -sf http://localhost:${PORT}/api/status || exit 1
 
 CMD ["node", "src/server.js"]
+
