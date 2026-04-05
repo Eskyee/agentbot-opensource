@@ -27,16 +27,16 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m -u 1000 agent
+# Create non-root user and writable data dirs (must be root at this point)
+RUN useradd -m -u 1000 agent \
+    && mkdir -p /data /home/agent/data /home/agent/data/workspace \
+    && chown -R agent:agent /data /home/agent/data
+
 USER agent
 WORKDIR /home/agent
 
 # Copy binary
 COPY --from=builder /build/target/release/x402-node /usr/local/bin/x402-node
-
-# Create data directories
-RUN mkdir -p /home/agent/data /home/agent/data/workspace
 
 # Environment defaults
 ENV PORT=4023
