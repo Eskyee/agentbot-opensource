@@ -149,15 +149,27 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
     console.warn(`[RailwayProvision] Volume creation failed (non-fatal):`, volErr)
   }
 
-  // 3. Inject env vars
+  // 3. Inject env vars — retry once on failure (Railway occasionally rejects first upsert)
   const variables = getAgentEnvVars(agentId, plan)
-  await railwayGql(`
-    mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
-      variableCollectionUpsert(input: $input)
+  let varsSet = false
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      await railwayGql(`
+        mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+          variableCollectionUpsert(input: $input)
+        }
+      `, {
+        input: { projectId, environmentId, serviceId, variables },
+      })
+      varsSet = true
+      break
+    } catch (varsErr) {
+      console.warn(`[RailwayProvision] variableCollectionUpsert attempt ${attempt} failed:`, varsErr)
+      if (attempt === 2) throw varsErr
+      await new Promise(r => setTimeout(r, 2000))
     }
-  `, {
-    input: { projectId, environmentId, serviceId, variables },
-  })
+  }
+  console.log(`[RailwayProvision] Env vars set (varsSet=${varsSet}) for ${serviceId}`)
 
   // 4. Generate public domain
   let url = `https://${serviceName}.up.railway.app`
@@ -173,14 +185,18 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
     console.warn(`[RailwayProvision] Domain generation failed, using default:`, err)
   }
 
-  // 5. Trigger deploy
-  await railwayGql(`
-    mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
-      serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
-    }
-  `, { serviceId, environmentId })
+  // 5. Trigger deploy — non-fatal: Railway auto-deploys on env var change anyway
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+        serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+      }
+    `, { serviceId, environmentId })
+    console.log(`[RailwayProvision] Deploy triggered → ${url}`)
+  } catch (deployErr) {
+    console.warn(`[RailwayProvision] Deploy trigger failed (non-fatal — Railway will auto-deploy):`, deployErr)
+  }
 
-  console.log(`[RailwayProvision] Deploy triggered → ${url}`)
   return { agentId, url, serviceId, status: 'deploying' as const }
 }
 
