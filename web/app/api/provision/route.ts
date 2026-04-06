@@ -173,7 +173,8 @@ export async function POST(request: NextRequest) {
       data = { error: `Backend unavailable (HTTP ${enqueueRes.status}). Please try again in a moment.` }
     }
 
-    if (!enqueueRes.ok || !data?.job?.id) {
+    const job = data?.job as Record<string, unknown> | undefined
+    if (!enqueueRes.ok || !job?.id) {
       return NextResponse.json(
         { success: false, error: data?.error || 'Failed to enqueue provision job' },
         { status: enqueueRes.status >= 400 ? enqueueRes.status : 502 }
@@ -184,9 +185,9 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         queued: true,
-        jobId: data.job.id,
+        jobId: job.id,
         userId: agentId,
-        status: data.job.status || 'queued',
+        status: job.status || 'queued',
       },
       { status: 202 }
     )
