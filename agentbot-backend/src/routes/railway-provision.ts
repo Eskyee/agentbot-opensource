@@ -14,10 +14,8 @@
 
 import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
-import { DEFAULT_OPENCLAW_IMAGE } from '../lib/openclaw-version'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
-const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE
 
 function getAgentEnvVars(agentId: string, plan: string): Record<string, string> {
   return {
@@ -81,35 +79,61 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
 
   const serviceName = `agentbot-agent-${agentId}`
 
-  // 1. Create service
-  const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
-    mutation ServiceCreate($input: ServiceCreateInput!) {
-      serviceCreate(input: $input) { id name }
-    }
-  `, {
-    input: { projectId, name: serviceName, source: { image: OPENCLAW_IMAGE } },
-  })
+  // 1. Create service — idempotent: if it already exists, look up its ID
+  let serviceId: string
+  // Public official openclaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
+  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.5'
 
-  const serviceId = created.serviceCreate.id
-  console.log(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
+  try {
+    const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
+      mutation ServiceCreate($input: ServiceCreateInput!) {
+        serviceCreate(input: $input) { id name }
+      }
+    `, {
+      input: { projectId, name: serviceName, source: { image: openclawImage } },
+    })
+    serviceId = created.serviceCreate.id
+    console.log(`[RailwayProvision] Created service ${serviceId} (${serviceName}) for ${agentId}`)
+  } catch (createErr: unknown) {
+    const msg = createErr instanceof Error ? createErr.message : String(createErr)
+    if (!msg.includes('already exists')) throw createErr
 
-  // 2. Set resource limits + health check (no start command — image has CMD)
+    // Service already exists (retry after partial failure) — look up its ID
+    console.warn(`[RailwayProvision] Service already exists, looking up ID for ${serviceName}`)
+    const lookup = await railwayGql<{ project: { services: { edges: { node: { id: string; name: string } }[] } } }>(`
+      query ProjectServices($projectId: String!) {
+        project(id: $projectId) { services { edges { node { id name } } } }
+      }
+    `, { projectId })
+    const match = lookup.project.services.edges.find(e => e.node.name === serviceName)
+    if (!match) throw new Error(`Service ${serviceName} reported as existing but not found in project`)
+    serviceId = match.node.id
+    console.log(`[RailwayProvision] Resuming with existing service ${serviceId}`)
+  }
+
+  // 2. Set resource limits + health check — non-fatal (Railway may reject some fields)
+  // NOTE: no rootDirectory — that is a source/repo-build concept; image services don't use it
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.solo
-  await railwayGql(`
-    mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
-      serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
-    }
-  `, {
-    serviceId, environmentId,
-    input: {
-      memoryLimitMb: limits.memoryLimitMb,
-      cpuLimit: limits.cpuLimit,
-      healthcheckPath: '/healthz',
-      healthcheckTimeout: 60,
-      restartPolicyType: 'ON_FAILURE',
-      restartPolicyMaxRetries: 10,
-    },
-  })
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+        serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+      }
+    `, {
+      serviceId, environmentId,
+      input: {
+        memoryLimitMb: limits.memoryLimitMb,
+        cpuLimit: limits.cpuLimit,
+        healthcheckPath: '/api/status',
+        healthcheckTimeout: 60,
+        restartPolicyType: 'ON_FAILURE',
+        restartPolicyMaxRetries: 10,
+      },
+    })
+    console.log(`[RailwayProvision] Set resource limits for ${serviceId}`)
+  } catch (limitsErr) {
+    console.warn(`[RailwayProvision] Resource limits update failed (non-fatal):`, limitsErr)
+  }
 
   // 2b. Add persistent volume for config/conversations
   try {
