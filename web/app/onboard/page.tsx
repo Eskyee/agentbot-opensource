@@ -711,7 +711,8 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'MiMo V2 Pro, Kimi K2.5, Llama, GPT, DeepSeek - Fast and reliable', recommended: true },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'MiMo V2 Pro, Kimi K2.5, Llama, GPT, DeepSeek — Fast and reliable', recommended: true },
+                  { id: 'ollama', name: 'Ollama (Local)', desc: 'Run models locally on your own hardware — private & free', badge: 'PRIVATE' },
                   { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier' },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
                   { id: 'anthropic', name: 'Anthropic', desc: 'Claude — Best quality (requires API key)' },
@@ -734,6 +735,11 @@ function OnboardContent() {
                       {provider.recommended && (
                         <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full">
                           Recommended
+                        </span>
+                      )}
+                      {'badge' in provider && provider.badge && (
+                        <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full">
+                          {provider.badge}
                         </span>
                       )}
                     </div>
@@ -765,6 +771,28 @@ function OnboardContent() {
                 </div>
               )}
               
+              {/* Ollama instructions */}
+              {aiProvider === 'ollama' && (
+                <div className="bg-zinc-800 rounded-xl p-6">
+                  <h3 className="font-semibold mb-2">Ollama — run models locally</h3>
+                  <p className="text-sm text-zinc-400 mb-4">Your OpenClaw agent will use the Ollama instance running inside its Railway container. No API key needed.</p>
+                  <ol className="space-y-3 text-zinc-300 text-sm">
+                    <li className="flex gap-3">
+                      <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
+                      <span>OpenClaw will connect to Ollama at <code className="text-blue-300">http://ollama.railway.internal:11434</code> automatically</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
+                      <span>The Ollama service in your project will serve the model — no key required</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">3</span>
+                      <span>Recommended model: <strong>llama3.2</strong> or <strong>mistral</strong></span>
+                    </li>
+                  </ol>
+                </div>
+              )}
+
               {/* Gemini instructions */}
               {aiProvider === 'gemini' && (
                 <div className="bg-zinc-800 rounded-xl p-6">
@@ -821,7 +849,7 @@ function OnboardContent() {
                 )}
                 <button
                   onClick={() => mode === 'deploy' ? setStep('deploy') : setStep(aiProvider === 'openrouter' ? 'model' : 'skills')}
-                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq') && !apiKey}
+                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq' && aiProvider !== 'ollama') && !apiKey}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
                   {mode === 'deploy' ? 'Deploy OpenClaw →' : aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}

@@ -38,8 +38,8 @@ const LANE_CONFIG: Record<WorkloadLane, LaneConfig> = {
   deploy: {
     userConcurrency: 1,
     globalConcurrency: 4,
-    userBudgetPerMinute: 2,
-    globalBudgetPerMinute: 10,
+    userBudgetPerMinute: 6,
+    globalBudgetPerMinute: 20,
     ttlSeconds: 180,
   },
   chat: {

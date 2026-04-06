@@ -79,19 +79,22 @@ export async function POST(request: NextRequest) {
     const userEmail = (session!.user!.email || sessionEmail) as string
     const userId = (session!.user!.id || 'admin') as string
 
-    const slot = await acquireWorkloadSlot({
-      lane: 'deploy',
-      userId,
-      ip,
-      cost: autoProvision === true ? 2 : 1,
-    })
-    if (!slot.ok) {
-      return NextResponse.json(
-        { success: false, error: slot.reason, retryAfterSeconds: slot.retryAfterSeconds },
-        { status: 429 }
-      )
+    // Admins bypass the workload gate entirely so they can test deploys without hitting limits
+    if (!isAdmin) {
+      const slot = await acquireWorkloadSlot({
+        lane: 'deploy',
+        userId,
+        ip,
+        cost: autoProvision === true ? 2 : 1,
+      })
+      if (!slot.ok) {
+        return NextResponse.json(
+          { success: false, error: slot.reason, retryAfterSeconds: slot.retryAfterSeconds },
+          { status: 429 }
+        )
+      }
+      workloadTicket = slot.ticket
     }
-    workloadTicket = slot.ticket
 
     // 3. DB subscription check — admins bypass, everyone else must have active subscription
     if (!isAdmin && userId !== 'admin') {
@@ -161,9 +164,14 @@ export async function POST(request: NextRequest) {
     })
 
     const contentType = enqueueRes.headers.get('content-type') || ''
-    const data = contentType.includes('application/json')
-      ? await enqueueRes.json()
-      : { error: 'Provision queue returned non-JSON response' }
+    let data: Record<string, unknown>
+    if (contentType.includes('application/json')) {
+      data = await enqueueRes.json()
+    } else {
+      const rawText = await enqueueRes.text().catch(() => '')
+      console.error('[Provision] Backend returned non-JSON:', enqueueRes.status, rawText.slice(0, 300))
+      data = { error: `Backend unavailable (HTTP ${enqueueRes.status}). Please try again in a moment.` }
+    }
 
     if (!enqueueRes.ok || !data?.job?.id) {
       return NextResponse.json(
