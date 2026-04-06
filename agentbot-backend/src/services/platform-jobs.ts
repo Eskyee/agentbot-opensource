@@ -287,15 +287,23 @@ async function processProvisionJob(job: PlatformJobRow) {
   const payload = job.payload as unknown as QueueProvisionPayload;
   const result = await provisionOnRailway(payload.agentId, payload.plan || 'solo');
 
-  await persistProvisionCompletion({
-    userId: payload.userId,
-    agentId: payload.agentId,
-    url: result.url,
-    plan: payload.plan || 'solo',
-    aiProvider: payload.aiProvider || 'openrouter',
-    agentType: payload.agentType || 'creative',
-    status: result.status,
-  });
+  // Non-fatal: Railway service is deployed regardless of DB persistence success.
+  // A FK violation (user not found) or transient DB error must not re-queue
+  // the provision job — that would re-run serviceCreate and hit "already exists".
+  try {
+    await persistProvisionCompletion({
+      userId: payload.userId,
+      agentId: payload.agentId,
+      url: result.url,
+      plan: payload.plan || 'solo',
+      aiProvider: payload.aiProvider || 'openrouter',
+      agentType: payload.agentType || 'creative',
+      status: result.status,
+    });
+  } catch (dbErr: unknown) {
+    const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+    console.warn(`[PlatformJobs] persistProvisionCompletion failed (non-fatal): ${msg}`);
+  }
 
   await completeJob(job.id, {
     ...result,
