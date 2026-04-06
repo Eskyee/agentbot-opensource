@@ -29,6 +29,9 @@ function getAgentEnvVars(agentId: string, plan: string): Record<string, string> 
     INTERNAL_API_KEY: process.env.INTERNAL_API_KEY || '',
     WALLET_ENCRYPTION_KEY: process.env.WALLET_ENCRYPTION_KEY || '',
     NODE_ENV: 'production',
+    // Railway routes public HTTP traffic to the PORT value.
+    // openclaw gateway listens on 18789 — tell Railway to proxy there.
+    PORT: '18789',
   }
 }
 
