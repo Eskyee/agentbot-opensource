@@ -11,7 +11,7 @@ export const AGENTBOT_BACKEND_URL = trimUrl(
 
 export const X402_GATEWAY_URL = trimUrl(
   process.env.NEXT_PUBLIC_X402_GATEWAY_URL || process.env.X402_GATEWAY_URL,
-  'https://x402-gateway-production.up.railway.app'  // agentbot x402-gateway service
+  'https://x402-gateway-production-a474.up.railway.app'  // agentbot x402-gateway service
 )
 
 export const SOUL_SERVICE_URL = trimUrl(
