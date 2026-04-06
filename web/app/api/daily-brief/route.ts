@@ -11,19 +11,23 @@ const HEALTH_CHECKS: HealthCheck[] = [
   { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health` },
   { name: 'Agentbot Web', url: APP_URL },
   { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health` },
-  { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/health` },
   { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/health` },
 ]
 
 async function checkHealth(check: HealthCheck): Promise<{ name: string; status: string; detail?: string }> {
   try {
     const res = await fetch(check.url, { signal: AbortSignal.timeout(8000) })
-    if (!res.ok) return { name: check.name, status: 'degraded', detail: `HTTP ${res.status}` }
     try {
       const body = await res.json()
-      const version = body.version || body.build || ''
-      return { name: check.name, status: 'ok', detail: version ? `v${version}` : undefined }
+      // Some services return 503 with status: "degraded" in body — treat as degraded not down
+      const bodyStatus = body.status as string | undefined
+      const version = body.version || (typeof body.build === 'string' ? body.build.slice(0, 8) : '') || ''
+      if (res.ok && (!bodyStatus || bodyStatus === 'ok' || bodyStatus === 'live')) {
+        return { name: check.name, status: 'ok', detail: version ? `v${version}` : undefined }
+      }
+      return { name: check.name, status: 'degraded', detail: bodyStatus || `HTTP ${res.status}` }
     } catch {
+      if (!res.ok) return { name: check.name, status: 'degraded', detail: `HTTP ${res.status}` }
       return { name: check.name, status: 'ok' }
     }
   } catch {

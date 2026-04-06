@@ -53,6 +53,7 @@ export default function SettingsPage() {
   const [showcaseAgentId, setShowcaseAgentId] = useState('')
   const [showcaseSaving, setShowcaseSaving] = useState(false)
   const [showcaseSaved, setShowcaseSaved] = useState(false)
+  const [showcaseError, setShowcaseError] = useState('')
   const [openclawInfo, setOpenclawInfo] = useState<{
     managed: boolean
     instanceId: string | null
@@ -242,14 +243,22 @@ export default function SettingsPage() {
                         onClick={async () => {
                           if (!showcaseAgentId) return
                           setShowcaseSaving(true)
+                          setShowcaseError('')
                           try {
-                            await fetch('/api/agents/showcase', {
+                            const res = await fetch('/api/agents/showcase', {
                               method: 'PATCH',
                               headers: { 'Content-Type': 'application/json' },
                               body: JSON.stringify({ agentId: showcaseAgentId, showcaseOptIn, showcaseDescription }),
                             })
-                            setShowcaseSaved(true)
-                            setTimeout(() => setShowcaseSaved(false), 2000)
+                            if (!res.ok) {
+                              const errData = await res.json().catch(() => ({}))
+                              setShowcaseError(errData?.error || `Save failed (${res.status})`)
+                            } else {
+                              setShowcaseSaved(true)
+                              setTimeout(() => setShowcaseSaved(false), 2000)
+                            }
+                          } catch {
+                            setShowcaseError('Network error — please try again')
                           } finally {
                             setShowcaseSaving(false)
                           }
@@ -259,7 +268,10 @@ export default function SettingsPage() {
                       >
                         {showcaseSaving ? 'Saving...' : showcaseSaved ? 'Saved ✓' : 'Save'}
                       </button>
-                      {showcaseOptIn && (
+                      {showcaseError && (
+                        <span className="text-[10px] text-red-400">{showcaseError}</span>
+                      )}
+                      {showcaseOptIn && !showcaseError && (
                         <a href="/showcase" target="_blank" rel="noopener noreferrer" className="text-[10px] text-purple-400 hover:text-purple-300 uppercase tracking-widest">
                           View showcase →
                         </a>

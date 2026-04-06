@@ -1,5 +1,7 @@
 function trimUrl(value: string | undefined, fallback: string): string {
-  return (value?.trim() || fallback).replace(/\/$/, '')
+  // Strip real newlines AND literal \n \r artifacts from Vercel CLI env exports
+  const cleaned = value?.replace(/\\n|\\r|\n|\r/g, '').trim()
+  return (cleaned || fallback).replace(/\/$/, '')
 }
 
 export const AGENTBOT_BACKEND_URL = trimUrl(
