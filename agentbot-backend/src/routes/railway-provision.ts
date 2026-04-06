@@ -32,6 +32,10 @@ function getAgentEnvVars(agentId: string, plan: string): Record<string, string> 
     // Railway routes public HTTP traffic to the PORT value.
     // openclaw gateway listens on 18789 — tell Railway to proxy there.
     PORT: '18789',
+    // openclaw gateway defaults to loopback-only bind.
+    // Railway's reverse proxy is external, so we must bind to all interfaces.
+    // Auth is enforced via OPENCLAW_GATEWAY_TOKEN above.
+    OPENCLAW_GATEWAY_BIND: 'lan',
   }
 }
 
