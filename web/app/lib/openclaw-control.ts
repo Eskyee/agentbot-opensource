@@ -1,13 +1,9 @@
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from './openclaw-config'
 
-const RAW_CONTROL_UI_BASE =
-  process.env.NEXT_PUBLIC_OPENCLAW_CONTROL_UI_URL ||
-  process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL ||
-  DEFAULT_OPENCLAW_GATEWAY_URL
-
-export const DEFAULT_OPENCLAW_CONTROL_UI_BASE = RAW_CONTROL_UI_BASE
+export const DEFAULT_OPENCLAW_CONTROL_UI_BASE = DEFAULT_OPENCLAW_GATEWAY_URL
   .replace(/\/(chat|skills|config)\/?$/, '')
   .replace(/\/$/, '')
+
 export const OPENCLAW_CONTROLS_ENABLED =
   process.env.NEXT_PUBLIC_ENABLE_OPENCLAW_CONTROLS !== 'false'
 
@@ -33,11 +29,16 @@ export function buildOpenClawControlUrl({
   gatewayToken?: string | null
   session?: string
 }): string {
-  if (!DEFAULT_OPENCLAW_CONTROL_UI_BASE) {
+  // Use the user's actual gateway URL as the base, not the platform default
+  const userGatewayBase = gatewayUrl 
+    ? new URL(gatewayUrl).origin
+    : DEFAULT_OPENCLAW_CONTROL_UI_BASE
+
+  if (!userGatewayBase) {
     return '#'
   }
 
-  const base = `${DEFAULT_OPENCLAW_CONTROL_UI_BASE}/${view}`
+  const base = `${userGatewayBase}/${view}`
   const href = view === 'chat'
     ? `${base}?session=${encodeURIComponent(session)}`
     : base
