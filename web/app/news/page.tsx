@@ -3,6 +3,38 @@ import Link from 'next/link';
 const communityUpdates = [
   {
     source: 'Agentbot',
+    date: '7 April 2026',
+    title: 'Jobs Board Launch',
+    excerpt: 'Hire talent or find roles in the agent ecosystem. Browse local + external jobs, create career profiles, post positions.',
+    url: '/jobs',
+    type: 'feature',
+  },
+  {
+    source: 'Agentbot',
+    date: '6 April 2026',
+    title: 'GitHub Sponsors + Sponsor Page',
+    excerpt: 'Support the platform via GitHub Sponsors. New dedicated /sponsor page with tier options from $10-200/mo.',
+    url: '/sponsor',
+    type: 'feature',
+  },
+  {
+    source: 'Agentbot',
+    date: '5 April 2026',
+    title: 'Git City Repository Analyzer',
+    excerpt: 'Analyze any GitHub repo as a 3D city. View commits, contributors, stars, forks, topics, and recent activity.',
+    url: '/dashboard/git-city',
+    type: 'feature',
+  },
+  {
+    source: 'Agentbot',
+    date: '2 April 2026',
+    title: 'OpenClaw 2026.4.1 + v1.0.0 Open Source',
+    excerpt: 'Concurrent tool orchestration, tiered permission system, encrypted per-user keys, maintenance page, and v1.0.0 open source release.',
+    url: '/blog/posts/platform-update-april-2026',
+    type: 'release',
+  },
+  {
+    source: 'Agentbot',
     date: '23 March 2026',
     title: 'MiMo-V2-Pro Now Default Model',
     excerpt: 'Xiaomi\'s flagship 1T+ parameter model with 1M context is now the default on Agentbot. #1 in programming benchmarks, 100% uptime.',
@@ -108,9 +140,11 @@ const communityUpdates = [
 ];
 
 const trendingTopics = [
+  { tag: 'Jobs Board', count: 312 },
   { tag: 'Agent Swarms', count: 247 },
   { tag: 'x402 Payments', count: 183 },
   { tag: 'Skills Marketplace', count: 156 },
+  { tag: 'Git City', count: 142 },
   { tag: 'Base Network', count: 134 },
   { tag: 'Autonomous Trading', count: 98 },
   { tag: 'Local AI', count: 87 },
