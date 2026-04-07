@@ -10,6 +10,26 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'ai-agent-jobs-board-live',
+    dateLabel: '7 Apr',
+    isoDate: '2026-04-07',
+    title: 'AI Agent Jobs Board is Live',
+    excerpt:
+      'A jobs board dedicated to AI agent developers and builders. Post jobs, find talent, build the future.',
+    tags: ['Feature', 'Jobs', 'Beta'],
+    track: 'Shipping',
+  },
+  {
+    slug: 'open-source-multi-tenant-architecture',
+    dateLabel: '7 Apr',
+    isoDate: '2026-04-07',
+    title: 'Open Source Multi-Tenant AI Agent Platform',
+    excerpt:
+      'How we built Agentbot with Docker isolation, BYOK AI, USDC payments on Base, and a skill marketplace.',
+    tags: ['Architecture', 'Open Source', 'Engineering'],
+    track: 'Build Log',
+  },
+  {
     slug: 'openclaw-v2026-4-5',
     dateLabel: '7 Apr',
     isoDate: '2026-04-07',
