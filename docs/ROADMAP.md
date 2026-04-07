@@ -2,19 +2,44 @@
 
 **Last Updated:** April 7, 2026
 
+## Core Principle: **User Choice Always**
+
+> Our users love having options. Everything we build should give them choices — never lock them in.
+
+### Choice in Practice
+- **AI Providers** — BYOK: OpenRouter, Anthropic, OpenAI, Gemini, Groq, DeepSeek (user picks)
+- **Hosting** — Managed (Railway/Vercel) OR self-host (MIT licensed)
+- **Skills** — Install any from marketplace OR create custom
+- **Storage** — Centralized (our default) OR decentralized (gitlawb option)
+- **Payment** — USDC on Base OR traditional
+
+---
+
 ## Current Features
 
 ### Core Platform
 - [x] Multi-tenant agent deployment
 - [x] Docker isolation per agent
 - [x] Multi-channel (Telegram, Discord, WhatsApp)
-- [x] BYOK AI (OpenRouter, Anthropic, OpenAI, etc.)
+- [x] BYOK AI (OpenRouter, Anthropic, OpenAI, etc.) - user chooses
 - [x] USDC wallets on Base
-- [x] Skill marketplace (40+ skills)
+- [x] Skill marketplace (40+ skills) - install any or build own
 - [x] x402 micropayments
 - [x] OpenClaw v2026.4.5 support
 - [x] Video generation UI (coming soon)
 - [x] Music generation UI
+
+### User Choice Options
+| Feature | Option A | Option B |
+|---------|----------|----------|
+| **AI Provider** | OpenRouter | Bring your own key |
+| **Hosting** | Managed (Railway) | Self-host (MIT) |
+| **Storage** | Centralized (default) | Decentralized (gitlawb) |
+| **Skills** | Marketplace | Build custom |
+| **Payment** | USDC on Base | Traditional Stripe |
+| **Auth** | Clerk (email/passkeys) | Custom (later) |
+| **Channels** | Telegram/Discord/WhatsApp | Add your own |
+| **Code** | Keep on platform | Push to gitlawb |
 
 ### Platform Stats
 - [x] Jobs Board (beta)
