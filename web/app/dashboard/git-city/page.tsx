@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { GitBranch, Loader2, ExternalLink, Briefcase, Building, Gamepad2 } from 'lucide-react'
+import { GitBranch, Loader2, ExternalLink, Briefcase, Building, Gamepad2, Star, GitFork, Eye, Calendar, Users, Code } from 'lucide-react'
 import Link from 'next/link'
 import {
   DashboardShell,
@@ -15,14 +15,36 @@ interface RepoStats {
   stars: number
   forks: number
   language: string
+  watchers: number
+  topics: string[]
+  license: string
+  createdAt: string
+  updatedAt: string
+  description: string
+}
+
+interface Commit {
+  sha: string
+  message: string
+  author: string
+  date: string
+  url: string
+}
+
+interface CityData {
+  repository: {
+    fullName: string
+    url: string
+  }
+  stats: RepoStats
+  commits: Commit[]
 }
 
 export default function GitCityPage() {
   const [repoUrl, setRepoUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [stats, setStats] = useState<RepoStats | null>(null)
-  const [repoName, setRepoName] = useState('')
+  const [data, setData] = useState<CityData | null>(null)
 
   const analyzeRepo = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +52,7 @@ export default function GitCityPage() {
 
     setLoading(true)
     setError(null)
-    setStats(null)
+    setData(null)
 
     try {
       const response = await fetch('/api/git-city', {
@@ -44,14 +66,21 @@ export default function GitCityPage() {
         throw new Error(err.error || 'Failed to analyze repository')
       }
 
-      const data = await response.json()
-      setStats(data.stats)
-      setRepoName(data.repository.fullName)
+      const result = await response.json()
+      setData(result)
     } catch (err) {
       setError((err as Error).message)
     } finally {
       setLoading(false)
     }
+  }
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    })
   }
 
   return (
@@ -94,7 +123,7 @@ export default function GitCityPage() {
           </Link>
         </div>
 
-        <div className="max-w-2xl">
+        <div className="max-w-4xl">
           <p className="text-zinc-400 text-sm mb-6">
             Visualize your GitHub repositories. Enter a GitHub repo URL to see commit history, 
             contributor stats, and more.
@@ -127,42 +156,91 @@ export default function GitCityPage() {
             </div>
           )}
 
-          {stats && (
-            <div className="border border-zinc-800 bg-zinc-900/50">
-              <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-                <h3 className="text-sm font-bold">{repoName}</h3>
-                <a
-                  href={`https://github.com/${repoName}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-zinc-500 hover:text-white transition-colors"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </a>
+          {data && (
+            <div className="space-y-6">
+              {/* Repo Header */}
+              <div className="border border-zinc-800 bg-zinc-900/50 p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-white font-bold text-xl">{data.repository.fullName}</h3>
+                    {data.stats.description && (
+                      <p className="text-zinc-400 text-sm mt-2">{data.stats.description}</p>
+                    )}
+                  </div>
+                  <a
+                    href={data.repository.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-500 hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="h-5 w-5" />
+                  </a>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                  <StatCard icon={<GitBranch className="h-4 w-4" />} label="Commits" value={data.stats.totalCommits} />
+                  <StatCard icon={<Users className="h-4 w-4" />} label="Contributors" value={data.stats.uniqueContributors} />
+                  <StatCard icon={<Star className="h-4 w-4" />} label="Stars" value={data.stats.stars} />
+                  <StatCard icon={<GitFork className="h-4 w-4" />} label="Forks" value={data.stats.forks} />
+                  <StatCard icon={<Eye className="h-4 w-4" />} label="Watchers" value={data.stats.watchers} />
+                  <StatCard icon={<Code className="h-4 w-4" />} label="Language" value={data.stats.language} />
+                </div>
+
+                {/* Topics */}
+                {data.stats.topics?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {data.stats.topics.map((topic: string) => (
+                      <span key={topic} className="px-2 py-1 bg-blue-900/30 text-blue-400 text-xs">
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Meta */}
+                <div className="flex flex-wrap gap-4 text-xs text-zinc-500">
+                  {data.stats.license && <span>License: {data.stats.license}</span>}
+                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Created: {formatDate(data.stats.createdAt)}</span>
+                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> Updated: {formatDate(data.stats.updatedAt)}</span>
+                </div>
               </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800">
-                <div className="bg-zinc-950 p-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Commits</div>
-                  <div className="text-xl font-bold">{stats.totalCommits}</div>
+
+              {/* Recent Commits */}
+              <div className="border border-zinc-800 bg-zinc-900/50">
+                <div className="p-4 border-b border-zinc-800">
+                  <h4 className="text-white font-bold text-sm">Recent Commits</h4>
                 </div>
-                <div className="bg-zinc-950 p-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Contributors</div>
-                  <div className="text-xl font-bold">{stats.uniqueContributors}</div>
-                </div>
-                <div className="bg-zinc-950 p-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Stars</div>
-                  <div className="text-xl font-bold">{stats.stars}</div>
-                </div>
-                <div className="bg-zinc-950 p-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Language</div>
-                  <div className="text-xl font-bold">{stats.language}</div>
+                <div className="divide-y divide-zinc-800">
+                  {data.commits.slice(0, 15).map((commit) => (
+                    <a
+                      key={commit.sha}
+                      href={commit.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-4 hover:bg-zinc-800/50 transition-colors block"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm truncate">{commit.message}</p>
+                          <p className="text-zinc-500 text-xs mt-1">
+                            <span className="text-blue-400">{commit.sha}</span>
+                            {' • '}
+                            {commit.author}
+                            {' • '}
+                            {formatDate(commit.date)}
+                          </p>
+                        </div>
+                        <ExternalLink className="h-3 w-3 text-zinc-600 flex-shrink-0 ml-2" />
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>
           )}
 
-          {!stats && !loading && !error && (
+          {!data && !loading && !error && (
             <div className="text-center py-12 border border-dashed border-zinc-800">
               <GitBranch className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
               <p className="text-zinc-600 text-sm">Enter a GitHub repository URL to get started</p>
@@ -172,5 +250,17 @@ export default function GitCityPage() {
         </div>
       </DashboardContent>
     </DashboardShell>
+  )
+}
+
+function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number | string }) {
+  return (
+    <div className="bg-zinc-900/50 p-3">
+      <div className="flex items-center gap-2 text-zinc-500 mb-1">
+        {icon}
+        <span className="text-[10px] uppercase tracking-widest">{label}</span>
+      </div>
+      <div className="text-lg font-bold text-white">{value}</div>
+    </div>
   )
 }

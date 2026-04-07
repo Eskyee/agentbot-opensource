@@ -282,26 +282,23 @@ function processCommitsToCityBlocks(commits: any[]) {
 // Calculate repository statistics
 function calculateStats(commits: any[], repoData: any | null) {
   const authors = new Map<string, number>()
-  let totalAdditions = 0
-  let totalDeletions = 0
-
+  
   commits.forEach(commit => {
     const author = commit.commit.author.name
     authors.set(author, (authors.get(author) || 0) + 1)
   })
 
-  const topContributors = Array.from(authors.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, count]) => ({ name, commits: count }))
-
   return {
     totalCommits: commits.length,
     uniqueContributors: authors.size,
-    topContributors,
     stars: repoData?.stargazers_count || 0,
     forks: repoData?.forks_count || 0,
+    watchers: repoData?.watchers_count || 0,
     language: repoData?.language || 'Unknown',
-    lastUpdated: repoData?.updated_at || null,
+    topics: repoData?.topics || [],
+    license: repoData?.license?.name || null,
+    createdAt: repoData?.created_at || null,
+    updatedAt: repoData?.updated_at || null,
+    description: repoData?.description || '',
   }
 }
