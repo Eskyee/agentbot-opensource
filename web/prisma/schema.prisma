@@ -618,6 +618,114 @@ model bridge_messages {
   @@index([created_at], map: "idx_bridge_created")
 }
 
+// ═══════════════════════════════════════════════════════
+// JOB BOARD - Git City Integration
+// ═══════════════════════════════════════════════════════
+
+model JobCompany {
+  id           String       @id @default(cuid())
+  advertiserId String?
+  name         String
+  slug         String       @unique
+  logoUrl      String?
+  website      String
+  description  String?
+  githubOrg    String?
+  hiredCount   Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  jobs         JobListing[]
+}
+
+model JobListing {
+  id              String        @id @default(cuid())
+  companyId       String
+  title           String
+  description     String        @db.Text
+  salaryMin       Int
+  salaryMax       Int
+  salaryCurrency  String        @default("USD")
+  roleType        String
+  techStack       String[]
+  seniority       String
+  contractType    String
+  webType         String        @default("both")
+  applyUrl        String
+  language        String        @default("en")
+  languagePtBr   String?
+  badgeResponseGuaranteed Boolean @default(false)
+  badgeNoAiScreening      Boolean @default(false)
+  status          String        @default("draft")
+  tier            String        @default("standard")
+  rejectionReason String?
+  stripeSessionId String?
+  stripePaymentIntent String?
+  viewCount       Int           @default(0)
+  applyCount      Int           @default(0)
+  profileCount   Int           @default(0)
+  publishedAt     DateTime?
+  expiresAt       DateTime?
+  filledAt        DateTime?
+  pausedAt        DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  company         JobCompany    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications    JobApplication[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model CareerProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  skills          String[]
+  seniority       String
+  yearsExperience Int?
+  bio             String   @db.Text
+  webType         String   @default("both")
+  contractTypes   String[]
+  salaryMin       Int?
+  salaryMax       Int?
+  salaryCurrency  String   @default("USD")
+  salaryVisible   Boolean  @default(false)
+  languages       String[]
+  timezone        String?
+  linkPortfolio   String?
+  linkLinkedin    String?
+  linkWebsite     String?
+  openToWork      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model JobApplication {
+  id          String      @id @default(cuid())
+  listingId   String
+  userId      String
+  hasProfile  Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  listing     JobListing? @relation(fields: [listingId], references: [id])
+
+  @@unique([listingId, userId])
+  @@index([listingId])
+  @@index([userId])
+}
+
+model JobAlert {
+  id         String   @id @default(cuid())
+  email      String
+  skills     String[]
+  seniority  String[]
+  webType    String   @default("both")
+  createdAt  DateTime @default(now())
+  verified   Boolean  @default(false)
+  verifyToken String?
+
+  @@index([email])
+}
+
 // Usage tracking
 model usage_logs {
   id            Int       @id @default(autoincrement())
