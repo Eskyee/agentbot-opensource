@@ -161,13 +161,22 @@ export default function SkillsPage() {
           body: JSON.stringify({ skillId, agentId: selectedAgentId }),
         })
 
+        const data = await res.json().catch(() => ({}))
+
         if (!res.ok) {
-          const errData = await res.json().catch(() => ({}))
-          throw new Error(errData.error || 'Failed to install skill')
+          if (data.deployWarning?.includes('Gateway unreachable')) {
+            throw new Error('Agent offline. Install your agent first, then retry installing skills.')
+          }
+          throw new Error(data.error || 'Failed to install skill')
         }
 
         setInstalledSkillIds((prev) => new Set(prev).add(skillId))
-        toast.success('Skill installed!')
+        
+        if (data.deployed) {
+          toast.success('Skill installed!')
+        } else {
+          toast.success('Skill saved! It will sync to your agent automatically.')
+        }
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : 'Failed to install skill'

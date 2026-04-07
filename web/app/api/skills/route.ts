@@ -173,12 +173,23 @@ export async function POST(request: Request) {
       const deployResult = await deploySkillToAgent(agentId, skillId)
       if (!deployResult.success) {
         console.warn(`[Skill Install] Gateway deploy warning: ${deployResult.error}`)
+        return NextResponse.json({ 
+          success: true, 
+          installed,
+          deployed: false,
+          deployWarning: deployResult.error
+        })
       }
+      return NextResponse.json({ success: true, installed, deployed: true })
     } catch (gatewayError) {
       console.warn('[Skill Install] Gateway deploy failed (will retry on sync):', gatewayError)
+      return NextResponse.json({ 
+        success: true, 
+        installed,
+        deployed: false,
+        deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically'
+      })
     }
-
-    return NextResponse.json({ success: true, installed })
   } catch (error) {
     console.error('Skill install error:', error)
     return NextResponse.json({ error: 'Failed to install skill' }, { status: 500 })
