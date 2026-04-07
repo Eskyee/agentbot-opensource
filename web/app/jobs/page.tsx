@@ -49,8 +49,9 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState({ roleType: '', seniority: '', webType: '' })
-  const [view, setView] = useState<'browse' | 'career' | 'applications' | 'company' | 'post'>('browse')
+  const [view, setView] = useState<'browse' | 'career' | 'applications' | 'company' | 'post' | 'myjobs' | 'sponsors'>('browse')
   const [myCompany, setMyCompany] = useState<any>(null)
+  const [myJobs, setMyJobs] = useState<any[]>([])
   const [applications, setApplications] = useState<any[]>([])
   const [careerProfile, setCareerProfile] = useState<any>(null)
 
@@ -58,6 +59,7 @@ export default function JobsPage() {
   useEffect(() => { if (view === 'company') fetchMyCompany() }, [view])
   useEffect(() => { if (view === 'applications') fetchApplications() }, [view])
   useEffect(() => { if (view === 'career') fetchCareerProfile() }, [view])
+  useEffect(() => { if (view === 'myjobs') fetchMyJobs() }, [view])
 
   const fetchJobs = async () => {
     setLoading(true)
@@ -101,6 +103,15 @@ export default function JobsPage() {
     setCareerProfile(data.profile || null)
   }
 
+  const fetchMyJobs = async () => {
+    const res = await fetch('/api/jobs/companies')
+    const data = await res.json()
+    const company = data.companies?.[0]
+    if (company?.jobs) {
+      setMyJobs(company.jobs)
+    }
+  }
+
   const handleApply = async (jobId: string) => {
     if (jobId.startsWith('gitcity-')) {
       alert('External jobs - apply on their website!')
@@ -123,9 +134,11 @@ export default function JobsPage() {
       <DashboardContent>
         <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
           <div className="flex gap-4">
-            <NavBtn active={view === 'browse'} onClick={() => setView('browse')}>Browse</NavBtn>
+            <NavBtn active={view === 'browse'} onClick={() => setView('browse')}>Jobs</NavBtn>
+            <NavBtn active={view === 'sponsors'} onClick={() => setView('sponsors')}>Sponsors</NavBtn>
             <NavBtn active={view === 'career'} onClick={() => setView('career')}>Career</NavBtn>
-            <NavBtn active={view === 'applications'} onClick={() => setView('applications')}>Applications</NavBtn>
+            <NavBtn active={view === 'applications'} onClick={() => setView('applications')}>My Applications</NavBtn>
+            {myCompany && <NavBtn active={view === 'myjobs'} onClick={() => setView('myjobs')}>My Jobs</NavBtn>}
             <NavBtn active={view === 'company'} onClick={() => setView('company')}>Company</NavBtn>
           </div>
           <button
@@ -140,7 +153,9 @@ export default function JobsPage() {
         {view === 'career' && <CareerForm profile={careerProfile} onSave={fetchCareerProfile} onCancel={() => setView('browse')} />}
         {view === 'applications' && <ApplicationsList applications={applications} />}
         {view === 'company' && <CompanyForm company={myCompany} onSave={fetchMyCompany} onCancel={() => setView('browse')} />}
-        {view === 'post' && <PostJobForm company={myCompany} onCancel={() => setView('browse')} />}
+        {view === 'post' && <PostJobForm company={myCompany} onCancel={() => setView('myjobs')} onPost={() => { fetchMyJobs(); setView('myjobs'); }} />}
+        {view === 'myjobs' && <MyJobsList jobs={myJobs} onPostNew={() => setView('post')} />}
+        {view === 'sponsors' && <SponsorsSection />}
       </DashboardContent>
     </DashboardShell>
   )
@@ -321,7 +336,7 @@ function CompanyForm({ company, onSave, onCancel }: { company: any; onSave: () =
   )
 }
 
-function PostJobForm({ company, onCancel }: { company: any; onCancel: () => void }) {
+function PostJobForm({ company, onCancel, onPost }: { company: any; onCancel: () => void; onPost?: () => void }) {
   const [form, setForm] = useState({ title: '', description: '', salaryMin: 50000, salaryMax: 150000, roleType: 'backend', seniority: 'mid', contractType: 'clt', techStack: '', applyUrl: '' })
   const [saving, setSaving] = useState(false)
 
@@ -355,6 +370,109 @@ function PostJobForm({ company, onCancel }: { company: any; onCancel: () => void
       <div><label className="block text-zinc-400 text-sm mb-2">Tech Stack</label><input value={form.techStack} onChange={(e) => setForm({...form, techStack: e.target.value})} placeholder="React, TypeScript..." className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
       <div><label className="block text-zinc-400 text-sm mb-2">Apply URL</label><input value={form.applyUrl} onChange={(e) => setForm({...form, applyUrl: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
       <div className="flex gap-4"><button onClick={onCancel} className="border border-zinc-700 text-zinc-400 px-4 py-2">Cancel</button><button onClick={handleSubmit} disabled={saving} className="bg-green-600 px-4 py-2">{saving ? 'Posting...' : 'Post Job'}</button></div>
+    </div>
+  )
+}
+
+function MyJobsList({ jobs, onPostNew }: { jobs: any[]; onPostNew: () => void }) {
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-white font-bold text-lg">My Posted Jobs</h3>
+        <button onClick={onPostNew} className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase px-4 py-2">
+          + Post New Job
+        </button>
+      </div>
+      {!jobs.length ? (
+        <div className="text-center py-12 border border-dashed border-zinc-800">
+          <Briefcase className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
+          <p className="text-zinc-600">No jobs posted yet</p>
+          <button onClick={onPostNew} className="mt-4 text-green-400 text-sm">Post your first job →</button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {jobs.map((job) => (
+            <div key={job.id} className="border border-zinc-800 bg-zinc-900/50 p-4 flex justify-between items-center">
+              <div>
+                <h4 className="text-white font-bold">{job.title}</h4>
+                <p className="text-zinc-400 text-sm">{job.viewCount} views • {job.applyCount} applications</p>
+              </div>
+              <span className={`px-2 py-1 text-xs ${job.status === 'active' ? 'bg-green-900/30 text-green-400' : 'bg-zinc-800 text-zinc-500'}`}>
+                {job.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SponsorsSection() {
+  const [sponsors, setSponsors] = useState<any[]>([])
+  const [showForm, setShowForm] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/jobs/sponsors')
+      .then(res => res.json())
+      .then(data => setSponsors(data.sponsors || []))
+      .finally(() => setLoading(false))
+  }, [])
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h3 className="text-white font-bold text-lg">Sponsors & Backers</h3>
+          <p className="text-zinc-400 text-sm">Companies supporting open source developers</p>
+        </div>
+        <button onClick={() => setShowForm(!showForm)} className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase px-4 py-2">
+          + Become a Sponsor
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="max-w-2xl border border-green-800 bg-green-900/20 p-6 mb-6">
+          <h4 className="text-white font-bold mb-4">Become a Sponsor</h4>
+          <p className="text-zinc-400 text-sm mb-4">Support open source projects and developers. Get visibility on the jobs board.</p>
+          <a href="https://www.thegitcity.com/hire/Eskyee" target="_blank" rel="noopener" className="text-green-400 text-sm hover:underline">
+            Learn about sponsorship → 
+          </a>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-12 text-zinc-500">Loading sponsors...</div>
+      ) : sponsors.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-zinc-800">
+          <p className="text-zinc-600">No sponsors yet. Be the first!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sponsors.map((sponsor) => (
+            <div key={sponsor.id} className="border border-zinc-800 bg-zinc-900/50 p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-10 w-10 bg-zinc-800 flex items-center justify-center text-white font-bold">
+                  {sponsor.name.charAt(0)}
+                </div>
+                <div>
+                  <h4 className="text-white font-bold">{sponsor.name}</h4>
+                  <a href={sponsor.website} target="_blank" rel="noopener" className="text-green-400 text-xs hover:underline">
+                    Visit →
+                  </a>
+                </div>
+              </div>
+              {sponsor.description && <p className="text-zinc-400 text-xs mt-2">{sponsor.description.slice(0,100)}</p>}
+              {sponsor.hiredCount > 0 && (
+                <div className="mt-3 pt-3 border-t border-zinc-800">
+                  <span className="text-green-400 text-xs font-bold">{sponsor.hiredCount} developers hired</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
