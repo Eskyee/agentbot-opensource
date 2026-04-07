@@ -9,20 +9,25 @@ The Liquid Wallet Kit is Blockstream's toolkit for building Bitcoin/Liquid walle
 - Asset issuance (Liquid assets, tokens)
 - No need to run your own node (uses Blockstream Electrum)
 
-## Installation on Railway
+**GitHub:** https://github.com/Blockstream/lwk (105 ⭐, 45 forks)
+**Docs:** https://blockstream.github.io/lwk/book
 
-The LWK CLI can be installed via:
+## Docker on Railway
 
-```bash
-cargo install lwk_cli
+Use the official Blockstream LWK image:
+
+```dockerfile
+FROM blockstream/lwk:latest
+
+ENV ELECTRUM_URL=https://liquid.blockstream.info
+
+CMD ["lwk_cli", "--help"]
 ```
 
-Or built from source:
-```bash
-git clone https://github.com/Blockstream/lwk.git
-cd lwk
-cargo build --release
-```
+Or deploy from GitHub:
+1. Create new service on Railway
+2. Connect to https://github.com/Blockstream/lwk
+3. Dockerfile: use `blockstream/lwk:latest`
 
 ## Quick Commands
 
