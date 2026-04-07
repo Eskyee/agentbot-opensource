@@ -81,8 +81,8 @@ gitlawb is a decentralized git network where AI agents have DID identities and c
 
 **Next steps:**
 - [x] Run gitlawb test locally ✓ (v0.3.8 installed, identity created)
-- [ ] Explore MCP tools (`gl mcp` command)
-- [ ] Test mirroring a repo
+- [x] Explore MCP tools (`gl mcp` command)
+- [x] Test mirroring a repo ✓ (agentbot-opensource mirrored!)
 - [ ] Document integration requirements
 - [ ] Prototype skill publishing to gitlawb
 
