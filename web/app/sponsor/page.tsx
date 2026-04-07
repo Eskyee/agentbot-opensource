@@ -144,23 +144,23 @@ export default function SponsorPage() {
             </div>
           </div>
 
-          {/* Blockstream Jade Integration */}
+          {/* Blockstream Green Integration */}
           <div className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
             <div className="flex items-center gap-3 mb-4">
               <Bitcoin className="h-6 w-6 text-orange-400" />
-              <h3 className="text-white font-bold text-lg">Use Your Blockstream Jade Wallet</h3>
+              <h3 className="text-white font-bold text-lg">Use Your Blockstream Green Wallet</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
-              Have a Blockstream Jade? Connect it to agentbot for BTC/Liquid operations. 
-              Your keys, your bitcoin - non-custodial.
+              Connect your Blockstream Green wallet (GreenAddress) to agentbot for BTC/Liquid operations. 
+              Your keys, your bitcoin - non-custodial. Hardware wallet compatible (Jade).
             </p>
             <div className="bg-black p-4 border border-zinc-800">
-              <p className="text-zinc-500 text-xs mb-2">Integration coming via Blockstream GDK</p>
+              <p className="text-zinc-500 text-xs mb-2">Integration via Blockstream GDK (Green Development Kit)</p>
               <ul className="text-zinc-400 text-xs space-y-1">
                 <li>• Send/receive BTC on-chain</li>
-                <li>• Liquid assets support</li>
+                <li>• Liquid assets support (L-BTC, USDt)</li>
                 <li>• Lightning via Greenlight (non-custodial)</li>
-                <li>• HW wallet security for agent transactions</li>
+                <li>• Hardware wallet support (Jade, Ledger, Trezor)</li>
               </ul>
             </div>
             <p className="text-zinc-500 text-xs mt-4">
