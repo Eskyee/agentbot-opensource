@@ -427,7 +427,8 @@ function SponsorsSection() {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-white font-bold text-lg">Support Agentbot</h3>
-            <p className="text-zinc-400 text-sm mt-1">Help us build the future of AI agents. Your sponsorship keeps us running!</p>
+            <p className="text-zinc-400 text-sm mt-1">Help us build the future of AI agents. Your sponsorship keeps us running and enables us to expand our services.</p>
+            <p className="text-zinc-500 text-xs mt-2">Monthly goal: $500 to cover infrastructure costs</p>
           </div>
           <a
             href="https://github.com/sponsors/Eskyee"
