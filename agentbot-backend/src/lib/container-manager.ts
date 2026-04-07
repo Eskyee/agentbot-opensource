@@ -165,7 +165,7 @@ export async function createContainer(
     agents: {
       defaults: {
         workspace: '/home/node/.openclaw/workspace',
-        model: { primary: 'openrouter/google/gemini-flash-1.5' },
+        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
     },

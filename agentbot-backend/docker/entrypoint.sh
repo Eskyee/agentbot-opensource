@@ -93,7 +93,8 @@ fi
     cat > "${HOME}/.openclaw/openclaw.json" << EOF
 {
   "gateway": { "port": ${GATEWAY_PORT}, "bind": "lan", "trustedProxies": ["127.0.0.1", "10.0.0.0/8", "100.64.0.0/10", "172.16.0.0/12", "192.168.0.0/16"], "controlUi": { "allowedOrigins": ["*"], "dangerouslyDisableDeviceAuth": true, "dangerouslyAllowHostHeaderOriginFallback": true } },
-  "auth": { "method": "token", "token": "${GATEWAY_TOKEN}" }
+  "auth": { "method": "token", "token": "${GATEWAY_TOKEN}" },
+  "agents": { "defaults": { "model": { "primary": "openrouter/xiaomi/mimo-v2-pro" } } }
 }
 EOF
   }
