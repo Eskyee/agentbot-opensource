@@ -90,21 +90,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Repository URL required' }, { status: 400 })
     }
 
-    // Parse GitHub URL
-    const githubMatch = url.match(/github\.com\/([^\/]+)\/([^\/]+)/)
+    // Parse GitHub URL - handle various formats
+    // Supports: https://github.com/owner/repo, https://github.com/owner/repo.git, github.com/owner/repo
+    const githubMatch = url.match(/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?$/)
     if (!githubMatch) {
-      return NextResponse.json({ error: 'Only GitHub repositories supported' }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Invalid GitHub URL', 
+        details: 'Please use format: https://github.com/owner/repo' 
+      }, { status: 400 })
     }
 
     const [, owner, repo] = githubMatch
-    const cityData = await generateCityData(owner, repo.replace('.git', ''), 'main')
+    console.log(`[GitCity] Parsed URL: owner=${owner}, repo=${repo}`)
+    
+    const cityData = await generateCityData(owner, repo, 'main')
     
     return NextResponse.json(cityData)
 
   } catch (error) {
     console.error('[GitCity] POST error:', error)
+    const errorMessage = (error as Error).message
+    
+    // Provide helpful error messages for common issues
+    let userError = 'Failed to analyze repository'
+    if (errorMessage.includes('404')) {
+      userError = 'Repository not found. Please check the URL and make sure the repository exists and is public.'
+    } else if (errorMessage.includes('403')) {
+      userError = 'GitHub API rate limit exceeded. Please try again in a few minutes.'
+    } else if (errorMessage.includes('401')) {
+      userError = 'Authentication required. This repository may be private.'
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to analyze repository', details: (error as Error).message },
+      { error: userError, details: errorMessage },
       { status: 500 }
     )
   }
@@ -148,8 +166,10 @@ async function fetchGitHubRepos(username: string) {
 // Generate city data from git commits
 async function generateCityData(owner: string, repo: string, branch: string) {
   try {
-    // Fetch commits
-    const commitsResponse = await fetch(
+    console.log(`[GitCity] Fetching commits for ${owner}/${repo} on branch ${branch}`)
+    
+    // Fetch commits - try main first, then master if main fails
+    let commitsResponse = await fetch(
       `${GITHUB_API_BASE}/repos/${owner}/${repo}/commits?sha=${branch}&per_page=100`,
       {
         headers: {
@@ -158,12 +178,29 @@ async function generateCityData(owner: string, repo: string, branch: string) {
         },
       }
     )
+    
+    // If main fails, try master
+    if (!commitsResponse.ok && branch === 'main') {
+      console.log('[GitCity] Main branch not found, trying master...')
+      commitsResponse = await fetch(
+        `${GITHUB_API_BASE}/repos/${owner}/${repo}/commits?sha=master&per_page=100`,
+        {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'User-Agent': 'Agentbot-GitCity',
+          },
+        }
+      )
+    }
 
     if (!commitsResponse.ok) {
-      throw new Error(`Failed to fetch commits: ${commitsResponse.status}`)
+      const errorText = await commitsResponse.text()
+      console.error(`[GitCity] GitHub API error: ${commitsResponse.status}`, errorText)
+      throw new Error(`GitHub API error: ${commitsResponse.status} - ${errorText}`)
     }
 
     const commits = await commitsResponse.json()
+    console.log(`[GitCity] Fetched ${commits.length} commits`)
 
     // Fetch repo stats
     const repoResponse = await fetch(
