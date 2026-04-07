@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Briefcase, Search, MapPin, DollarSign, Clock, ExternalLink, Building, User, Bell } from 'lucide-react'
+import { Briefcase, Search, ExternalLink, Building } from 'lucide-react'
 import {
   DashboardShell,
   DashboardHeader,
@@ -30,20 +30,17 @@ interface Job {
     slug: string
     logoUrl: string | null
     website: string
-    description: string | null
   }
+  source?: string
 }
 
 const ROLE_TYPES = ['frontend', 'backend', 'fullstack', 'devops', 'mobile', 'data', 'design', 'other']
 const SENIORITY_LEVELS = ['junior', 'mid', 'senior', 'staff', 'lead']
-const CONTRACT_TYPES = { clt: 'Full-time (CLT)', pj: 'Contractor (PJ)', contract: 'Contract' }
-const WEB_TYPES = { web2: 'Web2', web3: 'Web3', both: 'Web2 + Web3' }
+const CONTRACT_TYPES: Record<string, string> = { clt: 'Full-time', pj: 'Contractor', contract: 'Contract' }
+const WEB_TYPES: Record<string, string> = { web2: 'Web2', web3: 'Web3', both: 'Web2+Web3' }
 
 const formatSalary = (min: number, max: number, currency: string) => {
-  const formatNum = (n: number) => {
-    if (n >= 1000) return `${(n / 1000).toFixed(0)}k`
-    return n.toString()
-  }
+  const formatNum = (n: number) => n >= 1000 ? `${(n/1000).toFixed(0)}k` : n.toString()
   return `${formatNum(min)} - ${formatNum(max)} ${currency}`
 }
 
@@ -51,19 +48,16 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [filters, setFilters] = useState({
-    roleType: '',
-    seniority: '',
-    webType: '',
-  })
-  const [view, setView] = useState<'browse' | 'career' | 'applications' | 'post' | 'company'>('browse')
+  const [filters, setFilters] = useState({ roleType: '', seniority: '', webType: '' })
+  const [view, setView] = useState<'browse' | 'career' | 'applications' | 'company' | 'post'>('browse')
   const [myCompany, setMyCompany] = useState<any>(null)
-  const [loadingCompany, setLoadingCompany] = useState(true)
+  const [applications, setApplications] = useState<any[]>([])
+  const [careerProfile, setCareerProfile] = useState<any>(null)
 
-  useEffect(() => {
-    fetchJobs()
-    fetchMyCompany()
-  }, [filters, search])
+  useEffect(() => { fetchJobs() }, [filters, search])
+  useEffect(() => { if (view === 'company') fetchMyCompany() }, [view])
+  useEffect(() => { if (view === 'applications') fetchApplications() }, [view])
+  useEffect(() => { if (view === 'career') fetchCareerProfile() }, [view])
 
   const fetchJobs = async () => {
     setLoading(true)
@@ -74,9 +68,14 @@ export default function JobsPage() {
       if (filters.seniority) params.set('seniority', filters.seniority)
       if (filters.webType) params.set('webType', filters.webType)
 
-      const response = await fetch(`/api/jobs/board?${params}`)
-      const data = await response.json()
-      setJobs(data.jobs || [])
+      const [localRes, externalRes] = await Promise.all([
+        fetch(`/api/jobs/board?${params}`),
+        fetch('/api/jobs/external').catch(() => ({ json: () => ({ jobs: [] }) }))
+      ])
+
+      const localData = await localRes.json()
+      const externalData = await externalRes.json()
+      setJobs([...(localData.jobs || []), ...(externalData.jobs || [])])
     } catch (error) {
       console.error('Failed to fetch jobs:', error)
     } finally {
@@ -85,693 +84,277 @@ export default function JobsPage() {
   }
 
   const fetchMyCompany = async () => {
-    try {
-      const response = await fetch('/api/jobs/companies')
-      const data = await response.json()
-      setMyCompany(data.companies?.[0] || null)
-    } catch (error) {
-      console.error('Failed to fetch company:', error)
-    } finally {
-      setLoadingCompany(false)
-    }
+    const res = await fetch('/api/jobs/companies')
+    const data = await res.json()
+    setMyCompany(data.companies?.[0] || null)
+  }
+
+  const fetchApplications = async () => {
+    const res = await fetch('/api/jobs/apply')
+    const data = await res.json()
+    setApplications(data.applications || [])
+  }
+
+  const fetchCareerProfile = async () => {
+    const res = await fetch('/api/jobs/career')
+    const data = await res.json()
+    setCareerProfile(data.profile || null)
   }
 
   const handleApply = async (jobId: string) => {
+    if (jobId.startsWith('gitcity-')) {
+      alert('External jobs - apply on their website!')
+      return
+    }
     try {
-      const response = await fetch('/api/jobs/apply', {
+      const res = await fetch('/api/jobs/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ listingId: jobId }),
       })
-      
-      if (response.ok) {
-        alert('Applied successfully!')
-        fetchJobs()
-      } else {
-        const err = await response.json()
-        alert(err.error || 'Failed to apply')
-      }
-    } catch (error) {
-      alert('Failed to apply')
-    }
+      if (res.ok) { alert('Applied!'); fetchJobs(); }
+      else { const err = await res.json(); alert(err.error || 'Failed'); }
+    } catch { alert('Failed to apply'); }
   }
 
   return (
     <DashboardShell>
-      <DashboardHeader
-        title="Jobs Board"
-        icon={<Briefcase className="h-5 w-5 text-green-400" />}
-      />
-
+      <DashboardHeader title="Jobs Board" icon={<Briefcase className="h-5 w-5 text-green-400" />} />
       <DashboardContent>
         <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
           <div className="flex gap-4">
-            <button
-              onClick={() => setView('browse')}
-              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
-                view === 'browse' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              Browse Jobs
-            </button>
-            <button
-              onClick={() => setView('career')}
-              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
-                view === 'career' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              My Career Profile
-            </button>
-            <button
-              onClick={() => setView('applications')}
-              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
-                view === 'applications' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              My Applications
-            </button>
-            <button
-              onClick={() => setView('company')}
-              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
-                view === 'company' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              My Company
-            </button>
+            <NavBtn active={view === 'browse'} onClick={() => setView('browse')}>Browse</NavBtn>
+            <NavBtn active={view === 'career'} onClick={() => setView('career')}>Career</NavBtn>
+            <NavBtn active={view === 'applications'} onClick={() => setView('applications')}>Applications</NavBtn>
+            <NavBtn active={view === 'company'} onClick={() => setView('company')}>Company</NavBtn>
           </div>
-          <div className="flex gap-2">
-            <a
-              href="https://www.thegitcity.com/jobs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
-            >
-              Git City Jobs ↗
-            </a>
-            <button
-              onClick={() => myCompany ? setView('post') : setView('company')}
-              className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
-            >
-              {myCompany ? '+ Post Job' : '+ Post a Job'}
-            </button>
-          </div>
+          <button
+            onClick={() => myCompany ? setView('post') : setView('company')}
+            className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase px-4 py-2"
+          >
+            {myCompany ? '+ Post Job' : '+ Post a Job'}
+          </button>
         </div>
 
-        {view === 'browse' && (
-          <>
-            <div className="flex gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search jobs, companies, tech..."
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white pl-10 pr-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-                />
-              </div>
-              <select
-                value={filters.roleType}
-                onChange={(e) => setFilters({ ...filters, roleType: e.target.value })}
-                className="bg-zinc-900 border border-zinc-700 text-zinc-300 px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-              >
-                <option value="">All Roles</option>
-                {ROLE_TYPES.map((role) => (
-                  <option key={role} value={role}>{role.charAt(0).toUpperCase() + role.slice(1)}</option>
-                ))}
-              </select>
-              <select
-                value={filters.seniority}
-                onChange={(e) => setFilters({ ...filters, seniority: e.target.value })}
-                className="bg-zinc-900 border border-zinc-700 text-zinc-300 px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-              >
-                <option value="">All Levels</option>
-                {SENIORITY_LEVELS.map((level) => (
-                  <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>
-                ))}
-              </select>
-              <select
-                value={filters.webType}
-                onChange={(e) => setFilters({ ...filters, webType: e.target.value })}
-                className="bg-zinc-900 border border-zinc-700 text-zinc-300 px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-              >
-                <option value="">All Types</option>
-                {Object.entries(WEB_TYPES).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-            </div>
-
-            {loading ? (
-              <div className="text-center py-12 text-zinc-500">Loading jobs...</div>
-            ) : jobs.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-zinc-800">
-                <Briefcase className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
-                <p className="text-zinc-600 text-sm">No jobs found</p>
-                <p className="text-zinc-700 text-xs mt-1">Try adjusting your filters</p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {jobs.map((job) => (
-                  <div
-                    key={job.id}
-                    className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-zinc-700 transition-colors"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="h-12 w-12 bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold text-lg">
-                        {job.company.name.charAt(0)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-white font-bold text-lg">{job.title}</h3>
-                            <p className="text-zinc-400 text-sm flex items-center gap-2">
-                              <Building className="h-3 w-3" />
-                              {job.company.name}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-green-400 font-bold">
-                              {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}
-                            </p>
-                            <p className="text-zinc-500 text-xs flex items-center gap-1 justify-end">
-                              <Clock className="h-3 w-3" />
-                              {job.applyCount} applied
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          <span className="px-2 py-1 bg-zinc-800 text-zinc-400 text-xs">
-                            {job.roleType}
-                          </span>
-                          <span className="px-2 py-1 bg-zinc-800 text-zinc-400 text-xs">
-                            {job.seniority}
-                          </span>
-                          <span className="px-2 py-1 bg-zinc-800 text-zinc-400 text-xs">
-                            {CONTRACT_TYPES[job.contractType as keyof typeof CONTRACT_TYPES] || job.contractType}
-                          </span>
-                          <span className="px-2 py-1 bg-zinc-800 text-zinc-400 text-xs">
-                            {WEB_TYPES[job.webType as keyof typeof WEB_TYPES] || job.webType}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {job.techStack.slice(0, 6).map((tech) => (
-                            <span key={tech} className="px-2 py-0.5 bg-green-900/30 text-green-400 text-xs">
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="flex gap-2 mt-4">
-                          <button
-                            onClick={() => handleApply(job.id)}
-                            className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
-                          >
-                            Apply Now
-                          </button>
-                          <a
-                            href={job.applyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors flex items-center gap-2"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Company Site
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {view === 'career' && (
-          <CareerProfileForm />
-        )}
-
-        {view === 'applications' && (
-          <ApplicationsList />
-        )}
-
-        {view === 'company' && (
-          <CompanyForm company={myCompany} onUpdate={fetchMyCompany} onCancel={() => setView('browse')} />
-        )}
-
-        {view === 'post' && (
-          <PostJobForm company={myCompany} onCancel={() => setView('browse')} />
-        )}
+        {view === 'browse' && <BrowseJobs jobs={jobs} loading={loading} search={search} setSearch={setSearch} filters={filters} setFilters={setFilters} onApply={handleApply} />}
+        {view === 'career' && <CareerForm profile={careerProfile} onSave={fetchCareerProfile} onCancel={() => setView('browse')} />}
+        {view === 'applications' && <ApplicationsList applications={applications} />}
+        {view === 'company' && <CompanyForm company={myCompany} onSave={fetchMyCompany} onCancel={() => setView('browse')} />}
+        {view === 'post' && <PostJobForm company={myCompany} onCancel={() => setView('browse')} />}
       </DashboardContent>
     </DashboardShell>
   )
 }
 
-function CareerProfileForm() {
-  const [profile, setProfile] = useState({
-    skills: [] as string[],
-    seniority: 'mid',
-    yearsExperience: 0,
-    bio: '',
-    webType: 'both',
-    contractTypes: [] as string[],
-    salaryMin: 0,
-    salaryMax: 0,
-    openToWork: false,
-  })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    fetch('/api/jobs/career')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.profile) {
-          setProfile({
-            skills: data.profile.skills || [],
-            seniority: data.profile.seniority || 'mid',
-            yearsExperience: data.profile.yearsExperience || 0,
-            bio: data.profile.bio || '',
-            webType: data.profile.webType || 'both',
-            contractTypes: data.profile.contractTypes || [],
-            salaryMin: data.profile.salaryMin || 0,
-            salaryMax: data.profile.salaryMax || 0,
-            openToWork: data.profile.openToWork || false,
-          })
-        }
-      })
-      .finally(() => setLoading(false))
-  }, [])
-
-  const handleSave = async () => {
-    setSaving(true)
-    try {
-      const response = await fetch('/api/jobs/career', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile),
-      })
-      
-      if (response.ok) {
-        alert('Profile saved!')
-      }
-    } catch (error) {
-      alert('Failed to save profile')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (loading) return <div className="text-center py-12 text-zinc-500">Loading profile...</div>
-
+function NavBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <div className="max-w-2xl">
-      <div className="border border-zinc-800 bg-zinc-900/50 p-6 space-y-6">
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Bio</label>
-          <textarea
-            value={profile.bio}
-            onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-            rows={4}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="Tell us about yourself..."
-          />
-        </div>
+    <button onClick={onClick} className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${active ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
+      {children}
+    </button>
+  )
+}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Seniority</label>
-            <select
-              value={profile.seniority}
-              onChange={(e) => setProfile({ ...profile, seniority: e.target.value })}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              {SENIORITY_LEVELS.map((level) => (
-                <option key={level} value={level}>{level.charAt(0).toUpperCase() + level.slice(1)}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Years Experience</label>
-            <input
-              type="number"
-              value={profile.yearsExperience}
-              onChange={(e) => setProfile({ ...profile, yearsExperience: parseInt(e.target.value) || 0 })}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Skills (comma separated)</label>
+function BrowseJobs({ jobs, loading, search, setSearch, filters, setFilters, onApply }: {
+  jobs: Job[]; loading: boolean; search: string; setSearch: (s: string) => void;
+  filters: Record<string, string>; setFilters: (f: Record<string, string>) => void;
+  onApply: (id: string) => void
+}) {
+  return (
+    <>
+      <div className="flex gap-4 mb-6">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
           <input
-            type="text"
-            value={profile.skills.join(', ')}
-            onChange={(e) => setProfile({ ...profile, skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean) })}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="React, TypeScript, Node.js, ..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search jobs..."
+            className="w-full bg-zinc-900 border border-zinc-700 text-white pl-10 pr-4 py-2 text-sm focus:border-green-500"
           />
         </div>
+        <Select value={filters.roleType} onChange={(v) => setFilters({...filters, roleType: v})} options={ROLE_TYPES} placeholder="Role" />
+        <Select value={filters.seniority} onChange={(v) => setFilters({...filters, seniority: v})} options={SENIORITY_LEVELS} placeholder="Level" />
+        <Select value={filters.webType} onChange={(v) => setFilters({...filters, webType: v})} options={['web2', 'web3', 'both']} placeholder="Type" />
+      </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="openToWork"
-            checked={profile.openToWork}
-            onChange={(e) => setProfile({ ...profile, openToWork: e.target.checked })}
-            className="bg-zinc-900 border border-zinc-700"
-          />
-          <label htmlFor="openToWork" className="text-zinc-400 text-sm">
-            Open to work
-          </label>
+      {loading ? <div className="text-center py-12 text-zinc-500">Loading...</div> : jobs.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-zinc-800">
+          <Briefcase className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
+          <p className="text-zinc-600">No jobs found</p>
         </div>
+      ) : (
+        <div className="grid gap-4">
+          {jobs.map((job) => (
+            <JobCard key={job.id} job={job} onApply={onApply} />
+          ))}
+        </div>
+      )}
+    </>
+  )
+}
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 text-white text-xs font-bold uppercase tracking-widest px-6 py-2 transition-colors"
-        >
-          {saving ? 'Saving...' : 'Save Profile'}
-        </button>
+function JobCard({ job, onApply }: { job: Job; onApply: (id: string) => void }) {
+  const isExternal = job.source === 'gitcity'
+  return (
+    <div className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-zinc-700">
+      <div className="flex items-start gap-4">
+        <div className="h-12 w-12 bg-zinc-800 flex items-center justify-center text-zinc-500 font-bold">
+          {job.company.name.charAt(0)}
+        </div>
+        <div className="flex-1">
+          <div className="flex justify-between">
+            <div>
+              <h3 className="text-white font-bold">{job.title}</h3>
+              <p className="text-zinc-400 text-sm flex items-center gap-1"><Building className="h-3 w-3" />{job.company.name}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-green-400 font-bold">{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}</p>
+              <p className="text-zinc-500 text-xs">{job.applyCount} applied</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <Tag>{job.roleType}</Tag>
+            <Tag>{job.seniority}</Tag>
+            <Tag>{CONTRACT_TYPES[job.contractType] || job.contractType}</Tag>
+            {isExternal && <Tag className="bg-blue-900/30 text-blue-400">Git City</Tag>}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={() => onApply(job.id)} className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase px-4 py-2">
+              {isExternal ? 'View' : 'Apply'}
+            </button>
+            <a href={job.applyUrl} target="_blank" rel="noopener" className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase px-4 py-2 flex items-center gap-1">
+              <ExternalLink className="h-3 w-3" /> Site
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
-function ApplicationsList() {
-  const [applications, setApplications] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+function Tag({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return <span className={`px-2 py-1 bg-zinc-800 text-zinc-400 text-xs ${className}`}>{children}</span>
+}
 
-  useEffect(() => {
-    fetch('/api/jobs/apply')
-      .then((res) => res.json())
-      .then((data) => setApplications(data.applications || []))
-      .finally(() => setLoading(false))
-  }, [])
+function Select({ value, onChange, options, placeholder }: { value: string; onChange: (v: string) => void; options: string[]; placeholder: string }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="bg-zinc-900 border border-zinc-700 text-zinc-300 px-4 py-2 text-sm"
+    >
+      <option value="">{placeholder}</option>
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+    </select>
+  )
+}
 
-  if (loading) return <div className="text-center py-12 text-zinc-500">Loading applications...</div>
+function CareerForm({ profile, onSave, onCancel }: { profile: any; onSave: () => void; onCancel: () => void }) {
+  const [form, setForm] = useState({ skills: profile?.skills?.join(', ') || '', seniority: profile?.seniority || 'mid', yearsExperience: profile?.yearsExperience || 0, bio: profile?.bio || '', openToWork: profile?.openToWork || false })
+  const [saving, setSaving] = useState(false)
 
-  if (applications.length === 0) {
-    return (
-      <div className="text-center py-12 border border-dashed border-zinc-800">
-        <Briefcase className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
-        <p className="text-zinc-600 text-sm">No applications yet</p>
-        <p className="text-zinc-700 text-xs mt-1">Browse jobs and apply to see them here</p>
+  const handleSave = async () => {
+    setSaving(true)
+    await fetch('/api/jobs/career', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form, skills: form.skills.split(',').map(s => s.trim()).filter(Boolean) }),
+    })
+    onSave()
+    setSaving(false)
+    alert('Saved!')
+  }
+
+  return (
+    <div className="max-w-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+      <h3 className="text-white font-bold text-lg">Career Profile</h3>
+      <div><label className="block text-zinc-400 text-sm mb-2">Bio</label><textarea value={form.bio} onChange={(e) => setForm({...form, bio: e.target.value})} rows={4} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div className="grid grid-cols-2 gap-4">
+        <div><label className="block text-zinc-400 text-sm mb-2">Seniority</label><select value={form.seniority} onChange={(e) => setForm({...form, seniority: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2">{SENIORITY_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+        <div><label className="block text-zinc-400 text-sm mb-2">Years Experience</label><input type="number" value={form.yearsExperience} onChange={(e) => setForm({...form, yearsExperience: +e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      </div>
+      <div><label className="block text-zinc-400 text-sm mb-2">Skills (comma separated)</label><input value={form.skills} onChange={(e) => setForm({...form, skills: e.target.value})} placeholder="React, TypeScript..." className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div className="flex items-center gap-2"><input type="checkbox" checked={form.openToWork} onChange={(e) => setForm({...form, openToWork: e.target.checked})} /><label className="text-zinc-400">Open to work</label></div>
+      <div className="flex gap-4"><button onClick={onCancel} className="border border-zinc-700 text-zinc-400 px-4 py-2">Cancel</button><button onClick={handleSave} disabled={saving} className="bg-green-600 px-4 py-2">{saving ? 'Saving...' : 'Save'}</button></div>
+    </div>
+  )
+}
+
+function ApplicationsList({ applications }: { applications: any[] }) {
+  if (!applications.length) return <div className="text-center py-12 text-zinc-500">No applications yet</div>
+  return (
+    <div className="space-y-4">
+      {applications.map((app) => (
+        <div key={app.id} className="border border-zinc-800 bg-zinc-900/50 p-4 flex justify-between">
+          <div><h4 className="text-white font-bold">{app.listing?.title}</h4><p className="text-zinc-400 text-sm">{app.listing?.company?.name}</p></div>
+          <div className="text-right text-xs text-zinc-500">{new Date(app.createdAt).toLocaleDateString()}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CompanyForm({ company, onSave, onCancel }: { company: any; onSave: () => void; onCancel: () => void }) {
+  const [form, setForm] = useState({ name: company?.name || '', website: company?.website || '', description: company?.description || '' })
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    if (!form.name || !form.website) return alert('Name and website required')
+    setSaving(true)
+    await fetch('/api/jobs/board', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'company', ...form, slug: form.name.toLowerCase().replace(/[^a-z0-9-]/g, '-') }),
+    })
+    onSave()
+    setSaving(false)
+    alert('Company saved!')
+  }
+
+  return (
+    <div className="max-w-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+      <h3 className="text-white font-bold text-lg">{company ? 'My Company' : 'Create Company'}</h3>
+      <div><label className="block text-zinc-400 text-sm mb-2">Name</label><input value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div><label className="block text-zinc-400 text-sm mb-2">Website</label><input value={form.website} onChange={(e) => setForm({...form, website: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div><label className="block text-zinc-400 text-sm mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} rows={3} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div className="flex gap-4"><button onClick={onCancel} className="border border-zinc-700 text-zinc-400 px-4 py-2">Cancel</button><button onClick={handleSave} disabled={saving} className="bg-green-600 px-4 py-2">{saving ? 'Saving...' : 'Save'}</button></div>
     </div>
   )
 }
 
 function PostJobForm({ company, onCancel }: { company: any; onCancel: () => void }) {
-  const [jobTitle, setJobTitle] = useState('')
-  const [jobDescription, setJobDescription] = useState('')
-  const [salaryMin, setSalaryMin] = useState(50000)
-  const [salaryMax, setSalaryMax] = useState(150000)
-  const [roleType, setRoleType] = useState('backend')
-  const [seniority, setSeniority] = useState('mid')
-  const [contractType, setContractType] = useState('clt')
-  const [techStack, setTechStack] = useState('')
-  const [applyUrl, setApplyUrl] = useState('')
+  const [form, setForm] = useState({ title: '', description: '', salaryMin: 50000, salaryMax: 150000, roleType: 'backend', seniority: 'mid', contractType: 'clt', techStack: '', applyUrl: '' })
   const [saving, setSaving] = useState(false)
 
-  const handlePostJob = async () => {
-    if (!company?.id) return
+  const handleSubmit = async () => {
+    if (!form.title || !form.description || !form.applyUrl) return alert('Fill required fields')
     setSaving(true)
-    try {
-      const response = await fetch('/api/jobs/board', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyId: company.id,
-          title: jobTitle,
-          description: jobDescription,
-          salaryMin,
-          salaryMax,
-          roleType,
-          seniority,
-          contractType,
-          techStack: techStack.split(',').map((s) => s.trim()).filter(Boolean),
-          applyUrl,
-        }),
-      })
-      const data = await response.json()
-      if (data.job) {
-        alert('Job posted! It will be visible once approved.')
-        onCancel()
-      } else {
-        alert(data.error || 'Failed to post job')
-      }
-    } catch (error) {
-      alert('Failed to post job')
-    } finally {
-      setSaving(false)
-    }
+    await fetch('/api/jobs/board', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyId: company.id, ...form, techStack: form.techStack.split(',').map(s => s.trim()).filter(Boolean) }),
+    })
+    setSaving(false)
+    alert('Job posted!')
+    onCancel()
   }
 
   return (
-    <div className="max-w-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-      <h3 className="text-white font-bold text-lg mb-4">Post a Job for {company?.name}</h3>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Job Title</label>
-          <input
-            type="text"
-            value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="Senior Backend Engineer"
-          />
-        </div>
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Description</label>
-          <textarea
-            value={jobDescription}
-            onChange={(e) => setJobDescription(e.target.value)}
-            rows={4}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="Describe the role, responsibilities, and ideal candidate..."
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Salary Min ($)</label>
-            <input
-              type="number"
-              value={salaryMin}
-              onChange={(e) => setSalaryMin(parseInt(e.target.value) || 0)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Salary Max ($)</label>
-            <input
-              type="number"
-              value={salaryMax}
-              onChange={(e) => setSalaryMax(parseInt(e.target.value) || 0)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Role Type</label>
-            <select
-              value={roleType}
-              onChange={(e) => setRoleType(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              {ROLE_TYPES.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Seniority</label>
-            <select
-              value={seniority}
-              onChange={(e) => setSeniority(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              {SENIORITY_LEVELS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Contract</label>
-            <select
-              value={contractType}
-              onChange={(e) => setContractType(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              <option value="clt">Full-time (CLT)</option>
-              <option value="pj">Contractor (PJ)</option>
-              <option value="contract">Contract</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Tech Stack (comma separated)</label>
-          <input
-            type="text"
-            value={techStack}
-            onChange={(e) => setTechStack(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="React, TypeScript, Node.js, PostgreSQL"
-          />
-        </div>
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Apply URL</label>
-          <input
-            type="url"
-            value={applyUrl}
-            onChange={(e) => setApplyUrl(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="https://acme.com/careers/..."
-          />
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={onCancel}
-            className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handlePostJob}
-            disabled={saving || !jobTitle || !jobDescription || !applyUrl}
-            className="bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
-          >
-            {saving ? 'Posting...' : 'Post Job'}
-          </button>
-        </div>
+    <div className="max-w-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+      <h3 className="text-white font-bold text-lg">Post a Job for {company.name}</h3>
+      <div><label className="block text-zinc-400 text-sm mb-2">Title</label><input value={form.title} onChange={(e) => setForm({...form, title: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div><label className="block text-zinc-400 text-sm mb-2">Description</label><textarea value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} rows={4} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div className="grid grid-cols-2 gap-4">
+        <div><label className="block text-zinc-400 text-sm mb-2">Salary Min</label><input type="number" value={form.salaryMin} onChange={(e) => setForm({...form, salaryMin: +e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+        <div><label className="block text-zinc-400 text-sm mb-2">Salary Max</label><input type="number" value={form.salaryMax} onChange={(e) => setForm({...form, salaryMax: +e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
       </div>
-    </div>
-  )
-}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Salary Min ($)</label>
-            <input
-              type="number"
-              value={salaryMin}
-              onChange={(e) => setSalaryMin(parseInt(e.target.value) || 0)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            />
-          </div>
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Salary Max ($)</label>
-            <input
-              type="number"
-              value={salaryMax}
-              onChange={(e) => setSalaryMax(parseInt(e.target.value) || 0)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Role Type</label>
-            <select
-              value={roleType}
-              onChange={(e) => setRoleType(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              {ROLE_TYPES.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Seniority</label>
-            <select
-              value={seniority}
-              onChange={(e) => setSeniority(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              {SENIORITY_LEVELS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-zinc-400 text-sm mb-2">Contract</label>
-            <select
-              value={contractType}
-              onChange={(e) => setContractType(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            >
-              <option value="clt">Full-time (CLT)</option>
-              <option value="pj">Contractor (PJ)</option>
-              <option value="contract">Contract</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Tech Stack (comma separated)</label>
-          <input
-            type="text"
-            value={techStack}
-            onChange={(e) => setTechStack(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="React, TypeScript, Node.js, PostgreSQL"
-          />
-        </div>
-        <div>
-          <label className="block text-zinc-400 text-sm mb-2">Apply URL</label>
-          <input
-            type="url"
-            value={applyUrl}
-            onChange={(e) => setApplyUrl(e.target.value)}
-            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
-            placeholder="https://acme.com/careers/..."
-          />
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={onCancel}
-            className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handlePostJob}
-            disabled={saving || !jobTitle || !jobDescription || !applyUrl}
-            className="bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
-          >
-            {saving ? 'Posting...' : 'Post Job'}
-          </button>
-        </div>
+      <div className="grid grid-cols-3 gap-4">
+        <div><label className="block text-zinc-400 text-sm mb-2">Role</label><select value={form.roleType} onChange={(e) => setForm({...form, roleType: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2">{ROLE_TYPES.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
+        <div><label className="block text-zinc-400 text-sm mb-2">Level</label><select value={form.seniority} onChange={(e) => setForm({...form, seniority: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2">{SENIORITY_LEVELS.map(s => <option key={s} value={s}>{s}</option>)}</select></div>
+        <div><label className="block text-zinc-400 text-sm mb-2">Contract</label><select value={form.contractType} onChange={(e) => setForm({...form, contractType: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2"><option value="clt">Full-time</option><option value="pj">Contractor</option></select></div>
       </div>
-    </div>
-  )
-}
-
-  return (
-    <div className="space-y-4">
-      {applications.map((app) => (
-        <div
-          key={app.id}
-          className="border border-zinc-800 bg-zinc-900/50 p-4 flex items-center justify-between"
-        >
-          <div>
-            <h4 className="text-white font-bold">{app.listing?.title}</h4>
-            <p className="text-zinc-400 text-sm">{app.listing?.company?.name}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-zinc-500 text-xs">
-              Applied {new Date(app.createdAt).toLocaleDateString()}
-            </p>
-            <p className={`text-xs ${app.hasProfile ? 'text-green-400' : 'text-yellow-400'}`}>
-              {app.hasProfile ? 'Profile included' : 'No profile'}
-            </p>
-          </div>
-        </div>
-      ))}
+      <div><label className="block text-zinc-400 text-sm mb-2">Tech Stack</label><input value={form.techStack} onChange={(e) => setForm({...form, techStack: e.target.value})} placeholder="React, TypeScript..." className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div><label className="block text-zinc-400 text-sm mb-2">Apply URL</label><input value={form.applyUrl} onChange={(e) => setForm({...form, applyUrl: e.target.value})} className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2" /></div>
+      <div className="flex gap-4"><button onClick={onCancel} className="border border-zinc-700 text-zinc-400 px-4 py-2">Cancel</button><button onClick={handleSubmit} disabled={saving} className="bg-green-600 px-4 py-2">{saving ? 'Posting...' : 'Post Job'}</button></div>
     </div>
   )
 }
