@@ -422,6 +422,24 @@ function SponsorsSection() {
 
   return (
     <div>
+      {/* Agentbot Sponsorship Banner */}
+      <div className="border border-blue-800 bg-gradient-to-r from-blue-900/30 to-green-900/30 p-6 mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-white font-bold text-lg">Support Agentbot</h3>
+            <p className="text-zinc-400 text-sm mt-1">Help us build the future of AI agents. Your sponsorship keeps us running!</p>
+          </div>
+          <a
+            href="https://github.com/sponsors/Eskyee"
+            target="_blank"
+            rel="noopener"
+            className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase px-6 py-3 transition-colors"
+          >
+            Sponsor on GitHub
+          </a>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="text-white font-bold text-lg">Sponsors & Backers</h3>
