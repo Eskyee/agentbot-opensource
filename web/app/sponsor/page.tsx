@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, Coffee, Pizza, Code, Rocket, Building, Star, ExternalLink, Check } from 'lucide-react'
+import { Heart, Coffee, Pizza, Code, Rocket, Building, Star, ExternalLink, Check, Bitcoin } from 'lucide-react'
 import Link from 'next/link'
 import {
   DashboardShell,
@@ -75,7 +75,98 @@ export default function SponsorPage() {
             </div>
           </div>
 
-          {/* GitHub Link */}
+          {/* Payment Options */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+            {/* GitHub Sponsors */}
+            <a
+              href="https://github.com/sponsors/Eskyee"
+              target="_blank"
+              rel="noopener"
+              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-purple-600 transition-all text-center"
+            >
+              <Heart className="h-8 w-8 text-pink-400 mx-auto mb-3" />
+              <h3 className="text-white font-bold mb-2">GitHub Sponsors</h3>
+              <p className="text-zinc-500 text-xs">Recurring monthly</p>
+            </a>
+
+            {/* Self-Hosted - Run your own */}
+            <a
+              href="https://github.com/Eskyee/agentbot-opensource"
+              target="_blank"
+              rel="noopener"
+              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-green-600 transition-all text-center"
+            >
+              <Code className="h-8 w-8 text-green-400 mx-auto mb-3" />
+              <h3 className="text-white font-bold mb-2">Self-Hosted</h3>
+              <p className="text-zinc-500 text-xs">Run your own instance</p>
+            </a>
+
+            {/* Bitcoin */}
+            <a
+              href="#bitcoin"
+              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-orange-600 transition-all text-center"
+              onClick={(e) => {
+                e.preventDefault()
+                document.getElementById('bitcoin-section')?.scrollIntoView({ behavior: 'smooth' })
+              }}
+            >
+              <Bitcoin className="h-8 w-8 text-orange-400 mx-auto mb-3" />
+              <h3 className="text-white font-bold mb-2">Bitcoin</h3>
+              <p className="text-zinc-500 text-xs">On-chain or Lightning</p>
+            </a>
+          </div>
+
+          {/* Self-Hosted Callout */}
+          <div className="border border-green-900 bg-green-900/20 p-6 mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <Check className="h-6 w-6 text-green-400" />
+              <h3 className="text-white font-bold text-lg">Self-Hosted is the Only Way</h3>
+            </div>
+            <p className="text-zinc-400 text-sm mb-4">
+              Agentbot is open source for a reason. We believe in self-hosted, permissionless infrastructure. 
+              Run your own instance, own your data, control your agents.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <a
+                href="https://github.com/Eskyee/agentbot-opensource"
+                target="_blank"
+                rel="noopener"
+                className="bg-green-600 hover:bg-green-500 text-white font-bold text-sm px-6 py-3"
+              >
+                View on GitHub →
+              </a>
+              <a
+                href="/docs/self-host"
+                className="border border-green-700 hover:border-green-600 text-green-400 font-bold text-sm px-6 py-3"
+              >
+                Self-Host Guide
+              </a>
+            </div>
+          </div>
+
+          {/* Bitcoin Section */}
+          <div id="bitcoin-section" className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <Bitcoin className="h-6 w-6 text-orange-400" />
+              <h3 className="text-white font-bold text-lg">Bitcoin Donations</h3>
+            </div>
+            <p className="text-zinc-400 text-sm mb-4">
+              Send Bitcoin (on-chain or Lightning) to support agentbot development.
+            </p>
+            <div className="bg-black p-4 border border-zinc-800">
+              <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
+              <code className="text-orange-400 text-sm break-all">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code>
+            </div>
+            <div className="mt-4 bg-black p-4 border border-zinc-800">
+              <p className="text-zinc-500 text-xs uppercase mb-2">Lightning (LNURL)</p>
+              <code className="text-orange-400 text-sm break-all">LNURL1DP68GURN8GHJ7MR9VAJKUEPWD9XZ7PHVEFNVEMN6RPJCMN8DDKGDR3A8K6T</code>
+            </div>
+            <p className="text-zinc-500 text-xs mt-4">
+              ⚡ For larger amounts, ask for an invoice via esky33@proton.me
+            </p>
+          </div>
+
+
           <div className="flex justify-center mb-12">
             <a
               href="https://github.com/sponsors/Eskyee"
