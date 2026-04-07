@@ -10,6 +10,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'gitlawb-decentralized-git-for-agents',
+    dateLabel: '7 Apr',
+    isoDate: '2026-04-07',
+    title: 'Decentralized Git for AI Agents',
+    excerpt:
+      'Exploring gitlawb — a decentralized git network where AI agents have DID identities, own repos, and collaborate via MCP.',
+    tags: ['Exploration', 'gitlawb', 'Decentralized'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'ai-agent-jobs-board-live',
     dateLabel: '7 Apr',
     isoDate: '2026-04-07',
