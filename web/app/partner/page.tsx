@@ -8,6 +8,8 @@ export default function PartnerPage() {
     name: '',
     email: '',
     company: '',
+    website: '',
+    type: 'general',
     message: ''
   });
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -25,7 +27,7 @@ export default function PartnerPage() {
 
       if (response.ok) {
         setStatus('success');
-        setFormData({ name: '', email: '', company: '', message: '' });
+        setFormData({ name: '', email: '', company: '', website: '', type: 'general', message: '' });
       } else {
         setStatus('error');
       }
@@ -49,6 +51,11 @@ export default function PartnerPage() {
           <p className="text-zinc-400 text-sm max-w-xl leading-relaxed">
             Build together. Win together.
           </p>
+
+          <div className="border border-green-900 bg-green-900/20 p-4 inline-block">
+            <span className="text-green-400 text-xs uppercase tracking-widest">Fast Track</span>
+            <p className="text-zinc-400 text-xs mt-1">Enterprise & branded companies: 24hr approval • AI providers auto-reviewed</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -128,7 +135,8 @@ export default function PartnerPage() {
               {status === 'success' ? (
                 <div className="border border-zinc-800 bg-black p-5">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Received</span>
-                  <p className="text-white text-sm">Thanks! We&apos;ll be in touch soon.</p>
+                  <p className="text-white text-sm">Thanks! We'll be in touch soon.</p>
+                  <p className="text-zinc-500 text-xs mt-2">Enterprise & AI providers: 24hr response time</p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -168,6 +176,34 @@ export default function PartnerPage() {
                       className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                       placeholder="Your company"
                     />
+                  </div>
+                  <div>
+                    <label htmlFor="website" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Website (optional)</label>
+                    <input
+                      type="url"
+                      id="website"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                      className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+                      placeholder="https://your-company.com"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="type" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Partner Type</label>
+                    <select
+                      id="type"
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white focus:outline-none focus:border-zinc-500"
+                    >
+                      <option value="general">General Partnership</option>
+                      <option value="ai_provider">AI Model Provider</option>
+                      <option value="integration">Tool/API Integration</option>
+                      <option value="reseller">Reseller/Agency</option>
+                      <option value="content">Content Creator</option>
+                      <option value="infrastructure">Infrastructure Partner</option>
+                      <option value="enterprise">Enterprise (Fast Track)</option>
+                    </select>
                   </div>
                   <div>
                     <label htmlFor="message" className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Message</label>
