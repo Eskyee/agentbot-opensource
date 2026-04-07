@@ -66,6 +66,7 @@ export default function SkillsPage() {
   const [newSkillCategory, setNewSkillCategory] = useState('')
   const [creatingSkill, setCreatingSkill] = useState(false)
   const [openclawSkillsUrl, setOpenclawSkillsUrl] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Fetch agents on mount
   useEffect(() => {
@@ -106,6 +107,9 @@ export default function SkillsPage() {
     if (selectedAgentId) {
       params.set('agentId', selectedAgentId)
     }
+    if (searchQuery.trim()) {
+      params.set('search', searchQuery.trim())
+    }
 
     try {
       const response = await fetch(`/api/skills?${params.toString()}`)
@@ -134,7 +138,7 @@ export default function SkillsPage() {
       setCategories(['all'])
       setInstalledSkillIds(new Set())
     }
-  }, [category, selectedAgentId])
+  }, [category, selectedAgentId, searchQuery])
 
   useEffect(() => {
     fetchSkills()
@@ -374,9 +378,19 @@ export default function SkillsPage() {
           </div>
         )}
 
-        {/* Category filters */}
-        <div className="flex flex-wrap gap-2">
-          {categories.map((cat) => (
+        {/* Search and Category filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Input
+              type="search"
+              placeholder="Search skills..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
             <Badge
               key={cat}
               variant={category === cat ? 'default' : 'outline'}
@@ -390,6 +404,7 @@ export default function SkillsPage() {
               {cat}
             </Badge>
           ))}
+          </div>
         </div>
 
         {/* Skills grid */}

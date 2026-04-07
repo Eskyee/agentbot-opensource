@@ -45,6 +45,13 @@ const DEFAULT_SKILLS = [
   { name: 'Content Calendar', description: 'Plan and schedule social media posts across all platforms.', category: 'marketing', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
   { name: 'SEO Analyzer', description: 'Analyze website SEO, suggest keywords, audit backlinks.', category: 'marketing', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
   { name: 'Affiliate Tracker', description: 'Track affiliate links, clicks, conversions across networks.', category: 'marketing', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  // v2026.4.5 new features
+  { name: 'Video Generator', description: 'Generate videos via xAI Grokin, Runway, or Wan. AI-powered video creation for social media and marketing.', category: 'creative', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: true },
+  { name: 'Music Generator', description: 'Create original music with Google Lyria or MiniMax. Async generation with follow-up delivery.', category: 'creative', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: true },
+  { name: 'ComfyUI Workflows', description: 'Run ComfyUI workflows locally or on Comfy Cloud. Image, video, and music generation with custom prompts.', category: 'creative', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Qwen AI', description: 'Use Qwen models for chat, reasoning, and tool calling. Bundled provider with fast inference.', category: 'ai', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Fireworks AI', description: 'Access Fireworks AI models for generation and reasoning. High-throughput inference.', category: 'ai', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Bedrock Mantle', description: 'Use Amazon Bedrock Mantle models with automatic inference profile discovery.', category: 'ai', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: false },
 ]
 
 export const dynamic = 'force-dynamic'
@@ -68,6 +75,7 @@ export async function GET(request: Request) {
   const category = searchParams.get('category')
   const featured = searchParams.get('featured')
   const agentId = searchParams.get('agentId')
+  const search = searchParams.get('search')
 
   // Resolve session once — used to include installed skill IDs in response
   const session = await getAuthSession()
@@ -78,6 +86,12 @@ export async function GET(request: Request) {
     const where: Record<string, any> = {}
     if (category && category !== 'all') where.category = category
     if (featured === 'true') where.featured = true
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ]
+    }
 
     const [skills, categories] = await Promise.all([
       prisma.skill.findMany({
