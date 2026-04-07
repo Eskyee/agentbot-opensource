@@ -144,6 +144,58 @@ export default function SponsorPage() {
             </div>
           </div>
 
+          {/* Blockstream Jade Integration */}
+          <div className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <Bitcoin className="h-6 w-6 text-orange-400" />
+              <h3 className="text-white font-bold text-lg">Use Your Blockstream Jade Wallet</h3>
+            </div>
+            <p className="text-zinc-400 text-sm mb-4">
+              Have a Blockstream Jade? Connect it to agentbot for BTC/Liquid operations. 
+              Your keys, your bitcoin - non-custodial.
+            </p>
+            <div className="bg-black p-4 border border-zinc-800">
+              <p className="text-zinc-500 text-xs mb-2">Integration coming via Blockstream GDK</p>
+              <ul className="text-zinc-400 text-xs space-y-1">
+                <li>• Send/receive BTC on-chain</li>
+                <li>• Liquid assets support</li>
+                <li>• Lightning via Greenlight (non-custodial)</li>
+                <li>• HW wallet security for agent transactions</li>
+              </ul>
+            </div>
+            <p className="text-zinc-500 text-xs mt-4">
+              📧 Ask about early access: esky33@proton.me
+            </p>
+          </div>
+
+          {/* Liquid Node Future */}
+          <div className="border border-purple-900 bg-purple-900/20 p-6 mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <Check className="h-6 w-6 text-purple-400" />
+              <h3 className="text-white font-bold text-lg">Future: Liquid Node for Users</h3>
+            </div>
+            <p className="text-zinc-400 text-sm mb-4">
+              Running a pruned Liquid node for agentbot users. Benefits:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div className="bg-black p-3 border border-zinc-800">
+                <span className="text-purple-400 font-bold">⚡ Faster Blocks</span>
+                <p className="text-zinc-500 mt-1">1-minute block times on Liquid</p>
+              </div>
+              <div className="bg-black p-3 border border-zinc-800">
+                <span className="text-purple-400 font-bold">⚡ Lightning</span>
+                <p className="text-zinc-500 mt-1">Native Lightning for instant payments</p>
+              </div>
+              <div className="bg-black p-3 border border-zinc-800">
+                <span className="text-purple-400 font-bold">⚡ Assets</span>
+                <p className="text-zinc-500 mt-1">Issue & transfer Liquid assets</p>
+              </div>
+            </div>
+            <p className="text-zinc-500 text-xs mt-4">
+              🚀 Coming when we scale - need 500+ sponsors to fund the node infrastructure
+            </p>
+          </div>
+
           {/* Bitcoin Section */}
           <div id="bitcoin-section" className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
             <div className="flex items-center gap-3 mb-4">
