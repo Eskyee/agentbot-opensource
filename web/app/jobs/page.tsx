@@ -156,7 +156,7 @@ function NavBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 
 function BrowseJobs({ jobs, loading, search, setSearch, filters, setFilters, onApply }: {
   jobs: Job[]; loading: boolean; search: string; setSearch: (s: string) => void;
-  filters: Record<string, string>; setFilters: (f: Record<string, string>) => void;
+  filters: { roleType: string; seniority: string; webType: string }; setFilters: React.Dispatch<React.SetStateAction<{ roleType: string; seniority: string; webType: string }>>;
   onApply: (id: string) => void
 }) {
   return (
@@ -257,7 +257,7 @@ function CareerForm({ profile, onSave, onCancel }: { profile: any; onSave: () =>
     await fetch('/api/jobs/career', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form, skills: form.skills.split(',').map(s => s.trim()).filter(Boolean) }),
+      body: JSON.stringify({ ...form, skills: form.skills.split(',').map((s: string) => s.trim()).filter(Boolean) }),
     })
     onSave()
     setSaving(false)
