@@ -295,6 +295,9 @@ export default function BitcoinPage() {
               <div>
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600">Headless Backend</div>
                 <h2 className="text-sm font-bold tracking-tight uppercase mt-1">Watch-Only Wallets</h2>
+                <p className="text-[10px] text-zinc-500 mt-1">
+                  🔐 Secure: Your keys, your bitcoin. Blockstream Green xpub supported.
+                </p>
               </div>
               {syncPill}
             </div>
@@ -354,6 +357,9 @@ export default function BitcoinPage() {
                   rows={5}
                   className="w-full bg-black border border-zinc-800 px-3 py-2 text-xs text-white placeholder:text-zinc-700 outline-none focus:border-zinc-700 font-mono"
                 />
+                <p className="text-[10px] text-zinc-500 mt-2">
+                  📱 Blockstream Green: Get xpub from Wallet → Settings → Export Xpub
+                </p>
               </div>
 
               <button
