@@ -10,6 +10,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agentbot-on-ipfs-via-gitlawb',
+    dateLabel: '7 Apr',
+    isoDate: '2026-04-07',
+    title: 'Our Code is Now on IPFS',
+    excerpt:
+      'We mirrored our open source repo to gitlawb — now it lives on IPFS, decentralized, with DID identity for agents.',
+    tags: ['IPFS', 'gitlawb', 'Decentralized'],
+    track: 'Shipping',
+  },
+  {
     slug: 'gitlawb-decentralized-git-for-agents',
     dateLabel: '7 Apr',
     isoDate: '2026-04-07',
