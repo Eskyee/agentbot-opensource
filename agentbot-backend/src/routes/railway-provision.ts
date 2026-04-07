@@ -17,6 +17,52 @@ import { authenticate } from '../middleware/auth'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
 
+function buildOpenClawConfig(): string {
+  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || ''
+  const config = {
+    env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
+    gateway: {
+      mode: 'local',
+      // 'lan' binds to 0.0.0.0 so Railway's external reverse proxy can reach port 18789.
+      // 'loopback' (the default) binds to 127.0.0.1 and causes 502 from Railway proxy.
+      bind: 'lan',
+      auth: { mode: 'token', token: gatewayToken },
+      // Trust Railway's internal network ranges so forwarded-for headers are honoured.
+      trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
+      controlUi: {
+        allowedOrigins: ['*'],
+        dangerouslyDisableDeviceAuth: true,
+        dangerouslyAllowHostHeaderOriginFallback: true,
+      },
+      http: { endpoints: { chatCompletions: { enabled: true } } },
+    },
+    agents: {
+      defaults: {
+        workspace: '/home/node/.openclaw/workspace',
+        model: { primary: 'openrouter/google/gemini-flash-1.5' },
+        heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
+      },
+    },
+    channels: {
+      telegram: { enabled: false, dmPolicy: 'pairing' },
+      discord:  { enabled: false, dmPolicy: 'pairing' },
+      whatsapp: { enabled: false, dmPolicy: 'pairing' },
+    },
+    cron:    { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    session: {
+      scope: 'per-sender',
+      reset: { mode: 'daily', atHour: 4 },
+      maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
+    },
+    tools: {
+      profile: 'coding',
+      exec: { backgroundMs: 10000, timeoutSec: 1800 },
+      web:  { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
+    },
+  }
+  return JSON.stringify(config)
+}
+
 function getAgentEnvVars(agentId: string, plan: string): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
@@ -32,10 +78,9 @@ function getAgentEnvVars(agentId: string, plan: string): Record<string, string> 
     // Railway routes public HTTP traffic to the PORT value.
     // openclaw gateway listens on 18789 — tell Railway to proxy there.
     PORT: '18789',
-    // openclaw gateway defaults to loopback-only bind.
-    // Railway's reverse proxy is external, so we must bind to all interfaces.
-    // Auth is enforced via OPENCLAW_GATEWAY_TOKEN above.
-    OPENCLAW_GATEWAY_BIND: 'lan',
+    // Full openclaw config — start command writes this to disk before launching gateway.
+    // This is the only reliable way to set gateway.bind=lan (CLI args / env vars don't work).
+    OPENCLAW_CONFIG_JSON: buildOpenClawConfig(),
   }
 }
 
@@ -118,8 +163,27 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
     console.log(`[RailwayProvision] Resuming with existing service ${serviceId}`)
   }
 
-  // 2. Set resource limits + health check — non-fatal (Railway may reject some fields)
-  // NOTE: no rootDirectory — that is a source/repo-build concept; image services don't use it
+  // 2. Set start command — critical: writes OPENCLAW_CONFIG_JSON to disk before gateway starts.
+  // Without this openclaw binds to loopback (127.0.0.1) and Railway proxy gets 502.
+  // Sent as its own mutation so resource-limit failures don't block it.
+  // Single-quoted sh -c body is safe: no single quotes appear inside it.
+  // Use $HOME (not hardcoded /home/node) so the config lands where openclaw looks for it.
+  const startCmd = `sh -c 'mkdir -p "$HOME/.openclaw" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "$HOME/.openclaw/openclaw.json" && exec openclaw gateway'`
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+        serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+      }
+    `, {
+      serviceId, environmentId,
+      input: { startCommand: startCmd },
+    })
+    console.log(`[RailwayProvision] Set startCommand for ${serviceId}`)
+  } catch (startCmdErr) {
+    console.warn(`[RailwayProvision] startCommand update failed (non-fatal):`, startCmdErr)
+  }
+
+  // 2b. Set resource limits — non-fatal (Railway may reject cpuLimit on some plans)
   const limits = PLAN_LIMITS[plan] ?? PLAN_LIMITS.solo
   try {
     await railwayGql(`
@@ -131,7 +195,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
       input: {
         memoryLimitMb: limits.memoryLimitMb,
         cpuLimit: limits.cpuLimit,
-        healthcheckPath: '/api/status',
+        healthcheckPath: '/health',
         healthcheckTimeout: 60,
         restartPolicyType: 'ON_FAILURE',
         restartPolicyMaxRetries: 10,
@@ -185,7 +249,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
       mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
         serviceDomainCreate(input: $input) { domain }
       }
-    `, { input: { serviceId, environmentId } })
+    `, { input: { serviceId, environmentId, targetPort: 18789 } })
     const domain = domainResult.serviceDomainCreate.domain
     url = domain.startsWith('http') ? domain : `https://${domain}`
   } catch (err) {

@@ -88,3 +88,53 @@ Fixed critical vulnerabilities:
 - Dependabot found 10-12 vulnerabilities in dependencies (not code)
 - Recommend: `npm audit fix` and keep dependencies updated
 - All security fixes pushed to opensource repo
+
+---
+
+## April 6, 2026 - Railway OpenClaw Provision Fix
+
+### Problem
+Paying users couldn't deploy agents. Provisioned Railway containers returned 502.
+
+### Root Causes Found & Fixed
+
+#### 1. `gateway.bind: loopback` (the main bug)
+OpenClaw gateway defaults to binding `127.0.0.1:18789`. Railway's reverse proxy is external and can't reach loopback → 502.
+
+**Fix:** Inject a full `openclaw.json` config via env var + start command:
+```
+OPENCLAW_CONFIG_JSON = { gateway: { bind: 'lan', ... } }
+startCommand = sh -c 'mkdir -p "$HOME/.openclaw" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "$HOME/.openclaw/openclaw.json" && exec openclaw gateway'
+```
+
+#### 2. `channels.webchat` not valid in openclaw 2026.4.5
+Config was crashing the container on every boot with: `channels.webchat: unknown channel id: webchat`
+
+**Fix:** Removed `webchat` from channels config. Only `telegram`, `discord`, `whatsapp` are valid.
+
+#### 3. `targetPort: 18789` missing from domain create
+Railway proxy was defaulting to port 3000 instead of 18789.
+
+**Fix:** Added `targetPort: 18789` to `serviceDomainCreate` mutation.
+
+#### 4. Healthcheck path was wrong
+Was set to `/api/status` — openclaw exposes `/health`.
+
+**Fix:** `healthcheckPath: '/health'`
+
+#### 5. `serviceInstanceUpdate` combining startCommand + resource limits → Railway rejection
+Railway rejected the combined mutation. Separated into two calls — startCommand first (critical), limits second (non-fatal).
+
+### Files Changed
+- `agentbot-backend/src/routes/railway-provision.ts`
+  - Added `buildOpenClawConfig()` function
+  - `startCommand` via dedicated `serviceInstanceUpdate`
+  - `targetPort: 18789` on domain create
+  - Healthcheck: `/api/status` → `/health`
+  - Removed `OPENCLAW_GATEWAY_BIND` env var (ineffective)
+
+### Verified Live
+```
+GET https://agentbot-agent-1336825a8917885f-production.up.railway.app/health
+→ 200 {"ok":true,"status":"live"}
+```

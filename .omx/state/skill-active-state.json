@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "active": true,
+  "skill": "ralph",
+  "keyword": "keep going",
+  "phase": "planning",
+  "activated_at": "2026-04-04T19:15:37.879Z",
+  "updated_at": "2026-04-04T19:15:37.879Z",
+  "source": "keyword-detector",
+  "session_id": "",
+  "thread_id": "019d596d-d3f2-7372-b275-3b6e2db3adaf",
+  "turn_id": "019d59ea-dcdb-7661-9f3b-d72cf058f158",
+  "iteration": 22,
+  "last_turn_at": "2026-04-04T23:47:49.783Z"
+}

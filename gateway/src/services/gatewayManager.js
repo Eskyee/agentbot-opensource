@@ -10,7 +10,7 @@
  *  - Exposes WS proxy attachment for the HTTP server
  */
 
-import { spawn } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import { EventEmitter } from 'events';
 import httpProxy from 'http-proxy';
 import net from 'net';
@@ -219,6 +219,24 @@ class GatewayManager extends EventEmitter {
       // Bind gateway to loopback — our wrapper is the public face
       OPENCLAW_GATEWAY_BIND: 'loopback',
     };
+
+    // Clear any stale gateway lock file before spawning.
+    // This handles the case where a previous container left a pid lock on the
+    // persistent volume (e.g. pid 229 that no longer exists).
+    // spawnSync with timeout so it never blocks the restart loop.
+    try {
+      const stopResult = spawnSync('openclaw', ['gateway', 'stop'], {
+        env,
+        timeout: 8000,
+        stdio: 'pipe',
+      });
+      if (stopResult.stdout) {
+        const out = stopResult.stdout.toString().trim();
+        if (out) log.info(`[pre-spawn stop] ${out}`);
+      }
+    } catch {
+      // Ignore — stop failure just means no stale lock to clear
+    }
 
     // Match reference: openclaw gateway run --bind loopback --port 18789 --auth token --token <TOKEN>
     const args = [

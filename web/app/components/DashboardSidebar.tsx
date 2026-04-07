@@ -20,6 +20,8 @@ export const navSections = [
       { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
       { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
+      { label: 'Git City', href: '/dashboard/git-city', icon: '⌂' },
+      { label: 'Jobs', href: '/jobs', icon: '◈' },
     ]
   },
   {
