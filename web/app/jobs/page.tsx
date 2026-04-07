@@ -56,10 +56,13 @@ export default function JobsPage() {
     seniority: '',
     webType: '',
   })
-  const [view, setView] = useState<'browse' | 'career' | 'applications'>('browse')
+  const [view, setView] = useState<'browse' | 'career' | 'applications' | 'post' | 'company'>('browse')
+  const [myCompany, setMyCompany] = useState<any>(null)
+  const [loadingCompany, setLoadingCompany] = useState(true)
 
   useEffect(() => {
     fetchJobs()
+    fetchMyCompany()
   }, [filters, search])
 
   const fetchJobs = async () => {
@@ -78,6 +81,18 @@ export default function JobsPage() {
       console.error('Failed to fetch jobs:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchMyCompany = async () => {
+    try {
+      const response = await fetch('/api/jobs/companies')
+      const data = await response.json()
+      setMyCompany(data.companies?.[0] || null)
+    } catch (error) {
+      console.error('Failed to fetch company:', error)
+    } finally {
+      setLoadingCompany(false)
     }
   }
 
@@ -109,31 +124,57 @@ export default function JobsPage() {
       />
 
       <DashboardContent>
-        <div className="flex gap-4 mb-6 border-b border-zinc-800 pb-4">
-          <button
-            onClick={() => setView('browse')}
-            className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
-              view === 'browse' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            Browse Jobs
-          </button>
-          <button
-            onClick={() => setView('career')}
-            className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
-              view === 'career' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            My Career Profile
-          </button>
-          <button
-            onClick={() => setView('applications')}
-            className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
-              view === 'applications' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            My Applications
-          </button>
+        <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setView('browse')}
+              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
+                view === 'browse' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              Browse Jobs
+            </button>
+            <button
+              onClick={() => setView('career')}
+              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
+                view === 'career' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              My Career Profile
+            </button>
+            <button
+              onClick={() => setView('applications')}
+              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
+                view === 'applications' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              My Applications
+            </button>
+            <button
+              onClick={() => setView('company')}
+              className={`px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
+                view === 'company' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              My Company
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <a
+              href="https://www.thegitcity.com/jobs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
+            >
+              Git City Jobs ↗
+            </a>
+            <button
+              onClick={() => myCompany ? setView('post') : setView('company')}
+              className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
+            >
+              {myCompany ? '+ Post Job' : '+ Post a Job'}
+            </button>
+          </div>
         </div>
 
         {view === 'browse' && (
@@ -275,6 +316,14 @@ export default function JobsPage() {
 
         {view === 'applications' && (
           <ApplicationsList />
+        )}
+
+        {view === 'company' && (
+          <CompanyForm company={myCompany} onUpdate={fetchMyCompany} onCancel={() => setView('browse')} />
+        )}
+
+        {view === 'post' && (
+          <PostJobForm company={myCompany} onCancel={() => setView('browse')} />
         )}
       </DashboardContent>
     </DashboardShell>
@@ -431,9 +480,276 @@ function ApplicationsList() {
         <Briefcase className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
         <p className="text-zinc-600 text-sm">No applications yet</p>
         <p className="text-zinc-700 text-xs mt-1">Browse jobs and apply to see them here</p>
-      </div>
-    )
+    </div>
+  )
+}
+
+function PostJobForm({ company, onCancel }: { company: any; onCancel: () => void }) {
+  const [jobTitle, setJobTitle] = useState('')
+  const [jobDescription, setJobDescription] = useState('')
+  const [salaryMin, setSalaryMin] = useState(50000)
+  const [salaryMax, setSalaryMax] = useState(150000)
+  const [roleType, setRoleType] = useState('backend')
+  const [seniority, setSeniority] = useState('mid')
+  const [contractType, setContractType] = useState('clt')
+  const [techStack, setTechStack] = useState('')
+  const [applyUrl, setApplyUrl] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const handlePostJob = async () => {
+    if (!company?.id) return
+    setSaving(true)
+    try {
+      const response = await fetch('/api/jobs/board', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId: company.id,
+          title: jobTitle,
+          description: jobDescription,
+          salaryMin,
+          salaryMax,
+          roleType,
+          seniority,
+          contractType,
+          techStack: techStack.split(',').map((s) => s.trim()).filter(Boolean),
+          applyUrl,
+        }),
+      })
+      const data = await response.json()
+      if (data.job) {
+        alert('Job posted! It will be visible once approved.')
+        onCancel()
+      } else {
+        alert(data.error || 'Failed to post job')
+      }
+    } catch (error) {
+      alert('Failed to post job')
+    } finally {
+      setSaving(false)
+    }
   }
+
+  return (
+    <div className="max-w-2xl border border-zinc-800 bg-zinc-900/50 p-6">
+      <h3 className="text-white font-bold text-lg mb-4">Post a Job for {company?.name}</h3>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-zinc-400 text-sm mb-2">Job Title</label>
+          <input
+            type="text"
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            placeholder="Senior Backend Engineer"
+          />
+        </div>
+        <div>
+          <label className="block text-zinc-400 text-sm mb-2">Description</label>
+          <textarea
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+            rows={4}
+            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            placeholder="Describe the role, responsibilities, and ideal candidate..."
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Salary Min ($)</label>
+            <input
+              type="number"
+              value={salaryMin}
+              onChange={(e) => setSalaryMin(parseInt(e.target.value) || 0)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Salary Max ($)</label>
+            <input
+              type="number"
+              value={salaryMax}
+              onChange={(e) => setSalaryMax(parseInt(e.target.value) || 0)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Role Type</label>
+            <select
+              value={roleType}
+              onChange={(e) => setRoleType(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            >
+              {ROLE_TYPES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Seniority</label>
+            <select
+              value={seniority}
+              onChange={(e) => setSeniority(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            >
+              {SENIORITY_LEVELS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Contract</label>
+            <select
+              value={contractType}
+              onChange={(e) => setContractType(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            >
+              <option value="clt">Full-time (CLT)</option>
+              <option value="pj">Contractor (PJ)</option>
+              <option value="contract">Contract</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-zinc-400 text-sm mb-2">Tech Stack (comma separated)</label>
+          <input
+            type="text"
+            value={techStack}
+            onChange={(e) => setTechStack(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            placeholder="React, TypeScript, Node.js, PostgreSQL"
+          />
+        </div>
+        <div>
+          <label className="block text-zinc-400 text-sm mb-2">Apply URL</label>
+          <input
+            type="url"
+            value={applyUrl}
+            onChange={(e) => setApplyUrl(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            placeholder="https://acme.com/careers/..."
+          />
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={onCancel}
+            className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handlePostJob}
+            disabled={saving || !jobTitle || !jobDescription || !applyUrl}
+            className="bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
+          >
+            {saving ? 'Posting...' : 'Post Job'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Salary Min ($)</label>
+            <input
+              type="number"
+              value={salaryMin}
+              onChange={(e) => setSalaryMin(parseInt(e.target.value) || 0)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Salary Max ($)</label>
+            <input
+              type="number"
+              value={salaryMax}
+              onChange={(e) => setSalaryMax(parseInt(e.target.value) || 0)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Role Type</label>
+            <select
+              value={roleType}
+              onChange={(e) => setRoleType(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            >
+              {ROLE_TYPES.map((r) => (
+                <option key={r} value={r}>{r}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Seniority</label>
+            <select
+              value={seniority}
+              onChange={(e) => setSeniority(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            >
+              {SENIORITY_LEVELS.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Contract</label>
+            <select
+              value={contractType}
+              onChange={(e) => setContractType(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            >
+              <option value="clt">Full-time (CLT)</option>
+              <option value="pj">Contractor (PJ)</option>
+              <option value="contract">Contract</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-zinc-400 text-sm mb-2">Tech Stack (comma separated)</label>
+          <input
+            type="text"
+            value={techStack}
+            onChange={(e) => setTechStack(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            placeholder="React, TypeScript, Node.js, PostgreSQL"
+          />
+        </div>
+        <div>
+          <label className="block text-zinc-400 text-sm mb-2">Apply URL</label>
+          <input
+            type="url"
+            value={applyUrl}
+            onChange={(e) => setApplyUrl(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-green-500 focus:outline-none"
+            placeholder="https://acme.com/careers/..."
+          />
+        </div>
+        <div className="flex gap-4">
+          <button
+            onClick={onCancel}
+            className="border border-zinc-700 text-zinc-400 hover:text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handlePostJob}
+            disabled={saving || !jobTitle || !jobDescription || !applyUrl}
+            className="bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 transition-colors"
+          >
+            {saving ? 'Posting...' : 'Post Job'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
   return (
     <div className="space-y-4">
