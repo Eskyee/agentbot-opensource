@@ -14,11 +14,13 @@
 
 import { Router, Request, Response } from 'express'
 import { authenticate } from '../middleware/auth'
+import * as crypto from 'crypto'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
 
 function buildOpenClawConfig(): string {
-  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || ''
+  // Each user's agent needs its own unique token
+  const gatewayToken = crypto.randomBytes(32).toString('hex')
   const config = {
     env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
     gateway: {
@@ -39,7 +41,7 @@ function buildOpenClawConfig(): string {
     agents: {
       defaults: {
         workspace: '/home/node/.openclaw/workspace',
-        model: { primary: 'openrouter/google/gemini-flash-1.5' },
+        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
     },

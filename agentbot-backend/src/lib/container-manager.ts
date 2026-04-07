@@ -147,7 +147,8 @@ export async function createContainer(
   // 2. Build openclaw.json config and inject all env vars in one shot.
   //    Config is passed as OPENCLAW_CONFIG_JSON env var so the start command
   //    can write it without shell heredoc quoting issues.
-  const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN || crypto.randomBytes(32).toString('hex');
+  // Generate a unique token for each agent - don't use shared platform token
+  const gatewayToken = crypto.randomBytes(32).toString('hex')
   const openclawConfig = {
     env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
     gateway: {
