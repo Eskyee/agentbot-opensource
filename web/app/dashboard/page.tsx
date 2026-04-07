@@ -7,6 +7,7 @@ import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { toast } from 'sonner'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
 import { TrialBanner } from '@/app/components/TrialBanner'
@@ -677,6 +678,26 @@ function DashboardContent() {
                 </a>
                 <div className="border border-zinc-800 px-4 py-3">
                   <div className="flex items-center justify-between mb-2">
+                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Gateway Token</p>
+                    <button
+                      onClick={() => {
+                        const token = instance?.gatewayToken || bootstrap?.gatewayToken
+                        if (token) {
+                          navigator.clipboard.writeText(token)
+                          toast.success('Token copied!')
+                        }
+                      }}
+                      className="text-[10px] text-blue-500 hover:text-blue-400 font-bold uppercase tracking-widest"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <code className="text-[10px] text-zinc-500 font-mono break-all block">
+                    {instance?.gatewayToken || bootstrap?.gatewayToken || 'No token available'}
+                  </code>
+                </div>
+                <div className="border border-zinc-800 px-4 py-3">
+                  <div className="flex items-center justify-between mb-2">
                     <p className="text-[10px] uppercase tracking-widest text-zinc-600">Auto Pairing</p>
                     <span
                       className={`h-2 w-2 rounded-full ${
@@ -703,6 +724,16 @@ function DashboardContent() {
                     Refresh token
                     <span className="text-[10px] text-zinc-500">↺</span>
                   </button>
+                  {autoPairHealth === 'missing' && (
+                    <div className="mt-3 pt-3 border-t border-zinc-800">
+                      <p className="text-[10px] text-yellow-500 mb-2">Having connection issues?</p>
+                      <p className="text-[10px] text-zinc-500 mb-2">
+                        1. Copy your gateway token above<br/>
+                        2. Open <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{instance?.subdomain}</a><br/>
+                        3. Go to Settings → Paste token in "Gateway Token"
+                      </p>
+                    </div>
+                  )}
                 </div>
                 {instance?.botUsername && (
                   <a
