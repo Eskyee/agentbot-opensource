@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { controlsDisabledResponse, getOwnedOpenClawUser, OPENCLAW_CONTROLS_ENABLED } from '@/app/api/instance/_runtime'
 import { getRailwayEnvironmentId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { prisma } from '@/app/lib/prisma'
 
 /**
  * POST /api/instance/[userId]/repair
@@ -27,10 +28,17 @@ export async function POST(
     openclawUrl: user.openclawUrl,
   })
 
+  // Get user's unique token from database
+  const registration = await prisma.$queryRaw<{ gateway_token: string }[]>`
+    SELECT gateway_token FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
+  `
+  const userGatewayToken = registration[0]?.gateway_token || crypto.randomUUID()
+
   try {
     // Re-inject all env vars (fixes corrupted/missing vars)
+    // Use user's unique token, not the shared platform token
     const variables = {
-      OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
+      OPENCLAW_GATEWAY_TOKEN: userGatewayToken,
       OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || '',
       OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
       AGENTBOT_USER_ID: userId,
