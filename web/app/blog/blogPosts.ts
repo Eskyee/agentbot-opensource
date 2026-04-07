@@ -10,6 +10,26 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'openclaw-v2026-4-5',
+    dateLabel: '7 Apr',
+    isoDate: '2026-04-07',
+    title: 'OpenClaw v2026.4.5',
+    excerpt:
+      'Video generation, music generation, new providers (Qwen, Fireworks, Bedrock Mantle), multilingual Control UI, and more.',
+    tags: ['OpenClaw', 'Release'],
+    track: 'Release',
+  },
+  {
+    slug: 'following-openclaw-contributors',
+    dateLabel: '7 Apr',
+    isoDate: '2026-04-07',
+    title: 'Following the OpenClaw Contributors',
+    excerpt:
+      'We followed all 102 OpenClaw contributors. Here\'s why this matters for the AI agent ecosystem.',
+    tags: ['Community', 'OpenClaw'],
+    track: 'Shipping',
+  },
+  {
     slug: 'btcpay-agentbot',
     dateLabel: '3 Apr',
     isoDate: '2026-04-03',
