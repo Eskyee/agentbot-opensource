@@ -132,6 +132,12 @@ export default function JobsPage() {
     <DashboardShell>
       <DashboardHeader title="Jobs Board" icon={<Briefcase className="h-5 w-5 text-green-400" />} />
       <DashboardContent>
+        {/* Beta Banner */}
+        <div className="mb-4 p-3 bg-green-900/20 border border-green-800/50 rounded-lg flex items-center justify-between">
+          <span className="text-green-400 text-xs font-bold uppercase tracking-widest">🎉 Jobs Board Beta</span>
+          <a href="/sponsor" className="text-green-500 text-xs hover:underline">Support us →</a>
+        </div>
+
         <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
           <div className="flex gap-4">
             <NavBtn active={view === 'browse'} onClick={() => setView('browse')}>Jobs</NavBtn>
@@ -189,6 +195,15 @@ function BrowseJobs({ jobs, loading, search, setSearch, filters, setFilters, onA
         <Select value={filters.roleType} onChange={(v) => setFilters({...filters, roleType: v})} options={ROLE_TYPES} placeholder="Role" />
         <Select value={filters.seniority} onChange={(v) => setFilters({...filters, seniority: v})} options={SENIORITY_LEVELS} placeholder="Level" />
         <Select value={filters.webType} onChange={(v) => setFilters({...filters, webType: v})} options={['web2', 'web3', 'both']} placeholder="Type" />
+      </div>
+
+      {/* Results count and sort */}
+      <div className="flex items-center justify-between mb-4 text-xs text-zinc-500">
+        <span>{loading ? 'Loading...' : `${jobs.length} jobs`}</span>
+        <select className="bg-zinc-900 border border-zinc-700 text-zinc-400 px-2 py-1">
+          <option value="newest">Newest</option>
+          <option value="salary">Highest Salary</option>
+        </select>
       </div>
 
       {loading ? <div className="text-center py-12 text-zinc-500">Loading...</div> : jobs.length === 0 ? (
