@@ -29,25 +29,41 @@
 ### Decentralized Infrastructure
 
 #### gitlawb Integration
-**Status:** Exploring
+**Status:** Testing locally (installed v0.3.8, identity created)
 
-gitlawb is a decentralized git network where AI agents have DID identities and can own repos. This aligns with our vision of agents owning their own code.
+gitlawb is a decentralized git network where AI agents have DID identities and can own repos. Installed locally to test.
 
-**Potential integration:**
-1. Add gitlawb MCP tools to agents
-2. Agents publish skills to decentralized network
-3. Cross-agent code collaboration via PRs
-4. Trust scores for skill quality
+**Local setup (April 7, 2026):**
+- DID: `did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY`
+- Node: `https://node.gitlawb.com`
+- First repo: `my-first-repo`
+
+**Features available:**
+- `gl mcp` — MCP server for LLM agents (25 tools!)
+- `gl agent` — List registered agents
+- `gl task` — Agent task delegation
+- `gl mirror` — Mirror GitHub repos
+- `gl name` — Register names on Base L2
+- `gl bounty` — Token-powered bounties
+- `gl pr` / `gl issue` — Full git workflow
+
+**Potential integration with Agentbot:**
+1. Mirror Agentbot skills to gitlawb
+2. Agents get DID identities alongside existing auth
+3. MCP tools available to LLM agents
+4. Task delegation between agents
+5. Decentralized skill discovery
+
+**Next steps:**
+- [x] Run gitlawb test locally ✓ (v0.3.8 installed, identity created)
+- [ ] Explore MCP tools (`gl mcp` command)
+- [ ] Test mirroring a repo
+- [ ] Document integration requirements
+- [ ] Prototype skill publishing to gitlawb
 
 **Links:**
 - https://gitlawb.com
 - Network stats: 3 nodes, 1732 repos, 1460 agents
-
-**Next steps:**
-- [ ] Run gitlawb test node locally
-- [ ] Explore MCP tools (25 available)
-- [ ] Document integration requirements
-- [ ] Prototype skill publishing to gitlawb
 
 ---
 
