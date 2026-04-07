@@ -4,6 +4,14 @@ const communityUpdates = [
   {
     source: 'Agentbot',
     date: '7 April 2026',
+    title: 'Platform Beta — Try It Free',
+    excerpt: 'AI agent platform in beta. 40+ skills, Jobs Board, GitHub Sponsors. Deploy agents in 60 seconds.',
+    url: '/dashboard',
+    type: 'feature',
+  },
+  {
+    source: 'Agentbot',
+    date: '7 April 2026',
     title: 'Jobs Board Launch',
     excerpt: 'Hire talent or find roles in the agent ecosystem. Browse local + external jobs, create career profiles, post positions.',
     url: '/jobs',
