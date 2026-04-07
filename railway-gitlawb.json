@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.app/schema.json",
+  "name": "gitlawb-mcp",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "curl -fsSL https://gitlawb.com/install.sh | sh"
+  },
+  "run": {
+    "command": "gl mcp serve",
+    "runtime": "nixpacks"
+  }
+}

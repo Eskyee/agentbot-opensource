@@ -98,3 +98,4 @@ agentbot-backend/.env.local
 
 # Local standalone repos
 btcpay-configurator/
+keys/
