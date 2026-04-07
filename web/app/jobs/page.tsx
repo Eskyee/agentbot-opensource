@@ -183,22 +183,22 @@ function BrowseJobs({ jobs, loading, search, setSearch, filters, setFilters, onA
 }) {
   return (
     <>
-        <div className="flex flex-col sm:flex-row gap-2 mb-4">
-          <div className="flex-1 relative min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search jobs..."
-              className="w-full bg-zinc-900 border border-zinc-700 text-white pl-10 pr-4 py-2 text-sm focus:border-green-500"
-            />
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            <Select value={filters.roleType} onChange={(v) => setFilters({...filters, roleType: v})} options={ROLE_TYPES} placeholder="Role" />
-            <Select value={filters.seniority} onChange={(v) => setFilters({...filters, seniority: v})} options={SENIORITY_LEVELS} placeholder="Level" />
-            <Select value={filters.webType} onChange={(v) => setFilters({...filters, webType: v})} options={['web2', 'web3', 'both']} placeholder="Type" />
-          </div>
+      <div className="flex flex-col sm:flex-row gap-2 mb-4">
+        <div className="flex-1 relative min-w-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search jobs..."
+            className="w-full bg-zinc-900 border border-zinc-700 text-white pl-10 pr-4 py-2 text-sm focus:border-green-500"
+          />
         </div>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          <Select value={filters.roleType} onChange={(v) => setFilters({...filters, roleType: v})} options={ROLE_TYPES} placeholder="Role" />
+          <Select value={filters.seniority} onChange={(v) => setFilters({...filters, seniority: v})} options={SENIORITY_LEVELS} placeholder="Level" />
+          <Select value={filters.webType} onChange={(v) => setFilters({...filters, webType: v})} options={['web2', 'web3', 'both']} placeholder="Type" />
+        </div>
+      </div>
 
       {/* Results count and sort */}
       <div className="flex items-center justify-between mb-4 text-xs text-zinc-500">
