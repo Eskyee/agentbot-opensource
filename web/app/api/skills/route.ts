@@ -31,6 +31,20 @@ const DEFAULT_SKILLS = [
   { name: 'Event Scheduler', description: 'Schedule events across Telegram, Discord, WhatsApp, Email with recurring support.', category: 'events', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
   { name: 'Venue Finder', description: 'Find venues worldwide. UK, Europe, US, Asia with capacity and price filters.', category: 'events', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
   { name: 'Festival Finder', description: 'Discover festivals globally, compare lineups, get UK and Europe recommendations.', category: 'events', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'Spotify Analytics', description: 'Track streams, followers, playlist placements. Cross-platform analytics dashboard.', category: 'music', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'SoundCloud Manager', description: 'Upload tracks, manage likes, track reposts, analyze audience demographics.', category: 'music', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Bandcamp Sync', description: 'Sync releases, track sales, manage merchandise across Bandcamp.', category: 'music', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Crypto Price Alerts', description: 'Monitor crypto prices, send alerts via Telegram/Discord when thresholds hit.', category: 'finance', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'DeFi Portfolio', description: 'Track wallet holdings, LP positions, yield farming across Base/Ethereum.', category: 'finance', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Invoice Generator', description: 'Create and send invoices in USDC. Track payments, send reminders.', category: 'finance', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'AI Image Generator', description: 'Generate images via Stable Diffusion, DALL-E, or Midjourney. Batch processing.', category: 'creative', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Video Editor', description: 'Auto-edit video clips, add transitions, captions, and background music.', category: 'creative', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Podcast Producer', description: 'Auto-edit podcasts, remove filler words, add intro/outro music.', category: 'creative', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'CRM Helper', description: 'Track leads, follow-ups, and customer interactions across channels.', category: 'productivity', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Meeting Notes', description: 'Auto-generate meeting notes from Zoom/Google Meet transcripts.', category: 'productivity', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Content Calendar', description: 'Plan and schedule social media posts across all platforms.', category: 'marketing', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'SEO Analyzer', description: 'Analyze website SEO, suggest keywords, audit backlinks.', category: 'marketing', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Affiliate Tracker', description: 'Track affiliate links, clicks, conversions across networks.', category: 'marketing', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
 ]
 
 export const dynamic = 'force-dynamic'
