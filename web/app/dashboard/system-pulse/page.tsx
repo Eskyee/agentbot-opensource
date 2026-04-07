@@ -6,7 +6,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar,
 } from 'recharts'
 import {
-  Activity, DollarSign, Cpu, Shield, MessageSquare, Bot, Clock, Server, Radio,
+  Activity, DollarSign, Cpu, Shield, MessageSquare, Bot, Clock, Server, Radio, type LucideIcon,
 } from 'lucide-react'
 import {
   DashboardShell,
@@ -181,7 +181,7 @@ export default function SystemPulsePage() {
     sub,
     color = 'text-blue-400',
   }: {
-    icon: React.ElementType
+    icon: LucideIcon
     label: string
     value: string | number
     sub?: string

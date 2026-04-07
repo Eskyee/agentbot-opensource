@@ -138,18 +138,19 @@ export default function JobsPage() {
           <a href="/sponsor" className="text-green-500 text-xs hover:underline">Support us →</a>
         </div>
 
-        <div className="flex justify-between items-center mb-6 border-b border-zinc-800 pb-4">
-          <div className="flex gap-4">
+        {/* Navigation - mobile responsive */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-zinc-800 pb-4">
+          <div className="flex flex-wrap gap-2 max-w-full overflow-x-auto">
             <NavBtn active={view === 'browse'} onClick={() => setView('browse')}>Jobs</NavBtn>
             <NavBtn active={view === 'sponsors'} onClick={() => setView('sponsors')}>Sponsors</NavBtn>
             <NavBtn active={view === 'career'} onClick={() => setView('career')}>Career</NavBtn>
-            <NavBtn active={view === 'applications'} onClick={() => setView('applications')}>My Applications</NavBtn>
+            <NavBtn active={view === 'applications'} onClick={() => setView('applications')}>Applications</NavBtn>
             {myCompany && <NavBtn active={view === 'myjobs'} onClick={() => setView('myjobs')}>My Jobs</NavBtn>}
             <NavBtn active={view === 'company'} onClick={() => setView('company')}>Company</NavBtn>
           </div>
           <button
             onClick={() => myCompany ? setView('post') : setView('company')}
-            className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase px-4 py-2"
+            className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase px-4 py-2 whitespace-nowrap"
           >
             {myCompany ? '+ Post Job' : '+ Post a Job'}
           </button>
@@ -182,20 +183,22 @@ function BrowseJobs({ jobs, loading, search, setSearch, filters, setFilters, onA
 }) {
   return (
     <>
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search jobs..."
-            className="w-full bg-zinc-900 border border-zinc-700 text-white pl-10 pr-4 py-2 text-sm focus:border-green-500"
-          />
+        <div className="flex flex-col sm:flex-row gap-2 mb-4">
+          <div className="flex-1 relative min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search jobs..."
+              className="w-full bg-zinc-900 border border-zinc-700 text-white pl-10 pr-4 py-2 text-sm focus:border-green-500"
+            />
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            <Select value={filters.roleType} onChange={(v) => setFilters({...filters, roleType: v})} options={ROLE_TYPES} placeholder="Role" />
+            <Select value={filters.seniority} onChange={(v) => setFilters({...filters, seniority: v})} options={SENIORITY_LEVELS} placeholder="Level" />
+            <Select value={filters.webType} onChange={(v) => setFilters({...filters, webType: v})} options={['web2', 'web3', 'both']} placeholder="Type" />
+          </div>
         </div>
-        <Select value={filters.roleType} onChange={(v) => setFilters({...filters, roleType: v})} options={ROLE_TYPES} placeholder="Role" />
-        <Select value={filters.seniority} onChange={(v) => setFilters({...filters, seniority: v})} options={SENIORITY_LEVELS} placeholder="Level" />
-        <Select value={filters.webType} onChange={(v) => setFilters({...filters, webType: v})} options={['web2', 'web3', 'both']} placeholder="Type" />
-      </div>
 
       {/* Results count and sort */}
       <div className="flex items-center justify-between mb-4 text-xs text-zinc-500">

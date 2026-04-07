@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Cpu, Star, ExternalLink, Radio, Shield, Zap, Layers, TrendingUp, RefreshCw } from 'lucide-react'
+import { Cpu, Star, ExternalLink, Radio, Shield, Zap, Layers, TrendingUp, RefreshCw, type LucideIcon } from 'lucide-react'
 import {
   DashboardShell,
   DashboardHeader,
@@ -104,7 +104,7 @@ const ITEMS: TechItem[] = [
   },
 ]
 
-const CATEGORY_META: Record<Category, { label: string; icon: React.ElementType; color: string }> = {
+const CATEGORY_META: Record<Category, { label: string; icon: LucideIcon; color: string }> = {
   all:       { label: 'All',       icon: Layers,     color: 'text-zinc-400' },
   models:    { label: 'Models',    icon: Cpu,         color: 'text-blue-400' },
   infra:     { label: 'Infra',     icon: Zap,         color: 'text-blue-400' },

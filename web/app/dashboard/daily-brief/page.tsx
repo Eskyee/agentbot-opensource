@@ -1,14 +1,14 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Sun, RefreshCw, Cpu, TrendingUp, Shield, Calendar, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Sun, RefreshCw, Cpu, TrendingUp, Shield, Calendar, CheckCircle2, ArrowRight, type LucideIcon } from 'lucide-react'
 import {
   DashboardShell,
   DashboardHeader,
   DashboardContent,
 } from '@/app/components/shared/DashboardShell'
 
-const ICON_MAP: Record<string, React.ElementType> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   system: Cpu,
   tasks: CheckCircle2,
   focus: ArrowRight,

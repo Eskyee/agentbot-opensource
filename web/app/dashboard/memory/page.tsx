@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   Brain, Plus, Trash2, Tag, Clock, FileText, Lightbulb, AlertCircle, Search,
-  Server, Shield, Cpu, Zap,
+  Server, Shield, Cpu, Zap, type LucideIcon,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -30,7 +30,7 @@ interface MemoryEntry {
 
 const KIND_META: Record<MemoryKind, {
   label: string
-  icon: React.ElementType
+  icon: LucideIcon
   color: string
   status: 'active' | 'idle' | 'error' | 'offline'
 }> = {

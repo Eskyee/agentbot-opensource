@@ -6,7 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area,
 } from 'recharts';
-import { DollarSign, TrendingDown, TrendingUp, Zap, Clock, Loader2 } from 'lucide-react';
+import { DollarSign, TrendingDown, TrendingUp, Zap, Clock, Loader2, type LucideIcon } from 'lucide-react';
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
 import StatusPill from '@/app/components/shared/StatusPill';
 
@@ -53,19 +53,19 @@ async function fetchCostData(period: string): Promise<CostData> {
 }
 
 const StatCard = ({
-  icon: Icon, label, value, sub, trend, color = 'text-blue-400',
+  icon: Icon, label, value, sub, trend, colorClass = 'text-blue-400',
 }: {
-  icon: React.ElementType; label: string; value: string; sub?: string; trend?: 'up' | 'down'; color?: string;
+  icon: LucideIcon; label: string; value: string; sub?: string; trend?: 'up' | 'down'; colorClass?: string;
 }) => (
   <div className="bg-zinc-950 border border-zinc-800 p-5">
     <div className="flex items-center justify-between mb-2">
       <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-600">
-        <Icon className={`h-4 w-4 ${color}`} />{label}
+        <Icon className={`h-4 w-4 ${colorClass}`} />{label}
       </div>
       {trend === 'up'   && <TrendingUp   className="h-3 w-3 text-red-400" />}
       {trend === 'down' && <TrendingDown className="h-3 w-3 text-green-400" />}
     </div>
-    <div className={`text-2xl font-bold tracking-tight ${color}`}>{value}</div>
+        <div className={`text-2xl font-bold tracking-tight ${colorClass}`}>{value}</div>
     {sub && <div className="text-[10px] text-zinc-600 mt-1">{sub}</div>}
   </div>
 );
@@ -149,7 +149,7 @@ export default function CostPage() {
             label={`${period === 'mtd' ? 'MTD' : period} Cost`}
             value={`$${summary.totalCost.toFixed(2)}`}
             sub="all agents"
-            color="text-green-400"
+            colorClass="text-green-400"
             trend={summary.totalCost > 10 ? 'up' : 'down'}
           />
           <StatCard
@@ -157,21 +157,21 @@ export default function CostPage() {
             label="Tokens Used"
             value={`${(summary.totalTokens / 1_000_000).toFixed(1)}M`}
             sub="input + output"
-            color="text-blue-400"
+            colorClass="text-blue-400"
           />
           <StatCard
             icon={Clock}
             label="API Calls"
             value={summary.totalCalls.toLocaleString()}
             sub={`last ${period}`}
-            color="text-blue-400"
+            colorClass="text-blue-400"
           />
           <StatCard
             icon={DollarSign}
             label="Avg / Call"
             value={`$${summary.avgCostPerCall.toFixed(4)}`}
             sub="blended"
-            color="text-yellow-400"
+            colorClass="text-yellow-400"
           />
         </div>
 
