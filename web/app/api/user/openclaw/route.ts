@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { readSharedGatewayToken } from '@/app/lib/gateway-token'
+import { getOrCreateUserGatewayToken } from '@/app/lib/token-manager'
 import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
-
-const getGatewayToken = () => readSharedGatewayToken()
 
 export async function GET() {
   const session = await getAuthSession()
@@ -19,11 +17,14 @@ export async function GET() {
     select: { openclawUrl: true, openclawInstanceId: true },
   })
 
+  // Get the user's own gateway token (unique per agent)
+  const tokenResult = await getOrCreateUserGatewayToken(session.user.id)
+  const userGatewayToken = tokenResult?.token || null
+
   return NextResponse.json({
     openclawUrl: user?.openclawUrl || null,
     openclawInstanceId: user?.openclawInstanceId || null,
-    // Gateway token is the same for all agents (platform-level auth)
-    gatewayToken: getGatewayToken(),
+    gatewayToken: userGatewayToken,
   })
 }
 
