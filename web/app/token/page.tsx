@@ -29,6 +29,90 @@ export default function TokenPage() {
           </p>
         </div>
 
+        {/* Solana Token */}
+        <section className="border-t border-zinc-800 pt-12 mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-blue-400 block mb-8">Solana Token (Community)</span>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Name</span>
+              <span className="text-white text-sm font-bold uppercase">Agentbot</span>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Symbol</span>
+              <span className="text-white text-sm font-bold uppercase">AGENTBOT</span>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Network</span>
+              <span className="text-white text-sm font-bold uppercase">Solana</span>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">DEX</span>
+              <span className="text-white text-sm font-bold uppercase">Pump.fun</span>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Address</span>
+              <div className="flex items-center gap-4 flex-wrap">
+                <code className="text-blue-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
+                  9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
+                </code>
+                <a
+                  href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-zinc-400 text-xs uppercase tracking-widest hover:text-white transition-colors"
+                >
+                  View on Solscan
+                </a>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Status</span>
+              <span className="text-green-500 text-sm font-bold uppercase">Graduated</span>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Progress</span>
+              <span className="text-white text-sm font-bold uppercase">100%</span>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="border border-zinc-800 bg-black p-4">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Market Cap</span>
+              <span className="text-white text-sm font-bold">$3.46K</span>
+            </div>
+            <div className="border border-zinc-800 bg-black p-4">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">24h Volume</span>
+              <span className="text-white text-sm font-bold">$107K</span>
+            </div>
+            <div className="border border-zinc-800 bg-black p-4">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Holders</span>
+              <span className="text-white text-sm font-bold">75</span>
+            </div>
+            <div className="border border-zinc-800 bg-black p-4">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Liquidity</span>
+              <span className="text-white text-sm font-bold">$4.51K</span>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <a
+              href="https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-blue-600 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-blue-500 transition-colors"
+            >
+              Trade on Pump.fun
+            </a>
+          </div>
+        </section>
+
         {/* Token Information */}
         <section className="border-t border-zinc-800 pt-12 mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Token Information</span>
@@ -91,6 +175,36 @@ export default function TokenPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <a
+              href="https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-blue-400 block mb-2">Solana</span>
+              <span className="text-sm text-white">Pump.fun ↗</span>
+            </a>
+
+            <a
+              href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Solscan</span>
+              <span className="text-sm text-white">View Token ↗</span>
+            </a>
+
+            <a
+              href="https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">DexScreener</span>
+              <span className="text-sm text-white">Chart ↗</span>
+            </a>
+
+            <a
               href="https://agentbot.raveculture.xyz"
               target="_blank"
               rel="noopener noreferrer"
@@ -116,7 +230,7 @@ export default function TokenPage() {
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">GeckoTerminal</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">GeckoTerminal (Base)</span>
               <span className="text-sm text-white">AGENTBOT/WETH Pool</span>
             </a>
 
@@ -126,7 +240,7 @@ export default function TokenPage() {
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Trade</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Trade (Base)</span>
               <span className="text-sm text-white">Buy on Uniswap</span>
             </a>
 
@@ -136,7 +250,7 @@ export default function TokenPage() {
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Explorer</span>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Explorer (Base)</span>
               <span className="text-sm text-white">View on Basescan</span>
             </a>
 
