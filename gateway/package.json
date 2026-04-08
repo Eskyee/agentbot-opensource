@@ -1,9 +1,10 @@
 {
-  "name": "openclaw-railway",
+  "name": "@agentbot/gateway",
   "version": "1.0.0",
-  "description": "Railway wrapper for OpenClaw \u2014 setup UI + gateway manager",
+  "description": "Railway wrapper for OpenClaw — setup UI + gateway manager",
   "main": "src/server.js",
   "type": "module",
+  "workspaces": ["."],
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
