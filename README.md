@@ -6,7 +6,7 @@
 
 <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeibstpvk6pqo23ks3vork3yzr6ns5mdeltkv5snrkpgxn3j6pkgoau" alt="Agentbot" width="900" />
 
-[![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.2-blue)](https://github.com/OpenClaw/openclaw)
+[![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.7-blue)](https://github.com/OpenClaw/openclaw)
 [![Website](https://img.shields.io/badge/site-agentbot.sh-black)](https://agentbot.sh)
 [![Docs](https://img.shields.io/badge/docs-live-0ea5e9)](https://docs.agentbot.raveculture.xyz)
 [![Discord](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/vTPG4vdV6D)
