@@ -60,14 +60,35 @@ export default function TokenPage() {
                 <code className="text-blue-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
                   9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
                 </code>
-                <a
-                  href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-zinc-400 text-xs uppercase tracking-widest hover:text-white transition-colors"
-                >
-                  View on Solscan
-                </a>
+            <a
+              href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Solscan</span>
+              <span className="text-sm text-white">Contract ↗</span>
+            </a>
+
+            <a
+              href="https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">DexScreener</span>
+              <span className="text-sm text-white">Chart ↗</span>
+            </a>
+
+            <a
+              href="https://www.oklink.com/solana/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Oklink</span>
+              <span className="text-sm text-white">Token Info ↗</span>
+            </a>
               </div>
             </div>
 
