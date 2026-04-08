@@ -1,13 +1,14 @@
 import { Calendar, CheckCircle, Mail } from 'lucide-react'
 import Link from 'next/link'
 
-export default function ExpertSetupSuccess({
+export default async function ExpertSetupSuccess({
   searchParams,
 }: {
-  searchParams: { date?: string; time?: string }
+  searchParams: Promise<{ date?: string; time?: string }>
 }) {
-  const date = searchParams.date || ''
-  const time = searchParams.time || ''
+  const params = await searchParams
+  const date = params.date || ''
+  const time = params.time || ''
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
