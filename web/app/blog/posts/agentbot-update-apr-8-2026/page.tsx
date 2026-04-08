@@ -90,14 +90,21 @@ export default function BlogPost() {
             <li>→ Blog post on Cybersecurity in the Age of AI</li>
           </ul>
 
-          <h2 className="text-2xl font-bold text-white mt-12 mb-4">What's Next</h2>
+          <h2 className="text-2xl font-bold text-white mt-12 mb-4">What's Next: Code & Community</h2>
 
           <p className="text-zinc-400 mb-6">
-            We're building fast. The Zero Human Company vision is becoming reality — AI agents managing AI agents, with crypto-native payments throughout. The Solana token is proof: the community is here and active.
+            <strong>We're focusing on code and community.</strong> Agentbot is an open source project — we're here to support developers building with AI agents. The Solana token is proof the community is here, but our core mission is:
           </p>
 
+          <ul className="space-y-4 text-zinc-400 mb-8">
+            <li>→ <strong className="text-white">Open Source First:</strong> All agentbot code is free. Fork it, build on it, break it.</li>
+            <li>→ <strong className="text-white">Developer Support:</strong> We're building tools, docs, and skills to help devs ship faster.</li>
+            <li>→ <strong className="text-white">Community Projects:</strong> If you're building something cool with agents, we want to help.</li>
+            <li>→ <strong className="text-white">Zero Gatekeeping:</strong> No API keys required to get started. Deploy in 60 seconds.</li>
+          </ul>
+
           <p className="text-zinc-500 text-sm mt-12 pt-8 border-t border-zinc-800">
-            Deployed via OpenClaw. Powered by Base + Solana.
+            Open source. Community owned. Built on Base + Solana.
           </p>
         </div>
       </article>
