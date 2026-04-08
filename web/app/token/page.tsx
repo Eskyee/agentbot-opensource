@@ -205,6 +205,16 @@ export default function TokenPage() {
             </a>
 
             <a
+              href="https://www.oklink.com/solana/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Oklink</span>
+              <span className="text-sm text-white">Token Info ↗</span>
+            </a>
+
+            <a
               href="https://agentbot.raveculture.xyz"
               target="_blank"
               rel="noopener noreferrer"
