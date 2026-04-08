@@ -10,6 +10,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agentbot-update-apr-8-2026',
+    dateLabel: '8 Apr',
+    isoDate: '2026-04-08',
+    title: 'Community Token, Turborepo 2.9, and More',
+    excerpt:
+      'Big update: AGENTBOT launched on Solana pump.fun, Turborepo 2.9, OpenClaw latest, Blockstream Jade, and live GitHub stars.',
+    tags: ['Token', 'Solana', 'Turborepo', 'OpenClaw'],
+    track: 'Shipping',
+  },
+  {
     slug: 'agentbot-on-ipfs-via-gitlawb',
     dateLabel: '7 Apr',
     isoDate: '2026-04-07',
