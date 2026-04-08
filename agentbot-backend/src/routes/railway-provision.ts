@@ -68,7 +68,7 @@ function buildOpenClawConfig(): string {
 function getAgentEnvVars(agentId: string, plan: string): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
-    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || '',
+    OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app',
     AGENTBOT_USER_ID: agentId,
     AGENTBOT_PLAN: plan,
     AGENTBOT_API_URL: process.env.BACKEND_API_URL || '',
