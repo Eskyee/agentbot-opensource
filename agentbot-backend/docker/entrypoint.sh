@@ -1,6 +1,6 @@
 #!/bin/sh
 # Agentbot OpenClaw Agent Container Entrypoint (Official Image)
-# Uses ghcr.io/openclaw/openclaw:2026.4.2
+# Uses ghcr.io/openclaw/openclaw:2026.4.7
 # Runs openclaw onboard --non-interactive for proper setup
 set -e
 
