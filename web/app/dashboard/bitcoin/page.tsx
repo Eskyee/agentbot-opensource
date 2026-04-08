@@ -516,6 +516,56 @@ export default function BitcoinPage() {
             </div>
           </section>
         </div>
+
+        {/* Blockstream Jade / LWK Integration */}
+        <section className="mt-6 bg-zinc-950 border border-zinc-800 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Hardware Wallet</div>
+              <h2 className="text-sm font-bold tracking-tight uppercase mt-1">Blockstream Jade + Liquid</h2>
+              <p className="text-[10px] text-zinc-500 mt-1">
+                🔐 Hardware security: Use Jade hardware wallet with Liquid Network support
+              </p>
+            </div>
+            <a
+              href="https://blockstream.com/jade/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-blue-400 hover:text-blue-300"
+            >
+              Get Jade →
+            </a>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border border-zinc-800 bg-black/40 p-4">
+              <div className="text-xs font-bold text-white mb-2">Jade S1</div>
+              <p className="text-[10px] text-zinc-500 mb-3">Air-gapped signing with OLED display</p>
+              <div className="text-[10px] text-zinc-600">Bitcoin + Liquid</div>
+            </div>
+            
+            <div className="border border-zinc-800 bg-black/40 p-4">
+              <div className="text-xs font-bold text-white mb-2">Multi-Sig</div>
+              <p className="text-[10px] text-zinc-500 mb-3">2-of-2 or 2-of-3 with Jade + software</p>
+              <div className="text-[10px] text-zinc-600">Enhanced security</div>
+            </div>
+            
+            <div className="border border-zinc-800 bg-black/40 p-4">
+              <div className="text-xs font-bold text-white mb-2">Liquid Assets</div>
+              <p className="text-[10px] text-zinc-500 mb-3">Issue tokens, stablecoins on Liquid</p>
+              <div className="text-[10px] text-zinc-600">Tokenization</div>
+            </div>
+          </div>
+          
+          <div className="mt-4 pt-4 border-t border-zinc-800">
+            <a
+              href="/docs/liquid-lwk-railway"
+              className="inline-flex items-center gap-2 text-[10px] text-blue-400 hover:text-blue-300"
+            >
+              Learn how to deploy LWK on Railway →
+            </a>
+          </div>
+        </section>
       </DashboardContent>
     </DashboardShell>
   )
