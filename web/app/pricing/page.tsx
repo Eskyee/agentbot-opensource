@@ -152,6 +152,30 @@ export default function PricingPage() {
           </div>
         </section>
 
+        {/* Expert Setup CTA */}
+        <section className="border-t border-zinc-800 pt-16 mb-16">
+          <div className="max-w-2xl">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Need Help?</span>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase mb-4">
+              Live 1-on-1 Setup
+            </h2>
+            <p className="text-sm text-zinc-400 mb-6">
+              Don't want to figure it out alone? Book a 1-hour live screen share session with our team to get your agent configured and running.
+            </p>
+            <div className="flex items-baseline gap-2 mb-6">
+              <span className="text-3xl font-bold">£49</span>
+              <span className="text-zinc-500 text-sm">/ session</span>
+            </div>
+            <Button
+              variant="outline"
+              className="border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 text-xs font-bold uppercase tracking-widest"
+              onClick={() => window.location.href = '/expert-setup'}
+            >
+              Book Expert Setup
+            </Button>
+          </div>
+        </section>
+
         {/* Payment Methods */}
         <section className="border-t border-zinc-800 pt-16 mb-16">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">Accepted Payment Methods</div>
