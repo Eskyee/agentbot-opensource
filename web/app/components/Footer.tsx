@@ -79,6 +79,7 @@ export default function Footer() {
               { href: '/token', label: '$AGENTBOT' },
               { href: 'https://github.com/Eskyee/agentbot-opensource', label: 'GitHub' },
               { href: 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource', label: 'Gitlawb' },
+              { href: 'https://deepwiki.com/Eskyee/agentbot-opensource', label: 'DeepWiki' },
               { href: 'https://dev.to/agentbot', label: 'Dev.to' },
               { href: 'https://talent.app/raveculture.base.eth', label: 'Talent' },
               { href: 'https://openwebui.com/u/jaieskyravecult115142e2f8', label: 'Open WebUI' },
