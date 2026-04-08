@@ -185,11 +185,11 @@ export default function X402Dashboard() {
           <h3 className="text-sm font-mono font-bold text-white mb-4">DYNAMIC PRICING</h3>
           <div className="text-center">
             <div className="text-2xl font-mono font-bold text-white">
-              ${pricing?.pricing.rate || 0.01}
+              ${pricing?.pricing?.rate ?? 0.01}
             </div>
             <p className="text-xs font-mono text-zinc-500 uppercase mt-1">
               {pricing?.tier || 'basic'} tier
-              {pricing?.pricing.discount ? ` (${pricing.pricing.discount}% off)` : ''}
+              {pricing?.pricing?.discount ? ` (${pricing.pricing.discount}% off)` : ''}
             </p>
           </div>
         </div>
