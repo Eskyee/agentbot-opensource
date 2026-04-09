@@ -13,7 +13,7 @@ export interface ServiceStatus {
 
 export const HEALTH_SERVICES: ServiceHealth[] = [
   { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health` },
-  { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/health` },
+  { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/soul/status` },
   { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health` },
 ]
 
@@ -26,10 +26,22 @@ export async function checkServices(services: ServiceHealth[] = HEALTH_SERVICES)
           return { name: service.name, status: 'degraded', detail: `HTTP ${res.status}` }
         }
         const body = await res.json().catch(() => null)
+        const detail =
+          typeof body === 'object' && body !== null
+            ? ('status' in body && typeof body.status === 'string'
+                ? body.status
+                : 'active' in body
+                  ? ((body as { active?: boolean; dormant?: boolean }).active
+                      ? ((body as { dormant?: boolean }).dormant ? 'dormant' : 'active')
+                      : 'inactive')
+                  : 'build' in body && typeof body.build === 'string'
+                    ? body.build
+                    : 'ok')
+            : 'ok'
         return {
           name: service.name,
           status: 'ok',
-          detail: typeof body === 'object' && body !== null ? (body.status || body.build || 'ok') : 'ok',
+          detail,
         }
       } catch (error: any) {
         return { name: service.name, status: 'down', detail: error?.message || 'unreachable' }
