@@ -60,6 +60,7 @@ export const navSections = [
       { label: 'Billing', href: '/billing', icon: '☆' },
       { label: 'Bankr', href: '/dashboard/trading', icon: '◈' },
       { label: 'Domains', href: '/dashboard/domains', icon: '🌍' },
+      { label: 'Feedback', href: '/dashboard/feedback', icon: '💬' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
       { label: 'Showcase', href: '/showcase', icon: '✧' },
     ]
