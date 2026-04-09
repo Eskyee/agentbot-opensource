@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -38,6 +39,15 @@ export default function BuildingSaaSWithFactoryDroid() {
             </div>
           </div>
 
+          <Image
+            src="/blog/factory-droid-cover.jpg"
+            alt="Three AI droids — provisioner, skill-builder, and user-manager — connected to a central SaaS dashboard"
+            width={1200}
+            height={630}
+            className="rounded-lg border border-zinc-800 mb-8"
+            priority
+          />
+
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             The Problem: One Dev, Entire Platform
           </h2>
@@ -50,6 +60,14 @@ export default function BuildingSaaSWithFactoryDroid() {
           <p className="text-zinc-300 mb-6">
             I build it solo. No co-founder, no engineering team. Just me and Factory Droid.
           </p>
+
+          <Image
+            src="/blog/factory-droid-solo-dev.jpg"
+            alt="Solo developer at a futuristic desk with holographic AI screens showing code and dashboards"
+            width={1200}
+            height={630}
+            className="rounded-lg border border-zinc-800 mb-8"
+          />
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             What is Factory Droid?
@@ -68,6 +86,14 @@ export default function BuildingSaaSWithFactoryDroid() {
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             Our Custom Droid Fleet
           </h2>
+          <Image
+            src="/blog/factory-droid-droids-fleet.jpg"
+            alt="Three AI robot droids with neon purple and green glow — the custom droid fleet"
+            width={1200}
+            height={630}
+            className="rounded-lg border border-zinc-800 mb-6"
+          />
+
           <p className="text-zinc-300 mb-4">
             We run three custom droids in our <code className="text-zinc-200">.factory/droids/</code> directory,
             each tuned for a different slice of the platform:
@@ -151,6 +177,14 @@ runtime on Railway infrastructure.
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             The Daily Workflow
           </h2>
+          <Image
+            src="/blog/factory-droid-workflow.jpg"
+            alt="Futuristic code workflow terminal with neon cyan and pink holographic displays"
+            width={1200}
+            height={630}
+            className="rounded-lg border border-zinc-800 mb-6"
+          />
+
           <p className="text-zinc-300 mb-4">
             Here is what a typical day looks like building Agentbot with Factory Droid:
           </p>

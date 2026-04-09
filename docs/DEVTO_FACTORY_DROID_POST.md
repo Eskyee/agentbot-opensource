@@ -3,15 +3,19 @@ title: Building a SaaS Platform with Factory Droid — From Zero to Production
 published: true
 description: How one developer ships an AI agent platform at startup speed using custom droids as a virtual engineering team.
 tags: factorydroid, saas, ai, buildinpublic
-cover_image: 
+cover_image: https://agentbot.raveculture.xyz/blog/factory-droid-cover.jpg
 canonical_url: https://agentbot.sh/blog/posts/building-saas-with-factory-droid
 ---
+
+![Three AI droids — provisioner, skill-builder, and user-manager — connected to a central SaaS dashboard](https://agentbot.raveculture.xyz/blog/factory-droid-cover.jpg)
 
 ## The Problem: One Dev, Entire Platform
 
 Agentbot is a SaaS platform that provisions autonomous AI agent containers for the music and culture industry. Users sign up, pick a plan, and get a dedicated OpenClaw agent running on Railway in under 60 seconds. Behind that simple flow sits a Next.js frontend, an Express backend, Prisma ORM, Stripe billing, Railway container orchestration, 40+ API routes, and a skill marketplace with 45+ installable capabilities.
 
 I build it solo. No co-founder, no engineering team. Just me and Factory Droid.
+
+![Solo developer at a futuristic desk with holographic AI screens](https://agentbot.raveculture.xyz/blog/factory-droid-solo-dev.jpg)
 
 ## What is Factory Droid?
 
@@ -20,6 +24,8 @@ I build it solo. No co-founder, no engineering team. Just me and Factory Droid.
 The real power is **custom droids** — you write a markdown spec that teaches the AI your specific domain, and it becomes a specialist.
 
 ## Our Custom Droid Fleet
+
+![Three AI robot droids with neon purple and green glow](https://agentbot.raveculture.xyz/blog/factory-droid-droids-fleet.jpg)
 
 We run three custom droids in our `.factory/droids/` directory, each tuned for a different slice of the platform:
 
@@ -76,6 +82,8 @@ runtime on Railway infrastructure.
 That is it. The droid reads the frontmatter for routing, then the body gives it domain expertise. When you or another droid spawns it as a subagent, it already knows your file paths, your data models, your security rules, and your common failure modes. No prompt engineering on every request.
 
 ## The Daily Workflow
+
+![Futuristic code workflow terminal with neon holographic displays](https://agentbot.raveculture.xyz/blog/factory-droid-workflow.jpg)
 
 Here is what a typical day looks like building Agentbot with Factory Droid:
 
