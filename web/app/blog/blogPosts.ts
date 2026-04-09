@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'hardening-agentic-stack',
+    dateLabel: '10 Apr',
+    isoDate: '2026-04-10',
+    title: 'The Hardening Agentic Stack',
+    excerpt:
+      'From chatbots to autonomous systems. MCP standardization, persistent memory, vision-based agents, and the infrastructure making agents production-ready.',
+    tags: ['Industry', 'Infrastructure', 'Analysis', 'Security'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'mimo-v2-pro-powers-agentbot',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
