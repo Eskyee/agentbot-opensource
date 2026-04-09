@@ -558,12 +558,22 @@ export default function BitcoinPage() {
           </div>
           
           <div className="mt-4 pt-4 border-t border-zinc-800">
-            <a
-              href="/docs/liquid-lwk-railway"
-              className="inline-flex items-center gap-2 text-[10px] text-blue-400 hover:text-blue-300"
-            >
-              Learn how to deploy LWK on Railway →
-            </a>
+            <div className="flex flex-wrap gap-4">
+              <a
+                href="/docs/liquid-lwk-railway"
+                className="inline-flex items-center gap-2 text-[10px] text-blue-400 hover:text-blue-300"
+              >
+                Learn how to deploy LWK on Railway →
+              </a>
+              <a
+                href="https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-[10px] text-zinc-400 hover:text-white"
+              >
+                Official Liquid node setup →
+              </a>
+            </div>
           </div>
         </section>
       </DashboardContent>

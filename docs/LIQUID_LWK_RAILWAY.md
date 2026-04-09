@@ -11,6 +11,7 @@ The Liquid Wallet Kit is Blockstream's toolkit for building Bitcoin/Liquid walle
 
 **GitHub:** https://github.com/Blockstream/lwk (105 ⭐, 45 forks)
 **Docs:** https://blockstream.github.io/lwk/book
+**Official Liquid node guide:** https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node
 
 ## Docker on Railway
 
@@ -60,6 +61,16 @@ lwk_cli wallet burn -w WALLET --asset ASSET --satoshi-asset 100000  # Burn
 For Railway deployment:
 - `ELECTRUM_URL` - Optional custom Electrum server (default: Blockstream's)
 - `LOG_LEVEL` - Debug, info, warn, error
+
+## When You Need a Full Liquid Node
+
+LWK does not require you to run a full Liquid node for normal wallet operations. It can use Blockstream Electrum.
+
+If you want your own validating Liquid infrastructure instead of the lightweight LWK path, use Blockstream's official guide:
+
+- https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node
+
+That guide walks through installing Elements Core, choosing a data directory, syncing the Liquid chain, and understanding optional Bitcoin-node-backed peg-in validation.
 
 ## Agentbot Integration
 

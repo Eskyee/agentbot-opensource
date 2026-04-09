@@ -22,7 +22,25 @@ export default function LiquidLwkRailwayPage() {
             Liquid Wallet Kit (LWK)<br />on Railway
           </h1>
           <p className="text-zinc-400 max-w-2xl mx-auto">
-            Deploy Blockstream's Liquid Wallet Kit on Railway for multi-sig Bitcoin/Liquid operations with Jade HWW support.
+            Deploy Blockstream&apos;s Liquid Wallet Kit on Railway for multi-sig Bitcoin/Liquid operations with Jade HWW support.
+          </p>
+          <p className="text-zinc-500 max-w-2xl mx-auto mt-3 text-sm">
+            If you want a full validating Liquid node instead of the lighter LWK path, use Blockstream&apos;s official Elements Core guide.
+          </p>
+        </div>
+
+        <div className="border border-zinc-800 bg-zinc-950 p-5 mb-8">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Official Blockstream Guide</span>
+          <a
+            href="https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300"
+          >
+            Set up a Liquid node →
+          </a>
+          <p className="text-xs text-zinc-500 mt-3">
+            Blockstream&apos;s guide covers Elements Core installation, Liquid chain sync, and the optional Bitcoin-node peg-in validation path.
           </p>
         </div>
 
@@ -108,7 +126,7 @@ docker build -t lwk .`}
                 <div className="bg-zinc-800/50 rounded-lg p-3">
                   <div className="font-bold text-sm mb-1">Software Signer</div>
                   <pre className="text-xs text-zinc-400 font-mono">
-./lwk_cli signer create --mnemonic "your twelve words..."
+{`./lwk_cli signer create --mnemonic "your twelve words..."`}
                   </pre>
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-3">
@@ -179,13 +197,13 @@ railway up
             </div>
             <div className="bg-zinc-800/50 rounded-lg p-4">
               <div className="font-bold text-sm mb-2">Issue Asset</div>
-              <pre className="text-xs text-zinc-400 font-mono">
-./lwk_cli asset issue \
+                  <pre className="text-xs text-zinc-400 font-mono">
+{`./lwk_cli asset issue \
   --ticker MYTOKEN \
   --name "My Token" \
   --amount 1000000 \
-  --wallet my-liquid-wallet
-              </pre>
+  --wallet my-liquid-wallet`}
+                  </pre>
             </div>
             <div className="bg-zinc-800/50 rounded-lg p-4">
               <div className="font-bold text-sm mb-2">Send Transaction</div>
@@ -235,6 +253,9 @@ railway up
             </a>
             <a href="https://docs.liquid.net/docs/lwk-overview-and-examples" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
               <span>📖</span> LWK Documentation
+            </a>
+            <a href="https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+              <span>🧱</span> Blockstream Liquid Node Guide
             </a>
             <a href="https://help.railway.xyz/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
               <span>🚂</span> Railway Docs
