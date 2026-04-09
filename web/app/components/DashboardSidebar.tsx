@@ -21,6 +21,7 @@ export const navSections = [
       { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
       { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
       { label: 'Solana', href: '/dashboard/solana', icon: '◎' },
+      { label: 'Buddies', href: '/buddies', icon: '🐚' },
       { label: 'Git City', href: '/dashboard/git-city', icon: '⌂' },
       { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
       { label: 'Jobs', href: '/jobs', icon: '◈' },
