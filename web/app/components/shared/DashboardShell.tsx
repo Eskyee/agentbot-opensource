@@ -15,6 +15,7 @@ export function DashboardShell({ children, className }: DashboardShellProps) {
 
 interface DashboardHeaderProps {
   title: string
+  subtitle?: string
   icon?: React.ReactNode
   count?: number
   action?: React.ReactNode
@@ -23,6 +24,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({
   title,
+  subtitle,
   icon,
   count,
   action,
@@ -35,13 +37,18 @@ export function DashboardHeader({
         className
       )}
     >
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink-0">
-        {icon}
-        <h1 className="text-base sm:text-xl font-bold tracking-tight font-mono truncate">{title}</h1>
-        {count !== undefined && (
-          <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5 font-mono">
-            {count}
-          </span>
+      <div className="min-w-0 flex-shrink">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          {icon}
+          <h1 className="text-base sm:text-xl font-bold tracking-tight font-mono truncate">{title}</h1>
+          {count !== undefined && (
+            <span className="text-xs text-zinc-500 bg-zinc-900 border border-zinc-700 rounded-full px-3 py-0.5 font-mono">
+              {count}
+            </span>
+          )}
+        </div>
+        {subtitle && (
+          <p className="mt-1 text-xs text-zinc-500 truncate">{subtitle}</p>
         )}
       </div>
       {action}
