@@ -10,6 +10,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'conference-recap-tokyo-london-2026',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'Conference Recap: Tokyo & London 2026 — AI Agents Are the New Consensus',
+    excerpt:
+      'TEAMZ Summit Tokyo, Consensus Hong Kong, and London Blockchain Conference all converge on one thesis: autonomous AI agents running on crypto rails are the next layer of infrastructure.',
+    tags: ['Conferences', 'AI Agents', 'Tokyo', 'London', '$AGENTBOT'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'agentbot-update-apr-9-2026',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
