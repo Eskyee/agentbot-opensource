@@ -52,6 +52,13 @@ const DEFAULT_SKILLS = [
   { name: 'Qwen AI', description: 'Use Qwen models for chat, reasoning, and tool calling. Bundled provider with fast inference.', category: 'ai', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: false },
   { name: 'Fireworks AI', description: 'Access Fireworks AI models for generation and reasoning. High-throughput inference.', category: 'ai', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: false },
   { name: 'Bedrock Mantle', description: 'Use Amazon Bedrock Mantle models with automatic inference profile discovery.', category: 'ai', author: 'OpenClaw v2026.4.5', downloads: 0, rating: 5.0, featured: false },
+  // v2026.4.9 — adapted from Kilo-Org/cloud
+  { name: 'Chat SDK', description: 'Build multi-platform chat bots. One SDK for Slack, Teams, Discord, Google Chat, GitHub, and Linear.', category: 'channels', author: 'Kilo-Org', downloads: 0, rating: 5.0, featured: true },
+  { name: 'Sentry CLI', description: 'Monitor production errors, stream logs, triage issues, and run AI root cause analysis from the CLI.', category: 'development', author: 'Kilo-Org', downloads: 0, rating: 5.0, featured: true },
+  { name: 'Docker Containers', description: 'Best practices for building and managing agent containers. Resource limits, health checks, security.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'Stateful Agents', description: 'Persistent state, agent-to-agent coordination, scheduled tasks, and Drizzle ORM SQLite migrations.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: true },
+  { name: 'Deploy CLI', description: 'CLI reference for deploying agents, managing secrets, streaming logs, and troubleshooting containers.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
+  { name: 'Code Review', description: 'Review agent code against production best practices. Security, state management, and anti-pattern detection.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
 ]
 
 export const dynamic = 'force-dynamic'
