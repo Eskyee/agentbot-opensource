@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
           stdout: result.stdout,
           stderr: result.stderr,
           exitCode: result.exitCode,
-          duration: `${result.durationMs}ms`,
+          duration: "completed",
         })
       }
 
