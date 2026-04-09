@@ -71,6 +71,7 @@ function OnboardContent() {
     { id: 'openrouter/meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 (Advanced)', provider: 'openrouter', description: 'Advanced general assistant. Requires Solo plan.', tier: 'solo' },
     { id: 'openrouter/qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 (Coding)', provider: 'openrouter', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
     { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1 (Reasoning)', provider: 'openrouter', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
+    { id: 'openrouter/solana/solana-agent-kit', name: 'Solana Agent Kit', provider: 'openrouter', description: 'DeFi, NFTs, token ops. 60+ Solana actions via MCP. Requires Label plan.', tier: 'label' },
   ]
 
   // Available ready-to-use skills

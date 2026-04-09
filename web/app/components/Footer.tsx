@@ -77,6 +77,7 @@ export default function Footer() {
             {[
               { href: '/partner', label: 'Partner' },
               { href: '/token', label: '$AGENTBOT' },
+              { href: '/solana', label: 'Solana' },
               { href: 'https://github.com/Eskyee/agentbot-opensource', label: 'GitHub' },
               { href: 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource', label: 'Gitlawb' },
               { href: 'https://deepwiki.com/Eskyee/agentbot-opensource', label: 'DeepWiki' },
