@@ -29,22 +29,22 @@ interface ShowcaseAgent {
   memberSince: string
 }
 
-async function getAgents(): Promise<ShowcaseAgent[]> {
+async function getAgents(): Promise<{ agents: ShowcaseAgent[]; failed: boolean }> {
   try {
     const res = await fetch(
       buildAppUrl('/api/showcase'),
       { next: { revalidate: 60 } }
     )
-    if (!res.ok) return []
+    if (!res.ok) return { agents: [], failed: true }
     const data = await res.json()
-    return data.agents ?? []
+    return { agents: data.agents ?? [], failed: false }
   } catch {
-    return []
+    return { agents: [], failed: true }
   }
 }
 
 export default async function ShowcasePage() {
-  const agents = await getAgents()
+  const { agents, failed } = await getAgents()
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
@@ -75,7 +75,28 @@ export default async function ShowcasePage() {
           </p>
         </div>
 
-        {agents.length === 0 ? (
+        {failed ? (
+          <div className="border border-zinc-800 p-16 text-center">
+            <p className="text-zinc-600 text-sm uppercase tracking-widest mb-2">Showcase unavailable</p>
+            <p className="text-zinc-500 text-xs mb-8">
+              The public showcase is temporarily having trouble loading. Please try again shortly.
+            </p>
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              <Link
+                href="/"
+                className="text-xs border border-zinc-700 text-zinc-400 px-6 py-3 uppercase tracking-widest hover:border-zinc-500 hover:text-white transition-colors"
+              >
+                Back home
+              </Link>
+              <Link
+                href="/register"
+                className="text-xs bg-white text-black px-6 py-3 uppercase tracking-widest font-bold hover:bg-zinc-200 transition-colors"
+              >
+                Deploy your agent
+              </Link>
+            </div>
+          </div>
+        ) : agents.length === 0 ? (
           /* Empty state */
           <div className="border border-zinc-800 p-16 text-center">
             <p className="text-zinc-600 text-sm uppercase tracking-widest mb-2">No agents yet</p>

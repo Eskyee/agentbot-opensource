@@ -5,44 +5,65 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 60 // Cache for 60s — public page, no auth needed
 
 export async function GET() {
-  const agents = await prisma.agent.findMany({
-    where: { showcaseOptIn: true, status: 'running' },
-    select: {
-      id: true,
-      name: true,
-      showcaseDescription: true,
-      createdAt: true,
-      memories: {
-        where: { key: 'personality' },
-        select: { value: true },
-        take: 1,
+  try {
+    const agents = await prisma.agent.findMany({
+      where: {
+        showcaseOptIn: true,
+        status: { in: ['active', 'running'] },
       },
-    },
-    orderBy: { createdAt: 'asc' },
-    take: 48,
-  })
+      select: {
+        id: true,
+        name: true,
+        showcaseDescription: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'asc' },
+      take: 48,
+    })
 
-  const formatted = agents.map((a) => {
-    let personalityType = 'basement'
-    let expertise = ''
-    try {
-      const raw = a.memories[0]?.value
-      if (raw) {
-        const p = typeof raw === 'string' ? JSON.parse(raw) : raw
-        personalityType = p.type || 'basement'
-        expertise = p.expertise || ''
+    const agentIds = agents.map((agent) => agent.id)
+    const memories = agentIds.length
+      ? await prisma.agentMemory.findMany({
+          where: {
+            agentId: { in: agentIds },
+            key: 'personality',
+          },
+          select: {
+            agentId: true,
+            value: true,
+          },
+        })
+      : []
+
+    const memoryByAgentId = new Map(memories.map((memory) => [memory.agentId, memory.value]))
+
+    const formatted = agents.map((agent) => {
+      let personalityType = 'basement'
+      let expertise = ''
+      try {
+        const raw = memoryByAgentId.get(agent.id)
+        if (raw) {
+          const personality = typeof raw === 'string' ? JSON.parse(raw) : raw
+          personalityType = personality.type || 'basement'
+          expertise = personality.expertise || ''
+        }
+      } catch {
+        // Fall back to defaults if personality memory is missing or malformed.
       }
-    } catch { /* ignore parse errors */ }
 
-    return {
-      id: a.id,
-      name: a.name,
-      description: a.showcaseDescription || null,
-      personalityType,
-      expertise,
-      memberSince: a.createdAt,
-    }
-  })
+      return {
+        id: agent.id,
+        name: agent.name,
+        description: agent.showcaseDescription || null,
+        personalityType,
+        expertise,
+        memberSince: agent.createdAt,
+      }
+    })
 
-  return NextResponse.json({ agents: formatted, total: formatted.length })
+    return NextResponse.json({ agents: formatted, total: formatted.length })
+  } catch (error) {
+    console.error('[Showcase API] Error:', error)
+    return NextResponse.json({ error: 'Failed to load showcase agents' }, { status: 500 })
+  }
 }
