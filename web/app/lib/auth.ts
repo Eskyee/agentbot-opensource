@@ -299,8 +299,18 @@ export const authOptions: AuthOptions = {
     },
   },
   events: {
-    async signIn({ user, account }) {
-      console.log(`[Auth] User ${user.email} signed in via ${account?.provider || 'credentials'}`);
+    async signIn({ user, account, isNewUser }) {
+      console.log(`[Auth] User ${user.email} signed in via ${account?.provider || 'credentials'} (new=${isNewUser})`);
+      if (isNewUser && user.email) {
+        try {
+          const { sendWelcomeEmail } = await import('@/app/lib/email')
+          const name = user.name || user.email.split('@')[0]
+          await sendWelcomeEmail(user.email, name)
+          console.log(`[Auth] Welcome email sent to ${user.email}`)
+        } catch (err) {
+          console.error(`[Auth] Failed to send welcome email:`, err)
+        }
+      }
     },
     async signOut({ token }) {
       console.log(`[Auth] User ${token?.email} signed out`);

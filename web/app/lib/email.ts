@@ -33,17 +33,27 @@ export async function sendEmail({
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
-  return sendEmail({
-    to: email,
-    subject: 'Welcome to Agentbot!',
-    html: `
-      <h1>Welcome to Agentbot, ${name}!</h1>
-      <p>Thanks for signing up. You can now deploy your first AI agent in 60 seconds.</p>
-      <p>Get started at: <a href="https://agentbot.raveculture.xyz/onboard">https://agentbot.raveculture.xyz/onboard</a></p>
-      <hr />
-      <p>Best,<br>The Agentbot Team</p>
-    `,
-  });
+  const { welcomeEmail } = await import('@/lib/email/templates')
+  const { subject, html } = welcomeEmail(name)
+  return sendEmail({ to: email, subject, html })
+}
+
+export async function sendAgentDeployedEmail(email: string, name: string, plan: string, agentUrl: string) {
+  const { agentDeployedEmail } = await import('@/lib/email/templates')
+  const { subject, html } = agentDeployedEmail(name, plan, agentUrl)
+  return sendEmail({ to: email, subject, html })
+}
+
+export async function sendPlanUpgradedEmail(email: string, name: string, oldPlan: string, newPlan: string) {
+  const { planUpgradedEmail } = await import('@/lib/email/templates')
+  const { subject, html } = planUpgradedEmail(name, oldPlan, newPlan)
+  return sendEmail({ to: email, subject, html })
+}
+
+export async function sendWeeklyDigestEmail(email: string, name: string, stats: { messagesProcessed: number; tasksCompleted: number; uptime: string }) {
+  const { weeklyDigestEmail } = await import('@/lib/email/templates')
+  const { subject, html } = weeklyDigestEmail(name, stats)
+  return sendEmail({ to: email, subject, html })
 }
 
 export async function sendPaymentReceiptEmail(

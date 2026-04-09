@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { StatusBadge } from '@/app/components/shared/StatusBadge'
+import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
 import { TrialBanner } from '@/app/components/TrialBanner'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
@@ -60,11 +62,32 @@ interface DashboardBootstrapData {
   gatewayToken?: string | null
 }
 
-function getRuntimeBadge(status?: string) {
-  if (status === 'running') return { label: 'Running', tone: 'text-green-400' }
-  if (status === 'starting') return { label: 'Starting', tone: 'text-yellow-400' }
-  if (status === 'stopped') return { label: 'Stopped', tone: 'text-zinc-400' }
-  return { label: 'Unknown', tone: 'text-zinc-500' }
+type ConfirmAction = {
+  action: 'stop' | 'reset-memory'
+  title: string
+  description: string
+  confirmLabel: string
+  pendingLabel: string
+  variant: 'danger' | 'warning' | 'default'
+}
+
+const CONFIRM_ACTIONS: Record<string, ConfirmAction> = {
+  stop: {
+    action: 'stop',
+    title: 'Stop Agent',
+    description: 'This will stop your agent container. It will go offline and stop responding to messages until you start it again.',
+    confirmLabel: 'Stop Agent',
+    pendingLabel: 'Stopping...',
+    variant: 'danger',
+  },
+  'reset-memory': {
+    action: 'reset-memory',
+    title: 'Reset Agent Memory',
+    description: 'This will permanently wipe all memory, identity, and conversation history. This cannot be undone.',
+    confirmLabel: 'Reset Memory',
+    pendingLabel: 'Resetting...',
+    variant: 'danger',
+  },
 }
 
 function DashboardContent() {
@@ -89,6 +112,7 @@ function DashboardContent() {
   const [statusChecks, setStatusChecks] = useState<{ name: string; status: 'ok' | 'degraded' | 'down'; detail?: string }[]>([])
   const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
   const [healingAttempted, setHealingAttempted] = useState(false)
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmAction | null>(null)
   const controlsEnabled = OPENCLAW_CONTROLS_ENABLED
 
   useEffect(() => {
@@ -321,29 +345,49 @@ function DashboardContent() {
   const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
     if (!instance) return
     if (!controlsEnabled) {
-      alert('Managed runtime controls are temporarily disabled while the Railway control path is hardened.')
+      toast.warning('Managed runtime controls are temporarily disabled while the Railway control path is hardened.')
       return
     }
+
+    // Destructive actions need confirmation dialog
+    if (CONFIRM_ACTIONS[action] && !confirmDialog) {
+      setConfirmDialog(CONFIRM_ACTIONS[action])
+      return
+    }
+
     setActionLoading(action)
-    
+    const labels: Record<string, string> = {
+      restart: 'Restarting agent',
+      stop: 'Stopping agent',
+      start: 'Starting agent',
+      update: 'Updating agent',
+      repair: 'Repairing agent',
+      'reset-memory': 'Resetting memory',
+    }
+    const toastId = toast.loading(labels[action] || 'Processing...')
+
     try {
       const res = await fetch(`/api/instance/${instance.userId}/${action}`, {
         method: 'POST'
       })
       const data = await res.json()
-      
+
       if (data.success) {
-        if (action === 'reset-memory') {
-          alert('Memory reset successfully!')
-        } else if (action === 'repair') {
-          alert('Agent repaired successfully!')
+        const successMsg: Record<string, string> = {
+          restart: 'Agent restarted successfully',
+          stop: 'Agent stopped',
+          start: 'Agent started',
+          update: 'Agent updated to latest version',
+          repair: 'Agent repaired successfully',
+          'reset-memory': 'Memory wiped — agent is fresh',
         }
+        toast.success(successMsg[action] || 'Done', { id: toastId })
         setTimeout(() => fetchInstance(instance.userId, instance.botUsername || ''), 1000)
       } else {
-        alert(data.error || 'Action failed')
+        toast.error(data.error || 'Action failed', { id: toastId })
       }
-    } catch (e) {
-      alert('Action failed')
+    } catch {
+      toast.error('Action failed — check your connection', { id: toastId })
     } finally {
       setActionLoading('')
     }
@@ -462,7 +506,7 @@ function DashboardContent() {
 
   const isRunning = instance.status === 'running'
   const startedAt = instance.startedAt
-  const runtimeBadge = getRuntimeBadge(instance.status)
+  const statusTone = instance.status === 'running' ? 'text-green-400' : instance.status === 'starting' ? 'text-yellow-400' : 'text-zinc-400'
   const skillsManagerUrl = buildOpenClawControlUrl({
     view: 'skills',
     gatewayUrl: instance.url,
@@ -554,9 +598,7 @@ function DashboardContent() {
                   </h2>
                   <p className="mt-1 text-[11px] text-zinc-500">Live OpenClaw controls and runtime identity</p>
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${runtimeBadge.tone}`}>
-                  {runtimeBadge.label}
-                </span>
+                <StatusBadge status={instance?.status || 'unknown'} />
               </div>
               <dl className="space-y-3">
                 {instance?.botUsername && (
@@ -617,7 +659,7 @@ function DashboardContent() {
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-zinc-500">State</dt>
-                  <dd className={`font-mono ${runtimeBadge.tone}`}>
+                  <dd className={`font-mono ${statusTone}`}>
                     {instance?.status || 'unknown'}
                   </dd>
                 </div>
@@ -815,11 +857,7 @@ function DashboardContent() {
                     </button>
                     
                     <button
-                      onClick={() => {
-                        if (confirm('Wipe memory, identity & conversation history? This cannot be undone.')) {
-                          performAction('reset-memory')
-                        }
-                      }}
+                      onClick={() => performAction('reset-memory')}
                       disabled={!!actionLoading}
                       className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                     >
@@ -869,6 +907,22 @@ function DashboardContent() {
         </div>
         </main>
       </div>
+
+      {confirmDialog && (
+        <ConfirmDialog
+          open={!!confirmDialog}
+          onOpenChange={(open) => { if (!open) setConfirmDialog(null) }}
+          title={confirmDialog.title}
+          description={confirmDialog.description}
+          confirmLabel={confirmDialog.confirmLabel}
+          pendingLabel={confirmDialog.pendingLabel}
+          variant={confirmDialog.variant}
+          onConfirm={async () => {
+            setConfirmDialog(null)
+            await performAction(confirmDialog.action)
+          }}
+        />
+      )}
     </div>
   )
 }
