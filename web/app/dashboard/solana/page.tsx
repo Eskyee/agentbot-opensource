@@ -64,7 +64,7 @@ export default function SolanaDashboard() {
         <div className="space-y-4">
           {[
             { name: 'Solana Agent Kit', status: 'Available', tools: '60+', tier: 'Label' },
-            { name: 'solana-clawd', status: 'Available', tools: '31', tier: 'All' },
+            { name: 'Agentbot Solana', status: 'Available', tools: '31', tier: 'All' },
             { name: 'cobotgg', status: 'Coming Soon', tools: '27', tier: 'Label' },
             { name: 'RefundYourSOL', status: 'Coming Soon', tools: '7', tier: 'All' },
           ].map((integration) => (
@@ -122,7 +122,7 @@ export default function SolanaDashboard() {
             Integration Docs
           </a>
           <a
-            href="https://github.com/coinbase/solana-agent-kit"
+            href="https://github.com/sendai/solana-agent-kit"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"

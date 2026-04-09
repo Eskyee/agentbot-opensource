@@ -18,11 +18,11 @@ interface Buddy {
 }
 
 const BUDDY_TYPES: Record<BuddyType, { emoji: string; name: string; rarity: string; color: string }> = {
-  crab: { emoji: '🦀', name: 'Solana Crab', rarity: 'Common', color: 'from-red-500 to-orange-500' },
-  robot: { emoji: '🤖', name: 'Chain Bot', rarity: 'Uncommon', color: 'from-blue-500 to-cyan-500' },
-  ghost: { emoji: '👻', name: 'Gas Ghoul', rarity: 'Rare', color: 'from-purple-500 to-pink-500' },
-  dragon: { emoji: '🐉', name: 'NFT Drake', rarity: 'Epic', color: 'from-green-500 to-emerald-500' },
-  alien: { emoji: '👽', name: 'Token Visitor', rarity: 'Legendary', color: 'from-yellow-500 to-amber-500' },
+  crab: { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'from-blue-500 to-cyan-500' },
+  robot: { emoji: '⚡', name: 'Spark Agent', rarity: 'Uncommon', color: 'from-yellow-500 to-orange-500' },
+  ghost: { emoji: '👻', name: 'Ghost Agent', rarity: 'Rare', color: 'from-purple-500 to-pink-500' },
+  dragon: { emoji: '🐉', name: 'Dragon Agent', rarity: 'Epic', color: 'from-green-500 to-emerald-500' },
+  alien: { emoji: '👽', name: 'Alien Agent', rarity: 'Legendary', color: 'from-red-500 to-amber-500' },
 }
 
 const ANIMATIONS = ['spin', 'bounce', 'float', 'pulse', 'wiggle']
@@ -39,7 +39,7 @@ export default function BlockchainBuddiesPage() {
       setBuddies(JSON.parse(saved))
     } else {
       setBuddies([
-        { id: '1', name: 'Clawdy', type: 'crab', level: 1, xp: 0, energy: 100, happiness: 80, lastFed: Date.now(), lastPlayed: Date.now() },
+        { id: '1', name: 'Baby', type: 'crab', level: 1, xp: 0, energy: 100, happiness: 80, lastFed: Date.now(), lastPlayed: Date.now() },
       ])
     }
   }, [])
@@ -53,7 +53,7 @@ export default function BlockchainBuddiesPage() {
     setTimeout(() => {
       const types: BuddyType[] = ['crab', 'crab', 'crab', 'robot', 'robot', 'ghost', 'dragon', 'alien']
       const randomType = types[Math.floor(Math.random() * types.length)]
-      const names = ['Sol', 'Ray', 'Jup', 'Mete', 'Orca', 'Drift', 'Port', 'Saber']
+      const names = ['Bot', 'Agent', 'Claw', 'Byte', 'Nova', 'Pulse', 'Node', 'Flux']
       const newBuddy: Buddy = {
         id: Date.now().toString(),
         name: names[Math.floor(Math.random() * names.length)] + (Math.floor(Math.random() * 99) + 1),
@@ -119,10 +119,10 @@ export default function BlockchainBuddiesPage() {
         <div className="text-center mb-12">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">New Feature</div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase mb-4">
-            Blockchain Buddies
+            Agentbot Babies
           </h1>
           <p className="text-zinc-400 max-w-xl mx-auto">
-            Hatch, raise, and trade digital companions. Your AI agent's pet blockchain friends.
+            Hatch, raise, and trade digital companions. Your AI agent's babies.
           </p>
         </div>
 

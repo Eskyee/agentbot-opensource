@@ -473,7 +473,7 @@ export default function WhyAgentbotPage() {
                 <li><strong className="text-white">basefmbot</strong> — Onchain Radio Agent (by raveculture) for underground communities</li>
                 <li><strong className="text-white">cafe</strong> — Customer service agent for startups</li>
                 <li><strong className="text-white">studio-one</strong> — Dancehall Dub Agent with London roots culture</li>
-                <li><strong className="text-white">clawdbotdj</strong> — Underground DJ Agent for crate digging</li>
+                <li><strong className="text-white">agentbotdj</strong> — Underground DJ Agent for crate digging</li>
                 <li><strong className="text-white">chain</strong> — Crypto Agent with wallet (USDC, swaps on Base)</li>
                 <li><strong className="text-white">vault</strong> — DeFi Agent for yield farming and staking</li>
                 <li><strong className="text-white">pay</strong> — Commerce Agent for crypto payments and subscriptions</li>

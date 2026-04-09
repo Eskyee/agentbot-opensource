@@ -13,11 +13,11 @@ const integrations = [
     icon: <Coins className="w-6 h-6" />,
   },
   {
-    name: 'solana-clawd',
-    description: 'Open-source Solana AI agent framework. Claude Code architecture × Solana. MCP-native, 31 Solana tools, Blockchain Buddies, Unicode animations.',
-    features: ['31 MCP tools', 'Telegram bot', 'Blockchain Buddies', 'Voice Mode', 'Metaplex Agent Registry'],
-    stars: 11,
-    url: 'https://github.com/x402agent/solana-clawd',
+    name: 'Agentbot Solana',
+    description: 'Agentbot\'s native Solana agent framework. MCP-native, 31 Solana tools, Agentbot Babies, Unicode animations, Voice Mode. All plans.',
+    features: ['31 MCP tools', 'Telegram bot', 'Agentbot Babies', 'Voice Mode', 'All plans'],
+    stars: null,
+    url: 'https://github.com/Eskyee/agentbot-solana',
     icon: <Zap className="w-6 h-6" />,
   },
   {
@@ -25,7 +25,7 @@ const integrations = [
     description: 'Multi-chain agent platform on Cloudflare. 27 MCP tools for prediction markets, token swaps across 20+ chains, and Pump.fun token launches.',
     features: ['Kalshi (7 tools)', 'Polymarket (7 tools)', 'Token swaps 20+ chains', 'Pump.fun launch', 'Agent Registry'],
     stars: null,
-    url: 'https://github.com/cobotgg/openclawagents',
+    url: 'https://github.com/cobotgg/cobot',
     icon: <Globe className="w-6 h-6" />,
   },
   {
@@ -37,19 +37,19 @@ const integrations = [
     icon: <Wallet className="w-6 h-6" />,
   },
   {
-    name: 'SolClaw',
-    description: 'AI agent for autonomous Solana operations via WhatsApp/Telegram. 60+ Solana actions, natural language commands, 34 protocol skills.',
+    name: 'Agentbot Trade',
+    description: 'Agentbot\'s autonomous Solana trading agent. 60+ Solana actions via WhatsApp/Telegram, natural language commands, 34 protocol skills.',
     features: ['WhatsApp & Telegram', 'Natural language', 'Drift, Raydium, Meteora', 'Token deployment', 'NFT minting'],
-    stars: 11,
-    url: 'https://github.com/anagrambuild/solclaw',
+    stars: null,
+    url: 'https://github.com/Eskyee/agentbot-solana',
     icon: <TrendingUp className="w-6 h-6" />,
   },
   {
-    name: 'OpenClaw Solana Connect',
-    description: 'Secure toolkit for OpenClaw agents to interact with Solana. Private key protection, max limits, human confirmation thresholds.',
+    name: 'Agentbot Solana Connect',
+    description: 'Secure toolkit for Agentbot agents to interact with Solana. Private key protection, max limits, human confirmation thresholds.',
     features: ['Private key protection', 'Max SOL limits', 'Human confirmation', 'Wallet generation', 'Transaction history'],
-    stars: 1,
-    url: 'https://github.com/Seenfinity/openclaw-solana-connect',
+    stars: null,
+    url: 'https://github.com/Eskyee/agentbot-solana',
     icon: <Wallet className="w-6 h-6" />,
   },
 ]
@@ -169,11 +169,11 @@ export default function SolanaPage() {
           </div>
         </div>
 
-        {/* $CLAWD Token */}
+        {/* $AGENTBOT Token */}
         <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-2xl p-6 mb-16">
-          <h2 className="text-xl font-bold uppercase tracking-tight mb-4">Competitor Token: $CLAWD</h2>
+          <h2 className="text-xl font-bold uppercase tracking-tight mb-4">$AGENTBOT Token</h2>
           <p className="text-zinc-400 text-sm mb-4">
-            solana-clawd has launched $CLAWD token on pump.fun. Agentbot has $AGENTBOT on pump.fun as well.
+            $AGENTBOT is live on pump.fun. The native token powering the Agentbot ecosystem.
           </p>
           <div className="flex gap-4">
             <a
