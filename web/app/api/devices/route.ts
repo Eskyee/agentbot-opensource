@@ -61,6 +61,23 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { deviceId, action } = body
 
+    // Self-pair: auto-approve a new device for the current user
+    if (action === 'pair') {
+      const deviceName = body.name || 'My Device'
+      const device = await prisma.pairedDevice.create({
+        data: {
+          userId: session.user.id,
+          name: deviceName,
+          ip: req.headers.get('x-forwarded-for') || 'self-pair',
+          status: 'approved',
+        },
+      })
+      return NextResponse.json({
+        success: true,
+        device: { id: device.id, name: device.name, status: device.status },
+      })
+    }
+
     if (!deviceId || !action) {
       return NextResponse.json(
         { error: 'Missing required fields: deviceId, action' },
@@ -70,7 +87,7 @@ export async function POST(req: Request) {
 
     if (!['approve', 'deny', 'revoke'].includes(action)) {
       return NextResponse.json(
-        { error: 'Invalid action. Must be: approve, deny, or revoke' },
+        { error: 'Invalid action. Must be: pair, approve, deny, or revoke' },
         { status: 400 }
       )
     }

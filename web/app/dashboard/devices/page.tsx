@@ -93,10 +93,10 @@ export default function DevicesPage() {
     setPairing(true)
     setError('')
     try {
-      const res = await fetch('/api/devices/pair', {
+      const res = await fetch('/api/devices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'My iPhone' }),
+        body: JSON.stringify({ action: 'pair', name: 'My iPhone' }),
       })
       const data = await res.json()
       if (!res.ok) {
