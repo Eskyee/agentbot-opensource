@@ -2,8 +2,9 @@ import { MetadataRoute } from 'next'
 import fs from 'fs'
 import path from 'path'
 import { APP_URL } from '@/app/lib/app-url'
+import { listAutoBlogPosts } from '@/app/lib/auto-blog'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Auto-discover blog posts from directory
   const postsDir = path.join(process.cwd(), 'app', 'blog', 'posts')
   const blogSlugs = fs
@@ -14,6 +15,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const blogUrls: MetadataRoute.Sitemap = blogSlugs.map((slug) => ({
     url: `${APP_URL}/blog/posts/${slug}`,
     changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  const autoPosts = await listAutoBlogPosts()
+  const autoBlogUrls: MetadataRoute.Sitemap = autoPosts.map((post) => ({
+    url: `${APP_URL}/blog/updates/${post.slug}`,
+    changeFrequency: 'daily',
     priority: 0.6,
   }))
 
@@ -64,5 +72,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.3,
     },
     ...blogUrls,
+    ...autoBlogUrls,
   ]
 }

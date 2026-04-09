@@ -6,9 +6,20 @@ export interface BlogPostSummary {
   excerpt: string
   tags: string[]
   track: 'Shipping' | 'Release' | 'Field Notes' | 'Build Log'
+  href?: string
 }
 
 export const blogPosts: BlogPostSummary[] = [
+  {
+    slug: 'platform-recovery-and-hardening-apr-9-2026',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'Platform Recovery, Mainnet Bitcoin, and Production Guardrails',
+    excerpt:
+      'We spent the last stretch repairing the Railway stack, moving Bitcoin to mainnet, hardening the wallet/runtime path, and putting better production protection around Agentbot.',
+    tags: ['Operations', 'Railway', 'Bitcoin', 'Hardening'],
+    track: 'Build Log',
+  },
   {
     slug: 'conference-recap-tokyo-london-2026',
     dateLabel: '9 Apr',

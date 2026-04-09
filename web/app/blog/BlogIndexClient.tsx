@@ -28,6 +28,7 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
   const releases = filtered.filter((post) => post.track === 'Release').slice(0, 4)
   const fieldNotes = filtered.filter((post) => post.track === 'Field Notes').slice(0, 3)
   const gridPosts = filtered.slice(1)
+  const hrefFor = (post: BlogPostSummary) => post.href || `/blog/posts/${post.slug}`
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
@@ -109,7 +110,7 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
                 </span>
               ))}
             </div>
-            <Link href={`/blog/posts/${featured.slug}`} className="group block">
+            <Link href={hrefFor(featured)} className="group block">
               <h2 className="max-w-5xl text-3xl font-bold uppercase tracking-[-0.06em] leading-tight transition-colors group-hover:text-zinc-300 sm:text-5xl">
                 {featured.title}
               </h2>
@@ -138,7 +139,7 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
                 {gridPosts.map((post) => (
                   <Link
                     key={post.slug}
-                    href={`/blog/posts/${post.slug}`}
+                    href={hrefFor(post)}
                     className="group bg-black p-6 transition-colors hover:bg-zinc-950"
                   >
                     <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -161,7 +162,7 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
                 <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Release track</p>
                 <div className="mt-5 space-y-4">
                   {releases.map((post) => (
-                    <Link key={post.slug} href={`/blog/posts/${post.slug}`} className="block border-b border-zinc-900 pb-4 last:border-b-0 last:pb-0">
+                    <Link key={post.slug} href={hrefFor(post)} className="block border-b border-zinc-900 pb-4 last:border-b-0 last:pb-0">
                       <div className="text-[10px] uppercase tracking-[0.22em] text-zinc-600">{post.dateLabel}</div>
                       <div className="mt-1 text-sm font-bold uppercase tracking-[-0.04em]">{post.title}</div>
                     </Link>
@@ -173,7 +174,7 @@ export function BlogIndexClient({ posts }: { posts: BlogPostSummary[] }) {
                 <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Field notes</p>
                 <div className="mt-5 space-y-4">
                   {fieldNotes.map((post) => (
-                    <Link key={post.slug} href={`/blog/posts/${post.slug}`} className="block">
+                    <Link key={post.slug} href={hrefFor(post)} className="block">
                       <div className="text-sm font-bold uppercase tracking-[-0.04em]">{post.title}</div>
                       <div className="mt-2 text-xs leading-6 text-zinc-500">{post.excerpt}</div>
                     </Link>
