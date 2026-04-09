@@ -133,6 +133,15 @@ export default async function Home() {
                 Base-native
               </span>
             </div>
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-6 opacity-50">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-700">Built with</span>
+              <span className="text-xs text-zinc-600 font-bold">Base</span>
+              <span className="text-xs text-zinc-600 font-bold">OpenClaw</span>
+              <span className="text-xs text-zinc-600 font-bold">Next.js</span>
+              <span className="text-xs text-zinc-600 font-bold">Vercel</span>
+              <span className="text-xs text-zinc-600 font-bold">Railway</span>
+              <span className="text-xs text-zinc-600 font-bold">Neon</span>
+            </div>
           </div>
         </div>
       </section>
