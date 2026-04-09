@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'mimo-v2-pro-powers-agentbot',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study',
+    excerpt:
+      'Every agent deployed on Agentbot boots with Xiaomi MiMo-V2-Pro. Here\'s why we chose it over GPT-5.2 and Claude, and what we\'ve learned running it 24/7.',
+    tags: ['MiMo-V2-Pro', 'Xiaomi', 'Case Study', 'Production'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'openclaw-v2026-4-9',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
