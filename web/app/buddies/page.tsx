@@ -164,9 +164,11 @@ export default function BlockchainBuddiesPage() {
         setBuddies(prev => prev.map(b => b.id === buddy.id ? data.buddy : b))
       } catch { setError('Failed to feed buddy') }
     } else {
-      const updated = buddies.map(b =>
-        b.id === buddy.id ? { ...b, energy: Math.min(100, b.energy + 20), happiness: Math.min(100, b.happiness + 10), xp: b.xp + 10, lastFed: Date.now() } : b
-      )
+      const updated = buddies.map(b => {
+        if (b.id !== buddy.id) return b
+        const newXp = b.xp + 10
+        return { ...b, energy: Math.min(100, b.energy + 20), happiness: Math.min(100, b.happiness + 10), xp: newXp, level: Math.floor(newXp / 100) + 1, lastFed: Date.now() }
+      })
       setBuddies(updated)
       localStorage.setItem('agentbot_buddies', JSON.stringify(updated))
     }
@@ -186,9 +188,11 @@ export default function BlockchainBuddiesPage() {
         setBuddies(prev => prev.map(b => b.id === buddy.id ? data.buddy : b))
       } catch { setError('Failed to play with buddy') }
     } else {
-      const updated = buddies.map(b =>
-        b.id === buddy.id ? { ...b, happiness: Math.min(100, b.happiness + 15), xp: b.xp + 25, lastPlayed: Date.now() } : b
-      )
+      const updated = buddies.map(b => {
+        if (b.id !== buddy.id) return b
+        const newXp = b.xp + 25
+        return { ...b, happiness: Math.min(100, b.happiness + 15), xp: newXp, level: Math.floor(newXp / 100) + 1, lastPlayed: Date.now() }
+      })
       setBuddies(updated)
       localStorage.setItem('agentbot_buddies', JSON.stringify(updated))
     }

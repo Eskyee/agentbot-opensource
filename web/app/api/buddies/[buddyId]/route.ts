@@ -28,12 +28,15 @@ export async function PATCH(
     const { action } = body
 
     if (action === 'feed') {
+      const newXp = buddy.xp + 10
+      const newLevel = Math.floor(newXp / 100) + 1
       const updated = await prisma.buddy.update({
         where: { id: buddyId },
         data: {
           energy: Math.min(100, buddy.energy + 20),
           happiness: Math.min(100, buddy.happiness + 10),
-          xp: buddy.xp + 10,
+          xp: newXp,
+          level: newLevel,
           lastFed: new Date(),
         },
       })
@@ -41,11 +44,14 @@ export async function PATCH(
     }
 
     if (action === 'play') {
+      const newXp = buddy.xp + 25
+      const newLevel = Math.floor(newXp / 100) + 1
       const updated = await prisma.buddy.update({
         where: { id: buddyId },
         data: {
           happiness: Math.min(100, buddy.happiness + 15),
-          xp: buddy.xp + 25,
+          xp: newXp,
+          level: newLevel,
           lastPlayed: new Date(),
         },
       })

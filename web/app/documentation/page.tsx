@@ -70,6 +70,27 @@ const newFeatures = [
     ]
   },
   {
+    title: 'Liquid Wallet Kit',
+    description: 'Deploy Blockstream LWK on Railway for multi-sig Liquid operations with Jade HWW.',
+    links: [
+      { label: 'LWK + Railway Guide', href: '/docs/liquid-lwk-railway' }
+    ]
+  },
+  {
+    title: 'Solana Agents',
+    description: 'Connect to Solana DeFi. Token swaps, NFT minting, 60+ MCP tools.',
+    links: [
+      { label: 'Solana Integrations', href: '/solana' }
+    ]
+  },
+  {
+    title: 'Blockchain Buddies',
+    description: 'Digital pets for your agent. Hatch, feed, and play with on-chain companions.',
+    links: [
+      { label: 'Buddies', href: '/buddies' }
+    ]
+  },
+  {
     title: 'Agent Swarms',
     description: 'Deploy multiple agents that work together. Coordinate complex workflows.',
     links: [
