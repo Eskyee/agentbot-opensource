@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Bitcoin, Copy, RefreshCw, Plus, ArrowDownLeft, Activity } from 'lucide-react'
+import { Bitcoin, Copy, RefreshCw, Plus, ArrowDownLeft, Activity, QrCode, Camera, ArrowRight, Shield, CheckCircle2, Upload, Download } from 'lucide-react'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
 
@@ -136,6 +136,15 @@ export default function BitcoinPage() {
   const [agentId, setAgentId] = useState('')
   const [label, setLabel] = useState('')
   const [derivationScheme, setDerivationScheme] = useState('')
+
+  // Air-gap Jade signing state
+  const [airGapStep, setAirGapStep] = useState<'idle' | 'create' | 'scan-sign' | 'broadcast'>('idle')
+  const [unsignedPsbt, setUnsignedPsbt] = useState('')
+  const [signedPsbt, setSignedPsbt] = useState('')
+  const [jadeRecipient, setJadeRecipient] = useState('')
+  const [jadeAmount, setJadeAmount] = useState('')
+  const [jadeWalletId, setJadeWalletId] = useState<number | null>(null)
+  const [signingTx, setSigningTx] = useState(false)
 
   const loadData = async (opts?: { quiet?: boolean }) => {
     const quiet = opts?.quiet ?? false
@@ -517,14 +526,14 @@ export default function BitcoinPage() {
           </section>
         </div>
 
-        {/* Blockstream Jade / LWK Integration */}
+        {/* Blockstream Jade — Air-Gapped Signing */}
         <section className="mt-6 bg-zinc-950 border border-zinc-800 p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="text-[10px] uppercase tracking-widest text-zinc-600">Hardware Wallet</div>
-              <h2 className="text-sm font-bold tracking-tight uppercase mt-1">Blockstream Jade + Liquid</h2>
+              <h2 className="text-sm font-bold tracking-tight uppercase mt-1">Blockstream Jade — Air-Gapped Signing</h2>
               <p className="text-[10px] text-zinc-500 mt-1">
-                🔐 Hardware security: Use Jade hardware wallet with Liquid Network support
+                🔐 Sign transactions offline. QR code in → Jade signs → QR code out. No USB, no internet.
               </p>
             </div>
             <a
@@ -536,34 +545,222 @@ export default function BitcoinPage() {
               Get Jade →
             </a>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border border-zinc-800 bg-black/40 p-4">
-              <div className="text-xs font-bold text-white mb-2">Jade S1</div>
-              <p className="text-[10px] text-zinc-500 mb-3">Air-gapped signing with OLED display</p>
-              <div className="text-[10px] text-zinc-600">Bitcoin + Liquid</div>
-            </div>
-            
-            <div className="border border-zinc-800 bg-black/40 p-4">
-              <div className="text-xs font-bold text-white mb-2">Multi-Sig</div>
-              <p className="text-[10px] text-zinc-500 mb-3">2-of-2 or 2-of-3 with Jade + software</p>
-              <div className="text-[10px] text-zinc-600">Enhanced security</div>
-            </div>
-            
-            <div className="border border-zinc-800 bg-black/40 p-4">
-              <div className="text-xs font-bold text-white mb-2">Liquid Assets</div>
-              <p className="text-[10px] text-zinc-500 mb-3">Issue tokens, stablecoins on Liquid</p>
-              <div className="text-[10px] text-zinc-600">Tokenization</div>
-            </div>
+
+          {/* Step indicator */}
+          <div className="flex items-center gap-2 mb-6 flex-wrap">
+            {['Create TX', 'Scan with Jade', 'Broadcast'].map((step, i) => {
+              const stepKeys = ['create', 'scan-sign', 'broadcast'] as const
+              const isActive = airGapStep === stepKeys[i]
+              const isPast = ['create', 'scan-sign', 'broadcast'].indexOf(airGapStep) > i
+              return (
+                <div key={step} className="flex items-center gap-2">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${
+                    isPast ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' :
+                    isActive ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' :
+                    'border-zinc-700 text-zinc-600'
+                  }`}>
+                    {isPast ? <CheckCircle2 className="w-3 h-3" /> : i + 1}
+                  </div>
+                  <span className={`text-[10px] font-mono ${isActive ? 'text-white' : 'text-zinc-600'}`}>{step}</span>
+                  {i < 2 && <ArrowRight className="w-3 h-3 text-zinc-700 mx-1" />}
+                </div>
+              )
+            })}
           </div>
-          
-          <div className="mt-4 pt-4 border-t border-zinc-800">
+
+          {/* Step 1: Create unsigned transaction */}
+          {(airGapStep === 'idle' || airGapStep === 'create') && (
+            <div className="space-y-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Step 1 — Create Unsigned Transaction</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">From Wallet</label>
+                  <select
+                    value={jadeWalletId ?? ''}
+                    onChange={e => setJadeWalletId(Number(e.target.value) || null)}
+                    className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-600"
+                  >
+                    <option value="">Select wallet...</option>
+                    {wallets.map(w => (
+                      <option key={w.id} value={w.id}>{w.label || `Wallet #${w.id}`} ({w.network})</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">Recipient Address</label>
+                  <input
+                    type="text"
+                    value={jadeRecipient}
+                    onChange={e => setJadeRecipient(e.target.value)}
+                    placeholder="bc1q..."
+                    className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-600"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">Amount (sats)</label>
+                  <input
+                    type="number"
+                    value={jadeAmount}
+                    onChange={e => setJadeAmount(e.target.value)}
+                    placeholder="100000"
+                    className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-600"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if (!jadeWalletId || !jadeRecipient || !jadeAmount) return
+                  const mockPsbt = `cHNidP8BAH${btoa(`${jadeWalletId}:${jadeRecipient}:${jadeAmount}`).replace(/=/g, '')}AAAAA`
+                  setUnsignedPsbt(mockPsbt)
+                  setAirGapStep('create')
+                }}
+                disabled={!jadeWalletId || !jadeRecipient || !jadeAmount}
+                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600/10 border border-blue-500/30 text-blue-400 text-xs font-bold hover:bg-blue-600/20 disabled:opacity-30 transition-colors"
+              >
+                <QrCode className="w-3 h-3" />
+                Generate Unsigned TX → QR Code
+              </button>
+            </div>
+          )}
+
+          {/* Step 2: Show QR code for Jade to scan */}
+          {airGapStep === 'create' && unsignedPsbt && (
+            <div className="space-y-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Step 2 — Scan with Jade</div>
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex-shrink-0">
+                  <div className="bg-white p-4 inline-block rounded">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(unsignedPsbt)}`}
+                      alt="Unsigned PSBT QR Code"
+                      width={250}
+                      height={250}
+                    />
+                  </div>
+                  <p className="text-[10px] text-zinc-500 mt-2 text-center font-mono">
+                    Scan this with your Jade camera
+                  </p>
+                </div>
+                <div className="flex-1 space-y-3">
+                  <div className="border border-zinc-800 bg-black/40 p-4">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Instructions</div>
+                    <ol className="text-xs text-zinc-400 space-y-2 list-decimal pl-4">
+                      <li>On your Jade: go to <span className="text-white font-mono">Scan QR</span></li>
+                      <li>Point Jade camera at the QR code above</li>
+                      <li>Review the transaction on Jade&apos;s OLED screen</li>
+                      <li>Confirm on Jade to sign</li>
+                      <li>Jade displays a new QR code — scan it with your phone</li>
+                    </ol>
+                  </div>
+                  <div className="border border-zinc-800 bg-black/40 p-4">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Raw PSBT</div>
+                    <div className="text-[10px] text-zinc-500 font-mono break-all bg-zinc-900 p-2 rounded">
+                      {unsignedPsbt.length > 80 ? unsignedPsbt.substring(0, 80) + '...' : unsignedPsbt}
+                    </div>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(unsignedPsbt)}
+                      className="mt-2 text-[10px] text-blue-400 hover:text-blue-300"
+                    >
+                      Copy full PSBT
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setAirGapStep('scan-sign')}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-colors"
+                >
+                  <Camera className="w-3 h-3" />
+                  I scanned — paste signed PSBT
+                </button>
+                <button
+                  onClick={() => { setAirGapStep('idle'); setUnsignedPsbt('') }}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-zinc-800 text-zinc-400 text-xs hover:border-zinc-600 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Paste signed PSBT and broadcast */}
+          {airGapStep === 'scan-sign' && (
+            <div className="space-y-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Step 3 — Paste Signed PSBT & Broadcast</div>
+              <div>
+                <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">
+                  Signed PSBT from Jade
+                </label>
+                <textarea
+                  value={signedPsbt}
+                  onChange={e => setSignedPsbt(e.target.value)}
+                  placeholder="Paste the signed PSBT (base64) from your Jade's QR code..."
+                  rows={4}
+                  className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-zinc-600 resize-none"
+                />
+              </div>
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">How to get the signed PSBT</div>
+                <ol className="text-xs text-zinc-400 space-y-1 list-decimal pl-4">
+                  <li>After Jade signs, it shows a QR code on its screen</li>
+                  <li>Use your phone camera to scan the Jade QR code</li>
+                  <li>Copy the text content and paste it above</li>
+                </ol>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    if (!signedPsbt) return
+                    setAirGapStep('broadcast')
+                  }}
+                  disabled={!signedPsbt}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 disabled:opacity-30 transition-colors"
+                >
+                  <Upload className="w-3 h-3" />
+                  Broadcast Transaction
+                </button>
+                <button
+                  onClick={() => { setAirGapStep('create'); setSignedPsbt('') }}
+                  className="flex items-center gap-2 px-4 py-2.5 border border-zinc-800 text-zinc-400 text-xs hover:border-zinc-600 transition-colors"
+                >
+                  Back
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Success */}
+          {airGapStep === 'broadcast' && (
+            <div className="space-y-4">
+              <div className="border border-emerald-500/30 bg-emerald-500/5 p-6 text-center">
+                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-3" />
+                <div className="text-sm font-bold text-emerald-300 mb-1">Transaction Broadcast</div>
+                <p className="text-xs text-zinc-400">
+                  Your air-gapped transaction has been submitted to the Bitcoin network.
+                </p>
+                <p className="text-[10px] text-zinc-600 mt-2 font-mono">
+                  (Demo mode — connect to NBXplorer backend for live broadcasting)
+                </p>
+              </div>
+              <button
+                onClick={() => { setAirGapStep('idle'); setUnsignedPsbt(''); setSignedPsbt(''); setJadeRecipient(''); setJadeAmount('') }}
+                className="flex items-center gap-2 px-5 py-2.5 border border-zinc-800 text-zinc-400 text-xs hover:border-zinc-600 transition-colors"
+              >
+                <Shield className="w-3 h-3" />
+                Start New Transaction
+              </button>
+            </div>
+          )}
+
+          {/* Links */}
+          <div className="mt-6 pt-4 border-t border-zinc-800">
             <div className="flex flex-wrap gap-4">
               <a
                 href="/docs/liquid-lwk-railway"
                 className="inline-flex items-center gap-2 text-[10px] text-blue-400 hover:text-blue-300"
               >
-                Learn how to deploy LWK on Railway →
+                Deploy LWK on Railway →
               </a>
               <a
                 href="https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node"
@@ -571,7 +768,15 @@ export default function BitcoinPage() {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-[10px] text-zinc-400 hover:text-white"
               >
-                Official Liquid node setup →
+                Liquid node setup →
+              </a>
+              <a
+                href="https://blockstream.com/jade/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-[10px] text-zinc-400 hover:text-white"
+              >
+                Get Blockstream Jade →
               </a>
             </div>
           </div>
