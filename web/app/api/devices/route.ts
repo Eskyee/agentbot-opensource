@@ -21,6 +21,36 @@ export async function GET() {
   })
 }
 
+// Generate a pairing code for self-pairing
+export async function PUT(req: Request) {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { searchParams } = new URL(req.url)
+  const name = searchParams.get('name') || 'My Device'
+
+  // Generate a 6-digit pairing code
+  const pairingCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+
+  const device = await prisma.pairedDevice.create({
+    data: {
+      userId: session.user.id,
+      name,
+      ip: req.headers.get('x-forwarded-for') || 'self',
+      status: 'pending',
+    },
+  })
+
+  return NextResponse.json({
+    success: true,
+    deviceId: device.id,
+    pairingCode,
+    pairingUrl: `/dashboard/devices?pair=${pairingCode}&id=${device.id}`,
+  })
+}
+
 export async function POST(req: Request) {
   const session = await getAuthSession()
   if (!session?.user?.id) {
