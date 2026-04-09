@@ -24,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'           # matches Dockerfile node:22-alpine
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: agentbot-backend/package-lock.json
 
@@ -45,6 +45,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - uses: actions/setup-node@v4
         with:
@@ -55,20 +57,20 @@ jobs:
       - name: Install
         run: cd web && npm ci
 
+      - name: Generate Prisma Client
+        run: cd web && npx prisma generate
+
       - name: Build
         run: cd web && npx next build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
-          # Stub vars so Prisma/Next doesn't warn at build time
-          # Real values are set in the Vercel dashboard — do NOT put secrets here
           DATABASE_URL: 'postgresql://stub:stub@localhost/stub'
           NEXTAUTH_SECRET: 'ci-build-stub-not-a-real-secret'
-          NEXTAUTH_URL: 'https://agentbot.raveculture.xyz'
+          NEXTAUTH_URL: 'https://agentbot.sh'
           INTERNAL_API_KEY: 'ci-build-stub'
-          BACKEND_API_URL: 'https://agentbot-api.onrender.com'
+          BACKEND_API_URL: 'https://agentbot-backend-production.up.railway.app'
 
       - name: Run E2E Tests
-        # Soft-fail: Playwright needs a running dev server, skipped in CI unless server is up
         run: cd web && (npx playwright test 2>/dev/null || echo "No E2E tests ran — skipping")
         env:
           BASE_URL: http://localhost:3000
@@ -97,9 +99,8 @@ jobs:
       - name: Summary
         run: |
           echo "✅ CI passed — deployments auto-triggering:"
-          echo "  • Vercel   → agentbot.raveculture.xyz (GitHub integration)"
-          echo "  • Render   → agentbot-api.onrender.com (render.yaml blueprint)"
-          echo "  • Railway  → tempo-x402-production.up.railway.app (soul-build.yml)"
+          echo "  • Vercel   → agentbot.sh (GitHub integration)"
+          echo "  • Railway  → agentbot-backend, borg-0, x402-gateway"
 
   smoke-test:
     name: Smoke Test (Production Health)
@@ -107,36 +108,45 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for Render deploy to settle
-        run: sleep 30
+      - name: Wait for deploys to settle
+        run: sleep 60
 
-      - name: Render — agentbot-api health
+      - name: Vercel — frontend health
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://agentbot-api.onrender.com/health)
-          echo "Render /health → $STATUS"
-          # Render free tier may spin up slowly — warn but don't fail the pipeline
-          if [ "$STATUS" != "200" ]; then
-            echo "⚠️  Render returned $STATUS (may be cold-starting — check dashboard)"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://agentbot.sh)
+          echo "Vercel / → $STATUS"
+          if [ "$STATUS" != "200" ] && [ "$STATUS" != "307" ] && [ "$STATUS" != "302" ]; then
+            echo "⚠️ Vercel returned $STATUS"
           else
-            echo "✅ Render healthy"
+            echo "✅ Vercel healthy"
           fi
 
-      - name: Railway — tempo-x402 health
+      - name: Railway — backend health
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://tempo-x402-production.up.railway.app/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://agentbot-backend-production.up.railway.app/health)
           echo "Railway /health → $STATUS"
           if [ "$STATUS" != "200" ]; then
-            echo "⚠️  Railway returned $STATUS (check tempo-x402 logs)"
+            echo "⚠️ Railway returned $STATUS"
           else
             echo "✅ Railway healthy"
           fi
 
-      - name: Vercel — frontend health
+      - name: Railway — x402 gateway health
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://agentbot.raveculture.xyz)
-          echo "Vercel / → $STATUS"
-          if [ "$STATUS" != "200" ] && [ "$STATUS" != "307" ] && [ "$STATUS" != "302" ]; then
-            echo "⚠️  Vercel returned $STATUS"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://x402-gateway-production.up.railway.app/health)
+          echo "x402 /health → $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "⚠️ x402 returned $STATUS"
           else
-            echo "✅ Vercel healthy"
+            echo "✅ x402 healthy"
+          fi
+
+      - name: Railway — browser automation health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://agentbot-browser-production.up.railway.app/health)
+          echo "Browser /health → $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "⚠️ Browser returned $STATUS"
+          else
+            echo "✅ Browser healthy"
           fi
