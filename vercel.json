@@ -1,8 +1,9 @@
 {
   "rootDirectory": "web",
   "framework": "nextjs",
-  "regions": ["iad1"],
+  "regions": ["iad1", "lhr1"],
   "installCommand": "npm install --include=dev",
   "buildCommand": "NEXT_PUBLIC_DEMO_MODE=true npm run build",
-  "outputDirectory": ".next"
+  "outputDirectory": ".next",
+  "ignoreCommand": "git diff --name-only HEAD~1 | grep -qvE '^docs/|^\.github/|^README\.md$|^LICENSE$' && exit 1 || exit 0"
 }
