@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agentic-infrastructure-shift',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'The Agentic Infrastructure Shift',
+    excerpt:
+      '30% of Vercel deployments are now by coding agents. Vercel declares agentic infrastructure. Here\'s what it means for Agentbot.',
+    tags: ['Industry', 'AI Agents', 'Infrastructure', 'Vercel'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'basefm-open-source',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
