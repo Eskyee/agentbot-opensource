@@ -146,6 +146,23 @@ export default function BitcoinPage() {
   const [jadeWalletId, setJadeWalletId] = useState<number | null>(null)
   const [signingTx, setSigningTx] = useState(false)
 
+  // Liquid node status
+  const [liquidInfo, setLiquidInfo] = useState<{ status: string; blocks: number; pruned: boolean; verificationProgress: number } | null>(null)
+  const [loadingLiquid, setLoadingLiquid] = useState(false)
+
+  const loadLiquidInfo = async () => {
+    setLoadingLiquid(true)
+    try {
+      const res = await fetch('/api/bitcoin/liquid')
+      const data = await res.json()
+      setLiquidInfo(data)
+    } catch {
+      setLiquidInfo({ status: 'unreachable', blocks: 0, pruned: true, verificationProgress: 0 })
+    } finally {
+      setLoadingLiquid(false)
+    }
+  }
+
   const loadData = async (opts?: { quiet?: boolean }) => {
     const quiet = opts?.quiet ?? false
     if (quiet) setRefreshing(true)
@@ -185,6 +202,7 @@ export default function BitcoinPage() {
 
   useEffect(() => {
     void loadData()
+    void loadLiquidInfo()
   }, [])
 
   useEffect(() => {
@@ -525,6 +543,85 @@ export default function BitcoinPage() {
             </div>
           </section>
         </div>
+
+        {/* Liquid Network Node Status */}
+        <section className="mt-6 bg-zinc-950 border border-zinc-800 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Liquid Network</div>
+              <h2 className="text-sm font-bold tracking-tight uppercase mt-1">Pruned Elements Node</h2>
+              <p className="text-[10px] text-zinc-500 mt-1">
+                ⛓️ Full Liquid node — 1GB pruned, synced on Railway
+              </p>
+            </div>
+            <button
+              onClick={loadLiquidInfo}
+              disabled={loadingLiquid}
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+            >
+              <RefreshCw className={`h-3 w-3 ${loadingLiquid ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="border border-zinc-800 bg-black/40 p-4">
+              <div className="text-[10px] text-zinc-500 uppercase mb-1">Status</div>
+              <div className="text-sm font-bold font-mono">
+                {liquidInfo?.status === 'connected' ? (
+                  <span className="text-emerald-400">● Connected</span>
+                ) : liquidInfo?.status === 'unreachable' ? (
+                  <span className="text-red-400">● Unreachable</span>
+                ) : (
+                  <span className="text-zinc-500">—</span>
+                )}
+              </div>
+            </div>
+            <div className="border border-zinc-800 bg-black/40 p-4">
+              <div className="text-[10px] text-zinc-500 uppercase mb-1">Blocks</div>
+              <div className="text-sm font-bold font-mono">
+                {liquidInfo?.blocks ? liquidInfo.blocks.toLocaleString() : '—'}
+              </div>
+            </div>
+            <div className="border border-zinc-800 bg-black/40 p-4">
+              <div className="text-[10px] text-zinc-500 uppercase mb-1">Sync</div>
+              <div className="text-sm font-bold font-mono">
+                {liquidInfo?.verificationProgress ? `${(liquidInfo.verificationProgress * 100).toFixed(1)}%` : '—'}
+              </div>
+            </div>
+            <div className="border border-zinc-800 bg-black/40 p-4">
+              <div className="text-[10px] text-zinc-500 uppercase mb-1">Pruned</div>
+              <div className="text-sm font-bold font-mono">
+                {liquidInfo?.pruned ? (
+                  <span className="text-blue-400">1 GB</span>
+                ) : (
+                  <span className="text-zinc-500">Full</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-zinc-800">
+            <div className="flex flex-wrap gap-4">
+              <a
+                href="https://blockstream.com/liquid/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-blue-400 hover:text-blue-300"
+              >
+                About Liquid Network →
+              </a>
+              <a
+                href="https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-zinc-400 hover:text-white"
+              >
+                Liquid node setup →
+              </a>
+            </div>
+          </div>
+        </section>
 
         {/* Blockstream Jade — Air-Gapped Signing */}
         <section className="mt-6 bg-zinc-950 border border-zinc-800 p-6">
