@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'building-saas-with-factory-droid',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'Building a SaaS Platform with Factory Droid',
+    excerpt:
+      'How one developer ships an AI agent platform at startup speed using custom droids as a virtual engineering team.',
+    tags: ['Factory Droid', 'SaaS', 'Build in Public', 'Developer Tools'],
+    track: 'Build Log',
+  },
+  {
     slug: 'mimo-v2-pro-powers-agentbot',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
