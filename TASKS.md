@@ -3,6 +3,11 @@
 ## In Progress
 
 ## Up Next
+- [ ] Vercel redeploy to seed 6 new skills into DB and publish blog post
+- [ ] Register blog post in `web/app/blog/blogPosts.ts` (security-patch-apr-9-2026)
+- [ ] Prune stale claude/* branches (9 local, many remote)
+- [ ] Clear stale git stashes (4 accumulated)
+- [ ] Update Talent Protocol stats (1,713 commits, 85 PRs) — requires wallet login
 
 ## Done
 - [x] Security audit — all CRIT/HIGH/MED/LOW findings fixed
