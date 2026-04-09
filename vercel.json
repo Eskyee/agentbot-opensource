@@ -2,7 +2,7 @@
   "rootDirectory": "web",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "installCommand": "npm install",
+  "installCommand": "npm install --include=dev",
   "buildCommand": "NEXT_PUBLIC_DEMO_MODE=true npm run build",
   "outputDirectory": ".next"
 }
