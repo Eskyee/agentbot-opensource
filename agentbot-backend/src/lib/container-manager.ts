@@ -21,7 +21,7 @@ const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }
   solo:       { cpuMillicores: 1000, memoryMB: 2048 },
   collective: { cpuMillicores: 2000, memoryMB: 4096 },
   label:      { cpuMillicores: 4000, memoryMB: 8192 },
-  network:    { cpuMillicores: 8000, memoryMB: 16384 },
+  network:    { cpuMillicores: 4000, memoryMB: 16384 },
 };
 
 // Env vars to inject into each agent container

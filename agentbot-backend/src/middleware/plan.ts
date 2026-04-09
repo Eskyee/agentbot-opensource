@@ -15,14 +15,14 @@ export const PLANS = {
   },
   collective: {
     price: 69,
-    agents: 10,
+    agents: 3,
     models: ['openai/gpt-4o-mini', 'openai/gpt-4o', 'google/gemini-2.0-flash', 'anthropic/claude-3.5-sonnet', 'xiaomi/mimo-v2-pro'],
     skills: 10,
     a2aMessages: 500,
   },
   label: {
     price: 149,
-    agents: 3,
+    agents: 10,
     models: ['openai/gpt-4o-mini', 'openai/gpt-4o', 'openai/gpt-4-turbo', 'google/gemini-2.0-flash', 'anthropic/claude-3.5-sonnet', 'anthropic/claude-3-opus', 'xiaomi/mimo-v2-pro'],
     skills: 25,
     a2aMessages: 2000,
