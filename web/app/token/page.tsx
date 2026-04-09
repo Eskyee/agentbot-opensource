@@ -27,6 +27,15 @@ export default function TokenPage() {
           <p className="text-zinc-400 text-sm max-w-xl leading-relaxed">
             $AGENTBOT — the native token powering the Agentbot AI agent deployment platform on Base.
           </p>
+
+          <div className="border border-emerald-500/30 bg-emerald-500/5 p-4 rounded-lg max-w-xl">
+            <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold mb-2">Community Token</div>
+            <p className="text-sm text-zinc-300">
+              <strong className="text-white">We didn&apos;t launch this token — the community did.</strong> The Solana $AGENTBOT was created by
+              community members on Pump.fun. The Agentbot team does not control the token, does not hold tokens,
+              and does not influence trading. We build the platform. The community owns the token.
+            </p>
+          </div>
         </div>
 
         {/* Solana Token */}
