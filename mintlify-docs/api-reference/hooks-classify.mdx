@@ -1,0 +1,127 @@
+---
+title: Hooks classify
+description: "Classify agent tool calls into permission tiers for the pre-tool-use hook system"
+---
+
+# Hooks classify
+
+Classifies agent tool calls into permission tiers as part of the Docker agent pre-tool-use hook system. This endpoint is called by the hook script running inside Docker agent containers, not by end users directly.
+
+When a Docker agent invokes a tool, the `pre-tool-use` hook script sends the tool name and input to this endpoint. The classifier evaluates the request and returns one of three outcomes:
+
+- **Safe** — auto-approved, the agent proceeds immediately
+- **Dangerous** — queued for dashboard approval via the [permissions API](/api-reference/permissions)
+- **Destructive** — blocked, the agent cannot proceed
+
+<Note>This endpoint uses internal API key authentication, not session-based auth. It is designed to be called by the hook script running inside the agent container, not by the dashboard or end users.</Note>
+
+## Classify a tool call
+
+```http
+POST /api/hooks/classify
+```
+
+Classifies a tool call and returns a permission decision. Safe tools are auto-approved. Dangerous tools are queued for user approval and return a `requestId` that can be resolved through the [permissions API](/api-reference/permissions). Destructive tools are blocked.
+
+### Authentication
+
+Requires a valid internal API key in the `Authorization` header:
+
+```bash
+curl -X POST https://agentbot.sh/api/hooks/classify \
+  -H "Authorization: Bearer INTERNAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "toolName": "bash",
+    "toolInput": { "command": "git status" },
+    "agentId": "agent_123",
+    "userId": "user_456"
+  }'
+```
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `toolName` | string | Yes | Name of the tool being invoked (for example, `bash`, `write`, `read`, `exec`, `shell`) |
+| `toolInput` | object | No | Input parameters passed to the tool. For shell tools, this typically contains a `command` or `input` field. |
+| `agentId` | string | No | Identifier of the agent making the tool call. Defaults to `"unknown"` if omitted. |
+| `userId` | string | No | Identifier of the user who owns the agent. Defaults to `"unknown"` if omitted. |
+
+### Response
+
+The response shape depends on the classification tier.
+
+#### Safe (auto-approved)
+
+```json
+{
+  "allow": true,
+  "tier": "safe",
+  "reason": "Safe: git status"
+}
+```
+
+#### Dangerous (queued for approval)
+
+```json
+{
+  "allow": false,
+  "tier": "dangerous",
+  "reason": "Queued for approval: Dangerous command: ^node\\s",
+  "requestId": "hook_1711929600000_a1b2c3d4e"
+}
+```
+
+#### Destructive (blocked)
+
+```json
+{
+  "allow": false,
+  "tier": "destructive",
+  "reason": "Blocked: Destructive: ^rm\\s+(-rf?|--recursive)\\s+[~\\/]"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `allow` | boolean | Whether the tool call is permitted to proceed |
+| `tier` | string | Classification tier: `safe`, `dangerous`, or `destructive` |
+| `reason` | string | Human-readable explanation of the classification decision |
+| `requestId` | string | Present only for `dangerous` tier. Use this ID to approve or reject the request via [`POST /api/permissions`](/api-reference/permissions#submit-permission-decision). |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `toolName` in request body |
+| 401 | Unauthorized — missing or invalid internal API key |
+
+## Hook flow
+
+The classify endpoint is one step in the Docker agent pre-tool-use hook flow:
+
+1. The agent invokes a tool inside its Docker container
+2. The `--hook-pre-tool-use` flag triggers the hook script
+3. The hook script sends the tool details to `POST /api/hooks/classify`
+4. The endpoint classifies the tool call and returns a decision
+5. For `dangerous` tier results, the server pushes a `permission_request` message to the dashboard via the [WebSocket endpoint](/api-reference/permissions#websocket-real-time-notifications) (the dashboard can also poll [`GET /api/permissions`](/api-reference/permissions#list-pending-permission-requests) as a fallback)
+6. The user approves or rejects via [`POST /api/permissions`](/api-reference/permissions#submit-permission-decision) or through the [WebSocket `decision` message](/api-reference/permissions#client-to-server-messages)
+7. The agent receives the decision and proceeds or stops
+
+<Warning>The hook system is fail-closed. If the classify endpoint is unreachable, all tool calls are denied by default.</Warning>
+
+## Classification rules
+
+The classifier evaluates tool calls using the same tiered rules described in the [permissions API classification tiers](/api-reference/permissions#command-classification-tiers). Refer to that page for the full list of safe commands, dangerous patterns, and destructive patterns.
+
+### Tool-specific classification
+
+| Tool name | Classification logic |
+|-----------|---------------------|
+| `bash`, `exec`, `shell` | Classified based on the `command` or `input` parameter using pattern matching against safe commands, dangerous patterns, and destructive patterns |
+| `write`, `file_write` | `dangerous` if writing to sensitive paths (`.env`, `credentials`, `.ssh`); otherwise `safe` |
+| `read`, `file_read` | Always `safe` |
+| Unknown tools | Default to `dangerous` |

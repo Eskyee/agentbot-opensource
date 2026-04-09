@@ -1,0 +1,406 @@
+---
+title: API reference
+description: "Complete API reference for Agentbot"
+---
+
+# API reference
+
+Complete API reference for Agentbot.
+
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreiec4xih75nginbmhmicbk3t5i4amubxbndil2ntzpiupsmj2mlwpy" alt="Agentbot API reference" height="360" style={{borderRadius: '12px', width: '100%', objectFit: 'cover', marginBottom: '24px'}} />
+
+## Base URL
+
+```
+https://agentbot.sh/api
+```
+
+## Authentication
+
+Agentbot supports multiple authentication methods depending on the endpoint.
+
+### Session authentication
+
+Most web API endpoints use cookie-based session authentication via NextAuth. Sign in through the web application to obtain a session cookie.
+
+### API keys
+
+You can generate API keys from the dashboard. Include your key in the `Authorization` header:
+
+```bash
+curl -X GET https://agentbot.sh/api/agents \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+API keys use the `sk_` prefix and are shown only once at creation time. See the [keys API](/api-reference/keys) for details.
+
+### API key authentication (backend)
+
+Backend endpoints such as `/api/deployments` and `/api/openclaw/instances` use a shared internal API key for authentication. Include the key as a bearer token:
+
+```bash
+curl -X GET https://backend.example.com/api/openclaw/instances \
+  -H "Authorization: Bearer YOUR_INTERNAL_API_KEY"
+```
+
+See the [auth API](/api-reference/auth#api-key-authentication-backend-core-endpoints) for details.
+
+## Data isolation
+
+All authenticated API requests are scoped to the calling user's data through row-level security (RLS) policies at the database level. You can only read and modify resources that belong to your account. See [Security](/security#row-level-security) for the full list of protected tables and how isolation works.
+
+## Rate limits
+
+The backend API enforces per-IP rate limits using standard `RateLimit-*` response headers. When a limit is exceeded, the API returns `429 Too Many Requests`.
+
+### Backend API rate limits
+
+| Scope | Applies to | Limit | Error message |
+|-------|-----------|-------|---------------|
+| General | All `/api/*` routes | 120 req/min per IP | `Too many requests, please slow down.` |
+| AI (all endpoints) | `/api/ai/*` routes | 30 req/min per IP | `AI rate limit exceeded.` |
+| Deployments | `POST /api/deployments` | 5 req/min per IP | `Deployment rate limit exceeded.` |
+
+### Web API rate limits
+
+| Endpoint | Limit |
+|----------|-------|
+| `/api/v1/gateway` | 100/min |
+| `/api/agents` | 100/min |
+| `/api/chat` | 60/min |
+| `/api/instance/*` | 30/min |
+| `/api/provision` | 5/min |
+| `/api/register` | Rate-limited per IP |
+| `/api/auth/forgot-password` | Rate-limited per IP |
+| `/api/auth/reset-password` | Rate-limited per IP |
+
+### Rate limit response headers
+
+All rate-limited responses include standard headers:
+
+| Header | Description |
+|--------|-------------|
+| `RateLimit-Limit` | Maximum requests allowed in the current window |
+| `RateLimit-Remaining` | Requests remaining in the current window |
+| `RateLimit-Reset` | Time in seconds until the rate limit window resets |
+
+<Note>Legacy `X-RateLimit-*` headers are not sent. Use the unprefixed `RateLimit-*` headers instead.</Note>
+
+## Request format
+
+All POST and PUT requests that include a JSON body must set the `Content-Type` header to `application/json`. The backend API uses the Express JSON body parser, and requests without this header may result in an empty or undefined request body.
+
+Request bodies are limited to **1 MB**. Requests exceeding this limit are rejected before reaching the endpoint handler.
+
+```bash
+curl -X POST https://agentbot.sh/api/ai/chat \
+  -H "Content-Type: application/json" \
+  -H "x-user-plan: solo" \
+  -H "x-stripe-subscription-id: sub_123" \
+  -d '{"messages": [{"role": "user", "content": "Hello"}]}'
+```
+
+## Response format
+
+### Success
+
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
+
+<Note>Some endpoints return domain-specific top-level keys (for example `agents`, `keys`, `stats`) instead of a generic `data` wrapper. Refer to each endpoint's documentation for the exact response shape.</Note>
+
+### Error
+
+```json
+{
+  "error": "Description of the error"
+}
+```
+
+## HTTP status codes
+
+| Code | Meaning |
+|------|---------|
+| 200 | Success |
+| 201 | Resource created |
+| 400 | Bad request or validation error |
+| 401 | Unauthorized (missing or invalid authentication) |
+| 402 | Payment required — a paid subscription is mandatory for all agent provisioning and usage. The minimum plan is `solo`. Also returned when an [MPP](/payments/mpp) credential is missing for gateway requests, when the subscription ID does not match the authenticated user's subscription on file (`SUBSCRIPTION_MISMATCH`), or when using the deprecated `free` plan value. |
+| 403 | Forbidden (insufficient permissions, token gating failure, bot detection, missing CSRF token, or missing active subscription). Non-admin users without an active subscription who attempt to provision an agent receive a `403` with the message `Active subscription required`. |
+| 404 | Resource not found |
+| 429 | Too many requests or tier limit reached |
+| 500 | Internal server error |
+| 502 | Backend service unavailable |
+| 503 | Service unavailable (for example, provisioning kill switch is active) |
+
+## Endpoint reference
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/gateway` | POST | Route requests to plugins with Stripe or [MPP](/payments/mpp) payment |
+| `/api/agents` | GET | List all agents |
+| `/api/agents/:id` | GET | Get agent details |
+| `/api/agents/:id/config` | GET | Get agent configuration |
+| `/api/agents/:id/config` | PUT | Update agent configuration |
+| `/api/agents/:id/messages` | GET | Get agent messages |
+| `/api/agents/:id/stats` | GET | Get agent stats |
+| `/api/agents/:id/verification` | GET | Get verification status |
+| `/api/agents/:id/verify` | POST | Verify an agent |
+| `/api/agents/:id/verify` | DELETE | Remove verification |
+| `/api/agents/:id/start` | POST | Start an agent |
+| `/api/agents/:id/stop` | POST | Stop an agent |
+| `/api/agents/:id/restart` | POST | Restart an agent |
+| `/api/agents/:id/update` | POST | Update agent image |
+| `/api/agents/:id/repair` | POST | Repair an agent |
+| `/api/agents/:id/reset-memory` | POST | Reset agent memory |
+| `/api/agents/:id/token` | GET | Get agent gateway token |
+| `/api/agents/:id/sync` | POST | Sync agent skills, memories, and files to the gateway |
+| `/api/agents/user/:userId` | GET | Get agents for a user (internal, used by Edge Runtime) |
+| `/api/instance/:userId` | GET | Get instance runtime state by probing the agent directly |
+| `/api/instance/:userId/stats` | GET | Get instance stats via gateway healthcheck |
+| `/api/instance/:userId/start` | POST | Start (deploy) an agent service (web proxy) |
+| `/api/instance/:userId/stop` | POST | Stop (suspend) an agent service (web proxy) |
+| `/api/instance/:userId/restart` | POST | Restart an agent service (web proxy) |
+| `/api/instance/:userId/repair` | POST | Reconfigure and restart an agent (web proxy) |
+| `/api/instance/:userId/reset-memory` | POST | Wipe agent memory and restart (web proxy) |
+| `/api/instance/:userId/token` | GET | Get agent gateway token (web proxy) |
+| `/api/instance/:userId/update` | POST | Trigger agent image update (web proxy) |
+| `/api/agents/clone` | POST | Clone an existing agent (requires x402 payment proof) |
+| `/api/agents/clone` | GET | Clone service health check |
+| `/api/agents/definitions` | GET | List agent definitions (backend only) |
+| `/api/agents/definitions/:name` | GET | Get agent definition by name (backend only) |
+| `/api/agents/definitions` | POST | Validate an agent definition (backend only) |
+| `/api/agents/provision` | POST | Provision a new agent (web) |
+| `/api/agents/provision` | GET | List provisioned agents (web) |
+| `/api/agents/:id/verification` | GET | Get verification status (backend) |
+| `/api/chat` | GET | List message history |
+| `/api/chat` | POST | Send message to agent via OpenAI-compatible REST API |
+| `/api/gateway/chat` | POST | Send message to agent via gateway WebSocket proxy (fallback) |
+| `/api/gateway/status` | GET | Combined gateway health, sessions, and cron status |
+| `/api/channels` | GET | Channel connection status from gateway |
+| `/api/sessions` | GET | List active conversation sessions from gateway |
+| `/api/cron` | GET | List cron jobs from gateway |
+| `/api/cron` | POST | Create a cron job on the gateway |
+| `/api/cron` | DELETE | Delete a cron job from the gateway |
+| `/api/demo/chat` | GET | List available demo models (no auth) |
+| `/api/demo/chat` | POST | Send a demo chat message (no auth, rate-limited by IP) |
+| `/api/daily-brief` | GET | Aggregated daily service health brief |
+| `/api/health` | GET | Health check |
+| `/api/heartbeat` | GET | Get heartbeat settings (gateway-first, DB fallback) |
+| `/api/heartbeat` | PUT | Update heartbeat settings (gateway-first, DB fallback) |
+| `/api/heartbeat` | DELETE | Reset heartbeat settings (deprecated — use PUT with `enabled: false`) |
+| `/api/memory` | GET | Get agent memory (omit or pass `agentId=all` for all agents) |
+| `/api/memory` | POST | Store agent memory |
+| `/api/metrics` | GET | Get platform-wide metrics |
+| `/api/credits` | GET | Get credit balance |
+| `/api/keys` | GET | List API keys |
+| `/api/keys` | POST | Create API key (max 10 per account) |
+| `/api/keys/:id` | GET | Get API key details |
+| `/api/keys/:id` | DELETE | Delete API key |
+| `/api/keys/validate` | POST | Validate an API key (no session required) |
+| `/api/skills` | GET | List skills marketplace |
+| `/api/skills` | POST | Install a skill on an agent |
+| `/api/skills/:name` | POST | Use a skill |
+| `/api/skills/booking-settlement` | GET, POST | Booking escrow and settlement |
+| `/api/skills/instant-split` | GET, POST | Royalty split execution |
+| `/api/wallet` | GET | Get wallet info |
+| `/api/wallet` | POST | Wallet actions (create, info) |
+| `/api/wallet/address` | GET | Get CDP wallet address |
+| `/api/wallet/create` | POST | Create a CDP wallet |
+| `/api/wallet/cdp` | GET | Get CDP wallet status |
+| `/api/wallet/cdp` | POST | Create a CDP wallet client |
+| `/api/wallet/top-up` | GET | Create a Stripe checkout session for wallet top-up |
+| `/api/wallet/top-up` | POST | Stripe webhook for wallet top-up payment completion |
+| `/api/user/bankr-key` | GET | Check if a personal Bankr API key is configured |
+| `/api/user/bankr-key` | POST | Save or update a personal Bankr API key (encrypted at rest) |
+| `/api/user/bankr-key` | DELETE | Remove a personal Bankr API key |
+| `/api/bankr/balances` | GET | Get wallet balances from the Bankr trading service |
+| `/api/bankr/prompt` | POST | Send a natural-language prompt to the Bankr trading agent |
+| `/api/bankr/prompt` | GET | Poll the status of an asynchronous Bankr agent job |
+| `/api/deployments` | GET | List active deployments (admin only) |
+| `/api/deployments` | POST | Create a deployment by forwarding to the provisioning endpoint (requires session) |
+| `/api/provision` | GET | Get provisioning stats (requires bridge secret) |
+| `/api/provision` | POST | Provision agent with channel tokens or as OpenClaw-only deployment (requires auth) |
+| `/api/user/openclaw` | GET | Get the authenticated user's OpenClaw URL, instance ID, and gateway token |
+| `/api/registration/token` | GET | Get gateway token for a user (internal, used by Edge Runtime) |
+| `/api/validate-key` | POST | Validate an API key (backend only) |
+| `/api/register-home` | POST | Register a Home mode installation (backend only, requires identity headers) |
+| `/api/register-link` | POST | Register a Link mode installation (backend only, requires identity headers) |
+| `/api/installations` | GET | List registered installations (backend only, requires identity headers) |
+| `/api/agent` | GET | Agent interaction (health, sessions, memory, skills, credentials) |
+| `/api/agent` | POST | Agent interaction (chat, create-session, update-skill, set-credential) |
+| `/api/files` | GET | List files for an agent |
+| `/api/files` | POST | Upload a file for an agent |
+| `/api/files` | DELETE | Delete a file |
+| `/api/settings` | GET | Get current user profile |
+| `/api/settings` | POST, PATCH | Update user profile |
+| `/api/settings/password` | POST | Change password |
+| `/api/register` | POST | Create a new account (includes 7-day free trial) |
+| `/api/trial` | GET | Get free trial status for the authenticated user |
+| `/api/showcase` | GET | List agents in the public showcase gallery (no auth) |
+| `/api/agents/showcase` | GET | Get showcase opt-in status for your agent |
+| `/api/agents/showcase` | PATCH | Update showcase visibility and description |
+| `/api/wallet-auth` | POST | Wallet sign in (SIWE) |
+| `/api/auth/forgot-password` | POST | Request password reset |
+| `/api/auth/reset-password` | POST | Reset password |
+| `/api/security/risc` | GET | Cross-Account Protection endpoint health check |
+| `/api/security/risc` | POST | Receive Google Cross-Account Protection (RISC) security events |
+| `/api/auth/farcaster/verify` | GET, POST | Verify Farcaster identity (GET returns endpoint metadata) |
+| `/api/auth/farcaster/refresh` | GET, POST | Refresh Farcaster token (GET returns endpoint metadata) |
+| `/api/auth/token-gating/verify` | GET, POST | Verify token gating access |
+| `/api/passkey/register/options` | POST | Get WebAuthn registration options (requires session) |
+| `/api/passkey/register/verify` | POST | Verify and store a new passkey (requires session) |
+| `/api/passkey/auth/options` | POST | Get WebAuthn authentication options |
+| `/api/passkey/auth/verify` | POST | Authenticate with a passkey and create a session |
+| `/api/dashboard/data` | GET | Get all dashboard data in a single optimized request (session auth, Edge Runtime, CDN-cached for 5s) |
+| `/api/dashboard/analytics` | GET | Get deployment trends, channel activity, and skill analytics (session auth) |
+| `/api/dashboard/bootstrap` | GET | Get lightweight user and runtime shell data for the dashboard (session auth) |
+| `/api/dashboard/cost` | GET | Get aggregated cost dashboard data (by agent, model, and day) |
+| `/api/dashboard/health` | GET | Get health status of backend services (no auth) |
+| `/api/dashboard/stats` | GET | Get dashboard stats (agent counts, skills, tasks) |
+| `/api/referrals` | GET | Get referral data, statistics, and referral link (session auth) |
+| `/api/stats` | GET | Get system stats (CPU, memory, uptime, health, deployment info) |
+| `/api/billing` | GET | Get billing info |
+| `/api/billing` | POST | Billing actions (`create-checkout`, `enable-byok`, `disable-byok`, `get-usage`, `buy-credits`) |
+| `/api/subscriptions/deploy` | POST | Activate a subscription tier for deployment (backend only, requires auth) |
+| `/api/scheduled-tasks` | GET | List scheduled tasks (filtered by optional `agentId`) |
+| `/api/scheduled-tasks` | POST | Create a scheduled task |
+| `/api/scheduled-tasks` | PUT | Update a scheduled task |
+| `/api/scheduled-tasks` | DELETE | Delete a scheduled task |
+| `/api/checkout/verify` | GET | Verify a Stripe checkout session and activate subscription |
+| `/api/stripe/checkout` | GET | Redirect to Stripe checkout (accepts `plan` query param: `solo`, `collective`, `label`, `network`). Prices are in GBP. |
+| `/api/stripe/credits` | GET | Redirect to Stripe credit purchase (accepts `price` query param) |
+| `/api/stripe/storage-upgrade` | POST | Upgrade storage plan |
+| `/api/metrics/:userId/historical` | GET | Get historical time-series metrics (backend only) |
+| `/api/metrics/:userId/performance` | GET | Get current performance metrics (backend only) |
+| `/api/metrics/:userId/summary` | GET | Get music industry metrics summary (backend only) |
+| `/api/ai/health` | GET | AI provider availability (backend only, requires auth) |
+| `/api/ai/models` | GET | List available AI models (backend only, requires auth) |
+| `/api/ai/models/:provider` | GET | List models for a provider (backend only, requires auth) |
+| `/api/ai/models/select` | POST | Smart model selection for a task type (backend only) |
+| `/api/ai/chat` | POST | Universal chat completion (backend only, requires subscription plan) |
+| `/api/ai/estimate-cost` | POST | Estimate token cost (backend only) |
+| `/api/mcp/:skillId` | POST | Activate a skill-embedded MCP server |
+| `/api/mcp/:skillId` | DELETE | Deactivate a skill-embedded MCP server |
+| `/api/render-mcp/health` | GET | Render MCP gateway health check (backend only) |
+| `/api/render-mcp/info` | GET | Render MCP server metadata (backend only) |
+| `/api/render-mcp/setup` | GET | Render MCP setup instructions (backend only) |
+| `/api/render-mcp/tools` | GET | List Render MCP tools (backend only) |
+| `/api/render-mcp/examples` | GET | Example Render MCP prompts (backend only) |
+| `/api/render-mcp/validate-config` | POST | Validate Render API key (backend only) |
+| `/api/render-mcp/docs` | GET | Redirect to Render MCP docs (backend only) |
+| `/api/render-mcp/github` | GET | Redirect to Render MCP GitHub repo (backend only) |
+| `/api/version` | GET | Get platform version (no auth) |
+| `/api/openclaw/maintenance` | GET | Get agent health status (liveness and readiness) |
+| `/api/openclaw/maintenance` | POST | Restart agent container (runs doctor and migrations on startup) |
+| `/api/openclaw/ensure-compatibility` | POST | Ensure agent setup is compatible with OpenClaw 2026.4.2 (auto-migrates) |
+| `/api/support/heal-token` | POST | Auto-heal (regenerate) gateway token for the authenticated user |
+| `/api/openclaw-version` | GET | Get OpenClaw runtime version (web proxy, fallback `2026.4.2`) |
+| `/api/openclaw/version` | GET | Get OpenClaw runtime version (backend only) |
+| `/api/openclaw/instances` | GET | List running agent instances (backend only, requires auth) |
+| `/api/openclaw/instances/:id/stats` | GET | Get instance container stats (backend only, requires auth) |
+| `/api/openclaw/proxy/:agentId/*` | ALL | Proxy HTTP and WebSocket requests to an agent instance (backend only) |
+| `/api/deployments` | POST | Deploy an agent container (backend only, requires bearer token auth) |
+| `/api/models` | GET | List available OpenRouter AI models |
+| `/api/coinbase` | GET | Get Coinbase CDP configuration and supported features |
+| `/api/coinbase` | POST | Coinbase CDP wallet actions (create_wallet, get_balance, create_payment, onramp) |
+| `/api/basename` | GET | Resolve a Base Name (.base.eth) for a wallet address |
+| `/api/basefm/live` | GET | List active Mux live streams |
+| `/api/basefm/streams` | POST | Create a Mux live stream (RAVE token-gated) |
+| `/api/git-city` | GET | Get repository city visualization data or list user repos |
+| `/api/git-city` | POST | Analyze a GitHub repository URL for city visualization |
+| `/api/generate-video` | POST | Generate and upload a video (requires session) |
+| `/api/webhooks/mux` | POST | Mux webhook receiver (signature-verified) |
+| `/api/webhooks/resend` | POST | Resend email webhook — inbound email processing and outbound event tracking (sent, delivered, bounced, opened, clicked, complained) |
+| `/api/webhooks/railway-status` | POST | Railway platform status and deployment webhook receiver (persists to Redis) |
+| `/api/webhooks/railway-status` | GET | Poll last-known Railway status from Redis |
+| `/api/mission-control/fleet/graph` | GET | Get agent fleet constellation graph |
+| `/api/mission-control/fleet/traces` | GET | Get real-time execution traces |
+| `/api/mission-control/fleet/costs` | GET | Get per-agent cost attribution |
+| `/api/mission-control/fleet/bookings` | GET | Get talent bookings |
+| `/api/logs/:agentId/stream` | GET | Stream live agent logs via SSE (backend only) |
+| `/api/logs/:agentId/history` | GET | Get buffered log lines (backend only) |
+| `/api/logs/:agentId/stop` | POST | Stop a live log stream (backend only) |
+| `/api/logs/active` | GET | List active log streams (backend only) |
+| `/api/browse/tree` | GET | Get workspace file tree (backend only, requires auth) |
+| `/api/browse/read` | GET | Read a workspace file (backend only, requires auth) |
+| `/api/browse/write` | POST | Write a workspace file (backend only, requires auth) |
+| `/api/browse/git-status` | GET | Get workspace git status (backend only, requires auth) |
+| `/api/browse/git-diff` | GET | Get workspace git diff (backend only, requires auth) |
+| `/api/browse/git-sync` | POST | Commit and push workspace changes (backend only, requires auth) |
+| `/api/browse/git-log` | GET | Get workspace commit history (backend only, requires auth) |
+| `/api/usage/summary` | GET | Get aggregated token usage summary (backend only, requires auth) |
+| `/api/usage/by-agent/:agentId` | GET | Get token usage for a specific agent (backend only, requires auth) |
+| `/api/usage/by-model` | GET | Get token usage grouped by model (backend only, requires auth) |
+| `/api/usage/daily` | GET | Get daily token usage totals (backend only, requires auth) |
+| `/api/usage/tools` | GET | Get tool execution statistics (backend only, requires auth) |
+| `/api/jobs/board` | GET | List active job listings (public, supports filters) |
+| `/api/jobs/board` | POST | Create a job listing or company profile |
+| `/api/jobs/apply` | POST | Apply to a job listing |
+| `/api/jobs/apply` | GET | List your job applications |
+| `/api/jobs/career` | GET | Get your career profile |
+| `/api/jobs/career` | PUT | Create or update your career profile |
+| `/api/jobs/companies` | GET | List your companies and listing stats |
+| `/api/jobs/:jobId` | GET | Get background job status |
+| `/api/workflows` | GET | List all workflows |
+| `/api/workflows` | POST | Create a workflow |
+| `/api/workflows/:workflowId` | GET | Get workflow details |
+| `/api/workflows/:workflowId` | PUT | Update a workflow |
+| `/api/workflows/:workflowId` | DELETE | Delete a workflow |
+| `/api/swarms` | GET | List agent swarms |
+| `/api/swarms` | POST | Create an agent swarm |
+| `/api/underground/bus/send` | POST | Send an agent-to-agent message (signature-verified) |
+| `/api/underground/events` | GET | List underground events (backend only, requires auth) |
+| `/api/underground/events` | POST | Create an underground event (backend only, requires auth) |
+| `/api/underground/wallets` | POST | Create an agent wallet (backend only, requires auth) |
+| `/api/underground/wallets/:address/balance` | GET | Get agent wallet USDC balance (backend only, requires auth) |
+| `/api/underground/splits` | POST | Create and execute a royalty split (backend only, requires auth) |
+| `/api/permissions` | GET | List pending permission requests (backend only, requires auth). Accepts optional `agentId` query parameter. |
+| `/api/permissions` | POST | Submit a permission decision: `approve`, `reject`, or `approve_always` (backend only, requires auth) |
+| `/api/hooks/classify` | POST | Classify an agent tool call into a permission tier (internal, called by Docker agent hook script) |
+| `/api/orchestration/batch` | POST | Execute a batch of tool calls with concurrent optimization (backend only, requires auth) |
+| `/api/orchestration/partition` | POST | Dry-run partition of tool calls without execution (backend only, requires auth) |
+| `/api/colony/status` | GET | Get colony tree, soul cognitive state, or diagnostics |
+| `/api/invite` | POST | Create an invite token (requires session auth) |
+| `/api/invites/verify` | POST | Verify an invite token (no auth required) |
+| `/api/admin/invites` | GET | List all invites (requires admin session) |
+| `/api/admin/invites` | POST | Create an invite for a specific email (requires admin session) |
+| `/api/admin/fix-openclaw` | GET | **Deprecated.** Previously updated the OpenClaw service start command and triggered a redeploy. This endpoint has been removed. |
+| `/api/summarize` | POST | Summarize a URL — returns title, description, headings, paragraphs, word count (web summarizer service) |
+| `/api/extract` | POST | Extract links, images, and Open Graph metadata from a URL (web summarizer service) |
+| `/api/clawmerchants` | GET | List available ClawMerchants data feeds, or fetch a specific feed by `feed` query parameter |
+| `/api/debug` | POST | Execute an allowlisted diagnostic command against an agent |
+| `/api/config` | GET | Get current agent configuration and backup list |
+| `/api/config` | POST | Save a new agent configuration (auto-backs up the previous config) |
+| `/api/config` | PUT | Restore a previous configuration from a backup |
+| `/api/devices` | GET | List pending and approved paired devices |
+| `/api/devices` | POST | Approve, deny, or revoke a paired device |
+| `/api/market-intel` | GET | Live competitive landscape, infrastructure signals, and market opportunities |
+| `/v1/models` | GET | List all available models (OpenAI-compatible, no auth required) |
+| `/v1/models/:model` | GET | Get a single model by ID (OpenAI-compatible, no auth required) |
+| `/v1/embeddings` | POST | Generate embeddings (OpenAI-compatible, proxied to OpenRouter, requires auth) |
+| `/health` | GET | Backend health check (no auth required) |
+| `/install` | GET | Download the Home mode installation shell script |
+| `/link` | GET | Download the Link mode installation shell script |
+
+## SDK
+
+Use the Agentbot SDK:
+
+```bash
+npm install @agentbot/sdk
+```
+
+```typescript
+import { Agentbot } from '@agentbot/sdk';
+
+const client = new Agentbot({
+  apiKey: process.env.AGENTBOT_API_KEY
+});
+
+const agents = await client.agents.list();
+```

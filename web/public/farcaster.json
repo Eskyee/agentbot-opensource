@@ -1,0 +1,22 @@
+{
+  "_redirect": "Moved to /.well-known/farcaster.json",
+  "accountAssociation": {
+    "header": "eyJmaWQiOjAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMCJ9",
+    "payload": "eyJkb21haW4iOiJhZ2VudGJvdC5yYXZlY3VsdHVyZS54eXoifQ",
+    "signature": "REPLACE_WITH_SIGNED_SIGNATURE"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "Agentbot",
+    "iconUrl": "https://agentbot.raveculture.xyz/icon.png",
+    "homeUrl": "https://agentbot.raveculture.xyz",
+    "imageUrl": "https://agentbot.raveculture.xyz/og-image.png",
+    "buttonTitle": "Deploy Your Fleet",
+    "splashImageUrl": "https://agentbot.raveculture.xyz/splash.png",
+    "splashBackgroundColor": "#0a0e27",
+    "webhookUrl": "https://agentbot.raveculture.xyz/api/webhooks/farcaster",
+    "description": "Deploy autonomous AI agents in 60 seconds.",
+    "primaryCategory": "developer-tools",
+    "tags": ["ai", "agents", "base", "music", "automation"]
+  }
+}

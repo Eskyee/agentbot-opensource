@@ -1,0 +1,287 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation [ref=e3]:
+    - link "Agentbot Agentbot" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "Agentbot" [ref=e5]
+      - generic [ref=e6]: Agentbot
+    - generic [ref=e7]:
+      - link "Pricing" [ref=e8] [cursor=pointer]:
+        - /url: /pricing
+      - link "Why" [ref=e9] [cursor=pointer]:
+        - /url: /why
+      - link "Borg" [ref=e10] [cursor=pointer]:
+        - /url: /dashboard/borg
+      - link "Jobs" [ref=e11] [cursor=pointer]:
+        - /url: /jobs
+      - link "Sponsor" [ref=e12] [cursor=pointer]:
+        - /url: /sponsor
+      - link "News" [ref=e13] [cursor=pointer]:
+        - /url: /news
+      - link "Blog" [ref=e14] [cursor=pointer]:
+        - /url: /blog
+      - link "Agents" [ref=e15] [cursor=pointer]:
+        - /url: /agents
+      - link "Marketplace" [ref=e16] [cursor=pointer]:
+        - /url: /marketplace
+      - link "Demo" [ref=e17] [cursor=pointer]:
+        - /url: /demo
+      - link "Docs" [ref=e18] [cursor=pointer]:
+        - /url: /documentation
+    - generic [ref=e19]:
+      - link "Log in" [ref=e20] [cursor=pointer]:
+        - /url: /login
+      - link "Get Started" [ref=e21] [cursor=pointer]:
+        - /url: /signup
+  - main [ref=e22]:
+    - main [ref=e23]:
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]: Built for the Creative Industry
+          - link "Open Source ⭐ 4 🍴 1" [ref=e31] [cursor=pointer]:
+            - /url: https://github.com/Eskyee/agentbot-opensource
+            - img [ref=e32]
+            - text: Open Source
+            - generic [ref=e34]: ⭐ 4
+            - generic [ref=e35]: 🍴 1
+        - heading "Focus on the Work. Agents Handle the Rest." [level=1] [ref=e36]:
+          - text: Focus on the Work.
+          - text: Agents Handle the Rest.
+        - paragraph [ref=e37]: Your autonomous crew handles contracts, outreach, and client comms — while you stay focused on your craft.
+        - generic [ref=e38]:
+          - link "Deploy Your Crew" [ref=e39] [cursor=pointer]:
+            - /url: /onboard?plan=solo
+          - link "Try Demo" [ref=e40] [cursor=pointer]:
+            - /url: /demo
+      - img "Agentbot — Command Center" [ref=e44]
+      - generic [ref=e48]:
+        - generic [ref=e55]: agentbot.raveculture.xyz/dashboard
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: Agentbot
+            - generic [ref=e59]: ◈ Mission Control
+            - generic [ref=e60]: ◎ Wallet
+            - generic [ref=e61]: ⚡ Activity
+            - generic [ref=e62]: 📊 Analytics
+            - generic [ref=e63]: ⚙ Settings
+            - generic [ref=e64]:
+              - generic [ref=e65]: Agents
+              - generic [ref=e68]: the-strategist
+              - generic [ref=e71]: crew-manager
+              - generic [ref=e74]: sound-system
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - generic [ref=e77]:
+                - generic [ref=e78]: AGENTS
+                - generic [ref=e79]: "3"
+                - generic [ref=e80]: active
+              - generic [ref=e81]:
+                - generic [ref=e82]: TASKS
+                - generic [ref=e83]: "47"
+                - generic [ref=e84]: completed today
+              - generic [ref=e85]:
+                - generic [ref=e86]: UPTIME
+                - generic [ref=e87]: 99.9%
+                - generic [ref=e88]: last 30 days
+              - generic [ref=e89]:
+                - generic [ref=e90]: REVENUE
+                - generic [ref=e91]: $1.2k
+                - generic [ref=e92]: this month
+            - generic [ref=e93]:
+              - generic [ref=e94]: Recent Activity
+              - generic [ref=e95]:
+                - generic [ref=e97]: 2m ago
+                - generic [ref=e98]: the-strategist
+                - generic [ref=e99]: "Reviewed PR #47 — approved"
+              - generic [ref=e100]:
+                - generic [ref=e102]: 8m ago
+                - generic [ref=e103]: crew-manager
+                - generic [ref=e104]: Invoice sent to client — £450
+              - generic [ref=e105]:
+                - generic [ref=e107]: 15m ago
+                - generic [ref=e108]: sound-system
+                - generic [ref=e109]: Stream monitored — 1.2k listeners
+              - generic [ref=e110]:
+                - generic [ref=e112]: 23m ago
+                - generic [ref=e113]: the-strategist
+                - generic [ref=e114]: Standup summary generated
+              - generic [ref=e115]:
+                - generic [ref=e117]: 41m ago
+                - generic [ref=e118]: crew-manager
+                - generic [ref=e119]: Booking confirmed — Apr 12
+      - generic [ref=e122]:
+        - heading "Your 24/7 Autonomous Crew" [level=2] [ref=e123]:
+          - text: Your 24/7
+          - text: Autonomous Crew
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - heading "Built around your workflow." [level=3] [ref=e126]
+            - paragraph [ref=e127]: Name it, shape its voice, and it carries context across every client, project, and conversation.
+          - generic [ref=e128]:
+            - heading "Always on, zero wait." [level=3] [ref=e129]
+            - paragraph [ref=e130]: Live in 10 seconds, running 24/7 — handling inbound while you sleep.
+          - generic [ref=e131]:
+            - heading "Right where your clients are." [level=3] [ref=e132]
+            - paragraph [ref=e133]: Telegram, WhatsApp, Discord — meets people where they already message.
+        - link "See use cases →" [ref=e134] [cursor=pointer]:
+          - /url: /use-cases
+      - generic [ref=e136]:
+        - generic [ref=e137]: What Your Agent Can Do
+        - generic [ref=e139]:
+          - generic [ref=e140]: Summarize emails·
+          - generic [ref=e141]: Auto-reply to messages·
+          - generic [ref=e142]: Draft contracts·
+          - generic [ref=e143]: Schedule meetings·
+          - generic [ref=e144]: Track invoices·
+          - generic [ref=e145]: Monitor competitors·
+          - generic [ref=e146]: Generate content·
+          - generic [ref=e147]: Manage communities·
+          - generic [ref=e148]: Handle bookings·
+          - generic [ref=e149]: Run payroll·
+          - generic [ref=e150]: Research markets·
+          - generic [ref=e151]: Create proposals·
+          - generic [ref=e152]: Translate in real time·
+          - generic [ref=e153]: Screen leads·
+          - generic [ref=e154]: Track order shipments·
+          - generic [ref=e155]: Draft social posts·
+          - generic [ref=e156]: Analyze documents·
+          - generic [ref=e157]: Coordinate outreach·
+          - generic [ref=e158]: Monitor news·
+          - generic [ref=e159]: Generate reports·
+          - generic [ref=e160]: Manage files·
+          - generic [ref=e161]: Execute shell commands·
+          - generic [ref=e162]: Deploy code·
+          - generic [ref=e163]: Run web scrapers·
+          - generic [ref=e164]: Summarize emails·
+          - generic [ref=e165]: Auto-reply to messages·
+          - generic [ref=e166]: Draft contracts·
+          - generic [ref=e167]: Schedule meetings·
+          - generic [ref=e168]: Track invoices·
+          - generic [ref=e169]: Monitor competitors·
+          - generic [ref=e170]: Generate content·
+          - generic [ref=e171]: Manage communities·
+          - generic [ref=e172]: Handle bookings·
+          - generic [ref=e173]: Run payroll·
+          - generic [ref=e174]: Research markets·
+          - generic [ref=e175]: Create proposals·
+          - generic [ref=e176]: Translate in real time·
+          - generic [ref=e177]: Screen leads·
+          - generic [ref=e178]: Track order shipments·
+          - generic [ref=e179]: Draft social posts·
+          - generic [ref=e180]: Analyze documents·
+          - generic [ref=e181]: Coordinate outreach·
+          - generic [ref=e182]: Monitor news·
+          - generic [ref=e183]: Generate reports·
+          - generic [ref=e184]: Manage files·
+          - generic [ref=e185]: Execute shell commands·
+          - generic [ref=e186]: Deploy code·
+          - generic [ref=e187]: Run web scrapers·
+      - generic [ref=e189]:
+        - generic [ref=e190]:
+          - generic [ref=e191]:
+            - generic [ref=e192]: Pricing
+            - heading "Simple. No Markup." [level=2] [ref=e193]:
+              - text: Simple.
+              - text: No Markup.
+          - link "Full breakdown →" [ref=e194] [cursor=pointer]:
+            - /url: /pricing
+        - generic [ref=e195]:
+          - generic [ref=e196]:
+            - generic [ref=e198]: Solo
+            - generic [ref=e199]: £29/mo
+            - link "Select" [ref=e200] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=solo
+          - generic [ref=e201]:
+            - generic [ref=e202]:
+              - generic [ref=e203]: Collective
+              - generic [ref=e204]: Popular
+            - generic [ref=e205]: £69/mo
+            - link "Select" [ref=e206] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=collective
+          - generic [ref=e207]:
+            - generic [ref=e209]: Label
+            - generic [ref=e210]: £149/mo
+            - link "Select" [ref=e211] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=label
+          - generic [ref=e212]:
+            - generic [ref=e214]: Network
+            - generic [ref=e215]: £499/mo
+            - link "Select" [ref=e216] [cursor=pointer]:
+              - /url: /api/stripe/checkout?plan=network
+      - generic [ref=e219]:
+        - generic [ref=e220]:
+          - generic [ref=e221]: $AGENTBOT
+          - generic [ref=e222]: /WETH · Base
+        - generic [ref=e223]:
+          - link "Scanner" [ref=e224] [cursor=pointer]:
+            - /url: https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3
+          - generic [ref=e225]: ·
+          - link "Buy $AGENTBOT" [ref=e226] [cursor=pointer]:
+            - /url: https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc
+      - generic [ref=e230]:
+        - generic [ref=e231]: See It In Action
+        - heading "baseFM" [level=2] [ref=e232]
+        - paragraph [ref=e233]: A live radio station run entirely by an Agentbot agent — handling broadcast, fan engagement, and on-chain coordination with zero human input.
+        - generic [ref=e234]:
+          - link "Listen Live" [ref=e235] [cursor=pointer]:
+            - /url: https://basefm.space/live
+          - link "Support $BASEFM" [ref=e236] [cursor=pointer]:
+            - /url: https://bankr.bot/agents/basefm
+      - generic [ref=e238]:
+        - generic [ref=e239]: Explore
+        - generic [ref=e240]:
+          - link "Use Cases" [ref=e241] [cursor=pointer]:
+            - /url: /use-cases
+          - link "Capabilities" [ref=e242] [cursor=pointer]:
+            - /url: /capabilities
+          - link "Demo" [ref=e243] [cursor=pointer]:
+            - /url: /demo
+          - link "Marketplace" [ref=e244] [cursor=pointer]:
+            - /url: /marketplace
+          - link "Open Learning" [ref=e245] [cursor=pointer]:
+            - /url: /open-learning
+  - contentinfo [ref=e246]:
+    - generic [ref=e248]:
+      - generic [ref=e249]:
+        - generic [ref=e250]: © 2026 Agentbot · Zero Human Company
+        - generic [ref=e251]:
+          - generic [ref=e254]: Systems Operational
+          - generic [ref=e255]: "|"
+          - generic [ref=e256]: Agentbot v0.0.0
+          - generic [ref=e257]: "|"
+          - generic [ref=e258]: OpenClaw latest
+      - generic [ref=e259]:
+        - link "Partner" [ref=e260] [cursor=pointer]:
+          - /url: /partner
+        - link "$AGENTBOT" [ref=e261] [cursor=pointer]:
+          - /url: /token
+        - link "Solana" [ref=e262] [cursor=pointer]:
+          - /url: /solana
+        - link "Buddies" [ref=e263] [cursor=pointer]:
+          - /url: /buddies
+        - link "GitHub" [ref=e264] [cursor=pointer]:
+          - /url: https://github.com/Eskyee/agentbot-opensource
+        - link "Gitlawb" [ref=e265] [cursor=pointer]:
+          - /url: https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource
+        - link "DeepWiki" [ref=e266] [cursor=pointer]:
+          - /url: https://deepwiki.com/Eskyee/agentbot-opensource
+        - link "Dev.to" [ref=e267] [cursor=pointer]:
+          - /url: https://dev.to/agentbot
+        - link "Talent" [ref=e268] [cursor=pointer]:
+          - /url: https://talent.app/raveculture.base.eth
+        - link "Open WebUI" [ref=e269] [cursor=pointer]:
+          - /url: https://openwebui.com/u/jaieskyravecult115142e2f8
+        - link "Terms" [ref=e270] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e271] [cursor=pointer]:
+          - /url: /privacy
+  - generic [ref=e274]:
+    - generic [ref=e275]:
+      - generic [ref=e278]: ONLINE
+      - generic [ref=e279]: ·
+      - generic [ref=e280]: ·
+      - generic [ref=e281]: updated 10:06
+    - generic [ref=e282]: © 2026 Agentbot
+  - region "Notifications alt+T"
+  - alert [ref=e283]

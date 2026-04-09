@@ -1,0 +1,371 @@
+---
+title: Billing API
+description: "Manage subscriptions, check usage, enable BYOK, and purchase credits"
+---
+
+# Billing API
+
+Retrieve billing information and perform subscription actions such as creating a checkout session, enabling bring-your-own-key (BYOK) mode, checking usage, and purchasing credit packs.
+
+<Note>All billing endpoints require session authentication.</Note>
+
+## Get billing info
+
+```http
+GET /api/billing
+```
+
+Returns the available plans, the authenticated user's current plan, subscription status, BYOK status, and daily usage.
+
+### Response
+
+```json
+{
+  "plans": {
+    "solo": {
+      "name": "Solo",
+      "price": 29,
+      "agents": 1,
+      "features": ["1 AI Agent", "2GB RAM", "Telegram"]
+    },
+    "collective": {
+      "name": "Collective",
+      "price": 69,
+      "agents": 3,
+      "features": ["3 AI Agents", "4GB RAM", "Telegram + WhatsApp"]
+    },
+    "label": {
+      "name": "Label",
+      "price": 149,
+      "agents": 10,
+      "features": ["10 AI Agents", "8GB RAM", "All channels", "White-label emails"]
+    },
+    "network": {
+      "name": "Network",
+      "price": 499,
+      "agents": -1,
+      "features": ["Unlimited agents", "16GB RAM", "White-label reselling"]
+    }
+  },
+  "currentPlan": "solo",
+  "subscriptionStatus": "active",
+  "byokEnabled": false,
+  "usage": {
+    "dailyUnits": 600,
+    "used": 245,
+    "remaining": 355
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `plans` | object | Map of available plans with pricing and features |
+| `currentPlan` | string | User's current plan. One of `solo`, `collective`, `label`, or `network`. Users who subscribed via the Stripe checkout flow have plans like `solo`, `collective`, `label`, or `network`. |
+| `subscriptionStatus` | string | Stripe subscription status (`active`, `inactive`, etc.) |
+| `byokEnabled` | boolean | Whether BYOK mode is active |
+| `usage.dailyUnits` | number | Daily unit allowance for the current plan |
+| `usage.used` | number | Units used today |
+| `usage.remaining` | number | Units remaining today |
+
+<Note>The `currentPlan` value is set by the Stripe webhook when a checkout completes. Plans created through the primary checkout flow (`/api/stripe/checkout`) use `solo`, `collective`, `label`, or `network`. The billing dashboard displays these with their plan names: `solo` appears as "Solo", `collective` as "Collective", and `label` as "Label".</Note>
+
+<Warning>The billing endpoint internally defines a legacy plan catalog (`starter` at $19/mo, `pro` at $39/mo, `scale` at $79/mo) which may appear in responses for users who subscribed before the current plan names were introduced. The primary checkout flow and provisioning endpoints use the current plan names (`solo`, `collective`, `label`, `network`). If you encounter legacy plan names in billing responses, they map to the current plans as follows: `starter` → `solo`, `pro` → `collective`, `scale` → `label`.</Warning>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch billing info |
+
+## Billing actions
+
+```http
+POST /api/billing
+```
+
+Performs a billing action. The `action` field in the request body determines which operation is executed.
+
+### Create checkout session
+
+Creates a Stripe checkout session for subscribing to a plan.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `create-checkout` |
+| `plan` | string | Yes | Plan to subscribe to: `solo`, `collective`, `label`, or `network` |
+
+#### Response
+
+```json
+{
+  "url": "https://checkout.stripe.com/c/pay/..."
+}
+```
+
+Redirect the user to the returned `url` to complete payment.
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid plan |
+
+### Enable BYOK
+
+Enables bring-your-own-key mode with an external AI provider. When BYOK is active, AI requests are billed directly by the provider rather than consuming platform credits.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `enable-byok` |
+| `apiKey` | string | Yes | Your API key for the external provider |
+| `provider` | string | Yes | Provider name (for example, `openai`, `anthropic`) |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "BYOK enabled with openai. You'll pay openai directly for AI usage."
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | API key and provider are required |
+
+### Disable BYOK
+
+Disables BYOK mode and reverts to platform credits.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `disable-byok` |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "BYOK disabled. Using platform credits."
+}
+```
+
+### Get usage
+
+Returns the current day's unit consumption.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `get-usage` |
+
+#### Response
+
+```json
+{
+  "dailyUnits": 600,
+  "used": 245,
+  "remaining": 355,
+  "resetsAt": "midnight UTC"
+}
+```
+
+### Buy credits
+
+Purchases a credit pack.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `buy-credits` |
+| `pack` | string | Conditional | Pack size: `50`, `200`, or `500`. Either `pack` or `amount` must be provided. |
+| `amount` | string | Conditional | Alias for `pack`. Accepted as a fallback when `pack` is not provided. Same values: `50`, `200`, or `500`. |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "credits": 15,
+  "price": "$15"
+}
+```
+
+| Pack size | Credits |
+|-----------|---------|
+| `50` | 5 |
+| `200` | 15 |
+| `500` | 30 |
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid pack |
+
+### Common errors
+
+These apply to all billing POST actions:
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid action |
+| 401 | Unauthorized — no valid session |
+| 500 | Internal error |
+
+## Stripe checkout
+
+```http
+GET /api/stripe/checkout
+```
+
+Redirects to a Stripe checkout session for subscribing to a plan. This endpoint uses the `solo`, `collective`, `label`, and `network` plan names with GBP pricing. All new subscriptions include a **7-day free trial** — the first charge occurs after the trial period ends. Admin users (configured via `ADMIN_EMAILS`) bypass Stripe and are redirected directly to the onboarding page.
+
+<Note>The checkout plans (`solo`, `collective`, `label`, `network`) are the primary subscription path for agent provisioning. All plans start with a 7-day free trial. Admin users (configured via `ADMIN_EMAILS`) bypass Stripe entirely.</Note>
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `plan` | string | Yes | Plan to subscribe to: `solo`, `collective`, `label`, or `network` |
+
+### Checkout plan pricing
+
+| Plan | Price (GBP) |
+|------|-------------|
+| `solo` | £29/mo |
+| `collective` | £69/mo |
+| `label` | £149/mo |
+| `network` | £499/mo |
+
+### Response
+
+On success, redirects (303) to the Stripe checkout URL. The checkout session includes a 7-day free trial — the user enters payment details but is not charged until the trial ends. After checkout completes, Stripe redirects the user to `/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan={plan}`. On error, redirects to the pricing page with an error query parameter.
+
+| Redirect | Description |
+|----------|-------------|
+| Stripe checkout URL | Successful session creation — user completes payment on Stripe |
+| `/checkout/success?session_id=...&plan=...` | Post-payment redirect from Stripe after successful checkout |
+| `/pricing?cancelled=1` | User cancelled the Stripe checkout |
+| `/pricing?error=invalid_plan` | Unrecognized plan name |
+| `/pricing?error=stripe_not_configured` | Stripe secret key not set |
+| `/pricing?error=checkout_failed` | Stripe API error |
+| `/onboard?plan=...&paid=1&admin=1` | Admin bypass (no payment required) |
+
+## Verify checkout session
+
+```http
+GET /api/checkout/verify
+```
+
+Verifies a Stripe checkout session after payment and activates the subscription. Requires session authentication.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `session_id` | string | Yes | Stripe checkout session ID returned by Stripe after payment |
+
+### Response
+
+```json
+{
+  "plan": "solo",
+  "status": "active",
+  "nextBilling": "2026-04-20T00:00:00.000Z",
+  "customerId": "cus_abc123"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `plan` | string | Plan from the checkout session metadata. Defaults to `solo`. |
+| `status` | string | Always `active` on success. |
+| `nextBilling` | string or null | ISO 8601 date of the next billing cycle. `null` when the subscription period end date is unavailable. |
+| `customerId` | string | Stripe customer ID. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `session_id` query parameter |
+| 401 | Unauthorized |
+| 402 | Payment not completed |
+| 403 | Session does not belong to the authenticated user |
+| 500 | Verification failed |
+| 503 | Stripe not configured |
+
+## Subscription deploy
+
+```http
+POST /api/subscriptions/deploy
+```
+
+Records a subscription-to-plan mapping so the next agent deployment uses the correct resource tier. This endpoint is called by the Stripe webhook after a checkout completes.
+
+<Note>This is a backend-only endpoint that requires bearer token (API key) authentication.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tier` | string | Yes | Plan tier. One of: `solo`, `collective`, `label`, `network`, `underground`, `starter`, `pro`, `scale`, `enterprise`, `white_glove` |
+| `customerId` | string | Conditional | Customer identifier. Either `customerId` or `stripeCustomerId` must be provided. |
+| `stripeCustomerId` | string | Conditional | Stripe customer ID. Either `customerId` or `stripeCustomerId` must be provided. |
+| `subscriptionId` | string | No | Stripe subscription ID |
+
+### Response
+
+```json
+{
+  "success": true,
+  "customerId": "cus_abc123",
+  "subscriptionId": "sub_xyz",
+  "tier": "solo",
+  "resources": {
+    "memory": "2g",
+    "cpus": "1"
+  }
+}
+```
+
+### Plan resource allocations
+
+| Tier | Memory | CPUs | Notes |
+|------|--------|------|-------|
+| `solo` | 2 GB | 1 | |
+| `collective` | 4 GB | 2 | |
+| `label` | 8 GB | 4 | |
+| `network` | 16 GB | 4 | |
+| `underground` | 2 GB | 1 | Legacy alias |
+| `starter` | 2 GB | 1 | Legacy alias |
+| `pro` | 4 GB | 2 | Legacy alias |
+| `scale` | 8 GB | 4 | Legacy alias |
+| `enterprise` | 16 GB | 4 | Legacy alias |
+| `white_glove` | 32 GB | 8 | Legacy alias |
+
+<Note>The Railway provisioning function enforces resource limits for the following plans only: `underground`, `solo`, `collective`, `label`, `network`. Legacy aliases (`starter`, `pro`, `scale`, `enterprise`, `white_glove`) are not resolved during Railway provisioning and default to `solo` limits (2 GB / 1 vCPU). The subscription deploy endpoint still accepts all tier values listed above.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `customerId` is required (when neither customer ID field is provided) |
+| 400 | `tier` is required |
+| 400 | Invalid tier |
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Subscription activation failed |

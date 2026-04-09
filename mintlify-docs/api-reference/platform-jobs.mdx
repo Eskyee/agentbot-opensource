@@ -1,0 +1,295 @@
+---
+title: Platform jobs API
+description: "Enqueue and monitor background jobs for provisioning and gateway chat completions"
+---
+
+# Platform jobs API
+
+The platform jobs API provides a durable, priority-based background job queue. You can enqueue provisioning and chat jobs that run asynchronously with automatic retries and status tracking.
+
+<Note>These endpoints are backend-internal and require a valid internal API key passed in the `Authorization` header. Web clients should use the [Jobs API](/api-reference/jobs) proxy endpoints instead.</Note>
+
+## Job model
+
+Every job follows a common lifecycle:
+
+1. A job is created with status `queued`.
+2. A worker claims the job and moves it to `running`.
+3. On success the job moves to `completed` with a `result` payload.
+4. On failure the job is retried (up to `maxAttempts`) or moves to `failed`.
+
+Jobs that remain in `running` state for more than ten minutes are automatically requeued.
+
+### Job types
+
+| Type | Lane | Description |
+|------|------|-------------|
+| `provision_managed_runtime` | `deploy` | Provisions a new managed agent runtime |
+| `gateway_chat_completion` | `runtime_exec` | Sends a chat completion request through a gateway |
+
+### Job statuses
+
+| Status | Description |
+|--------|-------------|
+| `queued` | Waiting to be picked up by a worker |
+| `running` | Currently being processed |
+| `completed` | Finished successfully |
+| `failed` | Exhausted all retry attempts |
+
+## Enqueue a provision job
+
+```http
+POST /api/platform-jobs/provision
+```
+
+Queues a new managed-runtime provisioning job. The job is processed asynchronously and the response is returned immediately with a `202 Accepted` status.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `email` | string | Yes | User email address |
+| `agentId` | string | Yes | Agent identifier to provision |
+| `plan` | string | No | Subscription plan. Defaults to `solo`. |
+| `aiProvider` | string | No | AI provider. Defaults to `openrouter`. |
+| `agentType` | string | No | Agent type. Defaults to `creative`. |
+| `autoProvision` | boolean | No | Whether to provision automatically. Defaults to `false`. |
+| `stripeSubscriptionId` | string \| null | No | Stripe subscription identifier, if applicable. Defaults to `null`. |
+
+### Response (202)
+
+```json
+{
+  "success": true,
+  "queued": true,
+  "job": {
+    "id": "job_a1b2c3d4e5f6g7h8",
+    "userId": "user_123",
+    "agentId": "agent_456",
+    "lane": "deploy",
+    "jobType": "provision_managed_runtime",
+    "status": "queued",
+    "priority": 100,
+    "attempts": 0,
+    "maxAttempts": 5,
+    "runAt": "2026-04-07T04:00:00Z",
+    "lockedAt": null,
+    "startedAt": null,
+    "completedAt": null,
+    "error": null,
+    "result": null,
+    "payload": {
+      "userId": "user_123",
+      "agentId": "agent_456",
+      "plan": "solo",
+      "aiProvider": "openrouter",
+      "agentType": "creative",
+      "autoProvision": false
+    },
+    "createdAt": "2026-04-07T04:00:00Z",
+    "updatedAt": "2026-04-07T04:00:00Z"
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing or invalid `userId`, `email`, or `agentId` |
+| 500 | Failed to enqueue the job |
+
+## Enqueue a chat job
+
+```http
+POST /api/platform-jobs/chat
+```
+
+Queues a gateway chat completion job. The job is processed asynchronously and the response is returned immediately with a `202 Accepted` status.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `agentId` | string | Yes | Agent identifier |
+| `gatewayUrl` | string | Yes | Gateway URL to send the chat request to |
+| `message` | string | Yes | User message content |
+| `systemPrompt` | string \| null | No | Optional system prompt prepended to the conversation. Defaults to `null`. |
+
+### Response (202)
+
+```json
+{
+  "success": true,
+  "queued": true,
+  "job": {
+    "id": "job_b2c3d4e5f6g7h8i9",
+    "userId": "user_123",
+    "agentId": "agent_456",
+    "lane": "runtime_exec",
+    "jobType": "gateway_chat_completion",
+    "status": "queued",
+    "priority": 50,
+    "attempts": 0,
+    "maxAttempts": 3,
+    "runAt": "2026-04-07T04:00:00Z",
+    "lockedAt": null,
+    "startedAt": null,
+    "completedAt": null,
+    "error": null,
+    "result": null,
+    "payload": {
+      "userId": "user_123",
+      "agentId": "agent_456",
+      "plan": null,
+      "aiProvider": null,
+      "agentType": null,
+      "autoProvision": false
+    },
+    "createdAt": "2026-04-07T04:00:00Z",
+    "updatedAt": "2026-04-07T04:00:00Z"
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing or invalid `userId`, `agentId`, `gatewayUrl`, or `message` |
+| 500 | Failed to enqueue the job |
+
+## Get a job
+
+```http
+GET /api/platform-jobs/:jobId
+```
+
+Returns the current state of a job by its identifier.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `jobId` | string | Job identifier (prefixed with `job_`) |
+
+### Response
+
+```json
+{
+  "job": {
+    "id": "job_a1b2c3d4e5f6g7h8",
+    "userId": "user_123",
+    "agentId": "agent_456",
+    "lane": "deploy",
+    "jobType": "provision_managed_runtime",
+    "status": "completed",
+    "priority": 100,
+    "attempts": 1,
+    "maxAttempts": 5,
+    "runAt": "2026-04-07T04:00:00Z",
+    "lockedAt": null,
+    "startedAt": "2026-04-07T04:00:05Z",
+    "completedAt": "2026-04-07T04:00:30Z",
+    "error": null,
+    "result": {
+      "plan": "solo",
+      "aiProvider": "openrouter",
+      "agentType": "creative",
+      "queuedUserId": "user_123",
+      "agentId": "agent_456"
+    },
+    "payload": {
+      "userId": "user_123",
+      "agentId": "agent_456",
+      "plan": "solo",
+      "aiProvider": "openrouter",
+      "agentType": "creative",
+      "autoProvision": false
+    },
+    "createdAt": "2026-04-07T04:00:00Z",
+    "updatedAt": "2026-04-07T04:00:30Z"
+  }
+}
+```
+
+### Job response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `job.id` | string | Job identifier |
+| `job.userId` | string \| null | User who owns this job |
+| `job.agentId` | string \| null | Associated agent identifier |
+| `job.lane` | string | Processing lane (`deploy`, `runtime_exec`, or `recovery`) |
+| `job.jobType` | string | Job type (see [job types](#job-types)) |
+| `job.status` | string | Current status (see [job statuses](#job-statuses)) |
+| `job.priority` | number | Priority value. Higher values are processed first. |
+| `job.attempts` | number | Number of processing attempts so far |
+| `job.maxAttempts` | number | Maximum number of attempts before the job is marked as failed |
+| `job.runAt` | string | ISO 8601 timestamp of when the job is eligible to run |
+| `job.lockedAt` | string \| null | ISO 8601 timestamp of when a worker locked this job |
+| `job.startedAt` | string \| null | ISO 8601 timestamp of the first processing attempt |
+| `job.completedAt` | string \| null | ISO 8601 timestamp of completion or final failure |
+| `job.error` | string \| null | Error message from the most recent failed attempt |
+| `job.result` | object \| null | Result payload when the job completes successfully |
+| `job.payload` | object | Sanitized input payload |
+| `job.createdAt` | string | ISO 8601 creation timestamp |
+| `job.updatedAt` | string | ISO 8601 last update timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 404 | Job not found |
+| 500 | Failed to fetch the job |
+
+## Get job metrics
+
+```http
+GET /api/platform-jobs/metrics
+```
+
+Returns aggregate metrics across all jobs, grouped by lane and status. Useful for monitoring queue health.
+
+### Response
+
+```json
+{
+  "counts": [
+    { "lane": "deploy", "status": "queued", "count": 3 },
+    { "lane": "deploy", "status": "completed", "count": 120 },
+    { "lane": "runtime_exec", "status": "running", "count": 1 }
+  ],
+  "oldestQueuedAgeSeconds": 12.5
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `counts` | array | Job counts grouped by lane and status |
+| `counts[].lane` | string | Processing lane |
+| `counts[].status` | string | Job status |
+| `counts[].count` | number | Number of jobs in this lane and status |
+| `oldestQueuedAgeSeconds` | number | Age in seconds of the oldest queued job. Returns `0` when the queue is empty. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Failed to fetch metrics |
+
+## Retry behavior
+
+Failed jobs are automatically retried with exponential backoff:
+
+| Attempt | Delay |
+|---------|-------|
+| 1 | 30 seconds |
+| 2 | 60 seconds |
+| 3 | 90 seconds |
+| 4 | 120 seconds |
+| 5+ | 300 seconds (capped) |
+
+Provision jobs allow up to five attempts. Chat jobs allow up to three attempts. After exhausting all attempts, the job status is set to `failed`.

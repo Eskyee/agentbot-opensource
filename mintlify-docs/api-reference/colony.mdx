@@ -1,0 +1,630 @@
+---
+title: Colony API
+description: "Query colony status, soul cognitive state, and diagnostics"
+---
+
+# Colony API
+
+Retrieve colony status, agent fitness rankings, and soul service diagnostics.
+
+The colony endpoint proxies requests to the soul service, which provides cognitive architecture data for agents including plan-driven reasoning, fitness scoring, and colony coordination.
+
+The endpoint automatically attempts multiple soul service hosts. If the primary host is unavailable, a fallback host is tried. When a fallback host is used, the response includes `degraded: true` along with `error` and `detail` fields. The `root.serviceUrl` field reflects whichever host actually served the request.
+
+## Get colony status
+
+```http
+GET /api/colony/status
+```
+
+Requires session authentication. Returns colony tree data, agent fitness rankings, and root node details by default.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `action` | string | `tree` | Action to perform. One of `tree`, `soul`, or `diagnostics`. |
+
+### Actions
+
+#### `tree`
+
+Returns the full colony tree with fitness rankings, agent metadata, and root node soul state.
+
+```bash
+curl -X GET "https://agentbot.sh/api/colony/status?action=tree" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN"
+```
+
+#### Response
+
+```json
+{
+  "colony_size": 3,
+  "avg_fitness": 72,
+  "fittest": {
+    "id": "inst_abc123",
+    "name": "Atlas Prime",
+    "generation": 1,
+    "fitness": 85,
+    "specialization": "general",
+    "children": 2,
+    "parent": null,
+    "walletAddress": "0x1234...5678",
+    "status": "active",
+    "createdAt": "2026-03-22T00:00:00Z",
+    "url": "https://soul.example.com",
+    "endpoints": [
+      { "slug": "chat", "description": "Chat with the soul", "price": "0.001" }
+    ],
+    "uptime": 86400,
+    "version": "0.1.0"
+  },
+  "cull_queue": 0,
+  "agents": [
+    {
+      "id": "inst_abc123",
+      "name": "Atlas Prime",
+      "generation": 1,
+      "fitness": 85,
+      "specialization": "general",
+      "children": 2,
+      "parent": null,
+      "walletAddress": "0x1234...5678",
+      "status": "active",
+      "createdAt": "2026-03-22T00:00:00Z",
+      "url": "https://soul.example.com",
+      "endpoints": [
+        { "slug": "chat", "description": "Chat with the soul", "price": "0.001" }
+      ],
+      "uptime": 86400,
+      "version": "0.1.0"
+    }
+  ],
+  "root": {
+    "address": "0x1234...5678",
+    "designation": "Atlas Prime",
+    "fitness": {
+      "total": 0.85,
+      "prediction": 0.78,
+      "execution": 0.91
+    },
+    "wallet_balance": {
+      "formatted": "12.50",
+      "token": "USDC.e"
+    },
+    "clone_available": true,
+    "clone_price": "5.00",
+    "soul": {
+      "active": true,
+      "dormant": false,
+      "total_cycles": 1284,
+      "mode": "autonomous",
+      "active_plan": {
+        "id": "plan_001",
+        "goal_id": "goal_abc",
+        "current_step": 3,
+        "total_steps": 7,
+        "status": "executing",
+        "replan_count": 0
+      },
+      "free_energy": {
+        "F": "0.342",
+        "regime": "low",
+        "trend": "decreasing",
+        "components": [
+          { "system": "cortex", "surprise": "0.12", "weight": "0.25" }
+        ]
+      },
+      "brain": {
+        "parameters": 284000,
+        "train_steps": 5200,
+        "running_loss": 0.032
+      },
+      "transformer": {
+        "param_count": 284000,
+        "train_steps": 5200,
+        "running_loss": 0.032,
+        "vocab_size": 512,
+        "plans_generated": 148
+      }
+    },
+    "colony": {
+      "rank": 1,
+      "can_spawn": true,
+      "should_cull": false,
+      "niche": "general",
+      "colony_size": 3,
+      "fitness_rank": [
+        { "address": "0x1234...5678", "fitness": 0.85, "rank": 1 }
+      ]
+    }
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `colony_size` | number | Total number of agents in the colony |
+| `avg_fitness` | number | Average fitness score across all agents (0–100) |
+| `fittest` | object \| null | Agent with the highest fitness score, or `null` when the colony has no agents |
+| `cull_queue` | number | Number of agents with fitness below 40, eligible for culling |
+| `agents` | array | All agents in the colony including root, children, and peers |
+| `degraded` | boolean | Optional. `true` when the primary soul host was unavailable and a fallback host was used. Omitted when the primary host responds normally. |
+| `error` | string | Optional. Error message describing the failure. Present only when `degraded` is `true`. |
+| `detail` | string | Optional. Underlying error detail (e.g., `Connection refused`). Present only when `degraded` is `true`. |
+| `root` | object | Root node details including soul cognitive state and colony rank |
+
+**Agent fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Instance identifier. Falls back to `"borg-root"` when the root node has no registered identity. |
+| `name` | string | Agent display name |
+| `generation` | number | Generation in the colony lineage (1 = root, 2 = child) |
+| `fitness` | number | Fitness score (0–100) |
+| `specialization` | string | Agent specialization niche |
+| `children` | number | Number of child agents |
+| `parent` | string \| null | Parent agent wallet address, or `null` for root agents and when identity data is unavailable |
+| `walletAddress` | string \| null | Agent wallet address, or `null` when identity data is unavailable |
+| `status` | string | Agent status. One of `active`, `stale`, or `culling`. |
+| `createdAt` | string | ISO 8601 creation timestamp. Falls back to the current time when identity data is unavailable. |
+| `url` | string | Soul service URL for this agent |
+| `endpoints` | array | Available service endpoints with slug, description, and price |
+| `uptime` | number | Uptime in seconds |
+| `version` | string | Soul service version |
+
+<Note>When the root node has not yet registered its identity, fields such as `id`, `parent`, `walletAddress`, and `createdAt` use safe fallback values. The `id` defaults to `"borg-root"`, `parent` and `walletAddress` default to `null`, and `createdAt` defaults to the current timestamp. The `root.address` falls back to the zero address (`0x0000000000000000000000000000000000000000`) and `root.wallet_balance` returns `{ "formatted": "0.00", "token": "USDC.e" }`. When the colony contains no agents, `fittest` returns `null` and `avg_fitness` returns `0`.</Note>
+
+**Root fields (`root`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `address` | string | Root node wallet address. Falls back to the zero address when identity data is unavailable. |
+| `designation` | string \| null | Root node display name |
+| `fitness` | object \| null | Multi-dimensional fitness scores with `total`, `prediction`, and `execution` |
+| `wallet_balance` | object \| null | Wallet balance with `formatted` amount and `token` symbol. Returns `{ "formatted": "0.00", "token": "USDC.e" }` when identity data is unavailable. |
+| `clone_available` | boolean | Whether this node can create clones |
+| `clone_price` | string | Price to clone this node |
+| `soul` | object | Soul cognitive state |
+| `colony` | object \| null | Colony coordination data, or `null` if unavailable |
+
+**Root soul fields (`root.soul`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `active` | boolean | Whether the soul is actively thinking |
+| `dormant` | boolean | Whether the soul is in dormant mode |
+| `total_cycles` | number | Total cognitive cycles completed |
+| `mode` | string | Current operating mode |
+| `active_plan` | object \| null | Currently executing plan, or `null` if idle |
+| `free_energy` | object \| null | Free energy minimization metrics |
+| `brain` | object \| null | Brain neural network stats (parameters, training steps, loss) |
+| `transformer` | object \| null | Plan prediction transformer stats |
+
+**Root colony fields (`root.colony`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rank` | number | Fitness rank within the colony |
+| `can_spawn` | boolean | Whether this node can create child agents |
+| `should_cull` | boolean | Whether this node is marked for culling |
+| `niche` | string | Specialization niche |
+| `colony_size` | number | Total colony size |
+| `fitness_rank` | array | Ordered fitness ranking of all colony members |
+
+---
+
+#### `soul`
+
+Returns the full cognitive state of the soul service. The Borg Dashboard at `/dashboard/borg` consumes this endpoint and auto-refreshes every 30 seconds.
+
+```bash
+curl -X GET "https://agentbot.sh/api/colony/status?action=soul" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN"
+```
+
+#### Response
+
+```json
+{
+  "active": true,
+  "dormant": false,
+  "total_cycles": 1284,
+  "last_think_at": 1711152000,
+  "mode": "autonomous",
+  "tools_enabled": true,
+  "coding_enabled": true,
+  "cycle_health": {
+    "last_cycle_entered_code": true,
+    "total_code_entries": 42,
+    "cycles_since_last_commit": 3,
+    "completed_plans_count": 18,
+    "failed_plans_count": 2,
+    "goals_active": 4
+  },
+  "active_plan": {
+    "id": "plan_001",
+    "goal_id": "goal_abc",
+    "current_step": 3,
+    "total_steps": 7,
+    "status": "executing",
+    "replan_count": 0,
+    "current_step_type": "code",
+    "context": {}
+  },
+  "fitness": {
+    "total": 0.85,
+    "trend": 0.02,
+    "coordination": 0.88,
+    "economic": 0.78,
+    "evolution": 0.82,
+    "execution": 0.91,
+    "introspection": 0.79,
+    "prediction": 0.84,
+    "measured_at": 1711152000
+  },
+  "beliefs": [
+    {
+      "id": "belief_001",
+      "subject": "colony",
+      "predicate": "is_healthy",
+      "value": "true",
+      "confidence": "0.92",
+      "confirmation_count": 14
+    }
+  ],
+  "goals": [
+    {
+      "id": "goal_abc",
+      "description": "Optimize colony fitness score above 90%",
+      "status": "active",
+      "priority": 1,
+      "retry_count": 0
+    }
+  ],
+  "recent_thoughts": [],
+  "brain": {
+    "parameters": 284000,
+    "train_steps": 5200,
+    "running_loss": 0.032
+  },
+  "transformer": {
+    "param_count": 284000,
+    "train_steps": 5200,
+    "running_loss": 0.032,
+    "vocab_size": 512,
+    "plans_generated": 148
+  },
+  "benchmark": {
+    "elo_rating": 1847.5,
+    "elo_display": "1848 (Advanced)",
+    "opus_iq": "142",
+    "pass_at_1": 81.8,
+    "problems_attempted": 200
+  },
+  "capability_profile": {
+    "overall_success_rate": 0.82,
+    "strongest": "code_generation",
+    "weakest": "file_editing",
+    "capabilities": [
+      {
+        "capability": "code_generation",
+        "display_name": "Code Generation",
+        "attempts": 120,
+        "successes": 108,
+        "success_rate": 0.9
+      },
+      {
+        "capability": "file_editing",
+        "display_name": "File Editing",
+        "attempts": 45,
+        "successes": 28,
+        "success_rate": 0.622
+      }
+    ]
+  },
+  "role": {
+    "colony_size": 3,
+    "rank": 1,
+    "self_fitness": 0.85,
+    "psi": 0.9234,
+    "phase3_ready": true,
+    "can_spawn": true
+  },
+  "acceleration": {
+    "alpha": "0.12",
+    "regime": "EXPLOIT"
+  },
+  "cortex": {
+    "total_experiences": 1580,
+    "global_curiosity": 0.34,
+    "emotion": {
+      "valence": 0.65,
+      "arousal": 0.42,
+      "drive": "explore"
+    }
+  },
+  "genesis": null,
+  "hivemind": null,
+  "synthesis": null,
+  "evaluation": null,
+  "free_energy": {
+    "F": "0.342",
+    "regime": "LEARN",
+    "trend": "decreasing",
+    "components": [
+      {
+        "system": "cortex",
+        "surprise": "0.12",
+        "contribution": "35%",
+        "weight": "0.25"
+      },
+      {
+        "system": "brain",
+        "surprise": "0.08",
+        "contribution": "25%",
+        "weight": "0.30"
+      }
+    ]
+  },
+  "lifecycle": {
+    "phase": "mature",
+    "own_commits": 42,
+    "lines_diverged": 1200
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `active` | boolean | Whether the soul is actively thinking |
+| `dormant` | boolean | Whether the soul is in dormant mode |
+| `total_cycles` | number | Total cognitive cycles completed |
+| `last_think_at` | number \| null | Unix timestamp of last think cycle |
+| `mode` | string | Operating mode (e.g., `autonomous`) |
+| `tools_enabled` | boolean | Whether tool execution is enabled |
+| `coding_enabled` | boolean | Whether code generation is enabled |
+| `cycle_health` | object | Health metrics for the current cognitive cycle |
+| `active_plan` | object \| null | Currently executing plan |
+| `fitness` | object \| null | Multi-dimensional fitness scores |
+| `beliefs` | array | Active beliefs with subject, predicate, value, confidence, and confirmation count |
+| `goals` | array | Active goals with description, status, priority, and retry count |
+| `recent_thoughts` | array | Recent thought entries |
+| `brain` | object \| null | Brain neural network stats |
+| `transformer` | object \| null | Plan prediction transformer stats |
+| `benchmark` | object \| null | IQ and ELO benchmark scores |
+| `capability_profile` | object \| null | Success rates and attempt counts per capability |
+| `role` | object \| null | Colony role, rank, psi value, and spawn eligibility |
+| `acceleration` | object \| null | Learning acceleration parameters (alpha and regime) |
+| `cortex` | object \| null | World model state including experiences, curiosity, and emotion |
+| `genesis` | object \| null | Evolved plan templates |
+| `hivemind` | object \| null | Pheromone trail sharing data |
+| `synthesis` | object \| null | Multi-system synthesis state |
+| `evaluation` | object \| null | System evaluation records |
+| `free_energy` | object \| null | Free energy minimization metrics with component breakdown |
+| `lifecycle` | object \| null | Development lifecycle phase, commits, and divergence |
+
+**Fitness fields (`fitness`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total` | number | Overall fitness score (0–1) |
+| `trend` | number | Fitness trend over recent cycles. Positive values indicate improvement. |
+| `coordination` | number | Coordination fitness dimension (0–1) |
+| `economic` | number | Economic fitness dimension (0–1) |
+| `evolution` | number | Evolution fitness dimension (0–1) |
+| `execution` | number | Execution fitness dimension (0–1) |
+| `introspection` | number | Introspection fitness dimension (0–1) |
+| `prediction` | number | Prediction fitness dimension (0–1) |
+| `measured_at` | number | Unix timestamp of the measurement |
+
+**Benchmark fields (`benchmark`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `elo_rating` | number | ELO rating score |
+| `elo_display` | string | Human-readable ELO display string (e.g., `"1848 (Advanced)"`) |
+| `opus_iq` | string | IQ benchmark score |
+| `pass_at_1` | number | Pass@1 success rate as a percentage |
+| `problems_attempted` | number | Total benchmark problems attempted |
+
+**Capability profile fields (`capability_profile`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `overall_success_rate` | number | Aggregate success rate across all capabilities (0–1) |
+| `strongest` | string | Capability with the highest success rate |
+| `weakest` | string | Capability with the lowest success rate |
+| `capabilities` | array | Per-capability breakdown |
+| `capabilities[].capability` | string | Capability identifier |
+| `capabilities[].display_name` | string | Human-readable capability name |
+| `capabilities[].attempts` | number | Total attempts for this capability |
+| `capabilities[].successes` | number | Successful attempts |
+| `capabilities[].success_rate` | number | Success rate (0–1) |
+
+**Belief fields (`beliefs[]`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Belief identifier |
+| `subject` | string | Belief subject |
+| `predicate` | string | Belief predicate |
+| `value` | string | Belief value |
+| `confidence` | string | Confidence score as a decimal string |
+| `confirmation_count` | number | Number of times this belief has been confirmed |
+
+**Goal fields (`goals[]`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Goal identifier |
+| `description` | string | Goal description |
+| `status` | string | Goal status (e.g., `active`, `completed`, `failed`) |
+| `priority` | number | Priority level (lower is higher priority) |
+| `retry_count` | number | Number of retry attempts |
+
+**Role fields (`role`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `colony_size` | number | Total colony size |
+| `rank` | number | Fitness rank within the colony |
+| `self_fitness` | number | This node's own fitness score (0–1) |
+| `psi` | number | Colony psi coordination value |
+| `phase3_ready` | boolean | Whether the node is ready for phase 3 operations |
+| `can_spawn` | boolean | Whether this node can create child agents |
+
+**Free energy fields (`free_energy`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `F` | string | Free energy value as a decimal string |
+| `regime` | string | Current regime (e.g., `LEARN`, `EXPLOIT`) |
+| `trend` | string | Trend direction (e.g., `decreasing`, `increasing`, `stable`) |
+| `components` | array | Per-system free energy breakdown |
+| `components[].system` | string | System name (e.g., `cortex`, `brain`) |
+| `components[].surprise` | string | Surprise value as a decimal string |
+| `components[].contribution` | string | Contribution percentage |
+| `components[].weight` | string | Weight as a decimal string |
+
+**Acceleration fields (`acceleration`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `alpha` | string | Learning rate alpha as a decimal string |
+| `regime` | string | Acceleration regime (e.g., `EXPLOIT`, `LEARN`) |
+
+**Lifecycle fields (`lifecycle`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `phase` | string | Current lifecycle phase (e.g., `mature`, `bootstrap`, `evolving`) |
+| `own_commits` | number | Number of commits made by this node |
+| `lines_diverged` | number | Number of lines diverged from the parent |
+
+**Cortex fields (`cortex`):**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_experiences` | number | Total experiences recorded |
+| `global_curiosity` | number | Global curiosity level (0–1) |
+| `emotion` | object | Current emotional state |
+| `emotion.valence` | number | Emotional valence (-1 to 1, positive is pleasant) |
+| `emotion.arousal` | number | Emotional arousal level (0–1) |
+| `emotion.drive` | string | Current drive (e.g., `explore`, `exploit`) |
+
+---
+
+#### `diagnostics`
+
+Returns diagnostic data including failure patterns, stagnation risk, and capability bottlenecks.
+
+```bash
+curl -X GET "https://agentbot.sh/api/colony/status?action=diagnostics" \
+  -H "Cookie: session=YOUR_SESSION_TOKEN"
+```
+
+#### Response
+
+```json
+{
+  "overview": {
+    "total_outcomes": 150,
+    "completed": 130,
+    "failed": 20,
+    "success_rate": "86.7%"
+  },
+  "error_distribution": [
+    { "category": "timeout", "count": 8 },
+    { "category": "syntax_error", "count": 5 }
+  ],
+  "stagnation": {
+    "cycles_since_commit": 3,
+    "risk_level": "low",
+    "cycles_until_reset": 47
+  },
+  "capability_bottleneck": {
+    "capability": "file_editing",
+    "success_rate": "62.5%",
+    "attempts": 16
+  },
+  "recommendations": [
+    "Consider increasing timeout for complex tasks"
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `overview` | object | Aggregate outcome counts and success rate |
+| `error_distribution` | array | Error counts grouped by category |
+| `stagnation` | object | Stagnation risk metrics and cycles until automatic reset |
+| `capability_bottleneck` | object \| null | Weakest capability area, or `null` if no bottleneck detected |
+| `recommendations` | array | Suggested actions to improve agent performance |
+
+## Error responses
+
+### Soul service unavailable
+
+When no healthy soul host can be reached (including the fallback), the endpoint returns HTTP `200` with a degraded response. The `degraded` field is set to `true` and all colony fields use safe default values so clients can render a fallback UI without special error handling. The `root.serviceUrl` is set to the fallback host URL.
+
+```json
+{
+  "colony_size": 0,
+  "avg_fitness": 0,
+  "fittest": null,
+  "cull_queue": 0,
+  "agents": [],
+  "degraded": true,
+  "error": "Soul service unavailable",
+  "detail": "Connection refused",
+  "root": {
+    "address": "0x0000000000000000000000000000000000000000",
+    "designation": null,
+    "dashboardUrl": "/dashboard/borg",
+    "serviceUrl": "https://soul.example.com",
+    "fitness": null,
+    "wallet_balance": null,
+    "clone_available": false,
+    "clone_price": "0",
+    "soul": {
+      "active": false,
+      "dormant": false,
+      "total_cycles": 0,
+      "mode": "unavailable",
+      "active_plan": null,
+      "free_energy": null,
+      "brain": null,
+      "transformer": null
+    },
+    "colony": null
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `degraded` | boolean | `true` when the soul service is unreachable |
+| `error` | string | Error message describing the failure |
+| `detail` | string | Underlying error detail (for example, `Connection refused`) |
+| `root.dashboardUrl` | string | Soul dashboard path. Now an internal route (`/dashboard/borg`) instead of an external URL. |
+| `root.serviceUrl` | string | Soul service URL (replaces the former top-level `soul_url`) |
+
+<Note>The endpoint tries each configured soul host in order and uses the first healthy one. A host is considered healthy when its `/soul/status` path returns a JSON object containing an `active` field within 4 seconds. If no host passes the health check, the degraded response is returned. The `dashboardUrl` field now returns the internal path `/dashboard/borg` rather than an external soul service URL. The Borg Dashboard is served by the platform at `/dashboard/borg` and fetches soul data from this endpoint directly.</Note>
+
+### Unknown action
+
+When an unrecognized `action` parameter is provided, the endpoint returns HTTP `400`:
+
+```json
+{
+  "error": "Unknown action"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Colony data retrieved (also returned when the soul service is unavailable, with `degraded: true`) |
+| 400 | Unknown action parameter |
+| 401 | Unauthorized — no valid session |

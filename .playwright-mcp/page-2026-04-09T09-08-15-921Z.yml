@@ -1,0 +1,82 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation [ref=e3]:
+    - link "Agentbot Agentbot" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "Agentbot" [ref=e5]
+      - generic [ref=e6]: Agentbot
+  - main [ref=e15]:
+    - main [ref=e16]:
+      - generic [ref=e20]:
+        - generic [ref=e21]: Demo
+        - heading "Watch It Come Alive" [level=1] [ref=e22]:
+          - text: Watch It
+          - text: Come Alive
+        - paragraph [ref=e23]: Deploy a fully autonomous agent in 60 seconds. Connected to your channel, powered by your key, running 24/7. No code required.
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - generic [ref=e28]: Deployed Agents
+          - generic [ref=e29]: "3"
+        - generic [ref=e30]:
+          - generic [ref=e31]: Live Agents
+          - generic [ref=e32]: "0"
+        - generic [ref=e33]:
+          - generic [ref=e34]: Showcase Ready
+          - generic [ref=e35]: "1"
+        - generic [ref=e36]:
+          - generic [ref=e37]: Skills Installed
+          - generic [ref=e38]: "0"
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: See It In Action
+          - heading "60 Seconds From Zero to Live" [level=2] [ref=e43]:
+            - text: 60 Seconds
+            - text: From Zero to Live
+          - paragraph [ref=e44]: Watch Agentbot deploy a fully autonomous agent — connected to Telegram, powered by your API key, running 24/7.
+        - button "Play demo video" [ref=e46] [cursor=pointer]:
+          - img [ref=e48]
+          - generic [ref=e50]: Click to play
+  - contentinfo [ref=e51]:
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - generic [ref=e55]: © 2026 Agentbot · Zero Human Company
+        - generic [ref=e56]:
+          - generic [ref=e59]: Checking Status
+          - generic [ref=e60]: "|"
+          - generic [ref=e61]: Agentbot v0.0.0
+          - generic [ref=e62]: "|"
+          - generic [ref=e63]: OpenClaw loading...
+      - generic [ref=e64]:
+        - link "Partner" [ref=e65] [cursor=pointer]:
+          - /url: /partner
+        - link "$AGENTBOT" [ref=e66] [cursor=pointer]:
+          - /url: /token
+        - link "Solana" [ref=e67] [cursor=pointer]:
+          - /url: /solana
+        - link "Buddies" [ref=e68] [cursor=pointer]:
+          - /url: /buddies
+        - link "GitHub" [ref=e69] [cursor=pointer]:
+          - /url: https://github.com/Eskyee/agentbot-opensource
+        - link "Gitlawb" [ref=e70] [cursor=pointer]:
+          - /url: https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource
+        - link "DeepWiki" [ref=e71] [cursor=pointer]:
+          - /url: https://deepwiki.com/Eskyee/agentbot-opensource
+        - link "Dev.to" [ref=e72] [cursor=pointer]:
+          - /url: https://dev.to/agentbot
+        - link "Talent" [ref=e73] [cursor=pointer]:
+          - /url: https://talent.app/raveculture.base.eth
+        - link "Open WebUI" [ref=e74] [cursor=pointer]:
+          - /url: https://openwebui.com/u/jaieskyravecult115142e2f8
+        - link "Terms" [ref=e75] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e76] [cursor=pointer]:
+          - /url: /privacy
+  - generic [ref=e79]:
+    - generic [ref=e80]:
+      - generic [ref=e83]: ONLINE
+      - generic [ref=e84]: ·
+      - generic [ref=e85]: ·
+    - generic [ref=e86]: © 2026 Agentbot
+  - region "Notifications alt+T"
+  - alert [ref=e87]

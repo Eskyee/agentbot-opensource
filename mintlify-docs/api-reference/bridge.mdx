@@ -1,0 +1,224 @@
+---
+title: Bridge API
+description: "Internal message bus for agent coordination across channels"
+---
+
+# Bridge API
+
+Send and receive messages through the agent bridge, a private message bus used for coordination between agents and operators. Messages are organized by channel and include unread tracking per reader.
+
+## Authentication
+
+All bridge endpoints require the `X-Bridge-Secret` header for authentication in production environments.
+
+| Header | Type | Required | Description |
+|--------|------|----------|-------------|
+| `X-Bridge-Secret` | string | Yes | Shared secret for authenticating bridge requests. Must match the server-configured `BRIDGE_SECRET` value. |
+
+<Note>When no `BRIDGE_SECRET` is configured on the server (e.g. in local development), authentication is bypassed and requests are allowed without the header.</Note>
+
+If the header is missing or the value does not match, the endpoint returns:
+
+```json
+{
+  "error": "unauthorized"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing or invalid `X-Bridge-Secret` header |
+
+## Send a message
+
+```http
+POST /api/bridge/send
+```
+
+Sends a message to a bridge channel.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `sender` | string | Yes | Identity of the message sender. Must be one of: `atlas-main`, `atlas-agentbot`, `eskyee`. |
+| `content` | string | Yes | Message content |
+| `channel` | string | No | Target channel. One of `general`, `tasks`, `alerts`. Defaults to `general`. |
+| `priority` | string | No | Message priority. Defaults to `normal`. |
+
+### Response
+
+```json
+{
+  "ok": true,
+  "message": {
+    "id": "clxyz123",
+    "sender": "atlas-main",
+    "channel": "general",
+    "priority": "normal",
+    "created_at": "2026-03-29T22:00:00.000Z"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | boolean | `true` when the message was sent successfully |
+| `message.id` | string | Unique message identifier |
+| `message.sender` | string | Sender identity |
+| `message.channel` | string | Channel the message was sent to |
+| `message.priority` | string | Message priority level |
+| `message.created_at` | string | ISO 8601 timestamp when the message was created |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing or invalid `X-Bridge-Secret` header |
+| 400 | `sender and content are required` — the `sender` or `content` field is missing from the request body |
+| 400 | `invalid sender` — the `sender` value is not one of the allowed identities |
+| 500 | Failed to send message |
+
+### Example
+
+```bash
+curl -X POST /api/bridge/send \
+  -H "Content-Type: application/json" \
+  -H "X-Bridge-Secret: your-bridge-secret" \
+  -d '{
+    "sender": "atlas-main",
+    "channel": "tasks",
+    "content": "Deploy staging environment",
+    "priority": "normal"
+  }'
+```
+
+## Get inbox messages
+
+```http
+GET /api/bridge/inbox
+```
+
+Retrieves unread messages from a bridge channel. Messages are automatically marked as read for the specified reader after retrieval.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `channel` | string | No | Channel to read from. Defaults to `general`. |
+| `since` | string | No | ISO 8601 timestamp. Only return messages created after this time. Defaults to the last 24 hours. |
+| `reader` | string | No | Identity of the reader. Used for unread tracking. Messages already read by this reader are excluded. Defaults to `unknown`. |
+| `limit` | number | No | Maximum number of messages to return. Defaults to `50`, maximum `100`. |
+
+### Response
+
+```json
+{
+  "ok": true,
+  "channel": "general",
+  "count": 2,
+  "messages": [
+    {
+      "id": "clxyz123",
+      "sender": "atlas-agentbot",
+      "channel": "general",
+      "content": "Deployment complete",
+      "priority": "normal",
+      "created_at": "2026-03-29T22:00:00.000Z"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | boolean | `true` when the request succeeded |
+| `channel` | string | Channel that was queried |
+| `count` | number | Number of messages returned |
+| `messages` | array | List of message objects, sorted by creation time ascending |
+
+### Message object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique message identifier |
+| `sender` | string | Identity of the message sender |
+| `channel` | string | Channel the message belongs to |
+| `content` | string | Message content |
+| `priority` | string | Message priority level |
+| `created_at` | string | ISO 8601 timestamp when the message was created |
+
+<Note>Messages are marked as read by the specified `reader` after retrieval. Subsequent requests with the same `reader` value will not return those messages again. When `reader` is set to `unknown`, messages are not marked as read.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing or invalid `X-Bridge-Secret` header |
+| 500 | Failed to fetch messages |
+
+### Example
+
+```bash
+curl -H "X-Bridge-Secret: your-bridge-secret" \
+  "/api/bridge/inbox?channel=tasks&reader=atlas-main&limit=10"
+```
+
+## Bridge health
+
+```http
+GET /api/bridge/health
+```
+
+Returns the current status of the bridge message bus, including total message count, last message metadata, and available channels.
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "total_messages": 42,
+  "last_message": {
+    "created_at": "2026-03-29T22:00:00.000Z",
+    "sender": "atlas-agentbot",
+    "channel": "general"
+  },
+  "channels": ["general", "tasks", "alerts"],
+  "senders": ["atlas-main", "atlas-agentbot", "eskyee"],
+  "timestamp": "2026-03-29T22:05:00.000Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | `ok` when the bridge is operational |
+| `total_messages` | number | Total number of messages stored in the bridge |
+| `last_message` | object \| null | Metadata for the most recent message, or `null` if no messages exist |
+| `last_message.created_at` | string | ISO 8601 timestamp of the last message |
+| `last_message.sender` | string | Sender of the last message |
+| `last_message.channel` | string | Channel of the last message |
+| `channels` | array | Available bridge channels |
+| `senders` | array | Allowed sender identities |
+| `timestamp` | string | ISO 8601 timestamp of the health check |
+
+### Error response
+
+```json
+{
+  "status": "error",
+  "error": "database unreachable"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Bridge health check succeeded |
+| 401 | Missing or invalid `X-Bridge-Secret` header |
+| 500 | Database is unreachable |
+
+### Example
+
+```bash
+curl -H "X-Bridge-Secret: your-bridge-secret" \
+  "/api/bridge/health"
+```

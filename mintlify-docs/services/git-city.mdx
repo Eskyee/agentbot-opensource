@@ -1,0 +1,85 @@
+---
+title: "Git City Integration"
+description: "Analyze GitHub repositories with 3D city visualization and analytics"
+---
+
+# Git City Integration
+
+**Analyze any GitHub repository and visualize it as a 3D city.** Powered by git-city, the platform provides deep analytics on repositories, commits, contributors, and more.
+
+## Features
+
+### Repository Analysis
+- **Commits** — View total commit count and recent commit history
+- **Contributors** — Track unique contributors and their activity
+- **Stars & Forks** — Monitor repository popularity
+- **Topics & License** — Understand repository metadata
+
+### 3D Visualization
+- Repositories visualized as interactive 3D cities
+- Explore repositories visually in the dashboard
+
+### API Integration
+
+```typescript
+// Analyze a repository
+const response = await fetch('/api/git-city', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ repoUrl: 'https://github.com/owner/repo' })
+});
+
+const data = await response.json();
+// Returns: { repository, stats, commits }
+```
+
+### Endpoint
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/git-city` | Analyze GitHub repository |
+
+### Request Body
+
+```json
+{
+  "repoUrl": "https://github.com/owner/repo"
+}
+```
+
+### Response
+
+```json
+{
+  "repository": {
+    "fullName": "owner/repo",
+    "url": "https://github.com/owner/repo"
+  },
+  "stats": {
+    "totalCommits": 150,
+    "uniqueContributors": 12,
+    "stars": 500,
+    "forks": 50,
+    "language": "TypeScript",
+    "watchers": 25,
+    "topics": ["ai", "agents", "autonomous"],
+    "license": "MIT",
+    "createdAt": "2024-01-15",
+    "updatedAt": "2026-04-07",
+    "description": "Autonomous AI agent platform"
+  },
+  "commits": [
+    {
+      "sha": "abc123",
+      "message": "feat: add new feature",
+      "author": "username",
+      "date": "2026-04-07T12:00:00Z",
+      "url": "https://github.com/owner/repo/commit/abc123"
+    }
+  ]
+}
+```
+
+## Access
+
+Visit `/dashboard/git-city` on the platform to access the Git City analyzer. Enter any public GitHub repository URL to get detailed analytics and visualization.

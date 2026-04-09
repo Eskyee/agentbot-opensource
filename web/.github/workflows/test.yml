@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npx tsc --noEmit
+
+  # Foundry tests — enable when smart contracts are added to this repo.
+  # Requires: foundry.toml, src/, test/ directories with Solidity sources.
+  #
+  # foundry:
+  #   name: Foundry Tests
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v5
+  #       with:
+  #         persist-credentials: false
+  #         submodules: recursive
+  #     - uses: foundry-rs/foundry-toolchain@v1
+  #     - run: forge fmt --check
+  #     - run: forge build --sizes
+  #     - run: forge test -vvv

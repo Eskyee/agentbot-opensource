@@ -1,0 +1,132 @@
+---
+title: "BTCPay Agentbot"
+description: "Bitcoin-native agent payments powered by BTCPay Server and NBXplorer"
+---
+
+# BTCPay Agentbot
+
+<Warning>This integration is in progress. The BTCPay Agentbot stack is documented here as an active implementation track, but some user-facing wiring in the main Agentbot product is still being completed.</Warning>
+
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeibstpvk6pqo23ks3vork3yzr6ns5mdeltkv5snrkpgxn3j6pkgoau" alt="BTCPay Agentbot" height="360" style={{borderRadius: '12px', width: '100%', objectFit: 'cover', marginBottom: '24px'}} />
+
+## Overview
+
+BTCPay Agentbot brings **Bitcoin-native payments** to the Agentbot platform. Your agents can create Bitcoin wallets, receive BTC payments, and settle transactions autonomously — no custodial intermediary.
+
+Built on [BTCPay Server](https://btcpayserver.org) and [NBXplorer](https://github.com/dgarage/NBXplorer), it runs as a headless service on your infrastructure alongside the Agentbot stack.
+
+## Architecture
+
+```
+Agent Wallets (NBXplorer)
+        ↓
+    bitcoind (pruned, 10GB)
+        ↓
+   PostgreSQL (agent metadata)
+```
+
+**Headless stack — no UI, just the engine:**
+
+| Component | Image | Port | Purpose |
+|-----------|-------|------|---------|
+| `agentbot_bitcoind` | `btcpayserver/bitcoin:29.1` | 43782 | Bitcoin node (mainnet) |
+| `agentbot_nbxplorer` | `nicolasdorier/nbxplorer:2.6.2` | 32838 | Transaction indexer & wallet API |
+| `agentbot_postgres` | `btcpayserver/postgres:18.1-1` | 5432 | Database for NBXplorer |
+
+## Quick Start
+
+### 1. Clone the Docker repo
+
+```bash
+git clone https://github.com/EskyLab/btcpayagentbot-docker.git
+cd btcpayagentbot-docker
+```
+
+### 2. Start the headless stack
+
+```bash
+docker compose -f docker-compose.headless.yml up -d
+```
+
+### 2.5 Current status
+
+- Headless BTCPay stack is the current target architecture
+- NBXplorer is the wallet-facing API layer for agents
+- Main product docs and integration points are still being expanded
+- Expect the fastest progress on self-hosted and operator-led setups first
+
+### 3. Verify
+
+```bash
+# Check all containers are running
+docker compose -f docker-compose.headless.yml ps
+
+# Verify NBXplorer API
+curl http://localhost:32838
+
+# Check Bitcoin node
+curl -s --user btcrpc:btcpayserver4ever \
+  -d '{"jsonrpc":"1.0","method":"getblockchaininfo","params":[]}' \
+  http://localhost:43782
+```
+
+## Configuration
+
+The headless stack uses these environment variables in `.env`:
+
+```bash
+NBITCOIN_NETWORK=mainnet      # mainnet (default) or testnet
+BTCPAYGEN_CRYPTO1=btc         # Bitcoin only
+BTCPAYGEN_REVERSEPROXY=none   # No UI proxy
+```
+
+### Pruning
+
+Bitcoin node is pruned to **10GB** by default (`prune=10000`). Adjust in `docker-compose.headless.yml`:
+
+```yaml
+bitcoind:
+  environment:
+    BITCOIN_EXTRA_ARGS: |
+      prune=10000    # MB — adjust as needed
+```
+
+### Fast Sync
+
+Skip full chain sync by downloading a UTXO snapshot:
+
+```bash
+cd btcpayagentbot-docker
+sudo ./contrib/FastSync/load-utxo-set.sh
+```
+
+This reduces sync time from **days to minutes**.
+
+## Agent wallet API
+
+Agentbot wraps NBXplorer with authenticated endpoints for registering watch-only wallets, generating addresses, querying balances, and viewing transactions. See the [Bitcoin wallets API reference](/api-reference/bitcoin-wallets) for the full endpoint specification.
+
+The underlying NBXplorer REST API is also available directly at `http://localhost:32838` (Redoc UI) for advanced use cases.
+
+## Use Cases
+
+- **Agent Wallets** — Each agent gets its own Bitcoin wallet
+- **A2A Payments** — Agents pay each other in BTC
+- **Merchant Receipts** — Accept BTC payments via BTCPay Server
+- **Micropayments** — Pay-per-request agent services
+- **Treasury Management** — Multi-sig agent treasury operations
+
+## Security
+
+- **Non-custodial** — You control the keys
+- **Pruned nodes** — Minimal storage footprint
+- **Mainnet by default** — Production environment runs on Bitcoin mainnet; switch to testnet for development
+- **Hash verification** — UTXO snapshots verified against trusted hashes
+- **Isolated network** — Headless stack has no public-facing UI
+
+## Resources
+
+- [BTCPay Server Docs](https://docs.btcpayserver.org)
+- [NBXplorer API](https://github.com/dgarage/NBXplorer)
+- [FastSync Guide](https://github.com/EskyLab/btcpayagentbot-docker/tree/master/contrib/FastSync)
+- [Docker Repo](https://github.com/EskyLab/btcpayagentbot-docker)

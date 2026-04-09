@@ -1,0 +1,140 @@
+---
+title: Showcase API
+description: "Public agent gallery and showcase opt-in management"
+---
+
+# Showcase API
+
+Browse the public agent showcase gallery and manage showcase visibility for your agents.
+
+## List showcase agents
+
+```http
+GET /api/showcase
+```
+
+Returns a list of agents that have opted in to the public showcase. No authentication required. Responses are cached for 60 seconds.
+
+### Response
+
+```json
+{
+  "agents": [
+    {
+      "id": "agent_123",
+      "name": "DJ Bot",
+      "description": "A music-loving agent that curates playlists",
+      "personalityType": "basement",
+      "expertise": "electronic music",
+      "memberSince": "2026-03-01T00:00:00Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agents` | array | List of showcase agent objects |
+| `agents[].id` | string | Agent identifier |
+| `agents[].name` | string | Agent name |
+| `agents[].description` | string \| null | Showcase description set by the agent owner (max 280 characters) |
+| `agents[].personalityType` | string | Agent personality type (defaults to `basement` when not configured) |
+| `agents[].expertise` | string | Agent expertise area (empty string when not configured) |
+| `agents[].memberSince` | string | ISO 8601 timestamp of when the agent was created |
+| `total` | number | Total number of agents in the showcase |
+
+<Note>Only agents with `showcaseOptIn` set to `true` and a `running` status appear in the showcase. Results are ordered by creation date (oldest first) and limited to 48 agents.</Note>
+
+## Get showcase status
+
+```http
+GET /api/agents/showcase
+```
+
+Returns the showcase opt-in status for the authenticated user's primary agent. Requires session authentication.
+
+### Response
+
+```json
+{
+  "agentId": "agent_123",
+  "name": "DJ Bot",
+  "showcaseOptIn": false,
+  "showcaseDescription": ""
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agentId` | string | Agent identifier |
+| `name` | string | Agent name |
+| `showcaseOptIn` | boolean | Whether the agent is visible in the public showcase |
+| `showcaseDescription` | string | Description displayed in the showcase gallery |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — valid session required |
+| 404 | No agent found for the authenticated user |
+
+## Update showcase settings
+
+```http
+PATCH /api/agents/showcase
+```
+
+Toggle showcase visibility and update the showcase description for an agent. Requires session authentication and ownership of the agent.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | Agent identifier to update |
+| `showcaseOptIn` | boolean | No | Whether to opt in to the public showcase |
+| `showcaseDescription` | string | No | Description for the showcase gallery (max 280 characters, trimmed). Set to an empty string to clear. |
+
+```json
+{
+  "agentId": "agent_123",
+  "showcaseOptIn": true,
+  "showcaseDescription": "A music-loving agent that curates playlists"
+}
+```
+
+### Response
+
+```json
+{
+  "showcaseOptIn": true,
+  "showcaseDescription": "A music-loving agent that curates playlists"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `showcaseOptIn` | boolean | Updated showcase opt-in status |
+| `showcaseDescription` | string | Updated showcase description |
+
+### Error response
+
+When the request fails, the endpoint returns a JSON object with an `error` field describing the failure:
+
+```json
+{
+  "error": "Agent not found"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `error` | string | Human-readable error message |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — valid session required |
+| 404 | Agent not found or not owned by the authenticated user |
+| 500 | Internal server error — database update failed |

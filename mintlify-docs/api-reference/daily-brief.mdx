@@ -1,0 +1,142 @@
+---
+title: Daily brief API
+description: "Aggregated daily service health brief with real-time status checks"
+---
+
+# Daily brief API
+
+Retrieve an aggregated daily briefing that checks the health of all Agentbot platform services in real time.
+
+## Get daily brief
+
+```http
+GET /api/daily-brief
+```
+
+No authentication required. Returns a structured briefing with live health checks for each monitored service, recent activity context, focus items, market pulse, security alerts, and upcoming milestones.
+
+The endpoint probes each service concurrently using an 8-second per-service timeout. Services that do not respond within the timeout are reported as `down`. Services that return a non-2xx status with a JSON body containing `"status": "degraded"` are reported as `degraded` rather than `down`.
+
+### Monitored services
+
+| Service | Health endpoint |
+|---------|----------------|
+| Agentbot API | `https://agentbot-prod-production.up.railway.app/health` |
+| Agentbot Web | `https://agentbot.sh` |
+| x402 Gateway | `https://x402-gateway-production-a474.up.railway.app/health` |
+| Borg-0 | `https://borg-0-production.up.railway.app/health` |
+
+<Note>The Borg-0 service runs the x402-node binary, whose `/health` endpoint may return HTTP `503` until external dependencies are satisfied (connected peers, funded wallets, required environment variables). Railway uses a TCP port check on port `4023` instead of an HTTP health check for this service, so it is considered healthy as long as it is accepting TCP connections. When the daily brief probes `/health` over HTTP, it may report the service as `degraded` even though the underlying process is running and reachable. This is expected behavior during startup or when external dependencies are not yet available.</Note>
+
+### Response
+
+```json
+{
+  "date": "2026-03-27",
+  "generatedAt": "2026-03-27T15:06:42.000Z",
+  "brief": [
+    {
+      "id": "system",
+      "title": "System Status",
+      "color": "text-green-400",
+      "items": [
+        "Agentbot API — healthy (v1.2.0)",
+        "Agentbot Web — healthy",
+        "x402 Gateway — healthy (v0.9.1)",
+        "Borg-0 — healthy (v5e9b8c7a)"
+      ]
+    },
+    {
+      "id": "tasks",
+      "title": "Recent Activity",
+      "color": "text-blue-400",
+      "items": [
+        "See git log for latest commits and deployments",
+        "Dashboard pages are live with real data",
+        "Infrastructure monitoring active"
+      ]
+    },
+    {
+      "id": "focus",
+      "title": "Today's Focus",
+      "color": "text-yellow-400",
+      "items": [
+        "Monitor all services for stability",
+        "Continue feature development",
+        "Beta launch preparation"
+      ]
+    },
+    {
+      "id": "intel",
+      "title": "Market Pulse",
+      "color": "text-emerald-400",
+      "items": [
+        "Agentbot active on Vercel + Railway infrastructure",
+        "x402 protocol integration live",
+        "Onchain payment settlement operational"
+      ]
+    },
+    {
+      "id": "security",
+      "title": "Security & Alerts",
+      "color": "text-red-400",
+      "items": [
+        "All infrastructure healthy — no anomalies detected in last check"
+      ]
+    },
+    {
+      "id": "calendar",
+      "title": "Upcoming",
+      "color": "text-blue-400",
+      "items": [
+        "Beta launch: March 31, 2026 (v0.1.0-beta.1)",
+        "Vercel serves the web app from the web root",
+        "Railway services active for backend, Borg soul, x402 gateway, and shared OpenClaw UI"
+      ]
+    }
+  ]
+}
+```
+
+### Top-level fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `date` | string | Current date in `YYYY-MM-DD` format |
+| `generatedAt` | string | ISO 8601 timestamp when the brief was generated |
+| `brief` | array | List of briefing sections |
+
+### Brief section fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Section identifier. One of `system`, `tasks`, `focus`, `intel`, `security`, `calendar`. |
+| `title` | string | Display title for the section |
+| `color` | string | Tailwind CSS color class for the section icon |
+| `items` | array of strings | Content items for the section |
+
+### System status item format
+
+Each item in the `system` section follows one of these formats based on the service health:
+
+| Status | Format | Example |
+|--------|--------|---------|
+| Healthy | `{name} — healthy` or `{name} — healthy ({version})` | `Agentbot API — healthy (v1.2.0)` |
+| Degraded | `⚠️ {name} — degraded: {detail}` | `⚠️ x402 Gateway — degraded: HTTP 503` |
+| Down | `🔴 {name} — DOWN` | `🔴 Borg-0 — DOWN` |
+
+When a service returns a JSON response with a `version` or `build` field, the value is included in the healthy status message. If the `build` field is a string, only the first 8 characters are displayed (useful for shortened commit hashes).
+
+### Security section behavior
+
+The `security` section items are derived from the health check results:
+
+- When all services are healthy: `"All infrastructure healthy — no anomalies detected in last check"`
+- When services are down: `"{count} service(s) DOWN: {names}"`
+- When services are degraded: `"{count} service(s) degraded: {names}"`
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Brief generated successfully |

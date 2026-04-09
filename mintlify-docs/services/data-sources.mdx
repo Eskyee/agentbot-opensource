@@ -1,0 +1,114 @@
+---
+title: "Data Sources"
+description: "Connect your agents to music data, blockchain, and the open web."
+---
+
+# Data Sources
+
+**Unified data layer for autonomous music agents.** Agentbot agents read, write, and act on data from databases, blockchains, AI models, and external APIs — all through a single integration surface.
+
+## Overview
+
+Every agent needs data. Agentbot provides a layered data architecture — from local storage to onchain reads — so your agents can query, persist, and act on real-time information without custom plumbing.
+
+## Source Categories
+
+### Databases
+
+| Source | Purpose | Access |
+|--------|---------|--------|
+| **PostgreSQL (Neon)** | User data, agent config, workflows, billing | `DATABASE_URL` env var |
+| ~~**Redis**~~ | ~~Caching, rate limiting, session state~~ | ~~`REDIS_URL` env var~~ **Deprecated** — Redis is no longer required. Rate limiting uses in-process middleware. |
+| **BlockDB** | Music metadata, audio components, rights | [BlockDB docs](/services/blockdb) |
+
+### Blockchain
+
+| Source | Chain | Use Case |
+|--------|-------|----------|
+| **Base Mainnet** | Ethereum L2 | Token balances, NFT ownership, USDC |
+| **Base Sepolia** | Testnet | Development and staging |
+| **CDP Wallets** | Base | Agent treasury, payments, swaps |
+
+### AI Providers (BYOK)
+
+| Provider | Models | Notes |
+|----------|--------|-------|
+| **OpenRouter** | 300+ models | Default provider, widest selection |
+| **Anthropic** | Claude 3.5/Opus | Strong reasoning, long context |
+| **OpenAI** | GPT-4o/o3 | Vision, function calling |
+| **Google** | Gemini 2.0 | Multimodal, fast inference |
+| **Groq** | Llama 3, Mixtral | Ultra-fast inference, lowest latency |
+
+All providers are **Bring Your Own Key** — no markup on API costs.
+
+### External APIs
+
+| Service | Capability |
+|---------|------------|
+| **Music Lens API** | Mood analysis, tempo detection, key identification |
+| **Weather** | Current conditions and forecasts |
+| **Web Search** | Real-time web search for agent queries |
+| **Base FM** | Onchain radio submission queue |
+| **Notion** | Sync databases, pages, workflows |
+| **Browser Automation** | Autonomous web scraping and form filling |
+| **ClawMerchants** | 15 live data feeds — DeFi yields, token anomalies, security intel, market data, and more ([API reference](/api-reference/clawmerchants)) |
+
+### Payments
+
+| Provider | Type | Data Available |
+|----------|------|----------------|
+| **Stripe** | Credit card | Subscriptions, invoices, credit balances |
+| **x402** | USDC (Base) | Onchain payment receipts |
+| **MPP** | Crypto (Tempo) | Decentralized payment records |
+
+## Configuration
+
+Set data source credentials in your `.env`:
+
+```bash
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/agentbot
+
+# AI Providers (at least one required)
+OPENROUTER_API_KEY=sk-or-...
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+
+# Blockchain
+CDP_API_KEY_NAME=your-key-name
+CDP_API_KEY_PRIVATE_KEY=your-private-key
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│               AGENT CONTAINER               │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  │
+│  │  Memory  │  │  Skills  │  │  A2A Bus │  │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  │
+└───────┼──────────────┼─────────────┼────────┘
+        │              │             │
+   ┌────▼──────────────▼─────────────▼────┐
+   │        DATA SOURCE LAYER             │
+   │                                      │
+   │  ┌───────┐           ┌───────────┐  │
+   │  │  PG   │           │Blockchain │  │
+   │  │(Neon) │           │  (Base)   │  │
+   │  └───────┘           └───────────┘  │
+   │                                      │
+   │  ┌───────┐ ┌───────┐ ┌───────────┐  │
+   │  │AI APIs│ │BlockDB│ │  External │  │
+   │  │(BYOK) │ │       │ │  (Skills) │  │
+   │  └───────┘ └───────┘ └───────────┘  │
+   └──────────────────────────────────────┘
+```
+
+## Data Isolation
+
+Multi-tenant deployments enforce strict data boundaries:
+
+- Each user's agent data is isolated via `userId` scoping
+- Database queries filter by authenticated session
+- BlockDB queries include creator attribution
+- Blockchain reads are per-wallet (no shared state)

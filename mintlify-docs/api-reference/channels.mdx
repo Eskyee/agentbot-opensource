@@ -1,0 +1,96 @@
+---
+title: Channels API
+description: "Get real-time channel status from the OpenClaw gateway"
+---
+
+# Channels API
+
+Retrieve channel connection status and activity metrics from the OpenClaw gateway.
+
+## List channels
+
+```http
+GET /api/channels
+```
+
+Requires session authentication. Returns the status of all messaging channels based on real-time gateway session data.
+
+The endpoint queries the gateway for active sessions and infers channel status from session keys. Webchat status is determined by gateway health, while other channels (Telegram, Discord, WhatsApp) are marked as `connected` when sessions with matching keys exist.
+
+### Response
+
+```json
+{
+  "channels": [
+    {
+      "name": "Webchat",
+      "provider": "webchat",
+      "status": "connected",
+      "lastActive": "2026-03-30T01:00:00Z",
+      "messages": 42
+    },
+    {
+      "name": "Telegram",
+      "provider": "telegram",
+      "status": "connected",
+      "lastActive": "2026-03-30T00:45:00Z",
+      "messages": 15
+    },
+    {
+      "name": "Discord",
+      "provider": "discord",
+      "status": "not-configured",
+      "lastActive": null,
+      "messages": 0
+    },
+    {
+      "name": "WhatsApp",
+      "provider": "whatsapp",
+      "status": "not-configured",
+      "lastActive": null,
+      "messages": 0
+    }
+  ],
+  "gatewayHealth": "healthy",
+  "source": "gateway"
+}
+```
+
+### Channel object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Display name of the channel |
+| `provider` | string | Channel identifier: `webchat`, `telegram`, `discord`, or `whatsapp` |
+| `status` | string | Connection status (see table below) |
+| `lastActive` | string \| null | ISO 8601 timestamp of the most recent activity on this channel, or `null` if no activity |
+| `messages` | number | Total message count across all sessions for this channel |
+
+### Channel statuses
+
+| Status | Condition |
+|--------|-----------|
+| `connected` | Channel has active sessions or (for webchat) the gateway is healthy |
+| `not-configured` | No sessions found for this channel |
+| `unreachable` | Gateway health check failed (webchat only) |
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `channels` | array | List of channel objects |
+| `gatewayHealth` | string | Overall gateway health: `healthy` or `unreachable` |
+| `source` | string | Always `gateway` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+### Example
+
+```bash
+curl -X GET https://agentbot.sh/api/channels \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```

@@ -1,0 +1,227 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Agentbot",
+  "logo": {
+    "light": "/logo/agentbot-logo-light.svg",
+    "dark": "/logo/agentbot-logo-dark.svg"
+  },
+  "theme": "mint",
+  "colors": {
+    "primary": "#3b82f6",
+    "light": "#60a5fa",
+    "dark": "#2563eb"
+  },
+  "favicon": "/favicon.svg",
+  "fonts": {
+    "family": "Inter",
+    "heading": {
+      "family": "Inter",
+      "weight": 700
+    },
+    "body": {
+      "family": "Inter",
+      "weight": 400
+    }
+  },
+  "appearance": {
+    "default": "dark",
+    "strict": true
+  },
+  "background": {
+    "color": {
+      "dark": "#000000",
+      "light": "#ffffff"
+    }
+  },
+  "styling": {
+    "codeblocks": "dark"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting Started",
+        "pages": [
+          "index",
+          "quickstart",
+          "channels",
+          "models",
+          "installation",
+          "build",
+          "development-standard",
+          "troubleshooting"
+        ]
+      },
+      {
+        "group": "Core Concepts",
+        "pages": [
+          "concepts/agents",
+          "concepts/workflows",
+          "concepts/api-keys",
+          "concepts/architecture"
+        ]
+      },
+      {
+        "group": "Integrations",
+        "pages": [
+          "channels",
+          "integrations/telegram",
+          "integrations/discord",
+          "integrations/whatsapp",
+          "integrations/resend"
+        ]
+      },
+      {
+        "group": "Core Services",
+        "pages": [
+          "services/data-sources",
+          "services/blockdb",
+          "services/skills-marketplace",
+          "services/base-fm"
+        ]
+      },
+      {
+        "group": "Payments",
+        "pages": [
+          "payments/stripe",
+          "payments/x402",
+          "payments/mpp",
+          "payments/btcpay"
+        ]
+      },
+      {
+        "group": "API Reference",
+        "pages": [
+          "api-reference/overview",
+          "api-reference/gateway",
+          "api-reference/channels",
+          "api-reference/sessions",
+          "api-reference/cron",
+          "api-reference/agents",
+          "api-reference/team-provisioning",
+          "api-reference/auth",
+          "api-reference/keys",
+          "api-reference/wallet",
+          "api-reference/bitcoin-wallets",
+          "api-reference/bankr",
+          "api-reference/fee-payer",
+          "api-reference/metrics",
+          "api-reference/skills",
+          "api-reference/calendar",
+          "api-reference/memory",
+          "api-reference/files",
+          "api-reference/ai",
+          "api-reference/mcp-skills",
+          "api-reference/render-mcp",
+          "api-reference/streaming",
+          "api-reference/registration",
+          "api-reference/daily-brief",
+          "api-reference/health",
+          "api-reference/maintenance",
+          "api-reference/mission-control",
+          "api-reference/watchdog",
+          "api-reference/colony",
+          "api-reference/workflows",
+          "api-reference/underground",
+          "api-reference/invite",
+          "api-reference/web-summarizer",
+          "api-reference/x402",
+          "api-reference/demo-chat",
+          "api-reference/signals",
+          "api-reference/scheduled-tasks",
+          "api-reference/billing",
+          "api-reference/clawmerchants",
+          "api-reference/dashboard",
+          "api-reference/debug",
+          "api-reference/config",
+          "api-reference/devices",
+          "api-reference/bridge",
+          "api-reference/permissions",
+          "api-reference/hooks-classify",
+          "api-reference/orchestration",
+          "api-reference/hashline",
+          "api-reference/init-deep",
+          "api-reference/trial",
+          "api-reference/showcase",
+          "api-reference/admin-summary",
+          "api-reference/export",
+          "api-reference/wallet-monitor",
+          "api-reference/market-intel",
+          "api-reference/referrals",
+          "api-reference/gamification",
+          "api-reference/jobs",
+          "api-reference/platform-jobs",
+          "api-reference/git-city"
+        ]
+      },
+      {
+        "group": "MCP",
+        "pages": [
+          "mcp"
+        ]
+      },
+      {
+        "group": "Security",
+        "pages": [
+          "security"
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "logo": {
+      "light": "/logo/agentbot-logo-light.svg",
+      "dark": "/logo/agentbot-logo-dark.svg"
+    },
+    "links": [
+      {
+        "label": "Agentbot",
+        "href": "https://agentbot.sh"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/Eskyee/agentbot-opensource"
+      },
+      {
+        "label": "Discord",
+        "href": "https://discord.gg/vTPG4vdV6D"
+      },
+      {
+        "label": "Dev.to",
+        "href": "https://dev.to/agentbot"
+      },
+      {
+        "label": "Google Dev",
+        "href": "https://g.dev/agentbot"
+      },
+      {
+        "label": "Talent",
+        "href": "https://talent.app/raveculture.base.eth"
+      },
+      {
+        "label": "Base",
+        "href": "https://www.base.dev"
+      },
+      {
+        "label": "Cerebral Valley",
+        "href": "https://cerebralvalley.ai/u/Esky"
+      },
+      {
+        "label": "\u2615 Buy Me a Coffee",
+        "href": "https://buymeacoffee.com/agentbot"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Eskyee/agentbot-opensource",
+      "discord": "https://discord.gg/vTPG4vdV6D",
+      "website": "https://agentbot.sh"
+    }
+  },
+  "topbar": {
+    "cta": {
+      "label": "\ud83d\ude80 Free trial \u2014 no credit card required",
+      "href": "https://agentbot.sh/signup"
+    }
+  }
+}

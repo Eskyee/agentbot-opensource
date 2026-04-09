@@ -1,0 +1,109 @@
+---
+description: "Understanding Agentbot agents"
+---
+
+Agents are autonomous AI assistants that can interact with users across multiple platforms.
+
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreiec4xih75nginbmhmicbk3t5i4amubxbndil2ntzpiupsmj2mlwpy" alt="Agentbot agents" height="360" style={{borderRadius: '12px', width: '100%', objectFit: 'cover', marginBottom: '24px'}} />
+
+## How Agents Work
+
+Each agent runs in an isolated Docker container with:
+
+- **AI Model** - Powered by OpenRouter by default
+- **Memory** - Persistent conversation history
+- **Tools** - API integrations and capabilities
+- **Personality** - Custom instructions and behavior
+
+## Agent Structure
+
+```typescript
+interface Agent {
+  id: string;
+  name: string;
+  description: string;
+  
+  // AI Configuration
+  model: string;           // e.g., "anthropic/claude-3-opus"
+  temperature: number;     // 0-1, creativity level
+  maxTokens: number;
+  
+  // System Prompt
+  instructions: string;    // Agent personality & behavior
+  
+  // Capabilities
+  tools: Tool[];
+  integrations: Integration[];
+  
+  // Memory
+  memoryEnabled: boolean;
+  memoryLimit: number;     // Max messages to remember
+}
+```
+
+## Creating an Agent
+
+### Via Dashboard
+
+1. Go to **Dashboard → New Agent**
+2. Choose a template or blank agent
+3. Configure:
+   - Name and description
+   - AI model and settings
+   - System instructions
+   - Enabled tools
+4. Deploy
+
+### Via API
+
+```bash
+curl -X POST https://agentbot.sh/api/agents \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Agent",
+    "model": "anthropic/claude-3-opus",
+    "instructions": "You are a helpful assistant...",
+    "tools": ["web-search", "calculator"]
+  }'
+```
+
+## Agent Templates
+
+Agentbot includes pre-built templates:
+
+| Template | Description |
+|----------|-------------|
+| Assistant | General purpose AI assistant |
+| Customer Support | Support bot with knowledge base |
+| Rave Event | Event management & guest lists |
+| Treasury | Community fund management |
+
+## Tools
+
+Agents can use tools to extend their capabilities:
+
+- **Web Search** - Search the internet
+- **Calculator** - Math operations
+- **Weather** - Get weather data
+- **Custom APIs** - Your own API endpoints
+
+## Persistence
+
+Agents maintain memory across conversations:
+
+```typescript
+// Configure memory
+const agent = {
+  memoryEnabled: true,
+  memoryLimit: 100,  // Keep last 100 messages
+  // Older messages are summarized and stored
+}
+```
+
+## Best Practices
+
+1. **Clear Instructions** - Write specific system prompts
+2. **Limited Tools** - Only enable necessary tools
+3. **Memory Management** - Set appropriate memory limits
+4. **Monitor Costs** - Track API usage in dashboard

@@ -1,0 +1,205 @@
+---
+title: Architecture
+description: "System overview and how the pieces fit together."
+---
+
+# Architecture
+
+How Agentbot is built. A reference for contributors, self-hosters, and anyone who wants to understand the system.
+
+## System Overview
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                        USERS                                 │
+│         Telegram · Discord · WhatsApp · Web Dashboard        │
+└──────────────────────────────┬───────────────────────────────┘
+                           │
+                    ┌──────▼──────┐
+                    │   VERCEL    │
+                    │  Next.js 16 │
+                    │  (Frontend) │
+                    └──────┬──────┘
+                           │
+              ┌────────────┼────────────┐
+              │            │            │
+       ┌──────▼──────┐          ┌──────▼──────┐
+       │   RENDER    │          │  Neon PG    │
+       │  Backend    │          │  Database   │
+       │  (Express)  │          │             │
+       └──────┬──────┘          └─────────────┘
+              │
+    ┌─────────┼─────────┐
+    │         │         │
+┌───▼────┐ ┌──▼──┐ ┌────▼────┐
+│Inline  │ │Ollama│ │  A2A    │
+│Sched.  │ │ AI  │ │  Bus    │
+└────────┘ └─────┘ └─────────┘
+```
+
+## Components
+
+### Frontend (Vercel)
+
+**Stack:** Next.js 16 (App Router) + React 19 + Tailwind CSS v4
+
+The web dashboard, onboarding flow, billing, and all user-facing pages. Deployed on Vercel with automatic Git-based deploys.
+
+Key directories:
+- `web/app/` — Pages and API routes
+- `web/app/api/` — Server-side API proxies (provision, billing, auth)
+- `web/app/components/` — Shared UI components
+- `web/app/lib/` — Utilities (auth, Stripe, security)
+
+### Backend (Railway)
+
+**Stack:** Express.js + TypeScript
+
+The core API server. Handles agent provisioning, deployments, A2A communication, and skill management.
+
+Key services:
+- `POST /api/provision` — Create new agents (auth required)
+- `POST /api/deployments` — Deploy agent services on Railway (auth required)
+- `GET /api/agents` — List and manage agents
+- `POST /api/ai/*` — AI provider proxy (OpenRouter, Anthropic, etc.)
+- `GET /api/browse/*` — File explorer (tree, read, write, git sync)
+- `GET /api/logs/:agentId/stream` — Live log tail (SSE)
+- `GET /api/usage/*` — Usage tracking (tokens, costs, tool metrics)
+
+Protected endpoints use JWT auth middleware that verifies the token, attaches user context, and sets the RLS context on the database connection. See the [auth API](/api-reference/auth#auth-middleware) for details.
+
+### Inline scheduler
+
+Background task processing runs inside the API process via an inline scheduler. The scheduler polls the `scheduled_tasks` database table every 30 seconds and executes up to 10 pending tasks per cycle. Each task is dispatched as an HTTP request to the target agent's URL with a 30-second timeout.
+
+This replaces the previous standalone worker service and BullMQ queue system. No separate worker process or Redis instance is required.
+
+<Warning>**Deprecated:** The standalone worker service (`Dockerfile.worker`) and its Redis/BullMQ dependency have been removed. All background task processing now happens inline in the API process. If you were running a separate worker service, you can safely remove it.</Warning>
+
+### Database (Neon PostgreSQL)
+
+Stores:
+- User accounts and authentication
+- Agent configurations and metadata
+- Billing, subscriptions, and usage tracking
+- Skill marketplace data
+- A2A message history
+
+All user-scoped tables are protected by PostgreSQL row-level security (RLS) policies. Each authenticated request sets a database-level user context so queries automatically return only the calling user's data. Admin users bypass RLS and can access all rows. See [Security](/security#row-level-security) for the full list of protected tables.
+
+<Warning>**Deprecated:** The Redis cache layer has been removed. Rate limiting is now handled by in-process middleware (`express-rate-limit`). Session management and other functionality previously backed by Redis now use PostgreSQL or in-memory state. If you were running a Redis instance for Agentbot, it is no longer required.</Warning>
+
+### AI Layer (Ollama + BYOK)
+
+Two modes:
+- **Ollama (self-hosted):** Local inference for self-hosted deployments (Llama 3, Mistral)
+- **BYOK:** Users bring their own API keys for OpenRouter, Anthropic, OpenAI, Google, or Groq
+
+### Watchdog
+
+Monitors agent gateway processes for health and auto-recovers from failures:
+
+| Capability | Details |
+|------------|---------|
+| Health checks | Every 2 minutes (configurable via `WATCHDOG_CHECK_INTERVAL`) |
+| Crash detection | Listens for gateway exit events |
+| Crash-loop detection | 3 crashes in 5-minute window |
+| Auto-repair | Kill → wait 5s → restart → verify health (max 2 attempts) |
+| Notifications | Telegram + Discord alerts for crashes, repairs, and recovery |
+| Degraded state | 5-second retry interval when health check fails |
+
+See [Watchdog](/api-reference/watchdog) for the full API.
+
+### File Explorer + Git Sync
+
+Browser-based workspace management — no SSH needed:
+
+- **File tree:** Recursive directory listing with depth control
+- **Read/Write:** View and edit files inline (1MB limit)
+- **Git status:** See uncommitted changes
+- **Git diff:** Per-file or full workspace diffs
+- **Git sync:** One-click commit + push to GitHub
+- **Git log:** Browse recent commit history
+
+See [File Explorer API](/api-reference/browse) for the full API.
+
+### Usage Tracker
+
+PostgreSQL-backed token and cost tracking per agent, model, and time period:
+
+- Per-event recording (session, agent, provider, model, tokens, cost)
+- Daily aggregation with upsert
+- Tool event monitoring (success rate, duration)
+- Query APIs: summary, by-agent, by-model, daily totals
+
+See [Usage Tracking API](/api-reference/usage-tracking) for the full API.
+
+### A2A Bus (Agent-to-Agent)
+
+Enables agents to communicate directly:
+- Request/response patterns
+- Fire-and-forget messages
+- Skill delegation between agents
+- Cross-tenant isolation enforced
+
+## Data Flow: Agent Provisioning
+
+```
+User fills form (frontend)
+       │
+       ▼
+POST /api/provision (Vercel)
+       │
+       ▼
+POST /api/provision (Railway backend)
+       │
+       ├── Validate input (plan, provider, tokens)
+       ├── Generate userId + agentId
+       ├── Store config in PostgreSQL
+       ├── Create Railway service via Railway GraphQL API
+       ├── Assign subdomain
+       │
+       ▼
+Return agent URL + stream key to user
+```
+
+## Data Flow: Agent Runtime
+
+```
+User sends message (Telegram/Discord/WhatsApp)
+       │
+       ▼
+Webhook → Backend API
+       │
+       ├── Route to correct agent container
+       ├── Load agent config + memory
+       ├── Execute skills if needed
+       ├── Call AI provider (BYOK or Ollama)
+       ├── Check A2A bus for delegated tasks
+       │
+       ▼
+Response sent back to user
+```
+
+## Self-Hosting
+
+Agentbot is fully open source. To self-host:
+
+1. **Frontend:** Deploy `web/` to Vercel or any Next.js-compatible host
+2. **Backend:** Run `agentbot-backend/` on Railway or any Express-compatible host (includes the inline scheduler — no separate worker needed)
+3. **Database:** Neon Postgres (free tier available) or any PostgreSQL 15+
+4. **AI:** Ollama for local inference, or configure BYOK providers
+
+See [Installation](/installation) for full setup instructions.
+
+## Tech Decisions
+
+| Choice | Why |
+|--------|-----|
+| Next.js 16 | App Router, server components, Vercel-native DX |
+| Express (not serverless) | Long-running agent processes need persistent connections |
+| Neon Postgres | Serverless, scales to zero, generous free tier |
+| In-process rate limiting | `express-rate-limit` middleware — no external dependencies |
+| Railway services | Isolated agent environments per user (provisioned via Railway GraphQL API) |
+| BYOK over reselling | Users pay providers directly — no markup, no lock-in |
+| Base (not Ethereum) | Low fees, fast finality, Coinbase ecosystem |

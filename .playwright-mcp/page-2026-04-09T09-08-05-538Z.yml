@@ -1,0 +1,202 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation [ref=e3]:
+    - link "Agentbot Agentbot" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "Agentbot" [ref=e5]
+      - generic [ref=e6]: Agentbot
+  - main [ref=e15]:
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e19]:
+          - generic [ref=e20]: Pricing
+          - heading "One Creative Crew, One Business Mind" [level=1] [ref=e21]:
+            - text: One Creative Crew,
+            - text: One Business Mind
+          - paragraph [ref=e22]: Agentbot handles your fans. OpenClaw handles your inbox. Pay how you want — card or Apple Pay.
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - generic [ref=e26]: Agentbot
+            - heading "Creative Crew" [level=4] [ref=e27]
+            - list [ref=e28]:
+              - listitem [ref=e29]: Fan engagement (Telegram/WhatsApp)
+              - listitem [ref=e30]: BlockDB queries for A&R
+              - listitem [ref=e31]: Base FM submissions
+              - listitem [ref=e32]: Visual artwork generation
+          - generic [ref=e33]:
+            - generic [ref=e34]: OpenClaw
+            - heading "Business Operations" [level=4] [ref=e35]
+            - list [ref=e36]:
+              - listitem [ref=e37]: Email inbox management
+              - listitem [ref=e38]: Contract/Rider analysis (PDF)
+              - listitem [ref=e39]: Web scraping (gig listings)
+              - listitem [ref=e40]: x402 USDC invoicing
+          - generic [ref=e41]:
+            - generic [ref=e42]: You Provide
+            - heading "Your Own Keys" [level=4] [ref=e43]
+            - list [ref=e44]:
+              - listitem [ref=e45]: Your own AI API key
+              - listitem [ref=e46]: OpenAI, Anthropic, Ollama
+              - listitem [ref=e47]: No markup — wholesale rates
+              - listitem [ref=e48]: Switch models anytime
+        - generic [ref=e50]:
+          - generic [ref=e51]:
+            - generic [ref=e53]: Solo
+            - generic [ref=e54]: £29/mo
+            - list [ref=e55]:
+              - listitem [ref=e56]:
+                - img [ref=e57]
+                - text: 1 Creative Agent thread
+              - listitem [ref=e59]:
+                - img [ref=e60]
+                - text: Audience engagement (Telegram)
+              - listitem [ref=e62]:
+                - img [ref=e63]
+                - text: Opportunity discovery
+            - button "Select" [ref=e65] [cursor=pointer]
+          - generic [ref=e66]:
+            - generic [ref=e67]:
+              - generic [ref=e68]: Collective
+              - generic [ref=e69]: Popular
+            - generic [ref=e70]: £69/mo
+            - list [ref=e71]:
+              - listitem [ref=e72]:
+                - img [ref=e73]
+                - text: 3 Creative Agent threads
+              - listitem [ref=e75]:
+                - img [ref=e76]
+                - text: 1 OpenClaw Business seat
+              - listitem [ref=e78]:
+                - img [ref=e79]
+                - text: Email Triage (50/day)
+              - listitem [ref=e81]:
+                - img [ref=e82]
+                - text: x402 USDC Invoicing
+            - button "Select" [ref=e84] [cursor=pointer]
+          - generic [ref=e85]:
+            - generic [ref=e87]: Label
+            - generic [ref=e88]: £149/mo
+            - list [ref=e89]:
+              - listitem [ref=e90]:
+                - img [ref=e91]
+                - text: 10 Creative Agent threads
+              - listitem [ref=e93]:
+                - img [ref=e94]
+                - text: 3 OpenClaw Business seats
+              - listitem [ref=e96]:
+                - img [ref=e97]
+                - text: Multi-inbox (A&R@, Booking@)
+              - listitem [ref=e99]:
+                - img [ref=e100]
+                - text: White-label emails
+            - button "Select" [ref=e102] [cursor=pointer]
+          - generic [ref=e103]:
+            - generic [ref=e105]: Network
+            - generic [ref=e106]: £499/mo
+            - list [ref=e107]:
+              - listitem [ref=e108]:
+                - img [ref=e109]
+                - text: Unlimited Creative Agents
+              - listitem [ref=e111]:
+                - img [ref=e112]
+                - text: Unlimited OpenClaw seats
+              - listitem [ref=e114]:
+                - img [ref=e115]
+                - text: White-label (resell)
+              - listitem [ref=e117]:
+                - img [ref=e118]
+                - text: 99.9% SLA guarantee
+            - button "Select" [ref=e120] [cursor=pointer]
+        - generic [ref=e122]:
+          - generic [ref=e123]: Need Help?
+          - heading "Live 1-on-1 Setup" [level=2] [ref=e124]
+          - paragraph [ref=e125]: Don't want to figure it out alone? Book a 1-hour live screen share session with our team to get your agent configured and running.
+          - generic [ref=e126]:
+            - generic [ref=e127]: £49
+            - generic [ref=e128]: / session
+          - button "Book Expert Setup" [ref=e129] [cursor=pointer]
+        - generic [ref=e130]:
+          - generic [ref=e131]: Accepted Payment Methods
+          - generic [ref=e132]:
+            - generic [ref=e133]: Visa
+            - generic [ref=e134]: Mastercard
+            - generic [ref=e135]: Apple Pay
+            - generic [ref=e136]: Google Pay
+            - generic [ref=e137]: PayPal
+            - generic [ref=e138]: USDC
+          - paragraph [ref=e139]: Secure payments via Stripe. Crypto optional — use USDC on Base for discounts.
+        - generic [ref=e141]:
+          - generic [ref=e142]: Support
+          - heading "Frequently Asked Questions" [level=2] [ref=e143]:
+            - text: Frequently Asked
+            - text: Questions
+          - generic [ref=e144]:
+            - generic [ref=e146]:
+              - term [ref=e147]: What is the difference between Agentbot and OpenClaw?
+              - definition [ref=e148]: Agentbot = Creative Crew (fan engagement, promo, music). OpenClaw = Business Operations (email, contracts, invoicing). Solo tier gets Agentbot only. Collective+ includes OpenClaw seats.
+            - generic [ref=e149]:
+              - separator [ref=e150]
+              - generic [ref=e151]:
+                - term [ref=e152]: Do I need to provide my own AI API key?
+                - definition [ref=e153]: Yes — Agentbot is BYOK (Bring Your Own Key). You connect your OpenAI, Anthropic, OpenRouter, or local Ollama keys directly. You pay wholesale rates with zero markup.
+            - generic [ref=e154]:
+              - separator [ref=e155]
+              - generic [ref=e156]:
+                - term [ref=e157]: What payment methods do you accept?
+                - definition [ref=e158]: We accept all major credit cards through Stripe, or USDC on Base via x402.
+            - generic [ref=e159]:
+              - separator [ref=e160]
+              - generic [ref=e161]:
+                - term [ref=e162]: Can I change plans later?
+                - definition [ref=e163]: Yes. Upgrade or downgrade at any time from your dashboard. OpenClaw seats can be added incrementally on Collective+ tiers.
+        - generic [ref=e165]:
+          - heading "Ready to automate?" [level=2] [ref=e167]:
+            - text: Ready to
+            - text: automate?
+          - generic [ref=e168]:
+            - button "Get Started" [ref=e169] [cursor=pointer]
+            - button "Documentation" [ref=e170] [cursor=pointer]
+  - contentinfo [ref=e171]:
+    - generic [ref=e173]:
+      - generic [ref=e174]:
+        - generic [ref=e175]: © 2026 Agentbot · Zero Human Company
+        - generic [ref=e176]:
+          - generic [ref=e179]: Checking Status
+          - generic [ref=e180]: "|"
+          - generic [ref=e181]: Agentbot v0.0.0
+          - generic [ref=e182]: "|"
+          - generic [ref=e183]: OpenClaw loading...
+      - generic [ref=e184]:
+        - link "Partner" [ref=e185] [cursor=pointer]:
+          - /url: /partner
+        - link "$AGENTBOT" [ref=e186] [cursor=pointer]:
+          - /url: /token
+        - link "Solana" [ref=e187] [cursor=pointer]:
+          - /url: /solana
+        - link "Buddies" [ref=e188] [cursor=pointer]:
+          - /url: /buddies
+        - link "GitHub" [ref=e189] [cursor=pointer]:
+          - /url: https://github.com/Eskyee/agentbot-opensource
+        - link "Gitlawb" [ref=e190] [cursor=pointer]:
+          - /url: https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource
+        - link "DeepWiki" [ref=e191] [cursor=pointer]:
+          - /url: https://deepwiki.com/Eskyee/agentbot-opensource
+        - link "Dev.to" [ref=e192] [cursor=pointer]:
+          - /url: https://dev.to/agentbot
+        - link "Talent" [ref=e193] [cursor=pointer]:
+          - /url: https://talent.app/raveculture.base.eth
+        - link "Open WebUI" [ref=e194] [cursor=pointer]:
+          - /url: https://openwebui.com/u/jaieskyravecult115142e2f8
+        - link "Terms" [ref=e195] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e196] [cursor=pointer]:
+          - /url: /privacy
+  - generic [ref=e199]:
+    - generic [ref=e200]:
+      - generic [ref=e203]: ONLINE
+      - generic [ref=e204]: ·
+      - generic [ref=e205]: ·
+    - generic [ref=e206]: © 2026 Agentbot
+  - region "Notifications alt+T"
+  - alert [ref=e207]

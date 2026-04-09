@@ -1,0 +1,70 @@
+---
+title: Wallet Monitor API
+description: "Monitor node wallet balances and receive low-balance alerts"
+---
+
+# Wallet Monitor API
+
+Monitor the health of node wallets and receive alerts when balances fall below configured thresholds.
+
+## Get wallet monitor status
+
+```http
+GET /api/wallet-monitor/status
+```
+
+Requires session authentication with an admin email. Returns the current status of all monitored node wallets, including balance health and alert commands.
+
+### Authentication
+
+The authenticated user's email must be in the `ADMIN_EMAILS` environment variable (comma-separated list). Non-admin users receive a `403` response.
+
+### Response
+
+```json
+{
+  "statuses": [
+    {
+      "address": "0xabc123...",
+      "healthy": true,
+      "balance": "150.00",
+      "threshold": 100,
+      "alertCommand": "wallet alert 0xabc123..."
+    },
+    {
+      "address": "0xdef456...",
+      "healthy": false,
+      "balance": "45.00",
+      "threshold": 100,
+      "alertCommand": "wallet alert 0xdef456..."
+    }
+  ],
+  "lowCount": 1,
+  "timestamp": "2026-04-02T12:00:00.000Z"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `statuses` | array | Status of each monitored node wallet |
+| `statuses[].address` | string | Wallet address |
+| `statuses[].healthy` | boolean | `true` when the wallet balance is at or above the threshold |
+| `statuses[].balance` | string | Current wallet balance in pathUSD |
+| `statuses[].threshold` | number | Minimum balance threshold in pathUSD |
+| `statuses[].alertCommand` | string | Command to configure alerts for this wallet |
+| `lowCount` | number | Number of wallets with balances below the threshold |
+| `timestamp` | string | ISO 8601 timestamp of when the status was checked |
+
+### Low-balance alerts
+
+When one or more wallets have balances below the threshold, the endpoint automatically sends a support alert with details about the affected wallets. The alert is sent asynchronously and does not block the response.
+
+<Note>Support alerts require the `SUPPORT_WEBHOOK_URL` environment variable to be configured. When the variable is not set, alerts are logged to the console but not sent externally.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 403 | Unauthorized — user is not authenticated or is not an admin |

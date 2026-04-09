@@ -1,0 +1,726 @@
+---
+title: Usage tracking API
+description: "Track and query token usage, costs, and tool execution metrics per agent, model, and time period"
+---
+
+# Usage tracking API
+
+The usage tracking system records per-event token consumption and tool execution metrics. You can query aggregated data by agent, model, or time period.
+
+<Note>The usage tracker records events to a PostgreSQL database whenever an AI completion or tool call is made. The endpoints below are read-only query APIs for retrieving aggregated usage data.</Note>
+
+<Info>The live, user-facing endpoints on this page are `GET /api/dashboard/data`, `GET /api/dashboard/analytics`, `GET /api/dashboard/bootstrap`, `GET /api/dashboard/cost`, and `GET /api/dashboard/stats`. The lower query endpoints are roadmap/spec documentation only and are not linked from the main navigation.</Info>
+
+## Dashboard data
+
+```http
+GET /api/dashboard/data
+```
+
+Requires session authentication. Returns all dashboard data in a single request using parallel database queries. This endpoint replaces multiple sequential calls with one optimized request, reducing dashboard load time from 2–4 seconds to 200–400 ms.
+
+Runs on the Vercel Edge Runtime with CDN-level caching (`s-maxage=5, stale-while-revalidate=30`).
+
+### Response
+
+```json
+{
+  "userId": "user_abc123",
+  "credits": 5,
+  "plan": "solo",
+  "openclawUrl": "https://agentbot-agent-abc123-production.up.railway.app",
+  "openclawInstanceId": "abc123",
+  "gatewayToken": "a1b2c3d4e5f6...",
+  "agent": {
+    "id": "agent_xyz",
+    "status": "active",
+    "name": "Atlas",
+    "tier": "pro"
+  },
+  "health": {
+    "status": "healthy",
+    "checks": [
+      { "name": "Database", "status": "ok" },
+      { "name": "Gateway", "status": "ok" }
+    ]
+  },
+  "meta": {
+    "responseTime": 180,
+    "cached": false,
+    "timestamp": "2026-04-04T05:00:00.000Z"
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | Authenticated user's ID |
+| `credits` | number | Referral credits balance. Defaults to `0`. |
+| `plan` | string | Current subscription plan (for example `solo`, `collective`, `label`, `network`). Defaults to `free`. |
+| `openclawUrl` | string \| null | URL of the user's deployed OpenClaw instance, or `null` if not registered. |
+| `openclawInstanceId` | string \| null | OpenClaw instance ID, falling back to the agent ID if not set. |
+| `gatewayToken` | string \| null | Gateway authentication token resolved from the token manager or agent registration. |
+| `agent` | object \| null | Primary agent data, or `null` if no agent exists. |
+| `agent.id` | string | Agent identifier |
+| `agent.status` | string | Agent status (for example `active`, `running`, `stopped`) |
+| `agent.name` | string | Agent display name |
+| `agent.tier` | string | Agent tier |
+| `health` | object | System health summary |
+| `health.status` | string | Overall status: `healthy` or `degraded` |
+| `health.checks` | array | Individual service health checks |
+| `health.checks[].name` | string | Service name (for example `Database`, `Gateway`) |
+| `health.checks[].status` | string | `ok` or `down` |
+| `meta.responseTime` | number | Server-side response time in milliseconds |
+| `meta.cached` | boolean | Whether the response was served from cache |
+| `meta.timestamp` | string | ISO 8601 timestamp of the response |
+
+### Caching
+
+Responses include CDN caching headers:
+
+| Header | Value |
+|--------|-------|
+| `Cache-Control` | `public, s-maxage=5, stale-while-revalidate=30` |
+| `Vercel-CDN-Cache-Control` | `public, s-maxage=5, stale-while-revalidate=30` |
+| `CDN-Cache-Control` | `public, s-maxage=5` |
+
+<Note>Browser caching is prevented — only CDN-level caching is applied. Stale responses are served for up to 30 seconds while the CDN revalidates in the background.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch dashboard data (includes `details` and `responseTime` in the response body) |
+
+---
+
+## Dashboard analytics
+
+```http
+GET /api/dashboard/analytics
+```
+
+Requires session authentication. Returns deployment, skill, and task trends over time, channel activity, and top skill usage. Use this endpoint to render analytics charts and channel status indicators on the dashboard.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `range` | integer | `180` | Number of days of history to include. Accepted values: `30`, `90`, `180`, `365`. Other values default to `180`. |
+
+### Response
+
+```json
+{
+  "overview": {
+    "deployedAgents": 3,
+    "liveAgents": 2,
+    "installedSkills": 5,
+    "scheduledTasks": 8,
+    "connectedChannels": 2,
+    "channelMessages": 142
+  },
+  "trend": [
+    { "label": "Jan", "deployments": 1, "skills": 2, "tasks": 3 },
+    { "label": "Feb", "deployments": 0, "skills": 1, "tasks": 2 }
+  ],
+  "topSkills": [
+    { "name": "web_search", "installs": 3 }
+  ],
+  "channels": [
+    { "name": "Webchat", "messages": 120, "lastActive": "2026-04-03T12:00:00Z", "status": "connected" },
+    { "name": "Telegram", "messages": 22, "lastActive": "2026-04-02T08:30:00Z", "status": "connected" },
+    { "name": "Discord", "messages": 0, "lastActive": null, "status": "not-configured" }
+  ],
+  "source": {
+    "gateway": "live",
+    "sessions": "live"
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `overview.deployedAgents` | number | Total agents deployed by the user |
+| `overview.liveAgents` | number | Agents in `active` or `running` status |
+| `overview.installedSkills` | number | Total enabled skills across all agents |
+| `overview.scheduledTasks` | number | Total scheduled tasks |
+| `overview.connectedChannels` | number | Number of channels with a `connected` status |
+| `overview.channelMessages` | number | Total messages across all channels |
+| `trend` | array | Monthly buckets of deployment, skill, and task counts over the requested range |
+| `trend[].label` | string | Month label (for example `Jan`, `Feb`) |
+| `trend[].deployments` | number | Agents deployed in this month |
+| `trend[].skills` | number | Skills installed in this month |
+| `trend[].tasks` | number | Tasks created in this month |
+| `topSkills` | array | Top 6 most-installed skills, sorted by install count descending |
+| `topSkills[].name` | string | Skill name |
+| `topSkills[].installs` | number | Number of installs |
+| `channels` | array | Per-channel activity and connection status |
+| `channels[].name` | string | Channel display name (for example `Webchat`, `Telegram`, `Discord`) |
+| `channels[].messages` | number | Total messages on this channel |
+| `channels[].lastActive` | string \| null | ISO 8601 timestamp of last activity, or `null` |
+| `channels[].status` | string | Connection status: `connected`, `not-configured`, or `unreachable` |
+| `source.gateway` | string | Gateway data source status: `live` or `unreachable` |
+| `source.sessions` | string | Sessions data source status: `live` or `unavailable` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch analytics |
+
+---
+
+## Dashboard bootstrap
+
+```http
+GET /api/dashboard/bootstrap
+```
+
+Requires session authentication. Returns lightweight user and runtime shell data in a single request. Use this endpoint to populate the dashboard shell immediately without waiting for slower runtime probes.
+
+This endpoint consolidates data that previously required multiple separate fetches (user profile, OpenClaw state, and gateway token) into one call. The `gatewayToken` returned is the authenticated user's own token, enabling automatic pairing with their agent instance. The dashboard renders skeleton cards for runtime-dependent data while the full runtime probe completes in the background.
+
+### Response
+
+```json
+{
+  "credits": 5,
+  "referralCode": "abc123",
+  "referralCount": 2,
+  "plan": "solo",
+  "openclawUrl": "https://agentbot-agent-abc123-production.up.railway.app",
+  "openclawInstanceId": "abc123",
+  "gatewayToken": "a1b2c3d4e5f6..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `credits` | number | Referral credits balance. Defaults to `0` when no credits exist. |
+| `referralCode` | string \| null | The user's referral code, or `null` if not set. |
+| `referralCount` | number | Number of successful referrals. Defaults to `0`. |
+| `plan` | string \| null | Current subscription plan (for example, `solo`, `collective`, `label`, `network`), or `null` if no plan is active. |
+| `openclawUrl` | string \| null | URL of the user's deployed OpenClaw instance, or `null` if no instance is registered. |
+| `openclawInstanceId` | string \| null | Identifier of the user's OpenClaw instance, or `null` if no instance is registered. |
+| `gatewayToken` | string \| null | The authenticated user's gateway token for auto-pairing with their agent instance, or `null` if no token is registered. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+---
+
+## Test usage logging (deprecated)
+
+<Warning>This endpoint was removed in the March 2026 security audit and is no longer available. Requests to this path return `404`. Use the [cost dashboard](#cost-dashboard) endpoint to verify that usage tracking is working.</Warning>
+
+```http
+POST /api/test-usage
+```
+
+~~A debug endpoint that fires a single test event through the usage logging pipeline.~~
+
+---
+
+## Cost dashboard
+
+```http
+GET /api/dashboard/cost
+```
+
+Requires session authentication. Returns aggregated cost, token, and call data for the cost dashboard. Breaks down spending by agent, model, and day. Plan subscription costs are sourced from the database. AI token usage is fetched from the backend metrics service when available.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | string | `7d` | Time window for the aggregation. Accepted values: `7d` (last 7 days), `30d` (last 30 days), `mtd` (month to date). |
+
+### Response
+
+```json
+{
+  "period": "7d",
+  "summary": {
+    "totalCost": 13.68,
+    "totalTokens": 4560000,
+    "totalCalls": 1946,
+    "avgCostPerCall": 0.007
+  },
+  "agents": [
+    {
+      "name": "Atlas",
+      "tokens": 2840000,
+      "cost": 8.52,
+      "calls": 1247,
+      "avgCostPerCall": 0.0068,
+      "model": "claude-3-7-sonnet"
+    }
+  ],
+  "daily": [
+    {
+      "date": "Mar 17",
+      "cost": 1.42,
+      "tokens": 380000
+    }
+  ],
+  "modelBreakdown": [
+    {
+      "model": "claude-3-7-sonnet",
+      "percent": 68,
+      "cost": 9.30
+    }
+  ],
+  "isMockData": false,
+  "plan": "solo",
+  "planMonthlyCost": 29,
+  "agentCount": 4,
+  "activeAgents": 3
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `period` | string | The requested period echoed back (`7d`, `30d`, or `mtd`) |
+| `summary.totalCost` | number | Total cost in USD for the period |
+| `summary.totalTokens` | number | Total tokens (input + output) consumed |
+| `summary.totalCalls` | number | Total API calls made |
+| `summary.avgCostPerCall` | number | Blended average cost per call in USD |
+| `agents` | array | Per-agent cost breakdown, sorted by cost descending |
+| `agents[].name` | string | Agent name or identifier |
+| `agents[].tokens` | number | Total tokens consumed by the agent |
+| `agents[].cost` | number | Total cost in USD attributed to the agent |
+| `agents[].calls` | number | Number of API calls made by the agent |
+| `agents[].avgCostPerCall` | number | Average cost per call for the agent |
+| `agents[].model` | string | Primary model used by the agent |
+| `daily` | array | Daily cost and token totals |
+| `daily[].date` | string | Formatted date label (e.g. `"Mar 17"`) |
+| `daily[].cost` | number | Cost in USD for that day |
+| `daily[].tokens` | number | Total tokens consumed that day |
+| `modelBreakdown` | array | Cost breakdown by model, sorted by cost descending |
+| `modelBreakdown[].model` | string | Model identifier |
+| `modelBreakdown[].percent` | number | Percentage of total cost attributed to this model |
+| `modelBreakdown[].cost` | number | Cost in USD for this model |
+| `isMockData` | boolean | Always `false`. Retained for backward compatibility. |
+| `plan` | string | User's current subscription plan (for example `solo`, `collective`, `label`, `network`). |
+| `planMonthlyCost` | number | Monthly cost in USD for the user's current plan. |
+| `agentCount` | number | Total number of agents owned by the user. |
+| `activeAgents` | number | Number of agents in `active` or `running` status. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch cost data |
+
+---
+
+## Dashboard stats
+
+```http
+GET /api/dashboard/stats
+```
+
+Requires session authentication. Returns aggregated agent, skill, and task counts for the authenticated user. Used by the dashboard overview to display real-time stats cards.
+
+### Response
+
+```json
+{
+  "agents": {
+    "active": 1,
+    "total": 3,
+    "limit": 3,
+    "newToday": 0
+  },
+  "skills": {
+    "installed": 5
+  },
+  "tasks": {
+    "total": 12
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agents.active` | number | Number of agents with `active` status |
+| `agents.total` | number | Total number of agents owned by the user |
+| `agents.limit` | number | Maximum agents allowed by the user's plan |
+| `agents.newToday` | number | Number of agents created since midnight (UTC) |
+| `skills.installed` | number | Total installed skills across all the user's agents |
+| `tasks.total` | number | Total scheduled tasks across all the user's agents |
+
+### Plan-based agent limits
+
+The `agents.limit` value is determined by the user's subscription plan:
+
+| Plan | Agent limit |
+|------|-------------|
+| `free` | 1 |
+| `solo` | 1 |
+| `starter` | 1 |
+| `pro` | 3 |
+| `collective` | 3 |
+| `scale` | 10 |
+| `label` | 10 |
+| `enterprise` | 100 |
+| `network` | 100 |
+
+### Error handling
+
+On failure, the endpoint returns a fallback response with zeroed-out values instead of an error status code:
+
+```json
+{
+  "agents": { "active": 0, "total": 0, "limit": 1, "newToday": 0 },
+  "skills": { "installed": 0 },
+  "tasks": { "total": 0 }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 404 | User not found |
+
+---
+
+<Warning>The remaining endpoints below are not live on Agentbot. They are kept here as internal roadmap/spec documentation only.</Warning>
+
+All query endpoints below require bearer token authentication and are served by the backend API.
+
+## Usage summary
+
+```http
+GET /api/usage/summary
+```
+
+Returns daily aggregated token usage and cost data across all agents and models.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `days` | integer | `30` | Number of days of history to return |
+
+### Response
+
+```json
+[
+  {
+    "date": "2026-03-22",
+    "agent_id": "agent_abc",
+    "model": "openrouter/anthropic/claude-sonnet-4",
+    "provider": "openrouter",
+    "input_tokens": 15200,
+    "output_tokens": 3400,
+    "total_tokens": 18600,
+    "cost_usd": 0.042,
+    "turn_count": 12
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `date` | string | Date in `YYYY-MM-DD` format |
+| `agent_id` | string \| null | Agent that generated the usage, or `null` for unattributed events |
+| `model` | string | Model identifier |
+| `provider` | string | AI provider name |
+| `input_tokens` | number | Total input tokens for the day |
+| `output_tokens` | number | Total output tokens for the day |
+| `total_tokens` | number | Sum of all token types (input, output, cache read, cache write) |
+| `cost_usd` | number | Estimated cost in USD |
+| `turn_count` | number | Number of individual completion calls |
+
+## Usage by agent
+
+```http
+GET /api/usage/by-agent/:agentId
+```
+
+Returns token usage grouped by model for a specific agent.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `agentId` | string | ID of the agent to query |
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `days` | integer | `30` | Number of days of history to include |
+
+### Response
+
+```json
+[
+  {
+    "model": "openrouter/anthropic/claude-sonnet-4",
+    "provider": "openrouter",
+    "input_tokens": 45000,
+    "output_tokens": 12000,
+    "total_tokens": 57000,
+    "cost_usd": 0.13,
+    "events": 48
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `model` | string | Model identifier |
+| `provider` | string | AI provider name |
+| `input_tokens` | number | Total input tokens |
+| `output_tokens` | number | Total output tokens |
+| `total_tokens` | number | Total tokens across all types |
+| `cost_usd` | number | Estimated cost in USD |
+| `events` | number | Number of usage events |
+
+## Usage by model
+
+```http
+GET /api/usage/by-model
+```
+
+Returns token usage aggregated by model across all agents.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `days` | integer | `30` | Number of days of history to include |
+
+### Response
+
+```json
+[
+  {
+    "model": "openrouter/anthropic/claude-sonnet-4",
+    "provider": "openrouter",
+    "input_tokens": 120000,
+    "output_tokens": 35000,
+    "total_tokens": 155000,
+    "cost_usd": 0.35,
+    "turns": 200
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `model` | string | Model identifier |
+| `provider` | string | AI provider name |
+| `input_tokens` | number | Total input tokens |
+| `output_tokens` | number | Total output tokens |
+| `total_tokens` | number | Total tokens across all types |
+| `cost_usd` | number | Estimated cost in USD |
+| `turns` | number | Total completion turns |
+
+## Daily totals
+
+```http
+GET /api/usage/daily
+```
+
+Returns total token usage and cost per day.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `days` | integer | `7` | Number of days of history to return |
+
+### Response
+
+```json
+[
+  {
+    "date": "2026-03-22",
+    "total_tokens": 85000,
+    "cost_usd": 0.19,
+    "turns": 72
+  },
+  {
+    "date": "2026-03-21",
+    "total_tokens": 62000,
+    "cost_usd": 0.14,
+    "turns": 55
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `date` | string | Date in `YYYY-MM-DD` format |
+| `total_tokens` | number | Total tokens used that day |
+| `cost_usd` | number | Estimated cost in USD |
+| `turns` | number | Total completion turns |
+
+## Tool stats
+
+```http
+GET /api/usage/tools
+```
+
+Returns aggregated tool execution statistics, optionally filtered by agent.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `agentId` | string | — | Filter results to a specific agent. Omit for all agents. |
+| `days` | integer | `7` | Number of days of history to include |
+
+### Response
+
+```json
+[
+  {
+    "tool_name": "web_search",
+    "calls": 150,
+    "successes": 142,
+    "avg_ms": 1230.5
+  },
+  {
+    "tool_name": "code_edit",
+    "calls": 85,
+    "successes": 83,
+    "avg_ms": 450.2
+  }
+]
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tool_name` | string | Name of the tool |
+| `calls` | number | Total number of invocations |
+| `successes` | number | Number of successful invocations |
+| `avg_ms` | number | Average execution duration in milliseconds |
+
+## Usage event schema
+
+Each usage event is intended to be stored as a row in the `usage_logs` table (Prisma model name: `UsageLog`). Events will be recorded automatically whenever an AI completion is made (for example, from the [demo chat endpoint](/api-reference/demo-chat) or agent chat). Cost is calculated at write time using per-model pricing rates.
+
+<Warning>The `UsageLog` Prisma model is not yet in the schema. The `usage_logs` table was originally created via a dedicated SQL migration (`20260323000000_add_usage_logs`), but the Prisma model was removed from the build due to build failures. Usage event recording is currently inactive. The schema below documents the intended table structure for when the model is re-added.</Warning>
+
+### Server-side logging
+
+Every usage event emits a structured log line to the server console when it is recorded. This makes it possible to verify that the usage tracking pipeline is working without querying the database.
+
+**Success log format:**
+
+```
+[UsageLogger] Logging: <agentId> | <model> | <inputTokens>+<outputTokens> tokens | $<cost>
+```
+
+For example:
+
+```
+[UsageLogger] Logging: demo-chat | gpt-4o | 450+120 tokens | $0.004050
+```
+
+If the database write fails, an error is logged instead:
+
+```
+[UsageLogger] Failed to log usage: <error message>
+```
+
+<Info>Because usage recording is fire-and-forget (it never blocks the API response), these log lines are the primary way to diagnose write failures. Monitor your server logs for `[UsageLogger] Failed to log usage` entries if usage data appears to be missing from the cost dashboard.</Info>
+
+### Cost dashboard logging
+
+The cost dashboard endpoint emits its own diagnostic log lines prefixed with `[Cost API]`. These help you verify that the aggregation query is running and returning data.
+
+**Query result log:**
+
+```
+[Cost API] Found <count> usage logs
+```
+
+For example:
+
+```
+[Cost API] Found 0 usage logs
+```
+
+<Note>The cost dashboard now sources plan subscription costs from the database and AI token usage from the backend metrics service. If the backend is unavailable, plan-based cost data is still returned.</Note>
+
+If the entire handler fails, a general error is logged and a `500` response is returned:
+
+```
+[Cost API] Error: <error message>
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | integer | Auto-incrementing primary key |
+| `user_id` | varchar(255) | User who triggered the event |
+| `agent_id` | varchar(255) | Agent that triggered the completion |
+| `model` | varchar(100) | Model identifier (for example `anthropic/claude-sonnet-4.5`) |
+| `input_tokens` | integer | Number of input (prompt) tokens. Defaults to `0`. |
+| `output_tokens` | integer | Number of output (completion) tokens. Defaults to `0`. |
+| `cost_usd` | decimal(10,6) | Computed cost in USD (six decimal places). Defaults to `0`. |
+| `endpoint` | varchar(255) \| null | API route that generated the event (for example `/api/demo/chat`) |
+| `latency_ms` | integer \| null | Response latency in milliseconds |
+| `success` | boolean | Whether the completion succeeded. Defaults to `true`. |
+| `error_message` | text \| null | Error description when `success` is `false` |
+| `created_at` | timestamp | Timestamp when the event was recorded. Defaults to `NOW()`. |
+
+<Note>When accessing the table through the Prisma ORM, use the camelCase field names (`userId`, `agentId`, `inputTokens`, etc.). When writing raw SQL queries, use the snake_case column names shown above (`user_id`, `agent_id`, `input_tokens`, etc.).</Note>
+
+The table is indexed on `user_id`, `agent_id`, `created_at`, and the composite pairs `(user_id, created_at)` and `(agent_id, created_at)` for efficient time-range queries.
+
+<Warning>
+The usage event schema was updated in the March 2026 release. The previous fields `session_id`, `session_key`, `cache_read_tokens`, `cache_write_tokens`, and `total_tokens` are no longer recorded. Use `input_tokens + output_tokens` to calculate total tokens.
+</Warning>
+
+## Tool event schema
+
+Each tool event records:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `session_id` | string \| null | Session that triggered the tool call |
+| `agent_id` | string \| null | Agent that invoked the tool |
+| `tool_name` | string | Name of the tool |
+| `success` | boolean | Whether the tool call succeeded |
+| `duration_ms` | number \| null | Execution time in milliseconds |
+
+## Errors
+
+All usage tracking endpoints return the following error codes:
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Database query failed |

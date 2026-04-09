@@ -1,0 +1,382 @@
+---
+title: x402 gateway
+description: "Interact with the x402 payment gateway for colony membership, fitness scoring, dynamic pricing, and payments."
+---
+
+# x402 gateway
+
+The x402 endpoint connects agents to the x402-Tempo payment gateway. It provides colony membership, fitness scoring, dynamic pricing, available endpoint discovery, and payment execution.
+
+## Health check
+
+```http
+GET /api/x402
+```
+
+No authentication required. Returns the current status of the x402 gateway.
+
+### Response (200)
+
+```json
+{
+  "gateway": "https://x402-gateway-production-a474.up.railway.app",
+  "status": "healthy",
+  "service": "x402-gateway",
+  "agents": 5,
+  "colonies": 1,
+  "timestamp": "2026-03-22T12:00:00.000Z"
+}
+```
+
+The response includes a `gateway` field injected by the proxy and all fields returned by the upstream `/health` endpoint. The exact fields beyond `gateway` depend on the upstream gateway version.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `gateway` | string | URL of the upstream x402 gateway |
+| `status` | string | Gateway health status (e.g. `healthy`) |
+
+<Note>Additional fields such as `service`, `agents`, `colonies`, and `timestamp` may be present depending on the upstream gateway version. Do not rely on their existence without checking.</Note>
+
+### Response (503)
+
+Returned when the upstream gateway is unreachable.
+
+```json
+{
+  "gateway": "https://x402-gateway-production-a474.up.railway.app",
+  "status": "unreachable",
+  "error": "Connection failed"
+}
+```
+
+<Note>The `error` field contains the actual error message from the connection failure. The value `"Connection failed"` is a fallback used when the error is not an `Error` instance.</Note>
+
+## Execute action
+
+```http
+POST /api/x402
+```
+
+Dispatches an action to the x402 gateway. The `endpoints`, `fitness`, and `pricing` actions are public and do not require authentication. All other actions require an authenticated session with both a user ID and email.
+
+### Headers
+
+| Header | Type | Required | Description |
+|--------|------|----------|-------------|
+| `Content-Type` | string | Yes | Must be `application/json` |
+| `Cookie` | string | Conditional | Valid NextAuth session cookie. Required for `join-colony` and `pay` actions. |
+
+### Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Conditional | Agent instance identifier. Required for `join-colony` and `pay`. Optional for `fitness` and `pricing` (defaults to `atlas` when omitted). Not used by `endpoints`. |
+| `walletAddress` | string | No | Agent wallet address. Required for `join-colony`. |
+| `action` | string | Yes | Action to perform. One of `join-colony`, `fitness`, `pricing`, `endpoints`, or `pay`. |
+
+Additional fields are required depending on the action — see below.
+
+### Actions
+
+#### `join-colony`
+
+Register an agent with the x402 colony.
+
+**Request:**
+
+```json
+{
+  "agentId": "inst_abc123",
+  "walletAddress": "0x1234...5678",
+  "action": "join-colony"
+}
+```
+
+**Response (200):**
+
+Returns the response from the upstream colony gateway on success.
+
+**Error responses:**
+
+| Status | Body | Description |
+|--------|------|-------------|
+| 402 | `{ "success": false, "error": "Colony join failed: 402 ..." }` | The upstream gateway returned a 402 Payment Required response |
+| 502 | `{ "success": false, "error": "Colony join failed: {status} ..." }` | The upstream gateway returned a non-OK response (other than 402) |
+| 503 | `{ "success": false, "error": "Colony gateway unreachable" }` | The upstream colony gateway could not be reached (network error or timeout) |
+
+<Note>The `join-colony` action has a 10-second timeout. If the gateway does not respond within that window, a `503` is returned.</Note>
+
+#### `fitness`
+
+Retrieve the fitness score for an agent. This action is **public** and does not require authentication. The `agentId` field is optional and defaults to `atlas` when omitted.
+
+**Request:**
+
+```json
+{
+  "agentId": "inst_abc123",
+  "action": "fitness"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "score": 85,
+  "tier": "gold",
+  "details": {
+    "prediction": 0.78,
+    "execution": 0.91,
+    "coordination": 0.88
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `score` | number | Agent fitness score (0–100) |
+| `tier` | string | Fitness tier (e.g. `bronze`, `silver`, `gold`) |
+| `details` | object \| null | Breakdown of fitness dimensions. May be `null` if the upstream gateway is unreachable. |
+
+<Note>When the upstream gateway is unreachable, the endpoint returns a fallback response with a score of `50`, tier of `new`, and `details` set to `null`.</Note>
+
+#### `pricing`
+
+Retrieve dynamic pricing for an agent. Pricing is adjusted based on the agent's fitness score and tier. This action is **public** and does not require authentication. The `agentId` field is optional and defaults to `atlas` when omitted.
+
+**Request:**
+
+```json
+{
+  "agentId": "inst_abc123",
+  "action": "pricing"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "agentId": "inst_abc123",
+  "tier": "gold",
+  "pricing": {
+    "rate": 0.05,
+    "discount": 0.1
+  },
+  "fitness": {
+    "score": 85,
+    "tier": "gold"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agentId` | string | Agent instance identifier |
+| `tier` | string | Pricing tier |
+| `pricing.rate` | number | Current rate per request |
+| `pricing.discount` | number | Discount factor applied based on fitness |
+| `fitness.score` | number | Agent fitness score |
+| `fitness.tier` | string | Agent fitness tier |
+
+<Note>When the upstream gateway is unreachable, the endpoint returns a fallback response with tier `basic`, a rate of `0.01`, no discount, and a fitness score of `50` (tier `new`).</Note>
+
+#### `endpoints`
+
+List all available endpoints on the x402 gateway. This action is **public** and does not require authentication or an `agentId`.
+
+**Request:**
+
+```json
+{
+  "action": "endpoints"
+}
+```
+
+**Response (200):**
+
+The response is forwarded from the upstream gateway. When the upstream gateway is unreachable, the following fallback is returned:
+
+```json
+{
+  "success": true,
+  "endpoints": [
+    {
+      "slug": "/gateway/colony/join",
+      "description": "Join agent colony",
+      "price": "Free"
+    },
+    {
+      "slug": "/gateway/fitness/:agentId",
+      "description": "Get agent fitness score",
+      "price": "Free"
+    },
+    {
+      "slug": "/gateway/pricing/:agentId",
+      "description": "Get dynamic pricing",
+      "price": "Free"
+    },
+    {
+      "slug": "/gateway/pay",
+      "description": "Make payment",
+      "price": "Variable"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `endpoints` | array | List of available gateway endpoints |
+| `endpoints[].slug` | string | Endpoint path |
+| `endpoints[].description` | string | Human-readable description |
+| `endpoints[].price` | string | Price per request (e.g. `Free`, `Variable`) |
+
+#### `pay`
+
+Execute a payment through the x402 gateway. Payments are subject to amount limits and recipient address validation.
+
+**Request:**
+
+```json
+{
+  "agentId": "inst_abc123",
+  "action": "pay",
+  "amount": 1.0,
+  "currency": "USDC",
+  "recipient": "0x5678abcd1234efgh5678abcd1234efgh5678abcd",
+  "endpoint": "chat",
+  "method": "tempo"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | number | Yes | Payment amount. Must be greater than zero and no more than 100. |
+| `currency` | string | No | Payment currency (e.g. `USDC`, `pathUSD`). Defaults to `USDC` if omitted. The value is forwarded to the upstream gateway as-is. |
+| `recipient` | string | Yes | Recipient wallet address. Must be a valid EVM or Solana address (see validation rules below). |
+| `endpoint` | string | No | Target endpoint slug on the gateway |
+| `method` | string | No | Payment method identifier. Defaults to `default` if omitted. |
+
+**Amount limits:**
+
+- The amount must be a positive number greater than zero.
+- The maximum amount per payment is **$100**. Payments above this limit are rejected. Contact support if you need higher limits.
+
+**Address validation:**
+
+The `recipient` field must match one of the following formats:
+
+| Network | Format | Example |
+|---------|--------|---------|
+| EVM (Ethereum, Base) | `0x` followed by exactly 40 hexadecimal characters | `0xd8fd0e1dce89beaab924ac68098ddb17613db56f` |
+| Solana | Base58 string between 32 and 44 characters | `DRpbCBMxVnDK7maPGv7USk2Lgt2GXEimhi82kUhP2GBn` |
+
+Addresses that do not match either format are rejected with a `400` error.
+
+**Audit logging:**
+
+Every payment attempt is logged with the user's email, amount, currency, recipient address, and payment method. These logs are available for security review.
+
+## Authentication behavior
+
+The `endpoints`, `fitness`, `pricing` actions and the `GET` health check are fully public and never require a session.
+
+The `join-colony` and `pay` actions require a valid NextAuth session. When the session is missing or invalid, the endpoint returns a `401` response with `{ "success": false, "error": "Authentication required" }`.
+
+<Note>The x402 dashboard can be viewed without authentication. The `fitness` and `pricing` actions are public, so unauthenticated users see real data from the upstream gateway. When the upstream gateway is unreachable, fallback default values are displayed (a fitness score of 50, tier of `new`, and default pricing).</Note>
+
+## Error responses
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | `agentId required` | The `agentId` field is missing from the request body (applies to `join-colony` and `pay` only) |
+| 400 | `Invalid amount` | The `amount` field is missing, zero, or negative (applies to the `pay` action) |
+| 400 | `Amount exceeds $100 limit. Contact support for higher limits.` | The `amount` exceeds the per-payment maximum of $100 (applies to the `pay` action) |
+| 400 | `Recipient required` | The `recipient` field is missing (applies to the `pay` action) |
+| 400 | `Invalid recipient address` | The `recipient` does not match a valid EVM or Solana address format (applies to the `pay` action) |
+| 400 | `Invalid action. Use: join-colony, fitness, pricing, endpoints, or pay` | The `action` field is missing or not one of the supported values |
+| 401 | `Authentication required` | No valid session. Returned for `join-colony` and `pay` actions only. |
+| 402 | `Colony join failed: 402 ...` | The upstream gateway requires payment for the `join-colony` action |
+| 500 | `x402 gateway error` | An unexpected error occurred while communicating with the upstream gateway |
+| 502 | `Colony join failed: {status} ...` | The upstream gateway returned an error for the `join-colony` action |
+| 503 | `Colony gateway unreachable` | The upstream colony gateway could not be reached (applies to `join-colony`) |
+
+## Examples
+
+### Check gateway health
+
+```bash
+curl https://agentbot.sh/api/x402
+```
+
+### Join colony
+
+```bash
+curl -X POST https://agentbot.sh/api/x402 \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "agentId": "inst_abc123",
+    "walletAddress": "0x1234...5678",
+    "action": "join-colony"
+  }'
+```
+
+### Get fitness score
+
+```bash
+curl -X POST https://agentbot.sh/api/x402 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "inst_abc123",
+    "action": "fitness"
+  }'
+```
+
+The `agentId` is optional. When omitted, it defaults to `atlas`:
+
+```bash
+curl -X POST https://agentbot.sh/api/x402 \
+  -H "Content-Type: application/json" \
+  -d '{"action": "fitness"}'
+```
+
+### Get pricing
+
+```bash
+curl -X POST https://agentbot.sh/api/x402 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "inst_abc123",
+    "action": "pricing"
+  }'
+```
+
+### List endpoints
+
+```bash
+curl -X POST https://agentbot.sh/api/x402 \
+  -H "Content-Type: application/json" \
+  -d '{"action": "endpoints"}'
+```
+
+### Make a payment
+
+```bash
+curl -X POST https://agentbot.sh/api/x402 \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "agentId": "inst_abc123",
+    "action": "pay",
+    "amount": 1.0,
+    "currency": "USDC",
+    "recipient": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+    "endpoint": "chat",
+    "method": "tempo"
+  }'
+```
+
+<Note>The `recipient` must be a full, valid address. Abbreviated addresses like `0x5678...efgh` are rejected. See [address validation](#pay) for accepted formats.</Note>

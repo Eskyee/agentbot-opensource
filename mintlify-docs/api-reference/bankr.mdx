@@ -1,0 +1,234 @@
+---
+title: Bankr API
+description: "Manage per-user Bankr API keys and query trading balances"
+---
+
+# Bankr API
+
+Manage your personal Bankr API key and interact with the Bankr trading service. Each user can store their own encrypted API key, which takes precedence over the platform-wide key. If no personal key is configured and no platform key is available, endpoints return a `503` with `needsKey: true` so your client can prompt for key entry.
+
+<Note>All Bankr endpoints require session authentication. Your personal API key is encrypted at rest with AES-256-GCM and is never returned in plaintext through the API.</Note>
+
+## Bankr API key management
+
+Manage your personal Bankr API key. When configured, your key is used for all Bankr requests instead of the platform default.
+
+### Check key status
+
+```http
+GET /api/user/bankr-key
+```
+
+Returns whether you have a personal Bankr API key configured. Does not reveal the key itself.
+
+#### Response
+
+```json
+{
+  "configured": true
+}
+```
+
+#### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `configured` | boolean | `true` if you have a personal Bankr API key stored, `false` otherwise |
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+### Save API key
+
+```http
+POST /api/user/bankr-key
+```
+
+Stores or updates your personal Bankr API key. The key is encrypted with AES-256-GCM before being saved. If you already have a key configured, it is replaced.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `apiKey` | string | Yes | Your Bankr API key. Must be a non-empty string, maximum 512 characters. |
+
+#### Response
+
+```json
+{
+  "success": true
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `apiKey` is missing, empty, or exceeds 512 characters |
+| 401 | Unauthorized — no valid session |
+
+### Remove API key
+
+```http
+DELETE /api/user/bankr-key
+```
+
+Removes your personal Bankr API key. After deletion, Bankr endpoints fall back to the platform-wide key if one is configured.
+
+#### Response
+
+```json
+{
+  "success": true
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+## Get balances
+
+```http
+GET /api/bankr/balances
+```
+
+Returns wallet balances from the Bankr trading service across the specified chains.
+
+### Key resolution
+
+The endpoint resolves the API key in the following order:
+
+1. Your personal key (set via `POST /api/user/bankr-key`)
+2. The platform-wide key
+3. If neither is available, returns `503` with `needsKey: true`
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `chains` | string | No | Comma-separated list of chains to query. Defaults to `base,polygon,mainnet,solana,unichain`. |
+
+### Response
+
+The response shape is determined by the Bankr API and contains balance data for the requested chains.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Bankr API request failed |
+| 503 | No Bankr API key configured. Response includes `needsKey: true`. |
+
+### Error response (no key)
+
+```json
+{
+  "error": "No Bankr API key configured",
+  "needsKey": true
+}
+```
+
+<Note>When your client receives a `503` response with `needsKey: true`, display a key-entry form so the user can configure their personal Bankr API key via `POST /api/user/bankr-key`.</Note>
+
+## Send prompt
+
+```http
+POST /api/bankr/prompt
+```
+
+Sends a natural-language prompt to the Bankr trading agent and returns its response. Use this to execute trades, check positions, or ask trading-related questions through the Bankr service.
+
+### Key resolution
+
+Uses the same key resolution order as the [balances endpoint](#get-balances).
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `prompt` | string | Yes | The natural-language instruction or question for the Bankr agent |
+| `threadId` | string | No | Thread identifier for continuing a previous conversation |
+
+### Response
+
+The response shape is determined by the Bankr API and contains the agent's reply.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Bankr API request failed |
+| 503 | No Bankr API key configured. Response includes `needsKey: true`. |
+
+## Get job status
+
+```http
+GET /api/bankr/prompt
+```
+
+Polls the status of an asynchronous Bankr agent job.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `jobId` | string | Yes | The job identifier returned by a previous prompt request |
+
+### Response
+
+The response shape is determined by the Bankr API and contains the current job status and result.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `jobId` query parameter |
+| 401 | Unauthorized — no valid session |
+| 500 | Bankr API request failed |
+| 503 | No Bankr API key configured. Response includes `needsKey: true`. |
+
+## Mint asset
+
+```http
+POST /api/bankr-mint
+```
+
+<Warning>**Temporarily unavailable.** Bankr minting is offline while an upstream dependency issue is resolved. All requests currently return `503` with code `FEATURE_UNAVAILABLE`. No authentication is required (the endpoint fails before auth is checked).</Warning>
+
+Mints an asset through the Bankr SDK on the specified blockchain network.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `walletAddress` | string | Yes | The wallet address to mint the asset to |
+| `assetName` | string | Yes | Name of the asset to mint |
+| `network` | string | No | Blockchain network to mint on. Defaults to `base`. |
+
+### Response (503 — feature unavailable)
+
+While the feature is offline, all requests return:
+
+```json
+{
+  "error": "Bankr minting is coming soon.",
+  "code": "FEATURE_UNAVAILABLE",
+  "details": "The Bankr minting feature is temporarily offline while we upgrade dependencies. Check back shortly."
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `walletAddress` or `assetName` in request body |
+| 500 | Internal server error |
+| 503 | Feature temporarily unavailable (`code: "FEATURE_UNAVAILABLE"`) |

@@ -1,0 +1,154 @@
+# Channels
+
+Connect your Agentbot to messaging platforms. Each channel lets users talk to your agent from their preferred app.
+
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreiec4xih75nginbmhmicbk3t5i4amubxbndil2ntzpiupsmj2mlwpy" alt="Agentbot channels" height="360" style={{borderRadius: '12px', width: '100%', objectFit: 'cover', marginBottom: '24px'}} />
+
+## Supported Channels
+
+| Channel | Status | Setup Difficulty |
+|---------|--------|-----------------|
+| **Telegram** | ✅ Recommended | Easy — bot token only |
+| **WhatsApp** | ✅ Supported | Medium — QR code linking |
+| **Discord** | ✅ Supported | Medium — bot token + guild |
+| **Slack** | ✅ Supported | Medium — app + bot tokens |
+| **Signal** | ⚠️ Experimental | Hard — requires signal-cli |
+| **iMessage** | ⚠️ macOS only | Medium — macOS bridge |
+| **Google Chat** | ⚠️ Advanced | Hard — service account |
+| **Nostr** | ⚠️ Beta | Medium — relay + keys |
+
+---
+
+## Telegram (Recommended)
+
+The easiest channel to set up.
+
+### Steps
+1. Open [@BotFather](https://t.me/BotFather) on Telegram
+2. Send `/newbot` and follow the prompts
+3. Copy the bot token (looks like `123456:ABC-DEF...`)
+4. Paste it in **Control UI → Channels → Telegram → Bot Token**
+5. Click **Save** → **Probe** to test the connection
+
+### Key Settings
+- **DM Policy**: `pairing` (default) — users must pair before chatting
+- **Group Policy**: `open` or `disabled` — whether the bot responds in groups
+- **Streaming**: `partial` (default) — shows typing indicator while generating
+- **Allow From**: Leave empty for open access, or add specific Telegram user IDs
+
+### Quick Config
+```
+channels.telegram.enabled = true
+channels.telegram.botToken = "YOUR_TOKEN"
+channels.telegram.dmPolicy = "pairing"
+channels.telegram.streaming = "partial"
+```
+
+---
+
+## WhatsApp
+
+Connect your personal or business WhatsApp.
+
+### Steps
+1. Go to **Control UI → Channels → WhatsApp**
+2. Set `Enabled = true`
+3. Click **Save**
+4. Click **Show QR** — a QR code appears
+5. Open WhatsApp on your phone → Settings → Linked Devices → Link a Device
+6. Scan the QR code
+7. Wait for "Connected" status
+
+### Key Settings
+- **Self-Phone Mode**: Enable if the bot uses your personal number
+- **DM Policy**: `pairing` recommended for security
+- **Group Policy**: `disabled` by default — enable if you want bot in groups
+- **Debounce**: 500ms default — batches rapid messages from same sender
+
+### ⚠️ Important
+- WhatsApp sessions expire. Use **Relink** if connection drops
+- Your phone must stay connected to the internet
+
+---
+
+## Discord
+
+Create a Discord bot and add it to your server.
+
+### Steps
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **New Application** → name it → **Create**
+3. Go to **Bot** tab → click **Reset Token** → copy the token
+4. Go to **OAuth2 → URL Generator** → select `bot` scope
+5. Select permissions: `Send Messages`, `Read Message History`, `Use Slash Commands`
+6. Copy the generated URL → open it → add bot to your server
+7. Paste the bot token in **Control UI → Channels → Discord → Bot Token**
+8. Click **Save** → **Probe**
+
+### Key Settings
+- **Intents**: Enable `Message Content Intent` in Discord Developer Portal
+- **Guilds**: Add your server ID to restrict which servers the bot responds in
+- **Presence**: Set online status and activity text
+- **Streaming**: `partial` shows live typing updates
+
+---
+
+## Slack
+
+Add your agent to a Slack workspace.
+
+### Steps
+1. Go to [Slack API](https://api.slack.com/apps) → **Create New App**
+2. Choose **From scratch** → name it → select workspace
+3. Go to **Socket Mode** → enable it → copy App Token
+4. Go to **OAuth & Permissions** → add scopes: `chat:write`, `im:history`, `im:write`, `channels:history`
+5. Install to workspace → copy Bot Token
+6. Paste both tokens in **Control UI → Channels → Slack**
+7. Click **Save** → **Probe**
+
+### Key Settings
+- **Mode**: `socket` (recommended) — no public URL needed
+- **Native Streaming**: `true` — uses Slack's native streaming API
+- **Reaction Level**: `ack` — reacts to messages with 👍 when processed
+
+---
+
+## General Channel Settings
+
+These apply to all channels:
+
+| Setting | What It Does | Default |
+|---------|-------------|---------|
+| **DM Policy** | Who can DM the bot | `pairing` |
+| **Group Policy** | Bot behavior in groups | `disabled` |
+| **Allow From** | Whitelist specific users | empty (all) |
+| **Streaming** | Show typing/generation | varies |
+| **Markdown** | Format responses | `true` |
+| **Media Max MB** | Max file size | 25 |
+| **Response Prefix** | Text before every reply | empty |
+
+---
+
+## Troubleshooting
+
+### Bot not responding
+1. Check **Control UI → Channels** — is it showing "Running: Yes"?
+2. Click **Probe** to test the connection
+3. Check **Logs** for errors
+
+### "Connected" but no messages
+- Check **DM Policy** — if set to `pairing`, users must pair first
+- Check **Allow From** — if set, only listed users can chat
+- Check **Group Policy** — might be blocking group messages
+
+### Connection keeps dropping
+- **WhatsApp**: Phone went offline — use **Relink**
+- **Telegram**: Bot token expired — regenerate in @BotFather
+- **Discord**: Intents not enabled — check Developer Portal
+
+---
+
+## Need Help?
+
+- [Discord Community](https://discord.gg/vTPG4vdV6D)
+- [Documentation](https://docs.openclaw.ai)

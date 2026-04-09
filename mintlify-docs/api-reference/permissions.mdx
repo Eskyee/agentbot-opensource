@@ -1,0 +1,303 @@
+---
+title: Permissions API
+description: "Tiered permission system for sandbox command classification and approval"
+---
+
+# Permissions API
+
+Manage permission requests for agent tool calls using a tiered classification system. Commands are classified at runtime into three tiers:
+
+- **Safe** — auto-approved (read-only operations like `ls`, `cat`, `git status`)
+- **Dangerous** — routed to the dashboard for user approval (code execution, network writes, git push)
+- **Destructive** — blocked by default (`rm -rf /`, `DROP TABLE`, `terraform destroy`)
+
+<Note>This is Phase 1 of sandbox governance. Safe commands pass through automatically. Dangerous commands are queued for approval and can be reviewed in the dashboard. Destructive commands are blocked and require explicit user enablement via the dashboard.</Note>
+
+## List pending permission requests
+
+```http
+GET /api/permissions
+```
+
+Returns all pending permission requests for the authenticated user. You can optionally filter by agent.
+
+Requires bearer token authentication.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agentId` | string | No | Filter pending requests by agent ID. When omitted, returns all pending requests for the authenticated user. |
+
+### Response
+
+```json
+{
+  "pending": [
+    {
+      "id": "perm_1711929600000_a1b2c3d4e",
+      "agentId": "agent_123",
+      "userId": "user_456",
+      "toolName": "bash",
+      "toolInput": {
+        "command": "node script.js"
+      },
+      "tier": "dangerous",
+      "reason": "Dangerous command: ^node\\s",
+      "timestamp": 1711929600000,
+      "status": "pending"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pending` | array | List of pending permission requests |
+| `pending[].id` | string | Unique request identifier (format: `perm_{timestamp}_{random}`) |
+| `pending[].agentId` | string | Agent that triggered the tool call |
+| `pending[].userId` | string | Owner of the agent |
+| `pending[].toolName` | string | Name of the tool being invoked (for example, `bash`, `write`, `read`) |
+| `pending[].toolInput` | object | Input parameters passed to the tool |
+| `pending[].tier` | string | Classification tier: `safe`, `dangerous`, or `destructive` |
+| `pending[].reason` | string | Human-readable explanation of why the command was classified at this tier |
+| `pending[].timestamp` | number | Unix timestamp (milliseconds) when the request was created |
+| `pending[].status` | string | Request status: `pending`, `approved`, or `rejected` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 403 | Forbidden |
+
+## Submit permission decision
+
+```http
+POST /api/permissions
+```
+
+Approve or reject a pending permission request. Requires bearer token authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `requestId` | string | Yes | The `id` of the pending permission request |
+| `decision` | string | Yes | One of: `approve`, `reject`, `approve_always` |
+| `feedback` | string | No | Optional reviewer feedback or notes to attach to the decision. Accepted by the web proxy but not currently used by the backend permission handler. |
+| `modifiedInput` | string | No | Optional modified command input. Accepted by the web proxy but not currently used by the backend permission handler. |
+
+<Note>The `approve_always` decision approves the current request and is intended to auto-approve similar commands in the future. Auto-approval persistence is not yet implemented — currently `approve_always` behaves the same as `approve`.</Note>
+
+### Response
+
+### Response (backend)
+
+The backend returns the decision along with the classification tier:
+
+```json
+{
+  "success": true,
+  "requestId": "perm_1711929600000_a1b2c3d4e",
+  "decision": "approve",
+  "tier": "dangerous"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the decision was processed |
+| `requestId` | string | The request that was decided |
+| `decision` | string | The decision that was applied |
+| `tier` | string | Classification tier of the resolved request (`safe`, `dangerous`, or `destructive`) |
+
+### Response (web proxy)
+
+The web proxy returns the decision without the tier:
+
+```json
+{
+  "success": true,
+  "requestId": "perm_1711929600000_a1b2c3d4e",
+  "decision": "approve"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the decision was processed |
+| `requestId` | string | The request that was decided |
+| `decision` | string | The decision that was applied |
+
+<Note>The backend response includes a `tier` field indicating the classification tier of the resolved request. The web proxy does not include this field.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `requestId` or `decision` |
+| 400 | Invalid `decision` value. Must be one of: `approve`, `reject`, `approve_always`. |
+| 401 | Unauthorized — missing or invalid bearer token |
+| 403 | Forbidden |
+| 404 | Request not found — the `requestId` does not match any pending request |
+
+## Command classification tiers
+
+The classifier evaluates commands and tool calls against built-in pattern lists. Unknown commands default to the `dangerous` tier.
+
+### Safe tier (auto-approve)
+
+Commands that are read-only or informational:
+
+| Category | Examples |
+|----------|----------|
+| Filesystem read | `cat`, `head`, `tail`, `ls`, `find`, `stat`, `wc`, `du`, `df` |
+| Text processing | `grep`, `sort`, `uniq`, `cut`, `awk`, `sed` |
+| Git read-only | `git status`, `git diff`, `git log`, `git show`, `git branch` |
+| System info | `echo`, `pwd`, `whoami`, `date`, `uptime`, `env` |
+| Network read-only | `curl` (GET), `wget`, `ping`, `nslookup`, `dig` |
+| Package info | `npm list`, `npm view`, `pip list`, `pip show` |
+| Docker read-only | `docker ps`, `docker images`, `docker logs`, `docker inspect` |
+
+### Dangerous tier (requires approval)
+
+Commands that modify state or execute code:
+
+| Category | Examples |
+|----------|----------|
+| Code execution | `python`, `node`, `npx`, `npm run`, `npm install` |
+| Network writes | `curl -X POST`, `curl -d`, `wget --post` |
+| Git writes | `git push`, `git commit`, `git merge`, `git rebase`, `git reset` |
+| Container writes | `docker run`, `docker build`, `docker exec`, `docker rm` |
+| Remote execution | `ssh`, `scp`, `rsync` |
+| File writes | Redirects to `/`, `mv /`, `cp ... /` |
+| Infrastructure | `railway up`, `vercel deploy` |
+
+### Destructive tier (blocked by default)
+
+Commands that can cause irreversible damage:
+
+| Category | Examples |
+|----------|----------|
+| Filesystem destruction | `rm -rf /`, `sudo rm`, `dd if=`, `mkfs`, `fdisk` |
+| Repository destruction | `gh repo delete`, `gh repo edit --visibility public` |
+| Database destruction | `DROP DATABASE`, `DROP TABLE`, `TRUNCATE`, `DELETE FROM` |
+| Infrastructure destruction | `terraform destroy`, `railway service delete`, `docker system prune` |
+| System modification | `sudo`, `chmod 777`, `chown` |
+
+## Tool call classification
+
+In addition to shell commands, the classifier handles structured tool calls:
+
+| Tool name | Classification |
+|-----------|---------------|
+| `bash`, `exec`, `shell` | Classified based on the `command` parameter using the rules above |
+| `write`, `file_write` | `dangerous` if writing to sensitive paths (`.env`, `credentials`, `.ssh`); otherwise `safe` |
+| `read`, `file_read` | Always `safe` |
+| Unknown tools | Default to `dangerous` |
+
+## WebSocket real-time notifications
+
+Instead of polling `GET /api/permissions`, you can connect via WebSocket to receive instant push notifications when a permission request is created. The WebSocket endpoint replaces the previous 5-second polling approach with real-time delivery.
+
+```
+ws://HOST/ws/permissions?userId=USER_ID
+```
+
+### Connection
+
+Connect by passing your `userId` as a query parameter. On successful connection, the server sends a `connected` message:
+
+```json
+{
+  "type": "connected",
+  "data": { "userId": "user_456", "timestamp": 1711929600000 }
+}
+```
+
+If the `userId` parameter is missing, the server closes the connection with code `4001`.
+
+### Server-to-client messages
+
+| Message type | Description | Data fields |
+|--------------|-------------|-------------|
+| `connected` | Sent on successful connection | `userId`, `timestamp` |
+| `permission_request` | A new permission request requires approval | `id`, `command`, `tier`, `reason`, `agentId` |
+| `decision_ack` | Confirms that a decision was processed | `requestId`, `decision`, `timestamp` |
+| `heartbeat` | Sent every 30 seconds to keep the connection alive | `timestamp` |
+| `pong` | Response to a client `ping` | `timestamp` |
+| `error` | Sent when the server cannot parse a client message | `message` |
+
+#### Permission request example
+
+```json
+{
+  "type": "permission_request",
+  "data": {
+    "id": "hook_1711929600000_a1b2c3d4e",
+    "command": "node script.js",
+    "tier": "dangerous",
+    "reason": "Dangerous command: ^node\\s",
+    "agentId": "agent_123"
+  }
+}
+```
+
+### Client-to-server messages
+
+| Message type | Description | Data fields |
+|--------------|-------------|-------------|
+| `decision` | Submit an approval or rejection for a pending request | `requestId`, `decision` |
+| `ping` | Connectivity check; server responds with `pong` | _(none)_ |
+
+#### Decision example
+
+```json
+{
+  "type": "decision",
+  "data": {
+    "requestId": "hook_1711929600000_a1b2c3d4e",
+    "decision": "approve"
+  }
+}
+```
+
+The `decision` field accepts `approve` or `reject`.
+
+### Connection lifecycle
+
+- **Heartbeat** — the server sends a heartbeat every 30 seconds. If you do not receive a heartbeat within the expected interval, reconnect.
+- **Cleanup** — the server removes the client from its tracking map on disconnect. No explicit close handshake is required beyond the standard WebSocket close frame.
+- **Multiple sessions** — a single user can have multiple concurrent WebSocket connections. All sessions for a user receive the same `permission_request` broadcasts.
+
+<Note>The REST API (`GET /api/permissions` and `POST /api/permissions`) remains fully supported. The WebSocket endpoint is an alternative real-time channel. If the WebSocket connection drops, you can fall back to polling the REST endpoint.</Note>
+
+## Pre-tool-use hook
+
+The permission system integrates with Docker agent containers through a pre-tool-use hook. When an agent makes a tool call inside its container:
+
+1. The `--hook-pre-tool-use` flag triggers the hook script
+2. The hook script sends tool details to [`POST /api/hooks/classify`](/api-reference/hooks-classify)
+3. The classify endpoint evaluates the tool name and input
+4. **Safe** tools are auto-approved — the agent proceeds immediately
+5. **Dangerous** tools are queued — the server pushes a `permission_request` message via the [WebSocket endpoint](#websocket-real-time-notifications) (or the dashboard can poll `GET /api/permissions`)
+6. **Destructive** tools are blocked — the agent cannot proceed
+
+<Note>The hook system is fail-closed. If the classify endpoint is unreachable, all tool calls are denied by default. See the [hooks classify API](/api-reference/hooks-classify) for full endpoint details including request format and authentication.</Note>
+
+```json
+{
+  "allow": false,
+  "tier": "dangerous",
+  "reason": "Queued for approval: Dangerous command: ^node\\s",
+  "requestId": "hook_1711929600000_a1b2c3d4e"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `allow` | boolean | Whether the tool call was permitted |
+| `tier` | string | Classification tier |
+| `reason` | string | Explanation of the classification |
+| `requestId` | string | Present only for `dangerous` tier. Use this ID to approve or reject the request via `POST /api/permissions` or the [WebSocket `decision` message](#client-to-server-messages). |

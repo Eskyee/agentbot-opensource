@@ -1,0 +1,421 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Build with AI Agents in Lisbon, 1st May. Sponsored by Cloudflare.
+      - link "Grab your ticket." [ref=e6] [cursor=pointer]:
+        - /url: https://agentsday.org/
+    - button "Dismiss notice" [ref=e7] [cursor=pointer]:
+      - img [ref=e8]
+  - generic [ref=e10]:
+    - main [ref=e11]:
+      - generic [ref=e12]:
+        - navigation [ref=e13]:
+          - generic [ref=e14]:
+            - generic [ref=e15]:
+              - link [ref=e16] [cursor=pointer]:
+                - /url: /
+                - img [ref=e17]
+              - list [ref=e26]:
+                - listitem [ref=e27]:
+                  - link "Rewards" [ref=e28] [cursor=pointer]:
+                    - /url: /~/earn
+                - listitem [ref=e29]:
+                  - link "Builders" [ref=e30] [cursor=pointer]:
+                    - /url: /~/explore
+                - listitem [ref=e31]:
+                  - link "Projects" [ref=e32] [cursor=pointer]:
+                    - /url: /~/projects
+                - listitem [ref=e33]:
+                  - link "Pricing" [ref=e34] [cursor=pointer]:
+                    - /url: /~/pricing
+            - list [ref=e36]:
+              - listitem [ref=e37]:
+                - generic [ref=e38]:
+                  - button "Search" [ref=e40] [cursor=pointer]:
+                    - img
+                    - generic [ref=e41]:
+                      - generic: ⌘
+                      - generic: K
+                  - button "Login" [active] [ref=e43] [cursor=pointer]
+        - main [ref=e44]:
+          - generic [ref=e46]:
+            - generic [ref=e48]:
+              - link "$600K rewards distributed so far" [ref=e49] [cursor=pointer]:
+                - /url: https://dune.com/talent_protocol/talentprotocol
+                - generic [ref=e50]: $600K rewards distributed so far
+                - img [ref=e51]
+              - heading "Build for impact" [level=1] [ref=e53]
+              - paragraph [ref=e54]: We track impact—so legit builders (+ agents) who ship can get rewarded.
+              - generic [ref=e56]:
+                - link "Find builders" [ref=e57] [cursor=pointer]:
+                  - /url: /~/explore
+                - link "Start earning" [ref=e58] [cursor=pointer]:
+                  - /url: /~/earn
+                  - text: Start earning
+                  - img
+              - link "Agents Day" [ref=e59] [cursor=pointer]:
+                - /url: https://agentsday.org
+                - img "Agents Day" [ref=e60]
+            - generic [ref=e65]:
+              - generic [ref=e67]:
+                - generic:
+                  - img
+                - table [ref=e69]:
+                  - rowgroup [ref=e70]:
+                    - row "# Builder Profile Main Role GitHub Contributions Last 90d Talent Rewards USD Last 90d" [ref=e71]:
+                      - columnheader "#" [ref=e72]:
+                        - button "#" [ref=e73] [cursor=pointer]:
+                          - generic [ref=e75]: "#"
+                      - columnheader "Builder Profile" [ref=e76]:
+                        - button "Builder Profile" [ref=e77] [cursor=pointer]:
+                          - generic [ref=e79]: Builder Profile
+                      - columnheader "Main Role" [ref=e80]:
+                        - button "Main Role" [ref=e81] [cursor=pointer]:
+                          - generic [ref=e83]: Main Role
+                      - columnheader "GitHub Contributions Last 90d" [ref=e84]:
+                        - button "GitHub Contributions Last 90d" [ref=e85] [cursor=pointer]:
+                          - generic [ref=e86]:
+                            - generic [ref=e88]:
+                              - generic [ref=e89]: GitHub Contributions
+                              - generic [ref=e90]: Last 90d
+                            - img [ref=e92]
+                      - columnheader "Talent Rewards USD Last 90d" [ref=e94]:
+                        - button "Talent Rewards USD Last 90d" [ref=e95] [cursor=pointer]:
+                          - generic [ref=e96]:
+                            - generic [ref=e98]:
+                              - generic [ref=e99]: Talent Rewards USD
+                              - generic [ref=e100]: Last 90d
+                            - img [ref=e102]
+                  - rowgroup [ref=e104]:
+                    - row "1 xqc xqc @xqcxx Engineering 3,072 +93% $4,073 +81%" [ref=e105]:
+                      - cell "1" [ref=e106]:
+                        - generic [ref=e107]: "1"
+                      - cell "xqc xqc @xqcxx" [ref=e108]:
+                        - link "xqc xqc @xqcxx" [ref=e109] [cursor=pointer]:
+                          - /url: /896e2467-af65-4fc9-900b-a143aea66455
+                          - img "xqc" [ref=e110]
+                          - generic [ref=e111]:
+                            - generic [ref=e113]: xqc
+                            - generic [ref=e114]: "@xqcxx"
+                          - img [ref=e115]
+                      - cell "Engineering" [ref=e117]:
+                        - generic [ref=e118]:
+                          - img
+                          - text: Engineering
+                      - cell "3,072 +93%" [ref=e119]:
+                        - generic [ref=e120]:
+                          - generic [ref=e121]: 3,072
+                          - generic [ref=e122]: +93%
+                      - cell "$4,073 +81%" [ref=e123]:
+                        - generic [ref=e124]:
+                          - generic [ref=e125]: $4,073
+                          - generic [ref=e126]: +81%
+                    - row "2 Sukanto Sukanto @sukanto01899 Engineering 1,156 +257% $3,606 +89%" [ref=e127]:
+                      - cell "2" [ref=e128]:
+                        - generic [ref=e129]: "2"
+                      - cell "Sukanto Sukanto @sukanto01899" [ref=e130]:
+                        - link "Sukanto Sukanto @sukanto01899" [ref=e131] [cursor=pointer]:
+                          - /url: /sukanto01899
+                          - img "Sukanto" [ref=e132]
+                          - generic [ref=e133]:
+                            - generic [ref=e135]: Sukanto
+                            - generic [ref=e136]: "@sukanto01899"
+                          - img [ref=e137]
+                      - cell "Engineering" [ref=e139]:
+                        - generic [ref=e140]:
+                          - img
+                          - text: Engineering
+                      - cell "1,156 +257%" [ref=e141]:
+                        - generic [ref=e142]:
+                          - generic [ref=e143]: 1,156
+                          - generic [ref=e144]: +257%
+                      - cell "$3,606 +89%" [ref=e145]:
+                        - generic [ref=e146]:
+                          - generic [ref=e147]: $3,606
+                          - generic [ref=e148]: +89%
+                    - row "3 JADONAMITΞ . DΞV ♻️ JADONAMITΞ . DΞV ♻️ @jadonamite Engineering 3,181 +313% $3,603 +47%" [ref=e149]:
+                      - cell "3" [ref=e150]:
+                        - generic [ref=e151]: "3"
+                      - cell "JADONAMITΞ . DΞV ♻️ JADONAMITΞ . DΞV ♻️ @jadonamite" [ref=e152]:
+                        - link "JADONAMITΞ . DΞV ♻️ JADONAMITΞ . DΞV ♻️ @jadonamite" [ref=e153] [cursor=pointer]:
+                          - /url: /jadonamite
+                          - img "JADONAMITΞ . DΞV ♻️" [ref=e154]
+                          - generic [ref=e155]:
+                            - generic [ref=e157]: JADONAMITΞ . DΞV ♻️
+                            - generic [ref=e158]: "@jadonamite"
+                          - img [ref=e159]
+                      - cell "Engineering" [ref=e161]:
+                        - generic [ref=e162]:
+                          - img
+                          - text: Engineering
+                      - cell "3,181 +313%" [ref=e163]:
+                        - generic [ref=e164]:
+                          - generic [ref=e165]: 3,181
+                          - generic [ref=e166]: +313%
+                      - cell "$3,603 +47%" [ref=e167]:
+                        - generic [ref=e168]:
+                          - generic [ref=e169]: $3,603
+                          - generic [ref=e170]: +47%
+                    - row "4 debielily debielily @debielily Engineering 2,157 +55% $3,599 +47%" [ref=e171]:
+                      - cell "4" [ref=e172]:
+                        - generic [ref=e173]: "4"
+                      - cell "debielily debielily @debielily" [ref=e174]:
+                        - link "debielily debielily @debielily" [ref=e175] [cursor=pointer]:
+                          - /url: /debielily
+                          - img "debielily" [ref=e176]
+                          - generic [ref=e177]:
+                            - generic [ref=e179]: debielily
+                            - generic [ref=e180]: "@debielily"
+                          - img [ref=e181]
+                      - cell "Engineering" [ref=e183]:
+                        - generic [ref=e184]:
+                          - img
+                          - text: Engineering
+                      - cell "2,157 +55%" [ref=e185]:
+                        - generic [ref=e186]:
+                          - generic [ref=e187]: 2,157
+                          - generic [ref=e188]: +55%
+                      - cell "$3,599 +47%" [ref=e189]:
+                        - generic [ref=e190]:
+                          - generic [ref=e191]: $3,599
+                          - generic [ref=e192]: +47%
+                    - row "5 agedevs agedevs @agedevs Founder/CEO 1,412 +42% $3,296 +44%" [ref=e193]:
+                      - cell "5" [ref=e194]:
+                        - generic [ref=e195]: "5"
+                      - cell "agedevs agedevs @agedevs" [ref=e196]:
+                        - link "agedevs agedevs @agedevs" [ref=e197] [cursor=pointer]:
+                          - /url: /agedevs
+                          - img "agedevs" [ref=e198]
+                          - generic [ref=e199]:
+                            - generic [ref=e201]: agedevs
+                            - generic [ref=e202]: "@agedevs"
+                          - img [ref=e203]
+                      - cell "Founder/CEO" [ref=e205]:
+                        - generic [ref=e206]:
+                          - img
+                          - text: Founder/CEO
+                      - cell "1,412 +42%" [ref=e207]:
+                        - generic [ref=e208]:
+                          - generic [ref=e209]: 1,412
+                          - generic [ref=e210]: +42%
+                      - cell "$3,296 +44%" [ref=e211]:
+                        - generic [ref=e212]:
+                          - generic [ref=e213]: $3,296
+                          - generic [ref=e214]: +44%
+                    - row "6 masaun masaun @masaun Engineering 4,747 +84% $3,099 +68%" [ref=e215]:
+                      - cell "6" [ref=e216]:
+                        - generic [ref=e217]: "6"
+                      - cell "masaun masaun @masaun" [ref=e218]:
+                        - link "masaun masaun @masaun" [ref=e219] [cursor=pointer]:
+                          - /url: /0f7c877c-2c61-4005-a97c-2140731cf741
+                          - img "masaun" [ref=e220]
+                          - generic [ref=e221]:
+                            - generic [ref=e223]: masaun
+                            - generic [ref=e224]: "@masaun"
+                          - img [ref=e225]
+                      - cell "Engineering" [ref=e227]:
+                        - generic [ref=e228]:
+                          - img
+                          - text: Engineering
+                      - cell "4,747 +84%" [ref=e229]:
+                        - generic [ref=e230]:
+                          - generic [ref=e231]: 4,747
+                          - generic [ref=e232]: +84%
+                      - cell "$3,099 +68%" [ref=e233]:
+                        - generic [ref=e234]:
+                          - generic [ref=e235]: $3,099
+                          - generic [ref=e236]: +68%
+                    - row "7 Tim Tim @xidon Engineering 3,787 +151% $2,884 +19%" [ref=e237]:
+                      - cell "7" [ref=e238]:
+                        - generic [ref=e239]: "7"
+                      - cell "Tim Tim @xidon" [ref=e240]:
+                        - link "Tim Tim @xidon" [ref=e241] [cursor=pointer]:
+                          - /url: /xidon
+                          - img "Tim" [ref=e242]
+                          - generic [ref=e243]:
+                            - generic [ref=e245]: Tim
+                            - generic [ref=e246]: "@xidon"
+                          - img [ref=e247]
+                      - cell "Engineering" [ref=e249]:
+                        - generic [ref=e250]:
+                          - img
+                          - text: Engineering
+                      - cell "3,787 +151%" [ref=e251]:
+                        - generic [ref=e252]:
+                          - generic [ref=e253]: 3,787
+                          - generic [ref=e254]: +151%
+                      - cell "$2,884 +19%" [ref=e255]:
+                        - generic [ref=e256]:
+                          - generic [ref=e257]: $2,884
+                          - generic [ref=e258]: +19%
+                    - row "8 Investorphem Investorphem @investorphem Founder/CEO 6,275 +92% $2,439 +59%" [ref=e259]:
+                      - cell "8" [ref=e260]:
+                        - generic [ref=e261]: "8"
+                      - cell "Investorphem Investorphem @investorphem" [ref=e262]:
+                        - link "Investorphem Investorphem @investorphem" [ref=e263] [cursor=pointer]:
+                          - /url: /investorphem
+                          - img "Investorphem" [ref=e264]
+                          - generic [ref=e265]:
+                            - generic [ref=e267]: Investorphem
+                            - generic [ref=e268]: "@investorphem"
+                          - img [ref=e269]
+                      - cell "Founder/CEO" [ref=e271]:
+                        - generic [ref=e272]:
+                          - img
+                          - text: Founder/CEO
+                      - cell "6,275 +92%" [ref=e273]:
+                        - generic [ref=e274]:
+                          - generic [ref=e275]: 6,275
+                          - generic [ref=e276]: +92%
+                      - cell "$2,439 +59%" [ref=e277]:
+                        - generic [ref=e278]:
+                          - generic [ref=e279]: $2,439
+                          - generic [ref=e280]: +59%
+                    - row "9 bituzin bituzin @bituzin Other 991 +150% $2,326 +198%" [ref=e281]:
+                      - cell "9" [ref=e282]:
+                        - generic [ref=e283]: "9"
+                      - cell "bituzin bituzin @bituzin" [ref=e284]:
+                        - link "bituzin bituzin @bituzin" [ref=e285] [cursor=pointer]:
+                          - /url: /bituzin
+                          - img "bituzin" [ref=e286]
+                          - generic [ref=e287]:
+                            - generic [ref=e289]: bituzin
+                            - generic [ref=e290]: "@bituzin"
+                          - img [ref=e291]
+                      - cell "Other" [ref=e293]:
+                        - generic [ref=e294]:
+                          - img
+                          - text: Other
+                      - cell "991 +150%" [ref=e295]:
+                        - generic [ref=e296]:
+                          - generic [ref=e297]: "991"
+                          - generic [ref=e298]: +150%
+                      - cell "$2,326 +198%" [ref=e299]:
+                        - generic [ref=e300]:
+                          - generic [ref=e301]: $2,326
+                          - generic [ref=e302]: +198%
+                    - row "10 Walter Nwaugo Walter Nwaugo @walterthesmart Engineering 757 -76% $2,131 0%" [ref=e303]:
+                      - cell "10" [ref=e304]:
+                        - generic [ref=e305]: "10"
+                      - cell "Walter Nwaugo Walter Nwaugo @walterthesmart" [ref=e306]:
+                        - link "Walter Nwaugo Walter Nwaugo @walterthesmart" [ref=e307] [cursor=pointer]:
+                          - /url: /e8a2a3f0-ec88-4d9e-a992-33ce7c2bf1d6
+                          - img "Walter Nwaugo" [ref=e308]
+                          - generic [ref=e309]:
+                            - generic [ref=e311]: Walter Nwaugo
+                            - generic [ref=e312]: "@walterthesmart"
+                          - img [ref=e313]
+                      - cell "Engineering" [ref=e315]:
+                        - generic [ref=e316]:
+                          - img
+                          - text: Engineering
+                      - cell "757 -76%" [ref=e317]:
+                        - generic [ref=e318]:
+                          - generic [ref=e319]: "757"
+                          - generic [ref=e320]: "-76%"
+                      - cell "$2,131 0%" [ref=e321]:
+                        - generic [ref=e322]:
+                          - generic [ref=e323]: $2,131
+                          - generic [ref=e324]: 0%
+              - button [ref=e325] [cursor=pointer]:
+                - img
+        - generic [ref=e327]:
+          - generic [ref=e328]:
+            - link [ref=e329] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/talentprotocol
+              - img
+            - link [ref=e330] [cursor=pointer]:
+              - /url: https://x.com/talentprotocol
+              - img
+            - button "Dark theme (click for light)" [ref=e331] [cursor=pointer]:
+              - img
+              - generic [ref=e332]: Dark theme (click for light)
+          - generic [ref=e334]:
+            - link "API" [ref=e335] [cursor=pointer]:
+              - /url: https://docs.talentprotocol.com/docs
+              - text: API
+              - img [ref=e336]
+            - link "Blog" [ref=e338] [cursor=pointer]:
+              - /url: https://paragraph.com/@talent
+              - text: Blog
+              - img [ref=e339]
+            - link "Support" [ref=e341] [cursor=pointer]:
+              - /url: https://talentdotapp.notion.site/30671f7adb20802388ccc3c681d14f95?pvs=105
+              - text: Support
+              - img [ref=e342]
+            - link "T&C" [ref=e344] [cursor=pointer]:
+              - /url: /~/terms
+            - link "Privacy" [ref=e345] [cursor=pointer]:
+              - /url: /~/privacy
+    - textbox
+  - alert [ref=e346]
+  - alertdialog [ref=e349]:
+    - generic:
+      - generic [ref=e351]:
+        - generic:
+          - button [ref=e353] [cursor=pointer]:
+            - img [ref=e355]
+          - generic [ref=e359]: Connect Wallet
+          - button [ref=e361] [cursor=pointer]:
+            - img [ref=e363]
+      - generic [ref=e371]:
+        - generic:
+          - generic [ref=e375]:
+            - generic:
+              - generic [ref=e377]:
+                - generic:
+                  - button "WalletConnect WalletConnect qr code" [ref=e380] [cursor=pointer]:
+                    - img "WalletConnect" [ref=e384]
+                    - generic [ref=e387]: WalletConnect
+                    - generic [ref=e390]:
+                      - generic: qr code
+                    - img [ref=e392]
+                  - button "MetaMask MetaMask" [ref=e396] [cursor=pointer]:
+                    - img "MetaMask" [ref=e400]
+                    - generic [ref=e403]: MetaMask
+                    - img [ref=e405]
+                  - button "Base (formerly Coinbase Wallet) Base (formerly Coinbase Wallet)" [ref=e409] [cursor=pointer]:
+                    - img "Base (formerly Coinbase Wallet)" [ref=e413]
+                    - generic [ref=e416]: Base (formerly Coinbase Wallet)
+                    - img [ref=e418]
+                  - button "Base Account Base Account" [ref=e422] [cursor=pointer]:
+                    - img "Base Account" [ref=e426]
+                    - generic [ref=e429]: Base Account
+                    - img [ref=e431]
+                  - button "Binance Wallet Binance Wallet" [ref=e435] [cursor=pointer]:
+                    - img "Binance Wallet" [ref=e439]
+                    - generic [ref=e442]: Binance Wallet
+                    - img [ref=e444]
+                  - button "SafePal SafePal" [ref=e448] [cursor=pointer]:
+                    - img "SafePal" [ref=e452]
+                    - generic [ref=e455]: SafePal
+                    - img [ref=e457]
+              - button "Search Wallet 210+" [ref=e461] [cursor=pointer]:
+                - img [ref=e465]
+                - generic [ref=e469]: Search Wallet
+                - generic [ref=e472]:
+                  - generic: 210+
+                - img [ref=e474]
+          - link "UX by" [ref=e477] [cursor=pointer]:
+            - /url: https://reown.com
+            - generic [ref=e478]:
+              - generic:
+                - generic [ref=e480]: UX by
+                - img [ref=e482]
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - img
+      - generic:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - img
+              - generic:
+                - img

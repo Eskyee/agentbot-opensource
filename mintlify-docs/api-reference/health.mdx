@@ -1,0 +1,671 @@
+---
+title: Health API
+description: "Health check and heartbeat endpoints for monitoring"
+---
+
+# Health API
+
+Monitor system health and configure heartbeat schedules.
+
+## Health check (web)
+
+```http
+GET /api/health
+```
+
+No authentication required. Returns system health status.
+
+<Note>The backend service exposes its own health check at `GET /health` (without the `/api` prefix). The web and backend health endpoints are independent — the web endpoint reports on the web application process while the backend endpoint reports on the API service. See [backend health check](#backend-health-check) below for details.</Note>
+
+<Warning>**Breaking change:** The health endpoint no longer returns `cpu`, `memory`, or `uptime` fields. These hardware details are now restricted to the admin-only endpoint at `/api/admin/health`. If you were consuming CPU, memory, or uptime data from this endpoint, update your integration to use the admin endpoint instead.</Warning>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "health": "healthy",
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | `ok` when the health check completed successfully |
+| `health` | string | Overall system health: `healthy`, `degraded`, or `unhealthy` |
+| `timestamp` | string | ISO 8601 timestamp of the health check |
+
+The `health` field reflects overall system status based on internal CPU and memory thresholds:
+
+| Value | Condition |
+|-------|-----------|
+| `healthy` | CPU and memory usage both at or below 70% |
+| `degraded` | CPU or memory usage above 70% but at or below 85% |
+| `unhealthy` | CPU or memory usage above 85% |
+
+### Degraded and unhealthy responses
+
+When the system is degraded or unhealthy, the endpoint still returns HTTP `200` with the `health` field set to `degraded` or `unhealthy`. The `status` field remains `ok`.
+
+```json
+{
+  "status": "ok",
+  "health": "unhealthy",
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+### Error response
+
+An HTTP `500` is returned only when an unexpected error occurs while collecting health metrics, not for degraded or unhealthy status:
+
+```json
+{
+  "status": "error",
+  "health": "unhealthy",
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Health check succeeded. Check the `health` field for `healthy`, `degraded`, or `unhealthy`. |
+| 500 | Unexpected error collecting health metrics. |
+
+## Platform version
+
+```http
+GET /api/version
+```
+
+No authentication required. Returns the current platform version string read from the embedded `VERSION` file.
+
+### Response headers
+
+| Header | Value | Description |
+|--------|-------|-------------|
+| `Cache-Control` | `max-age=3600, stale-while-revalidate=3600` | Response is cached for 1 hour and can be served stale for an additional hour while revalidating in the background. |
+
+### Response
+
+```json
+{
+  "version": "v0.1.0"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `version` | string | Platform version identifier. Falls back to `v0.0.0` when the version file cannot be read. |
+
+| Code | Description |
+|------|-------------|
+| 200 | Version returned |
+
+## Dashboard health
+
+```http
+GET /api/dashboard/health
+```
+
+No authentication required. Checks connectivity to backend services and returns their individual statuses. Use this endpoint to display an aggregated service health overview on a dashboard.
+
+### Response headers
+
+| Header | Value | Description |
+|--------|-------|-------------|
+| `Cache-Control` | `max-age=30, stale-while-revalidate=60` | Response is cached for 30 seconds and can be served stale for an additional 60 seconds while revalidating. |
+
+### Response
+
+```json
+{
+  "services": [
+    { "name": "Agentbot API", "status": "ok", "detail": "ok" },
+    { "name": "Tempo Soul", "status": "ok", "detail": "ok" },
+    { "name": "x402 Gateway", "status": "ok", "detail": "ok" }
+  ],
+  "timestamp": "2026-04-02T12:00:00.000Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `services` | array | List of monitored services |
+| `services[].name` | string | Service display name |
+| `services[].status` | string | Service status: `ok`, `degraded`, or `down` |
+| `services[].detail` | string | Additional detail. Contains the HTTP status code when degraded, or an error message when down. |
+| `timestamp` | string | ISO 8601 timestamp of the health check |
+
+The `status` field for each service reflects the result of an HTTP health probe with a 4-second timeout:
+
+| Value | Condition |
+|-------|-----------|
+| `ok` | Health endpoint returned HTTP 2xx |
+| `degraded` | Health endpoint returned a non-2xx HTTP status |
+| `down` | Health endpoint was unreachable or timed out |
+
+<Note>The Tempo Soul service (x402-node binary) may return HTTP `503` from its `/health` endpoint until external dependencies are satisfied (connected peers, funded wallets, required environment variables). This causes the dashboard health endpoint to report the service as `degraded` even though the process is running and accepting TCP connections on port `4023`. Railway uses a TCP port check instead of an HTTP health check for this service.</Note>
+
+| Code | Description |
+|------|-------------|
+| 200 | Health check completed (check individual service statuses in the response) |
+
+## Backend health check
+
+```http
+GET /health
+```
+
+No authentication required. Returns backend service status including Railway API availability. This endpoint is served by the backend API service (without the `/api` prefix).
+
+<Note>The backend API continues to serve non-provisioning endpoints (health, metrics, auth, AI, registration) even when the Railway API is not reachable. Agent provisioning and lifecycle operations are disabled until the Railway API becomes available.</Note>
+
+### Response
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-19T00:00:00Z",
+  "docker": "available",
+  "provisioning": "enabled",
+  "provider": "render"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Always `ok` when the backend is running |
+| `timestamp` | string | ISO 8601 timestamp of the health check |
+| `docker` | string | Provisioning infrastructure availability. `available` when the Railway API is reachable, `unavailable` otherwise. This field name is retained for backward compatibility. |
+| `provisioning` | string | Agent provisioning capability. `enabled` when the Railway API is reachable, `disabled` otherwise. |
+| `provider` | string | Provisioning infrastructure provider. Currently returns `render` for backward compatibility, but the underlying infrastructure uses Railway. |
+
+### Response when the Railway API is unavailable
+
+When the Railway API is not reachable, the health endpoint still returns HTTP `200` but reports degraded capabilities:
+
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-19T00:00:00Z",
+  "docker": "unavailable",
+  "provisioning": "disabled",
+  "provider": "render"
+}
+```
+
+When `provisioning` is `disabled`, any request to a provisioning-dependent endpoint (such as deploying, starting, stopping, or restarting an agent) returns a `500` error. Non-provisioning endpoints continue to operate normally.
+
+<Note>The `provider` field currently returns `render` for backward compatibility. Agent containers are now provisioned on Railway. This value may be updated to `railway` in a future release.</Note>
+
+## Get heartbeat settings
+
+```http
+GET /api/heartbeat?agentId=agent_123
+```
+
+Requires session authentication. Returns the heartbeat configuration for a specific agent.
+
+The endpoint first queries the OpenClaw gateway for a heartbeat cron job. If the gateway returns a matching job, the response uses the gateway data. If the gateway is unavailable or no heartbeat job exists, the endpoint falls back to the database.
+
+<Note>The `source` field in the response indicates where the data came from: `gateway` when read from the gateway's cron scheduler, or `db` when read from the database fallback.</Note>
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agentId` | string | No | The agent to retrieve heartbeat settings for. Required for the database fallback. When the gateway returns a heartbeat job, the `agentId` parameter is not used. |
+
+### Response (gateway source)
+
+When the gateway has a heartbeat cron job configured:
+
+```json
+{
+  "source": "gateway",
+  "enabled": true,
+  "frequency": "1h",
+  "nextRun": "2026-03-30T02:00:00Z",
+  "lastRun": "2026-03-30T01:00:00Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `source` | string | Always `gateway` when data is from the gateway |
+| `enabled` | boolean | Whether the heartbeat job is enabled |
+| `frequency` | string | Heartbeat interval derived from the cron schedule (for example, `1h`, `30m`). When the schedule uses milliseconds, the value is converted to hours. |
+| `nextRun` | string \| null | ISO 8601 timestamp of the next scheduled run |
+| `lastRun` | string \| null | ISO 8601 timestamp of the last run |
+
+### Response (database fallback)
+
+When no gateway heartbeat job is found and `agentId` is provided:
+
+```json
+{
+  "source": "db",
+  "enabled": true,
+  "frequency": "30m",
+  "message": "Using defaults — gateway heartbeat not configured"
+}
+```
+
+When saved settings exist in the database, the response includes the stored `enabled` and `frequency` values.
+
+When no `agentId` is provided and no gateway heartbeat is found:
+
+```json
+{
+  "source": "db",
+  "enabled": false,
+  "message": "No agentId provided"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to fetch heartbeat settings |
+
+## Update heartbeat settings
+
+```http
+PUT /api/heartbeat
+```
+
+Requires session authentication. Updates heartbeat settings for a specific agent.
+
+The endpoint first attempts to write the heartbeat as a cron job on the OpenClaw gateway. If the gateway write succeeds, the response indicates `source: "gateway"`. If the gateway is unavailable or the write fails, the settings are saved to the database as a fallback.
+
+<Warning>**Breaking change:** This endpoint now uses the `PUT` method instead of `POST`. The `POST` method is deprecated and may be removed in a future release. Update your integration to use `PUT`.</Warning>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Conditional | The agent to update heartbeat settings for. Required when the gateway write fails and the database fallback is used. |
+| `frequency` | string | No | Heartbeat interval. Supported values: `30m`, `1h`, `2h`, `3h`, `6h`, `12h`. |
+| `enabled` | boolean | No | Enable or disable heartbeats. Defaults to `true`. |
+
+### Response (gateway source)
+
+```json
+{
+  "success": true,
+  "source": "gateway",
+  "enabled": true,
+  "frequency": "3h"
+}
+```
+
+### Response (database fallback)
+
+```json
+{
+  "success": true,
+  "source": "db",
+  "enabled": true,
+  "frequency": "3h"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` on success |
+| `source` | string | Where the settings were saved: `gateway` or `db` |
+| `enabled` | boolean | Whether heartbeats are enabled |
+| `frequency` | string | Configured heartbeat interval |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId required` — the `agentId` field is missing and the gateway write failed (database fallback requires `agentId`) |
+| 401 | Unauthorized |
+| 500 | Heartbeat update failed |
+
+## Delete heartbeat settings
+
+<Warning>**Deprecated:** The `DELETE /api/heartbeat` endpoint is deprecated. To disable heartbeats, use `PUT /api/heartbeat` with `"enabled": false` instead. When using the gateway, you can also remove the heartbeat cron job directly via `DELETE /api/cron?jobId=heartbeat`. See the [cron API](/api-reference/cron).</Warning>
+
+```http
+DELETE /api/heartbeat
+```
+
+Requires session authentication. Resets heartbeat configuration for a specific agent by removing saved settings from the database.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | The agent to reset heartbeat settings for |
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId required` — the `agentId` field is missing from the request body |
+| 401 | Unauthorized |
+| 500 | Heartbeat reset failed |
+
+## Container health checks
+
+Agent services run the official OpenClaw image, which exposes built-in health endpoints on port `18789`. The backend uses these to determine service readiness during provisioning and ongoing monitoring.
+
+### Built-in health endpoints
+
+The OpenClaw image (`ghcr.io/openclaw/openclaw:2026.4.2`) provides two health endpoints on each agent service:
+
+| Endpoint | Purpose | Description |
+|----------|---------|-------------|
+| `GET /healthz` | Liveness | Returns `200` when the gateway process is running. Used by the health check to detect crashed or hung services. |
+| `GET /readyz` | Readiness | Returns `200` when the gateway is ready to accept requests. Use this to verify the service has completed startup before routing traffic. |
+
+Both endpoints are unauthenticated and bind to the service's internal port (`18789`).
+
+#### `/healthz` response
+
+```json
+{
+  "ok": true,
+  "status": "live"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ok` | boolean | `true` when the gateway process is running |
+| `status` | string | Always `live` when the endpoint responds |
+
+#### `/readyz` response
+
+```json
+{
+  "ready": true,
+  "failing": [],
+  "uptimeMs": 68163
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `ready` | boolean | `true` when the gateway is ready to accept requests |
+| `failing` | array | List of failing readiness checks. Empty when all checks pass. |
+| `uptimeMs` | number | Gateway uptime in milliseconds since startup |
+
+<Note>The backend probes `/healthz` on the agent's public Railway URL for health checks (with a 5-second timeout). The `/healthz` and `/readyz` endpoints are provided by the OpenClaw image itself and are available on all agent services.</Note>
+
+### Container health statuses
+
+| Status | Condition |
+|--------|-----------|
+| `healthy` | Service is running and the internal health endpoint responds successfully |
+| `starting` | Service is running but the health endpoint is not yet responding after all retries |
+| `running` | Service is active on Railway and responding |
+| `stopped` | Service has exited |
+| `suspended` | Service has been suspended (saves resources, retains data). Railway does not natively support suspension, so this status indicates the service has been marked idle. |
+| `not_found` | No matching Railway service exists for this agent |
+| `error` | Service is in an unexpected state, build failed, or cannot be inspected |
+
+### Health check behavior
+
+- The backend probes each agent's `/healthz` endpoint to determine service health. The health check uses a 5-second timeout per request.
+- The `waitForHealthy` function polls service health every 2 seconds, with a default overall timeout of 60 seconds.
+
+## Watchdog monitoring
+
+The backend runs a per-agent watchdog that continuously monitors agent health, detects crash loops, and performs automatic recovery. The watchdog operates internally and does not expose dedicated API endpoints. Status information is surfaced through the existing agent status and lifecycle endpoints.
+
+### Health check cycle
+
+The watchdog probes each agent's gateway at `GET /healthz` on the agent's internal port. Health checks run on a configurable interval (default: every 2 minutes). When the gateway reports unhealthy, the watchdog transitions the agent to a degraded state and increases the check frequency to every 5 seconds.
+
+| Parameter | Default | Environment variable |
+|-----------|---------|---------------------|
+| Health check interval | 120 seconds | `WATCHDOG_CHECK_INTERVAL` |
+| Degraded check interval | 5 seconds | `WATCHDOG_DEGRADED_CHECK_INTERVAL` |
+| Startup failure threshold | 3 consecutive failures | `WATCHDOG_STARTUP_FAILURE_THRESHOLD` |
+| Max repair attempts | 2 | `WATCHDOG_MAX_REPAIR_ATTEMPTS` |
+| Crash loop window | 5 minutes | `WATCHDOG_CRASH_LOOP_WINDOW` |
+| Crash loop threshold | 3 crashes in window | `WATCHDOG_CRASH_LOOP_THRESHOLD` |
+
+### Lifecycle states
+
+The watchdog tracks the following lifecycle states for each agent:
+
+| State | Description |
+|-------|-------------|
+| `stopped` | Agent is not running |
+| `starting` | Agent service has started; waiting for the first successful health check |
+| `running` | Agent is healthy and serving requests |
+| `degraded` | Health checks are failing after a previous healthy state |
+| `crash_loop` | Multiple crashes detected within the crash loop window |
+| `repairing` | Auto-repair is in progress |
+
+### Auto-repair
+
+When the watchdog detects an unhealthy agent, it can automatically attempt recovery. Auto-repair is enabled by default and can be disabled by setting the `WATCHDOG_AUTO_REPAIR` environment variable to `false`.
+
+The repair sequence is:
+
+1. Kill the agent gateway process
+2. Wait 5 seconds
+3. Restart the gateway
+4. Wait 30 seconds (startup grace period)
+5. Verify health
+
+If the repair fails, the watchdog retries up to the configured maximum (default: 2 attempts). After exhausting all repair attempts, the agent transitions to the `crash_loop` state.
+
+### Crash loop detection
+
+The watchdog tracks crash timestamps within a sliding window (default: 5 minutes). When the number of crashes in the window reaches the threshold (default: 3), the agent enters the `crash_loop` state. This prevents infinite restart loops for agents with persistent failures.
+
+### Notifications
+
+The watchdog sends notifications for critical events (degraded, crash loop, repair attempts) through configured channels:
+
+- **Telegram** — when `TELEGRAM_BOT_TOKEN` and `TELEGRAM_ADMIN_CHAT_ID` are set
+- **Discord** — when `DISCORD_WEBHOOK_URL` is set
+
+## Railway status webhook
+
+```http
+POST /api/webhooks/railway-status
+```
+
+Receives platform status notifications from Railway's status page and deployment events from the Railway dashboard. This endpoint processes deployment events, incident updates, component status changes, and page-level notifications. Events are persisted to Redis so the dashboard can display real-time Railway status.
+
+<Note>This endpoint accepts webhooks from both [status.railway.com](https://status.railway.com) (incident and component updates) and the Railway dashboard (deployment events). Configure webhook subscriptions in both locations to point to this URL.</Note>
+
+### Authentication
+
+When the `RAILWAY_WEBHOOK_SECRET` environment variable is configured, requests must include a valid secret via one of the following methods:
+
+| Method | Location | Description |
+|--------|----------|-------------|
+| Header | `x-railway-secret` | Shared secret in a custom request header |
+| Query parameter | `?secret=` | Shared secret as a URL query parameter |
+
+The secret is verified using a constant-time comparison to prevent timing attacks. When `RAILWAY_WEBHOOK_SECRET` is not configured, requests are accepted without verification (development mode only).
+
+<Warning>You should always configure `RAILWAY_WEBHOOK_SECRET` in production to prevent unauthorized parties from injecting fake status notifications.</Warning>
+
+### Request body
+
+The endpoint accepts two payload formats: deployment events from the Railway dashboard and status-page events from Railway's status page.
+
+#### Deployment event
+
+Sent by Railway when a deployment status changes.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | No | Event type identifier |
+| `deployment` | object | No | Deployment details |
+| `deployment.id` | string | No | Deployment identifier |
+| `deployment.status` | string | No | Current deployment status (for example, `SUCCESS`, `FAILED`, `BUILDING`, `DEPLOYING`) |
+| `deployment.url` | string | No | Deployment URL |
+| `deployment.service` | object | No | Service metadata |
+| `deployment.service.name` | string | No | Name of the deployed service |
+
+#### Status-page event
+
+Sent by Railway's status page for incident and component updates. The payload follows the [Railway status page webhook format](https://docs.railway.com/reference/status-page).
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `incident` | object | No | Incident details including `name`, `status`, and `incident_updates` |
+| `incident.name` | string | No | Name of the incident |
+| `incident.status` | string | No | Current incident status (for example, `investigating`, `identified`, `monitoring`, `resolved`) |
+| `incident.incident_updates` | array | No | List of update objects. The first entry's `body` field contains the latest update message. |
+| `component` | object | No | Component status change details |
+| `component.name` | string | No | Name of the affected component |
+| `component.status` | string | No | Current component status (for example, `operational`, `degraded_performance`, `partial_outage`, `major_outage`) |
+| `page` | object | No | Page-level status information |
+
+### Response
+
+On success, the endpoint returns the received event along with the persisted record:
+
+```json
+{
+  "received": true,
+  "record": {
+    "status": "SUCCESS",
+    "name": "my-service",
+    "message": "https://my-service.up.railway.app",
+    "eventType": "deployment",
+    "receivedAt": "2026-03-27T12:00:00.000Z"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `received` | boolean | Always `true` on success |
+| `record` | object | The status record persisted to Redis |
+| `record.status` | string | Normalized status value from the event |
+| `record.name` | string | Service or incident name. Defaults to `"Railway"` for status-page events. |
+| `record.message` | string | Deployment URL or latest incident update body |
+| `record.eventType` | string | One of `deployment`, `incident`, `component`, or the `type` field from the payload |
+| `record.receivedAt` | string | ISO 8601 timestamp when the event was received |
+
+<Note>The record is stored in Redis under the key `railway:status:latest` with a 7-day TTL. When Redis is not configured (`KV_REST_API_URL` and `KV_REST_API_TOKEN` not set), the endpoint still processes the event and returns the record but does not persist it.</Note>
+
+### Error response
+
+Returned when the request body is not valid JSON:
+
+```json
+{
+  "error": "Invalid payload"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Webhook payload received and processed |
+| 400 | Invalid JSON payload |
+| 401 | Unauthorized — missing or invalid secret when `RAILWAY_WEBHOOK_SECRET` is configured |
+
+### Example payloads
+
+#### Deployment event
+
+```json
+{
+  "type": "deployment.completed",
+  "deployment": {
+    "id": "dep_abc123",
+    "status": "SUCCESS",
+    "url": "https://my-service.up.railway.app",
+    "service": {
+      "name": "my-service"
+    }
+  }
+}
+```
+
+#### Incident event
+
+```json
+{
+  "incident": {
+    "name": "Elevated error rates on US-West deployments",
+    "status": "investigating",
+    "incident_updates": [
+      {
+        "body": "We are investigating elevated error rates affecting deployments in the US-West region."
+      }
+    ]
+  }
+}
+```
+
+## Railway status polling
+
+```http
+GET /api/webhooks/railway-status
+```
+
+Returns the last-known Railway status from Redis. No authentication required. Use this endpoint to display Railway platform status on your dashboard.
+
+### Response
+
+When a status event has been received and persisted:
+
+```json
+{
+  "status": "SUCCESS",
+  "lastEvent": {
+    "status": "SUCCESS",
+    "name": "my-service",
+    "message": "https://my-service.up.railway.app",
+    "eventType": "deployment",
+    "receivedAt": "2026-03-27T12:00:00.000Z"
+  },
+  "endpoint": "railway-status-webhook"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Status from the most recent event, or `no-events` if no events have been received |
+| `lastEvent` | object \| null | The full status record from the last webhook event, or `null` if no events exist |
+| `endpoint` | string | Always `railway-status-webhook` |
+
+When no events have been received:
+
+```json
+{
+  "status": "no-events",
+  "lastEvent": null,
+  "endpoint": "railway-status-webhook"
+}
+```
+
+When Redis is not configured (`KV_REST_API_URL` and `KV_REST_API_TOKEN` not set):
+
+```json
+{
+  "status": "unknown",
+  "message": "Redis not configured",
+  "endpoint": "railway-status-webhook"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Status retrieved (or fallback returned when Redis is unavailable) |

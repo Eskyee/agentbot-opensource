@@ -1,0 +1,54 @@
+---
+title: Referrals API
+description: "Retrieve referral data, statistics, and referral link for the authenticated user"
+---
+
+# Referrals API
+
+Retrieve your referral code, referral link, credit balance, and referral statistics.
+
+## Get referral data
+
+```http
+GET /api/referrals
+```
+
+Requires session authentication. Returns the authenticated user's referral code, generated referral link, accumulated credits, and conversion statistics.
+
+### Response
+
+```json
+{
+  "referralCode": "abc123",
+  "referralLink": "https://agentbot.raveculture.xyz/register?ref=abc123",
+  "credits": 30,
+  "stats": {
+    "successfulReferrals": 3,
+    "creditEarned": 30,
+    "totalReferrals": 5,
+    "pendingReferrals": 2
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `referralCode` | string \| null | Your referral code, or `null` if not set. |
+| `referralLink` | string \| null | Full referral URL for sharing. `null` when no referral code exists. |
+| `credits` | number | Accumulated referral credits balance. |
+| `stats.successfulReferrals` | number | Number of referrals where the referrer reward has been granted. |
+| `stats.creditEarned` | number | Total credit earned from successful referrals (£10 per referral). |
+| `stats.totalReferrals` | number | Total number of referrals (successful and pending). |
+| `stats.pendingReferrals` | number | Referrals that have not yet converted (total minus successful). |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 404 | User not found |
+| 500 | Failed to fetch referrals |
+
+<Note>Referral credits are also included in the [dashboard data](/api-reference/usage-tracking#dashboard-data) and [dashboard bootstrap](/api-reference/usage-tracking#dashboard-bootstrap) responses. Use this endpoint when you need the full referral breakdown including conversion statistics.</Note>

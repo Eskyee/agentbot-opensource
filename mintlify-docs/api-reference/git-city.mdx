@@ -1,0 +1,211 @@
+---
+title: Git City API
+description: "3D visualization of GitHub repository commit history"
+---
+
+# Git City API
+
+Fetch repository data and generate 3D city visualizations from GitHub commit history.
+
+<Note>All Git City endpoints require session authentication. You must be signed in to use these endpoints.</Note>
+
+## Get repository city data
+
+```http
+GET /api/git-city?owner={owner}&repo={repo}&branch={branch}
+```
+
+Fetches commit history for a GitHub repository and generates 3D city visualization data. Each day with commits becomes a city block, with height proportional to commit activity.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `type` | string | No | Request type. Use `user` to list a user's repositories, or omit for repository analysis. Defaults to `repo`. |
+| `owner` | string | Conditional | GitHub repository owner. Required when `type` is `repo` (default). |
+| `repo` | string | Conditional | GitHub repository name. Required when `type` is `repo` (default). |
+| `branch` | string | No | Branch to analyze. Defaults to `main`. |
+| `username` | string | Conditional | GitHub username. Required when `type` is `user`. |
+
+### Response (repository data)
+
+```json
+{
+  "repository": {
+    "owner": "octocat",
+    "repo": "hello-world",
+    "branch": "main",
+    "fullName": "octocat/hello-world",
+    "url": "https://github.com/octocat/hello-world"
+  },
+  "city": {
+    "blocks": [
+      {
+        "id": "block-2026-04-01",
+        "x": 0,
+        "z": 0,
+        "height": 2.5,
+        "color": "#10b981",
+        "type": "building",
+        "commitCount": 3,
+        "date": "2026-04-01"
+      }
+    ],
+    "dimensions": {
+      "width": 10,
+      "depth": 10,
+      "height": 5
+    }
+  },
+  "stats": {
+    "totalCommits": 100,
+    "uniqueContributors": 5,
+    "stars": 42,
+    "forks": 12,
+    "watchers": 42,
+    "language": "TypeScript",
+    "topics": ["api", "bot"],
+    "license": "MIT License",
+    "createdAt": "2025-01-01T00:00:00Z",
+    "updatedAt": "2026-04-07T00:00:00Z",
+    "description": "A sample repository"
+  },
+  "commits": [
+    {
+      "sha": "abc1234",
+      "message": "feat: add new feature",
+      "author": "octocat",
+      "date": "2026-04-07T04:42:20Z",
+      "url": "https://github.com/octocat/hello-world/commit/abc1234..."
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `repository.owner` | string | Repository owner |
+| `repository.repo` | string | Repository name |
+| `repository.branch` | string | Branch analyzed |
+| `repository.fullName` | string | Full repository name (`owner/repo`) |
+| `repository.url` | string | GitHub URL for the repository |
+| `city.blocks` | array | City blocks representing daily commit activity |
+| `city.blocks[].id` | string | Block identifier (format: `block-YYYY-MM-DD`) |
+| `city.blocks[].x` | number | X-axis grid position |
+| `city.blocks[].z` | number | Z-axis grid position |
+| `city.blocks[].height` | number | Block height (based on commit count, max 10) |
+| `city.blocks[].color` | string | Hex color code based on commit intensity |
+| `city.blocks[].type` | string | Block type: `building`, `park`, `water`, or `road` |
+| `city.blocks[].commitCount` | number | Number of commits on that day |
+| `city.blocks[].date` | string | Date for the block (`YYYY-MM-DD`) |
+| `city.dimensions.width` | number | City grid width |
+| `city.dimensions.depth` | number | City grid depth |
+| `city.dimensions.height` | number | Maximum block height |
+| `stats.totalCommits` | number | Total commits analyzed (up to 100) |
+| `stats.uniqueContributors` | number | Number of unique commit authors |
+| `stats.stars` | number | Repository star count |
+| `stats.forks` | number | Repository fork count |
+| `stats.watchers` | number | Repository watcher count |
+| `stats.language` | string | Primary repository language, or `Unknown` |
+| `stats.topics` | array | Repository topic tags |
+| `stats.license` | string \| null | Repository license name, or `null` if none |
+| `stats.createdAt` | string \| null | ISO 8601 repository creation date |
+| `stats.updatedAt` | string \| null | ISO 8601 repository last update date |
+| `stats.description` | string | Repository description |
+| `commits` | array | Recent commits (up to 50) |
+| `commits[].sha` | string | Short commit SHA (7 characters) |
+| `commits[].message` | string | First line of the commit message |
+| `commits[].author` | string | Commit author name |
+| `commits[].date` | string | ISO 8601 commit date |
+| `commits[].url` | string | GitHub URL for the commit |
+
+### Block color mapping
+
+| Commits per day | Color |
+|----------------|-------|
+| 1–2 | `#3b82f6` (blue) |
+| 3–5 | `#10b981` (green) |
+| 6–10 | `#f59e0b` (amber) |
+| 11+ | `#ef4444` (red) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — valid session required |
+| 500 | Failed to generate git city data |
+
+## List user repositories
+
+```http
+GET /api/git-city?type=user&username={username}
+```
+
+Returns a list of public GitHub repositories for a user, sorted by last updated.
+
+### Response
+
+```json
+{
+  "repos": [
+    {
+      "id": 123456,
+      "name": "hello-world",
+      "fullName": "octocat/hello-world",
+      "description": "A sample repository",
+      "stars": 42,
+      "forks": 12,
+      "language": "TypeScript",
+      "updatedAt": "2026-04-07T00:00:00Z",
+      "url": "https://github.com/octocat/hello-world"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `repos` | array | List of repositories (up to 30) |
+| `repos[].id` | number | GitHub repository ID |
+| `repos[].name` | string | Repository name |
+| `repos[].fullName` | string | Full repository name (`owner/repo`) |
+| `repos[].description` | string \| null | Repository description |
+| `repos[].stars` | number | Star count |
+| `repos[].forks` | number | Fork count |
+| `repos[].language` | string \| null | Primary language |
+| `repos[].updatedAt` | string | ISO 8601 last update timestamp |
+| `repos[].url` | string | GitHub URL |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Username required |
+| 401 | Unauthorized — valid session required |
+
+## Analyze repository by URL
+
+```http
+POST /api/git-city
+```
+
+Accepts a GitHub repository URL and generates city visualization data. Only GitHub repositories are supported.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | Yes | GitHub repository URL (for example, `https://github.com/octocat/hello-world`) |
+
+### Response
+
+Returns the same response shape as [GET /api/git-city](#get-repository-city-data). The branch defaults to `main`.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Repository URL required |
+| 400 | Only GitHub repositories supported |
+| 401 | Unauthorized — valid session required |
+| 500 | Failed to analyze repository |

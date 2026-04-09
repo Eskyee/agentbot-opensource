@@ -1,0 +1,145 @@
+---
+title: Devices API
+description: "Manage paired devices with approve, deny, and revoke actions"
+---
+
+# Devices API
+
+Manage device pairing for your agent. Devices start in a `pending` state and can be approved, denied, or revoked.
+
+<Note>All device endpoints require an authenticated session. Unauthenticated requests receive a `401` response.</Note>
+
+## List devices
+
+```http
+GET /api/devices
+```
+
+Returns all pending and approved devices grouped by status.
+
+### Response
+
+```json
+{
+  "pending": [
+    {
+      "id": "dev_pending_1",
+      "name": "iPhone 15 Pro — Atlas Mobile",
+      "ip": "86.23.104.12",
+      "firstSeen": "2026-03-27T14:22:00Z",
+      "lastSeen": "2026-03-27T15:30:00Z",
+      "status": "pending"
+    }
+  ],
+  "approved": [
+    {
+      "id": "dev_approved_1",
+      "name": "Docker Container — agentbot-prod",
+      "ip": "10.0.1.42",
+      "firstSeen": "2026-03-25T09:00:00Z",
+      "lastSeen": "2026-03-27T15:29:00Z",
+      "status": "approved"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pending` | array | Devices awaiting approval |
+| `approved` | array | Devices that have been approved |
+
+### Device object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique device identifier |
+| `name` | string | Human-readable device name |
+| `ip` | string | IP address of the device |
+| `firstSeen` | string | ISO 8601 timestamp when the device was first detected |
+| `lastSeen` | string | ISO 8601 timestamp of the device's most recent activity |
+| `status` | string | One of `pending`, `approved`, `denied`, or `revoked` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | `Unauthorized` — no authenticated session |
+
+## Manage a device
+
+```http
+POST /api/devices
+```
+
+Approve, deny, or revoke a device. The action must be valid for the device's current status:
+
+- `approve` — only valid when the device is `pending`
+- `deny` — only valid when the device is `pending`
+- `revoke` — only valid when the device is `approved`
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `deviceId` | string | Yes | The identifier of the device to act on |
+| `action` | string | Yes | One of `approve`, `deny`, or `revoke` |
+
+### Response
+
+```json
+{
+  "success": true,
+  "pending": [],
+  "approved": [
+    {
+      "id": "dev_approved_1",
+      "name": "iPhone 15 Pro — Atlas Mobile",
+      "ip": "86.23.104.12",
+      "firstSeen": "2026-03-27T14:22:00Z",
+      "lastSeen": "2026-03-27T15:35:00Z",
+      "status": "approved"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when the action was applied |
+| `pending` | array | Remaining pending devices |
+| `approved` | array | Currently approved devices |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | `Unauthorized` — no authenticated session |
+| 400 | `Missing required fields: deviceId, action` — one or both required fields are missing |
+| 400 | `Invalid action. Must be: approve, deny, or revoke` — the action is not recognized |
+| 400 | `Device is not pending` — attempted to approve or deny a device that is not in `pending` status |
+| 400 | `Device is not approved` — attempted to revoke a device that is not in `approved` status |
+| 400 | `Invalid request body` — the request body is not valid JSON |
+| 404 | `Device not found` — no device exists with the given identifier |
+
+### Example: approve a device
+
+```bash
+curl -X POST https://agentbot.sh/api/devices \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deviceId": "dev_pending_1",
+    "action": "approve"
+  }'
+```
+
+### Example: revoke a device
+
+```bash
+curl -X POST https://agentbot.sh/api/devices \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deviceId": "dev_approved_1",
+    "action": "revoke"
+  }'
+```

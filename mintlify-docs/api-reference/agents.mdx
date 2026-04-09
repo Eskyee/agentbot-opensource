@@ -1,0 +1,1578 @@
+---
+title: Agents API
+description: "Create, manage, and interact with agents"
+---
+
+# Agents API
+
+Create, manage, and interact with agents.
+
+<Note>All agent endpoints that require authentication are scoped to the authenticated user's data through [row-level security](/security#row-level-security). You can only access agents that belong to your account.</Note>
+
+## List agents
+
+```http
+GET /api/agents
+```
+
+Returns all agents owned by the authenticated user. When no session is present, returns an empty list instead of a `401` error.
+
+### Response (backend)
+
+The backend returns a flat array of agent objects:
+
+```json
+[
+  {
+    "id": "agent_123",
+    "status": "active",
+    "created": "2026-03-01T00:00:00Z",
+    "subdomain": "agent_123.agents.localhost",
+    "url": "https://agent_123.agents.localhost"
+  }
+]
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `[].id` | string | Agent identifier |
+| `[].status` | string | Current agent status |
+| `[].created` | string | ISO 8601 creation timestamp |
+| `[].subdomain` | string | Agent subdomain |
+| `[].url` | string | Agent URL |
+
+### Response (web proxy)
+
+The web proxy wraps the response in an object:
+
+```json
+{
+  "agents": [
+    {
+      "id": "agent_123",
+      "name": "My Agent",
+      "model": "claude-opus-4-6",
+      "status": "running",
+      "websocketUrl": "ws://openclaw-gateway:10000/agent/user_123",
+      "createdAt": "2026-03-01T00:00:00Z",
+      "updatedAt": "2026-03-01T12:00:00Z"
+    }
+  ],
+  "count": 1,
+  "status": "ok"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agents` | array | List of agent objects owned by the authenticated user |
+| `agents[].id` | string | Agent identifier |
+| `agents[].name` | string | Agent name |
+| `agents[].model` | string | AI model assigned to the agent |
+| `agents[].status` | string | Current agent status |
+| `agents[].websocketUrl` | string | WebSocket URL for the agent gateway |
+| `agents[].createdAt` | string | ISO 8601 creation timestamp |
+| `agents[].updatedAt` | string | ISO 8601 last update timestamp |
+| `count` | number | Total number of agents returned |
+| `status` | string | Response status (`ok`) |
+
+<Note>The backend and web proxy return different response shapes. The backend returns a flat array with `created`, `subdomain`, and `url` fields. The web proxy wraps the data in an `agents` key and includes `name`, `model`, `websocketUrl`, `createdAt`, and `updatedAt` fields.</Note>
+
+## Create agent
+
+```http
+POST /api/agents
+```
+
+Creates a new agent with an auto-generated ID and stores its metadata on disk. Requires bearer token authentication (backend).
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Agent name |
+| `config` | object | No | Agent configuration |
+| `config.plan` | string | No | Plan tier (for example, `solo`, `collective`, `label`, `network`). Defaults to `free` when omitted. Note that `free` is not a standard plan tier and may not be recognized by other endpoints. |
+| `config.aiProvider` | string | No | AI provider (for example, `openrouter`, `anthropic`) |
+
+### Response (201 Created)
+
+```json
+{
+  "id": "agent_123",
+  "name": "My Agent",
+  "agentId": "agent_123",
+  "status": "pending",
+  "subdomain": "agent_123.agents.localhost",
+  "url": "https://agent_123.agents.localhost",
+  "createdAt": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Name required |
+| 401 | Unauthorized |
+| 500 | Failed to create agent |
+
+<Note>For provisioning an agent with messaging channel tokens and a live Render service deployment, use [`POST /api/agents/provision`](#provision-agent) or [`POST /api/provision`](#provision-with-channel-tokens) instead.</Note>
+
+## Get agent
+
+```http
+GET /api/agents/:id
+```
+
+Requires authentication and ownership of the agent.
+
+### Response (backend)
+
+The backend returns the agent object directly without a wrapper:
+
+```json
+{
+  "id": "agent_123",
+  "status": "active",
+  "startedAt": "2026-03-01T00:00:00Z",
+  "plan": "solo",
+  "subdomain": "agent_123.agents.localhost",
+  "url": "https://agent_123.agents.localhost",
+  "openclawVersion": "2026.3.24",
+  "verified": false,
+  "verificationType": null,
+  "attestationUid": null,
+  "verifiedAt": null
+}
+```
+
+### Response (web proxy)
+
+The web proxy wraps the agent in an object:
+
+```json
+{
+  "agent": {
+    "id": "agent_123",
+    "status": "active",
+    "startedAt": "2026-03-01T00:00:00Z",
+    "plan": "solo",
+    "subdomain": "agent_123.agents.localhost",
+    "url": "https://agent_123.agents.localhost",
+    "openclawVersion": "2026.3.24",
+    "verified": false,
+    "verificationType": null,
+    "attestationUid": null,
+    "verifiedAt": null
+  }
+}
+```
+
+<Note>The backend returns the agent object directly. The web proxy wraps it in an `agent` key and adds a top-level `status` field.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Agent not found or not owned by user |
+| 500 | Failed to fetch agent |
+
+## Update agent
+
+```http
+PUT /api/agents/:id
+```
+
+Updates an agent's metadata including plan, AI provider, and configuration. Requires bearer token authentication (backend).
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `plan` | string | No | Plan tier |
+| `aiProvider` | string | No | AI provider |
+| `config` | object | No | Additional configuration |
+
+### Response
+
+```json
+{
+  "id": "agent_123",
+  "plan": "collective",
+  "aiProvider": "anthropic",
+  "subdomain": "agent_123.agents.localhost",
+  "status": "active",
+  "message": "Agent updated"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Agent not found |
+| 500 | Failed to update agent |
+
+<Note>To update agent configuration through the web proxy with session authentication, use [`PUT /api/agents/:id/config`](#update-agent-configuration) instead.</Note>
+
+## Delete agent
+
+```http
+DELETE /api/agents/:id
+```
+
+Stops and removes the agent's local Docker container, deallocates its port, and removes its metadata file. Requires bearer token authentication (backend).
+
+### Response
+
+```json
+{
+  "id": "agent_123",
+  "deleted": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to delete agent |
+
+<Note>The backend uses best-effort cleanup (service destruction and metadata removal). If the agent does not exist, the operation succeeds silently and returns `deleted: true`.</Note>
+
+## Provision agent
+
+```http
+POST /api/agents/provision
+```
+
+Provisions a new agent. Requires an active subscription unless the caller is an admin.
+
+<Note>The agent is created immediately with a `provisioning` status and transitions to `running` once the backend deployment endpoint confirms the deployment. If deployment fails, the status changes to `error`.</Note>
+
+<Note>The provisioning endpoint calls `POST /api/deployments` on the backend to deploy the agent as a Render service. The request includes a 15-second timeout. When the model is set to `claude-opus-4-6`, the AI provider is automatically set to `anthropic`; otherwise it falls back to the provider specified in the agent configuration (default: `openrouter`). The plan sent to the backend defaults to `label` when no tier is specified.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Agent name |
+| `model` | string | No | AI model (default: `claude-opus-4-6`). Options: `claude-opus-4-6`, `gpt-4`, `custom` |
+| `config` | object | No | Agent configuration |
+| `tier` | string | No | Subscription tier hint. Options: `starter`, `pro`, `enterprise`. This value is forwarded to the backend as the `plan` field (mapped to `solo`, `collective`, `label`, `network`). When omitted, the backend deployment defaults to `label`. |
+
+<Note>The web proxy enforces agent limits based on the subscription tier (`starter`: 1, `pro`: 3, `enterprise`: 100). The backend provisioning route (`POST /api/provision`) enforces its own limits (`solo`: 1, `collective`: 3, `label`: 10, `network`: 999999). The plan middleware enforces a separate set of agent limits for AI model access (`solo`: 1, `collective`: 10, `label`: 3, `network`: 100). The provisioning limits and middleware limits apply independently. The limit cannot be overridden in the request body.</Note>
+
+<Note>The backend also accepts legacy plan aliases for resource allocation: `underground` (2 GB / 1 CPU), `starter` (2 GB / 1 CPU), `pro` (4 GB / 2 CPU), `scale` (8 GB / 4 CPU), `enterprise` (16 GB / 4 CPU), and `white_glove` (32 GB / 8 CPU). These are accepted in addition to the standard plan names (`solo`, `collective`, `label`, `network`) when determining container resource limits.</Note>
+
+### Admin bypass
+
+Admin users (configured via `ADMIN_EMAILS`) are exempt from the following restrictions:
+
+- **Subscription requirement** — admins can provision agents without an active subscription (the `402` error is not returned).
+- **Agent limit** — admins receive an elevated agent slot limit instead of the plan-based cap.
+
+Admin status is determined by checking the session email against `ADMIN_EMAILS`. This endpoint does not accept an `email` field in the request body — only the authenticated session email is used for the admin check. See [admin check](#admin-check) in the `POST /api/provision` section for the legacy endpoint's resolution order, which also supports a body email fallback when no session is present.
+
+<Note>The backend also supports a `TESTER_EMAILS` environment variable. When backend payment enforcement is re-enabled, emails listed in `TESTER_EMAILS` will bypass the Stripe subscription check, similar to admin emails. This feature is currently inactive because backend payment enforcement is disabled (see the `402` error note below).</Note>
+
+### Response (201 Created)
+
+```json
+{
+  "success": true,
+  "agent": {
+    "id": "agent_789",
+    "name": "My Agent",
+    "status": "running",
+    "websocketUrl": "ws://openclaw-gateway:10000/agent/user_123",
+    "model": "claude-opus-4-6",
+    "createdAt": "2026-03-19T00:00:00Z"
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Agent name is required |
+| 401 | Unauthorized |
+| 402 | Active subscription required to provision agents |
+| 429 | Agent limit reached for your plan (web proxy). Response includes `current` (agent count) and `limit` fields. Limits: `starter` 1, `pro` 3, `enterprise` 100. Users without a recognized plan default to a limit of 1. The backend returns `402` with code `AGENT_LIMIT_REACHED` for the same condition. |
+| 500 | Failed to provision agent |
+
+## Clone agent
+
+```http
+POST /api/agents/clone
+```
+
+<Warning>**Not yet available.** Agent cloning is under development and this endpoint currently returns `501 Not Implemented`. No payment is processed. The request body is ignored.</Warning>
+
+### Response (501 Not Implemented)
+
+```json
+{
+  "error": "Agent cloning is not yet available",
+  "message": "This feature is under development. No payment has been charged.",
+  "status": "unavailable"
+}
+```
+
+All POST requests to this endpoint return `501` regardless of the request body. No payment flow is initiated.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 501 | Agent cloning is not yet available |
+
+### Clone service health
+
+```http
+GET /api/agents/clone
+```
+
+Returns the clone service status and protocol configuration. No authentication required.
+
+```json
+{
+  "service": "agentbot-clone",
+  "version": "0.1.0",
+  "protocol": "x402-tempo",
+  "clonePrice": "1.0 pathUSD",
+  "chainId": 4217
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `service` | string | Service identifier |
+| `version` | string | Clone service version |
+| `protocol` | string | Payment protocol used |
+| `clonePrice` | string | Current price to clone an agent |
+| `chainId` | number | Blockchain chain ID for payments |
+
+## List provisioned agents
+
+```http
+GET /api/agents/provision
+```
+
+Requires session authentication.
+
+### Response
+
+```json
+{
+  "success": true,
+  "agents": [
+    {
+      "id": "agent_789",
+      "name": "My Agent",
+      "model": "claude-opus-4-6",
+      "status": "running",
+      "websocketUrl": "ws://openclaw-gateway:10000/agent/user_123",
+      "createdAt": "2026-03-19T00:00:00Z",
+      "updatedAt": "2026-03-19T00:00:00Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to list agents |
+
+## Get agent configuration
+
+```http
+GET /api/agents/:id/config
+```
+
+Returns the current configuration for an agent. Requires authentication and ownership.
+
+### Response
+
+```json
+{
+  "config": {},
+  "status": "ok"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Agent not found or agent configuration not found |
+| 500 | Failed to fetch agent configuration |
+
+## Update agent configuration
+
+```http
+PUT /api/agents/:id/config
+```
+
+Updates the configuration for an agent. Requires authentication and ownership. The request body is forwarded to the backend.
+
+### Response
+
+```json
+{
+  "config": {},
+  "status": "updated"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Agent not found |
+| 500 | Failed to update agent configuration |
+
+## Get agent logs
+
+```http
+GET /api/agents/:id/logs
+```
+
+Returns logs for an agent. Requires authentication and ownership.
+
+<Warning>This endpoint currently returns mock data. Log entries are generated placeholders, not real agent logs. For real-time logs, use the [live log stream](#stream-agent-logs) endpoint instead.</Warning>
+
+### Query parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | number | Maximum log entries to return (default: 50, max: 100) |
+| `level` | string | Filter by log level (for example, `info`, `error`, `warn`) |
+
+### Response
+
+```json
+{
+  "logs": [
+    {
+      "id": "log_1",
+      "timestamp": "2026-03-19T00:00:00Z",
+      "level": "info",
+      "message": "Agent activity log entry 1",
+      "source": "agent",
+      "agentId": "agent_123"
+    }
+  ],
+  "total": 50,
+  "limit": 50,
+  "status": "ok"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Agent not found |
+| 500 | Failed to fetch logs |
+
+## Stream agent logs
+
+<Info>The live log streaming endpoints (`/api/logs/:agentId/stream`, `/api/logs/:agentId/history`, `POST /api/logs/:agentId/stop`, and `GET /api/logs/active`) are planned for a future release. See the [live log tail](/api-reference/log-tail) page for the intended specification.</Info>
+
+## Get agent messages
+
+```http
+GET /api/agents/:id/messages
+```
+
+Returns paginated messages for an agent. Requires authentication and ownership.
+
+### Query parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | number | Maximum messages to return (default: 50, max: 100) |
+| `offset` | number | Offset for pagination (default: 0) |
+
+### Response
+
+```json
+{
+  "messages": [
+    {
+      "id": "msg_1",
+      "agentId": "agent_123",
+      "sender": "user",
+      "content": "Hello",
+      "timestamp": "2026-03-19T00:00:00Z",
+      "platform": "telegram"
+    }
+  ],
+  "total": 0,
+  "limit": 50,
+  "offset": 0,
+  "status": "ok"
+}
+```
+
+<Warning>This endpoint currently returns mock data. Message entries are generated placeholders. A future release will connect this endpoint to the backend message store.</Warning>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Agent not found |
+| 500 | Failed to fetch messages |
+
+## Get agent stats
+
+```http
+GET /api/agents/:id/stats
+```
+
+Returns live service metrics when available, with a mock fallback.
+
+### Response (live)
+
+```json
+{
+  "stats": {
+    "agentId": "agent_123",
+    "cpu": "0.15%",
+    "memory": "128MiB / 2GiB",
+    "memoryPercent": "6.25%",
+    "network": "1.2kB / 3.4kB",
+    "uptime": 86400000,
+    "uptimeFormatted": "1d 0h",
+    "status": "running",
+    "pids": "12",
+    "messagesProcessed": "N/A",
+    "messagesPerHour": "N/A",
+    "averageResponseTime": "N/A",
+    "successRate": "N/A",
+    "errorRate": "N/A"
+  },
+  "status": "ok"
+}
+```
+
+### Response (mock fallback)
+
+When the backend is unavailable, mock data is returned with `"status": "mock"`:
+
+```json
+{
+  "stats": {
+    "agentId": "agent_123",
+    "messagesProcessed": 1234,
+    "messagesPerHour": 456,
+    "averageResponseTime": 789,
+    "uptime": 12345,
+    "successRate": "95.42",
+    "errorRate": "4.58",
+    "timestamp": "2026-03-19T00:00:00Z"
+  },
+  "status": "mock"
+}
+```
+
+## Agent lifecycle
+
+Lifecycle operations are available at two endpoint patterns depending on which service you call:
+
+- **Web proxy:** `/api/instance/:userId/{action}` — requires session authentication and proxies to the backend.
+- **Backend direct:** `/api/agents/:id/{action}` — requires API key authentication.
+
+Both patterns support the same actions. The examples below use the backend pattern.
+
+<Note>The backend agents route uses local Docker commands (`docker start`, `docker stop`, `docker restart`) for lifecycle operations, not the Render API. The Render API is used by the provisioning route (`POST /api/provision`) for creating new agent services. When Docker is unavailable on the backend host, lifecycle operations return `500` with an error message. You can check availability using the [backend health endpoint](/api-reference/health#backend-health-check) — when the `docker` field is `unavailable`, lifecycle operations will fail.</Note>
+
+### Start agent
+
+```http
+POST /api/agents/:id/start
+```
+
+Starts a stopped agent container using `docker start`.
+
+```json
+{
+  "success": true,
+  "status": "active"
+}
+```
+
+### Stop agent
+
+```http
+POST /api/agents/:id/stop
+```
+
+Stops the agent container using `docker stop`. The container retains its data and configuration and can be resumed with the [start endpoint](#start-agent).
+
+```json
+{
+  "success": true,
+  "status": "stopped"
+}
+```
+
+### Restart agent
+
+```http
+POST /api/agents/:id/restart
+```
+
+```json
+{
+  "success": true,
+  "status": "active",
+  "healedLegacyModel": false,
+  "healMessage": "skip",
+  "openclawVersion": "2026.3.24"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `healedLegacyModel` | boolean | Whether a deprecated model was automatically migrated during restart |
+| `healMessage` | string | Description of the migration performed (`skip` when no migration was needed, or `skip:container-not-running` when the container is unavailable) |
+| `openclawVersion` | string | Current OpenClaw runtime version |
+
+### Update agent image
+
+```http
+POST /api/agents/:id/update
+```
+
+Triggers an image update on the backend. Before replacing the service, the endpoint creates a backup of the agent's data. If the new image fails to start, the endpoint automatically rolls back to the previous image.
+
+#### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | string | No | Custom image to deploy. When omitted, the platform default image is used. |
+
+#### Response
+
+```json
+{
+  "success": true,
+  "status": "active",
+  "image": "ghcr.io/openclaw/openclaw:2026.3.24",
+  "previousImage": "ghcr.io/openclaw/openclaw:2026.3.12",
+  "backupPath": "/opt/agentbot/data/backups/openclaw-updates/agent_123/20260320-000000.tar.gz",
+  "openclawVersion": "2026.3.24"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `image` | string | New service image. The platform default is `ghcr.io/openclaw/openclaw:2026.3.24`. |
+| `previousImage` | string | Previous service image before the update |
+| `backupPath` | string \| null | Path to the pre-update backup archive |
+| `openclawVersion` | string | Current OpenClaw runtime version |
+
+<Note>When the new service fails to start, the endpoint reverts to `previousImage`. The caller still receives a `500` error, but the agent is restored to its prior working state. The pre-update backup remains available at `backupPath` for manual recovery if needed.</Note>
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid docker image value |
+| 500 | Update failed. When automatic rollback succeeds, the agent continues running on the previous image. |
+
+### Repair agent
+
+```http
+POST /api/agents/:id/repair
+```
+
+Returns the backend response directly.
+
+```json
+{
+  "success": true,
+  "message": "Agent repaired successfully"
+}
+```
+
+### Reset agent memory
+
+```http
+POST /api/agents/:id/reset-memory
+```
+
+Returns the backend response directly.
+
+```json
+{
+  "success": true,
+  "message": "Memory reset successfully"
+}
+```
+
+### Lifecycle error responses
+
+Backend lifecycle endpoints return the following shape on failure:
+
+```json
+{
+  "error": "Error message describing the failure"
+}
+```
+
+Web proxy lifecycle endpoints return a different error shape:
+
+```json
+{
+  "success": false,
+  "status": "error"
+}
+```
+
+| Code | Source | Description |
+|------|--------|-------------|
+| 401 | Both | Unauthorized — missing or invalid authentication |
+| 403 | Web proxy | Forbidden — authenticated user does not own this agent instance |
+| 500 | Backend | Internal server error (for example, Render API unavailable or service operation failed) |
+| 502 | Web proxy | Backend service unavailable |
+
+## Get instance details
+
+```http
+GET /api/instance/:userId
+```
+
+Returns the current status and metadata for an agent instance.
+
+### Response
+
+```json
+{
+  "userId": "user_123",
+  "status": "running",
+  "startedAt": "2026-03-01T00:00:00Z",
+  "subdomain": "user_123.agents.localhost",
+  "url": "https://user_123.agents.localhost",
+  "plan": "solo",
+  "openclawVersion": "2026.2.17"
+}
+```
+
+## Get instance stats
+
+```http
+GET /api/instance/:userId/stats
+```
+
+Returns resource usage statistics for an agent instance.
+
+### Response
+
+```json
+{
+  "userId": "user_123",
+  "cpu": "0.15%",
+  "memory": "128MiB",
+  "status": "running",
+    "plan": "solo",
+    "openclawVersion": "2026.3.24"
+}
+```
+
+## Get agent gateway token
+
+```http
+GET /api/agents/:id/token
+```
+
+Returns the gateway token for the agent. If no token exists, a new cryptographically random token is generated using 32 bytes of entropy (returned as a 64-character hex string). Tokens generated by the service entrypoint (when the `OPENCLAW_GATEWAY_TOKEN` environment variable is not set) use 24 bytes (48 hex characters).
+
+```json
+{
+  "token": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 404 | Agent not found |
+| 500 | Failed to get token |
+
+## Agent verification
+
+Agents can be verified using multiple verification types: `eas` (Ethereum Attestation Service), `coinbase`, `ens`, or `webauthn`.
+
+### Get verification status
+
+```http
+GET /api/agents/:id/verification
+```
+
+<Note>The backend GET endpoint uses `/api/agents/:id/verification` while POST and DELETE use `/api/agents/:id/verify`. The web API proxies all three methods through `/api/agents/:id/verify`.</Note>
+
+```json
+{
+  "verified": false,
+  "verificationType": null,
+  "attestationUid": null,
+  "verifierAddress": null,
+  "verifiedAt": null,
+  "metadata": null
+}
+```
+
+### Verify agent
+
+```http
+POST /api/agents/:id/verify
+```
+
+#### Request body
+
+<Note>Requires `Content-Type: application/json` header.</Note>
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `verificationType` | string | Yes | One of: `eas`, `coinbase`, `ens`, `webauthn` |
+| `verified` | boolean | No | Whether the agent is verified (defaults to `true` via web API) |
+| `attestationUid` | string | No | Attestation UID from EAS |
+| `verifierAddress` | string | No | Address of the verifying wallet |
+| `metadata` | object | No | Additional verification metadata |
+
+<Note>The web API always sets `verified: true` on success. When calling the backend directly, you can pass `verified`, `verifierAddress`, and `metadata` explicitly.</Note>
+
+#### Response
+
+```json
+{
+  "success": true,
+  "verified": true,
+  "verificationType": "eas",
+  "attestationUid": "0x123...",
+  "verifiedAt": "2026-03-19T00:00:00Z"
+}
+```
+
+#### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized (handled by authentication middleware) |
+| 404 | Agent not found |
+| 500 | Failed to update verification |
+
+### Remove verification
+
+```http
+DELETE /api/agents/:id/verify
+```
+
+```json
+{
+  "success": true
+}
+```
+
+## Provision with channel tokens
+
+```http
+POST /api/provision
+```
+
+Provisions a new agent with messaging channel tokens. Requires session authentication. When a session is active, the user's email is automatically resolved from it.
+
+When `autoProvision` is `true` or `agentType` is `business`, channel tokens are not required and the agent is provisioned as an OpenClaw-only deployment. Otherwise, at least one channel token (Telegram, WhatsApp, or Discord) is required.
+
+### Admin check
+
+Admin status is determined by resolving a single email and checking it against the configured `ADMIN_EMAILS`:
+
+1. **Session email** — if an authenticated session exists, the session email is used.
+2. **Body email fallback** — if no session email is available (for example, the session is missing or the session user has no email), the `email` field in the request body is used instead.
+
+The first available email is checked against `ADMIN_EMAILS`. If it matches, the caller is treated as an admin. When the session is missing entirely (for example, after a Stripe checkout redirect loses the session cookie) and the body `email` matches an admin, a synthetic session is created and the request proceeds without requiring a real session. Non-admin users without a valid session receive a `401` error.
+
+<Note>Only one email is checked — the session email takes priority. If the session email exists but is not an admin, the body email is not checked as a secondary fallback. This differs from previous behavior where both emails were checked independently.</Note>
+
+<Warning>This endpoint is subject to the general rate limit of 120 requests per minute per IP.</Warning>
+
+The request is proxied to the backend provisioning service. When `MUX_TOKEN_ID` and `MUX_TOKEN_SECRET` are configured, the backend creates a real Mux live stream via the Mux API with public playback policy. When Mux credentials are not configured, placeholder streaming credentials are returned instead.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `telegramToken` | string | Conditional | Telegram bot token. At least one channel token is required unless `autoProvision` is `true` or `agentType` is `business`. |
+| `telegramUserId` | string | No | Telegram user ID for owner binding |
+| `whatsappToken` | string | Conditional | WhatsApp API token. At least one channel token is required unless `autoProvision` is `true` or `agentType` is `business`. |
+| `discordBotToken` | string | Conditional | Discord bot token. At least one channel token is required unless `autoProvision` is `true` or `agentType` is `business`. |
+| `aiProvider` | string | No | AI provider (default: `openrouter`). Options: `openrouter`, `gemini`, `groq`, `anthropic`, `openai`. Each provider maps to a default model — see [AI provider defaults](#ai-provider-defaults) below. |
+| `plan` | string | No | Plan tier. Options: `solo`, `collective`, `label`, `network`. Defaults to `free` when omitted. Since `free` is not a valid plan, omitting this field returns a `400` validation error — you must explicitly specify a paid plan when calling the backend directly. |
+| `model` | string | No | AI model identifier. When omitted, the default model for the selected `aiProvider` is used (see [AI provider defaults](#ai-provider-defaults)). |
+| `skills` | string[] | No | List of skill identifiers to enable on the agent. |
+| `agentType` | string | No | Agent type. When set to `business`, the agent is provisioned as an OpenClaw-only deployment and channel tokens are not required. |
+| `autoProvision` | boolean | No | When `true`, the agent is provisioned as an OpenClaw-only deployment and channel tokens are not required. The onboard flow sets this automatically in deploy mode. |
+| `email` | string | No | User email address. When omitted, the email is automatically populated from the authenticated session. When a session email is available, it takes priority and the body email is not used for the admin check. This field is only checked against `ADMIN_EMAILS` when no session email is present (see [admin check](#admin-check) above). The resolved email is forwarded to the backend in the `X-User-Email` header. |
+| `stripeSubscriptionId` | string | No | Stripe subscription ID from checkout. This field is accepted by the backend provisioning service directly. The web proxy does not forward this field — it performs its own subscription check against the database instead. |
+
+<Note>When a session is active, the server resolves the user email from the session via `getServerSession`. The session email is used for the admin check. When no session email is available, the `email` field from the request body is checked against `ADMIN_EMAILS` — if it matches, a synthetic session is created and the request proceeds. The resolved email is sent to the backend provisioning service in the `X-User-Email` header.</Note>
+
+<Warning>The following request fields are deprecated and no longer accepted: `whatsappPhoneNumberId`, `whatsappBusinessAccountId`, `discordGuildId`, `discordChannelId`.</Warning>
+
+### Response
+
+The proxy returns a filtered subset of the backend response:
+
+```json
+{
+  "success": true,
+  "userId": "a1b2c3d4e5",
+  "subdomain": "dj-a1b2c3d4e5.agentbot.raveculture.xyz",
+  "url": "https://dj-a1b2c3d4e5.agentbot.raveculture.xyz",
+  "streamKey": "sk-ab12-cd34-ef56",
+  "liveStreamId": "x7k9m2p4q1"
+}
+```
+
+<Note>The `/api/provision` proxy returns only `success`, `userId`, `subdomain`, `url`, `streamKey`, and `liveStreamId`. The full response shape from the backend provisioning service is shown below.</Note>
+
+<Note>When provisioning with `autoProvision: true` or `agentType: "business"` (OpenClaw-only deployment), the proxy also persists the `openclawUrl` and `openclawInstanceId` to the user record. You can retrieve these values later using [`GET /api/user/openclaw`](#get-user-openclaw-instance).</Note>
+
+### Full backend response
+
+When calling the backend provisioning service directly, the response includes additional fields. The backend returns `200 OK` on success (not `201 Created`).
+
+<Warning>Channel tokens (`telegramToken`, `discordBotToken`, `whatsappToken`) are no longer included in the provision response. Tokens are write-only secrets — they are stored server-side but never returned to the caller.</Warning>
+
+```json
+{
+  "success": true,
+  "userId": "a1b2c3d4e5",
+  "agentId": "a1b2c3d4e5",
+  "id": "a1b2c3d4e5",
+  "aiProvider": "openrouter",
+  "aiProviderConfig": {
+    "model": "openai/gpt-4o-mini",
+    "baseUrl": "https://openrouter.ai/api/v1",
+    "requiresKey": true
+  },
+  "plan": "solo",
+  "streamKey": "sk-ab12-cd34-ef56",
+  "liveStreamId": "x7k9m2p4q1",
+  "rtmpServer": "rtmps://live.mux.com/app",
+  "playbackUrl": "https://image.mux.com/x7k9m2p4q1/playlist.m3u8",
+  "subdomain": "dj-a1b2c3d4e5.agentbot.raveculture.xyz",
+  "url": "https://dj-a1b2c3d4e5.agentbot.raveculture.xyz",
+  "hls": {
+    "playlistUrl": "https://image.mux.com/x7k9m2p4q1/playlist.m3u8"
+  },
+  "rtmp": {
+    "server": "rtmps://live.mux.com/app",
+    "key": "sk-ab12-cd34-ef56"
+  },
+  "status": "active",
+  "createdAt": "2026-03-20T00:00:00Z",
+  "metadata": {
+    "channels": {
+      "telegram": "enabled",
+      "discord": "disabled",
+      "whatsapp": "disabled"
+    },
+    "streaming": {
+      "provider": "mux",
+      "lowLatency": true,
+      "resolution": "1920x1080",
+      "bitrate": "5000k"
+    }
+  },
+  "container": {
+    "name": "agentbot-agent-a1b2c3d4e5",
+    "status": "running",
+    "serviceId": "srv-abc123def456",
+    "renderUrl": "https://agentbot-agent-a1b2c3d4e5.up.railway.app"
+  }
+}
+```
+
+<Note>The `container` object is included when the backend successfully creates a container for the agent. If container creation fails, provisioning still succeeds and the `container` field is omitted. The agent can operate using API-side processing until the container becomes available. You can check backend availability using the [backend health endpoint](/api-reference/health#backend-health-check).</Note>
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `container.name` | string | Container name (format: `agentbot-agent-{userId}`) |
+| `container.status` | string | Container status (for example, `running`, `stopped`) |
+| `container.serviceId` | string | Railway service ID for the agent container. |
+| `container.renderUrl` | string | Public runtime URL for the agent container (for example, `https://agentbot-agent-{userId}.up.railway.app`). The field name is legacy; the runtime is now provisioned on Railway. |
+| `container.port` | number \| null | **Deprecated.** Previously held the container's local listening port. Removed in favor of `container.renderUrl`, which points to the public runtime URL. |
+| `container.gatewayUrl` | string | **Deprecated.** Previously held the local gateway URL. Replaced by `container.renderUrl`, which points to the public runtime URL. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | At least one channel token required (Telegram, WhatsApp, or Discord) when `autoProvision` is not `true` and `agentType` is not `business`, or invalid `aiProvider` value |
+| 400 | Invalid plan value (backend only). The `plan` field must be one of `solo`, `collective`, `label`, or `network`. The web proxy defaults to `label` when forwarding to the backend, so this error is only returned when calling the backend directly with an unrecognized value. Since the `plan` field defaults to `free` when omitted, and `free` is not a valid plan, callers must always specify an explicit paid plan. The error message is: `Invalid plan. Supported: solo, collective, label, network`. |
+| 401 | Authentication required. Returned when no session is present and the resolved email (session email or body `email`) does not match a configured admin email (or no email is available). |
+| 403 | Active subscription required (web proxy). Returned when the authenticated user does not have an active subscription and is not an admin. The response body includes `success: false` and an `error` message: `Active subscription required. Please purchase a plan to deploy.` |
+| 402 | No free tier available. Returned when `plan` is `free` (the default when omitted). The response body includes `code: "PAYMENT_REQUIRED"` and the message `"No free tier. Choose a paid plan to get started."` You must explicitly specify a paid plan (`solo`, `collective`, `label`, or `network`). |
+| 402 | Active subscription required (backend). **Currently disabled.** This check is commented out in the backend while payment enforcement is being validated. When re-enabled, it will be returned when a valid paid plan is specified but no Stripe subscription ID is provided and the caller is not an admin or tester. The response body will include a `code` field set to `PAYMENT_REQUIRED`. |
+| 402 | Agent limit reached for your plan. The response body includes a `code` field set to `AGENT_LIMIT_REACHED`, along with `current` (current agent count) and `limit` (maximum allowed) fields. Provisioning limits: `solo` 1, `collective` 3, `label` 10, `network` unlimited. |
+| 500 | Internal server error |
+| 502 | Provisioning service unavailable or returned an error. All backend URLs failed or returned non-success responses. |
+| 503 | Provisioning is temporarily disabled (kill switch active) or provisioning service misconfigured. |
+
+### AI provider defaults
+
+Each `aiProvider` value maps to a default model and base URL. There are two model configurations: the **container config** (used by the agent's internal gateway) and the **provision response metadata** (`aiProviderConfig` field). These may differ.
+
+#### Container config models
+
+These models are configured inside the agent service at provisioning time and are used by the gateway's model fallback chain:
+
+| Provider | Primary model | Fallback model | Base URL |
+|----------|--------------|----------------|----------|
+| `openrouter` | `moonshotai/kimi-k2.5` | `openrouter/openai/gpt-4o-mini` | `https://openrouter.ai/api/v1` |
+| `gemini` (or `google`) | `google/gemini-2.0-flash` | `openrouter/anthropic/claude-sonnet-4-5` | `https://generativelanguage.googleapis.com/v1beta/models` |
+| `groq` | `groq/gemma2-9b-it` | `openai/gpt-4o-mini` | `https://api.groq.com/openai/v1` |
+| `anthropic` | `anthropic/claude-sonnet-4-5` | `openai/gpt-4o` | `https://api.anthropic.com/v1` |
+| `openai` | `openai/gpt-4o` | `openai/gpt-4o-mini` | `https://api.openai.com/v1` |
+| `minimax` | `MiniMax/MiniMax-Text-01` | `openai/gpt-4o-mini` | `https://api.minimax.chat/v1` |
+
+#### Provision response metadata models
+
+The `aiProviderConfig` object returned in the provision response uses different default models:
+
+| Provider | Default model | Base URL |
+|----------|--------------|----------|
+| `openrouter` | `openai/gpt-4o-mini` | `https://openrouter.ai/api/v1` |
+| `gemini` | `gemini-2.0-flash` | `https://generativelanguage.googleapis.com/v1beta/models` |
+| `groq` | `mixtral-8x7b-32768` | `https://api.groq.com/openai/v1` |
+| `anthropic` | `claude-3-sonnet-20240229` | `https://api.anthropic.com/v1` |
+| `openai` | `gpt-4o` | `https://api.openai.com/v1` |
+| `minimax` | `MiniMax/MiniMax-Text-01` | `https://api.minimax.chat/v1` |
+
+Each provider includes a fallback model in the service config that is used automatically when the primary model is unavailable or returns an error.
+
+<Note>`minimax` is available as a fallback in the provider configuration map but is not currently accepted as a value for the `aiProvider` request parameter. Passing `minimax` as `aiProvider` returns a `400` validation error. This provider may be enabled in a future release.</Note>
+
+## Channel configuration
+
+When an agent is provisioned, its channel configuration is generated based on the tokens provided. All channels share a set of defaults and each channel type has specific settings.
+
+### Channel defaults
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `groupPolicy` | `allowlist` | Only explicitly allowed users can interact with the agent in group contexts |
+| `heartbeat.showOk` | `false` | Suppress heartbeat OK messages |
+| `heartbeat.showAlerts` | `true` | Show heartbeat alert messages |
+| `heartbeat.useIndicator` | `true` | Display a status indicator |
+
+### Telegram channel settings
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `dmPolicy` | `allowlist` or `pairing` | `allowlist` when owner IDs are provided, `pairing` otherwise |
+| `groups.*.requireMention` | `true` | Agent only responds in groups when mentioned |
+| `historyLimit` | `50` | Number of messages retained in context |
+| `replyToMode` | `first` | Reply threading mode |
+| `streaming` | `partial` | Enable partial message streaming |
+| `retry.attempts` | `3` | Maximum retry attempts |
+| `retry.minDelayMs` | `400` | Minimum delay between retries |
+| `retry.maxDelayMs` | `30000` | Maximum delay between retries |
+| `retry.jitter` | `0.1` | Jitter factor for retry delays |
+
+### Discord channel settings
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `dmPolicy` | `allowlist` or `pairing` | `allowlist` when owner IDs are provided, `pairing` otherwise |
+| `dm.enabled` | `true` | Accept direct messages |
+| `dm.groupEnabled` | `false` | Group DMs are disabled |
+| `historyLimit` | `20` | Number of messages retained in context |
+| `streaming` | `partial` | Enable partial message streaming |
+| `retry.attempts` | `3` | Maximum retry attempts |
+| `retry.minDelayMs` | `500` | Minimum delay between retries |
+| `retry.maxDelayMs` | `30000` | Maximum delay between retries |
+| `retry.jitter` | `0.1` | Jitter factor for retry delays |
+
+### WhatsApp channel settings
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| `dmPolicy` | `allowlist` or `pairing` | `allowlist` when owner IDs are provided, `pairing` otherwise |
+| `groups.*.requireMention` | `true` | Agent only responds in groups when mentioned |
+| `sendReadReceipts` | `true` | Send read receipts for incoming messages |
+
+### Group chat mention patterns
+
+All channels that support group chat use the following default mention patterns: `@agent` and `agent`. The agent only responds in group conversations when one of these patterns is detected in the message.
+
+## Tool profiles
+
+Each agent is assigned a tool profile at provisioning time based on its plan tier. The tool profile determines which built-in tools the agent can use.
+
+| Plan | Tool profile | Description |
+|------|-------------|-------------|
+| `solo` | `messaging` | Chat-only tools suitable for messaging workflows |
+| `collective` | `coding` | Full development tools including code execution |
+| `label` | `coding` | Full development tools including code execution |
+| `network` | `coding` | Full development tools including code execution |
+
+<Note>The tool profile is set once at service creation and persists for the lifetime of the agent. Upgrading your plan does not automatically change the tool profile of existing agents — you need to reprovision the agent or use the [repair endpoint](#repair-agent) to apply the new profile.</Note>
+
+All tool profiles deny `browser` and `canvas` tools inside agent services. The `coding` profile includes shell commands (`ls`, `cat`, `grep`, `curl`, `git`, `node`, `python3`, and others) while the `messaging` profile restricts the agent to chat-oriented capabilities.
+
+## Deploy agent (backend)
+
+```http
+POST /api/deployments
+```
+
+<Note>This is a backend-only endpoint. It deploys an agent as a Render web service and requires a `Content-Type: application/json` header. Requires bearer token authentication. Rate limited to 5 requests per minute per IP.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | Unique agent identifier |
+| `config` | object | No | Deployment configuration |
+| `config.telegramToken` | string | Yes | Telegram bot token |
+| `config.ownerIds` | string[] | No | Telegram owner user IDs |
+| `config.aiProvider` | string | No | AI provider (default: `openrouter`) |
+| `config.apiKey` | string | No | API key for the AI provider |
+| `config.plan` | string | No | Plan tier. Options: `label`, `solo`, `collective`, `network`. When omitted, defaults to `free` which resolves to `starter` resource limits (2 GB memory, 1 CPU). |
+
+### Response (201 Created)
+
+```json
+{
+  "id": "deploy-agent_123",
+  "agentId": "agent_123",
+  "subdomain": "agent_123.agents.localhost",
+  "url": "https://agent_123.agents.localhost",
+  "status": "active",
+  "openclawVersion": "2026.3.24"
+}
+```
+
+### Response (200 Already Active)
+
+If the agent service is already running, returns the existing deployment details with the same shape as the 201 response.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId is required`, `Invalid agentId`, or `telegramToken is required` |
+| 401 | Unauthorized |
+| 500 | Deployment failed. When the Render API is not reachable, the error message indicates that provisioning is unavailable. Check the [backend health endpoint](/api-reference/health#backend-health-check) to verify Render API availability before deploying. |
+
+## OpenClaw version (backend)
+
+```http
+GET /api/openclaw/version
+```
+
+Returns the current OpenClaw runtime version. Requires bearer token authentication.
+
+### Response
+
+```json
+{
+  "openclawVersion": "2026.3.24",
+  "image": "ghcr.io/openclaw/openclaw:2026.3.24",
+  "deployedAt": "2026-03-20T00:00:00Z"
+}
+```
+
+<Note>`deployedAt` returns the current server time when the request is made, not the actual deployment time of the OpenClaw runtime.</Note>
+
+## List instances (backend)
+
+```http
+GET /api/openclaw/instances
+```
+
+Returns all running agent services. Requires bearer token authentication.
+
+### Response
+
+```json
+{
+  "instances": [
+    {
+      "agentId": "agent_123",
+      "name": "openclaw-agent_123",
+      "image": "ghcr.io/openclaw/openclaw:2026.3.24",
+      "status": "Up 2 hours",
+      "createdAt": "2026-03-20 00:00:00 +0000 UTC",
+      "version": "2026.3.24",
+      "metadata": {
+        "agentId": "agent_123",
+        "createdAt": "2026-03-20T00:00:00Z",
+        "plan": "solo"
+      }
+    }
+  ],
+  "count": 1
+}
+```
+
+<Note>The `metadata` object contains the full agent metadata from the on-disk JSON file and may include additional fields beyond those shown (for example, `aiProvider`, `port`, `subdomain`, `url`, `status`, and `config`).</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to list instances |
+
+## Get instance service stats (backend)
+
+```http
+GET /api/openclaw/instances/:id/stats
+```
+
+Returns resource usage for a specific agent service. Requires bearer token authentication.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Agent ID |
+
+### Response
+
+```json
+{
+  "agentId": "agent_123",
+  "cpu": "12.5%",
+  "memory": "100MiB / 1GiB",
+  "memoryPercent": "10.0%",
+  "network": "1.2kB / 3.4kB",
+  "blockIO": "0B / 0B",
+  "pids": "12",
+  "status": "running",
+  "uptime": 86400000,
+  "uptimeFormatted": "1d 0h",
+  "timestamp": "2026-03-20T00:00:00Z"
+}
+```
+
+## Get user OpenClaw instance
+
+```http
+GET /api/user/openclaw
+```
+
+Returns the authenticated user's OpenClaw URL and instance ID. These values are set during provisioning when `autoProvision` is `true` or `agentType` is `business`. Requires session authentication.
+
+### Response
+
+```json
+{
+  "openclawUrl": "https://dj-a1b2c3d4e5.agentbot.raveculture.xyz",
+  "openclawInstanceId": "inst_a1b2c3d4e5"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `openclawUrl` | string \| null | The OpenClaw dashboard URL for this user. `null` when no OpenClaw instance has been provisioned. |
+| `openclawInstanceId` | string \| null | The OpenClaw instance identifier. `null` when no OpenClaw instance has been provisioned. |
+
+## Agent interaction
+
+```http
+GET /api/agent
+POST /api/agent
+```
+
+Unified endpoint for interacting with agents. All requests require session authentication. The `userId` is always bound to the authenticated session and cannot be overridden by the client.
+
+### GET actions
+
+Pass the `action` query parameter to select the operation.
+
+#### List endpoints
+
+```http
+GET /api/agent
+```
+
+Returns available endpoints and version information when no action is specified.
+
+```json
+{
+  "apiVersion": "1.0.0",
+  "agentbotVersion": "2026.3.1",
+  "endpoints": {
+    "GET /api/agent": "List endpoints",
+    "GET /api/agent?action=health": "Health status",
+    "GET /api/agent?action=sessions": "List sessions",
+    "GET /api/agent?action=session&sessionId=xxx": "Get session details",
+    "GET /api/agent?action=memory": "Get agent memory",
+    "GET /api/agent?action=skills": "List available skills",
+    "GET /api/agent?action=credentials": "List configured credentials",
+    "POST /api/agent": "Send message to agent",
+    "POST /api/agent?action=create-session": "Create new session",
+    "POST /api/agent?action=update-skill": "Enable/disable skill"
+  }
+}
+```
+
+#### Health
+
+```http
+GET /api/agent?action=health
+```
+
+```json
+{
+  "status": "running",
+  "version": "2026.3.1",
+  "apiVersion": "1.0.0",
+  "uptime": 86400,
+  "model": "claude-sonnet-4-20250514",
+  "channels": ["telegram"],
+  "skills": [],
+  "lastSeen": 1710806400000
+}
+```
+
+#### List sessions
+
+```http
+GET /api/agent?action=sessions
+```
+
+```json
+{
+  "sessions": [
+    {
+      "id": "sess_abc123",
+      "status": "active",
+      "messageCount": 5,
+      "createdAt": 1710806400000,
+      "lastActivity": 1710810000000
+    }
+  ]
+}
+```
+
+#### Get session
+
+```http
+GET /api/agent?action=session&sessionId=sess_abc123
+```
+
+Returns the full session including messages.
+
+#### Memory
+
+```http
+GET /api/agent?action=memory
+```
+
+Returns the last 10 messages from the active session (truncated to 100 characters each).
+
+```json
+{
+  "memory": [
+    { "role": "user", "content": "Hello, can you help me with..." },
+    { "role": "assistant", "content": "Of course! Let me..." }
+  ]
+}
+```
+
+#### Skills
+
+```http
+GET /api/agent?action=skills
+```
+
+Returns skills available on the agent instance.
+
+#### Credentials
+
+```http
+GET /api/agent?action=credentials
+```
+
+Returns which credentials are configured for the agent.
+
+```json
+{
+  "credentials": {
+    "anthropic": false,
+    "openai": false,
+    "openrouter": true,
+    "google": false,
+    "telegram": true,
+    "discord": false,
+    "whatsapp": false
+  }
+}
+```
+
+### POST actions
+
+Pass the `action` field in the request body.
+
+#### Chat
+
+```http
+POST /api/agent
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | No | Set to `chat` or omit (default action) |
+| `message` | string | Yes | Message to send to the agent |
+| `sessionId` | string | No | Session ID to continue. A new session is created if omitted and no active session exists. |
+
+```json
+{
+  "sessionId": "sess_abc123",
+  "reply": "Agent is processing your request...",
+  "timestamp": 1710810000000
+}
+```
+
+#### Create session
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | `create-session` |
+
+```json
+{
+  "sessionId": "sess_abc123",
+  "status": "active"
+}
+```
+
+#### Update skill
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | `update-skill` |
+| `skillId` | string | Yes | Skill ID to enable or disable |
+| `enabled` | boolean | No | Whether to enable or disable the skill. Defaults to `false` (removes the skill) when omitted. |
+
+```json
+{
+  "success": true,
+  "skillId": "browser",
+  "enabled": true
+}
+```
+
+#### Set credential
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | `set-credential` |
+| `key` | string | Yes | Credential key (for example, `anthropic`, `telegram`) |
+| `value` | string | No | Credential value. When omitted, the credential is marked as unconfigured. |
+
+```json
+{
+  "success": true,
+  "key": "anthropic",
+  "configured": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid action or missing required fields |
+| 401 | Unauthorized |
+| 404 | Session not found |
+| 500 | Internal error |
+
+## Send message
+
+```http
+POST /api/chat
+```
+
+Requires session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `message` | string | Yes | Message to send |
+| `topic` | string | No | Conversation topic |
+
+```json
+{
+  "message": "Hello!",
+  "topic": "general"
+}
+```
+
+### Response
+
+```json
+{
+  "id": "msg_123",
+  "message": "Hello!",
+  "topic": "general",
+  "status": "sent",
+  "timestamp": "2026-03-19T00:00:00Z",
+  "reply": "Message received by agent"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Message required |
+| 401 | Unauthorized |
+| 500 | Failed to send message |
+
+## List messages
+
+```http
+GET /api/chat
+```
+
+Returns the message history. Requires session authentication.
+
+### Response
+
+```json
+{
+  "messages": [],
+  "count": 0
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |

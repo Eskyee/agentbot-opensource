@@ -1,0 +1,166 @@
+---
+title: Debug API
+description: "Diagnostic commands and dashboard health checks for debugging"
+---
+
+# Debug API
+
+Run diagnostic commands against a running agent and perform dashboard health checks.
+
+## Execute a debug command
+
+```http
+POST /api/debug
+```
+
+Runs one of the allowlisted commands and returns the command output.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `command` | string | Yes | The command to execute. Must be one of the allowlisted values listed below. |
+| `agentId` | string | Yes | The agent to run the command against |
+
+### Allowlisted commands
+
+| Command | Description |
+|---------|-------------|
+| `gateway.restart` | Restart the agent gateway process |
+| `openclaw.doctor` | Run a full health diagnostic |
+| `openclaw.logs.tail` | Tail the most recent log entries |
+| `openclaw.status` | Show agent status summary |
+| `openclaw.config.show` | Display the current agent configuration |
+| `openclaw.memory.stats` | Show memory store statistics |
+| `openclaw.skills.list` | List installed skills |
+| `openclaw.channels.status` | Show channel connection status |
+| `openclaw.cron.list` | List scheduled cron jobs |
+| `openclaw.version` | Display version information |
+
+### Response
+
+```json
+{
+  "command": "openclaw.status",
+  "output": "OpenClaw Agent Status\n━━━━━━━━━━━━━━━━━━━━━━\nVersion:     2026.4.2\nUptime:      3d 14h 22m\nStatus:      ACTIVE\n...",
+  "exitCode": 0,
+  "duration": 342,
+  "timestamp": "2026-03-27T15:30:00.000Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `command` | string | The command that was executed |
+| `output` | string | The command output text |
+| `exitCode` | number | Exit code of the command. `0` indicates success. |
+| `duration` | number | Execution time in milliseconds |
+| `timestamp` | string | ISO 8601 timestamp when the command completed |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `Missing required fields: command, agentId` — one or both required fields are missing |
+| 400 | `Command "..." is not in the allowlist` — the command is not one of the ten allowlisted values |
+| 400 | `Invalid request body` — the request body is not valid JSON |
+
+### Example
+
+```bash
+curl -X POST https://agentbot.sh/api/debug \
+  -H "Content-Type: application/json" \
+  -d '{
+    "command": "openclaw.doctor",
+    "agentId": "agent_abc123"
+  }'
+```
+
+---
+
+## Dashboard check
+
+```http
+GET /api/debug/dashboard-check
+```
+
+No authentication required. Runs connectivity checks against the database and authentication endpoints and returns their status. Use this endpoint to quickly verify that core services are reachable.
+
+### Response
+
+```json
+{
+  "timestamp": "2026-04-04T12:00:00.000Z",
+  "status": "ok",
+  "checks": {
+    "database": "ok",
+    "gateway": "unknown",
+    "auth": "ok"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `timestamp` | string | ISO 8601 timestamp of the check |
+| `status` | string | Always `ok` when the endpoint responds |
+| `checks.database` | string | Database connectivity: `ok` or `error` |
+| `checks.gateway` | string | Gateway connectivity: `ok`, `error`, or `unknown` |
+| `checks.auth` | string | Auth service connectivity: `ok` or `error` |
+
+| Code | Description |
+|------|-------------|
+| 200 | Check completed (inspect individual check values for service status) |
+
+---
+
+## Support diagnostics
+
+```http
+GET /api/support/diagnostics
+```
+
+Requires session authentication. Returns a diagnostic report including service health, active trial count, gateway token status, and recent agent errors. When the gateway token is missing, a support alert is automatically sent.
+
+### Response
+
+```json
+{
+  "serviceHealth": [
+    { "name": "Agentbot API", "status": "ok", "detail": "ok" },
+    { "name": "Tempo Soul", "status": "ok", "detail": "ok" }
+  ],
+  "trialCount": 12,
+  "tokenStatus": "present",
+  "recentErrors": [
+    {
+      "id": "agent_xyz",
+      "name": "my-agent",
+      "updatedAt": "2026-04-04T11:00:00.000Z",
+      "status": "error"
+    }
+  ],
+  "gatewayUrl": "https://openclaw-gw-ui-production.up.railway.app",
+  "timestamp": "2026-04-04T12:00:00.000Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `serviceHealth` | array | Service connectivity results (same format as [dashboard health](/api-reference/health#dashboard-health)) |
+| `trialCount` | number | Number of users currently on an active free trial |
+| `tokenStatus` | string | Gateway token status: `present` or `missing` |
+| `recentErrors` | array | Up to 5 most recently updated agents in `error` status |
+| `recentErrors[].id` | string | Agent identifier |
+| `recentErrors[].name` | string | Agent name |
+| `recentErrors[].updatedAt` | string | ISO 8601 timestamp of the last status update |
+| `recentErrors[].status` | string | Agent status (always `error` in this list) |
+| `gatewayUrl` | string | Configured gateway URL |
+| `timestamp` | string | ISO 8601 timestamp of the diagnostic report |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session or email not available |
+| 500 | Diagnostics failed |

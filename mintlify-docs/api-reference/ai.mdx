@@ -1,0 +1,380 @@
+---
+title: AI API
+description: "AI provider endpoints for model selection, chat completion, and cost estimation"
+---
+
+# AI API
+
+Endpoints for interacting with AI models through a unified provider layer. These endpoints are served by the backend API service, not the web application. They are available at the backend base URL, which may differ from the web API base URL depending on your deployment.
+
+<Note>These endpoints are internal backend endpoints and are not exposed through the web application's `/api` routes. All `/api/ai/*` endpoints require bearer token (API key) authentication — the `authenticate` middleware is applied to the entire `/api/ai` router mount. The chat and cost estimation endpoints additionally require a valid subscription plan via header-based plan enforcement. All POST requests must include the `Content-Type: application/json` header.</Note>
+
+<Warning>All `/api/ai/*` endpoints share a rate limit of 30 requests per minute per IP, not just the chat endpoint.</Warning>
+
+## Health check
+
+```http
+GET /api/ai/health
+```
+
+Requires bearer token authentication. Returns the availability status of configured AI providers.
+
+### Response
+
+```json
+{
+  "status": "healthy",
+  "providers": {
+    "openrouter": true
+  },
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+The `status` field is `healthy` when the OpenRouter provider is reachable and `degraded` when it is not. Only the OpenRouter provider is checked.
+
+### Error response
+
+When the provider check fails, the response uses `status: "error"` and includes the error message:
+
+```json
+{
+  "status": "error",
+  "error": "Provider connection failed"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 503 | AI service unavailable |
+
+## List models
+
+```http
+GET /api/ai/models
+```
+
+Requires bearer token authentication. Returns all available AI models across providers.
+
+### Response
+
+```json
+{
+  "models": [
+    {
+      "id": "anthropic/claude-sonnet-4-20250514",
+      "name": "Claude Sonnet",
+      "provider": "openrouter",
+      "description": "Fast, intelligent model for everyday tasks",
+      "tags": ["chat", "code"],
+      "inputCost": 0.003,
+      "outputCost": 0.015,
+      "contextWindow": 200000,
+      "available": true
+    }
+  ],
+  "count": 1,
+  "openrouter": 1,
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Failed to fetch models |
+
+## List models by provider
+
+```http
+GET /api/ai/models/:provider
+```
+
+Requires bearer token authentication.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `provider` | string | Provider name (for example, `openrouter`) |
+
+### Response
+
+```json
+{
+  "provider": "openrouter",
+  "models": [],
+  "count": 0,
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+## Select model
+
+```http
+POST /api/ai/models/select
+```
+
+Requires bearer token authentication and a valid subscription plan.
+
+Automatically selects the best model for a given task type.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `taskType` | string | No | Type of task (default: `general`) |
+
+### Response
+
+```json
+{
+  "model": {
+    "id": "anthropic/claude-sonnet-4-20250514",
+    "provider": "openrouter"
+  },
+  "taskType": "general",
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 402 | Valid subscription required |
+| 404 | No models available |
+
+## Chat completion
+
+```http
+POST /api/ai/chat
+```
+
+Send a chat completion request through the unified AI provider layer. The model is auto-selected if not specified.
+
+<Warning>This endpoint requires a valid subscription plan. Requests without a recognized plan or active Stripe subscription receive a `402` response. The requested model must also be available on your plan — see [plan-based model access](#plan-based-model-access) below.</Warning>
+
+<Note>The chat endpoint uses [header-based authentication](/api-reference/auth#header-based-authentication-ai-routes). Access control is enforced through the `x-user-plan` and `x-stripe-subscription-id` headers. When a database is available, the plan middleware cross-references the `x-stripe-subscription-id` header against the user's record in the database to prevent subscription forgery. The plan stored in the database is used instead of the header value. If the database is unavailable, the middleware falls back to header-based validation with a format check on the subscription ID. Admin emails (configured via `ADMIN_EMAILS`) bypass both plan and subscription requirements.</Note>
+
+### Request headers
+
+The following headers are required for plan enforcement:
+
+| Header | Type | Required | Description |
+|--------|------|----------|-------------|
+| `x-user-plan` | string | Yes | Subscription plan name (`label`, `solo`, `collective`, or `network`) |
+| `x-user-email` | string | No | User email. Admin emails bypass plan restrictions. |
+| `x-stripe-subscription-id` | string | Yes | Active Stripe subscription ID |
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messages` | array | Yes | Array of message objects with `role` (`user`, `assistant`, or `system`) and `content` |
+| `model` | string | No | Model ID. Auto-selected based on `taskType` if omitted. Must be allowed by your plan. |
+| `taskType` | string | No | Used for auto-selection when `model` is omitted |
+| `temperature` | number | No | Sampling temperature |
+| `top_p` | number | No | Nucleus sampling parameter |
+| `max_tokens` | number | No | Maximum tokens in the response |
+| `algorithmMode` | boolean | No | When `true`, injects the PAI Algorithm system prompt into the conversation. This enables a 7-phase structured problem-solving format (Observe, Think, Plan, Build, Execute, Verify, Learn) for the agent's responses. The system prompt is prepended to the messages array only if no existing system message already contains the Algorithm phases. Defaults to `false`. |
+
+### Example request
+
+```json
+{
+  "messages": [
+    { "role": "system", "content": "You are a helpful assistant." },
+    { "role": "user", "content": "Hello!" }
+  ],
+  "temperature": 0.7,
+  "max_tokens": 1024
+}
+```
+
+### Example request with Algorithm mode
+
+When `algorithmMode` is enabled, the agent responds using a structured 7-phase format for non-trivial tasks:
+
+```json
+{
+  "messages": [
+    { "role": "user", "content": "Audit the authentication flow for security issues" }
+  ],
+  "algorithmMode": true
+}
+```
+
+### Response
+
+Returns a structured response with the following shape:
+
+```json
+{
+  "id": "chatcmpl-abc123",
+  "model": "anthropic/claude-sonnet-4-20250514",
+  "provider": "openrouter",
+  "message": {
+    "role": "assistant",
+    "content": "Hello! How can I help you today?"
+  },
+  "usage": {
+    "prompt_tokens": 25,
+    "completion_tokens": 10,
+    "total_tokens": 35
+  },
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Messages array is required and must be non-empty |
+| 402 | Valid subscription required. Returned when the plan header is missing or unrecognized (`PLAN_REQUIRED`), when there is no active Stripe subscription (`SUBSCRIPTION_REQUIRED`), or when the subscription ID in the request header does not match the subscription on file for the authenticated user (`SUBSCRIPTION_MISMATCH`). |
+| 403 | Model not available on your plan (`MODEL_RESTRICTED`). The response includes an `allowedModels` array listing the models your plan supports. |
+| 404 | No models available |
+| 500 | AI provider error |
+
+#### 402 error examples
+
+```json
+{
+  "success": false,
+  "error": "Valid subscription required. Choose a plan at /pricing",
+  "code": "PLAN_REQUIRED"
+}
+```
+
+When the subscription ID sent in the `x-stripe-subscription-id` header does not match the subscription stored in the database for the authenticated user:
+
+```json
+{
+  "success": false,
+  "error": "Subscription mismatch. Please sign out and back in.",
+  "code": "SUBSCRIPTION_MISMATCH"
+}
+```
+
+#### 403 error example
+
+```json
+{
+  "error": "Model openai/gpt-4-turbo not available on your plan. Upgrade for more models.",
+  "code": "MODEL_RESTRICTED",
+  "allowedModels": ["openai/gpt-4o-mini", "google/gemini-2.0-flash"]
+}
+```
+
+## Token quotas (planned)
+
+<Warning>Token quotas are not yet enforced. The backend does not currently track token usage or reject requests based on usage limits. The quota system described below is planned for a future release. When implemented, requests exceeding the plan limit will be rejected with a `429` status and a `QUOTA_EXCEEDED` error code.</Warning>
+
+| Plan | Monthly token limit (planned) |
+|------|-------------------|
+| `solo` | 2,000,000 |
+| `collective` | 6,000,000 |
+| `label` | 20,000,000 |
+| `network` | Unlimited |
+
+## Plan-based model access
+
+Each subscription plan grants access to a specific set of AI models. The chat endpoint enforces these limits automatically via the plan middleware.
+
+| Plan | Price | Models | Agent limit | Skill limit | A2A messages/day |
+|------|-------|--------|-------------|-------------|------------------|
+| `solo` | £29/mo | `openai/gpt-4o-mini`, `google/gemini-2.0-flash`, `xiaomi/mimo-v2-pro` | 1 | 3 | 100 |
+| `collective` | £69/mo | `openai/gpt-4o-mini`, `openai/gpt-4o`, `google/gemini-2.0-flash`, `anthropic/claude-3.5-sonnet`, `xiaomi/mimo-v2-pro` | 10 | 10 | 500 |
+| `label` | £149/mo | `openai/gpt-4o-mini`, `openai/gpt-4o`, `openai/gpt-4-turbo`, `google/gemini-2.0-flash`, `anthropic/claude-3.5-sonnet`, `anthropic/claude-3-opus`, `xiaomi/mimo-v2-pro` | 3 | 25 | 2,000 |
+| `network` | £499/mo | All models | 100 | 100 | 10,000 |
+
+<Note>Admin users are automatically granted `network`-level access regardless of their subscription plan.</Note>
+
+<Note>The plan middleware (`x-user-plan` header) enforces model access, skill limits, and A2A message quotas. The provisioning endpoint enforces separate agent creation limits: `solo` 1, `collective` 3, `label` 10, `network` unlimited. The agent count is per-user across all plans — all active agents count toward the current plan's limit. The provisioning limits determine how many agents you can create, while the middleware limits in the table above apply to per-request AI model access and skill usage.</Note>
+
+## Model fallbacks
+
+The backend AI service uses a tier-based fallback system. Each tier has a primary model and one or more fallback models. When the primary model is unavailable, times out, or returns an error, the system automatically retries the request using the next fallback model in order. Each model attempt is bounded by a configurable timeout (default 30 seconds) to prevent hangs.
+
+| Tier | Primary model | Fallback models |
+|------|--------------|-----------------|
+| `reasoning` | `deepseek/deepseek-r1` | `meta-llama/llama-3.3-70b-instruct`, `moonshotai/kimi-k2.5` |
+| `coding` | `qwen/qwen-2.5-coder-32b-instruct` | `deepseek/deepseek-r1`, `google/gemini-2.0-flash-001` |
+| `fast` | `meta-llama/llama-3.3-70b-instruct` | `mistralai/mistral-7b-instruct`, `google/gemini-2.0-flash-001` |
+| `creative` | `moonshotai/kimi-k2.5` | `deepseek/deepseek-r1`, `meta-llama/llama-3.3-70b-instruct` |
+
+Fallback routing is handled transparently. The response always indicates which model ultimately served the request via the `model` field. All tier-based requests are routed through OpenRouter.
+
+## Task-based model selection
+
+In addition to provider-level fallbacks, the backend AI service uses tag-based model selection that picks the best available model based on the type of work being performed. When you specify a `taskType`, the system searches the available OpenRouter models for matching capability tags and selects the first match.
+
+| Task type | Matching tags |
+|-----------|--------------|
+| `coding` | `coding`, `logic` |
+| `analysis` | `analysis` |
+| `creative` | `creative` |
+| `long` | `long-context` |
+| `general` | `general`, `balanced` |
+
+When no model matches the requested task tags, the first available model from the OpenRouter catalog is used as a fallback. All task-based requests are routed through OpenRouter.
+
+## Algorithm mode
+
+The chat endpoint supports an optional structured problem-solving mode called **PAI Algorithm mode**. When enabled via the `algorithmMode` parameter, a system prompt is injected that instructs the model to process non-trivial tasks using a 7-phase format:
+
+| Phase | Name | Purpose |
+|-------|------|---------|
+| 1 | Observe | Reverse-engineer the request: what was asked, what was implied, and what is not wanted. Produce 3–5 Ideal State Criteria (ISC). |
+| 2 | Think | Select capabilities and a composition pattern (Pipeline, TDD Loop, Fan-out, or Gate). |
+| 3 | Plan | Define concrete numbered steps with clear handoffs. |
+| 4 | Build | Create artifacts such as files, configs, or code. |
+| 5 | Execute | Run the work using the selected capabilities. |
+| 6 | Verify | Test each ISC criterion with evidence, marking each as pass or fail. |
+| 7 | Learn | Summarize what worked, what didn't, and what to improve. |
+
+The Algorithm system prompt is prepended to the `messages` array as a `system` message. If the messages already contain a system message with Algorithm phase markers, the prompt is not duplicated. For simple greetings or acknowledgments, the model skips the 7-phase format and responds naturally.
+
+<Note>Algorithm mode is opt-in and does not affect billing or model selection. It only modifies the system prompt sent to the model. Based on Daniel Miessler's TheAlgorithm v0.2.24.</Note>
+
+## Estimate cost
+
+```http
+POST /api/ai/estimate-cost
+```
+
+Requires bearer token authentication and a valid subscription plan.
+
+Estimate the cost of a request based on token counts and model pricing.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Model ID |
+| `inputTokens` | number | Yes | Number of input tokens |
+| `outputTokens` | number | Yes | Number of output tokens |
+
+### Response
+
+```json
+{
+  "model": "anthropic/claude-sonnet-4-20250514",
+  "inputTokens": 1000,
+  "outputTokens": 500,
+  "estimatedCost": 0.0045,
+  "currency": "USD",
+  "timestamp": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Model, inputTokens, and outputTokens are all required |
+| 401 | Unauthorized — missing or invalid bearer token |
+| 402 | Valid subscription required |

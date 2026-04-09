@@ -1,0 +1,142 @@
+---
+title: Memory API
+description: "Store and retrieve key-value memory for agents"
+---
+
+# Memory API
+
+Store and retrieve persistent key-value data for your agents. All endpoints require session authentication. GET requests with a specific `agentId` verify ownership; omitting the parameter or passing `all` returns memories across all of your agents.
+
+## Get memory
+
+```http
+GET /api/memory?agentId=agent_123
+```
+
+Retrieve memory for a specific agent, or for all of your agents at once.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agentId` | string | No | ID of the agent. Pass `all` or omit to return memories across all of your agents. When a specific agent ID is provided, an ownership check is performed. |
+
+### Response
+
+When `agentId` is a specific agent ID:
+
+```json
+{
+  "memory": {
+    "preferences": { "theme": "dark" },
+    "context": "Last conversation was about scheduling"
+  },
+  "agentId": "agent_123",
+  "count": 2,
+  "lastUpdated": "2026-03-19T00:00:00Z"
+}
+```
+
+When `agentId` is `all` or omitted:
+
+```json
+{
+  "memory": {
+    "preferences": { "theme": "dark" },
+    "context": "Last conversation was about scheduling",
+    "other_agent_key": "value from another agent"
+  },
+  "agentId": null,
+  "count": 3,
+  "lastUpdated": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 404 | Agent not found (only when a specific `agentId` is provided) |
+| 500 | Failed to fetch memory |
+
+## Store memory (single key)
+
+```http
+POST /api/memory
+```
+
+Write a single key-value pair to agent memory.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | ID of the agent |
+| `key` | string | Yes | Memory key |
+| `memory` | any | Yes | Value to store (max 100 KB) |
+
+### Response
+
+```json
+{
+  "success": true,
+  "agentId": "agent_123",
+  "key": "preferences",
+  "saved": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId` required, memory data required, or value too large (max 100 KB) |
+| 401 | Unauthorized |
+| 404 | Agent not found |
+| 500 | Failed to save memory |
+
+## Store memory (bulk)
+
+```http
+POST /api/memory
+```
+
+Write multiple key-value pairs in a single request.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | ID of the agent |
+| `memory` | object | Yes | Object of key-value pairs to store (max 50 keys) |
+
+```json
+{
+  "agentId": "agent_123",
+  "memory": {
+    "preferences": { "theme": "dark" },
+    "context": "Scheduling discussion"
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "agentId": "agent_123",
+  "keysUpdated": 2,
+  "saved": "2026-03-19T00:00:00Z"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId` required, memory data required, or too many keys (max 50) |
+| 401 | Unauthorized |
+| 404 | Agent not found |
+| 500 | Failed to save memory |

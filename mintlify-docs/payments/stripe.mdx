@@ -1,0 +1,580 @@
+---
+title: Stripe integration
+description: "Accept credit card payments for monthly subscriptions and one-time credit purchases using Stripe."
+---
+
+# Stripe integration
+
+Accept credit card payments for monthly subscriptions and one-time credit purchases. All plans are billed monthly — yearly billing is not available.
+
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeibstpvk6pqo23ks3vork3yzr6ns5mdeltkv5snrkpgxn3j6pkgoau" alt="Agentbot Stripe billing" height="360" style={{borderRadius: '12px', width: '100%', objectFit: 'cover', marginBottom: '24px'}} />
+
+## Accepted payment methods
+
+Stripe checkout accepts the following payment methods:
+
+- Visa / Mastercard (credit and debit)
+- Apple Pay
+- Google Pay
+- PayPal
+
+<Note>
+Crypto payments are not accepted through Stripe checkout. For USDC payments on Base, see the [x402 integration](/payments/x402). For per-request crypto payments via the Tempo blockchain, see [MPP payments](/payments/mpp).
+</Note>
+
+## Setup
+
+### Step 1: Create Stripe account
+
+1. Go to [Stripe.com](https://stripe.com)
+2. Create a business account
+3. Complete verification
+
+### Step 2: Get API keys
+
+1. Go to **Developers → API Keys**
+2. Copy:
+   - Publishable Key (starts with `pk_`)
+   - Secret Key (starts with `sk_`)
+
+### Step 3: Connect to Agentbot
+
+1. Go to **Settings → Payments → Stripe**
+2. Enter keys
+3. Click **Connect**
+
+### Step 4: Configure webhooks
+
+Two webhook endpoints handle Stripe events:
+
+1. **Subscription webhook** — handles subscription lifecycle events
+2. **Wallet top-up webhook** — handles wallet top-up payments
+
+#### Subscription webhook
+
+1. Go to **Developers → Webhooks**
+2. Add endpoint: `https://agentbot.sh/api/webhooks/stripe`
+3. Select events:
+   - `checkout.session.completed`
+   - `customer.subscription.created`
+   - `customer.subscription.updated`
+   - `customer.subscription.deleted`
+   - `invoice.payment_succeeded`
+   - `invoice.payment_failed`
+4. Copy webhook secret and add to Agentbot
+
+#### Wallet top-up webhook
+
+1. Add a second endpoint: `https://agentbot.sh/api/wallet/top-up`
+2. Select events:
+   - `checkout.session.completed`
+3. Copy webhook secret and add to Agentbot as `STRIPE_WEBHOOK_SECRET`
+
+<Note>The wallet top-up webhook only processes `checkout.session.completed` events where the session metadata `type` field is set to `wallet_top_up`. All other checkout events are ignored by this endpoint.</Note>
+
+## Pricing plans
+
+All plans are billed monthly in GBP. A paid subscription is required to provision and use agents — there is no free tier. New subscriptions start with a **7-day free trial** before the first charge.
+
+<Warning>Attempting to provision an agent without an active paid subscription returns an error. The web proxy returns `403 Forbidden` with the message `Active subscription required. Please purchase a plan to deploy.` Admin users bypass this check. All non-admin users must subscribe to a plan before creating agents.</Warning>
+
+| Plan | Price | Specs | Key features |
+|------|-------|-------|--------------|
+| Solo | £29/mo | 1 Agent · Mistral 7B | Telegram, BYOK, A2A Bus Access, Basic Analytics |
+| Collective | £69/mo | 3 Agents · Llama 3.3 | Everything in Solo + Royalty Split Engine, Fleet visibility, WhatsApp, Priority support |
+| Label | £149/mo | 10 Agents · DeepSeek R1 | Everything in Collective + Priority A2A Routing, 24/7 Signal Guard, White-glove staging, Custom integrations, Dedicated account manager |
+
+<Note>The billing page displays Solo, Collective, and Label as the public upgrade options. Custom and white-label deployments are handled separately through sales.</Note>
+
+## Enterprise add-ons
+
+Individual add-ons can be purchased on top of any subscription plan. All add-on prices are billed monthly in GBP. To purchase an add-on, contact sales at [sales@agentbot.com](mailto:sales@agentbot.com).
+
+| Add-on | Price | Description |
+|--------|-------|-------------|
+| Audit Logs | £199/mo | Full traceability of every agent action and decision |
+| Slack Integration | £149/mo | Agents work inside your Slack workspace |
+| Salesforce Connector | £349/mo | Sync leads, contacts, and opportunities automatically |
+| API Access | £249/mo | Programmatic access to your agents via REST API |
+| Custom Integration | £499/mo | Custom connector built for your tools |
+| Dedicated Account Manager | £399/mo | Priority support and personalized onboarding |
+
+<Note>
+Add-ons are not available for self-service purchase through Stripe checkout. Use the Contact Sales button on the billing page or email [sales@agentbot.com](mailto:sales@agentbot.com) to add any of these to your subscription.
+</Note>
+
+### Full Enterprise Suite
+
+The Full Enterprise Suite bundles all add-ons and additional enterprise capabilities at a single price of **£4,999/mo**. It includes:
+
+- Unlimited AI Agents with hierarchical task delegation
+- Enterprise SSO/SAML and role-based access control (RBAC)
+- Credential isolation and zero-trust security
+- Full audit logging and compliance tooling
+- Pre-built connectors for Salesforce, Cisco, Google Cloud, Adobe, and CrowdStrike
+- Tool use framework for external APIs
+- Hardware agnostic deployment (NVIDIA, AMD, Intel support)
+- 24/7 priority support with SLA guarantee
+- Fleet dashboards, support diagnostics, and advanced analytics
+
+To purchase the Full Enterprise Suite, contact sales or use the billing page in the dashboard.
+
+## Payment methods
+
+The billing page supports two payment methods:
+
+- **Stripe** — pay with card for instant activation
+- **Tempo Wallet** — pay with USDC for on-chain settlement
+
+Card payments go through the Stripe checkout flow described below. For USDC payments, see the [Wallet API reference](/api-reference/wallet) and [MPP payments](/payments/mpp).
+
+## Checkout
+
+### Start a checkout session
+
+To start a subscription checkout, redirect the user to the checkout endpoint with a `plan` query parameter:
+
+```http
+GET /api/stripe/checkout?plan={plan_id}
+```
+
+**Parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `plan` | string | Yes | One of `solo`, `collective`, or `label` for the public self-serve checkout flow |
+
+<Note>The public billing flow uses the `solo`, `collective`, and `label` plan IDs. Custom and white-label arrangements are handled separately through sales and are not part of the normal self-serve Stripe checkout flow.</Note>
+
+The endpoint redirects the user to Stripe's hosted checkout page. All new subscriptions include a **7-day free trial** — the first charge occurs after the trial period ends. On successful checkout, the user is redirected to `/checkout/success` with the Stripe session ID and plan as query parameters. On cancellation, the user returns to the pricing page.
+
+<Note>
+Admin users (configured via `ADMIN_EMAILS`) skip the Stripe checkout flow entirely and are redirected straight to onboarding. No payment is required for admin accounts.
+</Note>
+
+<Note>
+The onboarding flow enforces payment before agent deployment. If the user has not completed payment, the deploy button is replaced with a checkout redirect. Attempting to deploy without a confirmed payment redirects the user to `GET /api/stripe/checkout?plan={plan}` to complete checkout first.
+</Note>
+
+**Example**
+
+```bash
+# Redirect user to checkout
+window.location.href = '/api/stripe/checkout?plan=collective'
+```
+
+<Warning>
+The legacy `POST /api/checkout` endpoint is deprecated and returns a `410 Gone` status. Use `GET /api/stripe/checkout` instead.
+</Warning>
+
+### Verify a checkout session
+
+After a successful checkout, you can verify the session and retrieve the resulting plan:
+
+```http
+GET /api/checkout/verify?session_id={session_id}
+```
+
+**Parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `session_id` | string | Yes | The Stripe checkout session ID returned after payment |
+
+This endpoint verifies that the checkout session has been paid and returns the subscription details. When the session metadata includes a `userId`, the endpoint also eagerly marks the user's subscription as active in the database. This ensures the user can provision agents immediately without waiting for the Stripe webhook to arrive.
+
+<Note>The subscription activation performed by this endpoint is idempotent. The Stripe webhook will also set the same values when it arrives — whichever runs first wins, and the second update is a no-op.</Note>
+
+**Response**
+
+```json
+{
+  "plan": "collective",
+  "status": "active",
+  "nextBilling": "2026-04-27T00:00:00.000Z",
+  "customerId": "cus_abc123"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `plan` | string | The plan from session metadata (defaults to `solo` if not set) |
+| `status` | string | Always `active` when payment is confirmed |
+| `nextBilling` | string \| null | ISO 8601 date of the next billing cycle, if available from the subscription |
+| `customerId` | string | Stripe customer ID |
+
+**Errors**
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `session_id` parameter |
+| 402 | Payment not completed |
+| 500 | Verification failed |
+| 503 | Stripe not configured |
+
+### Buy credits
+
+To purchase additional credits, redirect the user to the credits checkout endpoint:
+
+```http
+GET /api/stripe/credits?price={stripe_price_id}
+```
+
+**Parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `price` | string | Yes | A valid Stripe price ID from the allowed credit price list |
+
+The endpoint redirects the user to a Stripe checkout page for the selected credit pack. On success, credits are added to the account automatically.
+
+**Example**
+
+```bash
+# Redirect user to credit purchase
+window.location.href = '/api/stripe/credits?price=price_xxx'
+```
+
+## Billing API
+
+Manage billing, subscriptions, and usage programmatically. All billing endpoints require authentication with a valid JWT token.
+
+<Warning>The billing API may still expose legacy internal plan aliases such as `starter`, `pro`, `scale`, and `network` in some responses for backward compatibility. Treat the public checkout and pricing flow as the source of truth for customer-facing plan names.</Warning>
+
+```bash
+curl -X GET https://agentbot.sh/api/billing \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Get billing info
+
+Retrieve your current plan, subscription status, and usage.
+
+```http
+GET /api/billing
+```
+
+**Response**
+
+```json
+{
+  "plans": {
+    "starter": {
+      "name": "Starter",
+      "price": 19,
+      "dailyUnits": 600,
+      "features": ["1 AI Agent", "2GB RAM", "Telegram", "Basic skills"]
+    },
+    "pro": {
+      "name": "Pro",
+      "price": 39,
+      "dailyUnits": 1000,
+      "features": ["1 AI Agent", "4GB RAM", "All channels", "All skills", "Priority support"]
+    },
+    "scale": {
+      "name": "Scale",
+      "price": 79,
+      "dailyUnits": 2500,
+      "features": ["3 AI Agents", "8GB RAM", "All channels", "All skills", "Analytics"]
+    }
+  },
+  "currentPlan": "starter",
+  "subscriptionStatus": "active",
+  "byokEnabled": false,
+  "usage": {
+    "dailyUnits": 600,
+    "used": 245,
+    "remaining": 355
+  }
+}
+```
+
+<Note>The billing API returns plan tiers as `starter`, `pro`, and `scale` with USD pricing. These correspond to the subscription plans available through the billing dashboard. The Stripe checkout endpoint uses a separate set of plan identifiers (`solo`, `collective`, `label`, `network`) for direct checkout flows.</Note>
+
+### Billing actions
+
+Use `POST /api/billing` with an `action` field to manage your subscription.
+
+| Action | Description |
+|--------|-------------|
+| `create-checkout` | Create a Stripe checkout session for a plan |
+| `enable-byok` | Enable Bring Your Own Key mode for AI usage |
+| `disable-byok` | Disable BYOK and return to platform credits |
+| `get-usage` | Get current daily usage stats |
+| `buy-credits` | Purchase a credit pack |
+
+#### Create checkout
+
+Start a new Stripe checkout session for a subscription plan. The billing API accepts `starter`, `pro`, or `scale` as plan values.
+
+```json
+{
+  "action": "create-checkout",
+  "plan": "starter"
+}
+```
+
+**Response**
+
+```json
+{
+  "url": "https://checkout.stripe.com/..."
+}
+```
+
+Redirect the user to the returned `url` to complete payment.
+
+#### Enable BYOK
+
+Enable Bring Your Own Key mode so AI requests use your own API keys instead of platform credits.
+
+```json
+{
+  "action": "enable-byok",
+  "apiKey": "your-provider-api-key",
+  "provider": "openrouter"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `enable-byok` |
+| `apiKey` | string | Yes | Your API key for the AI provider |
+| `provider` | string | Yes | AI provider name (for example `openrouter`, `anthropic`, `openai`) |
+
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "BYOK enabled with openrouter. You'll pay openrouter directly for AI usage."
+}
+```
+
+#### Disable BYOK
+
+Switch back to platform credits for AI usage.
+
+```json
+{
+  "action": "disable-byok"
+}
+```
+
+**Response**
+
+```json
+{
+  "success": true,
+  "message": "BYOK disabled. Using platform credits."
+}
+```
+
+#### Get usage
+
+Retrieve your current daily usage statistics.
+
+```json
+{
+  "action": "get-usage"
+}
+```
+
+**Response**
+
+```json
+{
+  "dailyUnits": 600,
+  "used": 245,
+  "remaining": 355
+}
+```
+
+#### Buy credits
+
+Purchase a credit pack to top up your account balance. Pass one of the available pack sizes.
+
+```json
+{
+  "action": "buy-credits",
+  "pack": "200"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | Must be `buy-credits` |
+| `pack` | string | Yes | Credit pack size: `50`, `200`, or `500` |
+
+**Response**
+
+```json
+{
+  "success": true,
+  "credits": 15,
+  "price": "$15"
+}
+```
+
+| Pack size | Credits | Price |
+|-----------|---------|-------|
+| `50` | 5 | $5 |
+| `200` | 15 | $15 |
+| `500` | 30 | $30 |
+
+## Storage upgrade
+
+Upgrade to the Pro plan with 50GB storage via a dedicated checkout endpoint.
+
+```http
+POST /api/stripe/storage-upgrade
+```
+
+This endpoint requires authentication. No request body is needed — the upgrade is a fixed Pro plan at £39/mo with 50GB storage, WhatsApp support, and a custom domain.
+
+**Response**
+
+```json
+{
+  "url": "https://checkout.stripe.com/..."
+}
+```
+
+Redirect the user to the returned `url` to complete the upgrade. On success, the user is redirected to the files dashboard. On cancellation, the user returns to the files dashboard with an error parameter.
+
+| Status | Description |
+|--------|-------------|
+| 200 | Checkout URL returned |
+| 401 | Unauthorized (authentication required) |
+| 500 | Stripe not configured or checkout creation failed |
+
+## Webhook events
+
+Handle subscription events:
+
+```typescript
+// /api/webhooks/stripe (canonical endpoint)
+export async function POST(request) {
+  const sig = request.headers.get('stripe-signature');
+  const body = await request.text();
+  
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+  } catch (err) {
+    return new Response(`Webhook Error: ${err.message}`, { status: 401 });
+  }
+  
+  switch (event.type) {
+    case 'checkout.session.completed':
+      // Grant access
+      await grantAccess(event.data.object.customer_email);
+      break;
+    case 'customer.subscription.deleted':
+      // Revoke access
+      await revokeAccess(event.data.object.customer_email);
+      break;
+  }
+  
+  return new Response('OK');
+}
+```
+
+<Warning>The legacy endpoint at `/api/stripe/webhook` has been permanently removed. Both `POST` and `GET` requests return `410 Gone` with `{ "error": "This endpoint is deprecated. Use /api/webhooks/stripe instead." }`. Update your Stripe dashboard webhook URL to the canonical endpoint at `/api/webhooks/stripe`. The previous forwarding behavior has been removed.</Warning>
+
+### User matching
+
+When processing `checkout.session.completed` events, the webhook identifies the user by the `userId` field in the session metadata. If the `userId` matches an existing user, the subscription is activated for that user.
+
+When `userId` is missing from the session metadata, the webhook falls back to looking up the user by `customerEmail`. In this case, only existing users are updated — a new user account is never created. If no user is found by email, the event is logged and skipped. This prevents duplicate accounts when session metadata is incomplete.
+
+<Warning>Ensure your Stripe checkout session metadata includes a `userId` field. When `userId` is missing, the webhook can only update users that already exist in the database by email. If the email does not match any existing user, the subscription activation is skipped.</Warning>
+
+### Plan mapping
+
+When processing `checkout.session.completed` events, the webhook maps the `plan` value from the session metadata to a subscription tier. The following plans are recognized:
+
+| Metadata value | Mapped plan |
+|----------------|-------------|
+| `underground` | `solo` |
+| `solo` | `solo` |
+| `collective` | `collective` |
+| `label` | `label` |
+| `network` | `network` |
+
+Any unrecognized plan value falls back to `solo`. The `underground` plan is mapped to `solo` for backward compatibility.
+
+<Warning>If your Stripe product metadata uses a plan name that is not in the table above, the subscription will be recorded as `solo`. Make sure your Stripe product metadata `plan` field matches one of the recognized values exactly.</Warning>
+
+## Wallet top-up
+
+In addition to subscriptions and credit packs, you can use Stripe to add funds directly to your wallet for agent calls. The wallet top-up flow uses a dedicated endpoint that creates a one-time Stripe checkout session.
+
+### Available amounts
+
+| Amount | Description |
+|--------|-------------|
+| $5 | 5 agent calls |
+| $10 | 10 agent calls |
+| $25 | 25 agent calls |
+| $50 | 50 agent calls |
+
+### Start a wallet top-up
+
+Redirect the user to the wallet top-up endpoint with `amount` and `address` query parameters:
+
+```http
+GET /api/wallet/top-up?amount=1000&address=0x...
+```
+
+**Parameters**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `amount` | number | No | Amount in cents: `500`, `1000`, `2500`, or `5000`. Defaults to `1000`. |
+| `address` | string | Yes | Wallet address to credit (0x-prefixed, 42 characters). |
+
+The endpoint returns a JSON response with the Stripe checkout URL and session ID. Redirect the user to the `url` to complete payment. No session authentication is required — the wallet address identifies the recipient.
+
+**Example**
+
+```bash
+# Redirect user to wallet top-up ($25)
+window.location.href = '/api/wallet/top-up?amount=2500&address=0xd8fd...db56f'
+```
+
+On success, the user is redirected to `/dashboard/wallet?top_up=success`. On cancellation, the user is redirected to `/dashboard/wallet?top_up=cancelled`.
+
+<Note>Wallet top-up payments are processed as one-time charges, not recurring subscriptions. The amount is credited to the user's wallet after successful payment via the webhook at `POST /api/wallet/top-up`. See the [Wallet API reference](/api-reference/wallet#wallet-top-up) for full endpoint details.</Note>
+
+### Direct transfer
+
+You can also fund your wallet by sending USDC directly to your wallet address on the Tempo network. Copy your wallet address from the wallet dashboard and transfer funds from any compatible wallet. No Stripe checkout is needed for direct transfers.
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion icon="error" title="Payments not working">
+
+- Verify API keys are correct
+- Check webhook is configured
+- Ensure products/prices are created in Stripe
+
+</Accordion>
+
+<Accordion icon="error" title="Webhook errors">
+
+- Verify webhook secret
+- Check webhook URL is accessible
+- Review Stripe logs in developer dashboard
+
+</Accordion>
+
+<Accordion icon="error" title="410 error on /api/checkout">
+
+The legacy `/api/checkout` endpoint has been deprecated. Use `GET /api/stripe/checkout?plan={plan_id}` instead.
+
+</Accordion>
+
+</AccordionGroup>

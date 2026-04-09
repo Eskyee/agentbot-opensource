@@ -1,0 +1,188 @@
+---
+title: Cron API
+description: "Manage cron jobs on the OpenClaw gateway"
+---
+
+# Cron API
+
+Create, list, and delete cron jobs directly on the OpenClaw gateway. Cron jobs run recurring tasks on your agent using the gateway's built-in scheduler.
+
+<Note>These endpoints manage cron jobs on the gateway itself via `POST /tools/invoke`. For application-level scheduled tasks stored in the database, see the [scheduled tasks API](/api-reference/scheduled-tasks).</Note>
+
+<Note>Cron is enabled by default on all new instances. The provisioning template sets a maximum of 2 concurrent runs and 24-hour session retention. You can adjust these limits using the [config API](/api-reference/config).</Note>
+
+All cron endpoints require session authentication.
+
+## List cron jobs
+
+```http
+GET /api/cron
+```
+
+Returns all cron jobs from the gateway, including disabled jobs.
+
+### Response
+
+```json
+{
+  "jobs": [
+    {
+      "id": "heartbeat",
+      "name": "Heartbeat",
+      "enabled": true,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 1800000
+      },
+      "payload": {
+        "kind": "systemEvent",
+        "text": "Heartbeat check — review emails, calendar, and recent activity."
+      },
+      "lastRun": "2026-03-30T01:00:00Z",
+      "nextRun": "2026-03-30T01:30:00Z"
+    }
+  ],
+  "total": 1,
+  "source": "gateway"
+}
+```
+
+### Job object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Job identifier |
+| `name` | string | Job display name |
+| `enabled` | boolean | Whether the job is active |
+| `schedule` | object | Schedule configuration. Contains `kind` (`every` for interval-based) and timing fields like `everyMs` (interval in milliseconds) or `expr` (cron expression). |
+| `payload` | object | Job payload sent to the agent when the job runs |
+| `lastRun` | string \| null | ISO 8601 timestamp of the last execution |
+| `nextRun` | string \| null | ISO 8601 timestamp of the next scheduled execution |
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `jobs` | array | List of cron job objects |
+| `total` | number | Total number of jobs |
+| `source` | string | Data source — `gateway` on success, `gateway-error` when the gateway is unreachable |
+
+### Gateway errors
+
+When the gateway is unreachable, the endpoint returns HTTP `200` with an empty job list and the error detail:
+
+```json
+{
+  "jobs": [],
+  "error": "Gateway unreachable",
+  "source": "gateway-error"
+}
+```
+
+### Example
+
+```bash
+curl -X GET https://agentbot.sh/api/cron \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```
+
+## Create a cron job
+
+```http
+POST /api/cron
+```
+
+Adds a new cron job to the gateway.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Job name |
+| `schedule` | object | Yes | Schedule configuration. Use `{ "kind": "every", "everyMs": 3600000 }` for interval-based schedules, or `{ "kind": "cron", "expr": "0 9 * * *" }` for cron expressions. |
+| `payload` | object | Yes | Job payload sent to the agent on each run |
+| `enabled` | boolean | No | Whether the job starts active. Defaults to `true`. |
+
+### Example request
+
+```json
+{
+  "name": "Daily digest",
+  "schedule": {
+    "kind": "every",
+    "everyMs": 86400000
+  },
+  "payload": {
+    "kind": "systemEvent",
+    "text": "Generate a daily activity digest."
+  }
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "source": "gateway"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `name, schedule, and payload required` — one or more required fields are missing |
+| 401 | Unauthorized — no valid session |
+| 502 | Gateway error — the gateway rejected the request or is unreachable |
+
+### Example
+
+```bash
+curl -X POST https://agentbot.sh/api/cron \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "name": "Daily digest",
+    "schedule": { "kind": "every", "everyMs": 86400000 },
+    "payload": { "kind": "systemEvent", "text": "Generate a daily activity digest." }
+  }'
+```
+
+## Delete a cron job
+
+```http
+DELETE /api/cron?jobId=heartbeat
+```
+
+Removes a cron job from the gateway.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `jobId` | string | Yes | ID of the job to delete |
+
+### Response
+
+```json
+{
+  "success": true,
+  "source": "gateway"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `jobId required` — the `jobId` query parameter is missing |
+| 401 | Unauthorized — no valid session |
+| 502 | Gateway error — the gateway rejected the request or is unreachable |
+
+### Example
+
+```bash
+curl -X DELETE "https://agentbot.sh/api/cron?jobId=heartbeat" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```

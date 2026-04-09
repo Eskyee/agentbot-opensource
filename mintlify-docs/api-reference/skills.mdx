@@ -1,0 +1,490 @@
+---
+title: Skills API
+description: "API endpoints for the agent skills marketplace"
+---
+
+# Skills API
+
+Use skill endpoints to extend your agents with specialized capabilities.
+
+## Base URL
+
+```
+https://agentbot.sh/api/skills
+```
+
+## List skills
+
+```http
+GET /api/skills
+```
+
+Returns all available skills in the marketplace. No authentication required for basic listing. When a valid session is present and `agentId` is provided, the response includes which skills are already installed for that user and agent.
+
+### Query parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `category` | string | Filter by category. Use `all` or omit for all skills. Options: `streaming`, `events`, `payments`, `finance`, `productivity`, `communication`, `development`, `channels`, `music`, `creative`, `marketing` |
+| `featured` | string | Set to `true` to return only featured skills |
+| `agentId` | string | Agent identifier. When provided with an authenticated session, the response includes an `installedSkillIds` array indicating which skills are already installed on this agent. |
+
+### Response
+
+```json
+{
+  "skills": [
+    {
+      "id": "dj-streaming",
+      "name": "DJ Streaming",
+      "description": "Stream DJ sets with Mux",
+      "category": "streaming",
+      "author": "Agentbot",
+      "downloads": 150,
+      "rating": 5.0,
+      "featured": true,
+      "mcpEnabled": false,
+      "mcpConfig": null
+    }
+  ],
+  "categories": [
+    "streaming",
+    "events",
+    "payments",
+    "finance",
+    "productivity",
+    "communication",
+    "development",
+    "channels",
+    "music",
+    "creative",
+    "marketing"
+  ],
+  "featured": [],
+  "installedSkillIds": ["dj-streaming", "guestlist"]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `skills` | array | List of skill objects matching the query filters |
+| `skills[].mcpEnabled` | boolean | Whether this skill has a bundled MCP server enabled. When `true`, the skill provides additional tools through the [MCP skills API](/api-reference/mcp-skills). |
+| `skills[].mcpConfig` | object \| null | MCP server configuration for the skill. Contains server name, version, and tool definitions when `mcpEnabled` is `true`. `null` when the skill has no MCP configuration. |
+| `categories` | string[] | All distinct skill categories in the marketplace |
+| `featured` | array | Subset of `skills` where `featured` is `true` |
+| `installedSkillIds` | string[] | IDs of skills installed and enabled for the authenticated user and the specified `agentId`. Returns an empty array when no session is present or `agentId` is omitted. |
+
+## Install skill
+
+```http
+POST /api/skills
+```
+
+Requires session authentication. Installs a skill on an agent.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `skillId` | string | Yes | ID of the skill to install |
+| `agentId` | string | Yes | ID of the agent to install the skill on |
+
+### Response
+
+```json
+{
+  "success": true,
+  "installed": {
+    "id": "inst_123",
+    "skillId": "dj-streaming",
+    "agentId": "agent_456",
+    "installedAt": "2026-03-20T00:00:00Z"
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `skillId` or `agentId` |
+| 401 | Unauthorized |
+| 404 | Agent not found or skill not found |
+| 500 | Internal error |
+
+<Note>When a skill is installed, the agent's complete state (including the newly installed skill) is automatically synced to the OpenClaw gateway. If the gateway sync fails, the skill is still recorded in the database — you can retry the sync manually using the [agent sync endpoint](/api-reference/agents#sync-agent-to-gateway).</Note>
+
+## Create skill
+
+```http
+POST /api/skills/create
+```
+
+Requires session authentication. Creates a new custom skill in the marketplace. The skill becomes available to all users once created.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Display name of the skill. Maximum 80 characters. Must be unique across the marketplace. |
+| `description` | string | Yes | Summary of the skill's capabilities. Maximum 600 characters. |
+| `category` | string | No | Category for the skill. Maximum 40 characters. Defaults to `custom` when omitted. |
+| `code` | string | No | Skill handler code or configuration. Maximum 2000 characters. |
+
+### Response
+
+```json
+{
+  "success": true,
+  "skill": {
+    "id": "clx9abc123",
+    "name": "My Custom Skill",
+    "description": "Analyzes track mix quality",
+    "category": "custom",
+    "code": "",
+    "author": "user@example.com",
+    "downloads": 0,
+    "rating": 0,
+    "featured": false,
+    "mcpEnabled": false,
+    "mcpConfig": null,
+    "createdAt": "2026-04-02T12:00:00.000Z",
+    "updatedAt": "2026-04-02T12:00:00.000Z"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `skill.id` | string | Unique identifier for the created skill |
+| `skill.name` | string | Display name |
+| `skill.description` | string | Skill description |
+| `skill.category` | string | Category (defaults to `custom`) |
+| `skill.code` | string | Skill handler code |
+| `skill.author` | string | Set to the authenticated user's display name or email |
+| `skill.downloads` | number | Download count, starts at `0` |
+| `skill.rating` | number | Rating score, starts at `0` |
+| `skill.featured` | boolean | Always `false` for user-created skills |
+| `skill.mcpEnabled` | boolean | Whether the skill has a bundled MCP server. Always `false` for user-created skills. |
+| `skill.mcpConfig` | object \| null | MCP server configuration. Always `null` for user-created skills. |
+| `skill.createdAt` | string | ISO 8601 creation timestamp |
+| `skill.updatedAt` | string | ISO 8601 last-updated timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `name` or `description`, or a skill with the same name already exists |
+| 401 | Unauthorized |
+| 500 | Internal error |
+
+## Uninstall skill
+
+```http
+DELETE /api/skills
+```
+
+Requires session authentication. Removes a skill from an agent.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `skillId` | string | Yes | ID of the skill to uninstall |
+| `agentId` | string | Yes | ID of the agent to uninstall the skill from |
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Missing `skillId` or `agentId` |
+| 401 | Unauthorized |
+| 500 | Internal error |
+
+<Note>The uninstall endpoint returns `{ "success": true }` even when no matching installation exists. It does not return a `404` error for missing installations.</Note>
+
+<Note>When a skill is uninstalled, the updated agent state is automatically synced to the OpenClaw gateway. If the sync fails, the skill is still removed from the database — you can retry the sync manually using the [agent sync endpoint](/api-reference/agents#sync-agent-to-gateway).</Note>
+
+## Available skills
+
+### Streaming
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| DJ Streaming | `/dj-streaming` | Stream live DJ sets via Mux with RAVE token verification |
+
+### Events
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Guestlist Manager | `/guestlist` | Manage event guestlists, RSVPs, check-ins, and capacity limits |
+| Event Ticketing | `/event-ticketing` | Sell tickets with USDC payments on Base via x402 protocol |
+| Event Scheduler | `/event-scheduler` | Schedule events across Telegram, Discord, WhatsApp, and email with recurring support |
+| Venue Finder | `/venue-finder` | Find venues worldwide with capacity and price filters |
+| Festival Finder | `/festival-finder` | Discover festivals globally, compare lineups, and get recommendations |
+
+### Payments
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| USDC Payments | `/usdc-payments` | Accept USDC payments on Base, generate payment links, and track transactions |
+| Booking Settlement | `/booking-settlement` | Escrow and split execution for booking payments with auto-release on gig completion |
+| Instant Split | `/instant-split` | Execute royalty splits instantly in USDC on Base with configurable thresholds |
+
+### Finance
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Community Treasury | `/treasury` | Track spending, reimbursements, and multi-sig treasury management |
+| Royalty Tracker | `/royalty-tracker` | Track streaming royalties across platforms in USDC |
+
+### Productivity
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Google Calendar | `/google-calendar` | Schedule events, manage availability, and set reminders with full Google Calendar sync. See the [Calendar API](/api-reference/calendar) for detailed endpoint documentation. |
+| File Manager | `/file-manager` | Upload, download, and organize files with local storage integration |
+| Google Workspace | `/google-workspace` | Gmail, Calendar, Drive, and Sheets integration |
+| Notion | `/notion` | Sync with Notion databases, pages, and workflows |
+
+### Communication
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Email | `/email` | Send and receive emails with newsletter support |
+
+### Development
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Webhooks | `/webhook` | Connect to any API with HTTP requests, webhooks, and integrations |
+| Browser Automation | `/browser` | Browse websites, fill forms, and scrape data autonomously |
+
+### Channels
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Telegram | `/telegram` | Connect via Telegram with bot commands, messages, and groups |
+| Discord | `/discord` | Connect via Discord with slash commands, embeds, and voice channels |
+| WhatsApp | `/whatsapp` | Connect via WhatsApp with message templates, media, and status updates |
+| WhatsApp Business | `/whatsapp-business` | Full WhatsApp Business API with automated replies, labels, and catalogs |
+| Slack | `/slack` | Post to channels, create threads, and handle slash commands |
+
+### Music
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Track Archaeologist | `/track-archaeologist` | Deep catalog search via BlockDB similarity search |
+| Setlist Oracle | `/setlist-oracle` | BPM, key, and energy analysis to build DJ sets with Camelot mixing |
+| Demo Submitter | `/demo-submitter` | Submit demos to Base FM for airplay consideration |
+
+### Creative
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Visual Synthesizer | `/visual-synthesizer` | Generate release artwork and social media assets using Stable Diffusion XL |
+
+### Marketing
+
+| Skill | Endpoint | Description |
+|-------|----------|-------------|
+| Groupie Manager | `/groupie-manager` | Fan segmentation, lifecycle tracking, and automated merch drop campaigns |
+
+## Use a skill
+
+```http
+POST /api/skills/{skill-name}
+```
+
+### Visual Synthesizer
+
+```json
+{
+  "prompt": "dark techno album cover",
+  "style": "industrial"
+}
+```
+
+### Track Archaeologist
+
+```json
+{
+  "action": "search",
+  "bpm": 128,
+  "genre": "techno",
+  "mood": "dark"
+}
+```
+
+### Setlist Oracle
+
+```json
+{
+  "action": "build",
+  "genre": "house",
+  "duration": 120
+}
+```
+
+### Groupie Manager
+
+```json
+{
+  "action": "segment"
+}
+```
+
+### Royalty Tracker
+
+```json
+{
+  "action": "total"
+}
+```
+
+### Demo Submitter
+
+```json
+{
+  "action": "submit",
+  "title": "My Track",
+  "artist": "My Name"
+}
+```
+
+### Event Ticketing
+
+```json
+{
+  "action": "purchase",
+  "eventId": "e1",
+  "email": "fan@example.com",
+  "tier": "vip"
+}
+```
+
+### Event Scheduler
+
+```json
+{
+  "action": "schedule",
+  "title": "Newsletter",
+  "date": "2026-03-20",
+  "time": "18:00",
+  "channels": ["telegram", "email"]
+}
+```
+
+### Venue Finder
+
+```json
+{
+  "action": "search",
+  "city": "London",
+  "type": "underground",
+  "capacity": 200,
+  "maxPrice": 500
+}
+```
+
+### Festival Finder
+
+```json
+{
+  "action": "search",
+  "genre": "techno",
+  "country": "UK",
+  "maxPrice": 350
+}
+```
+
+### Booking Settlement
+
+Manage booking escrow, fund releases, and settlement simulations.
+
+**Actions:** `list`, `get`, `create_escrow`, `release_funds`, `simulate_settlement`
+
+```json
+{
+  "action": "create_escrow",
+  "bookingId": "bk_1"
+}
+```
+
+```json
+{
+  "action": "release_funds",
+  "bookingId": "bk_1"
+}
+```
+
+```json
+{
+  "action": "simulate_settlement",
+  "booking": {
+    "guarantee": 500,
+    "backend": 200,
+    "deposit": 100
+  }
+}
+```
+
+### Instant Split
+
+Execute royalty splits instantly in USDC on Base.
+
+**Actions:** `list_pending`, `create_split_rule`, `execute_split`, `get_balance`, `simulate`
+
+```json
+{
+  "action": "execute_split",
+  "splitId": "split_1"
+}
+```
+
+```json
+{
+  "action": "create_split_rule",
+  "splits": {
+    "recipientAddress": "0x...",
+    "percentage": 50,
+    "role": "artist",
+    "name": "Artist"
+  },
+  "threshold": 50
+}
+```
+
+```json
+{
+  "action": "simulate",
+  "streams": 100000,
+  "rate": 0.003
+}
+```
+
+## Response format
+
+```json
+{
+  "success": true
+}
+```
+
+<Note>Each skill returns additional data specific to its function alongside the `success` field.</Note>
+
+## Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid request parameters |
+| 404 | Skill not found |
+| 500 | Internal error |

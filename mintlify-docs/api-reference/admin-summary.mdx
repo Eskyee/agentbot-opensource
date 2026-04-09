@@ -1,0 +1,89 @@
+---
+title: Admin Summary API
+description: "Admin dashboard summary with service health, trial stats, and agent status"
+---
+
+# Admin Summary API
+
+Retrieve a consolidated admin dashboard summary including service health, trial statistics, and agent status breakdowns.
+
+## Get admin summary
+
+```http
+GET /api/admin/summary
+```
+
+Requires session authentication with an admin email. Returns service health checks, active trial counts, expiring trial users, agent status totals, and recent agent errors.
+
+### Authentication
+
+The authenticated user's email must be in the `ADMIN_EMAILS` environment variable (comma-separated list). Non-admin users receive a `403` response.
+
+### Response
+
+```json
+{
+  "serviceHealth": [
+    { "name": "Agentbot API", "status": "ok", "detail": "ok" },
+    { "name": "Tempo Soul", "status": "ok", "detail": "ok" },
+    { "name": "x402 Gateway", "status": "degraded", "detail": "HTTP 502" }
+  ],
+  "trial": {
+    "active": 12,
+    "expiringSoon": [
+      {
+        "id": "user_abc123",
+        "email": "user@example.com",
+        "endsAt": "2026-04-04T00:00:00.000Z",
+        "daysLeft": 2
+      }
+    ]
+  },
+  "agents": {
+    "totals": {
+      "running": 8,
+      "stopped": 3,
+      "error": 1
+    },
+    "recentErrors": [
+      {
+        "id": "agent_xyz",
+        "name": "my-agent",
+        "userId": "user_abc123",
+        "updatedAt": "2026-04-02T12:00:00.000Z",
+        "status": "error"
+      }
+    ]
+  },
+  "timestamp": "2026-04-02T12:00:00.000Z"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `serviceHealth` | array | Health status of monitored platform services. See [dashboard health](/api-reference/health#dashboard-health) for the service health format. |
+| `serviceHealth[].name` | string | Service display name |
+| `serviceHealth[].status` | string | Service status: `ok`, `degraded`, or `down` |
+| `serviceHealth[].detail` | string | Additional detail such as an HTTP status code or error message |
+| `trial.active` | number | Number of users on the free plan with an active trial |
+| `trial.expiringSoon` | array | Users whose trial expires within the next 3 days, ordered by expiration date. Returns up to 12 entries. |
+| `trial.expiringSoon[].id` | string | User ID |
+| `trial.expiringSoon[].email` | string | User email |
+| `trial.expiringSoon[].endsAt` | string | ISO 8601 trial expiration timestamp |
+| `trial.expiringSoon[].daysLeft` | number | Days remaining on the trial |
+| `agents.totals` | object | Agent counts grouped by status. Keys are status values (for example `running`, `stopped`, `error`) and values are counts. |
+| `agents.recentErrors` | array | Up to 5 most recently updated agents in the `error` state |
+| `agents.recentErrors[].id` | string | Agent ID |
+| `agents.recentErrors[].name` | string | Agent name |
+| `agents.recentErrors[].userId` | string | Owner's user ID |
+| `agents.recentErrors[].updatedAt` | string | ISO 8601 timestamp of the last status update |
+| `agents.recentErrors[].status` | string | Always `error` |
+| `timestamp` | string | ISO 8601 timestamp of when the summary was generated |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 403 | Unauthorized — user is not authenticated or is not an admin |

@@ -1,0 +1,419 @@
+---
+title: Metrics API
+description: "Endpoints for retrieving agent performance metrics and music industry analytics"
+---
+
+# Metrics API
+
+Retrieve agent performance data, historical metrics, and music industry analytics.
+
+## System stats
+
+```http
+GET /api/stats
+```
+
+Requires session authentication. Returns server-level resource usage, in-process counters, health classification, and deployment metadata.
+
+<Note>The in-process counters (`messages` and `errors`) are held in memory and reset when the web application restarts. They are not persisted to a database.</Note>
+
+### Response
+
+```json
+{
+  "cpu": 12.5,
+  "memory": 67.3,
+  "uptime": 3600,
+  "messages": 0,
+  "errors": 0,
+  "health": "healthy",
+  "timestamp": "2026-04-03T12:00:00.000Z",
+  "deployment": {
+    "provider": "vercel",
+    "environment": "production",
+    "region": "iad1",
+    "deploymentUrl": "https://agentbot.vercel.app",
+    "commitSha": "abc123def456",
+    "commitRef": "main",
+    "commitMessage": "Improve dashboard stats",
+    "deploymentId": "dpl_abc123",
+    "target": "production",
+    "projectProductionUrl": "agentbot.vercel.app"
+  },
+  "runtime": {
+    "node": "v22.14.0",
+    "platform": "linux",
+    "arch": "x64",
+    "heapUsedMb": 85.3,
+    "heapTotalMb": 128.0,
+    "rssMb": 156.2,
+    "externalMb": 2.1
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cpu` | number | CPU usage percentage (0–100), derived from the system load average divided by the number of CPU cores |
+| `memory` | number | Memory usage percentage (0–100) |
+| `uptime` | number | Seconds since the web application process started |
+| `messages` | number | In-process message counter. Resets on restart. |
+| `errors` | number | In-process error counter. Resets on restart. |
+| `health` | string | Overall health classification: `healthy`, `degraded`, or `unhealthy` |
+| `timestamp` | string | ISO 8601 timestamp of the stats snapshot |
+| `deployment.provider` | string | Hosting provider: `vercel` when running on Vercel, `node` otherwise |
+| `deployment.environment` | string | Deployment environment (for example `production`, `preview`, `development`). Falls back to `NODE_ENV` or `unknown`. |
+| `deployment.region` | string \| null | Deployment region identifier, or `null` when not available |
+| `deployment.deploymentUrl` | string \| null | Public deployment URL, or `null` when not running on Vercel |
+| `deployment.commitSha` | string \| null | Git commit SHA of the deployed build, or `null` when not available |
+| `deployment.commitRef` | string \| null | Git branch or tag of the deployed build, or `null` when not available |
+| `deployment.commitMessage` | string \| null | Git commit message of the deployed build, or `null` when not available |
+| `deployment.deploymentId` | string \| null | Vercel deployment identifier, or `null` when not running on Vercel |
+| `deployment.target` | string \| null | Vercel target environment (for example `production`, `preview`), or `null` when not running on Vercel |
+| `deployment.projectProductionUrl` | string \| null | Production URL configured for the Vercel project, or `null` when not running on Vercel |
+| `runtime.node` | string | Node.js version |
+| `runtime.platform` | string | Operating system platform (for example `linux`, `darwin`) |
+| `runtime.arch` | string | CPU architecture (for example `x64`, `arm64`) |
+| `runtime.heapUsedMb` | number | V8 heap memory in use, in megabytes |
+| `runtime.heapTotalMb` | number | Total V8 heap size, in megabytes |
+| `runtime.rssMb` | number | Resident set size of the process, in megabytes |
+| `runtime.externalMb` | number | Memory used by C++ objects bound to JavaScript objects, in megabytes |
+
+The `health` field is computed from CPU and memory thresholds:
+
+| Value | Condition |
+|-------|-----------|
+| `healthy` | CPU ≤ 70% and memory ≤ 70% and errors ≤ 5 |
+| `degraded` | CPU > 70% or memory > 70% or errors > 5 (but below the unhealthy threshold) |
+| `unhealthy` | CPU > 85% or memory > 85% or errors > 10 |
+
+### Error response
+
+On failure, the endpoint returns HTTP `500` with zeroed counters and `health: "unhealthy"`:
+
+```json
+{
+  "cpu": 0,
+  "memory": 0,
+  "uptime": 0,
+  "messages": 0,
+  "errors": 1,
+  "health": "unhealthy",
+  "timestamp": "2026-04-03T12:00:00.000Z",
+  "deployment": {
+    "provider": "vercel",
+    "environment": "production",
+    "region": null,
+    "deploymentUrl": null,
+    "commitSha": null,
+    "commitRef": null,
+    "commitMessage": null,
+    "deploymentId": null,
+    "target": null,
+    "projectProductionUrl": null
+  },
+  "runtime": {
+    "node": "v22.14.0",
+    "platform": "linux",
+    "arch": "x64",
+    "heapUsedMb": 0,
+    "heapTotalMb": 0,
+    "rssMb": 0,
+    "externalMb": 0
+  }
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to collect system stats. Returns zeroed fallback data (see above). |
+
+---
+
+## Platform metrics
+
+```http
+GET /api/metrics
+```
+
+<Note>This endpoint is served by the web application, not the backend API service. It is not available on the backend base URL.</Note>
+
+Returns platform-wide metrics including agent counts, message volumes, deployment stats, uptime, performance, and storage usage. Requires session authentication.
+
+Agent and deployment counts are sourced from the database. Performance data (`averageResponseTime`, `successRate`, `errorRate`, `cpu`, `memory`) is fetched from the backend metrics service when at least one active agent exists; otherwise these fields fall back to computed defaults or `0`. The `messages` fields are not tracked in the frontend database and always return `0`.
+
+### Response
+
+```json
+{
+  "metrics": {
+    "agents": {
+      "total": 4,
+      "active": 4,
+      "inactive": 0,
+      "failed": 0
+    },
+    "messages": {
+      "today": 0,
+      "thisWeek": 0,
+      "thisMonth": 0
+    },
+    "deployments": {
+      "total": 4,
+      "successful": 4,
+      "failed": 0
+    },
+    "uptime": {
+      "platformUptime": 99.9,
+      "averageAgentUptime": 98.5
+    },
+    "performance": {
+      "averageResponseTime": 450,
+      "successRate": 99.1,
+      "errorRate": 0,
+      "cpu": 15.3,
+      "memory": 42.1
+    },
+    "storage": {
+      "used": 0,
+      "total": 1024,
+      "percentUsed": 0
+    }
+  },
+  "timestamp": "2026-03-27T12:00:00Z",
+  "status": "ok",
+  "plan": "solo"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `metrics.agents.total` | number | Total number of agents |
+| `metrics.agents.active` | number | Currently running agents |
+| `metrics.agents.inactive` | number | Stopped agents |
+| `metrics.agents.failed` | number | Agents in a failed state |
+| `metrics.messages.today` | number | Messages processed today. Not currently tracked; always returns `0`. |
+| `metrics.messages.thisWeek` | number | Messages processed this week. Not currently tracked; always returns `0`. |
+| `metrics.messages.thisMonth` | number | Messages processed this month. Not currently tracked; always returns `0`. |
+| `metrics.deployments.total` | number | Total deployments |
+| `metrics.deployments.successful` | number | Successful deployments |
+| `metrics.deployments.failed` | number | Failed deployments |
+| `metrics.uptime.platformUptime` | number | Platform uptime percentage |
+| `metrics.uptime.averageAgentUptime` | number | Average agent uptime percentage |
+| `metrics.performance.averageResponseTime` | number | Average response time in milliseconds. Returns `0` when no backend data is available. |
+| `metrics.performance.successRate` | number | Success rate percentage. Defaults to `99.1` when active agents exist but no backend data is available, or `0` when no active agents exist. |
+| `metrics.performance.errorRate` | number | Error rate percentage. Calculated from the ratio of failed agents when no backend data is available. |
+| `metrics.performance.cpu` | number | Current CPU usage percentage (0–100). Returns `0` when no backend data is available. |
+| `metrics.performance.memory` | number | Current memory usage percentage (0–100). Returns `0` when no backend data is available. |
+| `metrics.storage.used` | number | Storage used in MB. Currently always returns `0`. |
+| `metrics.storage.total` | number | Total storage in MB |
+| `metrics.storage.percentUsed` | number | Storage usage percentage. Currently always returns `0`. |
+| `plan` | string \| null | User's current subscription plan (for example `solo`, `collective`, `label`, `network`), or `null` if not set. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to fetch metrics. The error response includes an empty `metrics` object alongside the `error` field: `{ "error": "Failed to fetch metrics", "metrics": {} }` |
+
+## Historical metrics
+
+<Note>The per-user metrics endpoints below are served by the backend API service, not the web application. They are available at the backend base URL, which may differ from the web API base URL depending on your deployment.</Note>
+
+```http
+GET /api/metrics/:userId/historical
+```
+
+Requires bearer token authentication. Returns time-series metrics for an agent over a specified time range. Data is sourced from the `container_metrics` database table, aggregated by hour. If no database history exists for the requested range, the endpoint falls back to a single live container sample.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | string | ID of the user whose agent metrics to retrieve |
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `range` | string | `24h` | Time range for metrics. Options: `24h`, `7d`, `30d` |
+
+### Response
+
+```json
+{
+  "userId": "user_123",
+  "timeRange": "24h",
+  "metrics": [
+    {
+      "timestamp": "2026-03-18T12:00:00Z",
+      "cpu": 15.3,
+      "memory": 42.1,
+      "messages": 85,
+      "errors": 2
+    }
+  ],
+  "averages": {
+    "cpu": 18,
+    "memory": 45,
+    "messages": 72,
+    "errors": 3
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | User ID for the metrics |
+| `timeRange` | string | Requested time range |
+| `metrics` | array | Array of metric data points |
+| `metrics[].timestamp` | string | ISO 8601 timestamp for the data point |
+| `metrics[].cpu` | number | CPU usage percentage (0–100) |
+| `metrics[].memory` | number | Memory usage percentage (0–100) |
+| `metrics[].messages` | number | Messages processed in the period |
+| `metrics[].errors` | number | Errors in the period |
+| `averages.cpu` | number | Average CPU usage over the time range |
+| `averages.memory` | number | Average memory usage over the time range |
+| `averages.messages` | number | Average messages per period |
+| `averages.errors` | number | Average errors per period |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to fetch historical metrics |
+
+## Performance metrics
+
+```http
+GET /api/metrics/:userId/performance
+```
+
+Requires bearer token authentication. Returns current real-time performance data for an agent.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | string | ID of the user whose agent performance to retrieve |
+
+### Response
+
+```json
+{
+  "cpu": 15.3,
+  "memory": 42.1,
+  "errorRate": 1.2,
+  "responseTime": 0
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `cpu` | number | Current CPU usage percentage (0–100) |
+| `memory` | number | Current memory usage percentage (0–100) |
+| `errorRate` | number | Error rate percentage calculated from agent logs |
+| `responseTime` | number | Response time in milliseconds. Currently always returns `0` — real instrumentation is not yet implemented. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to fetch performance data |
+
+## Metrics summary
+
+```http
+GET /api/metrics/:userId/summary
+```
+
+Requires bearer token authentication. Returns a music industry analytics summary for an agent, including revenue, bookings, fan engagement, streaming stats, and active skills.
+
+<Warning>This endpoint currently returns hardcoded placeholder data. All fields return zero or `$0.00` values. Real data integration is not yet implemented. The response shape is stable and will be populated with live data in a future release.</Warning>
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | string | ID of the user whose metrics summary to retrieve |
+
+### Response
+
+```json
+{
+  "revenue": {
+    "month": "$0.00",
+    "total": "$0.00",
+    "change": "+0%"
+  },
+  "bookings": {
+    "completed": 0,
+    "pending": 0,
+    "conversion": "0%"
+  },
+  "fans": {
+    "total": 0,
+    "active": 0,
+    "growth": "+0%",
+    "segmentation": {
+      "superfans": 0,
+      "casual": 0,
+      "new": 0
+    }
+  },
+  "streams": {
+    "monthlyListeners": 0,
+    "monthlyStreams": 0,
+    "growth": "+0%"
+  },
+  "skills": {
+    "active": 0,
+    "total": 0,
+    "growth": "+0%"
+  }
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `revenue.month` | string | Revenue for the current month |
+| `revenue.total` | string | Total lifetime revenue |
+| `revenue.change` | string | Month-over-month revenue change |
+| `bookings.completed` | number | Number of completed bookings |
+| `bookings.pending` | number | Number of pending bookings |
+| `bookings.conversion` | string | Booking conversion rate |
+| `fans.total` | number | Total fan count |
+| `fans.active` | number | Active fans |
+| `fans.growth` | string | Fan growth rate |
+| `fans.segmentation.superfans` | number | Number of superfans |
+| `fans.segmentation.casual` | number | Number of casual fans |
+| `fans.segmentation.new` | number | Number of new fans |
+| `streams.monthlyListeners` | number | Monthly listener count |
+| `streams.monthlyStreams` | number | Monthly stream count |
+| `streams.growth` | string | Streaming growth rate |
+| `skills.active` | number | Number of active skills |
+| `skills.total` | number | Total skills available |
+| `skills.growth` | string | Skills adoption growth rate |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid bearer token |
+| 500 | Failed to fetch metrics summary |

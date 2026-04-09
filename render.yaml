@@ -1,0 +1,74 @@
+# Agentbot Render Blueprint — API only (frontend on Vercel)
+#
+# ⚠️  INTERNAL_API_KEY SYNC REQUIRED:
+#     render.yaml uses `generateValue: true` which creates a unique key
+#     on first blueprint apply. After Render generates the key, copy it
+#     from the Render dashboard → Environment and paste it into:
+#       - Vercel dashboard → agentbot project → Environment Variables → INTERNAL_API_KEY
+#     Without this sync, web → backend API calls will return 401.
+
+databases:
+  - name: agentbot-db
+    databaseName: agentbot
+    plan: free
+    # NOTE: Render free Postgres suspends after 90 days of inactivity.
+    # Upgrade to `starter` ($7/mo) when you're ready for production reliability.
+    ipAllowList: []
+
+services:
+  # Backend API + inline scheduler
+  - type: web
+    name: agentbot-api
+    env: docker
+    dockerfilePath: Dockerfile
+    rootDir: agentbot-backend
+    plan: starter
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "3001"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agentbot-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MCP_API_KEY
+        generateValue: true
+      - key: WALLET_ENCRYPTION_KEY
+        generateValue: true
+      # ⚠️  After first deploy, copy the generated value to Vercel env vars
+      - key: INTERNAL_API_KEY
+        generateValue: true
+      # Soul/Railway service URL — backend needs this to proxy to borg/x402
+      - key: SOUL_SERVICE_URL
+        value: "https://x402-gateway-production.up.railway.app"
+      - key: OPENCLAW_GATEWAY_URL
+        value: "https://x402-gateway-production.up.railway.app"
+      - key: AGENTS_DOMAIN
+        value: "agents.raveculture.xyz"
+      # Set these in Render dashboard (sync: false = not in source control)
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: CDP_API_KEY_NAME
+        sync: false
+      - key: CDP_API_KEY_PRIVATE_KEY
+        sync: false
+      - key: CDP_WALLET_SECRET
+        sync: false
+      - key: BANKR_API_KEY
+        sync: false
+      - key: MUX_TOKEN_ID
+        sync: false
+      - key: MUX_TOKEN_SECRET
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false

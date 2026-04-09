@@ -1,0 +1,545 @@
+---
+title: Maintenance API
+description: "Agent health monitoring, restart, instance state, and factory reset endpoints"
+---
+
+# Maintenance API
+
+Check agent health, query runtime state, and trigger maintenance restarts. These endpoints operate on the authenticated user's deployed agent instance.
+
+## Get instance runtime state
+
+```http
+GET /api/instance/:userId
+```
+
+Requires session authentication. Returns runtime state for a specific agent instance by probing the agent's `/healthz` and `/readyz` endpoints directly. This endpoint resolves status without a backend hop — it reads the persisted OpenClaw URL from the database and probes the agent in-process.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | string | The instance identifier (matches the user's `openclawInstanceId`) |
+
+### Response
+
+```json
+{
+  "userId": "abc123",
+  "status": "running",
+  "startedAt": "2026-04-04T03:10:00.000Z",
+  "subdomain": "agentbot-agent-abc123-production.up.railway.app",
+  "url": "https://agentbot-agent-abc123-production.up.railway.app",
+  "plan": "solo",
+  "openclawVersion": "2026.4.2"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | The instance identifier from the request path |
+| `status` | string | Runtime status derived from health probes: `running`, `starting`, or `unknown` |
+| `startedAt` | string | ISO 8601 timestamp of when the status was checked |
+| `subdomain` | string | Hostname of the agent's public URL |
+| `url` | string | Full URL of the agent instance. Uses the persisted `openclawUrl` from the database when available, otherwise falls back to `https://agentbot-agent-{userId}-production.up.railway.app`. |
+| `plan` | string | The user's subscription plan (for example, `solo`, `collective`, `label`). Defaults to `free` when no plan is set. |
+| `openclawVersion` | string | OpenClaw runtime version reported by the agent's `/healthz` endpoint. Falls back to the platform default version when the probe fails or the agent does not report a version. |
+
+### Status values
+
+| Status | Condition |
+|--------|-----------|
+| `running` | Both `/healthz` and `/readyz` respond successfully |
+| `starting` | `/healthz` responds but `/readyz` does not |
+| `unknown` | `/healthz` does not respond or the probe failed |
+
+<Note>The health probe uses a 5-second timeout for `/healthz` and a 4-second timeout for `/readyz`. Agents that are starting up may report `unknown` or `starting` until fully initialized.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 403 | Forbidden — not authenticated (no valid session) |
+| 404 | No instance found — the authenticated user does not have a deployed agent, or does not own the requested instance. The response message is: `No instance found. Please deploy first.` |
+
+---
+
+## Get agent health
+
+```http
+GET /api/openclaw/maintenance
+```
+
+Requires session authentication. Returns liveness and readiness status for the user's agent container by probing the agent's `/healthz` and `/readyz` endpoints.
+
+### Response
+
+```json
+{
+  "instanceId": "abc123",
+  "railwayUrl": "https://agentbot-agent-abc123-production.up.railway.app",
+  "healthy": true,
+  "ready": true,
+  "version": "2026.4.2",
+  "uptime": "2d 5h",
+  "status": "healthy"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `instanceId` | string | The agent's instance identifier |
+| `railwayUrl` | string | The URL used for health probes. This is the per-user `openclawUrl` from the database when available, otherwise falls back to the constructed Railway URL (`https://agentbot-agent-{instanceId}-production.up.railway.app`). Note that the per-user URL may be stale — for gateway connections, use the shared gateway URL instead (see [`GET /api/user/openclaw`](/api-reference/agents#get-user-openclaw-instance)). |
+| `healthy` | boolean | `true` when the agent's `/healthz` endpoint responds successfully |
+| `ready` | boolean | `true` when the agent's `/readyz` endpoint responds successfully |
+| `version` | string \| null | Agent runtime version reported by `/healthz`, or `null` if the health probe failed or the version is not reported |
+| `uptime` | string \| null | Agent uptime reported by `/healthz`, or `null` if unavailable |
+| `status` | string | Computed status: `healthy`, `starting`, or `unreachable` |
+
+### Status values
+
+| Status | Condition |
+|--------|-----------|
+| `healthy` | Both `/healthz` and `/readyz` respond successfully |
+| `starting` | `/healthz` responds but `/readyz` does not |
+| `unreachable` | `/healthz` does not respond |
+
+### Response when no agent is deployed
+
+When the authenticated user has no deployed agent:
+
+```json
+{
+  "status": "no_agent",
+  "healthy": false,
+  "ready": false
+}
+```
+
+<Note>The health check uses a 5-second timeout for the `/healthz` probe and a 4-second timeout for the `/readyz` probe. Agents that are slow to start may report as `unreachable` or `starting` until fully initialized.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Health status returned (check `status` field for actual health) |
+| 401 | Unauthorized — missing or invalid session |
+
+## Restart or reset agent
+
+```http
+POST /api/openclaw/maintenance
+```
+
+Requires session authentication. Triggers a restart or factory reset of the user's agent container. The `action` field in the request body determines the behavior.
+
+When managed runtime controls are disabled (via the `ENABLE_OPENCLAW_CONTROLS` or `NEXT_PUBLIC_ENABLE_OPENCLAW_CONTROLS` environment variables set to `false`), this endpoint returns `503` with the message: `Managed runtime controls are temporarily disabled until the Railway control path is fully verified.`
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | No | The maintenance action to perform. One of `restart` or `factory-reset`. Defaults to `restart` when omitted. |
+
+### Actions
+
+#### `restart` (default)
+
+Restarts the agent container. The agent automatically runs `openclaw doctor --fix` on startup, which performs health checks and applies any pending migrations.
+
+**Request:**
+
+```json
+{
+  "action": "restart"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Agent restarting — doctor & migrations run on startup",
+  "serviceId": "abc123-service-id",
+  "instanceId": "abc123"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when the action was initiated |
+| `message` | string | Confirmation message describing what happened |
+| `serviceId` | string | Railway service identifier for the restarted agent |
+| `instanceId` | string | The user's OpenClaw instance identifier |
+
+#### `factory-reset`
+
+Pins the agent to the known-good OpenClaw image (`v2026.4.2`), reconfigures environment variables, and restarts the container with `doctor --fix`. Use this when an agent is broken after updating to an incompatible version.
+
+**Request:**
+
+```json
+{
+  "action": "factory-reset"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Factory reset complete — pinned to ghcr.io/openclaw/openclaw:2026.4.2. Agent restarting with doctor --fix.",
+  "image": "ghcr.io/openclaw/openclaw:2026.4.2",
+  "serviceId": "abc123-service-id"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | `true` when the action was initiated |
+| `message` | string | Confirmation message describing what happened |
+| `image` | string | The Docker image the agent was pinned to |
+| `serviceId` | string | Railway service identifier for the reset agent |
+
+### Error responses
+
+When the user has no deployed agent:
+
+```json
+{
+  "error": "No agent deployed"
+}
+```
+
+When a restart or factory reset fails:
+
+```json
+{
+  "error": "Description of the error"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Action completed successfully |
+| 401 | Unauthorized — missing or invalid session |
+| 404 | No agent deployed for the authenticated user |
+| 500 | Internal error during the restart or factory reset |
+| 503 | Managed runtime controls are disabled, or the required Railway configuration (environment, project, or service) could not be resolved. When Railway configuration is the cause, the response body contains a descriptive error message. |
+
+<Warning>Both `restart` and `factory-reset` cause a brief period of downtime while the container reinitializes. The `openclaw doctor --fix` process runs automatically during startup and may take additional time depending on the number of pending fixes or migrations.</Warning>
+
+<Note>Factory reset pins the agent to the platform's configured default image. After a factory reset, you can update to a newer version later through the normal update flow.</Note>
+
+## Ensure OpenClaw compatibility
+
+```http
+POST /api/openclaw/ensure-compatibility
+```
+
+Requires session authentication. Checks and migrates the authenticated user's agent setup for compatibility with OpenClaw 2026.4.2. This endpoint applies any necessary fixes automatically, including plugin config migration, agent pairing scope corrections, and token generation.
+
+### Response
+
+```json
+{
+  "compatible": true,
+  "fixes": [
+    "Migrated x_search plugin config",
+    "Fixed agent pairing scope"
+  ],
+  "errors": [],
+  "message": "Applied 2 compatibility fixes"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `compatible` | boolean | `true` when the user's setup is compatible with OpenClaw 2026.4.2 after applying any fixes |
+| `fixes` | string[] | List of compatibility fixes that were applied. Empty when no fixes were needed. |
+| `errors` | string[] | List of errors encountered during the compatibility check. Empty on success. |
+| `message` | string | Summary message describing the result |
+
+### Response when no fixes are needed
+
+```json
+{
+  "compatible": true,
+  "fixes": [],
+  "errors": [],
+  "message": "No fixes needed"
+}
+```
+
+### Error response
+
+When the compatibility check itself fails:
+
+```json
+{
+  "compatible": false,
+  "fixes": [],
+  "errors": ["Description of the error"],
+  "message": "Failed to ensure compatibility"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Compatibility check completed (inspect `compatible` and `fixes` for details) |
+| 401 | Unauthorized — missing or invalid session |
+| 500 | Internal error during the compatibility check |
+
+<Note>This endpoint is idempotent. Calling it multiple times applies only the fixes that have not already been applied. After all fixes are applied, subsequent calls return an empty `fixes` array.</Note>
+
+---
+
+## OpenClaw runtime version
+
+```http
+GET /api/openclaw/version
+```
+
+Returns the current OpenClaw runtime version and container image. Requires bearer token authentication (the `/api/openclaw` router applies the `authenticate` middleware to all non-proxy routes).
+
+### Response
+
+```json
+{
+  "openclawVersion": "2026.4.2",
+  "image": "ghcr.io/openclaw/openclaw:2026.4.2",
+  "deployedAt": "2026-04-01T12:00:00Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `openclawVersion` | string | Current OpenClaw runtime version, derived from the configured image tag (for example, `2026.4.2`). |
+| `image` | string | Docker image used for new agent containers. Defaults to the value of the `OPENCLAW_IMAGE` environment variable or `ghcr.io/openclaw/openclaw:2026.4.2`. |
+| `deployedAt` | string | ISO 8601 timestamp of when the version info was served (returns the current server time, not the actual deployment time) |
+
+## OpenClaw runtime version (web proxy)
+
+```http
+GET /api/openclaw-version
+```
+
+No authentication required. Proxies to the backend `GET /api/openclaw/version` endpoint using the internal API key. Returns the OpenClaw runtime version, container image, and deployment timestamp.
+
+When the backend is unreachable or returns an error, the endpoint returns a fallback version derived from the configured image tag (for example, `2026.4.2`) and includes the default image.
+
+### Response
+
+```json
+{
+  "openclawVersion": "2026.4.2",
+  "image": "ghcr.io/openclaw/openclaw:2026.4.2",
+  "deployedAt": "2026-04-01T12:00:00Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `openclawVersion` | string | OpenClaw runtime version from the backend. Falls back to the version derived from the configured image tag when the backend is unavailable or returns an error. |
+| `image` | string | Docker image identifier. When the backend is unavailable or does not return an image, defaults to the configured image (for example, `ghcr.io/openclaw/openclaw:2026.4.2`). |
+| `deployedAt` | string \| undefined | ISO 8601 deployment timestamp. Only present when the backend responds successfully. |
+
+<Note>This endpoint uses an 8-second request timeout when calling the backend. If the backend does not respond within that window, the fallback version is returned.</Note>
+
+| Code | Description |
+|------|-------------|
+| 200 | Version returned (check `openclawVersion` for actual value — may be a fallback) |
+
+## Heal gateway token
+
+```http
+POST /api/support/heal-token
+```
+
+Requires session authentication. Auto-heals (regenerates) the gateway token for the authenticated user's OpenClaw agent. When the user has no existing token, the endpoint generates a new one automatically instead of only checking for an existing token.
+
+The endpoint also checks gateway health and sends support alerts when token generation fails or the gateway is degraded.
+
+### Response
+
+```json
+{
+  "healed": true,
+  "token": "a1b2c3...64-char-hex",
+  "isNew": true,
+  "health": {
+    "name": "OpenClaw Gateway",
+    "status": "ok",
+    "detail": "ok"
+  },
+  "message": "New gateway token generated successfully"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `healed` | boolean | `true` when the token was successfully validated or regenerated |
+| `token` | string | The user's gateway token (64-character hex string) |
+| `isNew` | boolean | `true` when a new token was generated, `false` when an existing token was validated |
+| `health` | object | Gateway health check result |
+| `health.name` | string | Name of the checked service |
+| `health.status` | string | Gateway status: `ok`, `degraded`, or `down` |
+| `health.detail` | string | Additional detail about the health check result |
+| `message` | string | Human-readable description of what happened |
+
+### Response when token generation fails
+
+```json
+{
+  "healed": false,
+  "message": "Failed to generate gateway token. Support has been alerted.",
+  "health": {
+    "name": "OpenClaw Gateway",
+    "status": "ok",
+    "detail": "ok"
+  }
+}
+```
+
+### Error response
+
+```json
+{
+  "healed": false,
+  "message": "Internal error during token healing",
+  "error": "Description of the error"
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 200 | Token healed or validated successfully |
+| 401 | Unauthorized — missing or invalid session |
+| 500 | Token generation failed or internal error |
+
+<Note>This endpoint replaces the previous behavior where users had to manually refresh their pairing token. Tokens are now auto-generated when missing. The generated token is a 64-character hex string stored per-user in the database with a graceful fallback to the shared gateway token.</Note>
+
+---
+
+## List OpenClaw instances
+
+```http
+GET /api/openclaw/instances
+```
+
+Returns all running OpenClaw agent containers with their image, status, and metadata. Requires bearer token authentication.
+
+### Response
+
+```json
+{
+  "instances": [
+    {
+      "agentId": "agent_123",
+      "name": "openclaw-agent_123",
+      "image": "ghcr.io/openclaw/openclaw:2026.4.2",
+      "status": "Up 2 days",
+      "createdAt": "2026-04-01T00:00:00Z",
+      "version": "2026.4.2",
+      "metadata": {}
+    }
+  ],
+  "count": 1
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `instances` | array | List of running OpenClaw containers |
+| `instances[].agentId` | string | Agent identifier |
+| `instances[].name` | string | Docker container name |
+| `instances[].image` | string | Docker image the container is running |
+| `instances[].status` | string | Docker status string |
+| `instances[].createdAt` | string | Container creation timestamp |
+| `instances[].version` | string | OpenClaw CLI version inside the container, or `unknown` |
+| `instances[].metadata` | object \| null | Agent metadata from disk |
+| `count` | number | Total number of instances |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Failed to list instances |
+
+## Get instance container stats
+
+```http
+GET /api/openclaw/instances/:id/stats
+```
+
+Returns live resource usage for a specific OpenClaw container. Requires bearer token authentication.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Agent identifier |
+
+### Response
+
+```json
+{
+  "agentId": "agent_123",
+  "cpu": "0.15%",
+  "memory": "128MiB / 2GiB",
+  "memoryPercent": "6.25%",
+  "network": "1.2kB / 3.4kB",
+  "blockIO": "0B / 0B",
+  "pids": "12",
+  "status": "running",
+  "uptime": 86400000,
+  "uptimeFormatted": "1d 0h",
+  "timestamp": "2026-04-01T12:00:00Z"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agentId` | string | Agent identifier |
+| `cpu` | string | CPU usage percentage |
+| `memory` | string | Memory usage (used / total) |
+| `memoryPercent` | string | Memory usage percentage |
+| `network` | string | Network I/O (in / out) |
+| `blockIO` | string | Block I/O (read / write) |
+| `pids` | string | Number of running processes |
+| `status` | string | Container status |
+| `uptime` | number | Uptime in milliseconds |
+| `uptimeFormatted` | string | Human-readable uptime string |
+| `timestamp` | string | ISO 8601 timestamp of the measurement |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Failed to get container stats |
+
+## OpenClaw proxy
+
+```
+ALL /api/openclaw/proxy/:agentId/*
+```
+
+Transparent HTTP proxy to a running OpenClaw container. Forwards all HTTP methods to the container's internal address on port 18789. HTTP requests do not require authentication on the proxy itself — the OpenClaw instance's own token authentication handles access control.
+
+<Warning>WebSocket upgrades through the proxy require bearer token authentication. The server validates the `Authorization: Bearer <token>` header before establishing the WebSocket connection. This is handled at the server level, separate from the HTTP proxy middleware.</Warning>
+
+<Note>The proxy rewrites the request path by stripping the `/api/openclaw/proxy/:agentId` prefix before forwarding.</Note>
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `agentId` | string | Agent identifier (alphanumeric, hyphens, and underscores only) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 502 | OpenClaw instance unreachable |

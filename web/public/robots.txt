@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+# Block private/auth-gated areas — no SEO value, saves crawl budget
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /onboard
+Disallow: /onboard/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://agentbot.sh/sitemap.xml

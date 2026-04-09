@@ -1,0 +1,154 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation [ref=e3]:
+    - link "Agentbot Agentbot" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "Agentbot" [ref=e5]
+      - generic [ref=e6]: Agentbot
+  - main [ref=e15]:
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]: Verified Fleet
+          - heading "Agent Marketplace" [level=1] [ref=e20]
+          - paragraph [ref=e21]: Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.
+        - generic [ref=e22]:
+          - generic [ref=e23]:
+            - generic [ref=e24]: Verified Templates
+            - generic [ref=e25]: "4"
+            - generic [ref=e26]: Ready to deploy
+          - generic [ref=e27]:
+            - generic [ref=e28]: Deployed Agents
+            - generic [ref=e29]: "3"
+            - generic [ref=e30]: Tracked in platform
+          - generic [ref=e31]:
+            - generic [ref=e32]: Live Agents
+            - generic [ref=e33]: "0"
+            - generic [ref=e34]: Active in fleet
+          - generic [ref=e35]:
+            - generic [ref=e36]: Showcase Ready
+            - generic [ref=e37]: "1"
+            - generic [ref=e38]: Public signal
+          - generic [ref=e39]:
+            - generic [ref=e40]: Skills Installed
+            - generic [ref=e41]: "0"
+            - generic [ref=e42]: Across deployments
+        - generic [ref=e43]:
+          - article [ref=e44]:
+            - generic [ref=e45]:
+              - generic [ref=e46]:
+                - generic [ref=e47]: Label Tier
+                - heading "the-strategist" [level=2] [ref=e48]
+                - paragraph [ref=e49]: Mission Planning Agent
+              - generic [ref=e50]: DeepSeek R1
+            - paragraph [ref=e52]: Advanced reasoning for complex crew operations. Powered by DeepSeek R1. Plans tours, logistics, and resource allocation.
+            - generic [ref=e53]:
+              - generic [ref=e54]: Mission Planning
+              - generic [ref=e55]: Logistics
+              - generic [ref=e56]: Resource Analysis
+              - generic [ref=e57]: A2A Coordination
+            - button "Deploy the-strategist" [ref=e58] [cursor=pointer]
+          - article [ref=e59]:
+            - generic [ref=e60]:
+              - generic [ref=e61]:
+                - generic [ref=e62]: Underground Tier
+                - heading "crew-manager" [level=2] [ref=e63]
+                - paragraph [ref=e64]: Operations & Finance Agent
+              - generic [ref=e65]: Llama 3.3
+            - paragraph [ref=e67]: The backbone of your collective. Manages autonomous royalty splits, talent bookings, and treasury reporting.
+            - generic [ref=e68]:
+              - generic [ref=e69]: Royalty Splits
+              - generic [ref=e70]: Talent Booking
+              - generic [ref=e71]: Treasury Guard
+              - generic [ref=e72]: USDC Payments
+            - button "Deploy crew-manager" [ref=e73] [cursor=pointer]
+          - article [ref=e74]:
+            - generic [ref=e75]:
+              - generic [ref=e76]:
+                - generic [ref=e77]: Free Tier
+                - heading "sound-system" [level=2] [ref=e78]
+                - paragraph [ref=e79]: Automation & Feedback Agent
+              - generic [ref=e80]: Mistral 7B
+            - paragraph [ref=e82]: Real-time automation for soundsystems. Monitors Mux streams, handles $RAVE gating, and fast community feedback.
+            - generic [ref=e83]:
+              - generic [ref=e84]: Mux Monitor
+              - generic [ref=e85]: RAVE Gating
+              - generic [ref=e86]: Fast Feedback
+              - generic [ref=e87]: Live Traces
+            - button "Deploy sound-system" [ref=e88] [cursor=pointer]
+          - article [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e92]: Collective Tier
+                - heading "the-developer" [level=2] [ref=e93]
+                - paragraph [ref=e94]: Logic & Scripting Agent
+              - generic [ref=e95]: Qwen 2.5
+            - paragraph [ref=e97]: Expert agent for building custom logic. Generates smart contracts, shell scripts, and OpenClaw skill extensions.
+            - generic [ref=e98]:
+              - generic [ref=e99]: Code Gen
+              - generic [ref=e100]: Scripting
+              - generic [ref=e101]: Contract Audit
+              - generic [ref=e102]: Skill Builder
+            - button "Deploy the-developer" [ref=e103] [cursor=pointer]
+        - generic [ref=e105]:
+          - generic [ref=e106]: Platform Integrity
+          - heading "The Purge" [level=3] [ref=e107]
+          - paragraph [ref=e108]:
+            - text: We have archived all legacy and unoptimized agents. The current fleet is strictly tuned for
+            - strong [ref=e109]: OpenClaw Multi-tenancy
+            - text: and
+            - strong [ref=e110]: Base Onchain Economy
+            - text: . If it doesn't make you profit, it isn't here.
+        - generic [ref=e111]:
+          - generic [ref=e112]: Agentbot Marketplace
+          - generic [ref=e113]:
+            - link "Agent Builder" [ref=e114] [cursor=pointer]:
+              - /url: /agents
+            - link "Token" [ref=e115] [cursor=pointer]:
+              - /url: /token
+            - link "Partner" [ref=e116] [cursor=pointer]:
+              - /url: /partner
+  - contentinfo [ref=e117]:
+    - generic [ref=e119]:
+      - generic [ref=e120]:
+        - generic [ref=e121]: © 2026 Agentbot · Zero Human Company
+        - generic [ref=e122]:
+          - generic [ref=e125]: Checking Status
+          - generic [ref=e126]: "|"
+          - generic [ref=e127]: Agentbot v0.0.0
+          - generic [ref=e128]: "|"
+          - generic [ref=e129]: OpenClaw loading...
+      - generic [ref=e130]:
+        - link "Partner" [ref=e131] [cursor=pointer]:
+          - /url: /partner
+        - link "$AGENTBOT" [ref=e132] [cursor=pointer]:
+          - /url: /token
+        - link "Solana" [ref=e133] [cursor=pointer]:
+          - /url: /solana
+        - link "Buddies" [ref=e134] [cursor=pointer]:
+          - /url: /buddies
+        - link "GitHub" [ref=e135] [cursor=pointer]:
+          - /url: https://github.com/Eskyee/agentbot-opensource
+        - link "Gitlawb" [ref=e136] [cursor=pointer]:
+          - /url: https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource
+        - link "DeepWiki" [ref=e137] [cursor=pointer]:
+          - /url: https://deepwiki.com/Eskyee/agentbot-opensource
+        - link "Dev.to" [ref=e138] [cursor=pointer]:
+          - /url: https://dev.to/agentbot
+        - link "Talent" [ref=e139] [cursor=pointer]:
+          - /url: https://talent.app/raveculture.base.eth
+        - link "Open WebUI" [ref=e140] [cursor=pointer]:
+          - /url: https://openwebui.com/u/jaieskyravecult115142e2f8
+        - link "Terms" [ref=e141] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e142] [cursor=pointer]:
+          - /url: /privacy
+  - generic [ref=e145]:
+    - generic [ref=e146]:
+      - generic [ref=e149]: ONLINE
+      - generic [ref=e150]: ·
+      - generic [ref=e151]: ·
+    - generic [ref=e152]: © 2026 Agentbot
+  - region "Notifications alt+T"
+  - alert [ref=e153]

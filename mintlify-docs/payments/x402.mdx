@@ -1,0 +1,483 @@
+---
+description: "Accept USDC and pathUSD payments via x402 protocol"
+---
+
+# x402 Payments
+
+Accept cryptocurrency payments using the x402 protocol on Base network and Tempo chain.
+
+## Overview
+
+x402 is a payment protocol that enables HTTP requests to require payment. Agents can pay for API access programmatically. The protocol supports two networks:
+
+- **Base** — USDC payments for general API access
+- **Tempo** — pathUSD payments for agent-to-agent operations such as cloning
+
+## x402 Gateway (v4.0.1-mppx)
+
+The Agentbot x402 Gateway is deployed on Railway and provides:
+
+- **MPP (Machine Payment Protocol)** — Standard 402 payment flow via `mppx/express`
+- **Agent Marketplace** — Discovery, A2A payments, fitness scoring
+- **Session-based billing** — Pay-per-use without per-transaction signing
+- **Anti-scam guard** — Rate limits, payment caps, cooldowns, blacklist
+
+### Gateway URL
+
+```
+https://x402-gw-v2-production.up.railway.app
+```
+
+### Health Check
+
+```bash
+curl https://x402-gw-v2-production.up.railway.app/health
+```
+
+Response:
+```json
+{
+  "status": "healthy",
+  "service": "x402-gateway",
+  "version": "4.0.1-mppx",
+  "mpp": true,
+  "testnet": true,
+  "operator": {
+    "address": "0x23c3b2Eff9633793DFDc70Ae2b9e4A669b146a62",
+    "configured": true
+  }
+}
+```
+
+## Session-Based Endpoints (MPP)
+
+Session endpoints use the MPP protocol for pay-per-use billing. Clients deposit once, then use off-chain vouchers for subsequent requests.
+
+### Available Services
+
+| Endpoint | Price | Description |
+|----------|-------|-------------|
+| `/api/sessions/inference` | £0.05/call | AI inference calls |
+| `/api/sessions/blockdb` | £0.001/query | Blockchain data queries |
+| `/api/sessions/premium` | £0.01/request | Premium API access |
+| `/api/sessions/visual-synth` | £0.02/render | Visual content generation |
+| `/api/sessions/setlist` | £0.03/set | Music setlist generation |
+| `/api/sessions/stream` | £0.001/token | SSE streaming |
+
+### Example: AI Inference
+
+```bash
+# First request — returns 402 Payment Required
+curl -v https://x402-gw-v2-production.up.railway.app/api/sessions/inference
+
+# Response includes MPP challenge:
+# HTTP/1.1 402 Payment Required
+# Content-Type: application/json
+{
+  "type": "https://paymentauth.org/problems/payment-required",
+  "title": "Payment Required",
+  "status": 402,
+  "detail": "Payment is required.",
+  "challengeId": "pyksVi15Phh-HG0zNW5IlajnpZ_bFo_7wRUTZFvwGHo"
+}
+```
+
+## Agent Marketplace
+
+### List All Agents
+
+```bash
+curl https://x402-gw-v2-production.up.railway.app/gateway/marketplace
+```
+
+Response:
+```json
+{
+  "agents": [
+    {
+      "id": "atlas",
+      "walletAddress": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+      "totalTransactions": 5,
+      "successfulTransactions": 5,
+      "totalAmount": 0.009,
+      "successRate": 100,
+      "tier": "premium",
+      "colonyId": "tempo-x402",
+      "createdAt": "2026-03-23T00:05:39.093Z"
+    }
+  ],
+  "total": 1,
+  "colonies": 1
+}
+```
+
+### Discover Agent
+
+```bash
+curl https://x402-gw-v2-production.up.railway.app/gateway/marketplace/atlas
+```
+
+### Agent Fitness Score
+
+```bash
+curl https://x402-gw-v2-production.up.railway.app/gateway/fitness/atlas
+```
+
+Response:
+```json
+{
+  "score": 75,
+  "tier": "standard",
+  "details": {
+    "successRate": 100,
+    "recencyBonus": 14.64,
+    "volumeBonus": 0.00009,
+    "totalTransactions": 5,
+    "totalAmount": 0.009
+  }
+}
+```
+
+### Dynamic Pricing
+
+```bash
+curl https://x402-gw-v2-production.up.railway.app/gateway/pricing/atlas
+```
+
+Premium agents (>80 fitness) get 20% discount. Standard agents (>60) get 10%.
+
+### Join Colony
+
+```bash
+curl -X POST https://x402-gw-v2-production.up.railway.app/gateway/colony/join \
+  -H "Content-Type: application/json" \
+  -d '{"agentId": "my-agent", "walletAddress": "0x..."}'
+```
+
+### Agent-to-Agent Payment
+
+```bash
+curl -X POST https://x402-gw-v2-production.up.railway.app/gateway/marketplace/pay \
+  -H "Content-Type: application/json" \
+  -d '{"fromAgentId": "buyer", "toAgentId": "seller", "amount": 0.01}'
+```
+
+## Auto-Settlement
+
+The operator wallet sponsors gas and handles auto-settlement:
+
+```bash
+curl -X POST https://x402-gw-v2-production.up.railway.app/gateway/settle/auto \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agentId": "atlas",
+    "amount": 0.01,
+    "recipient": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f"
+  }'
+```
+
+Response:
+```json
+{
+  "status": "settled",
+  "hash": "0x...",
+  "amount": 0.01,
+  "recipient": "0xd8fd0e1dce89beaab924ac68098ddb17613db56f",
+  "agentId": "atlas",
+  "gasSponsored": true
+}
+```
+
+## 402 Index Listing
+
+Our gateway is registered on the [402 Index](https://402index.io) — a protocol-agnostic directory of paid APIs:
+
+| Service | Protocol | Status |
+|---------|----------|--------|
+| Agentbot AI Inference | MPP | healthy |
+| Agentbot BlockDB | MPP | healthy |
+| Agentbot Premium API | MPP | healthy |
+| Agentbot Visual Synth | MPP | healthy |
+| Agentbot Setlist Oracle | MPP | healthy |
+| Agentbot Stream | MPP | healthy |
+
+Domain verified: `x402-gw-v2-production.up.railway.app`
+
+## Anti-scam guard
+
+The gateway and the Agentbot API include built-in payment protections:
+
+- **Rate limiting** — Per-IP request limits (60 requests/min, 1,000 requests/hr on the web API)
+- **Payment caps** — Maximum single payment of **$100** via the `/api/x402` pay action. Contact support for higher limits.
+- **Address validation** — Recipient addresses are validated against EVM (42-character `0x`-prefixed hex) and Solana (32–44 character Base58) formats before any payment is processed
+- **Cooldowns** — Minimum time between payments
+- **Blacklist** — Blocked addresses/IPs
+- **Whitelist** — Trusted agents bypass checks
+- **Audit logging** — Every payment attempt is logged with the user's email, amount, currency, recipient, and payment method
+
+```bash
+curl https://x402-gw-v2-production.up.railway.app/gateway/guard
+```
+
+## x402-Node Bridge
+
+The gateway can proxy requests to the tempo-x402 x402-node for on-chain settlement:
+
+```bash
+curl -X POST https://x402-gw-v2-production.up.railway.app/gateway/x402-node/settle \
+  -H "Content-Type: application/json" \
+  -d '{
+    "endpoint": "/instance/info",
+    "method": "GET",
+    "agentId": "atlas"
+  }'
+```
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Agentbot Gateway                       │
+│  (Vercel — agentbot.raveculture.xyz)                     │
+├─────────────────────────────────────────────────────────┤
+│  Auth (Base SDK SIWE)    │  Stripe Checkout             │
+│  Agent Provisioning      │  Dashboard                   │
+└────────────────┬────────────────────────┬───────────────┘
+                 │                        │
+    ┌────────────▼────────────┐  ┌───────▼────────────────┐
+    │  x402 Gateway (Railway) │  │  Stripe Webhooks       │
+    │  v4.0.1-mppx            │  │  (Render)              │
+    ├─────────────────────────┤  └────────────────────────┘
+    │  MPP Session Billing    │
+    │  Agent Marketplace      │
+    │  Anti-Scam Guard        │
+    │  Auto-Settlement        │
+    └────────────┬────────────┘
+                 │
+    ┌────────────▼────────────┐
+    │  Tempo Network          │
+    │  (Testnet: 42431)       │
+    │  pathUSD Token          │
+    └─────────────────────────┘
+```
+    scheme: "exact",
+    price: "$0.001",
+    network: "eip155:8453",
+    payTo: x402Config.payTo,
+  },
+  description: "Premium API endpoint",
+  mimeType: "application/json",
+};
+```
+
+### Step 3: Check for Payment
+
+```typescript
+export async function GET(req: NextRequest) {
+  const server = getX402Server();
+  
+  const authHeader = req.headers.get("x-payments");
+  if (!authHeader) {
+    return new NextResponse(
+      JSON.stringify({ 
+        error: "Payment required",
+        payment: paymentRequirements 
+      }), 
+      { status: 402 }
+    );
+  }
+
+  // Verify and process payment
+  // Return data
+  return Response.json({ data: "Hello, paid user!" });
+}
+```
+
+## Agent Payment Flow
+
+Agents can make paid API calls:
+
+```typescript
+// Agent makes a paid request
+const response = await fetch('https://api.example.com/paid-endpoint', {
+  headers: {
+    'x-payments': paymentHeader // Automatically handled by x402 SDK
+  }
+});
+
+if (response.status === 402) {
+  // Payment required - x402 SDK handles payment automatically
+  const data = await response.json();
+  // Retry with payment
+}
+```
+
+## Tempo chain
+
+The Tempo chain extends the x402 protocol for agent-to-agent payments using pathUSD. This is used by the [clone endpoint](/api-reference/agents#clone-agent) to enable agent self-replication.
+
+### Clone payment flow
+
+Agents pay 1.0 pathUSD on the Tempo chain to clone themselves. The flow is:
+
+1. The parent agent sends 1.0 pathUSD to the recipient address on Tempo chain
+2. The transaction produces a payment proof containing the transaction hash, amount, and chain ID
+3. The payment proof is submitted to `POST /api/agents/clone` along with the clone request
+4. The server verifies the proof on-chain before creating the new agent
+
+### Payment proof structure
+
+```json
+{
+  "transactionHash": "0xabc123...",
+  "amount": "1.0",
+  "currency": "pathUSD",
+  "chainId": 4217,
+  "from": "0x1234...abcd",
+  "to": "0x5678...efgh",
+  "timestamp": 1711234567890
+}
+```
+
+### Verification rules
+
+The payment proof is validated against the following rules:
+
+- `chainId` must be `4217` (Tempo)
+- `currency` must be `pathUSD`
+- `amount` must be at least `1.0`
+- `transactionHash` must start with `0x`
+
+### x402 gateway
+
+The x402 gateway handles payment verification, colony membership, fitness scoring, dynamic pricing, and clone provisioning. The production gateway is hosted at `https://x402-gateway-production.up.railway.app`.
+
+You can interact with the gateway through the [x402 API endpoint](/api-reference/x402), which supports the following actions:
+
+- **join-colony** — register an agent with the x402 colony
+- **fitness** — retrieve an agent's fitness score
+- **pricing** — retrieve dynamic pricing for an agent
+- **endpoints** — list available gateway endpoints
+- **pay** — execute a Tempo pathUSD payment
+
+You can also check gateway health and query agent balances directly:
+
+```http
+GET {X402_GATEWAY_URL}/health
+```
+
+```http
+GET {X402_GATEWAY_URL}/balance/{walletAddress}
+```
+
+The gateway URL defaults to `http://localhost:4023` for local development and can be configured via the `X402_GATEWAY_URL` environment variable. In production, the Agentbot platform connects to the hosted gateway automatically.
+
+## Pricing examples
+
+| Action | Price | Network |
+|--------|-------|---------|
+| Basic API call | $0.001 USDC | Base |
+| AI generation | $0.01 USDC | Base |
+| File upload | $0.05 USDC | Base |
+| Video generation | $1.00 USDC | Base |
+| Agent clone | 1.0 pathUSD | Tempo |
+
+## Wallet setup
+
+### Base (USDC)
+
+1. Install MetaMask or Coinbase Wallet
+2. Bridge funds to Base network
+3. Get USDC on Base
+
+### Tempo (pathUSD)
+
+Agent wallets on the Tempo chain are created automatically during provisioning and cloning. Each agent receives a wallet address that can hold pathUSD for clone operations.
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Payment failed">
+
+- Ensure wallet has sufficient USDC on Base or pathUSD on Tempo
+- Check the network is correct (Base chain ID `8453`, Tempo chain ID `4217`)
+- Verify the payTo address is correct
+
+</Accordion>
+
+<Accordion title="402 response on clone endpoint">
+
+- Verify the payment proof includes a valid transaction hash starting with `0x`
+- Confirm the `chainId` is `4217` and `currency` is `pathUSD`
+- Ensure the payment amount is at least 1.0 pathUSD
+
+</Accordion>
+
+<Accordion title="x402 gateway unavailable">
+
+- Check the `X402_GATEWAY_URL` environment variable is set correctly
+- Verify the gateway service is running and accessible
+- The gateway health endpoint should return a `200` response
+
+</Accordion>
+
+</AccordionGroup>
+
+---
+
+## MPP (Machine Payments Protocol)
+
+For autonomous agents, use [MPP](https://mpp.dev) with Tempo Wallet for automated payments.
+
+### Environment Variables
+
+```bash
+# MPP / Machine Payments Protocol
+MPP_PRIVATE_KEY=0x...  # Generate from https://wallet.tempo.xyz
+```
+
+### Agent Integration
+
+```typescript
+import { createMPPClient, makeMPPRequest } from '@/lib/mpp';
+
+// Initialize at startup
+await createMPPClient();
+
+// Make paid requests - 402 handled automatically
+const result = await makeMPPRequest('https://mpp.dev/api/ping/paid');
+```
+
+### Tempo Wallet
+
+Agents use Tempo Wallet for autonomous payments:
+- [Create wallet](https://wallet.tempo.xyz)
+- Fund with USDC on Base
+- Configure `MPP_PRIVATE_KEY` in environment
+
+### Multi-Wallet Support
+
+Each agent/company can have their own Tempo wallet:
+
+```env
+# Default wallet
+MPP_PRIVATE_KEY=0x...
+
+# Multiple agent wallets (JSON)
+MPP_AGENT_WALLETS=[{"agentId": "agent-1", "companyId": "label-abc", "privateKey": "0x...", "address": "0x..."}]
+```
+
+```typescript
+import { makeMPPRequest, getAgentWalletAddress } from '@/lib/mpp';
+
+// Agent uses company's wallet
+const result = await makeMPPRequest('https://mpp.dev/api/paid-service', {
+  agentId: 'agent-1',  // Uses label-abc's wallet
+});
+
+// Get agent's wallet address
+const address = getAgentWalletAddress('agent-1');
+```
+
+See [MPP Documentation](https://mpp.dev) for more details.

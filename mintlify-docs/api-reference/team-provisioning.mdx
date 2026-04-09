@@ -1,0 +1,353 @@
+---
+title: Team provisioning API
+description: Provision multi-agent teams with pre-built or custom configurations
+---
+
+# Team provisioning API
+
+Provision coordinated multi-agent teams for Collective, Label, and Network plan tiers. Each agent in the team receives its own container service.
+
+<Note>Team provisioning requires a Collective plan or higher. Solo plan users are limited to single-agent provisioning via [`POST /api/provision`](/api-reference/agents#provision-with-channel-tokens).</Note>
+
+## Plan agent limits
+
+Each plan tier has a maximum number of agents that can be provisioned in a single team:
+
+| Plan | Max agents per team |
+|------|-------------------|
+| `solo` | 1 (team provisioning not available) |
+| `collective` | 3 |
+| `label` | 10 |
+| `network` | 50 |
+
+## Provision a team
+
+```http
+POST /api/provision/team
+```
+
+Creates a team of agents using a pre-built template or a custom agent configuration. Requires session authentication.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `plan` | string | Yes | Plan tier. Must be one of `collective`, `label`, or `network`. |
+| `templateKey` | string | No | Key of the pre-built team template to use (default: `dev_team`). Ignored when `customAgents` is provided. See [list templates](#list-team-templates) for available options. |
+| `customAgents` | array | No | Custom agent configurations. When provided, overrides the template. The number of agents must not exceed the plan's agent limit. |
+
+#### Custom agent object
+
+Each object in the `customAgents` array has the following fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Agent identifier within the team |
+| `role` | string | Yes | Agent role (for example, `Engineer`, `QA`) |
+| `description` | string | Yes | Short description of the agent's purpose |
+| `instruction` | string | Yes | System instruction for the agent |
+| `model` | string | Yes | AI model identifier (for example, `openrouter/xiaomi/mimo-v2-pro`) |
+| `tools` | string[] | Yes | List of tools the agent can use (for example, `filesystem`, `shell`, `think`, `todo`, `memory`) |
+| `memoryShared` | boolean | Yes | Whether the agent shares memory with other agents in the team |
+
+### Response
+
+```json
+{
+  "success": true,
+  "teamId": "team_1711234567890_a1b2c3",
+  "template": "Dev Team",
+  "agents": [
+    {
+      "container": "team_1711234567890_a1b2c3/pm",
+      "status": "running",
+      "url": "https://agentbot-agent-user123-pm.up.railway.app"
+    },
+    {
+      "container": "team_1711234567890_a1b2c3/engineer",
+      "status": "running",
+      "url": "https://agentbot-agent-user123-engineer.up.railway.app"
+    },
+    {
+      "container": "team_1711234567890_a1b2c3/qa",
+      "status": "running",
+      "url": "https://agentbot-agent-user123-qa.up.railway.app"
+    }
+  ],
+  "yaml_config": "# Agentbot Team Configuration\n..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether the team was provisioned |
+| `teamId` | string | Unique team identifier (format: `team_{timestamp}_{random}`) |
+| `template` | string | Name of the team template used |
+| `agents` | array | Per-agent provisioning results |
+| `agents[].container` | string | Container path (format: `{teamId}/{agentName}`) |
+| `agents[].status` | string | Agent status (`running` or `failed`) |
+| `agents[].url` | string | Agent service URL |
+| `yaml_config` | string | Generated YAML configuration for the team |
+
+<Note>If an individual agent in the team fails to provision, its `status` is set to `failed` and the remaining agents continue provisioning. The overall request still returns `200` — check each agent's `status` field to identify failures.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | Invalid or missing `plan`. The error message reads `"Team provisioning requires collect, label, or network plan"` (the message says "collect" but the valid value is `collective`). Response includes `available_templates` listing valid template keys. |
+| 401 | Unauthorized — missing or invalid session |
+| 500 | Team provisioning failed |
+
+### Example request
+
+```bash
+curl -X POST https://api.agentbot.raveculture.xyz/api/provision/team \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "plan": "collective",
+    "templateKey": "dev_team"
+  }'
+```
+
+### Example with custom agents
+
+```bash
+curl -X POST https://api.agentbot.raveculture.xyz/api/provision/team \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "plan": "label",
+    "customAgents": [
+      {
+        "name": "planner",
+        "role": "Project Planner",
+        "description": "Breaks down tasks and coordinates work",
+        "instruction": "You are the planner. Break requirements into tasks.",
+        "model": "openrouter/xiaomi/mimo-v2-pro",
+        "tools": ["filesystem", "think", "todo", "memory"],
+        "memoryShared": true
+      },
+      {
+        "name": "coder",
+        "role": "Developer",
+        "description": "Implements features and writes code",
+        "instruction": "You are the developer. Write clean code.",
+        "model": "openrouter/xiaomi/mimo-v2-pro",
+        "tools": ["filesystem", "shell", "think"],
+        "memoryShared": true
+      }
+    ]
+  }'
+```
+
+## List team templates
+
+```http
+GET /api/provision/team/templates
+```
+
+Returns all available pre-built team templates. Requires bearer token authentication (applied at the route mount level).
+
+### Response
+
+```json
+{
+  "templates": [
+    {
+      "key": "dev_team",
+      "name": "Dev Team",
+      "description": "Product Manager + Engineer + QA",
+      "agent_count": 3,
+      "agents": [
+        { "name": "pm", "role": "Product Manager" },
+        { "name": "engineer", "role": "Engineer" },
+        { "name": "qa", "role": "QA" }
+      ]
+    },
+    {
+      "key": "devops_team",
+      "name": "DevOps Team",
+      "description": "SRE Lead + Infrastructure Engineer + Security Auditor",
+      "agent_count": 3,
+      "agents": [
+        { "name": "sre", "role": "SRE Lead" },
+        { "name": "infra", "role": "Infrastructure Engineer" },
+        { "name": "security", "role": "Security Auditor" }
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "key": "developer",
+      "label": "Developer",
+      "templates": ["dev_team", "devops_team", "api_team"]
+    },
+    {
+      "key": "creator",
+      "label": "Creator",
+      "templates": ["content_team", "social_media_team", "research_team"]
+    },
+    {
+      "key": "business",
+      "label": "Business",
+      "templates": ["legal_team", "finance_team", "marketing_team", "sales_team"]
+    },
+    {
+      "key": "personal",
+      "label": "Personal",
+      "templates": ["personal_assistant", "solopreneur"]
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `templates` | array | Available team templates |
+| `templates[].key` | string | Template identifier used in `templateKey` parameter |
+| `templates[].name` | string | Human-readable template name |
+| `templates[].description` | string | Summary of the team composition |
+| `templates[].agent_count` | number | Number of agents in the template |
+| `templates[].agents` | array | Agent definitions within the template |
+| `templates[].agents[].name` | string | Agent identifier |
+| `templates[].agents[].role` | string | Agent role |
+| `categories` | array | Template categories for organizing templates by use case |
+| `categories[].key` | string | Category identifier |
+| `categories[].label` | string | Human-readable category name |
+| `categories[].templates` | string[] | List of template keys belonging to this category |
+
+## Available templates
+
+Templates are organized into four categories: **Developer**, **Creator**, **Business**, and **Personal**.
+
+### Developer
+
+#### Dev Team (`dev_team`)
+
+A development team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `pm` | Product Manager | `filesystem`, `think`, `todo`, `memory` |
+| `engineer` | Engineer | `filesystem`, `shell`, `think` |
+| `qa` | QA | `filesystem`, `shell`, `think` |
+
+#### DevOps Team (`devops_team`)
+
+An infrastructure and reliability team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `sre` | SRE Lead | `filesystem`, `shell`, `think`, `todo`, `memory` |
+| `infra` | Infrastructure Engineer | `filesystem`, `shell`, `think` |
+| `security` | Security Auditor | `filesystem`, `shell`, `think` |
+
+#### API Team (`api_team`)
+
+An API development team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `architect` | API Architect | `filesystem`, `think`, `todo`, `memory` |
+| `backend` | Backend Engineer | `filesystem`, `shell`, `think` |
+| `docs` | Docs Writer | `filesystem`, `think` |
+
+### Creator
+
+#### Content Team (`content_team`)
+
+A content production team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `manager` | Content Manager | `filesystem`, `think`, `todo`, `memory` |
+| `writer` | Writer | `filesystem`, `think`, `memory` |
+| `editor` | Editor | `filesystem`, `think` |
+
+#### Social Media Team (`social_media_team`)
+
+A social media team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `strategy` | Strategy Lead | `filesystem`, `think`, `todo`, `memory` |
+| `creator` | Content Creator | `filesystem`, `think`, `memory` |
+| `engagement` | Engagement Manager | `filesystem`, `think`, `memory` |
+
+#### Research Team (`research_team`)
+
+A research team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `lead` | Lead Researcher | `filesystem`, `think`, `todo`, `memory` |
+| `analyst` | Analyst | `filesystem`, `shell`, `think` |
+| `writer` | Research Writer | `filesystem`, `think` |
+
+### Business
+
+#### Legal Team (`legal_team`)
+
+A legal advisory team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `advisor` | Legal Advisor | `filesystem`, `think`, `todo`, `memory` |
+| `drafter` | Contract Drafter | `filesystem`, `think` |
+| `compliance` | Compliance Officer | `filesystem`, `think`, `memory` |
+
+#### Finance Team (`finance_team`)
+
+A financial operations team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `analyst` | Financial Analyst | `filesystem`, `shell`, `think`, `memory` |
+| `accountant` | Accountant | `filesystem`, `think` |
+| `budget` | Budget Manager | `filesystem`, `think`, `todo` |
+
+#### Marketing Team (`marketing_team`)
+
+A marketing team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `strategist` | Marketing Strategist | `filesystem`, `think`, `todo`, `memory` |
+| `copywriter` | Copywriter | `filesystem`, `think`, `memory` |
+| `growth` | Growth Analyst | `filesystem`, `shell`, `think` |
+
+#### Sales Team (`sales_team`)
+
+A sales team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `manager` | Sales Manager | `filesystem`, `think`, `todo`, `memory` |
+| `qualifier` | Lead Qualifier | `filesystem`, `think`, `memory` |
+| `ae` | Account Executive | `filesystem`, `think`, `memory` |
+
+### Personal
+
+#### Personal Assistant (`personal_assistant`)
+
+A daily productivity team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `scheduler` | Scheduler | `filesystem`, `think`, `todo`, `memory` |
+| `researcher` | Researcher | `filesystem`, `think`, `memory` |
+| `writer` | Writer | `filesystem`, `think`, `memory` |
+
+#### Solopreneur (`solopreneur`)
+
+A solo business operations team with three agents:
+
+| Agent | Role | Tools |
+|-------|------|-------|
+| `ops` | Business Manager | `filesystem`, `think`, `todo`, `memory` |
+| `marketer` | Marketer | `filesystem`, `think`, `memory` |
+| `support` | Support Agent | `filesystem`, `think`, `memory` |
+
+<Note>All pre-built templates use `openrouter/xiaomi/mimo-v2-pro` as the default model and enable shared memory across all agents in the team.</Note>

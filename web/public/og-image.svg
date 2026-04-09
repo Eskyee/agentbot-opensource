@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#000000"/>
+      <stop offset="100%" style="stop-color:#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" style="stop-color:#00ff88;stop-opacity:0.6"/>
+      <stop offset="50%" style="stop-color:#00ff88;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#00ff88;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Subtle glow -->
+  <ellipse cx="600" cy="315" rx="400" ry="200" fill="url(#glow)" filter="url(#blur)"/>
+  
+  <!-- Grid -->
+  <g stroke="#111" stroke-width="0.5">
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+  </g>
+  
+  <!-- Logo -->
+  <g transform="translate(540, 220)">
+    <circle cx="60" cy="60" r="50" fill="none" stroke="#00ff88" stroke-width="2" opacity="0.5"/>
+    <circle cx="60" cy="60" r="35" fill="#00ff88" opacity="0.2"/>
+    <text x="60" y="75" text-anchor="middle" font-size="50">🦞</text>
+  </g>
+  
+  <!-- Text -->
+  <text x="600" y="340" font-family="system-ui, -apple-system, sans-serif" font-size="64" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="0.15em">AGENTBOT</text>
+  
+  <text x="600" y="390" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#666666" text-anchor="middle" letter-spacing="0.1em">Run AI agents. Not servers.</text>
+  
+  <!-- Badge -->
+  <rect x="500" y="420" width="200" height="36" rx="18" fill="#00ff88" opacity="0.15"/>
+  <rect x="502" y="422" width="196" height="32" rx="16" fill="none" stroke="#00ff88" stroke-width="1" opacity="0.5"/>
+  <text x="600" y="443" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#00ff88" text-anchor="middle">Deploy in seconds</text>
+  
+  <!-- URL -->
+  <text x="600" y="600" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#333" text-anchor="middle">agentbot.raveculture.xyz</text>
+</svg>

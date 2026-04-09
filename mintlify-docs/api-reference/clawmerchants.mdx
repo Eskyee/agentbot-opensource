@@ -1,0 +1,159 @@
+---
+title: ClawMerchants data feeds
+description: "Query real-time DeFi, security, and market intelligence data feeds from ClawMerchants."
+---
+
+# ClawMerchants data feeds
+
+The ClawMerchants endpoint provides access to 15 live data feeds covering DeFi yields, token anomalies, security intelligence, market data, and developer trends.
+
+## List available feeds
+
+```http
+GET /api/clawmerchants
+```
+
+No authentication required. Returns all available data feeds with their upstream endpoints.
+
+### Response (200)
+
+```json
+{
+  "feeds": [
+    {
+      "id": "defi-yields",
+      "endpoint": "https://clawmerchants.com/v1/data/defi-yields-live",
+      "preview": "https://clawmerchants.com/v1/preview/defi-yields"
+    }
+  ],
+  "total": 15,
+  "docs": "https://clawmerchants.com/openapi.json"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `feeds` | array | List of available data feeds |
+| `feeds[].id` | string | Feed identifier used in the `feed` query parameter |
+| `feeds[].endpoint` | string | Upstream ClawMerchants endpoint URL |
+| `feeds[].preview` | string | Free preview URL for the feed |
+| `total` | number | Total number of available feeds |
+| `docs` | string | URL to the ClawMerchants OpenAPI specification |
+
+## Fetch a feed
+
+```http
+GET /api/clawmerchants?feed={feed_id}
+```
+
+No authentication required. Fetches data from a specific feed. Paid feeds may return a `402` response with an x402 payment challenge.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `feed` | string | Yes | Feed identifier (see [available feeds](#available-feeds)) |
+| `preview` | string | No | Set to `true` to fetch from the free preview endpoint instead of the live feed |
+
+### Response (200)
+
+```json
+{
+  "feed": "defi-yields",
+  "source": "clawmerchants",
+  "data": {}
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `feed` | string | Feed identifier that was requested |
+| `source` | string | Always `clawmerchants` |
+| `data` | object | Feed payload. Structure varies by feed — see [available feeds](#available-feeds) for details. |
+
+### Response (402)
+
+Returned when the upstream feed requires payment. The response includes an x402 payment challenge.
+
+```json
+{
+  "status": "payment_required",
+  "feed": "defi-yields",
+  "challenge": {},
+  "hint": "Use x402 or MPP to pay for this data feed"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Always `payment_required` |
+| `feed` | string | Feed identifier that was requested |
+| `challenge` | object | x402 payment challenge from the upstream provider |
+| `hint` | string | Human-readable payment guidance |
+
+## Error responses
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | `Unknown feed` | The `feed` parameter does not match any available feed. The response includes an `available` array of valid feed identifiers. |
+| 500 | `Feed fetch failed` | An error occurred while fetching from the upstream ClawMerchants endpoint. The `message` field contains the error detail. |
+
+### Unknown feed response
+
+```json
+{
+  "error": "Unknown feed",
+  "available": ["defi-yields", "token-anomalies", "security-intel", "..."]
+}
+```
+
+### Fetch failure response
+
+```json
+{
+  "error": "Feed fetch failed",
+  "message": "Request timed out"
+}
+```
+
+<Note>Upstream requests use a 10-second timeout. If the ClawMerchants service is slow or unavailable, you will receive a 500 error with the timeout message.</Note>
+
+## Available feeds
+
+| Feed ID | Upstream path | Category |
+|---------|---------------|----------|
+| `defi-yields` | `/v1/data/defi-yields-live` | DeFi |
+| `token-anomalies` | `/v1/data/token-anomalies-live` | DeFi |
+| `security-intel` | `/v1/data/security-intel-live` | Security |
+| `market-data` | `/v1/data/market-data-live` | Market |
+| `whale-alert` | `/v1/data/whale-alert-live` | Market |
+| `gas-prices` | `/v1/data/gas-prices-live` | Market |
+| `defi-tvl` | `/v1/data/defi-protocol-tvl-live` | DeFi |
+| `stablecoin-flows` | `/v1/data/stablecoin-flows-live` | DeFi |
+| `dex-volume` | `/v1/data/dex-volume-live` | Market |
+| `liquidations` | `/v1/data/liquidations-live` | DeFi |
+| `ai-ecosystem` | `/v1/data/ai-ecosystem-intel-live` | Intelligence |
+| `crypto-sentiment` | `/v1/data/crypto-sentiment-live` | Market |
+| `hn-trending` | `/v1/data/hn-top-stories-live` | Developer |
+| `github-trending` | `/v1/data/github-trending-live` | Developer |
+| `hf-papers` | `/v1/data/hf-papers-live` | Developer |
+
+## Examples
+
+### List all feeds
+
+```bash
+curl https://agentbot.sh/api/clawmerchants
+```
+
+### Fetch a live feed
+
+```bash
+curl "https://agentbot.sh/api/clawmerchants?feed=defi-yields"
+```
+
+### Fetch a preview
+
+```bash
+curl "https://agentbot.sh/api/clawmerchants?feed=security-intel&preview=true"
+```

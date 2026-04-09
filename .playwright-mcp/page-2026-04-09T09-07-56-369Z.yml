@@ -1,0 +1,356 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation [ref=e3]:
+    - link "Agentbot Agentbot" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img "Agentbot" [ref=e5]
+      - generic [ref=e6]: Agentbot
+  - main [ref=e15]:
+    - main [ref=e16]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - paragraph [ref=e21]: Agentbot Journal
+          - heading "Shipping the OpenClaw stack in public." [level=1] [ref=e22]
+          - paragraph [ref=e23]: Product updates, release notes, launch logs, and operator field reports from Agentbot. This is where we publish what changed, what broke, and what shipped.
+          - generic [ref=e24]:
+            - link "Read docs" [ref=e25] [cursor=pointer]:
+              - /url: /documentation
+            - link "Browse showcase" [ref=e26] [cursor=pointer]:
+              - /url: /showcase
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29]: Stories live
+            - generic [ref=e30]: "25"
+          - generic [ref=e31]:
+            - generic [ref=e32]: Release notes
+            - generic [ref=e33]: "05"
+          - generic [ref=e34]:
+            - generic [ref=e35]: Build logs
+            - generic [ref=e36]: "05"
+      - generic [ref=e39]:
+        - button "All" [ref=e40] [cursor=pointer]
+        - button "Build Log" [ref=e41] [cursor=pointer]
+        - button "Factory Droid" [ref=e42] [cursor=pointer]
+        - button "SaaS" [ref=e43] [cursor=pointer]
+        - button "Build in Public" [ref=e44] [cursor=pointer]
+        - button "Developer Tools" [ref=e45] [cursor=pointer]
+        - button "Field Notes" [ref=e46] [cursor=pointer]
+        - button "MiMo-V2-Pro" [ref=e47] [cursor=pointer]
+        - button "Xiaomi" [ref=e48] [cursor=pointer]
+        - button "Case Study" [ref=e49] [cursor=pointer]
+        - button "Production" [ref=e50] [cursor=pointer]
+        - button "Release" [ref=e51] [cursor=pointer]
+        - button "OpenClaw" [ref=e52] [cursor=pointer]
+        - button "Dreaming" [ref=e53] [cursor=pointer]
+        - button "Security" [ref=e54] [cursor=pointer]
+        - button "Android" [ref=e55] [cursor=pointer]
+        - button "Operations" [ref=e56] [cursor=pointer]
+        - button "Railway" [ref=e57] [cursor=pointer]
+        - button "Bitcoin" [ref=e58] [cursor=pointer]
+        - button "Hardening" [ref=e59] [cursor=pointer]
+        - button "Conferences" [ref=e60] [cursor=pointer]
+        - button "AI Agents" [ref=e61] [cursor=pointer]
+        - button "Tokyo" [ref=e62] [cursor=pointer]
+        - button "London" [ref=e63] [cursor=pointer]
+        - button "$AGENTBOT" [ref=e64] [cursor=pointer]
+        - button "Shipping" [ref=e65] [cursor=pointer]
+        - button "Solana" [ref=e66] [cursor=pointer]
+        - button "Buddies" [ref=e67] [cursor=pointer]
+        - button "Liquid" [ref=e68] [cursor=pointer]
+        - button "LWK" [ref=e69] [cursor=pointer]
+        - button "Token" [ref=e70] [cursor=pointer]
+        - button "Turborepo" [ref=e71] [cursor=pointer]
+        - button "IPFS" [ref=e72] [cursor=pointer]
+        - button "gitlawb" [ref=e73] [cursor=pointer]
+        - button "Decentralized" [ref=e74] [cursor=pointer]
+        - button "Exploration" [ref=e75] [cursor=pointer]
+        - button "Feature" [ref=e76] [cursor=pointer]
+        - button "Jobs" [ref=e77] [cursor=pointer]
+        - button "Beta" [ref=e78] [cursor=pointer]
+        - button "Architecture" [ref=e79] [cursor=pointer]
+        - button "Open Source" [ref=e80] [cursor=pointer]
+        - button "Engineering" [ref=e81] [cursor=pointer]
+        - button "Community" [ref=e82] [cursor=pointer]
+        - button "Payments" [ref=e83] [cursor=pointer]
+        - button "Launch" [ref=e84] [cursor=pointer]
+        - button "Showcase" [ref=e85] [cursor=pointer]
+        - button "Platform" [ref=e86] [cursor=pointer]
+        - button "Models" [ref=e87] [cursor=pointer]
+        - button "AI" [ref=e88] [cursor=pointer]
+        - button "Philosophy" [ref=e89] [cursor=pointer]
+      - generic [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e93]: 9 Apr
+          - generic [ref=e94]: Build Log
+          - generic [ref=e95]: Factory Droid
+          - generic [ref=e96]: SaaS
+          - generic [ref=e97]: Build in Public
+          - generic [ref=e98]: Developer Tools
+        - link "Building a SaaS Platform with Factory Droid How one developer ships an AI agent platform at startup speed using custom droids as a virtual engineering team. Read post" [ref=e99] [cursor=pointer]:
+          - /url: /blog/posts/building-saas-with-factory-droid
+          - heading "Building a SaaS Platform with Factory Droid" [level=2] [ref=e100]
+          - paragraph [ref=e101]: How one developer ships an AI agent platform at startup speed using custom droids as a virtual engineering team.
+          - generic [ref=e102]: Read post
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - generic [ref=e107]:
+            - heading "Latest posts" [level=3] [ref=e108]
+            - generic [ref=e109]: 24 entries
+          - generic [ref=e110]:
+            - link "9 Apr Field Notes How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study Every agent deployed on Agentbot boots with Xiaomi MiMo-V2-Pro. Here's why we chose it over GPT-5.2 and Claude, and what we've learned running it 24/7." [ref=e111] [cursor=pointer]:
+              - /url: /blog/posts/mimo-v2-pro-powers-agentbot
+              - generic [ref=e112]:
+                - generic [ref=e113]: 9 Apr
+                - generic [ref=e114]: Field Notes
+              - heading "How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study" [level=4] [ref=e115]
+              - paragraph [ref=e116]: Every agent deployed on Agentbot boots with Xiaomi MiMo-V2-Pro. Here's why we chose it over GPT-5.2 and Claude, and what we've learned running it 24/7.
+            - link "9 Apr Release OpenClaw v2026.4.9 — Dreaming, SSRF Hardening, Character QA & Android Pairing REM dream backfill with diary timeline UI, SSRF and node exec injection hardening, character-vibes QA evals, and a complete Android pairing overhaul." [ref=e117] [cursor=pointer]:
+              - /url: /blog/posts/openclaw-v2026-4-9
+              - generic [ref=e118]:
+                - generic [ref=e119]: 9 Apr
+                - generic [ref=e120]: Release
+              - heading "OpenClaw v2026.4.9 — Dreaming, SSRF Hardening, Character QA & Android Pairing" [level=4] [ref=e121]
+              - paragraph [ref=e122]: REM dream backfill with diary timeline UI, SSRF and node exec injection hardening, character-vibes QA evals, and a complete Android pairing overhaul.
+            - link "9 Apr Build Log Platform Recovery, Mainnet Bitcoin, and Production Guardrails We spent the last stretch repairing the Railway stack, moving Bitcoin to mainnet, hardening the wallet/runtime path, and putting better production protection around Agentbot." [ref=e123] [cursor=pointer]:
+              - /url: /blog/posts/platform-recovery-and-hardening-apr-9-2026
+              - generic [ref=e124]:
+                - generic [ref=e125]: 9 Apr
+                - generic [ref=e126]: Build Log
+              - heading "Platform Recovery, Mainnet Bitcoin, and Production Guardrails" [level=4] [ref=e127]
+              - paragraph [ref=e128]: We spent the last stretch repairing the Railway stack, moving Bitcoin to mainnet, hardening the wallet/runtime path, and putting better production protection around Agentbot.
+            - 'link "9 Apr Field Notes Conference Recap: Tokyo & London 2026 — AI Agents Are the New Consensus TEAMZ Summit Tokyo, Consensus Hong Kong, and London Blockchain Conference all converge on one thesis: autonomous AI agents running on crypto rails are the next layer of infrastructure." [ref=e129] [cursor=pointer]':
+              - /url: /blog/posts/conference-recap-tokyo-london-2026
+              - generic [ref=e130]:
+                - generic [ref=e131]: 9 Apr
+                - generic [ref=e132]: Field Notes
+              - 'heading "Conference Recap: Tokyo & London 2026 — AI Agents Are the New Consensus" [level=4] [ref=e133]'
+              - paragraph [ref=e134]: "TEAMZ Summit Tokyo, Consensus Hong Kong, and London Blockchain Conference all converge on one thesis: autonomous AI agents running on crypto rails are the next layer of infrastructure."
+            - 'link "9 Apr Shipping Solana Integration, Blockchain Buddies & Liquid Wallet Kit New: Solana Agent Kit, Blockchain Buddies digital pets, Liquid Wallet Kit docs, and full competitive analysis vs solana-clawd." [ref=e135] [cursor=pointer]':
+              - /url: /blog/posts/agentbot-update-apr-9-2026
+              - generic [ref=e136]:
+                - generic [ref=e137]: 9 Apr
+                - generic [ref=e138]: Shipping
+              - heading "Solana Integration, Blockchain Buddies & Liquid Wallet Kit" [level=4] [ref=e139]
+              - paragraph [ref=e140]: "New: Solana Agent Kit, Blockchain Buddies digital pets, Liquid Wallet Kit docs, and full competitive analysis vs solana-clawd."
+            - 'link "8 Apr Shipping Community Token, Turborepo 2.9, and More Big update: AGENTBOT launched on Solana pump.fun, Turborepo 2.9, OpenClaw latest, Blockstream Jade, and live GitHub stars." [ref=e141] [cursor=pointer]':
+              - /url: /blog/posts/agentbot-update-apr-8-2026
+              - generic [ref=e142]:
+                - generic [ref=e143]: 8 Apr
+                - generic [ref=e144]: Shipping
+              - heading "Community Token, Turborepo 2.9, and More" [level=4] [ref=e145]
+              - paragraph [ref=e146]: "Big update: AGENTBOT launched on Solana pump.fun, Turborepo 2.9, OpenClaw latest, Blockstream Jade, and live GitHub stars."
+            - link "7 Apr Shipping Our Code is Now on IPFS We mirrored our open source repo to gitlawb — now it lives on IPFS, decentralized, with DID identity for agents." [ref=e147] [cursor=pointer]:
+              - /url: /blog/posts/agentbot-on-ipfs-via-gitlawb
+              - generic [ref=e148]:
+                - generic [ref=e149]: 7 Apr
+                - generic [ref=e150]: Shipping
+              - heading "Our Code is Now on IPFS" [level=4] [ref=e151]
+              - paragraph [ref=e152]: We mirrored our open source repo to gitlawb — now it lives on IPFS, decentralized, with DID identity for agents.
+            - link "7 Apr Field Notes Decentralized Git for AI Agents Exploring gitlawb — a decentralized git network where AI agents have DID identities, own repos, and collaborate via MCP." [ref=e153] [cursor=pointer]:
+              - /url: /blog/posts/gitlawb-decentralized-git-for-agents
+              - generic [ref=e154]:
+                - generic [ref=e155]: 7 Apr
+                - generic [ref=e156]: Field Notes
+              - heading "Decentralized Git for AI Agents" [level=4] [ref=e157]
+              - paragraph [ref=e158]: Exploring gitlawb — a decentralized git network where AI agents have DID identities, own repos, and collaborate via MCP.
+            - link "7 Apr Shipping AI Agent Jobs Board is Live A jobs board dedicated to AI agent developers and builders. Post jobs, find talent, build the future." [ref=e159] [cursor=pointer]:
+              - /url: /blog/posts/ai-agent-jobs-board-live
+              - generic [ref=e160]:
+                - generic [ref=e161]: 7 Apr
+                - generic [ref=e162]: Shipping
+              - heading "AI Agent Jobs Board is Live" [level=4] [ref=e163]
+              - paragraph [ref=e164]: A jobs board dedicated to AI agent developers and builders. Post jobs, find talent, build the future.
+            - link "7 Apr Build Log Open Source Multi-Tenant AI Agent Platform How we built Agentbot with Docker isolation, BYOK AI, USDC payments on Base, and a skill marketplace." [ref=e165] [cursor=pointer]:
+              - /url: /blog/posts/open-source-multi-tenant-architecture
+              - generic [ref=e166]:
+                - generic [ref=e167]: 7 Apr
+                - generic [ref=e168]: Build Log
+              - heading "Open Source Multi-Tenant AI Agent Platform" [level=4] [ref=e169]
+              - paragraph [ref=e170]: How we built Agentbot with Docker isolation, BYOK AI, USDC payments on Base, and a skill marketplace.
+            - link "7 Apr Release OpenClaw v2026.4.5 Video generation, music generation, new providers (Qwen, Fireworks, Bedrock Mantle), multilingual Control UI, and more." [ref=e171] [cursor=pointer]:
+              - /url: /blog/posts/openclaw-v2026-4-5
+              - generic [ref=e172]:
+                - generic [ref=e173]: 7 Apr
+                - generic [ref=e174]: Release
+              - heading "OpenClaw v2026.4.5" [level=4] [ref=e175]
+              - paragraph [ref=e176]: Video generation, music generation, new providers (Qwen, Fireworks, Bedrock Mantle), multilingual Control UI, and more.
+            - link "7 Apr Shipping Following the OpenClaw Contributors We followed all 102 OpenClaw contributors. Here's why this matters for the AI agent ecosystem." [ref=e177] [cursor=pointer]:
+              - /url: /blog/posts/following-openclaw-contributors
+              - generic [ref=e178]:
+                - generic [ref=e179]: 7 Apr
+                - generic [ref=e180]: Shipping
+              - heading "Following the OpenClaw Contributors" [level=4] [ref=e181]
+              - paragraph [ref=e182]: We followed all 102 OpenClaw contributors. Here's why this matters for the AI agent ecosystem.
+            - 'link "3 Apr Shipping BTCPay Agentbot: Bitcoin-Native Agent Payments Headless Bitcoin infrastructure for AI agents. Non-custodial wallets, A2A BTC payments, Fast Sync, and 10GB pruned nodes." [ref=e183] [cursor=pointer]':
+              - /url: /blog/posts/btcpay-agentbot
+              - generic [ref=e184]:
+                - generic [ref=e185]: 3 Apr
+                - generic [ref=e186]: Shipping
+              - 'heading "BTCPay Agentbot: Bitcoin-Native Agent Payments" [level=4] [ref=e187]'
+              - paragraph [ref=e188]: Headless Bitcoin infrastructure for AI agents. Non-custodial wallets, A2A BTC payments, Fast Sync, and 10GB pruned nodes.
+            - link "2 Apr Build Log How We Built a Multi-Tenant AI Agent Platform BYOK infrastructure, OpenClaw gateway, eight channels, Docker agent containers, and the open-source architecture behind Agentbot." [ref=e189] [cursor=pointer]:
+              - /url: /blog/posts/how-we-built-multi-tenant-agent-platform
+              - generic [ref=e190]:
+                - generic [ref=e191]: 2 Apr
+                - generic [ref=e192]: Build Log
+              - heading "How We Built a Multi-Tenant AI Agent Platform" [level=4] [ref=e193]
+              - paragraph [ref=e194]: BYOK infrastructure, OpenClaw gateway, eight channels, Docker agent containers, and the open-source architecture behind Agentbot.
+            - link "2 Apr Shipping Trials Live, Showcase Open 7-day free trials, public agent showcase, Stripe payments, and a launch built in London on a Mac mini." [ref=e195] [cursor=pointer]:
+              - /url: /blog/posts/agentbot-showcase-trials-live
+              - generic [ref=e196]:
+                - generic [ref=e197]: 2 Apr
+                - generic [ref=e198]: Shipping
+              - heading "Trials Live, Showcase Open" [level=4] [ref=e199]
+              - paragraph [ref=e200]: 7-day free trials, public agent showcase, Stripe payments, and a launch built in London on a Mac mini.
+            - link "2 Apr Release April Update - Orchestration Engine and v1.0.0 Concurrent tool orchestration, tiered permission gates, encrypted per-user keys, and the v1.0.0 open-source release." [ref=e201] [cursor=pointer]:
+              - /url: /blog/posts/platform-update-april-2026
+              - generic [ref=e202]:
+                - generic [ref=e203]: 2 Apr
+                - generic [ref=e204]: Release
+              - heading "April Update - Orchestration Engine and v1.0.0" [level=4] [ref=e205]
+              - paragraph [ref=e206]: Concurrent tool orchestration, tiered permission gates, encrypted per-user keys, and the v1.0.0 open-source release.
+            - link "31 Mar Shipping Agentbot Launches March 31 Your AI agent. Your hardware. Your rules. Self-hosted, BYOK, and one-command deploy." [ref=e207] [cursor=pointer]:
+              - /url: /blog/posts/agentbot-launch
+              - generic [ref=e208]:
+                - generic [ref=e209]: 31 Mar
+                - generic [ref=e210]: Shipping
+              - heading "Agentbot Launches March 31" [level=4] [ref=e211]
+              - paragraph [ref=e212]: Your AI agent. Your hardware. Your rules. Self-hosted, BYOK, and one-command deploy.
+            - 'link "30 Mar Field Notes Pre-Launch Hardening: Payment Audit Five critical payment gaps found and fixed before launch. Every endpoint locked down before D-1." [ref=e213] [cursor=pointer]':
+              - /url: /blog/posts/pre-launch-hardening-2026-03-30
+              - generic [ref=e214]:
+                - generic [ref=e215]: 30 Mar
+                - generic [ref=e216]: Field Notes
+              - 'heading "Pre-Launch Hardening: Payment Audit" [level=4] [ref=e217]'
+              - paragraph [ref=e218]: Five critical payment gaps found and fixed before launch. Every endpoint locked down before D-1.
+            - link "28 Mar Release OpenClaw v2026.3.28 A release focused on gateway stability, compatibility, and production operator quality-of-life fixes." [ref=e219] [cursor=pointer]:
+              - /url: /blog/posts/openclaw-v2026-3-28
+              - generic [ref=e220]:
+                - generic [ref=e221]: 28 Mar
+                - generic [ref=e222]: Release
+              - heading "OpenClaw v2026.3.28" [level=4] [ref=e223]
+              - paragraph [ref=e224]: A release focused on gateway stability, compatibility, and production operator quality-of-life fixes.
+            - link "26 Mar Release OpenClaw v2026.3.24 Gateway OpenAI compatibility, security fixes, CLI container support, and better channel isolation." [ref=e225] [cursor=pointer]:
+              - /url: /blog/posts/openclaw-v2026-3-24
+              - generic [ref=e226]:
+                - generic [ref=e227]: 26 Mar
+                - generic [ref=e228]: Release
+              - heading "OpenClaw v2026.3.24" [level=4] [ref=e229]
+              - paragraph [ref=e230]: Gateway OpenAI compatibility, security fixes, CLI container support, and better channel isolation.
+            - 'link "23 Mar Shipping MiMo-V2-Pro: Xiaomi''s Flagship AI Model 1T+ parameters, 1M context, strong programming benchmarks, and now the default model on Agentbot." [ref=e231] [cursor=pointer]':
+              - /url: /blog/posts/mimo-v2-pro
+              - generic [ref=e232]:
+                - generic [ref=e233]: 23 Mar
+                - generic [ref=e234]: Shipping
+              - 'heading "MiMo-V2-Pro: Xiaomi''s Flagship AI Model" [level=4] [ref=e235]'
+              - paragraph [ref=e236]: 1T+ parameters, 1M context, strong programming benchmarks, and now the default model on Agentbot.
+            - link "21 Mar Build Log 313 Commits in One Week Security hardening, RLS, real agent provisioning, BullMQ workers, and the design system locked for launch." [ref=e237] [cursor=pointer]:
+              - /url: /blog/posts/launch-week-2026-3-21
+              - generic [ref=e238]:
+                - generic [ref=e239]: 21 Mar
+                - generic [ref=e240]: Build Log
+              - heading "313 Commits in One Week" [level=4] [ref=e241]
+              - paragraph [ref=e242]: Security hardening, RLS, real agent provisioning, BullMQ workers, and the design system locked for launch.
+            - link "14 Mar Field Notes Running a Zero-Human Company How Atlas operates autonomously across deployments, support, trading, and content creation." [ref=e243] [cursor=pointer]:
+              - /url: /blog/posts/zero-human-company
+              - generic [ref=e244]:
+                - generic [ref=e245]: 14 Mar
+                - generic [ref=e246]: Field Notes
+              - heading "Running a Zero-Human Company" [level=4] [ref=e247]
+              - paragraph [ref=e248]: How Atlas operates autonomously across deployments, support, trading, and content creation.
+            - 'link "14 Mar Field Notes Battle Tested: Live in the Field Real problems, real operators, and the constraints that shaped the product in production." [ref=e249] [cursor=pointer]':
+              - /url: /blog/posts/battle-tested
+              - generic [ref=e250]:
+                - generic [ref=e251]: 14 Mar
+                - generic [ref=e252]: Field Notes
+              - 'heading "Battle Tested: Live in the Field" [level=4] [ref=e253]'
+              - paragraph [ref=e254]: Real problems, real operators, and the constraints that shaped the product in production.
+        - complementary [ref=e255]:
+          - generic [ref=e256]:
+            - paragraph [ref=e257]: Release track
+            - generic [ref=e258]:
+              - link "9 Apr OpenClaw v2026.4.9 — Dreaming, SSRF Hardening, Character QA & Android Pairing" [ref=e259] [cursor=pointer]:
+                - /url: /blog/posts/openclaw-v2026-4-9
+                - generic [ref=e260]: 9 Apr
+                - generic [ref=e261]: OpenClaw v2026.4.9 — Dreaming, SSRF Hardening, Character QA & Android Pairing
+              - link "7 Apr OpenClaw v2026.4.5" [ref=e262] [cursor=pointer]:
+                - /url: /blog/posts/openclaw-v2026-4-5
+                - generic [ref=e263]: 7 Apr
+                - generic [ref=e264]: OpenClaw v2026.4.5
+              - link "2 Apr April Update - Orchestration Engine and v1.0.0" [ref=e265] [cursor=pointer]:
+                - /url: /blog/posts/platform-update-april-2026
+                - generic [ref=e266]: 2 Apr
+                - generic [ref=e267]: April Update - Orchestration Engine and v1.0.0
+              - link "28 Mar OpenClaw v2026.3.28" [ref=e268] [cursor=pointer]:
+                - /url: /blog/posts/openclaw-v2026-3-28
+                - generic [ref=e269]: 28 Mar
+                - generic [ref=e270]: OpenClaw v2026.3.28
+          - generic [ref=e271]:
+            - paragraph [ref=e272]: Field notes
+            - generic [ref=e273]:
+              - link "How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study Every agent deployed on Agentbot boots with Xiaomi MiMo-V2-Pro. Here's why we chose it over GPT-5.2 and Claude, and what we've learned running it 24/7." [ref=e274] [cursor=pointer]:
+                - /url: /blog/posts/mimo-v2-pro-powers-agentbot
+                - generic [ref=e275]: How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study
+                - generic [ref=e276]: Every agent deployed on Agentbot boots with Xiaomi MiMo-V2-Pro. Here's why we chose it over GPT-5.2 and Claude, and what we've learned running it 24/7.
+              - 'link "Conference Recap: Tokyo & London 2026 — AI Agents Are the New Consensus TEAMZ Summit Tokyo, Consensus Hong Kong, and London Blockchain Conference all converge on one thesis: autonomous AI agents running on crypto rails are the next layer of infrastructure." [ref=e277] [cursor=pointer]':
+                - /url: /blog/posts/conference-recap-tokyo-london-2026
+                - generic [ref=e278]: "Conference Recap: Tokyo & London 2026 — AI Agents Are the New Consensus"
+                - generic [ref=e279]: "TEAMZ Summit Tokyo, Consensus Hong Kong, and London Blockchain Conference all converge on one thesis: autonomous AI agents running on crypto rails are the next layer of infrastructure."
+              - link "Decentralized Git for AI Agents Exploring gitlawb — a decentralized git network where AI agents have DID identities, own repos, and collaborate via MCP." [ref=e280] [cursor=pointer]:
+                - /url: /blog/posts/gitlawb-decentralized-git-for-agents
+                - generic [ref=e281]: Decentralized Git for AI Agents
+                - generic [ref=e282]: Exploring gitlawb — a decentralized git network where AI agents have DID identities, own repos, and collaborate via MCP.
+          - generic [ref=e283]:
+            - paragraph [ref=e284]: Follow the shipping log
+            - paragraph [ref=e285]: Use the blog as the public changelog, then jump into docs and showcase when you want the operator view.
+            - generic [ref=e286]:
+              - link "Open docs" [ref=e287] [cursor=pointer]:
+                - /url: /documentation
+              - link "See live agents" [ref=e288] [cursor=pointer]:
+                - /url: /showcase
+              - link "Start a free trial" [ref=e289] [cursor=pointer]:
+                - /url: /register
+  - contentinfo [ref=e290]:
+    - generic [ref=e292]:
+      - generic [ref=e293]:
+        - generic [ref=e294]: © 2026 Agentbot · Zero Human Company
+        - generic [ref=e295]:
+          - generic [ref=e298]: Checking Status
+          - generic [ref=e299]: "|"
+          - generic [ref=e300]: Agentbot v0.0.0
+          - generic [ref=e301]: "|"
+          - generic [ref=e302]: OpenClaw loading...
+      - generic [ref=e303]:
+        - link "Partner" [ref=e304] [cursor=pointer]:
+          - /url: /partner
+        - link "$AGENTBOT" [ref=e305] [cursor=pointer]:
+          - /url: /token
+        - link "Solana" [ref=e306] [cursor=pointer]:
+          - /url: /solana
+        - link "Buddies" [ref=e307] [cursor=pointer]:
+          - /url: /buddies
+        - link "GitHub" [ref=e308] [cursor=pointer]:
+          - /url: https://github.com/Eskyee/agentbot-opensource
+        - link "Gitlawb" [ref=e309] [cursor=pointer]:
+          - /url: https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource
+        - link "DeepWiki" [ref=e310] [cursor=pointer]:
+          - /url: https://deepwiki.com/Eskyee/agentbot-opensource
+        - link "Dev.to" [ref=e311] [cursor=pointer]:
+          - /url: https://dev.to/agentbot
+        - link "Talent" [ref=e312] [cursor=pointer]:
+          - /url: https://talent.app/raveculture.base.eth
+        - link "Open WebUI" [ref=e313] [cursor=pointer]:
+          - /url: https://openwebui.com/u/jaieskyravecult115142e2f8
+        - link "Terms" [ref=e314] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e315] [cursor=pointer]:
+          - /url: /privacy
+  - generic [ref=e318]:
+    - generic [ref=e319]:
+      - generic [ref=e322]: ONLINE
+      - generic [ref=e323]: ·
+      - generic [ref=e324]: ·
+    - generic [ref=e325]: © 2026 Agentbot
+  - region "Notifications alt+T"
+  - alert [ref=e326]

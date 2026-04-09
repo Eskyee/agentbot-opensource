@@ -1,0 +1,254 @@
+---
+title: Registration API
+description: "Register and manage Home and Link mode installations"
+---
+
+# Registration API
+
+Register self-hosted (Home) and linked (Link) agent installations. These endpoints are backend-only and support the Home and Link deployment modes alongside the default Cloud mode.
+
+<Note>Home mode runs the agent container on your own hardware via Docker. Link mode connects an existing OpenClaw instance to the Agentbot platform. Cloud mode (the default) runs the agent on Agentbot infrastructure.</Note>
+
+## Install script
+
+```http
+GET /install
+```
+
+Returns the Home mode installation shell script. No authentication required. The response content type is `text/plain`.
+
+This script automates the setup of a self-hosted agent container. Pipe it to your shell to begin the Home mode installation:
+
+```bash
+curl -sSL https://agentbot.sh/install | bash
+```
+
+## Link script
+
+```http
+GET /link
+```
+
+Returns the Link mode setup shell script. No authentication required. The response content type is `text/plain`.
+
+This script connects an existing OpenClaw instance to the Agentbot platform. Pipe it to your shell to begin the Link mode setup:
+
+```bash
+curl -sSL https://agentbot.sh/link | bash
+```
+
+## Validate API key
+
+```http
+POST /api/validate-key
+```
+
+Validates a bearer token by computing a SHA-256 hash of the raw key and looking it up in the `api_keys` database table. Raw keys are never stored or compared directly. No session authentication is required — the API key is passed in the `Authorization` header.
+
+<Note>The web application's [key validation endpoint](/api-reference/keys#validate-key) uses a separate bcrypt-based lookup with the `sk_` prefix convention. The backend endpoint documented here uses SHA-256 hashing and does not require the `sk_` prefix.</Note>
+
+### Headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `Authorization` | Yes | Bearer token in the format `Bearer YOUR_API_KEY` |
+
+### Response
+
+```json
+{
+  "valid": true,
+  "userId": "user-a1b2c3d4",
+  "plan": "solo",
+  "features": ["dashboard", "marketplace", "analytics"]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `valid` | boolean | Whether the key is valid |
+| `userId` | string | User identifier |
+| `plan` | string | Current subscription plan (`label`, `solo`, `collective`, or `network`) |
+| `features` | string[] | List of features available to the user |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Missing bearer token or key is invalid |
+| 500 | Internal error during key validation |
+
+## Register Home installation
+
+```http
+POST /api/register-home
+```
+
+Registers a Home mode installation. Requires identity headers (`x-user-email`, `x-user-id`, `x-user-role`) set by the authenticated frontend. The backend middleware extracts these headers but does not independently verify a bearer token on this route.
+
+<Note>The web proxy forwards identity headers from the active session. The backend `authenticate` middleware reads these headers and attaches them to the request context. If no headers are provided, `userId` defaults to `anonymous`.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `mode` | string | No | Deployment mode (defaults to `home`) |
+| `gatewayToken` | string | No | Gateway token for the installation |
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Home installation registered",
+  "dashboardUrl": "https://agentbot.sh/dashboard"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `userId` is required |
+| 500 | Internal server error |
+
+## Register Link installation
+
+```http
+POST /api/register-link
+```
+
+Registers a Link mode installation that connects an existing OpenClaw instance. Requires identity headers (`x-user-email`, `x-user-id`, `x-user-role`) set by the authenticated frontend.
+
+<Note>The web proxy forwards identity headers from the active session. The backend `authenticate` middleware reads these headers and attaches them to the request context. If no headers are provided, `userId` defaults to `anonymous`.</Note>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | Yes | User identifier |
+| `gatewayToken` | string | No | Gateway token for the linked instance |
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "OpenClaw instance linked",
+  "dashboardUrl": "https://agentbot.sh/dashboard"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `userId` is required |
+| 500 | Internal server error |
+
+## List installations
+
+```http
+GET /api/installations
+```
+
+Returns registered installations belonging to the authenticated user. Results are scoped to the caller's identity — you can only see your own installations. Requires identity headers (`x-user-email`, `x-user-id`, `x-user-role`) set by the authenticated frontend.
+
+<Note>This endpoint filters results by the authenticated user's ID. Each user can only view their own installations across all deployment modes.</Note>
+
+### Response
+
+```json
+{
+  "success": true,
+  "count": 1,
+  "installations": [
+    {
+      "user_id": "user-a1b2c3d4",
+      "mode": "home",
+      "registered_at": "2026-03-21T00:00:00Z",
+      "last_seen": "2026-03-21T12:00:00Z",
+      "status": "active"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `installations[].user_id` | string | User identifier |
+| `installations[].mode` | string | Deployment mode: `home`, `link`, or `cloud` |
+| `installations[].registered_at` | string | ISO 8601 timestamp of registration |
+| `installations[].last_seen` | string | ISO 8601 timestamp of last heartbeat |
+| `installations[].status` | string | Current status: `active` or `inactive` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 500 | Internal server error |
+
+## Get registration token (internal)
+
+```http
+GET /api/registration/token
+```
+
+Returns the gateway token for a user from the agent registrations table. This is an internal API used by the Edge Runtime dashboard to retrieve gateway tokens without direct database access from edge functions.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `userId` | string | Yes | User identifier to look up the gateway token for |
+
+### Response
+
+```json
+{
+  "gateway_token": "a1b2c3d4e5f6..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `gateway_token` | string \| null | The gateway token associated with the user's agent registration. `null` when no registration exists for the user. |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `userId required` — the `userId` query parameter is missing |
+| 500 | Failed to fetch token |
+
+<Note>This endpoint queries the `agent_registrations` table directly. It does not require session authentication and is intended for internal service-to-service calls within the Edge Runtime.</Note>
+
+## Registration heartbeat
+
+```http
+POST /api/heartbeat
+```
+
+Reports the status of a registered installation. When the `userId` matches a known registration, the `last_seen` timestamp is updated and the status is set to `active`. Requires authentication.
+
+<Note>This is a backend registration heartbeat for Home and Link installations. It is separate from the [web heartbeat settings](/api-reference/health#get-heartbeat-settings) endpoint, which configures heartbeat scheduling for the web dashboard.</Note>
+
+### Authentication
+
+This endpoint uses the `authenticate` middleware which reads identity headers (`x-user-email`, `x-user-id`, `x-user-role`) from the request. If no headers are provided, the middleware assigns default values (`userId` defaults to `anonymous`) and the request proceeds. The middleware does not reject unauthenticated requests.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | string | No | User identifier of the registered installation |
+
+### Response
+
+```json
+{
+  "success": true,
+  "timestamp": "2026-03-21T12:00:00Z"
+}
+```

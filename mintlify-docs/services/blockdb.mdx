@@ -1,0 +1,74 @@
+---
+title: "BlockDB"
+description: "The granular music genome. Query 100M+ ethically licensed components."
+---
+
+# BlockDB
+
+**The granular music genome.** Query 100M+ ethically licensed components with onchain attribution.
+
+## Overview
+
+BlockDB decomposes music into granular components—"Blocks"—that can be queried, sampled, and remixed. Every retrieval is logged onchain, ensuring transparent provenance and real-time royalty payments to original creators.
+
+## Features
+
+### Block-Level Retrieval
+
+Query specific music components:
+- **Melodic fragments** — hooks, leads, basslines
+- **Rhythmic patterns** — drum loops, breaks, percussion
+- **Textural layers** — pads, atmospheres, FX
+- **Vocal samples** — one-shots, phrases, ad-libs
+
+### Royalty Transparency
+
+Every Block retrieval triggers:
+1. Onchain log entry (Base network)
+2. Creator wallet attribution
+3. Real-time USDC split distribution
+4. Verifiable audit trail
+
+### Music Lens API
+
+Transform raw audio data into actionable intelligence:
+
+| Function | Use Case |
+|----------|----------|
+| Mood Analysis | Categorize tracks by energy, vibe, emotion |
+| Tempo Detection | BPM analysis for DJ set curation |
+| Key Identification | Harmonic mixing recommendations |
+| Trend Intelligence | Global mood/tempo shifts in real-time |
+
+## Pricing
+
+| Tier | Monthly Queries | Price |
+|------|----------------|-------|
+| Solo | 100 | Included |
+| Collective | 5,000 | Included |
+| Label | Unlimited | Included |
+| Network | Unlimited | Included |
+
+**Overage:** £0.001 per Block retrieval (attribution logged onchain)
+
+## Getting Started
+
+```javascript
+// Query BlockDB via Agentbot API
+const block = await agentbot.blocks.query({
+  mood: 'dark',
+  bpm: { min: 128, max: 135 },
+  tags: ['techno', 'basement'],
+  limit: 10
+});
+
+// Each retrieval logs attribution onchain
+console.log(block.attribution); // { txHash, creator, royalty_split }
+```
+
+## Use Cases
+
+- **Demo curation** — Find similar tracks to evaluate submissions
+- **Playlist building** — Query by mood/tempo for cohesive sets
+- **A&R research** — Identify gaps in your catalog
+- **Remix sourcing** — Find compatible stems for collaborations

@@ -1,0 +1,301 @@
+---
+title: Orchestration API
+description: "Concurrent tool orchestration for batched execution of agent tool calls"
+---
+
+# Orchestration API
+
+Execute multiple tool calls in a single request with automatic concurrency optimization. Read-only tools run in parallel while mutating tools serialize, reducing total execution time without sacrificing safety.
+
+<Note>All orchestration endpoints require bearer token authentication. The `authenticate` middleware is applied when the router is mounted, so every request must include a valid `Authorization: Bearer <token>` header. Requests are also subject to the general API rate limit of 120 requests per minute.</Note>
+
+## Execute batch
+
+```http
+POST /api/orchestration/batch
+```
+
+Submit a batch of tool calls for concurrent execution. The system automatically classifies each tool as read-only or mutating, partitions them into execution batches, and runs them with optimal concurrency.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tools` | array | Yes | Array of tool call objects to execute. Minimum 1, maximum 20. |
+| `tools[].id` | string | Yes | Unique identifier for this tool call |
+| `tools[].toolName` | string | Yes | Name of the tool to invoke (for example, `read`, `grep`, `write`, `bash`) |
+| `tools[].input` | object | Yes | Input parameters for the tool call |
+| `userId` | string | No | User identifier for server-side logging. When calling through the Next.js proxy, this field is automatically populated from your session and does not need to be sent by the client. |
+
+```json
+{
+  "tools": [
+    { "id": "t1", "toolName": "read", "input": { "path": "/src/index.ts" } },
+    { "id": "t2", "toolName": "grep", "input": { "pattern": "TODO" } },
+    { "id": "t3", "toolName": "write", "input": { "path": "/src/config.ts", "content": "..." } },
+    { "id": "t4", "toolName": "read", "input": { "path": "/src/utils.ts" } }
+  ]
+}
+```
+
+In this example, `t1` and `t2` are read-only and run in parallel. `t3` is mutating and runs alone. `t4` is read-only and runs after `t3` completes.
+
+### Response
+
+```json
+{
+  "result": {
+    "success": true,
+    "results": [
+      {
+        "toolId": "t1",
+        "toolName": "read",
+        "success": true,
+        "output": { "..." : "..." },
+        "durationMs": 12
+      },
+      {
+        "toolId": "t2",
+        "toolName": "grep",
+        "success": true,
+        "output": { "..." : "..." },
+        "durationMs": 8
+      },
+      {
+        "toolId": "t3",
+        "toolName": "write",
+        "success": true,
+        "output": { "..." : "..." },
+        "durationMs": 45
+      },
+      {
+        "toolId": "t4",
+        "toolName": "read",
+        "success": true,
+        "output": { "..." : "..." },
+        "durationMs": 10
+      }
+    ],
+    "stats": {
+      "totalTools": 4,
+      "parallelBatches": 2,
+      "serialBatches": 1,
+      "maxParallelism": 2,
+      "totalDurationMs": 75
+    }
+  },
+  "partition": {
+    "batches": 3,
+    "totalTools": 4,
+    "parallelBatches": 2,
+    "serialBatches": 1,
+    "maxParallelism": 2,
+    "estimatedSpeedup": "133%"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `result.success` | boolean | `true` if all tool calls succeeded |
+| `result.results` | array | Ordered list of tool execution results |
+| `result.results[].toolId` | string | The `id` from the original tool call |
+| `result.results[].toolName` | string | The tool that was executed |
+| `result.results[].success` | boolean | Whether this tool call succeeded |
+| `result.results[].output` | any | Tool output (shape depends on the tool) |
+| `result.results[].error` | string | Error message if the tool call failed |
+| `result.results[].durationMs` | number | Execution time in milliseconds |
+| `result.stats.totalTools` | number | Total tool calls in the batch |
+| `result.stats.parallelBatches` | number | Number of batches that ran in parallel |
+| `result.stats.serialBatches` | number | Number of batches that ran serially |
+| `result.stats.maxParallelism` | number | Largest number of tools in a single parallel batch |
+| `result.stats.totalDurationMs` | number | Wall-clock time for the entire batch |
+| `partition.batches` | number | Total number of execution batches |
+| `partition.estimatedSpeedup` | string | Estimated speedup from parallelization |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `tools array required` — missing or empty `tools` field |
+| 400 | `Maximum 20 tools per batch` — batch size exceeds the limit |
+| 400 | `Each tool must have id and toolName` — a tool object is missing `id` or `toolName` |
+| 401 | Unauthorized — missing bearer token |
+| 403 | Forbidden — invalid bearer token |
+| 500 | Internal server error |
+
+<Note>Each tool object in the array must include both `id` and `toolName`. The API validates these fields and returns a `400` error if any tool object is missing either field.</Note>
+
+### Serial failure behavior
+
+When a mutating tool fails during serial execution, the batch stops immediately. Remaining tools in that serial batch are not executed. Parallel batches that already completed are unaffected.
+
+## Partition (dry run)
+
+```http
+POST /api/orchestration/partition
+```
+
+Preview how tool calls would be partitioned without executing them. Use this to debug batch composition or estimate parallelization gains.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tools` | array | Yes | Array of tool call objects (same format as the batch endpoint) |
+
+```json
+{
+  "tools": [
+    { "id": "t1", "toolName": "read", "input": { "path": "/src/a.ts" } },
+    { "id": "t2", "toolName": "read", "input": { "path": "/src/b.ts" } },
+    { "id": "t3", "toolName": "write", "input": { "path": "/src/c.ts" } },
+    { "id": "t4", "toolName": "grep", "input": { "pattern": "error" } }
+  ]
+}
+```
+
+### Response
+
+```json
+{
+  "batches": [
+    {
+      "parallel": true,
+      "tools": [
+        {
+          "call": { "id": "t1", "toolName": "read", "input": { "path": "/src/a.ts" } },
+          "class": "readonly",
+          "reason": "read is read-only"
+        },
+        {
+          "call": { "id": "t2", "toolName": "read", "input": { "path": "/src/b.ts" } },
+          "class": "readonly",
+          "reason": "read is read-only"
+        }
+      ]
+    },
+    {
+      "parallel": false,
+      "tools": [
+        {
+          "call": { "id": "t3", "toolName": "write", "input": { "path": "/src/c.ts" } },
+          "class": "mutating",
+          "reason": "write is mutating"
+        }
+      ]
+    },
+    {
+      "parallel": true,
+      "tools": [
+        {
+          "call": { "id": "t4", "toolName": "grep", "input": { "pattern": "error" } },
+          "class": "readonly",
+          "reason": "grep is read-only"
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalTools": 4,
+    "parallelBatches": 2,
+    "serialBatches": 1,
+    "maxParallelism": 2,
+    "estimatedSpeedup": "133%"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `batches` | array | Ordered list of execution batches |
+| `batches[].parallel` | boolean | `true` if tools in this batch run concurrently |
+| `batches[].tools` | array | Classified tool calls in this batch |
+| `batches[].tools[].call` | object | Original tool call object |
+| `batches[].tools[].class` | string | Concurrency classification: `readonly` or `mutating` |
+| `batches[].tools[].reason` | string | Explanation of the classification |
+| `stats.totalTools` | number | Total tool calls |
+| `stats.parallelBatches` | number | Number of parallel batches |
+| `stats.serialBatches` | number | Number of serial batches |
+| `stats.maxParallelism` | number | Largest parallel batch size |
+| `stats.estimatedSpeedup` | string | Rough speedup estimate |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `tools array required` — missing or non-array `tools` field |
+| 401 | Unauthorized — missing bearer token |
+| 403 | Forbidden — invalid bearer token |
+| 500 | Internal server error |
+
+<Note>Unlike the batch endpoint, the partition endpoint does not reject empty arrays or enforce a maximum tool limit. An empty `tools` array returns an empty `batches` array.</Note>
+
+## Tool classification
+
+Each tool is classified as `readonly` (parallelizable) or `mutating` (must serialize). Unknown tools default to `mutating` as a safety measure.
+
+### Read-only tools
+
+These tools have no side effects and can safely run in parallel:
+
+| Category | Tool names |
+|----------|-----------|
+| File reads | `read`, `file_read`, `file_read_tool` |
+| Search | `grep`, `search`, `find`, `glob` |
+| System info | `bash_status`, `docker_ps`, `docker_logs`, `docker_inspect` |
+| Web | `web_fetch`, `web_search`, `http_get` |
+| Memory | `memory_search`, `memory_get` |
+
+### Mutating tools
+
+These tools modify state and must run one at a time:
+
+| Category | Tool names |
+|----------|-----------|
+| File writes | `write`, `file_write`, `file_write_tool`, `edit`, `file_edit`, `file_edit_tool` |
+| Shell execution | `bash`, `exec`, `shell`, `terminal` |
+| Git writes | `git_commit`, `git_push`, `git_merge` |
+| Docker writes | `docker_run`, `docker_build`, `docker_exec` |
+| API calls | `http_post`, `http_put`, `http_delete`, `api_call` |
+| System | `install`, `uninstall`, `deploy` |
+| Agentbot | `provision`, `configure`, `restart` |
+
+### Shell command introspection
+
+For `bash`, `exec`, and `shell` tools, the classifier inspects the `command` input to determine the actual concurrency class. Read-only shell commands are promoted to `readonly`:
+
+| Category | Commands |
+|----------|----------|
+| Filesystem read | `cat`, `head`, `tail`, `ls`, `find`, `stat`, `wc`, `du`, `df` |
+| Text processing | `grep`, `sort`, `uniq`, `cut`, `awk` |
+| Git read-only | `git status`, `git diff`, `git log`, `git show`, `git branch`, `git tag`, `git remote`, `git blame`, `git reflog` |
+| System info | `echo`, `pwd`, `whoami`, `date`, `uptime`, `hostname`, `env`, `which` |
+| Package info | `npm list`, `npm view`, `npm outdated`, `pip list`, `pip show` |
+| Docker read-only | `docker ps`, `docker images`, `docker logs`, `docker inspect`, `docker stats` |
+| HTTP read | `curl` (without `-X`, `--request`, or `-d` flags) |
+
+Shell commands not in this list are classified as `mutating`.
+
+## Partitioning rules
+
+The partitioner groups tool calls into execution batches using these rules:
+
+1. **Consecutive read-only tools** become a single parallel batch
+2. **Each mutating tool** gets its own serial batch
+3. **Two adjacent mutating tools** are placed in separate serial batches (they do not merge)
+
+### Example
+
+Given tools: `[read, grep, bash("cat file"), write, read, bash("git push")]`
+
+The partitioner produces:
+
+| Batch | Type | Tools | Execution |
+|-------|------|-------|-----------|
+| 1 | Parallel | `read`, `grep`, `bash("cat file")` | All three run simultaneously |
+| 2 | Serial | `write` | Runs alone after batch 1 completes |
+| 3 | Parallel | `read` | Runs after batch 2 completes |
+| 4 | Serial | `bash("git push")` | Runs alone after batch 3 completes |
+
+The `bash("cat file")` command is promoted to `readonly` via shell command introspection, so it joins the first parallel batch. The `read` at position 5 starts a new parallel batch because the preceding `write` forced a serial boundary.

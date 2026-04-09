@@ -1,0 +1,101 @@
+# Node modules
+node_modules/
+web/node_modules/
+api/node_modules/
+agentbot-backend/node_modules/
+agentbot-worker/node_modules/
+
+# Build outputs
+dist/
+.next/
+agentbot-backend/dist/
+agentbot-worker/dist/
+
+# Environment files (CRITICAL - never commit secrets)
+.env
+.env.local
+.env.*.local
+.env.prodcheck
+.env.production
+.env.vercel
+.env.example
+.env.security
+.env.frontend
+.env.development.local
+web/.env
+web/.env.local
+web/.env.prodcheck
+web/.env.production
+web/.env.vercel
+web/.env.example
+web/.env.recoverycheck
+agentbot-backend/.env
+agentbot-backend/.env.local
+**/.env
+**/.env.*
+!**/.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+docker-compose.override.yml
+*.dockerignore
+
+# Certificates
+certs/
+
+# Data
+data/
+*.db
+*.sqlite
+
+# Vercel
+.vercel
+
+# Secrets and keys
+*.pem
+*.key
+credentials.json
+service-account-key.json
+
+# Claude worktrees (contains secrets)
+.claude/worktrees/*/
+
+# Test results
+test-results/
+playwright-report/
+playwright-results/
+
+# AI tool directories (symlinks, not project content)
+.factory/
+.kiro/
+.mux/
+.trae/
+.claude/skills/
+.claude/worktrees/
+.agents/skills/
+skills-lock.json
+
+# Local env files (never commit)
+.env.local
+web/.env.local
+agentbot-backend/.env.local
+
+# Local standalone repos
+btcpay-configurator/
+keys/

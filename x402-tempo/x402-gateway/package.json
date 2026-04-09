@@ -1,0 +1,16 @@
+{
+  "name": "x402-gateway",
+  "version": "3.0.0",
+  "description": "HTTP gateway — Agentbot agents ↔ borg-0 x402 endpoints",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

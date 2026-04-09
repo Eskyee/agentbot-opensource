@@ -1,0 +1,191 @@
+---
+title: Files API
+description: "Upload, download, list, and delete files for your agents"
+---
+
+# Files API
+
+Manage files attached to your agents. You can upload files for an agent to access, download them securely, list existing files, and delete them. All endpoints require session authentication.
+
+## Download a file
+
+```http
+GET /api/files?download={id}
+```
+
+Downloads a file by its ID. The server validates that the resolved file path is within the configured upload directory to prevent path traversal attacks. Returns the raw file content as a binary download.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `download` | string | Yes | The file ID to download |
+
+### Response headers
+
+| Header | Description |
+|--------|-------------|
+| `Content-Type` | MIME type of the file (falls back to `application/octet-stream`) |
+| `Content-Disposition` | `attachment; filename="{encoded filename}"` |
+| `Content-Length` | File size in bytes |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 403 | Invalid file path — the resolved path is outside the upload directory |
+| 404 | File not found |
+| 500 | File path missing from record, or download failed |
+
+<Note>The download URL format is `/api/files?download={id}`. Files are only accessible to the user who uploaded them.</Note>
+
+## List files
+
+```http
+GET /api/files?agentId=default
+```
+
+Returns all files for the authenticated user, optionally filtered by agent.
+
+### Query parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `agentId` | string | No | Filter files by agent ID |
+
+### Response
+
+```json
+{
+  "files": [
+    {
+      "id": "clx1abc123",
+      "filename": "training-data.csv",
+      "url": "/api/files?download=clx1abc123",
+      "size": 24576,
+      "mimeType": "text/csv",
+      "agentId": "default",
+      "createdAt": "2026-03-25T10:00:00.000Z"
+    }
+  ],
+  "totalSize": 24576,
+  "count": 1
+}
+```
+
+### File object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique file identifier |
+| `filename` | string | Original filename |
+| `url` | string | Download URL for the file |
+| `size` | number | File size in bytes |
+| `mimeType` | string | MIME type of the file |
+| `agentId` | string | ID of the agent this file belongs to |
+| `createdAt` | string | ISO 8601 timestamp when the file was uploaded |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized |
+| 500 | Failed to list files |
+
+## Upload a file
+
+```http
+POST /api/files
+```
+
+Upload a file for an agent. The request must use `multipart/form-data` encoding.
+
+### Request body (multipart/form-data)
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | File | Yes | The file to upload |
+| `agentId` | string | Yes | ID of the agent to attach the file to |
+
+### Response (201)
+
+```json
+{
+  "success": true,
+  "file": {
+    "id": "clx1abc123",
+    "name": "training-data.csv",
+    "size": 24576,
+    "type": "text/csv",
+    "url": "/api/files?download=clx1abc123",
+    "uploaded": "2026-03-25T10:00:00.000Z"
+  }
+}
+```
+
+### Upload response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `file.id` | string | Unique file identifier |
+| `file.name` | string | Original filename |
+| `file.size` | number | File size in bytes |
+| `file.type` | string | MIME type of the file |
+| `file.url` | string | Download URL for the file |
+| `file.uploaded` | string | ISO 8601 timestamp when the file was uploaded |
+
+<Note>The GET endpoint returns `filename` while the POST response returns `name`. Both refer to the sanitized filename of the uploaded file.</Note>
+
+### Filename validation
+
+Uploaded filenames are sanitized before storage:
+
+1. **Leading dots are stripped** — files like `.env` become `env`. A filename consisting entirely of dots (e.g., `...`) becomes empty after stripping.
+2. **Unsafe characters are replaced** — characters outside `a-zA-Z0-9._-` are replaced with underscores.
+3. **Length is limited to 128 characters** — filenames longer than 128 characters are truncated.
+4. **Fallback naming** — if the sanitized filename is empty, a fallback name of `upload_{timestamp}` is used.
+
+<Note>The stored filename may differ from the original filename you provided. Dotfiles (files starting with `.`) cannot be uploaded — the leading dots are always removed.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | No file provided or `agentId` required |
+| 401 | Unauthorized |
+| 404 | Agent not found |
+| 413 | Storage limit exceeded — upgrade your plan for more storage |
+| 500 | Upload failed |
+
+## Delete a file
+
+```http
+DELETE /api/files
+```
+
+Delete a file by its ID.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fileId` | string | Yes | ID of the file to delete |
+
+### Response
+
+```json
+{
+  "success": true,
+  "fileId": "clx1abc123"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `fileId` required |
+| 401 | Unauthorized |
+| 404 | File not found |
+| 500 | Delete failed |

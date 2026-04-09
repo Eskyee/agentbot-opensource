@@ -1,0 +1,31 @@
+# Local Docker Compose for testing
+# Usage: docker compose up -d openclaw-gateway
+# Logs: docker compose logs -f openclaw-gateway
+
+services:
+  openclaw-gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: agentbot-gateway-local
+    ports:
+      - "8080:8080"
+    volumes:
+      - gateway-config:/home/node/.openclaw
+      - gateway-workspace:/home/node/.openclaw/workspace
+    environment:
+      - NODE_ENV=development
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  gateway-config:
+    name: agentbot-gateway-local-config
+  gateway-workspace:
+    name: agentbot-gateway-local-workspace

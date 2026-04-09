@@ -1,0 +1,145 @@
+---
+title: Demo chat
+description: "Try AI models without deploying an agent. No authentication required."
+---
+
+# Demo chat
+
+The demo chat endpoint lets you interact with AI models without signing up or deploying an agent. Requests are rate-limited by IP address.
+
+## List available models
+
+```http
+GET /api/demo/chat
+```
+
+No authentication required. Returns the list of models available in demo mode.
+
+### Response (200)
+
+```json
+{
+  "models": [
+    { "id": "xiaomi/mimo-v2-pro", "name": "MiMo-V2-Pro", "provider": "Xiaomi" },
+    { "id": "anthropic/claude-sonnet-4.5", "name": "Claude Sonnet 4.5", "provider": "Anthropic" },
+    { "id": "openai/gpt-4o", "name": "GPT-4o", "provider": "OpenAI" },
+    { "id": "google/gemini-2.5-flash", "name": "Gemini 2.5 Flash", "provider": "Google" },
+    { "id": "deepseek/deepseek-r1", "name": "DeepSeek R1", "provider": "DeepSeek" },
+    { "id": "minimax/minimax-chat", "name": "MiniMax M2.7", "provider": "MiniMax" }
+  ],
+  "mode": "demo",
+  "message": "Welcome to Agentbot Demo - try AI models without deploying"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `models` | array | Available demo models |
+| `models[].id` | string | Model identifier to use in POST requests |
+| `models[].name` | string | Human-readable model name |
+| `models[].provider` | string | AI provider name |
+| `mode` | string | Always `demo` |
+| `message` | string | Welcome message |
+
+## Send a demo message
+
+```http
+POST /api/demo/chat
+```
+
+No authentication required. Rate-limited by IP address.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `message` | string | Yes | Message to send |
+| `model` | string | No | Model ID from the models list. Defaults to `xiaomi/mimo-v2-pro`. |
+| `mode` | string | No | Chat mode identifier |
+| `conversation` | array | No | Previous conversation messages for context. Only `user`-role messages are retained (max 4000 characters each). |
+
+### Example request
+
+```json
+{
+  "message": "What plans does Agentbot offer?",
+  "model": "openai/gpt-4o",
+  "conversation": [
+    { "role": "user", "content": "Tell me about Agentbot" }
+  ]
+}
+```
+
+### Response (200)
+
+```json
+{
+  "id": "gen-abc123",
+  "model": "openai/gpt-4o",
+  "message": "Agentbot offers four plans: Solo, Collective, Label, and Network...",
+  "usage": {
+    "prompt_tokens": 450,
+    "completion_tokens": 120,
+    "total_tokens": 570
+  },
+  "done": true
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Response identifier from the AI provider |
+| `model` | string | Model ID that served the request |
+| `message` | string | AI response content |
+| `usage` | object | Token usage statistics |
+| `usage.prompt_tokens` | number | Input tokens consumed |
+| `usage.completion_tokens` | number | Output tokens generated |
+| `usage.total_tokens` | number | Total tokens used |
+| `done` | boolean | Always `true` (non-streaming) |
+
+### Error responses
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| 400 | `Message required` | The `message` field is missing from the request body |
+| 429 | `Too many requests` | IP-based rate limit exceeded |
+| 503 | `Demo unavailable — service not configured.` | The demo service is not configured on the server |
+| _varies_ | `AI service error. Please try again.` | The upstream AI provider returned an error. The HTTP status code is passed through from the provider (for example, `402` for quota issues or `422` for invalid model parameters). |
+| 500 | `Failed to get response` | An unexpected error occurred |
+
+<Note>The demo endpoint uses a fixed max token limit of 1024 and does not support streaming. For full chat capabilities, use the [AI chat endpoint](/api-reference/ai#chat-completion) with a subscription plan.</Note>
+
+<Info>Every successful demo chat request automatically logs token usage and cost to the [usage tracking](/api-reference/usage-tracking) system. Demo requests are recorded with `userId: "demo"` and `agentId: "demo-chat"`, and are visible in the cost dashboard.</Info>
+
+## Examples
+
+### List models
+
+```bash
+curl https://agentbot.sh/api/demo/chat
+```
+
+### Send a message
+
+```bash
+curl -X POST https://agentbot.sh/api/demo/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "What skills are available?",
+    "model": "xiaomi/mimo-v2-pro"
+  }'
+```
+
+### Send with conversation history
+
+```bash
+curl -X POST https://agentbot.sh/api/demo/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "Tell me more about that",
+    "model": "openai/gpt-4o",
+    "conversation": [
+      { "role": "user", "content": "What is Agentbot?" }
+    ]
+  }'
+```

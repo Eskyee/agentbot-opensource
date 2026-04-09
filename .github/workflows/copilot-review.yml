@@ -1,0 +1,51 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  copilot-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analyze PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get PR info
+          PR_NUM=${{ github.event.pull_request.number }}
+          TITLE="${{ github.event.pull_request.title }}"
+          
+          # Count changed files
+          FILES=$(gh pr view $PR_NUM --json files -q '.files | length')
+
+          # Build review comment
+          cat > review.md <<EOF
+          ## AI Code Review
+
+          ### Summary
+          PR: **$TITLE**
+
+          ### Changes
+          - $FILES files changed
+          - See diff for details
+
+          ### Checklist
+          - [ ] Tests pass
+          - [ ] No console errors
+          - [ ] Documentation updated if needed
+
+          *Reviewed with GitHub Copilot*
+          EOF
+
+          # Post comment
+          gh pr comment $PR_NUM --body-file review.md

@@ -1,0 +1,249 @@
+---
+title: Bitcoin wallets
+description: "Register watch-only Bitcoin wallets for your agents and query addresses, balances, and transactions"
+---
+
+# Bitcoin wallets
+
+The Bitcoin wallets API lets you register watch-only Bitcoin wallets for your agents, generate receive addresses, check balances, and view transaction history. Wallets are backed by NBXplorer and derivation schemes are encrypted at rest.
+
+<Info>The Bitcoin wallet backend operates on **mainnet**. All addresses, balances, and transactions returned by these endpoints are for the Bitcoin mainnet network.</Info>
+
+<Note>All Bitcoin wallet endpoints require an authenticated session. The frontend proxies requests to the backend with a 10-second timeout. If the Bitcoin backend (NBXplorer) is unreachable, affected endpoints return `502`.</Note>
+
+## Authentication
+
+Bitcoin wallet endpoints use two layers of authorization:
+
+1. **Session authentication** — a valid NextAuth session is required. The frontend extracts `session.user.id` and `session.user.email` before proxying the request.
+2. **Bearer token** — the frontend attaches the `INTERNAL_API_KEY` as a bearer token when forwarding to the backend. The backend verifies this token using a timing-safe comparison.
+
+User identity headers (`x-user-id`, `x-user-email`) are set by the frontend after session verification and are trusted by the backend. All wallet queries are scoped to the authenticated user.
+
+## Get backend info
+
+```http
+GET /api/bitcoin/backend/info
+```
+
+Returns the status of the Bitcoin backend (NBXplorer). Use this to verify the Bitcoin infrastructure is online before performing wallet operations.
+
+### Response
+
+```json
+{
+  "chain": "BTC",
+  "status": "ok"
+}
+```
+
+The response is a passthrough from the NBXplorer status endpoint and may include additional fields depending on the NBXplorer version.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid session |
+| 502 | Bitcoin backend is unreachable or returned an error |
+
+## List wallets
+
+```http
+GET /api/bitcoin/wallets
+```
+
+Returns all Bitcoin wallets belonging to the authenticated user, ordered by creation date (newest first).
+
+### Response
+
+```json
+[
+  {
+    "id": 1,
+    "agentId": "agent_7",
+    "label": "Primary",
+    "network": "btc",
+    "createdAt": "2026-01-01T00:00:00Z"
+  }
+]
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Wallet identifier |
+| `agentId` | string | Agent associated with this wallet |
+| `label` | string \| null | Human-readable wallet label |
+| `network` | string | Always `"btc"` |
+| `createdAt` | string | ISO 8601 timestamp of wallet creation |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — missing or invalid session, or missing user context |
+| 500 | Failed to list wallets |
+
+## Register a watch-only wallet
+
+```http
+POST /api/bitcoin/wallets
+```
+
+Registers a new watch-only Bitcoin wallet for an agent. The derivation scheme (xpub) is validated against NBXplorer and then AES-encrypted before storage.
+
+<Warning>You must own the agent specified by `agentId`. The frontend verifies agent ownership before forwarding the request to the backend.</Warning>
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `agentId` | string | Yes | The agent to associate this wallet with. Must be owned by the authenticated user. |
+| `derivationScheme` | string | Yes | The xpub or derivation scheme for the wallet (for example, `"xpub6CUGRU..."`). Whitespace is trimmed. |
+| `label` | string | No | A human-readable label for the wallet. Defaults to `null`. |
+
+### Response (201 Created)
+
+```json
+{
+  "id": 1,
+  "agentId": "agent_7",
+  "label": "Primary",
+  "network": "btc"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Wallet identifier |
+| `agentId` | string | Agent associated with this wallet |
+| `label` | string \| null | Wallet label |
+| `network` | string | Always `"btc"` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `agentId` is missing or not a string |
+| 400 | `derivationScheme` is missing or empty |
+| 401 | Unauthorized — missing or invalid session |
+| 403 | The authenticated user does not own the specified agent |
+| 500 | Failed to register wallet — NBXplorer or database error |
+
+## Get unused address
+
+```http
+GET /api/bitcoin/wallets/{walletId}/address
+```
+
+Returns an unused receive address for the specified wallet. Use this to generate a fresh address for incoming payments.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `walletId` | string | The wallet's numeric identifier, passed as a URL path segment |
+
+<Note>The `walletId` must be a positive integer. It is passed as a string in the URL and validated by the backend.</Note>
+
+### Response
+
+```json
+{
+  "address": "bc1qexample..."
+}
+```
+
+The response is a passthrough from NBXplorer and may include additional fields.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `walletId` is not a positive integer |
+| 401 | Unauthorized — missing or invalid session |
+| 404 | Wallet not found or not owned by the authenticated user |
+| 502 | Failed to derive address — NBXplorer error |
+
+## Get wallet balance
+
+```http
+GET /api/bitcoin/wallets/{walletId}/balance
+```
+
+Returns the balance for the specified wallet.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `walletId` | string | The wallet's numeric identifier, passed as a URL path segment |
+
+### Response
+
+```json
+{
+  "confirmed": "0.1",
+  "unconfirmed": "0.0",
+  "available": "0.1",
+  "immature": "0.0",
+  "total": "0.1"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `confirmed` | string \| undefined | Confirmed balance in BTC |
+| `unconfirmed` | string \| undefined | Unconfirmed (pending) balance in BTC |
+| `available` | string \| undefined | Available (spendable) balance in BTC |
+| `immature` | string \| undefined | Immature coinbase balance in BTC |
+| `total` | string \| undefined | Total balance in BTC |
+
+<Note>All balance fields are optional strings. A field may be absent if NBXplorer does not return it for the given wallet state.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `walletId` is not a positive integer |
+| 401 | Unauthorized — missing or invalid session |
+| 404 | Wallet not found or not owned by the authenticated user |
+| 502 | Failed to fetch balance — NBXplorer error |
+
+## Get wallet transactions
+
+```http
+GET /api/bitcoin/wallets/{walletId}/transactions
+```
+
+Returns the transaction history for the specified wallet.
+
+### Path parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `walletId` | string | The wallet's numeric identifier, passed as a URL path segment |
+
+### Response
+
+```json
+{
+  "transactions": []
+}
+```
+
+The response is a passthrough from NBXplorer. The `transactions` array contains transaction objects with details such as transaction ID, amounts, confirmations, and timestamps.
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 400 | `walletId` is not a positive integer |
+| 401 | Unauthorized — missing or invalid session |
+| 404 | Wallet not found or not owned by the authenticated user |
+| 502 | Failed to fetch transactions — NBXplorer error |
+
+## Identity model
+
+All user and agent identifiers are strings. The `agentId` field uses the format `"agent_<id>"` and `userId` uses `"user_<id>"`. Wallet `id` values are numeric integers assigned by the database.
+
+Wallet lookups are always scoped by the authenticated user's ID, so users cannot access wallets belonging to other users.

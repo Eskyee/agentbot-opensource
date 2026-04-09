@@ -1,0 +1,400 @@
+---
+title: Mission control API
+description: "Monitor your agent fleet with real-time graphs, execution traces, cost attribution, and booking data"
+---
+
+# Mission control API
+
+Mission control provides a real-time view of your agent fleet. Use these endpoints to visualize agent relationships, trace execution activity, attribute costs per agent, and track talent bookings.
+
+<Note>All four mission control endpoints use session authentication. The web proxy resolves the user ID from the session automatically. Unauthenticated requests receive safe default responses (empty data with a `200` status) instead of an error.</Note>
+
+## Fleet graph
+
+```http
+GET /api/mission-control/fleet/graph
+```
+
+Returns a constellation graph of your agent fleet as a set of nodes and edges. Each node represents an agent with a `role` and positional data for graph layout. Edges use `from`/`to` fields with a `strength` value indicating relationship weight.
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+{
+  "nodes": [
+    {
+      "id": "borg-0",
+      "name": "borg-0",
+      "role": "orchestrator",
+      "status": "active",
+      "x": 400,
+      "y": 300,
+      "load": 72,
+      "memory": 58,
+      "fitness": 85,
+      "walletAddress": "0x1234...abcd",
+      "children": 2,
+      "endpoints": 3,
+      "cycles": 1042,
+      "uptime": 86400,
+      "version": "0.1.0",
+      "regime": "explore",
+      "freeEnergy": 0.34,
+      "url": "https://borg-0-production.up.railway.app"
+    },
+    {
+      "id": "a1b2c3d4",
+      "name": "Clone-a1b2c3d4",
+      "role": "worker",
+      "status": "active",
+      "x": 200,
+      "y": 450,
+      "load": 0,
+      "memory": 0,
+      "fitness": 0,
+      "walletAddress": "0xabcd...1234",
+      "url": "https://clone-a1b2.example.com"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e-borg-0-a1b2c3d4",
+      "from": "borg-0",
+      "to": "a1b2c3d4",
+      "strength": 0.6
+    }
+  ],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "soul",
+  "degraded": false,
+  "nodeCount": 1,
+  "stats": {
+    "totalAgents": 2,
+    "activeAgents": 2,
+    "idleAgents": 0,
+    "offlineAgents": 0
+  },
+  "serviceUrl": "https://borg-0-production.up.railway.app",
+  "dashboardUrl": "https://soul-dashboard.example.com"
+}
+```
+
+When no souls are reachable, the response uses the degraded shape with minimal node data:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "role": "orchestrator",
+      "status": "offline",
+      "x": 400,
+      "y": 300,
+      "load": 0,
+      "memory": 0
+    }
+  ],
+  "edges": [],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "degraded",
+  "degraded": true,
+  "detail": "No healthy soul host found",
+  "stats": {
+    "totalAgents": 1,
+    "activeAgents": 0,
+    "idleAgents": 0,
+    "offlineAgents": 1
+  },
+  "serviceUrl": "https://borg-0-production.up.railway.app",
+  "dashboardUrl": "https://soul-dashboard.example.com"
+}
+```
+
+When the request is unauthenticated (no valid session), the endpoint returns a default response:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "atlas",
+      "name": "Atlas",
+      "role": "orchestrator",
+      "status": "offline",
+      "x": 400,
+      "y": 300,
+      "load": 0,
+      "memory": 0
+    }
+  ],
+  "edges": [],
+  "timestamp": "2026-03-22T12:00:00.000Z",
+  "source": "unauthenticated",
+  "stats": {
+    "totalAgents": 1,
+    "activeAgents": 0,
+    "idleAgents": 0,
+    "offlineAgents": 1
+  },
+  "dashboardUrl": "https://soul-dashboard.example.com"
+}
+```
+
+### Node object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique agent identifier (designation or truncated instance ID for clones) |
+| `name` | string | Agent display name |
+| `role` | string | Agent role. One of `orchestrator`, `specialist`, or `worker` |
+| `status` | string | Current status. One of `active`, `idle`, or `offline` |
+| `x` | number | Horizontal position for graph layout |
+| `y` | number | Vertical position for graph layout |
+| `load` | number | Current load percentage (0–100). Derived from active plan progress |
+| `memory` | number | Memory usage percentage (0–100). Derived from cortex experience count |
+| `fitness` | number | Fitness score (0–100). Only present on live nodes |
+| `walletAddress` | string | On-chain wallet address of the agent. Present when available |
+| `children` | number | Number of child (clone) instances. Only present on parent nodes |
+| `endpoints` | number | Number of registered endpoints. Only present on parent nodes |
+| `cycles` | number | Total cognitive cycles completed. Only present on parent nodes |
+| `uptime` | number | Uptime in seconds. Only present on parent nodes |
+| `version` | string | Soul service version. Only present on parent nodes |
+| `regime` | string | Current free energy regime (for example `"explore"` or `"exploit"`). Only present on parent nodes |
+| `freeEnergy` | number | Current free energy value. Only present on parent nodes |
+| `url` | string | Soul instance URL. Present on both parent and clone nodes |
+
+<Note>The `type` field was renamed to `role` and now uses the values `orchestrator`, `specialist`, and `worker`. The `monitor` role is no longer returned by this endpoint.</Note>
+
+### Edge object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique edge identifier |
+| `from` | string | Source agent ID |
+| `to` | string | Target agent ID |
+| `strength` | number | Relationship weight between 0 and 1 |
+
+<Note>The `source` and `target` fields were renamed to `from` and `to`. The `type` field on edges was replaced by `strength`.</Note>
+
+### Response metadata
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `timestamp` | string | ISO 8601 timestamp of the response |
+| `source` | string | Data source. `"soul"` for live data from the primary host, `"soul-fallback"` when a fallback host served the data, `"degraded"` when no souls are reachable, `"unauthenticated"` when no valid session is present |
+| `degraded` | boolean | `true` when the primary soul host was unavailable. Omitted or `false` when the primary host responds normally. |
+| `detail` | string | Error message describing the failure. Only present when `degraded` is `true`. |
+| `nodeCount` | number | Number of live soul nodes fetched. Only present when `source` is `"soul"` or `"soul-fallback"` |
+| `stats` | object | Aggregate fleet statistics |
+| `stats.totalAgents` | number | Total number of nodes in the graph |
+| `stats.activeAgents` | number | Number of nodes with `active` status |
+| `stats.idleAgents` | number | Number of nodes with `idle` status |
+| `stats.offlineAgents` | number | Number of nodes with `offline` status |
+| `serviceUrl` | string | Soul service URL that served the request. Present when `source` is `"soul"`, `"soul-fallback"`, or `"degraded"`. |
+| `dashboardUrl` | string | Soul dashboard URL |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Fleet graph returned (check `source` and `degraded` for actual state) |
+
+The endpoint always returns HTTP `200`. Unauthenticated requests receive default empty data. When the soul service is unreachable, the response includes `degraded: true` with a `detail` message.
+
+## Execution traces
+
+```http
+GET /api/mission-control/fleet/traces
+```
+
+Returns up to 20 of the most recent execution traces for your agent fleet, sorted by recency. Each trace is returned as an `AgentTask`-shaped object with fields like `description`, `completedAt`, `tokensUsed`, and `costUSD`. Traces include active plan steps, recent thoughts, free energy component readings, and cycle status from live soul instances. Returns an empty array when no soul instances are reachable or when the request is unauthenticated.
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+[
+  {
+    "id": "trace-plan-0",
+    "status": "running",
+    "description": "plan: reflect (2/5)",
+    "startedAt": "2026-03-22T12:00:00.000Z",
+    "completedAt": null,
+    "tokensUsed": 0,
+    "costUSD": 0,
+    "model": "borg-0"
+  },
+  {
+    "id": "trace-thought-0-0",
+    "status": "completed",
+    "description": "plan: next step is to consolidate memory entries",
+    "startedAt": "2026-03-22T11:59:56.000Z",
+    "completedAt": "2026-03-22T11:59:56.285Z",
+    "tokensUsed": 542,
+    "costUSD": 0,
+    "model": "borg-0"
+  },
+  {
+    "id": "trace-fe-0-0",
+    "status": "completed",
+    "description": "cortex: surprise=0.12, contribution=0.04",
+    "startedAt": "2026-03-22T11:59:50.000Z",
+    "completedAt": "2026-03-22T11:59:50.001Z",
+    "tokensUsed": 0,
+    "costUSD": 0,
+    "model": "borg-0"
+  },
+  {
+    "id": "trace-cycles-0",
+    "status": "idle",
+    "description": "cycle 1042 complete — mode: active, regime: explore",
+    "startedAt": "2026-03-22T11:59:45.000Z",
+    "completedAt": null,
+    "tokensUsed": 0,
+    "costUSD": 0,
+    "model": "borg-0"
+  }
+]
+```
+
+### Trace object (AgentTask shape)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique trace identifier |
+| `status` | string | Execution result. One of `completed`, `running`, or `idle`. Raw `success` status is mapped to `completed` |
+| `description` | string | Description of the task executed |
+| `startedAt` | string | ISO 8601 timestamp when the task started |
+| `completedAt` | string \| null | ISO 8601 timestamp when the task finished. Computed from the original duration for timed traces. `null` for ongoing or non-timed traces |
+| `tokensUsed` | number | Token count for inference-type traces. `0` for other trace types |
+| `costUSD` | number | Cost in USD attributed to this trace. Currently always `0` |
+| `model` | string | Soul designation that produced the trace (for example `"borg-0"`) |
+
+<Note>The response is capped at 20 traces, sorted from most recent to oldest.</Note>
+
+<Note>The previous raw trace fields (`type`, `label`, `agent`, `duration`, `tokens`) have been replaced by the `AgentTask` shape (`description`, `completedAt`, `tokensUsed`, `costUSD`, `model`). The `status` value `success` is now returned as `completed`.</Note>
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Traces returned (empty array when no data is available or unauthenticated) |
+
+The endpoint always returns HTTP `200`. Unauthenticated requests receive an empty array `[]`.
+
+## Cost attribution
+
+```http
+GET /api/mission-control/fleet/costs
+```
+
+Returns a cost breakdown for your agent fleet based on the user's subscription plan and active agents.
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+{
+  "costs": [
+    {
+      "agentId": "agent_123",
+      "agentName": "Atlas",
+      "status": "active",
+      "tier": "pro",
+      "monthlyCost": 34.50,
+      "createdAt": "2026-03-01T00:00:00Z"
+    }
+  ],
+  "totalSpend": 138,
+  "managedAiCost": 69,
+  "coordinationRevenue": 0,
+  "plan": "collective",
+  "agentCount": 3,
+  "activeAgents": 2,
+  "monthsActive": 2
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `costs` | array | Per-agent cost breakdown. Each entry contains the agent's cost share based on the monthly plan cost split evenly across active agents. |
+| `costs[].agentId` | string | Agent identifier |
+| `costs[].agentName` | string | Agent display name |
+| `costs[].status` | string | Agent status |
+| `costs[].tier` | string | Agent tier |
+| `costs[].monthlyCost` | number | Monthly cost attributed to this agent, computed as the plan cost divided by the number of active agents |
+| `costs[].createdAt` | string | ISO 8601 agent creation timestamp |
+| `totalSpend` | number | Total spend across the fleet since subscription start |
+| `managedAiCost` | number | Monthly plan cost. One of `29` (solo), `69` (collective), `149` (label), or `499` (network). |
+| `coordinationRevenue` | number | Revenue from agent coordination. Currently always `0`. |
+| `plan` | string | User's current plan name |
+| `agentCount` | number | Total number of agents in the fleet |
+| `activeAgents` | number | Number of agents with `active` or `running` status |
+| `monthsActive` | number | Number of months since subscription start (minimum `1`) |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Cost data returned (empty costs array when unauthenticated or no agents exist) |
+
+The endpoint always returns HTTP `200`. Unauthenticated requests receive `{ "costs": [], "totalSpend": 0, "managedAiCost": 0, "coordinationRevenue": 0 }`.
+
+## Talent bookings
+
+```http
+GET /api/mission-control/fleet/bookings
+```
+
+Returns active booking requests for your agent fleet. Bookings represent agents that have been provisioned but whose containers are not yet ready (agents with `pending` status).
+
+### Authentication
+
+Requires session authentication.
+
+### Response
+
+```json
+{
+  "bookings": [
+    {
+      "id": "agent_456",
+      "agentName": "Researcher",
+      "status": "pending",
+      "tier": "pro",
+      "createdAt": "2026-04-01T12:00:00Z"
+    }
+  ]
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `bookings` | array | List of pending agent booking requests, ordered by creation date (newest first), limited to 10 entries |
+| `bookings[].id` | string | Agent identifier |
+| `bookings[].agentName` | string | Agent display name |
+| `bookings[].status` | string | Agent status (always `pending` for bookings) |
+| `bookings[].tier` | string | Agent tier |
+| `bookings[].createdAt` | string | ISO 8601 agent creation timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 200 | Booking data returned (empty bookings array when unauthenticated or no pending agents exist) |
+
+The endpoint always returns HTTP `200`. Unauthenticated requests receive `{ "bookings": [] }`.

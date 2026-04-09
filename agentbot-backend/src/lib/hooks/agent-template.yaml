@@ -1,0 +1,49 @@
+# Agentbot Agent Template — With Permission Hooks
+#
+# This template is used when provisioning new Docker agent containers.
+# The pre-tool-use hook routes commands through the tiered permission system.
+#
+# Usage: docker agent run agent-template.yaml --agent root
+#
+# Environment variables (injected by container manager):
+#   AGENTBOT_API_URL       — Backend URL for permission checks
+#   AGENTBOT_USER_ID       — Owner user ID
+#   AGENTBOT_AGENT_ID      — This agent's ID
+#   INTERNAL_API_KEY       — Auth token for backend
+#   OPENROUTER_API_KEY     — LLM provider key
+#   AGENTBOT_PERMISSION_MODE — "strict" (default) or "permissive"
+
+models:
+  model:
+    provider: openai-compatible
+    model: "{{MODEL}}"
+    base_url: "https://openrouter.ai/api/v1"
+    api_key: "{{OPENROUTER_API_KEY}}"
+    max_tokens: 16384
+
+agents:
+  root:
+    model: model
+    description: "{{AGENT_DESCRIPTION}}"
+    instruction: |
+      {{AGENT_INSTRUCTION}}
+
+      You have access to tools for filesystem operations, code execution, and web requests.
+      Commands are routed through a permission system:
+      - Safe commands (ls, cat, git status) execute immediately
+      - Dangerous commands (node, python, git push) require user approval via dashboard
+      - Destructive commands (rm -rf, DROP TABLE) are blocked
+
+      If a command is blocked or queued, wait for the user to approve it in the dashboard.
+      Never attempt to bypass the permission system.
+
+    toolsets:
+      - type: filesystem
+      - type: shell
+      - type: think
+      - type: memory
+        path: agent_memory.db
+
+# Hooks are injected by the container manager via docker agent CLI flags:
+#   --hook-pre-tool-use ./pre-tool-use.sh
+#   --hook-post-tool-use ./post-tool-use.sh

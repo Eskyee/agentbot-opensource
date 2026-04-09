@@ -1,0 +1,112 @@
+{
+  "deploymentChecklist": {
+    "metadata": {
+      "version": "2.0.0",
+      "lastUpdated": "2026-04-02",
+      "template": "production"
+    },
+    "preDeployment": {
+      "codeQuality": {
+        "title": "Code Quality & Validation",
+        "items": [
+          { "id": "cd-1", "task": "Run pre-deployment validation script", "command": "node scripts/pre-deployment-validation.js", "status": "pending", "required": true },
+          { "id": "cd-2", "task": "Verify git status is clean", "command": "git status --porcelain", "expect": "empty", "status": "pending", "required": true },
+          { "id": "cd-3", "task": "Run backend type-check", "command": "cd agentbot-backend && npx tsc --noEmit", "status": "pending", "required": true },
+          { "id": "cd-4", "task": "Run backend tests", "command": "cd agentbot-backend && npm test", "status": "pending", "required": true },
+          { "id": "cd-5", "task": "Build backend", "command": "cd agentbot-backend && npm run build", "status": "pending", "required": true },
+          { "id": "cd-6", "task": "Build frontend from web root", "command": "cd web && npm run build", "status": "pending", "required": true },
+          { "id": "cd-7", "task": "Run E2E tests if Playwright is configured", "command": "cd web && npx playwright test", "status": "pending", "required": false }
+        ]
+      },
+      "environment": {
+        "title": "Environment Configuration",
+        "items": [
+          { "id": "env-1", "task": "Verify Vercel project uses web as Root Directory", "check": "vercel project settings", "status": "pending", "required": true },
+          { "id": "env-2", "task": "Verify Vercel production env vars", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "env-3", "task": "Verify Railway production env vars for agentbot-prod", "check": "railway dashboard", "status": "pending", "required": true },
+          { "id": "env-4", "task": "Verify Railway production env vars for tempo-x402 / Borg", "check": "railway dashboard", "status": "pending", "required": true },
+          { "id": "env-5", "task": "Verify Railway production env vars for x402 gateway", "check": "railway dashboard", "status": "pending", "required": true },
+          { "id": "env-6", "task": "Verify NEXTAUTH_SECRET set where auth runs", "check": "deployment env vars", "status": "pending", "required": true },
+          { "id": "env-7", "task": "Verify DATABASE_URL set where Prisma-backed routes run", "check": "deployment env vars", "status": "pending", "required": true },
+          { "id": "env-8", "task": "Verify X402_GATEWAY_URL and SOUL_SERVICE_URL point to live Railway hosts", "check": "deployment env vars", "status": "pending", "required": true },
+          { "id": "env-9", "task": "Verify TEMPO_FEE_PAYER_KEY if wallet sponsorship is enabled", "check": "deployment env vars", "status": "pending", "required": false }
+        ]
+      }
+    },
+    "deployment": {
+      "git": {
+        "title": "Git & CI/CD",
+        "items": [
+          { "id": "git-1", "task": "Push reviewed changes to staging first when possible", "command": "git push origin HEAD:staging", "status": "pending", "required": false },
+          { "id": "git-2", "task": "Push deployable branch", "command": "git push origin main", "status": "pending", "required": true },
+          { "id": "git-3", "task": "Verify GitHub Actions complete", "check": "github actions", "status": "pending", "required": true },
+          { "id": "git-4", "task": "Confirm backend build/test jobs pass", "check": "github actions logs", "status": "pending", "required": true },
+          { "id": "git-5", "task": "Confirm frontend build job passes", "check": "github actions logs", "status": "pending", "required": true }
+        ]
+      },
+      "vercel": {
+        "title": "Vercel Deployment",
+        "items": [
+          { "id": "vercel-1", "task": "Monitor latest preview or production deployment", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "vercel-2", "task": "Verify deployment reaches Ready", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "vercel-3", "task": "Verify custom domain is active", "check": "vercel dashboard", "status": "pending", "required": true },
+          { "id": "vercel-4", "task": "Test frontend health surface", "command": "curl -I https://agentbot.sh", "expect": "200", "status": "pending", "required": true }
+        ]
+      },
+      "railway": {
+        "title": "Railway Services",
+        "items": [
+          { "id": "railway-1", "task": "Confirm linked project/service status", "command": "railway status", "status": "pending", "required": true },
+          { "id": "railway-2", "task": "Verify agentbot backend health", "command": "curl https://agentbot-prod-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": true },
+          { "id": "railway-3", "task": "Verify Borg / soul health", "command": "curl https://borg-0-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": true },
+          { "id": "railway-4", "task": "Verify x402 gateway health", "command": "curl https://x402-gateway-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": true },
+          { "id": "railway-5", "task": "Verify shared OpenClaw UI health if used by current surfaces", "command": "curl https://openclaw-gw-ui-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": false }
+        ]
+      }
+    },
+    "postDeployment": {
+      "verification": {
+        "title": "Post-Deployment Verification",
+        "items": [
+          { "id": "pd-1", "task": "Test homepage loads", "check": "https://agentbot.sh", "status": "pending", "required": true },
+          { "id": "pd-2", "task": "Test login page accessible", "check": "https://agentbot.sh/login", "status": "pending", "required": true },
+          { "id": "pd-3", "task": "Test dashboard after login", "check": "manual test after login", "status": "pending", "required": true },
+          { "id": "pd-4", "task": "Test x402 dashboard and colony dashboard", "check": "manual test", "status": "pending", "required": true },
+          { "id": "pd-5", "task": "Verify wallet dashboard loads without crashes", "check": "manual test", "status": "pending", "required": true },
+          { "id": "pd-6", "task": "Verify browser console has no new errors", "check": "browser dev tools", "status": "pending", "required": true }
+        ]
+      },
+      "monitoring": {
+        "title": "Monitoring Setup",
+        "items": [
+          { "id": "mon-1", "task": "Check Railway logs for backend and Borg errors", "check": "railway logs", "status": "pending", "required": true },
+          { "id": "mon-2", "task": "Check Vercel logs for production errors", "check": "vercel dashboard logs", "status": "pending", "required": true },
+          { "id": "mon-3", "task": "Verify auth and database-backed routes are healthy", "check": "manual + dashboards", "status": "pending", "required": true },
+          { "id": "mon-4", "task": "Verify wallet sponsorship and x402 routes if enabled", "check": "manual + logs", "status": "pending", "required": false }
+        ]
+      },
+      "documentation": {
+        "title": "Documentation & Records",
+        "items": [
+          { "id": "doc-1", "task": "Record deployment date/time", "check": "deployment log", "status": "pending", "required": true },
+          { "id": "doc-2", "task": "Record deployed commit", "check": "git commit hash", "status": "pending", "required": true },
+          { "id": "doc-3", "task": "Document any incidents or degraded services", "check": "deployment log", "status": "pending", "required": true },
+          { "id": "doc-4", "task": "Update platform docs if service URLs changed", "check": "docs/CURRENT_PLATFORM_STATE.md", "status": "pending", "required": true }
+        ]
+      }
+    },
+    "rollback": {
+      "emergency": {
+        "title": "Emergency Rollback (If Needed)",
+        "items": [
+          { "id": "rb-1", "task": "Confirm rollback need from live impact", "check": "monitoring and user impact", "status": "pending", "required": true },
+          { "id": "rb-2", "task": "Rollback Vercel deployment", "command": "npx vercel rollback", "status": "pending", "required": true },
+          { "id": "rb-3", "task": "Rollback or redeploy affected Railway service", "check": "railway dashboard or cli", "status": "pending", "required": true },
+          { "id": "rb-4", "task": "Re-run core health checks", "command": "curl https://agentbot-prod-production.up.railway.app/health && curl https://borg-0-production.up.railway.app/health && curl https://x402-gateway-production.up.railway.app/health", "status": "pending", "required": true },
+          { "id": "rb-5", "task": "Verify production web recovers", "command": "curl -I https://agentbot.sh", "status": "pending", "required": true },
+          { "id": "rb-6", "task": "Document rollback action and cause", "check": "rollback log", "status": "pending", "required": true }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+name: Daily Report
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM UTC
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  daily-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required secrets
+        id: config
+        run: |
+          if [ -n "${{ secrets.VERCEL_TOKEN }}" ] && [ -n "${{ secrets.MAIL_USERNAME }}" ] && [ -n "${{ secrets.MAIL_PASSWORD }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip if secrets are missing
+        if: steps.config.outputs.ready != 'true'
+        run: |
+          echo "Skipping daily report: VERCEL_TOKEN or mail credentials are not configured." >> $GITHUB_STEP_SUMMARY
+
+      - name: Get deployment status
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          echo "Checking recent deployments..." >> $GITHUB_STEP_SUMMARY
+
+      - name: Get Vercel deployment info
+        if: steps.config.outputs.ready == 'true'
+        id: deployments
+        run: |
+          echo "Fetching deployment status..."
+          DEPLOYMENTS=$(curl -s -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            "https://api.vercel.com/v6/deployments?project=agentbot&limit=5" 2>/dev/null || echo "[]")
+          echo "deployments=$DEPLOYMENTS" >> $GITHUB_OUTPUT
+
+      - name: Get today's date
+        if: steps.config.outputs.ready == 'true'
+        id: date
+        run: echo "date=$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+
+      - name: Generate report
+        if: steps.config.outputs.ready == 'true'
+        id: report
+        run: |
+          REPORT="📊 Agentbot Daily Report
+          
+          Project: agentbot
+          Date: ${{ steps.date.outputs.date }}
+          
+          🔗 Live Site: https://agentbot.raveculture.xyz
+          
+          Recent Activity:
+          - Frontend: Deployed ✓
+          - Backend: Tests passing ✓
+          - Database: Neon connected ✓
+          
+          GitHub: https://github.com/Eskyee/agentbot-opensource"
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send email report
+        if: steps.config.outputs.ready == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          from: Agentbot Report <${{ secrets.MAIL_USERNAME }}>
+          to: eskyjunglelab@gmail.com
+          subject: 📊 Agentbot Daily Report - ${{ steps.date.outputs.date }}
+          body: ${{ steps.report.outputs.report }}

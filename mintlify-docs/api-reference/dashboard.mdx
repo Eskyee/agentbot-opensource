@@ -1,0 +1,376 @@
+---
+title: Dashboard API
+description: "Endpoints for retrieving dashboard data, analytics, costs, and stats"
+---
+
+# Dashboard API
+
+Retrieve consolidated dashboard data, analytics trends, cost breakdowns, and agent statistics. All endpoints except [dashboard health](/api-reference/health#dashboard-health) require session authentication.
+
+## Dashboard data
+
+```http
+GET /api/dashboard/data
+```
+
+Requires session authentication. Returns all core dashboard data in a single request. This endpoint uses the standard Node.js runtime and is marked `force-dynamic` so responses are never statically cached.
+
+### Response
+
+```json
+{
+  "userId": "user_abc123",
+  "credits": 10,
+  "plan": "solo",
+  "openclawUrl": "https://openclaw-agent-abc.up.railway.app",
+  "openclawInstanceId": "inst_abc123",
+  "gatewayToken": "a1b2c3d4e5f6...",
+  "agent": {
+    "id": "agent_abc123",
+    "status": "active",
+    "name": "my-agent",
+    "tier": "solo"
+  },
+  "health": {
+    "status": "healthy",
+    "checks": [
+      { "name": "Database", "status": "ok" },
+      { "name": "Gateway", "status": "ok" }
+    ]
+  },
+  "meta": {
+    "responseTime": 45,
+    "cached": false,
+    "timestamp": "2026-04-04T12:00:00.000Z"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `userId` | string | Authenticated user ID |
+| `credits` | number | Available referral credits |
+| `plan` | string | Current subscription plan (for example `free`, `solo`, `collective`, `label`, `network`) |
+| `openclawUrl` | string \| null | URL for the user's OpenClaw instance |
+| `openclawInstanceId` | string \| null | OpenClaw instance identifier. Falls back to the agent ID when not explicitly set. |
+| `gatewayToken` | string \| null | Effective gateway token for authenticating with the agent gateway. Falls back to the registration token when no gateway token is set. |
+| `agent` | object \| null | Agent details, or `null` if no agent exists |
+| `agent.id` | string | Agent identifier |
+| `agent.status` | string | Current agent status |
+| `agent.name` | string | Agent display name |
+| `agent.tier` | string | Agent tier |
+| `health` | object | Aggregated system health |
+| `health.status` | string | `healthy` when all checks pass, `degraded` otherwise |
+| `health.checks` | array | Individual service check results |
+| `health.checks[].name` | string | Service name |
+| `health.checks[].status` | string | `ok` or `down` |
+| `health.checks[].detail` | string \| undefined | Error detail when the check failed |
+| `meta.responseTime` | number | Server-side response time in milliseconds |
+| `meta.cached` | boolean | Whether the response was served from cache |
+| `meta.timestamp` | string | ISO 8601 timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch dashboard data. The response includes a `details` field with the error message and a `responseTime` field. |
+
+---
+
+## Dashboard analytics
+
+```http
+GET /api/dashboard/analytics
+```
+
+Requires session authentication. Returns time-series trends for deployments, skills, and tasks, along with channel activity and top installed skills.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `range` | number | `180` | Number of days to include in the trend data. Accepted values: `30`, `90`, `180`, `365`. Any other value defaults to `180`. |
+
+### Response
+
+```json
+{
+  "overview": {
+    "deployedAgents": 3,
+    "liveAgents": 2,
+    "installedSkills": 8,
+    "scheduledTasks": 4,
+    "connectedChannels": 2,
+    "channelMessages": 156
+  },
+  "trend": [
+    {
+      "label": "Jan",
+      "deployments": 1,
+      "skills": 3,
+      "tasks": 2
+    }
+  ],
+  "topSkills": [
+    { "name": "weather", "installs": 3 }
+  ],
+  "channels": [
+    {
+      "name": "Webchat",
+      "messages": 85,
+      "lastActive": "2026-04-04T11:30:00.000Z",
+      "status": "connected"
+    },
+    {
+      "name": "Telegram",
+      "messages": 71,
+      "lastActive": "2026-04-04T10:15:00.000Z",
+      "status": "connected"
+    }
+  ],
+  "source": {
+    "gateway": "live",
+    "sessions": "live"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `overview.deployedAgents` | number | Total number of agents |
+| `overview.liveAgents` | number | Agents with status `active` or `running` |
+| `overview.installedSkills` | number | Total enabled skills |
+| `overview.scheduledTasks` | number | Total scheduled tasks |
+| `overview.connectedChannels` | number | Channels with status `connected` |
+| `overview.channelMessages` | number | Total messages across all channels |
+| `trend` | array | Monthly trend buckets within the requested range |
+| `trend[].label` | string | Month abbreviation (for example `Jan`, `Feb`) |
+| `trend[].deployments` | number | Agents created in this month |
+| `trend[].skills` | number | Skills installed in this month |
+| `trend[].tasks` | number | Tasks created in this month |
+| `topSkills` | array | Up to 6 most-installed skills |
+| `topSkills[].name` | string | Skill name |
+| `topSkills[].installs` | number | Number of installs |
+| `channels` | array | Per-channel activity summary |
+| `channels[].name` | string | Channel display name (`Webchat`, `Telegram`, `Discord`, `WhatsApp`, `iMessage`) |
+| `channels[].messages` | number | Message count for this channel |
+| `channels[].lastActive` | string \| null | ISO 8601 timestamp of last activity |
+| `channels[].status` | string | Channel status: `connected`, `not-configured`, or `unreachable` |
+| `source.gateway` | string | Gateway data source: `live` or `unreachable` |
+| `source.sessions` | string | Sessions data source: `live` or `unavailable` |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch analytics |
+
+---
+
+## Dashboard bootstrap
+
+```http
+GET /api/dashboard/bootstrap
+```
+
+Requires session authentication. Returns lightweight initialization data for the dashboard, including referral credits, plan information, and OpenClaw connection details. The `gatewayToken` is the authenticated user's own token, enabling automatic pairing with their agent instance.
+
+### Response
+
+```json
+{
+  "credits": 10,
+  "referralCode": "REF_abc123",
+  "referralCount": 3,
+  "plan": "solo",
+  "openclawUrl": "https://openclaw-agent-abc.up.railway.app",
+  "openclawInstanceId": "inst_abc123",
+  "gatewayToken": "a1b2c3d4e5f6..."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `credits` | number | Available referral credits |
+| `referralCode` | string \| null | User's referral code |
+| `referralCount` | number | Number of successful referrals |
+| `plan` | string \| null | Current subscription plan |
+| `openclawUrl` | string \| null | OpenClaw instance URL |
+| `openclawInstanceId` | string \| null | OpenClaw instance identifier |
+| `gatewayToken` | string \| null | The authenticated user's gateway token for auto-pairing with their agent instance, or `null` if no token is registered |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+---
+
+## Dashboard cost
+
+```http
+GET /api/dashboard/cost
+```
+
+Requires session authentication. Returns cost breakdown for the current billing period, including per-agent costs, daily cost trends, and model usage breakdown. Combines subscription plan costs from the database with AI token usage data from the backend metrics service when available.
+
+### Query parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `period` | string | `7d` | Cost period to retrieve. Accepted values: `7d`, `30d`, `mtd` (month to date). |
+
+### Response
+
+```json
+{
+  "period": "7d",
+  "summary": {
+    "totalCost": 6.77,
+    "totalTokens": 45000,
+    "totalCalls": 120,
+    "avgCostPerCall": 0.0042
+  },
+  "agents": [
+    {
+      "name": "my-agent",
+      "tokens": 25000,
+      "cost": 3.50,
+      "calls": 80,
+      "avgCostPerCall": 0.0044,
+      "model": "solo"
+    }
+  ],
+  "daily": [
+    {
+      "date": "Mar 29",
+      "cost": 0.97,
+      "tokens": 6500
+    }
+  ],
+  "modelBreakdown": [
+    {
+      "model": "solo",
+      "percent": 100,
+      "cost": 6.77
+    }
+  ],
+  "isMockData": false,
+  "plan": "solo",
+  "planMonthlyCost": 29,
+  "agentCount": 2,
+  "activeAgents": 1
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `period` | string | Requested cost period |
+| `summary.totalCost` | number | Total cost for the period |
+| `summary.totalTokens` | number | Total AI tokens consumed |
+| `summary.totalCalls` | number | Total AI API calls |
+| `summary.avgCostPerCall` | number | Average cost per AI call |
+| `agents` | array | Per-agent cost breakdown |
+| `agents[].name` | string | Agent name or identifier |
+| `agents[].tokens` | number | Tokens consumed by this agent |
+| `agents[].cost` | number | Total cost attributed to this agent |
+| `agents[].calls` | number | Number of AI calls made by this agent |
+| `agents[].avgCostPerCall` | number | Average cost per call for this agent |
+| `agents[].model` | string | Model or plan tier used |
+| `daily` | array | Daily cost breakdown |
+| `daily[].date` | string | Date label (for example `Mar 29`) |
+| `daily[].cost` | number | Cost for this day |
+| `daily[].tokens` | number | Tokens used on this day |
+| `modelBreakdown` | array | Cost breakdown by model |
+| `modelBreakdown[].model` | string | Model identifier |
+| `modelBreakdown[].percent` | number | Percentage of total cost |
+| `modelBreakdown[].cost` | number | Cost attributed to this model |
+| `isMockData` | boolean | Always `false`. Indicates that the response uses real data. |
+| `plan` | string | User's current plan |
+| `planMonthlyCost` | number | Monthly cost of the subscription plan in USD |
+| `agentCount` | number | Total number of agents |
+| `activeAgents` | number | Number of agents with status `active` or `running` |
+
+<Note>When the backend metrics service is unavailable, token usage and AI call data default to `0`. The plan-based subscription cost is always available from the database.</Note>
+
+### Plan pricing
+
+| Plan | Monthly cost |
+|------|-------------|
+| `solo` / `starter` / `underground` | $29 |
+| `collective` / `pro` | $69 |
+| `label` / `scale` | $149 |
+| `network` / `enterprise` | $499 |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Failed to fetch cost data |
+
+---
+
+## Dashboard stats
+
+```http
+GET /api/dashboard/stats
+```
+
+Requires session authentication. Returns agent, skill, and task counts for the authenticated user, including plan-based agent limits.
+
+### Response
+
+```json
+{
+  "agents": {
+    "active": 1,
+    "total": 2,
+    "limit": 1,
+    "newToday": 0
+  },
+  "skills": {
+    "installed": 5
+  },
+  "tasks": {
+    "total": 3
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `agents.active` | number | Number of agents with status `active` |
+| `agents.total` | number | Total number of agents |
+| `agents.limit` | number | Maximum agents allowed by the user's plan |
+| `agents.newToday` | number | Agents created today |
+| `skills.installed` | number | Total installed skills across all agents |
+| `tasks.total` | number | Total scheduled tasks across all agents |
+
+### Plan agent limits
+
+| Plan | Agent limit |
+|------|------------|
+| `free` / `solo` / `starter` | 1 |
+| `pro` / `collective` | 3 |
+| `scale` / `label` | 10 |
+| `enterprise` / `network` | 100 |
+
+### Errors
+
+On failure, the endpoint returns HTTP `200` with zeroed fallback data instead of an error status code:
+
+```json
+{
+  "agents": { "active": 0, "total": 0, "limit": 1, "newToday": 0 },
+  "skills": { "installed": 0 },
+  "tasks": { "total": 0 }
+}
+```
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session, or user not found (returns `404`) |

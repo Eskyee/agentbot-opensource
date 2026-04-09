@@ -1,0 +1,25 @@
+{
+  "name": "agentbot",
+  "private": true,
+  "workspaces": [
+    "web",
+    "agentbot-backend",
+    "gateway"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.0"
+  },
+  "packageManager": "npm@10.8.2",
+  "overrides": {
+    "hono": "^4.12.12",
+    "@hono/node-server": "^1.19.13",
+    "defu": "^6.1.5"
+  }
+}

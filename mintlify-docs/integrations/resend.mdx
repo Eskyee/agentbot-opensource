@@ -1,0 +1,186 @@
+---
+title: Resend email integration
+description: "Receive inbound emails and track outbound email events via Resend webhooks"
+---
+
+# Resend email integration
+
+Agentbot integrates with [Resend](https://resend.com) for both inbound email handling and outbound email event tracking. Inbound emails from approved senders are forwarded to your agent, while outbound email events (delivery, opens, clicks, bounces) are logged for analytics and compliance.
+
+## How it works
+
+### Inbound emails
+
+1. A user sends an email to your Resend inbox address
+2. Resend forwards the email to `POST /api/webhooks/resend`
+3. Agentbot verifies the webhook signature, checks the sender against an allowlist, and applies rate limiting
+4. Approved emails are processed and made available to your agent
+
+### Outbound email event tracking
+
+1. Agentbot sends a transactional email through Resend
+2. Resend delivers the email and tracks lifecycle events (sent, delivered, opened, clicked, bounced, complained)
+3. Resend forwards each event to `POST /api/webhooks/resend`
+4. Agentbot logs the event and takes action for bounces and complaints
+
+## Setup
+
+<Steps>
+  <Step title="Create a Resend webhook">
+    In the [Resend dashboard](https://resend.com/webhooks), create a webhook pointing to:
+
+    ```
+    https://agentbot.sh/api/webhooks/resend
+    ```
+
+    Subscribe to the event types you need. For full coverage, enable all of the following:
+
+    - `email.sent`
+    - `email.delivered`
+    - `email.delivery_delayed`
+    - `email.bounced`
+    - `email.complained`
+    - `email.opened`
+    - `email.clicked`
+    - `email.received` (for inbound email processing)
+  </Step>
+  <Step title="Configure environment variables">
+    Add the following environment variables to your deployment:
+
+    | Variable | Required | Description |
+    |----------|----------|-------------|
+    | `RESEND_API_KEY` | Yes | Your Resend API key |
+    | `RESEND_WEBHOOK_SECRET` | Yes | Webhook signing secret from the Resend dashboard |
+    | `ALLOWED_SENDERS` | No | Comma-separated list of approved sender email addresses. Defaults to the platform owner's addresses. |
+    | `OWNER_EMAIL` | No | Email address for security notifications |
+  </Step>
+  <Step title="Test the integration">
+    Send an email from one of the allowed sender addresses to your Resend inbox. Check the agent logs to confirm it was received and processed. For outbound tracking, send a test email through Resend and verify that delivery events appear in your logs.
+  </Step>
+</Steps>
+
+## Webhook endpoint
+
+```http
+POST /api/webhooks/resend
+```
+
+Receives email events from Resend. This endpoint handles both inbound email delivery and outbound email lifecycle tracking. For inbound emails, it verifies the webhook signature using Svix headers and enforces a sender allowlist. For outbound events, it logs event data and handles bounce/complaint cases.
+
+<Warning>This endpoint is intended to be called by Resend only. You should configure the `RESEND_WEBHOOK_SECRET` environment variable for signature verification. When the secret is not configured, requests are processed without signature verification and a warning is logged. Always configure the secret in production.</Warning>
+
+### Headers
+
+| Header | Required | Description |
+|--------|----------|-------------|
+| `svix-id` | Yes | Unique message identifier |
+| `svix-timestamp` | Yes | Message timestamp |
+| `svix-signature` | Yes | Webhook signature for verification |
+
+### Request body
+
+The request body is a JSON object with the following fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | string | The event type (e.g., `email.sent`, `email.delivered`, `email.bounced`) |
+| `data` | object | Event-specific payload |
+| `data.email_id` | string | Unique identifier of the email |
+| `data.to` | string | Recipient email address |
+| `data.subject` | string | Email subject line |
+| `data.created_at` | string | ISO 8601 timestamp of the event |
+
+For bounce events, the `data` object also includes:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.bounce.message` | string | Bounce reason from the receiving mail server |
+
+### Signature verification
+
+When `RESEND_WEBHOOK_SECRET` is configured, the endpoint verifies the webhook payload using [Svix](https://www.svix.com/) signature verification. Three headers are required: `svix-id`, `svix-timestamp`, and `svix-signature`. Requests with missing headers return `401` with `{ "error": "Missing signature headers" }`. Requests with an invalid signature return `401` with `{ "error": "Invalid signature" }`.
+
+When `RESEND_WEBHOOK_SECRET` is not configured, requests are processed without verification (a warning is logged).
+
+### Handled event types
+
+| Event | Behavior |
+|-------|----------|
+| `email.received` | Validates sender against the allowlist, applies rate limiting, fetches full email content, and forwards to the agent for processing. |
+| `email.sent` | Logged for analytics. |
+| `email.delivered` | Logged for delivery tracking and analytics. |
+| `email.delivery_delayed` | Logged for analytics. |
+| `email.bounced` | Logged with a warning. The recipient address is flagged for review. |
+| `email.complained` | Logged with a warning. The recipient address is flagged for removal from mailing lists. |
+| `email.opened` | Logged for engagement tracking. |
+| `email.clicked` | Logged for engagement tracking. |
+| Other events | Acknowledged and logged. No further processing. |
+
+### Response
+
+The endpoint always returns `200` to prevent Resend from retrying delivery.
+
+**Inbound email response:**
+
+```json
+{
+  "received": true,
+  "action": "processed"
+}
+```
+
+| `action` value | Meaning |
+|----------------|---------|
+| `processed` | Email passed all checks and was forwarded to the agent |
+| `rejected` | Sender is not on the allowlist |
+| `rate_limited` | Sender exceeded the rate limit |
+| `fetch_error` | Email content could not be retrieved from Resend |
+
+**Outbound event response:**
+
+```json
+{
+  "received": true
+}
+```
+
+## Security
+
+### Sender allowlist
+
+Only emails from addresses listed in the `ALLOWED_SENDERS` environment variable are processed. All other emails are rejected and logged for audit. This is a strict allowlist — there is no wildcard or domain-level matching.
+
+### Rate limiting
+
+Each allowed sender is limited to **10 emails per hour**. Emails that exceed this limit are acknowledged but not processed.
+
+### Content sanitization
+
+Email bodies are sanitized before processing:
+
+- Script tags and HTML markup are stripped
+- Body text is truncated to **5,000 characters**
+
+## Troubleshooting
+
+<AccordionGroup>
+
+<Accordion title="Webhook returns 500">
+
+Verify that the `RESEND_WEBHOOK_SECRET` environment variable is set. The endpoint cannot verify signatures without it.
+
+</Accordion>
+
+<Accordion title="Emails are rejected">
+
+Check that the sender's email address is included in `ALLOWED_SENDERS`. Addresses are matched in a case-insensitive manner.
+
+</Accordion>
+
+<Accordion title="Emails are rate limited">
+
+The limit is 10 emails per sender per hour. Wait for the rate limit window to reset or adjust the sending frequency.
+
+</Accordion>
+
+</AccordionGroup>

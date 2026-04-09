@@ -1,0 +1,109 @@
+---
+title: Export API
+description: "Export all user data as a downloadable JSON file"
+---
+
+# Export API
+
+Export your account data including profile information, agents, scheduled tasks, and workflows.
+
+## Export user data
+
+```http
+GET /api/export
+```
+
+Requires session authentication. Returns all data associated with your account as a downloadable JSON file.
+
+### Response headers
+
+| Header | Value | Description |
+|--------|-------|-------------|
+| `Content-Type` | `application/json` | JSON format |
+| `Content-Disposition` | `attachment; filename="agentbot-export-<id>-<date>.json"` | Triggers a file download. The filename includes a truncated user ID and the current date. |
+| `Cache-Control` | `no-store` | Response is never cached |
+
+### Response
+
+```json
+{
+  "exportedAt": "2026-04-02T12:00:00.000Z",
+  "version": "1.0",
+  "user": {
+    "id": "user_abc123",
+    "email": "user@example.com",
+    "name": "Jane Doe",
+    "plan": "solo",
+    "role": "user",
+    "referralCode": "REF123",
+    "referralCredits": 0
+  },
+  "agents": [
+    {
+      "id": "agent_xyz",
+      "name": "my-agent",
+      "model": "gpt-4o",
+      "status": "running",
+      "createdAt": "2026-03-01T00:00:00.000Z",
+      "updatedAt": "2026-04-01T00:00:00.000Z"
+    }
+  ],
+  "scheduledTasks": [
+    {
+      "id": "task_123",
+      "name": "daily-report",
+      "cronSchedule": "0 9 * * *",
+      "enabled": true,
+      "createdAt": "2026-03-15T00:00:00.000Z"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "wf_456",
+      "name": "onboarding-flow",
+      "enabled": true,
+      "createdAt": "2026-03-20T00:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `exportedAt` | string | ISO 8601 timestamp of when the export was generated |
+| `version` | string | Export format version |
+| `user` | object | Your account profile |
+| `user.id` | string | User ID |
+| `user.email` | string | Email address |
+| `user.name` | string \| null | Display name |
+| `user.plan` | string \| null | Subscription plan (for example `solo`, `collective`, `label`, `network`) |
+| `user.role` | string | Account role |
+| `user.referralCode` | string \| null | Your referral code |
+| `user.referralCredits` | number | Accumulated referral credits |
+| `agents` | array | All agents owned by you |
+| `agents[].id` | string | Agent ID |
+| `agents[].name` | string | Agent name |
+| `agents[].model` | string | AI model used by the agent |
+| `agents[].status` | string | Current agent status |
+| `agents[].createdAt` | string | ISO 8601 creation timestamp |
+| `agents[].updatedAt` | string | ISO 8601 last update timestamp |
+| `scheduledTasks` | array | All scheduled tasks owned by you |
+| `scheduledTasks[].id` | string | Task ID |
+| `scheduledTasks[].name` | string | Task name |
+| `scheduledTasks[].cronSchedule` | string | Cron expression for the schedule |
+| `scheduledTasks[].enabled` | boolean | Whether the task is enabled |
+| `scheduledTasks[].createdAt` | string | ISO 8601 creation timestamp |
+| `workflows` | array | All workflows owned by you |
+| `workflows[].id` | string | Workflow ID |
+| `workflows[].name` | string | Workflow name |
+| `workflows[].enabled` | boolean | Whether the workflow is enabled |
+| `workflows[].createdAt` | string | ISO 8601 creation timestamp |
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+| 500 | Export failed. The response includes an `error` field and a `message` field with details. |

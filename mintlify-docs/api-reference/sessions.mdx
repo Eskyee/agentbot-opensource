@@ -1,0 +1,83 @@
+---
+title: Sessions API
+description: "List active agent conversation sessions from the OpenClaw gateway"
+---
+
+# Sessions API
+
+Retrieve active conversation sessions from the OpenClaw gateway. These are agent conversation sessions, not [wallet payment sessions](/api-reference/wallet#mpp-payment-sessions).
+
+## List sessions
+
+```http
+GET /api/sessions
+```
+
+Requires session authentication. Returns up to 50 conversation sessions from the gateway.
+
+<Note>New instances are provisioned with `per-sender` session scope, meaning each sender gets an isolated conversation. Sessions reset daily at 4:00 AM server time and are pruned after 30 days (with a maximum of 500 entries per sender). You can change these defaults using the [config API](/api-reference/config).</Note>
+
+### Response
+
+```json
+{
+  "sessions": [
+    {
+      "key": "main",
+      "agentId": "agent_abc123",
+      "status": "active",
+      "messageCount": 24,
+      "lastActivity": "2026-03-30T01:15:00Z",
+      "createdAt": "2026-03-29T10:00:00Z",
+      "model": "openrouter/xiaomi/mimo-v2-pro"
+    }
+  ],
+  "total": 1,
+  "source": "gateway"
+}
+```
+
+### Session object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | string | Session key identifier (for example, `main`, `telegram-123`, `discord-456`) |
+| `agentId` | string \| null | ID of the agent handling this session |
+| `status` | string | Session status. Defaults to `active`. |
+| `messageCount` | number | Number of messages (turns) in this session |
+| `lastActivity` | string \| null | ISO 8601 timestamp of the most recent activity |
+| `createdAt` | string \| null | ISO 8601 timestamp when the session was created |
+| `model` | string \| null | AI model used for this session |
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `sessions` | array | List of session objects |
+| `total` | number | Total number of sessions returned |
+| `source` | string | Data source — `gateway` on success, `gateway-error` when the gateway is unreachable |
+
+### Gateway errors
+
+When the gateway is unreachable, the endpoint returns HTTP `200` with an empty session list and the error detail:
+
+```json
+{
+  "sessions": [],
+  "error": "Gateway unreachable",
+  "source": "gateway-error"
+}
+```
+
+### Errors
+
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized — no valid session |
+
+### Example
+
+```bash
+curl -X GET https://agentbot.sh/api/sessions \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```

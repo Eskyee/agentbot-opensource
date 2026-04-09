@@ -1,0 +1,66 @@
+- generic [active] [ref=e1]:
+  - banner:
+    - link "Skip to main content" [ref=e2] [cursor=pointer]:
+      - /url: "#main"
+      - generic [ref=e3]: Skip to main content
+  - main [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e9]:
+          - img [ref=e10]
+          - link "Excellent 4.6 out of 5 Trustpilot" [ref=e14] [cursor=pointer]:
+            - /url: https://www.trustpilot.com/review/godaddy.com
+            - generic [ref=e15]:
+              - generic [ref=e16]:
+                - generic [ref=e17]: Excellent
+                - generic [ref=e18]: 4.6 out of 5
+              - img "Trustpilot" [ref=e20]
+        - generic [ref=e24]:
+          - generic [ref=e27]:
+            - heading "Buy Now" [level=4] [ref=e28]
+            - generic [ref=e29]:
+              - term [ref=e30]: talent.xyz
+              - definition [ref=e31]:
+                - generic [ref=e32]: USD
+                - generic [ref=e33]: $100,000
+            - button "Next" [ref=e34] [cursor=pointer]:
+              - generic: Next
+            - generic [ref=e36]:
+              - strong [ref=e37]: Need help? Give us a call.
+              - paragraph [ref=e40]:
+                - link "020 7255 0717" [ref=e41] [cursor=pointer]:
+                  - /url: "true"
+          - generic [ref=e42]:
+            - heading "talent.xyz" [level=1] [ref=e43]
+            - paragraph [ref=e44]: is for sale!
+      - generic [ref=e48]:
+        - heading "Simple, secure purchase & transfer" [level=5] [ref=e51]
+        - heading "Trusted by customers globally" [level=5] [ref=e54]
+        - heading "24/7 dedicated support" [level=5] [ref=e57]
+      - generic [ref=e58]:
+        - generic [ref=e59]: Copyright © 2026 GoDaddy Operating Company, LLC. All Rights Reserved.
+        - generic [ref=e60]:
+          - button "Privacy Policy" [ref=e61] [cursor=pointer]:
+            - generic: Privacy Policy
+          - text: ·
+          - button "Do not share my personal information" [ref=e62] [cursor=pointer]:
+            - generic: Do not share my personal information
+  - contentinfo
+  - alert "privacyAlert" [ref=e64]:
+    - button "Close modal" [ref=e66] [cursor=pointer]:
+      - generic: x
+    - generic [ref=e67]:
+      - generic [ref=e68]: We serve cookies.
+      - text: We use tools, such as cookies, to enable essential services and functionality on our site and to collect data on how visitors interact with our site, products and services. By clicking Accept, you agree to our use of these tools for advertising, analytics and support.
+      - link "Privacy Policy" [ref=e69] [cursor=pointer]:
+        - /url: https://www.godaddy.com/legal/agreements/privacy-policy
+        - generic [ref=e70]: Privacy Policy
+    - group [ref=e72]:
+      - generic [ref=e73]:
+        - button "Manage" [ref=e74] [cursor=pointer]:
+          - generic: Manage
+        - button "Decline" [ref=e75] [cursor=pointer]:
+          - generic: Decline
+        - button "Accept" [ref=e76] [cursor=pointer]:
+          - generic: Accept
+  - alert [ref=e77]
