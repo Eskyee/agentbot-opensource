@@ -73,6 +73,7 @@ This file is the current operational reference for platform ownership, deploymen
 
 - Treat `web/` as the app root for Vercel.
 - Follow the staged release process in `docs/deploy-workflow.md`.
+- Follow `docs/RAILWAY_PROTECTION_RUNBOOK.md` before making Railway production changes in `motivated-comfort`.
 - Do not assume older Render references are current without verification.
 
 ## Documentation Status
