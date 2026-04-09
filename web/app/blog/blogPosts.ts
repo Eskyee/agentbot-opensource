@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'openclaw-v2026-4-9',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'OpenClaw v2026.4.9 — Dreaming, SSRF Hardening, Character QA & Android Pairing',
+    excerpt:
+      'REM dream backfill with diary timeline UI, SSRF and node exec injection hardening, character-vibes QA evals, and a complete Android pairing overhaul.',
+    tags: ['OpenClaw', 'Dreaming', 'Security', 'Android'],
+    track: 'Release',
+  },
+  {
     slug: 'platform-recovery-and-hardening-apr-9-2026',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
