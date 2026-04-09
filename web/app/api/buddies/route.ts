@@ -49,6 +49,8 @@ export async function POST(req: Request) {
         userId: session.user.id,
         name: name.trim(),
         type,
+        energy: 50,
+        happiness: 50,
       },
     })
 

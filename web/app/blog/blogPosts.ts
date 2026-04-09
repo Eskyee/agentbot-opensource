@@ -10,6 +10,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agentbot-update-apr-9-2026',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'Solana Integration, Blockchain Buddies & Liquid Wallet Kit',
+    excerpt:
+      'New: Solana Agent Kit, Blockchain Buddies digital pets, Liquid Wallet Kit docs, and full competitive analysis vs solana-clawd.',
+    tags: ['Solana', 'Buddies', 'Liquid', 'LWK'],
+    track: 'Shipping',
+  },
+  {
     slug: 'agentbot-update-apr-8-2026',
     dateLabel: '8 Apr',
     isoDate: '2026-04-08',

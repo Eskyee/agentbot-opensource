@@ -40,7 +40,7 @@ export async function PATCH(
           lastFed: new Date(),
         },
       })
-      return NextResponse.json({ buddy: updated })
+      return NextResponse.json({ buddy: updated, leveledUp: newLevel > buddy.level })
     }
 
     if (action === 'play') {
@@ -55,10 +55,40 @@ export async function PATCH(
           lastPlayed: new Date(),
         },
       })
+      return NextResponse.json({ buddy: updated, leveledUp: newLevel > buddy.level })
+    }
+
+    if (action === 'train') {
+      if (buddy.energy < 30) {
+        return NextResponse.json({ error: 'Not enough energy to train (need 30)' }, { status: 400 })
+      }
+      const newXp = buddy.xp + 50
+      const newLevel = Math.floor(newXp / 100) + 1
+      const updated = await prisma.buddy.update({
+        where: { id: buddyId },
+        data: {
+          energy: Math.max(0, buddy.energy - 30),
+          happiness: Math.max(0, buddy.happiness - 10),
+          xp: newXp,
+          level: newLevel,
+        },
+      })
+      return NextResponse.json({ buddy: updated, leveledUp: newLevel > buddy.level })
+    }
+
+    if (action === 'rename') {
+      const { newName } = body
+      if (!newName || typeof newName !== 'string' || newName.trim().length === 0 || newName.length > 30) {
+        return NextResponse.json({ error: 'Invalid name (1-30 chars)' }, { status: 400 })
+      }
+      const updated = await prisma.buddy.update({
+        where: { id: buddyId },
+        data: { name: newName.trim() },
+      })
       return NextResponse.json({ buddy: updated })
     }
 
-    return NextResponse.json({ error: 'Invalid action. Use: feed, play' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid action. Use: feed, play, train, rename' }, { status: 400 })
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
