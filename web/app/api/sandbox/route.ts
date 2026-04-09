@@ -4,26 +4,8 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
-const VERCEL_TOKEN = process.env.VERCEL_TOKEN || ''
-const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_N7HNvjOaJqkwmdiJmojvKH5BoMMN'
-const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || ''
-
-// Use Vercel API directly instead of Sandbox SDK (more reliable)
-async function createSandbox(runtime: string) {
-  const res = await fetch('https://api.vercel.com/v2/sandbox', {
-    method: 'POST',
-    headers: {
-      'Authorization': VERCEL_TOKEN ? `Bearer ${VERCEL_TOKEN}` : '',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      projectId: VERCEL_PROJECT_ID,
-      teamId: VERCEL_TEAM_ID || undefined,
-      runtime,
-    }),
-  })
-  return res.json()
-}
+// Vercel Sandbox uses OIDC token automatically in production
+// No manual token needed — Vercel injects VERCEL_OIDC_TOKEN
 
 export async function POST(req: NextRequest) {
   const session = await getAuthSession()
@@ -38,32 +20,55 @@ export async function POST(req: NextRequest) {
       case 'run': {
         if (!code) return NextResponse.json({ error: 'code required' }, { status: 400 })
 
-        // Use Vercel Sandbox API directly
         const runtime = language === 'python' ? 'python3.13' : 'node24'
 
+        // Try to use Vercel Sandbox via OIDC
         try {
-          const sandboxRes = await createSandbox(runtime)
-          if (!sandboxRes.id) {
-            // Fallback: return the code execution concept
+          const oidcToken = process.env.VERCEL_OIDC_TOKEN
+          if (!oidcToken) {
+            // Development mode — return simulated output
+            const ext = language === 'python' ? 'py' : 'js'
             return NextResponse.json({
               success: true,
               action: 'run',
               language,
-              stdout: `Sandbox created with ${runtime}. Code execution requires VERCEL_TOKEN.`,
+              stdout: `[Development Mode] Code would execute in ${runtime} sandbox.\n\n${language === 'python' ? 'Hello from Sandbox! 🦞' : 'Hello from Sandbox! 🦞'}`,
               stderr: '',
               exitCode: 0,
-              note: 'Configure VERCEL_TOKEN in Vercel environment for full sandbox execution.',
+              mode: 'development',
             })
           }
 
-          const sandboxId = sandboxRes.id
+          // Production mode — use Vercel Sandbox API with OIDC
+          const sandboxRes = await fetch('https://api.vercel.com/v2/sandbox', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${oidcToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ runtime }),
+          })
 
-          // Write file to sandbox
+          if (!sandboxRes.ok) {
+            const err = await sandboxRes.text()
+            return NextResponse.json({
+              success: false,
+              error: `Sandbox creation failed: ${err}`,
+              stdout: '',
+              stderr: err,
+              exitCode: 1,
+            })
+          }
+
+          const sandbox = await sandboxRes.json()
+          const sandboxId = sandbox.id
+
+          // Write and execute code
           const ext = language === 'python' ? 'py' : 'js'
           await fetch(`https://api.vercel.com/v2/sandbox/${sandboxId}/files`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${VERCEL_TOKEN}`,
+              'Authorization': `Bearer ${oidcToken}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -71,22 +76,21 @@ export async function POST(req: NextRequest) {
             }),
           })
 
-          // Run command
           const cmd = language === 'python' ? `python3 main.${ext}` : `node main.${ext}`
           const runRes = await fetch(`https://api.vercel.com/v2/sandbox/${sandboxId}/command`, {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${VERCEL_TOKEN}`,
+              'Authorization': `Bearer ${oidcToken}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ cmd }),
           })
           const result = await runRes.json()
 
-          // Stop sandbox
+          // Cleanup
           await fetch(`https://api.vercel.com/v2/sandbox/${sandboxId}`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}` },
+            headers: { 'Authorization': `Bearer ${oidcToken}` },
           })
 
           return NextResponse.json({
@@ -96,16 +100,16 @@ export async function POST(req: NextRequest) {
             stdout: result.stdout || '',
             stderr: result.stderr || '',
             exitCode: result.exitCode || 0,
+            mode: 'production',
           })
-        } catch {
-          // Fallback response
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : 'Sandbox error'
           return NextResponse.json({
-            success: true,
-            action: 'run',
-            language,
-            stdout: `Code would execute in ${runtime} sandbox.\nConfigure VERCEL_TOKEN for live execution.`,
-            stderr: '',
-            exitCode: 0,
+            success: false,
+            error: msg,
+            stdout: '',
+            stderr: msg,
+            exitCode: 1,
           })
         }
       }
@@ -116,9 +120,10 @@ export async function POST(req: NextRequest) {
           success: true,
           action: 'shell',
           command,
-          stdout: `Shell execution requires VERCEL_TOKEN configuration.`,
+          stdout: `Shell execution requires production environment with Vercel Sandbox enabled.`,
           stderr: '',
           exitCode: 0,
+          mode: 'development',
         })
       }
 
@@ -142,7 +147,6 @@ export async function GET() {
     ],
     runtimes: ['node24', 'node22', 'python3.13'],
     isolation: 'Firecracker microVM',
-    auth: VERCEL_TOKEN ? 'configured' : 'needs VERCEL_TOKEN',
+    auth: process.env.VERCEL_OIDC_TOKEN ? 'oidc' : 'development',
   })
 }
-// sandbox env fix Thu Apr  9 23:55:38 BST 2026
