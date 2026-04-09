@@ -544,14 +544,15 @@ export default function BitcoinPage() {
           </section>
         </div>
 
-        {/* Liquid Network Node Status */}
+        {/* Liquid Network — Full Feature Section */}
         <section className="mt-6 bg-zinc-950 border border-zinc-800 p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Liquid Network</div>
-              <h2 className="text-sm font-bold tracking-tight uppercase mt-1">Pruned Elements Node</h2>
-              <p className="text-[10px] text-zinc-500 mt-1">
-                ⛓️ Full Liquid node — 1GB pruned, synced on Railway
+              <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">Liquid Network</div>
+              <h2 className="text-2xl font-bold tracking-tighter uppercase mt-1">Bitcoin Layer 2</h2>
+              <p className="text-sm text-zinc-400 mt-2 max-w-xl">
+                Confidential transactions. 1-minute blocks. Lower fees. Issued assets. 
+                Our own Elements node powers it all — no third-party dependency.
               </p>
             </div>
             <button
@@ -564,44 +565,108 @@ export default function BitcoinPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="border border-zinc-800 bg-black/40 p-4">
-              <div className="text-[10px] text-zinc-500 uppercase mb-1">Status</div>
-              <div className="text-sm font-bold font-mono">
-                {liquidInfo?.status === 'connected' ? (
-                  <span className="text-emerald-400">● Connected</span>
-                ) : liquidInfo?.status === 'unreachable' ? (
-                  <span className="text-red-400">● Unreachable</span>
-                ) : (
-                  <span className="text-zinc-500">—</span>
-                )}
+          {/* Node Status */}
+          <div className="mb-6">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">Node Status</div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] text-zinc-500 uppercase mb-1">Status</div>
+                <div className="text-sm font-bold font-mono">
+                  {liquidInfo?.status === 'connected' ? (
+                    <span className="text-emerald-400">● Connected</span>
+                  ) : liquidInfo?.status === 'unreachable' ? (
+                    <span className="text-red-400">● Unreachable</span>
+                  ) : (
+                    <span className="text-zinc-500">—</span>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="border border-zinc-800 bg-black/40 p-4">
-              <div className="text-[10px] text-zinc-500 uppercase mb-1">Blocks</div>
-              <div className="text-sm font-bold font-mono">
-                {liquidInfo?.blocks ? liquidInfo.blocks.toLocaleString() : '—'}
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] text-zinc-500 uppercase mb-1">Blocks</div>
+                <div className="text-sm font-bold font-mono">
+                  {liquidInfo?.blocks ? liquidInfo.blocks.toLocaleString() : '—'}
+                </div>
               </div>
-            </div>
-            <div className="border border-zinc-800 bg-black/40 p-4">
-              <div className="text-[10px] text-zinc-500 uppercase mb-1">Sync</div>
-              <div className="text-sm font-bold font-mono">
-                {liquidInfo?.verificationProgress ? `${(liquidInfo.verificationProgress * 100).toFixed(1)}%` : '—'}
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] text-zinc-500 uppercase mb-1">Sync</div>
+                <div className="text-sm font-bold font-mono">
+                  {liquidInfo?.verificationProgress ? `${(liquidInfo.verificationProgress * 100).toFixed(1)}%` : '—'}
+                </div>
               </div>
-            </div>
-            <div className="border border-zinc-800 bg-black/40 p-4">
-              <div className="text-[10px] text-zinc-500 uppercase mb-1">Pruned</div>
-              <div className="text-sm font-bold font-mono">
-                {liquidInfo?.pruned ? (
-                  <span className="text-blue-400">1 GB</span>
-                ) : (
-                  <span className="text-zinc-500">Full</span>
-                )}
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] text-zinc-500 uppercase mb-1">Pruned</div>
+                <div className="text-sm font-bold font-mono">
+                  {liquidInfo?.pruned ? (
+                    <span className="text-blue-400">1 GB</span>
+                  ) : (
+                    <span className="text-zinc-500">Full</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-zinc-800">
+          {/* Features Grid */}
+          <div className="mb-6">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">What You Can Do</div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-xs font-bold text-white mb-2">🔒 Confidential Transactions</div>
+                <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  Amounts and asset types are hidden on-chain. Only sender and receiver can see the details. 
+                  Full privacy without mixing services.
+                </p>
+              </div>
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-xs font-bold text-white mb-2">⚡ 1-Minute Blocks</div>
+                <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  12x faster than Bitcoin. Transactions confirm in ~1 minute instead of ~12 minutes. 
+                  Near-instant for payments.
+                </p>
+              </div>
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-xs font-bold text-white mb-2">💸 Lower Fees</div>
+                <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  Fraction of Bitcoin mainnet fees. Transactions cost pennies. 
+                  Ideal for micropayments and frequent transfers.
+                </p>
+              </div>
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-xs font-bold text-white mb-2">🪙 Issued Assets</div>
+                <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  Create your own tokens on Liquid. Stablecoins, loyalty points, in-game assets. 
+                  All confidential by default.
+                </p>
+              </div>
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-xs font-bold text-white mb-2">🔐 Jade Hardware Wallet</div>
+                <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  Air-gapped signing with Blockstream Jade. QR code in → sign on device → QR code out. 
+                  No USB, no internet required.
+                </p>
+              </div>
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-xs font-bold text-white mb-2">🌉 L-BTC Bridge</div>
+                <p className="text-[10px] text-zinc-500 leading-relaxed">
+                  Peg BTC into Liquid as L-BTC. Use Bitcoin on a faster, cheaper, more private network. 
+                  Federated two-way peg.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* What is L-BTC */}
+          <div className="border border-zinc-800 bg-black/40 p-5 mb-6">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">What is L-BTC?</div>
+            <p className="text-sm text-zinc-400 leading-relaxed">
+              L-BTC is Bitcoin on the Liquid Network. It&apos;s backed 1:1 by real BTC locked in a 
+              federated peg. You can move BTC into Liquid (peg-in) and back out (peg-out) at any time. 
+              Same Bitcoin, faster settlement, confidential transactions.
+            </p>
+          </div>
+
+          {/* Links */}
+          <div className="pt-4 border-t border-zinc-800">
             <div className="flex flex-wrap gap-4">
               <a
                 href="https://blockstream.com/liquid/"
@@ -618,6 +683,14 @@ export default function BitcoinPage() {
                 className="text-[10px] text-zinc-400 hover:text-white"
               >
                 Liquid node setup →
+              </a>
+              <a
+                href="https://blockstream.com/jade/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[10px] text-zinc-400 hover:text-white"
+              >
+                Get Blockstream Jade →
               </a>
             </div>
           </div>
