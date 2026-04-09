@@ -2,6 +2,15 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rootDirectory": "web",
   "framework": "nextjs",
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "feat-*": false,
+      "fix-*": false,
+      "chore-*": false,
+      "dev-*": false
+    }
+  },
   "regions": ["iad1", "lhr1"],
   "functionFailoverRegions": ["sfo1"],
   "fluid": true,
