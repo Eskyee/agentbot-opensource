@@ -5,6 +5,57 @@ import { prisma } from '@/app/lib/prisma'
 export const dynamic = 'force-dynamic'
 
 const ALLOWED_PLANS = ['network', 'enterprise']
+const VERCEL_TOKEN = process.env.VERCEL_TOKEN || ''
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_N7HNvjOaJqkwmdiJmojvKH5BoMMN'
+const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || ''
+
+async function addDomainToVercel(domain: string) {
+  if (!VERCEL_TOKEN) return { success: false, error: 'VERCEL_TOKEN not configured' }
+
+  try {
+    const res = await fetch(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/domains${VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : ''}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${VERCEL_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: domain }),
+    })
+    const data = await res.json()
+    return { success: res.ok, data, error: data.error?.message }
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : 'Vercel API error' }
+  }
+}
+
+async function verifyDomainOnVercel(domain: string) {
+  if (!VERCEL_TOKEN) return { verified: false }
+
+  try {
+    const res = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains/${domain}/verify${VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : ''}`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}` },
+    })
+    const data = await res.json()
+    return { verified: data.verified || false, data }
+  } catch {
+    return { verified: false }
+  }
+}
+
+async function removeDomainFromVercel(domain: string) {
+  if (!VERCEL_TOKEN) return { success: false }
+
+  try {
+    await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/domains/${domain}${VERCEL_TEAM_ID ? `?teamId=${VERCEL_TEAM_ID}` : ''}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}` },
+    })
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
+}
 
 export async function GET() {
   const session = await getAuthSession()
