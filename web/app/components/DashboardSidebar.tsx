@@ -10,6 +10,7 @@ import { useState, useEffect, memo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control'
+import { customSignOut } from '@/app/lib/useCustomSession'
 
 export const navSections = [
   {
@@ -140,7 +141,8 @@ export const DashboardSidebar = memo(function DashboardSidebar({
     : runtimeStatus === 'live'
       ? 'bg-yellow-400'
       : 'bg-zinc-700'
-  const runtimeHost = openclawUrl ? new URL(openclawUrl).host : null
+  let runtimeHost: string | null = null
+  try { if (openclawUrl) runtimeHost = new URL(openclawUrl).host } catch {}
   const openclawConfigUrl = openclawUrl
     ? buildOpenClawControlUrl({ view: 'config', gatewayUrl: openclawUrl, gatewayToken })
     : null
@@ -276,10 +278,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
             </div>
           </div>
           <button
-            onClick={() => {
-              const { customSignOut } = require('@/app/lib/useCustomSession')
-              customSignOut()
-            }}
+            onClick={() => customSignOut()}
             className="w-full flex items-center justify-center gap-2 border border-zinc-800 px-4 py-2 text-sm text-zinc-500 hover:text-white hover:border-zinc-600 transition-colors"
           >
             Sign Out

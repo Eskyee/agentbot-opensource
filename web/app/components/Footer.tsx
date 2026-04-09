@@ -87,15 +87,22 @@ export default function Footer() {
               { href: 'https://openwebui.com/u/jaieskyravecult115142e2f8', label: 'Open WebUI' },
               { href: '/terms', label: 'Terms' },
               { href: '/privacy', label: 'Privacy' },
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-zinc-600 text-[10px] uppercase tracking-widest hover:text-white transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+            ].map((link) => {
+              const isExternal = link.href.startsWith('http')
+              const cls = "text-zinc-600 text-[10px] uppercase tracking-widest hover:text-white transition-colors"
+              if (isExternal) {
+                return (
+                  <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                    {link.label}
+                  </a>
+                )
+              }
+              return (
+                <Link key={link.href} href={link.href} className={cls}>
+                  {link.label}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>

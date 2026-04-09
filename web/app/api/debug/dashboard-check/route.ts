@@ -15,7 +15,7 @@ export async function GET() {
   
   // Check database
   try {
-    const dbRes = await fetch(process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh' + '/api/health')
+    const dbRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh') + '/api/health')
     checks.checks.database = dbRes.ok ? 'ok' : 'error'
   } catch {
     checks.checks.database = 'error'
@@ -23,7 +23,7 @@ export async function GET() {
   
   // Check auth endpoint
   try {
-    const authRes = await fetch(process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh' + '/api/auth/session')
+    const authRes = await fetch((process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh') + '/api/auth/session')
     checks.checks.auth = authRes.ok ? 'ok' : 'error'
   } catch {
     checks.checks.auth = 'error'

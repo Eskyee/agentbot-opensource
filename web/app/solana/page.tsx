@@ -9,7 +9,7 @@ const integrations = [
     description: '154 GitHub stars. 60+ built-in blockchain actions for DeFi, NFTs, token operations. Multi-framework support for LangChain, Vercel AI SDK, and MCP.',
     features: ['Token deployment', 'Jupiter swaps', 'Metaplex NFTs', 'Portfolio rebalancing', 'Autonomous mode with error recovery'],
     stars: 154,
-    url: 'https://github.com/coinbase/solana-agent-kit',
+    url: 'https://github.com/sendai/solana-agent-kit',
     icon: <Coins className="w-6 h-6" />,
   },
   {

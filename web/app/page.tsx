@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
@@ -14,7 +13,7 @@ export default async function Home() {
   let githubStars = 2
   let githubForks = 1
   try {
-    const res = await fetch('https://api.github.com/repos/Eskyee/agentbot-opensource', { cache: 'no-store' })
+    const res = await fetch('https://api.github.com/repos/Eskyee/agentbot-opensource', { next: { revalidate: 3600 } })
     if (res.ok) {
       const data = await res.json()
       githubStars = data.stargazers_count || 2

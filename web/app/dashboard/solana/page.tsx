@@ -1,11 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Wallet, TrendingUp, Coins, Zap, Globe, ExternalLink, RefreshCw } from 'lucide-react'
+import { Wallet, TrendingUp, Coins, Zap, Globe, ExternalLink } from 'lucide-react'
 
 export default function SolanaDashboard() {
   const [walletAddress, setWalletAddress] = useState('')
-  const [loading, setLoading] = useState(false)
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
