@@ -499,7 +499,7 @@ export default function GitCityPage() {
             <div className="text-center py-12 border border-dashed border-zinc-800">
               <GitBranch className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
               <p className="text-zinc-600 text-sm">Enter a GitHub repository URL to get started</p>
-              <p className="text-zinc-700 text-xs mt-1">Example: https://github.com/Eskyee/agentbot</p>
+              <p className="text-zinc-700 text-xs mt-1">Example: https://github.com/Eskyee/agentbot-opensource</p>
             </div>
           )}
         </div>

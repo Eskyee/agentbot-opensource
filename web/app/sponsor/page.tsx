@@ -273,7 +273,7 @@ export default function SponsorPage() {
           <div className="text-center text-zinc-500 text-sm">
             <p>Questions? Email esky33@proton.me</p>
             <div className="flex justify-center gap-4 mt-4">
-              <a href="https://github.com/Eskyee/agentbot" target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-white">
+              <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-white">
                 <ExternalLink className="h-3 w-3" /> GitHub
               </a>
               <Link href="/jobs" className="hover:text-white">Jobs Board</Link>
