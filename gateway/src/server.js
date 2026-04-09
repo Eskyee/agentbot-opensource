@@ -55,6 +55,11 @@ async function main() {
   // Static files for wrapper UI (setup/admin pages)
   // ── Routes ─────────────────────────────────────────────────────
 
+  // 402index.io domain verification
+  app.get('/.well-known/402index-verify.txt', (req, res) => {
+    res.type('text/plain').send('e4faad5ad0858b64d6bf3a5b91e1ba57a15e8e5753dfa207b158ffb24bf5087a');
+  });
+
   // Internal management API — always available
   app.use('/api', apiRoutes);
 
