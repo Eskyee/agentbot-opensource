@@ -145,3 +145,4 @@ export async function GET() {
     auth: VERCEL_TOKEN ? 'configured' : 'needs VERCEL_TOKEN',
   })
 }
+// sandbox env fix Thu Apr  9 23:55:38 BST 2026
