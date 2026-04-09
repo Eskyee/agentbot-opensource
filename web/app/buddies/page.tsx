@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Egg, Heart, Zap, Star, Coins, RefreshCw, MessageCircle, Music } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Egg, Heart, Zap, Star, RefreshCw, Music } from 'lucide-react'
 
 type BuddyType = 'crab' | 'robot' | 'ghost' | 'dragon' | 'alien'
 
@@ -13,8 +13,8 @@ interface Buddy {
   xp: number
   energy: number
   happiness: number
-  lastFed: number
-  lastPlayed: number
+  lastFed: string | number
+  lastPlayed: string | number
 }
 
 const BUDDY_TYPES: Record<BuddyType, { emoji: string; name: string; rarity: string; color: string }> = {
@@ -26,79 +26,150 @@ const BUDDY_TYPES: Record<BuddyType, { emoji: string; name: string; rarity: stri
 }
 
 const ANIMATIONS = ['spin', 'bounce', 'float', 'pulse', 'wiggle']
+const HATCH_NAMES = ['Bot', 'Agent', 'Claw', 'Byte', 'Nova', 'Pulse', 'Node', 'Flux']
+const HATCH_TYPES: BuddyType[] = ['crab', 'crab', 'crab', 'robot', 'robot', 'ghost', 'dragon', 'alien']
 
 export default function BlockchainBuddiesPage() {
   const [buddies, setBuddies] = useState<Buddy[]>([])
   const [selectedBuddy, setSelectedBuddy] = useState<Buddy | null>(null)
   const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
+  const [isAuthed, setIsAuthed] = useState(false)
   const [animation, setAnimation] = useState('bounce')
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const saved = localStorage.getItem('agentbot_buddies')
-    if (saved) {
-      setBuddies(JSON.parse(saved))
-    } else {
-      setBuddies([
-        { id: '1', name: 'Baby', type: 'crab', level: 1, xp: 0, energy: 100, happiness: 80, lastFed: Date.now(), lastPlayed: Date.now() },
-      ])
+  const fetchBuddies = useCallback(async () => {
+    try {
+      const res = await fetch('/api/buddies')
+      if (res.status === 401) {
+        setIsAuthed(false)
+        const saved = localStorage.getItem('agentbot_buddies')
+        if (saved) setBuddies(JSON.parse(saved))
+        return
+      }
+      if (!res.ok) throw new Error('Failed to load buddies')
+      setIsAuthed(true)
+      const data = await res.json()
+      setBuddies(data.buddies || [])
+    } catch {
+      const saved = localStorage.getItem('agentbot_buddies')
+      if (saved) setBuddies(JSON.parse(saved))
+    } finally {
+      setFetching(false)
     }
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('agentbot_buddies', JSON.stringify(buddies))
-  }, [buddies])
+    fetchBuddies()
+  }, [fetchBuddies])
 
-  const hatchNewBuddy = () => {
+  useEffect(() => {
+    if (selectedBuddy) {
+      const updated = buddies.find(b => b.id === selectedBuddy.id)
+      if (updated) setSelectedBuddy(updated)
+    }
+  }, [buddies, selectedBuddy])
+
+  const hatchNewBuddy = async () => {
     setLoading(true)
-    setTimeout(() => {
-      const types: BuddyType[] = ['crab', 'crab', 'crab', 'robot', 'robot', 'ghost', 'dragon', 'alien']
-      const randomType = types[Math.floor(Math.random() * types.length)]
-      const names = ['Bot', 'Agent', 'Claw', 'Byte', 'Nova', 'Pulse', 'Node', 'Flux']
-      const newBuddy: Buddy = {
-        id: Date.now().toString(),
-        name: names[Math.floor(Math.random() * names.length)] + (Math.floor(Math.random() * 99) + 1),
-        type: randomType,
-        level: 1,
-        xp: 0,
-        energy: 100,
-        happiness: 100,
-        lastFed: Date.now(),
-        lastPlayed: Date.now(),
-      }
-      setBuddies([...buddies, newBuddy])
-      setSelectedBuddy(newBuddy)
-      setLoading(false)
-    }, 1500)
-  }
+    setError(null)
+    const randomType = HATCH_TYPES[Math.floor(Math.random() * HATCH_TYPES.length)]
+    const name = HATCH_NAMES[Math.floor(Math.random() * HATCH_NAMES.length)] + (Math.floor(Math.random() * 99) + 1)
 
-  const feedBuddy = (buddy: Buddy) => {
-    setBuddies(buddies.map(b => {
-      if (b.id === buddy.id) {
-        return {
-          ...b,
-          energy: Math.min(100, b.energy + 20),
-          happiness: Math.min(100, b.happiness + 10),
-          xp: b.xp + 10,
-          lastFed: Date.now(),
+    if (isAuthed) {
+      try {
+        const res = await fetch('/api/buddies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, type: randomType }),
+        })
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || 'Failed to hatch')
         }
+        const data = await res.json()
+        setBuddies(prev => [...prev, data.buddy])
+        setSelectedBuddy(data.buddy)
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : 'Failed to hatch buddy')
+      } finally {
+        setLoading(false)
       }
-      return b
-    }))
-  }
-
-  const playWithBuddy = (buddy: Buddy) => {
-    setAnimation(ANIMATIONS[Math.floor(Math.random() * ANIMATIONS.length)])
-    setBuddies(buddies.map(b => {
-      if (b.id === buddy.id) {
-        return {
-          ...b,
-          happiness: Math.min(100, b.happiness + 15),
-          xp: b.xp + 25,
+    } else {
+      setTimeout(() => {
+        const newBuddy: Buddy = {
+          id: Date.now().toString(),
+          name,
+          type: randomType,
+          level: 1,
+          xp: 0,
+          energy: 100,
+          happiness: 100,
+          lastFed: Date.now(),
           lastPlayed: Date.now(),
         }
+        const updated = [...buddies, newBuddy]
+        setBuddies(updated)
+        setSelectedBuddy(newBuddy)
+        localStorage.setItem('agentbot_buddies', JSON.stringify(updated))
+        setLoading(false)
+      }, 1500)
+    }
+  }
+
+  const feedBuddy = async (buddy: Buddy) => {
+    setError(null)
+    if (isAuthed) {
+      try {
+        const res = await fetch(`/api/buddies/${buddy.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'feed' }),
+        })
+        if (!res.ok) throw new Error('Failed to feed')
+        const data = await res.json()
+        setBuddies(prev => prev.map(b => b.id === buddy.id ? data.buddy : b))
+      } catch {
+        setError('Failed to feed buddy')
       }
-      return b
-    }))
+    } else {
+      const updated = buddies.map(b => {
+        if (b.id === buddy.id) {
+          return { ...b, energy: Math.min(100, b.energy + 20), happiness: Math.min(100, b.happiness + 10), xp: b.xp + 10, lastFed: Date.now() }
+        }
+        return b
+      })
+      setBuddies(updated)
+      localStorage.setItem('agentbot_buddies', JSON.stringify(updated))
+    }
+  }
+
+  const playWithBuddy = async (buddy: Buddy) => {
+    setError(null)
+    setAnimation(ANIMATIONS[Math.floor(Math.random() * ANIMATIONS.length)])
+    if (isAuthed) {
+      try {
+        const res = await fetch(`/api/buddies/${buddy.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'play' }),
+        })
+        if (!res.ok) throw new Error('Failed to play')
+        const data = await res.json()
+        setBuddies(prev => prev.map(b => b.id === buddy.id ? data.buddy : b))
+      } catch {
+        setError('Failed to play with buddy')
+      }
+    } else {
+      const updated = buddies.map(b => {
+        if (b.id === buddy.id) {
+          return { ...b, happiness: Math.min(100, b.happiness + 15), xp: b.xp + 25, lastPlayed: Date.now() }
+        }
+        return b
+      })
+      setBuddies(updated)
+      localStorage.setItem('agentbot_buddies', JSON.stringify(updated))
+    }
   }
 
   const getAnimationClass = () => {
@@ -112,6 +183,14 @@ export default function BlockchainBuddiesPage() {
     }
   }
 
+  if (fetching) {
+    return (
+      <main className="min-h-screen bg-black text-white font-mono flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin text-zinc-500" />
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-black text-white font-mono">
       <div className="max-w-4xl mx-auto px-6 py-16">
@@ -122,9 +201,20 @@ export default function BlockchainBuddiesPage() {
             Agentbot Babies
           </h1>
           <p className="text-zinc-400 max-w-xl mx-auto">
-            Hatch, raise, and trade digital companions. Your AI agent's babies.
+            Hatch, raise, and trade digital companions. Your AI agent&apos;s babies.
           </p>
+          {!isAuthed && (
+            <p className="text-yellow-500/80 text-xs mt-3">
+              Sign in to save your buddies permanently.
+            </p>
+          )}
         </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg mb-6 text-center">
+            {error}
+          </div>
+        )}
 
         {/* Current Buddies */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-8">
@@ -245,14 +335,14 @@ export default function BlockchainBuddiesPage() {
                 disabled={selectedBuddy.energy >= 100}
                 className="flex-1 bg-orange-500/20 border border-orange-500/50 text-orange-400 py-3 rounded-lg font-bold hover:bg-orange-500/30 transition-colors disabled:opacity-50"
               >
-                🍕 Feed
+                Feed
               </button>
               <button
                 onClick={() => playWithBuddy(selectedBuddy)}
                 disabled={selectedBuddy.happiness >= 100}
                 className="flex-1 bg-blue-500/20 border border-blue-500/50 text-blue-400 py-3 rounded-lg font-bold hover:bg-blue-500/30 transition-colors disabled:opacity-50"
               >
-                🎮 Play
+                Play
               </button>
             </div>
           </div>
@@ -263,11 +353,11 @@ export default function BlockchainBuddiesPage() {
           <h2 className="text-xl font-bold uppercase tracking-tight mb-6">Unicode Animations</h2>
           <div className="grid gap-4 sm:grid-cols-5">
             {[
-              { chars: '◐ ◑ ◒ ◓', name: 'Spinner' },
-              { chars: '▖ ▗ ▘ ▙', name: 'Blocks' },
-              { chars: '┤ ┦ ┧ ┨ ┩ ┪ ┫', name: 'Bars' },
-              { chars: '▌▀▄▌▀▄▌', name: 'Wave' },
-              { chars: '⠋⠙⠹⠸⠼⠴⠦⠧', name: 'Braille' },
+              { chars: '\u25D0 \u25D1 \u25D2 \u25D3', name: 'Spinner' },
+              { chars: '\u2596 \u2597 \u2598 \u2599', name: 'Blocks' },
+              { chars: '\u2524 \u2526 \u2527 \u2528 \u2529 \u252A \u252B', name: 'Bars' },
+              { chars: '\u258C\u2580\u2584\u258C\u2580\u2584\u258C', name: 'Wave' },
+              { chars: '\u280B\u2819\u2839\u2838\u283C\u2834\u2826\u2827', name: 'Braille' },
             ].map((item) => (
               <div key={item.name} className="bg-zinc-800 rounded-lg p-4 text-center">
                 <div className="text-2xl font-mono mb-2 animate-pulse">{item.chars}</div>
@@ -295,7 +385,7 @@ export default function BlockchainBuddiesPage() {
         {/* Back link */}
         <div className="text-center">
           <a href="/dashboard" className="text-zinc-500 hover:text-white text-sm">
-            ← Back to Dashboard
+            &larr; Back to Dashboard
           </a>
         </div>
       </div>

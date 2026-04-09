@@ -47,6 +47,7 @@ model User {
   passkeyCredentials    PasskeyCredential[]
   passkeyChallenges     PasskeyChallenge[]
   notifications         Notification[]
+  buddies               Buddy[]
 }
 
 model Account {
@@ -370,6 +371,24 @@ model UserSetting {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, key])
+  @@index([userId])
+}
+
+model Buddy {
+  id         String   @id @default(cuid())
+  userId     String
+  name       String
+  type       String   // crab | robot | ghost | dragon | alien
+  level      Int      @default(1)
+  xp         Int      @default(0)
+  energy     Int      @default(100)
+  happiness  Int      @default(100)
+  lastFed    DateTime @default(now())
+  lastPlayed DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 
