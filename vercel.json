@@ -1,7 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "rootDirectory": "web",
   "framework": "nextjs",
   "regions": ["iad1", "lhr1"],
+  "fluid": true,
   "installCommand": "npm install --include=dev",
   "buildCommand": "NEXT_PUBLIC_DEMO_MODE=true npm run build",
   "outputDirectory": ".next",
