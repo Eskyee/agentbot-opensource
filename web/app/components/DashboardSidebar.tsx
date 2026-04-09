@@ -49,6 +49,7 @@ export const navSections = [
       { label: 'Workflows', href: '/dashboard/workflows', icon: '⇄' },
       { label: 'Support', href: '/dashboard/support', icon: '☰' },
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
+      { label: 'Browser', href: '/dashboard/browser', icon: '🌐' },
       { label: 'Borg Soul', href: '/dashboard/borg', icon: '⬢' },
     ]
   },
