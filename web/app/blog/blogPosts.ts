@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: '9-hours-25-commits',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: '9 Hours, 25 Commits, 7 Services',
+    excerpt:
+      'A full day of shipping: browser automation, sandbox, Liquid node, custom domains, workflow SDK, and more.',
+    tags: ['Shipping', 'Infrastructure', 'Update'],
+    track: 'Shipping',
+  },
+  {
     slug: 'agentic-infrastructure-shift',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
