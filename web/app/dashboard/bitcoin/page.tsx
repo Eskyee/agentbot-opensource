@@ -316,6 +316,30 @@ export default function BitcoinPage() {
         }
       />
       <DashboardContent>
+        {/* At a Glance */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="border border-zinc-800 bg-zinc-950 p-4">
+            <div className="text-[10px] text-zinc-500 uppercase mb-1">Bitcoin</div>
+            <div className="text-lg font-bold text-orange-400">Mainnet</div>
+            <div className="text-[10px] text-zinc-600">Watch-only wallets</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950 p-4">
+            <div className="text-[10px] text-zinc-500 uppercase mb-1">Liquid</div>
+            <div className="text-lg font-bold text-emerald-400">L-BTC</div>
+            <div className="text-[10px] text-zinc-600">Confidential, 1-min blocks</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950 p-4">
+            <div className="text-[10px] text-zinc-500 uppercase mb-1">Hardware</div>
+            <div className="text-lg font-bold text-white">Jade</div>
+            <div className="text-[10px] text-zinc-600">Air-gapped QR signing</div>
+          </div>
+          <div className="border border-zinc-800 bg-zinc-950 p-4">
+            <div className="text-[10px] text-zinc-500 uppercase mb-1">Node</div>
+            <div className="text-lg font-bold text-blue-400">Elements</div>
+            <div className="text-[10px] text-zinc-600">Pruned 1GB, syncing</div>
+          </div>
+        </div>
+
         <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)]">
           <section className="bg-zinc-950 border border-zinc-800 p-6">
             <div className="flex items-center justify-between mb-4">
