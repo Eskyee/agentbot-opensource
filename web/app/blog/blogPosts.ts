@@ -11,17 +11,6 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
-  {
-    slug: 'smashing-code-apr-9',
-    dateLabel: '9 Apr',
-    isoDate: '2026-04-09',
-    title: 'Smashing Code — 15 Features in 30 Commits',
-    excerpt:
-      'Blockchain Buddies, Solana integration, Bitcoin mainnet, Git City 3D viz, Expert Setup bookings, Jobs Board, and more.',
-    tags: ['Shipping', 'Platform', 'Update'],
-    track: 'Shipping',
-  },
-  {
     slug: 'platform-recovery-and-hardening-apr-9-2026',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
@@ -49,6 +38,7 @@ export const blogPosts: BlogPostSummary[] = [
     excerpt:
       'New: Solana Agent Kit, Blockchain Buddies digital pets, Liquid Wallet Kit docs, and full competitive analysis vs solana-clawd.',
     tags: ['Solana', 'Buddies', 'Liquid', 'LWK'],
+    track: 'Shipping',
   },
   {
     slug: 'agentbot-update-apr-8-2026',
