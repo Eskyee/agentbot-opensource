@@ -23,63 +23,21 @@ export async function POST(req: NextRequest) {
       }, { status: 400 })
     }
 
-    // For now, return a structured response that the agent can use
-    // Real implementation would connect to a browser instance (Playwright/Puppeteer)
-    switch (action) {
-      case 'navigate':
-        if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 })
-        return NextResponse.json({
-          success: true,
-          action: 'navigate',
-          url,
-          message: `Navigated to ${url}`,
-          note: 'Browser automation is in beta. Connect a Playwright instance for full functionality.',
-        })
+    // Proxy to Playwright backend
+    const BROWSER_URL = process.env.AGENTBOT_BROWSER_URL || 'https://agentbot-browser-production.up.railway.app'
 
-      case 'screenshot':
-        if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 })
-        return NextResponse.json({
-          success: true,
-          action: 'screenshot',
-          url,
-          message: `Screenshot captured from ${url}`,
-          note: 'Connect Playwright for actual screenshots.',
-        })
-
-      case 'extract':
-        if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 })
-        return NextResponse.json({
-          success: true,
-          action: 'extract',
-          url,
-          selector: selector || 'body',
-          message: `Extracted content from ${url}`,
-          note: 'Connect Playwright for DOM extraction.',
-        })
-
-      case 'fill-form':
-        if (!url || !steps) return NextResponse.json({ error: 'url and steps required' }, { status: 400 })
-        return NextResponse.json({
-          success: true,
-          action: 'fill-form',
-          url,
-          steps,
-          message: `Form automation configured for ${url}`,
-          note: 'Connect Playwright for form filling.',
-        })
-
-      case 'automate':
-        if (!steps || !Array.isArray(steps)) return NextResponse.json({ error: 'steps array required' }, { status: 400 })
-        return NextResponse.json({
-          success: true,
-          action: 'automate',
-          steps,
-          message: `Automation workflow configured with ${steps.length} steps`,
-          note: 'Connect Playwright for multi-step automation.',
-        })
-
-      default:
-        return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
+    try {
+      const res = await fetch(`${BROWSER_URL}/${action === 'fill-form' ? 'fill-form' : action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, selector, text, steps, fields: steps, fullPage: true }),
+        signal: AbortSignal.timeout(60000),
+      })
+      const data = await res.json()
+      return NextResponse.json(data)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Browser service unavailable'
+      return NextResponse.json({ error: msg, service: 'playwright-backend' }, { status: 502 })
     }
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
