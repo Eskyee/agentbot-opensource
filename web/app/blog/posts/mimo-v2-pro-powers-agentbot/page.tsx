@@ -2,250 +2,191 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study | Agentbot Blog',
-  description: 'Agentbot runs Xiaomi MiMo-V2-Pro as the default brain for every deployed agent. Here\'s why we chose it over GPT-5.2 and Claude, and what we\'ve learned running it in production.',
-  keywords: ['MiMo-V2-Pro', 'Xiaomi', 'Agentbot', 'OpenClaw', 'AI agents', 'production', 'case study', 'OpenRouter'],
+  title: 'MiMo-V2-Pro: The Model Powering Agentbot — Agentbot',
+  description: 'Xiaomi MiMo Token Plan — 1.6B credits for $100/mo. The model behind Agentbot\'s reasoning. Plus OpenRouter for 500+ models.',
+  keywords: ['MiMo', 'Xiaomi', 'AI models', 'OpenRouter', 'Agentbot'],
   openGraph: {
-    title: 'How MiMo-V2-Pro Powers Every Agent on Agentbot',
-    description: 'Production case study: why we chose MiMo-V2-Pro over GPT-5.2 and Claude for our agent platform.',
+    title: 'MiMo-V2-Pro: The Model Powering Agentbot',
+    description: '1.6B credits for $100/mo. Chain-of-thought reasoning. The model behind our agents.',
     url: 'https://agentbot.sh/blog/posts/mimo-v2-pro-powers-agentbot',
   },
 }
 
-export default function MiMoProductionCaseStudy() {
+export default function MiMoBlogPost() {
   return (
     <main className="min-h-screen bg-black text-white font-mono px-6 py-16 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <Link href="/blog" className="text-zinc-400 hover:text-white mb-8 inline-block">
-          &larr; Back to Blog
+          ← Back to Blog
         </Link>
 
         <article className="prose prose-invert max-w-none">
           <div className="mb-8">
             <p className="text-sm text-zinc-500 mb-2">9 April 2026</p>
             <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">
-              How MiMo-V2-Pro Powers Every Agent on Agentbot
+              MiMo-V2-Pro: The Model Powering Agentbot
             </h1>
-            <p className="text-lg text-zinc-400 mb-4">
-              A production case study from a platform that provisions autonomous AI agents for the music and culture industry.
-            </p>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Case Study</span>
-              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">MiMo-V2-Pro</span>
-              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Xiaomi</span>
-              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Production</span>
-              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenRouter</span>
+              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Models</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Guide</span>
+              <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Open Source</span>
+            </div>
+          </div>
+
+          <p className="text-zinc-300 mb-8 text-lg">
+            The model behind Agentbot&apos;s reasoning is <strong className="text-white">Xiaomi MiMo-V2-Pro</strong> — 
+            a chain-of-thought model that powers our planning, coding, and decision-making. 
+            Here&apos;s what it is, how to get it, and why we chose it.
+          </p>
+
+          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
+            What is MiMo-V2-Pro?
+          </h2>
+          <p className="text-zinc-300 mb-4">
+            Xiaomi&apos;s flagship AI model. Chain-of-thought reasoning with visible thinking tokens. 
+            Strong on programming benchmarks. 1M context window. Available through the 
+            Xiaomi MiMo Token Plan.
+          </p>
+
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div><span className="text-zinc-500">Model:</span> <span className="text-white">MiMo-V2-Pro</span></div>
+              <div><span className="text-zinc-500">Type:</span> <span className="text-white">Chain-of-Thought</span></div>
+              <div><span className="text-zinc-500">Context:</span> <span className="text-white">1M tokens</span></div>
+              <div><span className="text-zinc-500">Provider:</span> <span className="text-white">Xiaomi</span></div>
+              <div><span className="text-zinc-500">Also:</span> <span className="text-white">MiMo-V2-Omni, MiMo-V2-TTS</span></div>
+              <div><span className="text-zinc-500">API:</span> <span className="text-white">OpenAI-compatible</span></div>
             </div>
           </div>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            TL;DR
+            Xiaomi MiMo Token Plan
           </h2>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-8">
-            <ul className="list-none space-y-2 text-zinc-300 m-0 p-0">
-              <li><strong className="text-white">Platform:</strong> Agentbot &mdash; SaaS for deploying autonomous AI agents</li>
-              <li><strong className="text-white">Default model:</strong> <code className="text-zinc-200">openrouter/xiaomi/mimo-v2-pro</code></li>
-              <li><strong className="text-white">Every new agent</strong> provisioned on Agentbot boots with MiMo-V2-Pro as its brain</li>
-              <li><strong className="text-white">Runtime:</strong> OpenClaw agent framework on Railway containers</li>
-              <li><strong className="text-white">Routing:</strong> All inference via OpenRouter API</li>
-              <li><strong className="text-white">Why:</strong> Best cost/performance ratio for agentic workloads, 1M context, native OpenClaw optimisation</li>
+          <p className="text-zinc-300 mb-4">
+            A unified credit system. One subscription gives access to MiMo-V2-Pro, Omni, and TTS models. 
+            No separate payments. First buy gets 12% off.
+          </p>
+
+          <div className="space-y-3 mb-6">
+            <div className="border border-zinc-800 bg-zinc-950 p-4 flex justify-between items-center">
+              <div>
+                <div className="text-sm font-bold text-white">Lite</div>
+                <div className="text-[10px] text-zinc-500">60M credits · Entry level</div>
+              </div>
+              <div className="text-sm font-bold text-white">$6/mo</div>
+            </div>
+            <div className="border border-zinc-800 bg-zinc-950 p-4 flex justify-between items-center">
+              <div>
+                <div className="text-sm font-bold text-white">Standard</div>
+                <div className="text-[10px] text-zinc-500">200M credits · Daily efficiency</div>
+              </div>
+              <div className="text-sm font-bold text-white">$16/mo</div>
+            </div>
+            <div className="border border-zinc-800 bg-zinc-950 p-4 flex justify-between items-center">
+              <div>
+                <div className="text-sm font-bold text-white">Pro</div>
+                <div className="text-[10px] text-zinc-500">700M credits · Professional workflows</div>
+              </div>
+              <div className="text-sm font-bold text-white">$50/mo</div>
+            </div>
+            <div className="border border-blue-500/30 bg-blue-500/5 p-4 flex justify-between items-center">
+              <div>
+                <div className="text-sm font-bold text-blue-400">Max ⭐</div>
+                <div className="text-[10px] text-zinc-500">1.6B credits · Around-the-clock usage</div>
+              </div>
+              <div className="text-sm font-bold text-blue-400">$100/mo</div>
+            </div>
+          </div>
+
+          <div className="border border-zinc-800 bg-zinc-950 p-4 mb-6">
+            <div className="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 font-bold">What&apos;s Included</div>
+            <ul className="text-sm text-zinc-400 space-y-1 list-disc pl-4">
+              <li>MiMo-V2-Pro — flagship reasoning model</li>
+              <li>MiMo-V2-Omni — full multimodal model</li>
+              <li>MiMo-V2-TTS — speech synthesis (free for limited time)</li>
+              <li>OpenAI-compatible API</li>
+              <li>Works with OpenClaw, Claude Code, OpenCode, KiloCode, Cline</li>
+              <li>Priority access to new models (closed beta)</li>
             </ul>
           </div>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            What Agentbot Does
+            How to Set Up
           </h2>
-          <p className="text-zinc-300 mb-4">
-            Agentbot is a platform where users deploy their own autonomous AI agents in under 60 seconds.
-            Each agent runs inside a dedicated container on Railway, powered by the{' '}
-            <a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">OpenClaw</a> runtime.
-            Users connect their agents to Telegram, Discord, WhatsApp, or web chat, and the agent handles
-            tasks autonomously &mdash; from managing inboxes to running cash flow forecasts to triaging demo submissions.
-          </p>
-          <p className="text-zinc-300 mb-4">
-            We serve the music and culture industry: label managers, event promoters, independent artists,
-            and crypto-native communities. Our users need agents that can handle multi-step workflows,
-            parse documents, execute tool calls, and maintain consistent persona across long conversations.
-          </p>
 
-          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            Why We Chose MiMo-V2-Pro
-          </h2>
-          <p className="text-zinc-300 mb-4">
-            When we evaluated models for the default agent brain, we tested GPT-5.2, Claude Sonnet 4.6,
-            Gemini 3 Pro, and MiMo-V2-Pro across our actual production workloads. Here&apos;s what we found:
-          </p>
-
-          <h3 className="text-xl font-bold mb-3 text-white">1. Native OpenClaw optimisation</h3>
-          <p className="text-zinc-300 mb-4">
-            MiMo-V2-Pro is explicitly fine-tuned for agentic frameworks, including OpenClaw. Xiaomi describes it as
-            &quot;the native brain of OpenClaw&quot; &mdash; and in practice, that matters. Tool-call reliability is
-            significantly higher than GPT-5.2, and the model follows OpenClaw&apos;s session/tool/config schema
-            without the prompt engineering gymnastics required by other models.
-          </p>
-          <p className="text-zinc-300 mb-4">
-            On ClawEval, MiMo-V2-Pro scores 81.0 &mdash; approaching Claude Opus 4.6 (81.5) and well ahead of
-            GPT-5.2 (77.0). For a model at $1/M input tokens, that&apos;s remarkable.
-          </p>
-
-          <h3 className="text-xl font-bold mb-3 text-white">2. Cost at scale</h3>
-          <p className="text-zinc-300 mb-4">
-            Every agent on Agentbot runs 24/7. That means continuous inference costs. MiMo-V2-Pro at
-            <strong className="text-white"> $1/M input, $3/M output</strong> is 3x cheaper than Claude Sonnet 4.6
-            and 5x cheaper than Opus. For a multi-tenant platform where we need to keep per-user costs predictable,
-            this is the difference between a viable business and burning cash.
-          </p>
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="text-left py-2 text-zinc-400 font-mono">Model</th>
-                  <th className="text-right py-2 text-zinc-400 font-mono">Input</th>
-                  <th className="text-right py-2 text-zinc-400 font-mono">Output</th>
-                  <th className="text-right py-2 text-zinc-400 font-mono">ClawEval</th>
-                </tr>
-              </thead>
-              <tbody className="text-zinc-300">
-                <tr className="border-b border-zinc-900 bg-zinc-800/30">
-                  <td className="py-2 font-bold text-white">MiMo-V2-Pro</td>
-                  <td className="py-2 text-right text-green-400">$1</td>
-                  <td className="py-2 text-right text-green-400">$3</td>
-                  <td className="py-2 text-right">81.0</td>
-                </tr>
-                <tr className="border-b border-zinc-900">
-                  <td className="py-2">Claude Sonnet 4.6</td>
-                  <td className="py-2 text-right">$3</td>
-                  <td className="py-2 text-right">$15</td>
-                  <td className="py-2 text-right">79.2</td>
-                </tr>
-                <tr className="border-b border-zinc-900">
-                  <td className="py-2">GPT-5.2</td>
-                  <td className="py-2 text-right">$2</td>
-                  <td className="py-2 text-right">$8</td>
-                  <td className="py-2 text-right">77.0</td>
-                </tr>
-                <tr>
-                  <td className="py-2">Claude Opus 4.6</td>
-                  <td className="py-2 text-right">$5</td>
-                  <td className="py-2 text-right">$25</td>
-                  <td className="py-2 text-right">81.5</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <p className="text-zinc-500 text-xs mb-6">Per million tokens. ClawEval scores from mimo.xiaomi.com.</p>
-
-          <h3 className="text-xl font-bold mb-3 text-white">3. 1M context window</h3>
-          <p className="text-zinc-300 mb-4">
-            Our agents handle long-running sessions &mdash; an A&amp;R agent might process 50 demo submissions in a
-            single conversation, each with metadata, notes, and follow-up actions. The 1M context window means agents
-            don&apos;t lose track of earlier context mid-session. Combined with OpenClaw&apos;s session management,
-            this eliminates the &quot;sorry, I forgot what we were doing&quot; problem that plagues shorter-context models.
-          </p>
-
-          <h3 className="text-xl font-bold mb-3 text-white">4. Tool-call stability</h3>
-          <p className="text-zinc-300 mb-4">
-            Agent workloads are tool-heavy. Our agents call web search, document parsing, email APIs, wallet operations,
-            and database queries in multi-step chains. MiMo-V2-Pro&apos;s tool-call accuracy score of 61.5 on the
-            Tool Use benchmark &mdash; approaching Opus 4.6 (66.3) &mdash; means fewer broken tool chains and fewer
-            user-facing errors. GPT-5.2 scored 50.0 on the same benchmark.
-          </p>
-
-          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            How It&apos;s Wired
-          </h2>
-          <p className="text-zinc-300 mb-4">
-            Every agent container is provisioned with MiMo-V2-Pro as the default model. The configuration is
-            injected at deploy time:
-          </p>
-          <pre className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-sm text-zinc-300 overflow-x-auto mb-4">
-{`// Container provisioning — agentbot-backend
-agents: {
-  defaults: {
-    model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
-    // ...
-  }
-}`}
-          </pre>
-          <p className="text-zinc-300 mb-4">
-            Users can switch to any model on OpenRouter via their dashboard &mdash; GPT-5.2, Claude, Gemini, DeepSeek,
-            or even local Ollama. But MiMo-V2-Pro is the default because it delivers the best experience out of the box
-            for the agentic workloads our users run.
-          </p>
-          <p className="text-zinc-300 mb-4">
-            All inference routes through <a href="https://openrouter.ai/xiaomi/mimo-v2-pro" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">OpenRouter</a>,
-            which handles load balancing, fallback, and rate limiting. This means we never hit Xiaomi&apos;s API directly
-            &mdash; OpenRouter abstracts the provider, and our users benefit from the competitive routing.
-          </p>
-
-          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            Production Numbers
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-3 mb-6">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-center">
-              <div className="text-3xl font-bold text-white">100%</div>
-              <div className="text-xs text-zinc-500 uppercase mt-1">Agents use MiMo by default</div>
+          <div className="space-y-4 mb-6">
+            <div className="border border-zinc-800 bg-zinc-950 p-4">
+              <div className="text-xs font-bold text-white mb-2">Step 1: Subscribe</div>
+              <p className="text-[10px] text-zinc-400">
+                Go to <a href="https://platform.xiaomimimo.com/#/token-plan" className="text-blue-400 hover:text-blue-300">platform.xiaomimimo.com</a> and choose your plan. 
+                First buy gets 12% off.
+              </p>
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-center">
-              <div className="text-3xl font-bold text-white">24/7</div>
-              <div className="text-xs text-zinc-500 uppercase mt-1">Always-on containers</div>
+            <div className="border border-zinc-800 bg-zinc-950 p-4">
+              <div className="text-xs font-bold text-white mb-2">Step 2: Get API Key</div>
+              <p className="text-[10px] text-zinc-400">
+                After subscribing, generate an API key from the platform. Save it — you can only copy it once.
+              </p>
             </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 text-center">
-              <div className="text-3xl font-bold text-white">4 tiers</div>
-              <div className="text-xs text-zinc-500 uppercase mt-1">Solo to Network plans</div>
+            <div className="border border-zinc-800 bg-zinc-950 p-4">
+              <div className="text-xs font-bold text-white mb-2">Step 3: Configure</div>
+              <p className="text-[10px] text-zinc-400">
+                Add to your config: <code className="text-blue-400 bg-zinc-900 px-1 rounded">baseURL: https://token-plan-ams.xiaomimimo.com/v1</code>
+              </p>
             </div>
           </div>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            What We&apos;d Tell Other Builders
+            MiMo vs OpenRouter
           </h2>
-          <ul className="list-disc pl-6 text-zinc-300 mb-6 space-y-2">
-            <li>
-              <strong className="text-white">If you&apos;re building an agent platform</strong>, MiMo-V2-Pro via
-              OpenRouter is the best default. The ClawEval/PinchBench scores aren&apos;t just benchmarks &mdash; they
-              reflect real tool-call reliability and multi-step task completion.
-            </li>
-            <li>
-              <strong className="text-white">The 1M context is real</strong>. We&apos;ve tested sessions with 200k+
-              tokens accumulated over hours of agent work. No degradation.
-            </li>
-            <li>
-              <strong className="text-white">Cost matters at scale</strong>. When every user has an always-on agent,
-              the difference between $1/M and $5/M input tokens is the difference between unit economics that work
-              and ones that don&apos;t.
-            </li>
-            <li>
-              <strong className="text-white">BYOK still matters</strong>. We let users bring their own API keys and
-              switch models. But having a strong default that just works out of the box dramatically reduces onboarding friction.
-            </li>
-          </ul>
 
-          <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
-            About Agentbot
-          </h2>
-          <p className="text-zinc-300 mb-4">
-            Agentbot is an open-source SaaS platform for deploying autonomous AI agents. Built for the music and
-            culture industry, it provisions dedicated OpenClaw containers on Railway with BYOK model support,
-            multi-channel messaging (Telegram, Discord, WhatsApp), USDC wallets on Base, and Bitcoin/Solana integrations.
-          </p>
-          <p className="text-zinc-300 mb-4">
-            Open source: <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">github.com/Eskyee/agentbot-opensource</a>
-            <br />
-            Live platform: <a href="https://agentbot.sh" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">agentbot.sh</a>
-          </p>
-
-          <div className="border-t border-zinc-800 mt-8 pt-8">
-            <p className="text-zinc-500 text-sm">
-              Built by <a href="https://github.com/Eskyee" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white">raveculture</a>.
-              Agentbot is a Zero Human Company &mdash; agents handle the rest.
-            </p>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 mb-6">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="border-r border-zinc-800 pr-4">
+                <div className="text-[10px] text-zinc-500 uppercase mb-2 font-bold">MiMo Token Plan</div>
+                <ul className="text-zinc-400 space-y-1 text-xs">
+                  <li>✅ Unified credits (Pro + Omni + TTS)</li>
+                  <li>✅ 1M context window</li>
+                  <li>✅ Chain-of-thought reasoning</li>
+                  <li>✅ Priority model access</li>
+                  <li>✅ Works with OpenClaw</li>
+                  <li>⚠️ 3 models (Xiaomi only)</li>
+                </ul>
+              </div>
+              <div className="pl-4">
+                <div className="text-[10px] text-zinc-500 uppercase mb-2 font-bold">OpenRouter</div>
+                <ul className="text-zinc-400 space-y-1 text-xs">
+                  <li>✅ 500+ models</li>
+                  <li>✅ Any provider (OpenAI, Anthropic, Google, etc.)</li>
+                  <li>✅ Pay-as-you-go</li>
+                  <li>✅ Model routing & fallbacks</li>
+                  <li>✅ Works with OpenClaw</li>
+                  <li>⚠️ Higher per-token cost</li>
+                </ul>
+              </div>
+            </div>
           </div>
 
-          <div className="border-t border-zinc-800 mt-4 pt-4 flex gap-4 flex-wrap text-sm">
-            <Link href="/blog/posts/mimo-v2-pro" className="text-zinc-400 hover:text-white">MiMo-V2-Pro on Agentbot &rarr;</Link>
-            <Link href="/solana" className="text-zinc-400 hover:text-white">Solana Integrations &rarr;</Link>
-            <Link href="/pricing" className="text-zinc-400 hover:text-white">Pricing &rarr;</Link>
+          <p className="text-zinc-300 mb-6">
+            <strong className="text-white">Our recommendation:</strong> Use MiMo as your primary model for reasoning and coding. 
+            Use OpenRouter as your fallback and for accessing specialized models. Agentbot supports both — 
+            configure MiMo as primary, OpenRouter as fallback.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <a href="https://platform.xiaomimimo.com/#/token-plan" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center justify-center bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
+              Get MiMo Token Plan →
+            </a>
+            <a href="https://openrouter.ai" target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">
+              OpenRouter (500+ models) →
+            </a>
           </div>
+
+          <p className="text-zinc-400 text-sm">
+            Agentbot: <Link href="https://agentbot.sh" className="text-white underline">agentbot.sh</Link>
+          </p>
         </article>
       </div>
     </main>

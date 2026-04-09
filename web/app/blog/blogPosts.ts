@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'mimo-v2-pro-powers-agentbot',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'MiMo-V2-Pro: The Model Powering Agentbot',
+    excerpt:
+      'Xiaomi MiMo Token Plan — 1.6B credits for $100/mo. The model behind Agentbot reasoning. Plus OpenRouter for 500+ models.',
+    tags: ['Models', 'Guide', 'MiMo', 'OpenRouter'],
+    track: 'Shipping',
+  },
+  {
     slug: '9-hours-25-commits',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
