@@ -93,6 +93,50 @@ export default async function Home() {
         <DashboardPreview />
       </div>
 
+      {/* Social Proof */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
+          <div className="text-center space-y-6">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Built in the open</div>
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">78</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Dashboard Pages</div>
+              </div>
+              <div className="w-px h-8 bg-zinc-800" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">130+</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">API Routes</div>
+              </div>
+              <div className="w-px h-8 bg-zinc-800" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">34</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">AI Models</div>
+              </div>
+              <div className="w-px h-8 bg-zinc-800" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">MIT</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Open Source</div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+              <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
+                GitHub ↗
+              </a>
+              <a href="https://raveculture.mintlify.app" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
+                Docs ↗
+              </a>
+              <a href="https://dev.to/agentbot" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
+                Dev.to ↗
+              </a>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-700 border border-zinc-800 px-3 py-1.5">
+                Base-native
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Value Prop */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
@@ -127,6 +171,28 @@ export default async function Home() {
 
       {/* Capabilities */}
       <CapabilitiesTicker />
+
+      {/* Free Trial CTA */}
+      <section className="border-t border-zinc-900 bg-zinc-950">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20 text-center space-y-6">
+          <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">No credit card required</div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase">
+            Try Free<br />
+            <span className="text-zinc-700">For 7 Days</span>
+          </h2>
+          <p className="text-zinc-400 text-sm max-w-md mx-auto leading-relaxed">
+            Deploy your AI agent in 60 seconds. BYOK — bring your own key, pay wholesale rates. Cancel anytime.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link href="/signup" className="inline-flex items-center justify-center bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors w-full sm:w-auto">
+              Start Free Trial →
+            </Link>
+            <Link href="/demo" className="inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors w-full sm:w-auto">
+              Watch Demo
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Pricing — compact */}
       <section id="pricing" className="border-t border-zinc-900 scroll-mt-20">
