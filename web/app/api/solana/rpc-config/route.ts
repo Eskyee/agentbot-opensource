@@ -6,6 +6,15 @@ export const dynamic = 'force-dynamic'
 
 const SETTING_KEY = 'solana_rpc_url'
 const ALLOWED_PROTOCOLS = ['https:']
+const DEFAULT_RPC = process.env.SOLANA_RPC_URL_DEFAULT?.trim() || 'https://api.mainnet-beta.solana.com'
+
+function isPlaceholderRpc(url: string) {
+  return (
+    url.endsWith('api-key=') ||
+    url.endsWith('/v2/') ||
+    url.includes('example.solana-mainnet.quiknode.pro')
+  )
+}
 
 export async function GET() {
   const session = await getAuthSession()
@@ -17,7 +26,11 @@ export async function GET() {
     where: { userId_key: { userId: session.user.id, key: SETTING_KEY } },
   })
 
-  return NextResponse.json({ rpcUrl: setting?.value || '' })
+  return NextResponse.json({
+    rpcUrl: setting?.value || DEFAULT_RPC,
+    defaultRpcUrl: DEFAULT_RPC,
+    source: setting?.value ? 'user' : 'default',
+  })
 }
 
 export async function POST(req: NextRequest) {
@@ -42,6 +55,13 @@ export async function POST(req: NextRequest) {
 
     if (!ALLOWED_PROTOCOLS.includes(parsed.protocol)) {
       return NextResponse.json({ error: 'Only HTTPS URLs allowed' }, { status: 400 })
+    }
+
+    if (isPlaceholderRpc(rpcUrl.trim())) {
+      return NextResponse.json(
+        { error: 'RPC URL still contains a placeholder. Paste your full provider URL first.' },
+        { status: 400 }
+      )
     }
 
     await prisma.userSetting.upsert({

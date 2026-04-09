@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Wallet, TrendingUp, Coins, Zap, Globe, ExternalLink, RefreshCw, ArrowUpRight, ArrowDownRight, Search, Save, CheckCircle } from 'lucide-react'
+import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 
 interface TokenBalance {
   mint: string
@@ -41,8 +42,11 @@ export default function SolanaDashboard() {
   const [priceLoading, setPriceLoading] = useState(true)
 
   const [rpcUrl, setRpcUrl] = useState('')
+  const [defaultRpcUrl, setDefaultRpcUrl] = useState('https://api.mainnet-beta.solana.com')
+  const [rpcSource, setRpcSource] = useState<'user' | 'default'>('default')
   const [rpcSaving, setRpcSaving] = useState(false)
   const [rpcSaved, setRpcSaved] = useState(false)
+  const [rpcError, setRpcError] = useState<string | null>(null)
 
   const fetchPrice = useCallback(async () => {
     setPriceLoading(true)
@@ -63,6 +67,8 @@ export default function SolanaDashboard() {
       if (res.ok) {
         const data = await res.json()
         if (data.rpcUrl) setRpcUrl(data.rpcUrl)
+        if (data.defaultRpcUrl) setDefaultRpcUrl(data.defaultRpcUrl)
+        if (data.source === 'user' || data.source === 'default') setRpcSource(data.source)
       }
     } catch { /* silent */ }
   }, [])
@@ -103,11 +109,18 @@ export default function SolanaDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rpcUrl: rpcUrl.trim() }),
       })
+      const data = await res.json().catch(() => null)
       if (res.ok) {
+        setRpcError(null)
+        setRpcSource('user')
         setRpcSaved(true)
         setTimeout(() => setRpcSaved(false), 3000)
+      } else {
+        setRpcError(data?.error || 'Failed to save RPC URL')
       }
-    } catch { /* silent */ } finally {
+    } catch {
+      setRpcError('Failed to save RPC URL')
+    } finally {
       setRpcSaving(false)
     }
   }
@@ -115,7 +128,13 @@ export default function SolanaDashboard() {
   const priceUp = (solPrice?.change24h ?? 0) >= 0
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <DashboardShell>
+      <DashboardHeader
+        title="Solana Tools"
+        subtitle="Wallet lookup, RPC control, and Solana integration references"
+        icon={<Coins className="h-5 w-5 text-violet-400" />}
+      />
+      <DashboardContent className="max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Solana Integration</div>
@@ -324,6 +343,11 @@ export default function SolanaDashboard() {
               </button>
             </div>
           </div>
+          {rpcError && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg">
+              {rpcError}
+            </div>
+          )}
           <div className="flex gap-3">
             {[
               { label: 'Helius', url: 'https://mainnet.helius-rpc.com/?api-key=' },
@@ -333,16 +357,18 @@ export default function SolanaDashboard() {
             ].map((provider) => (
               <button
                 key={provider.label}
-                onClick={() => { setRpcUrl(provider.url); setRpcSaved(false) }}
+                onClick={() => { setRpcUrl(provider.url); setRpcSaved(false); setRpcError(null) }}
                 className="bg-zinc-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-zinc-700 transition-colors"
               >
                 {provider.label}
               </button>
             ))}
           </div>
-          <p className="text-xs text-zinc-600">
-            Using a private RPC (Helius, QuickNode, Alchemy) avoids rate limits on wallet lookups.
-          </p>
+          <div className="space-y-2 text-xs text-zinc-600">
+            <p>Using a private RPC (Helius, QuickNode, Alchemy) avoids rate limits on wallet lookups.</p>
+            <p>Current source: <span className="text-zinc-400 font-mono">{rpcSource === 'user' ? 'saved custom RPC' : 'default public RPC'}</span></p>
+            <p>Default fallback: <span className="text-zinc-400 font-mono break-all">{defaultRpcUrl}</span></p>
+          </div>
         </div>
       </div>
 
@@ -368,6 +394,7 @@ export default function SolanaDashboard() {
           </a>
         </div>
       </div>
-    </div>
+      </DashboardContent>
+    </DashboardShell>
   )
 }
