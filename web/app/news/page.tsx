@@ -2,6 +2,14 @@ import Link from 'next/link';
 
 const communityUpdates = [
   {
+    source: 'baseFM',
+    date: '9 April 2026',
+    title: 'baseFM Goes Open Source 📻',
+    excerpt: 'Onchain radio platform now open source on GitHub. Live DJs, crypto tipping, token-gated events. Fork it, build it, own the signal.',
+    url: 'https://github.com/Eskyee/baseFM',
+    type: 'open-source',
+  },
+  {
     source: 'Agentbot',
     date: '7 April 2026',
     title: 'Platform Beta — Try It Free',

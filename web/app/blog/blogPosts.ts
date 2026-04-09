@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'basefm-open-source',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'baseFM Goes Open Source',
+    excerpt:
+      'Onchain radio for the Base ecosystem is now open source. Live DJs, crypto tipping, token-gated community, and onchain events — all on GitHub.',
+    tags: ['Open Source', 'Base', 'Community', 'baseFM'],
+    track: 'Shipping',
+  },
+  {
     slug: 'building-saas-with-factory-droid',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
