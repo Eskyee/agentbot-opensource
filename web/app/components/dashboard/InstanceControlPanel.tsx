@@ -5,13 +5,16 @@ import Link from 'next/link'
 import {
   ArrowUpRight,
   Bot,
+  CalendarClock,
   Copy,
   ExternalLink,
+  LifeBuoy,
   Loader2,
   Power,
   RefreshCw,
   ShieldCheck,
   Sparkles,
+  Star,
   Wrench,
 } from 'lucide-react'
 import { StatusBadge, StatusDot } from '@/app/components/shared/StatusBadge'
@@ -60,6 +63,7 @@ interface TrialStatus {
   expired?: boolean
   daysLeft?: number
   endsAt?: string
+  plan?: string
 }
 
 function formatRelativeTime(value?: string | null) {
@@ -97,7 +101,7 @@ function formatDate(value?: string | null) {
 function formatInstanceName(instance: InstanceControlPanelProps['instance']) {
   if (instance.botUsername) return `@${instance.botUsername}`
 
-  const label = instance.subdomain.split('.')[0] || 'Agentbot Runtime'
+  const label = instance.subdomain.split('.')[0] || 'Managed instance'
   return label
     .split('-')
     .filter(Boolean)
@@ -106,13 +110,24 @@ function formatInstanceName(instance: InstanceControlPanelProps['instance']) {
 }
 
 function formatPlanLabel(plan?: string | null) {
-  if (!plan) return 'Managed'
+  if (!plan) return 'Managed plan'
   return plan.charAt(0).toUpperCase() + plan.slice(1)
 }
 
 function formatSubscriptionLabel(value?: string | null, fallbackPlan?: string) {
   if (!value || value === 'inactive') return `${formatPlanLabel(fallbackPlan)} plan`
   return value.replace(/_/g, ' ')
+}
+
+function formatMachineLabel(instanceId: string) {
+  return `Managed - ${instanceId}`
+}
+
+function formatGatewayProcess(value?: string | null, health?: string | null) {
+  if (value) return value
+  if (health === 'healthy') return 'healthy'
+  if (health) return health
+  return 'observing'
 }
 
 function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | null) {
@@ -150,29 +165,11 @@ function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | nul
   }
 }
 
-function SummaryCard({
-  label,
-  value,
-  detail,
-}: {
-  label: string
-  value: string
-  detail?: string
-}) {
-  return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{label}</p>
-      <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-white">{value}</p>
-      {detail ? <p className="mt-1 text-xs text-zinc-500">{detail}</p> : null}
-    </div>
-  )
-}
-
 function ActionButton({
   label,
   detail,
   icon: Icon,
-  tone = 'default',
+  accent,
   loading,
   disabled,
   onClick,
@@ -180,35 +177,38 @@ function ActionButton({
   label: string
   detail: string
   icon: typeof Power
-  tone?: 'default' | 'primary' | 'warning' | 'danger'
+  accent?: 'light' | 'zinc' | 'warning' | 'danger'
   loading?: boolean
   disabled?: boolean
   onClick: () => void
 }) {
-  const toneClass = tone === 'primary'
+  const accentClass = accent === 'light'
     ? 'border-white bg-white text-black hover:bg-zinc-200'
-    : tone === 'warning'
+    : accent === 'warning'
       ? 'border-amber-400/30 bg-amber-400/10 text-amber-200 hover:border-amber-300/60 hover:text-white'
-      : tone === 'danger'
+      : accent === 'danger'
         ? 'border-red-500/30 bg-red-500/10 text-red-300 hover:border-red-400/60 hover:text-white'
-        : 'border-zinc-800 bg-zinc-950 text-zinc-300 hover:border-zinc-700 hover:text-white'
+        : 'border-zinc-800 bg-zinc-950/70 text-zinc-300 hover:border-zinc-700 hover:text-white'
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-        toneClass,
+        'group flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        accentClass,
       )}
     >
-      <div className="mt-0.5 rounded-xl border border-current/20 p-2">
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 rounded-xl border border-current/20 p-2">
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+        </div>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em]">{label}</p>
+          <p className="mt-1 text-xs normal-case tracking-normal text-current/70">{detail}</p>
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-bold uppercase tracking-[0.18em]">{label}</p>
-        <p className="mt-1 text-xs normal-case tracking-normal text-current/70">{detail}</p>
-      </div>
+      <ArrowUpRight className="h-4 w-4 opacity-40 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
     </button>
   )
 }
@@ -226,6 +226,23 @@ export function InstanceControlPanel({
   configManagerUrl,
 }: InstanceControlPanelProps) {
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null)
+  const isRunning = instance.status === 'running'
+  const instanceName = formatInstanceName(instance)
+  const lifecycleTelemetry = stats?.telemetry?.lifecycleMetricsAvailable ?? false
+  const runtimeHealth = stats?.health === 'healthy' ? 'healthy' : stats?.health || 'checking'
+  const gatewayProcess = formatGatewayProcess(instance.gatewayProcessStatus, stats?.health)
+  const managedSpecs = getManagedSpecs(instance.plan, instance.subscriptionStatus)
+  const maskedToken = instance.gatewayToken
+    ? `${instance.gatewayToken.slice(0, 10)}...${instance.gatewayToken.slice(-6)}`
+    : 'No token yet'
+
+  const quickLinks = [
+    { label: 'Gateway Process', href: instance.controlUiUrl || instance.url, external: true },
+    { label: 'Subscription', href: '/billing', external: false },
+    { label: "What's New", href: '/dashboard/tech-updates', external: false },
+    { label: 'Skills Manager', href: skillsManagerUrl, external: true },
+    { label: 'Open Config', href: configManagerUrl, external: true },
+  ]
 
   useEffect(() => {
     fetch('/api/trial')
@@ -234,180 +251,223 @@ export function InstanceControlPanel({
       .catch(() => {})
   }, [])
 
-  const instanceName = formatInstanceName(instance)
-  const isRunning = instance.status === 'running'
-  const lifecycleTelemetry = stats?.telemetry?.lifecycleMetricsAvailable ?? false
-  const runtimeHealth = stats?.health === 'healthy' ? 'healthy' : stats?.health || 'checking'
-  const managedSpecs = getManagedSpecs(instance.plan, instance.subscriptionStatus)
-
-  const quickLinks = [
-    { label: 'Open Agentbot', href: instance.controlUiUrl || instance.url, external: true },
-    { label: 'Skills Manager', href: skillsManagerUrl, external: true },
-    { label: 'Config', href: configManagerUrl, external: true },
-    { label: 'Billing', href: '/billing', external: false },
-    { label: 'Updates', href: '/dashboard/tech-updates', external: false },
-  ]
-
   return (
-    <section className="rounded-[28px] border border-zinc-800 bg-zinc-900/70">
-      <div className="border-b border-zinc-800 px-5 py-5 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Agentbot Runtime</p>
+    <section className="overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950">
+      <div className="border-b border-zinc-800 bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(24,24,27,0.92),_rgba(9,9,11,0.96))] px-6 py-6 lg:px-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-300/80">Instance Controls</p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">{instanceName}</h2>
+              <h2 className="text-2xl font-bold uppercase tracking-tight text-white">{instanceName}</h2>
               <StatusBadge status={instance.status || 'unknown'} size="md" />
-              <span className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
+              <span className="inline-flex items-center gap-2 rounded-full border border-zinc-700 bg-black/40 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
                 <StatusDot status={runtimeHealth === 'healthy' ? 'running' : 'starting'} />
                 {runtimeHealth}
               </span>
             </div>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
-              Clean controls for your Agentbot instance, with setup, runtime actions, and the key machine facts in one place.
+            <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+              Manage power state, pairing, upgrade flow, and recovery for your managed OpenClaw runtime without leaving the dashboard.
             </p>
           </div>
 
-          <a
-            href={instance.controlUiUrl || instance.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
-          >
-            Open
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
-        </div>
-
-        <div className="mt-5 flex flex-wrap gap-2">
-          <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
-            {managedSpecs.cpuRam}
-          </span>
-          <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
-            {managedSpecs.storage}
-          </span>
-          <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
-            {formatSubscriptionLabel(instance.subscriptionStatus, instance.plan)}
-          </span>
+          <div className="min-w-0 rounded-2xl border border-zinc-800 bg-black/40 p-4 lg:max-w-sm">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Gateway Pairing</p>
+                <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-white">
+                  {autoPairHealth === 'ready' ? 'Connected' : autoPairHealth === 'missing' ? 'Needs attention' : 'Checking'}
+                </p>
+                <p className="mt-1 text-[11px] text-zinc-500">{maskedToken}</p>
+              </div>
+              <span
+                className={cn(
+                  'mt-1 h-3 w-3 rounded-full',
+                  autoPairHealth === 'ready'
+                    ? 'bg-emerald-400'
+                    : autoPairHealth === 'missing'
+                      ? 'bg-amber-400'
+                      : 'bg-zinc-600 animate-pulse',
+                )}
+              />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                onClick={onCopyToken}
+                disabled={!instance.gatewayToken}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Copy className="h-3.5 w-3.5" />
+                Copy Token
+              </button>
+              <button
+                onClick={onRefreshPairing}
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                <RefreshCw className={cn('h-3.5 w-3.5', autoPairHealth === 'loading' && 'animate-spin')} />
+                Refresh Pairing
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-6 px-5 py-5 sm:px-6 lg:px-8">
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-          <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Guided Setup</p>
-            <h3 className="mt-3 text-lg font-bold tracking-tight text-white">Get Agentbot configured fast</h3>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-zinc-400">
-              Book a live setup session if you want help wiring email, calendar, and messaging into your Agentbot workspace.
-            </p>
-            <Link
-              href="/expert-setup"
-              className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
-            >
-              Book setup
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
-              {trialStatus?.trial && !trialStatus.expired
-                ? `Free Trial - ${trialStatus.daysLeft ?? 0} days remaining`
-                : 'Subscription'}
-            </p>
-            <p className="mt-3 text-sm leading-6 text-white">
-              {trialStatus?.trial && !trialStatus.expired
-                ? `Your trial expires on ${formatDate(trialStatus.endsAt)}.`
-                : `${formatSubscriptionLabel(instance.subscriptionStatus, instance.plan)} is active for this instance.`}
-            </p>
-            <Link
-              href="/billing"
-              className="mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
-            >
-              {trialStatus?.trial && !trialStatus.expired ? 'Subscribe now' : 'Manage billing'}
-              <ArrowUpRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
-          <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Instance Controls</p>
-                <h3 className="mt-2 text-lg font-bold tracking-tight text-white">Manage power state and gateway lifecycle</h3>
+      <div className="grid gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:px-8">
+        <div className="space-y-6">
+          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,0.8fr)]">
+            <div className="rounded-[24px] border border-zinc-800 bg-[linear-gradient(180deg,_rgba(255,255,255,0.03),_rgba(9,9,11,0.9))] p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">{formatMachineLabel(instance.userId)}</p>
+                  <h3 className="mt-2 text-lg font-bold uppercase tracking-tight text-white">{instanceName}</h3>
+                </div>
+                <a
+                  href={instance.controlUiUrl || instance.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+                >
+                  Open
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={onCopyToken}
-                  disabled={!instance.gatewayToken}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                  Copy Token
-                </button>
-                <button
-                  onClick={onRefreshPairing}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
-                >
-                  <RefreshCw className={cn('h-3.5 w-3.5', autoPairHealth === 'loading' && 'animate-spin')} />
-                  Refresh Pairing
-                </button>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <span className="rounded-full border border-zinc-700 bg-black/40 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                  {managedSpecs.cpuRam}
+                </span>
+                <span className="rounded-full border border-zinc-700 bg-black/40 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                  {managedSpecs.storage}
+                </span>
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[24px] border border-zinc-800 bg-[linear-gradient(180deg,_rgba(245,158,11,0.08),_rgba(9,9,11,0.9))] p-5">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl border border-amber-400/20 bg-amber-400/10 p-2 text-amber-200">
+                  <CalendarClock className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-200/70">Agentbot Setup</p>
+                  <h3 className="mt-2 text-lg font-bold tracking-tight text-white">
+                    Go from inbox chaos to an AI executive assistant, in one hour.
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">
+                    An Agentbot expert configures your email, calendar, and messaging live on a call. Includes 2 months free hosting.
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/expert-setup"
+                className="mt-5 inline-flex items-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
+              >
+                Book your session
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="rounded-[24px] border border-zinc-800 bg-black/40 p-5">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 p-2 text-blue-300">
+                  <Star className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
+                    {trialStatus?.trial && !trialStatus.expired
+                      ? `Free Trial - ${trialStatus.daysLeft ?? 0} days remaining`
+                      : 'Subscription'}
+                  </p>
+                  <p className="mt-2 text-sm text-white">
+                    {trialStatus?.trial && !trialStatus.expired
+                      ? `Your trial expires on ${formatDate(trialStatus.endsAt)}.`
+                      : `${formatSubscriptionLabel(instance.subscriptionStatus, instance.plan)} is active for this runtime.`}
+                  </p>
+                </div>
+              </div>
+              <Link
+                href="/billing"
+                className="mt-5 inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                {trialStatus?.trial && !trialStatus.expired ? 'Subscribe now' : 'Manage subscription'}
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-zinc-800 bg-[linear-gradient(180deg,_rgba(24,24,27,0.78),_rgba(9,9,11,0.92))] p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Lifecycle</p>
+                <h3 className="mt-2 text-lg font-bold uppercase tracking-tight text-white">Power, upgrade, and recovery</h3>
+                <p className="mt-1 max-w-xl text-sm text-zinc-400">
+                  Safe actions stay grouped here so users can restart, redeploy, or heal their runtime without hunting across the dashboard.
+                </p>
+              </div>
+              <a
+                href={instance.controlUiUrl || instance.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
+              >
+                Open Gateway
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               <ActionButton
-                label={isRunning ? 'Restart Agentbot' : 'Start Machine'}
-                detail={isRunning ? 'Restart the running Agentbot instance.' : 'Bring this Agentbot instance online.'}
+                label={isRunning ? 'Restart OpenClaw' : 'Start Machine'}
+                detail={isRunning ? 'Graceful runtime restart with managed routing preserved' : 'Boot the managed runtime back into service'}
                 icon={isRunning ? RefreshCw : Power}
-                tone={isRunning ? 'primary' : 'warning'}
+                accent={isRunning ? 'light' : 'warning'}
                 loading={actionLoading === (isRunning ? 'restart' : 'start')}
                 disabled={!controlsEnabled || !!actionLoading}
                 onClick={() => onAction(isRunning ? 'restart' : 'start')}
               />
               <ActionButton
-                label="Redeploy or Upgrade"
-                detail="Pull the latest managed runtime image."
+                label="Redeploy / Upgrade"
+                detail="Pull the latest managed image and refresh OpenClaw"
                 icon={Sparkles}
                 loading={actionLoading === 'update'}
                 disabled={!controlsEnabled || !!actionLoading}
                 onClick={() => onAction('update')}
               />
-              <Link
-                href="/dashboard/maintenance"
-                className="flex items-start gap-3 rounded-2xl border border-zinc-800 bg-zinc-950 p-4 text-left transition-colors hover:border-zinc-700 hover:text-white"
-              >
-                <div className="mt-0.5 rounded-xl border border-current/20 p-2 text-zinc-300">
-                  <ShieldCheck className="h-4 w-4" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">Agentbot Doctor</p>
-                  <p className="mt-1 text-xs text-zinc-500">Diagnostics, maintenance, and guided fixes.</p>
-                </div>
-              </Link>
               <ActionButton
-                label="Agentbot Recovery"
-                detail="Repair tokens, proxy wiring, and config drift."
+                label="Recover with Agentbot"
+                detail="Run the managed repair flow for tokens, proxy wiring, and config drift"
                 icon={Wrench}
-                tone="warning"
+                accent="warning"
                 loading={actionLoading === 'repair'}
                 disabled={!controlsEnabled || !!actionLoading}
                 onClick={() => onAction('repair')}
               />
+              <Link
+                href="/dashboard/maintenance"
+                className="group flex w-full items-center justify-between gap-4 rounded-2xl border border-zinc-800 bg-zinc-950/70 px-4 py-4 text-left transition-colors hover:border-zinc-700 hover:text-white"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 rounded-xl border border-current/20 p-2 text-zinc-300">
+                    <ShieldCheck className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-200">OpenClaw Doctor</p>
+                    <p className="mt-1 text-xs text-zinc-500">Open the maintenance surface for diagnostics, migration help, and guided fixes</p>
+                  </div>
+                </div>
+                <ArrowUpRight className="h-4 w-4 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </Link>
               <ActionButton
                 label={isRunning ? 'Stop Machine' : 'Standby'}
-                detail={isRunning ? 'Take this instance offline until restarted.' : 'This instance is already offline.'}
+                detail={isRunning ? 'Take the runtime offline until you explicitly start it again' : 'Runtime is already offline'}
                 icon={Power}
-                tone="danger"
+                accent="danger"
                 loading={actionLoading === 'stop'}
                 disabled={!controlsEnabled || !!actionLoading || !isRunning}
                 onClick={() => onAction('stop')}
               />
               <ActionButton
                 label="Reset Memory"
-                detail="Wipe memory, identity, and conversation history."
+                detail="Wipe memory, identity, and conversation history for a clean restart"
                 icon={Bot}
-                tone="danger"
+                accent="danger"
                 loading={actionLoading === 'reset-memory'}
                 disabled={!controlsEnabled || !!actionLoading}
                 onClick={() => onAction('reset-memory')}
@@ -416,51 +476,85 @@ export function InstanceControlPanel({
 
             {!controlsEnabled ? (
               <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-                Managed lifecycle actions are temporarily gated while the control path is being hardened.
+                Managed lifecycle actions are temporarily gated while the Railway control path is being hardened. Direct gateway links still work.
               </div>
             ) : null}
           </div>
+        </div>
 
-          <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-              <SummaryCard label="State" value={instance.status || 'unknown'} detail={runtimeHealth} />
-              <SummaryCard
-                label="Uptime"
-                value={lifecycleTelemetry && stats?.uptime ? stats.uptime : 'Live checks only'}
-                detail="Detailed lifecycle telemetry is not exposed yet"
-              />
-              <SummaryCard label="Restarts" value="—" detail="Not exposed by the runtime API yet" />
-              <SummaryCard label="Last Exit" value="—" detail="Not exposed by the runtime API yet" />
-              <SummaryCard label="Provisioned" value={formatRelativeTime(instance.provisionedAt)} detail={instance.subdomain} />
-              <SummaryCard label="Version" value={instance.openclawVersion || 'unknown'} detail={instance.userId} />
+        <div className="space-y-4">
+          <div className="rounded-[24px] border border-zinc-800 bg-black/40 p-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Instance Snapshot</p>
+            <dl className="mt-4 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <dt className="text-sm text-zinc-500">State</dt>
+                <dd className="text-right text-sm font-bold uppercase tracking-[0.14em] text-white">{instance.status || 'unknown'}</dd>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <dt className="text-sm text-zinc-500">Uptime</dt>
+                <dd className="text-right text-sm font-bold uppercase tracking-[0.14em] text-white">
+                  {lifecycleTelemetry && stats?.uptime ? stats.uptime : 'Live checks only'}
+                </dd>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <dt className="text-sm text-zinc-500">Restarts</dt>
+                <dd className="text-right text-sm font-bold uppercase tracking-[0.14em] text-zinc-400">—</dd>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <dt className="text-sm text-zinc-500">Last Exit</dt>
+                <dd className="text-right text-sm font-bold uppercase tracking-[0.14em] text-zinc-400">—</dd>
+              </div>
+              <div className="flex items-start justify-between gap-4">
+                <dt className="text-sm text-zinc-500">Provisioned</dt>
+                <dd className="text-right text-sm font-bold uppercase tracking-[0.14em] text-white">
+                  {formatRelativeTime(instance.provisionedAt)}
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="rounded-[24px] border border-zinc-800 bg-black/40 p-5">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Launch Pads</p>
+            <div className="mt-4 space-y-2">
+              {quickLinks.map((link) =>
+                link.external ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center justify-between rounded-2xl border border-zinc-800 px-4 py-3 text-sm text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-900/70 hover:text-white"
+                  >
+                    <span>{link.label}</span>
+                    <ArrowUpRight className="h-4 w-4 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </a>
+                ) : (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="group flex items-center justify-between rounded-2xl border border-zinc-800 px-4 py-3 text-sm text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-900/70 hover:text-white"
+                  >
+                    <span>{link.label}</span>
+                    <ArrowUpRight className="h-4 w-4 text-zinc-600 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </Link>
+                )
+              )}
             </div>
+          </div>
 
-            <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Quick Links</p>
-              <div className="mt-4 space-y-2">
-                {quickLinks.map((link) =>
-                  link.external ? (
-                    <a
-                      key={link.label}
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-between rounded-2xl border border-zinc-800 px-4 py-3 text-sm text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
-                    >
-                      <span>{link.label}</span>
-                      <ArrowUpRight className="h-4 w-4 text-zinc-600" />
-                    </a>
-                  ) : (
-                    <Link
-                      key={link.label}
-                      href={link.href}
-                      className="flex items-center justify-between rounded-2xl border border-zinc-800 px-4 py-3 text-sm text-zinc-300 transition-colors hover:border-zinc-700 hover:bg-zinc-900 hover:text-white"
-                    >
-                      <span>{link.label}</span>
-                      <ArrowUpRight className="h-4 w-4 text-zinc-600" />
-                    </Link>
-                  )
-                )}
+          <div className="rounded-[24px] border border-zinc-800 bg-black/40 p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl border border-zinc-700 p-2 text-zinc-300">
+                <LifeBuoy className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Telemetry Note</p>
+                <p className="mt-2 text-sm text-zinc-300">
+                  Restart counts, last exit codes, and deeper machine stats aren&apos;t exposed by the managed runtime API yet.
+                </p>
+                <p className="mt-2 text-xs leading-6 text-zinc-500">
+                  This panel stays honest: live state, pairing, version, and recovery are real; deeper host telemetry will land here once the backend exposes it safely.
+                </p>
               </div>
             </div>
           </div>

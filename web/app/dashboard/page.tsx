@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { InstanceControlPanel } from '@/app/components/dashboard/InstanceControlPanel'
+import { StatusBadge } from '@/app/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
@@ -96,6 +97,11 @@ function DashboardContent() {
   const [credits, setCredits] = useState(0)
   const [bootstrap, setBootstrap] = useState<DashboardBootstrapData | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [gatewayStatus, setGatewayStatus] = useState<{
+    health: string
+    sessions: { total: number; active: number; available?: boolean; error?: string | null }
+    cron: { total: number; enabled: number; available?: boolean; error?: string | null }
+  } | null>(null)
   const [statusChecks, setStatusChecks] = useState<{ name: string; status: 'ok' | 'degraded' | 'down'; detail?: string }[]>([])
   const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
   const [healingAttempted, setHealingAttempted] = useState(false)
@@ -128,6 +134,7 @@ function DashboardContent() {
         return
       }
 
+      fetchGatewayStatus()
       fetchStatusChecks()
       
       let userId = urlUserId
@@ -192,6 +199,18 @@ function DashboardContent() {
       setCredits(data.credits || 0)
     } catch (e) {
       console.error('Failed to fetch dashboard bootstrap:', e)
+    }
+  }
+
+  const fetchGatewayStatus = async () => {
+    try {
+      const res = await fetch('/api/gateway/status')
+      if (res.ok) {
+        const data = await res.json()
+        setGatewayStatus(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch gateway status:', e)
     }
   }
 
@@ -469,6 +488,8 @@ function DashboardContent() {
     )
   }
 
+  const isRunning = instance.status === 'running'
+  const statusTone = instance.status === 'running' ? 'text-green-400' : instance.status === 'starting' ? 'text-yellow-400' : 'text-zinc-400'
   const skillsManagerUrl = buildOpenClawControlUrl({
     view: 'skills',
     gatewayUrl: instance.url,
@@ -479,6 +500,12 @@ function DashboardContent() {
     gatewayUrl: instance.url,
     gatewayToken: instance.gatewayToken,
   })
+  const sessionsLabel = gatewayStatus?.sessions?.available
+    ? `${gatewayStatus?.sessions.active ?? 0} active / ${gatewayStatus?.sessions.total ?? 0} total`
+    : 'unavailable'
+  const cronLabel = gatewayStatus?.cron?.available
+    ? `${gatewayStatus?.cron.enabled ?? 0} enabled / ${gatewayStatus?.cron.total ?? 0} total`
+    : 'unavailable'
 
   return (
     <div className="flex min-h-screen bg-black font-mono">
@@ -544,27 +571,156 @@ function DashboardContent() {
             ))}
           </div>
 
-          <InstanceControlPanel
-            instance={instance}
-            stats={stats}
-            controlsEnabled={controlsEnabled}
-            autoPairHealth={autoPairHealth}
-            actionLoading={actionLoading}
-            onCopyToken={() => {
-              const token = instance?.gatewayToken || bootstrap?.gatewayToken
-              if (token) {
-                navigator.clipboard.writeText(token)
-                toast.success('Token copied!')
-              }
-            }}
-            onRefreshPairing={() => {
-              setAutoPairHealth('loading')
-              fetchInstance(instance.userId, instance.botUsername || '')
-            }}
-            onAction={performAction}
-            skillsManagerUrl={skillsManagerUrl}
-            configManagerUrl={configManagerUrl}
-          />
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">
+            <div>
+              <InstanceControlPanel
+                instance={instance}
+                stats={stats}
+                controlsEnabled={controlsEnabled}
+                autoPairHealth={autoPairHealth}
+                actionLoading={actionLoading}
+                onCopyToken={() => {
+                  const token = instance?.gatewayToken || bootstrap?.gatewayToken
+                  if (token) {
+                    navigator.clipboard.writeText(token)
+                    toast.success('Token copied!')
+                  }
+                }}
+                onRefreshPairing={() => {
+                  setAutoPairHealth('loading')
+                  fetchInstance(instance.userId, instance.botUsername || '')
+                }}
+                onAction={performAction}
+                skillsManagerUrl={skillsManagerUrl}
+                configManagerUrl={configManagerUrl}
+              />
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xs font-bold uppercase tracking-widest">
+                    Agent Runtime
+                  </h2>
+                  <p className="mt-1 text-[11px] text-zinc-500">Live OpenClaw controls and runtime identity</p>
+                </div>
+                <StatusBadge status={instance?.status || 'unknown'} />
+              </div>
+              <dl className="space-y-3">
+                {instance?.botUsername && (
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Telegram</dt>
+                    <dd className="font-mono">
+                      <a 
+                        href={`https://t.me/${instance?.botUsername}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:underline"
+                      >
+                        @{instance?.botUsername}
+                      </a>
+                    </dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Instance ID</dt>
+                  <dd className="font-mono text-sm text-zinc-400">{instance?.userId}</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">URL</dt>
+                  <dd className="font-mono text-sm text-zinc-400 break-all">
+                    <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
+                      {instance?.subdomain}
+                    </a>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Plan</dt>
+                  <dd className="text-zinc-400 capitalize">{instance?.plan || 'free'}</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
+                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || 'unknown'}</dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Provisioned</dt>
+                  <dd className="text-zinc-400">
+                    {instance?.provisionedAt ? new Date(instance.provisionedAt).toLocaleString() : 'Unavailable'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <div className="mb-4">
+                <h2 className="text-xs font-bold uppercase tracking-widest">
+                  Runtime Signals
+                </h2>
+                <p className="mt-1 text-[11px] text-zinc-500">Separate the agent runtime from gateway telemetry so failures are obvious</p>
+              </div>
+              <dl className="space-y-3">
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">OpenClaw</dt>
+                  <dd className={`font-mono ${gatewayStatus?.health === 'healthy' ? 'text-green-400' : 'text-yellow-400'}`}>
+                    {gatewayStatus?.health || 'checking...'}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">State</dt>
+                  <dd className={`font-mono ${statusTone}`}>
+                    {instance?.status || 'unknown'}
+                  </dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">Gateway Sessions</dt>
+                  <dd className="text-zinc-400 font-mono">{sessionsLabel}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-zinc-500">Cron</dt>
+                  <dd className="text-zinc-400 font-mono">{cronLabel}</dd>
+                </div>
+                {gatewayStatus?.sessions?.error && !gatewayStatus.sessions.available && (
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions Detail</dt>
+                    <dd className="text-[11px] text-zinc-500">{gatewayStatus.sessions.error}</dd>
+                  </div>
+                )}
+                {gatewayStatus?.cron?.error && !gatewayStatus.cron.available && (
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Cron Detail</dt>
+                    <dd className="text-[11px] text-zinc-500">{gatewayStatus.cron.error}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+
+            <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
+                Help & Support
+              </h2>
+              <div className="space-y-3 text-sm">
+                <a href="/documentation" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Documentation
+                </a>
+                <a
+                  href="https://docs.agentbot.raveculture.xyz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
+                >
+                  Developer Docs
+                </a>
+                <a href="https://discord.gg/vTPG4vdV6D" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Discord
+                </a>
+                <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                  Contact
+                </a>
+              </div>
+            </div>
+            </div>
+          </div>
         </div>
         </main>
       </div>
