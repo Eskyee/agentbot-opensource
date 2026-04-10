@@ -7,6 +7,36 @@ import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
 
+const LOGGED_IN_NAV = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/community", label: "Community" },
+  { href: "/claim", label: "Claim" },
+  { href: "/jobs", label: "Jobs" },
+  { href: "/agents", label: "Agents" },
+  { href: "/marketplace", label: "Marketplace" },
+  { href: "/sponsor", label: "Sponsor" },
+  { href: "/news", label: "News" },
+  { href: "/blog", label: "Blog" },
+  { href: "/documentation", label: "Docs" },
+  { href: SOUL_DASHBOARD_URL, label: "Borg" },
+]
+
+const LOGGED_OUT_NAV = [
+  { href: "/pricing", label: "Pricing" },
+  { href: "/why", label: "Why" },
+  { href: "/jobs", label: "Jobs" },
+  { href: "/claim", label: "Claim" },
+  { href: "/token", label: "$AGENTBOT" },
+  { href: "/sponsor", label: "Sponsor" },
+  { href: "/news", label: "News" },
+  { href: "/blog", label: "Blog" },
+  { href: "/agents", label: "Agents" },
+  { href: "/marketplace", label: "Marketplace" },
+  { href: "/demo", label: "Demo" },
+  { href: "/documentation", label: "Docs" },
+  { href: SOUL_DASHBOARD_URL, label: "Borg" },
+]
+
 export default function Navbar() {
   const { data: session, status } = useCustomSession();
   const pathname = usePathname();
@@ -54,33 +84,15 @@ export default function Navbar() {
             </div>
           ) : isLoggedIn ? (
             <>
-              <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href={SOUL_DASHBOARD_URL} current={pathname}>Borg</NavLink>
-              <NavLink href="/jobs" current={pathname}>Jobs</NavLink>
-              <NavLink href="/claim" current={pathname}>Claim</NavLink>
-              <NavLink href="/sponsor" current={pathname}>Sponsor</NavLink>
-              <NavLink href="/news" current={pathname}>News</NavLink>
-              <NavLink href="/blog" current={pathname}>Blog</NavLink>
-              <NavLink href="/agents" current={pathname}>Agents</NavLink>
-              <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
-              <NavLink href="/claim" current={pathname}>Claim</NavLink>
-              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
+              {LOGGED_IN_NAV.map((item) => (
+                <NavLink key={item.href} href={item.href} current={pathname}>{item.label}</NavLink>
+              ))}
             </>
           ) : (
             <>
-              <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
-              <NavLink href="/why" current={pathname}>Why</NavLink>
-              <NavLink href={SOUL_DASHBOARD_URL} current={pathname}>Borg</NavLink>
-              <NavLink href="/jobs" current={pathname}>Jobs</NavLink>
-              <NavLink href="/claim" current={pathname}>Claim</NavLink>
-              <NavLink href="/sponsor" current={pathname}>Sponsor</NavLink>
-              <NavLink href="/news" current={pathname}>News</NavLink>
-              <NavLink href="/blog" current={pathname}>Blog</NavLink>
-              <NavLink href="/agents" current={pathname}>Agents</NavLink>
-              <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
-              <NavLink href="/claim" current={pathname}>Claim</NavLink>
-              <NavLink href="/demo" current={pathname}>Demo</NavLink>
-              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
+              {LOGGED_OUT_NAV.map((item) => (
+                <NavLink key={item.href} href={item.href} current={pathname}>{item.label}</NavLink>
+              ))}
             </>
           )}
         </div>
@@ -133,17 +145,9 @@ export default function Navbar() {
             {isLoggedIn ? (
               <>
                 <MobileSection label="Navigate">
-                  <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                  <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu}>Borg</MobileLink>
-                  <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim</MobileLink>
-                  <MobileLink href="/sponsor" onClick={closeMenu}>Sponsor</MobileLink>
-                  <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
-                  <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
-                  <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
-                  <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
-                  <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
+                  {LOGGED_IN_NAV.map((item) => (
+                    <MobileLink key={item.href} href={item.href} onClick={closeMenu}>{item.label}</MobileLink>
+                  ))}
                 </MobileSection>
                 <MobileSection label="Account">
                   {displayName && <div className="text-[10px] text-zinc-600 px-3 py-2 uppercase tracking-widest">{displayName}</div>}
@@ -161,17 +165,9 @@ export default function Navbar() {
             ) : (
               <>
                 <MobileSection label="Explore">
-                  <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
-                  <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
-                  <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu}>Borg</MobileLink>
-                  <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim</MobileLink>
-                  <MobileLink href="/sponsor" onClick={closeMenu}>Sponsor</MobileLink>
-                  <MobileLink href="/agents" onClick={closeMenu}>Agent Templates</MobileLink>
-                  <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
-                  <MobileLink href="/demo" onClick={closeMenu}>Try Demo</MobileLink>
-                  <MobileLink href="https://docs.agentbot.raveculture.xyz" onClick={closeMenu}>Docs</MobileLink>
+                  {LOGGED_OUT_NAV.map((item) => (
+                    <MobileLink key={item.href} href={item.href} onClick={closeMenu}>{item.label}</MobileLink>
+                  ))}
                 </MobileSection>
                 <MobileSection label="Community">
                   <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
