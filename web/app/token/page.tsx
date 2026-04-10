@@ -68,10 +68,10 @@ function formatTimestamp(value: string): string {
 
 function StatCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
       <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{label}</div>
-      <div className="mt-3 text-2xl font-bold tracking-tight text-white">{value}</div>
-      {detail ? <div className="mt-2 text-xs text-zinc-500">{detail}</div> : null}
+      <div className="mt-3 break-words text-xl font-bold tracking-tight text-white sm:text-2xl">{value}</div>
+      {detail ? <div className="mt-2 break-words text-xs leading-5 text-zinc-500">{detail}</div> : null}
     </div>
   )
 }
@@ -128,7 +128,7 @@ export default async function TokenPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="min-w-0 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Community Market</div>
@@ -171,7 +171,7 @@ export default async function TokenPage() {
 
         <section className="mt-12">
           <div className="mb-6 text-[10px] uppercase tracking-[0.24em] text-zinc-600">Live Stats</div>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-7">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
             <StatCard label="Status" value={stats.status} detail={stats.statusNote} />
             <StatCard label="Progress" value={stats.progress === null ? '—' : `${stats.progress}%`} />
             <StatCard
@@ -191,7 +191,7 @@ export default async function TokenPage() {
         </section>
 
         <section className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-          <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="min-w-0 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
             <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Overview</div>
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
               <div>
@@ -247,7 +247,7 @@ export default async function TokenPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="min-w-0 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
             <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Track Live</div>
             <div className="mt-5 space-y-3">
               {[
@@ -264,13 +264,13 @@ export default async function TokenPage() {
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black px-4 py-4 text-sm text-zinc-200 transition-colors hover:border-zinc-700 hover:text-white"
+                    className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-black px-4 py-4 text-sm text-zinc-200 transition-colors hover:border-zinc-700 hover:text-white"
                   >
-                    <span className="flex items-center gap-3">
+                    <span className="flex min-w-0 items-center gap-3">
                       <Icon className="h-4 w-4 text-zinc-500" />
-                      {item.label}
+                      <span className="break-words">{item.label}</span>
                     </span>
-                    <ArrowUpRight className="h-4 w-4 text-zinc-600" />
+                    <ArrowUpRight className="h-4 w-4 shrink-0 text-zinc-600" />
                   </a>
                 )
               })}
@@ -278,7 +278,7 @@ export default async function TokenPage() {
           </div>
         </section>
 
-        <section className="mt-12 rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+        <section className="mt-12 min-w-0 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Official Links</div>
@@ -308,10 +308,10 @@ export default async function TokenPage() {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black px-4 py-4 text-sm text-zinc-200 transition-colors hover:border-zinc-700 hover:text-white"
+                  className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-black px-4 py-4 text-sm text-zinc-200 transition-colors hover:border-zinc-700 hover:text-white"
                 >
-                  <span>{item.label}</span>
-                  <ArrowUpRight className="h-4 w-4 text-zinc-600" />
+                  <span className="break-words">{item.label}</span>
+                  <ArrowUpRight className="h-4 w-4 shrink-0 text-zinc-600" />
                 </a>
               ))}
             </div>
