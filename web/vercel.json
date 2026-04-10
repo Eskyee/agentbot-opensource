@@ -25,6 +25,10 @@
     {
       "path": "/api/cron/blog-daily",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/moltx-weekly",
+      "schedule": "0 9 * * 1"
     }
   ]
 }
