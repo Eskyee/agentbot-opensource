@@ -20,7 +20,10 @@ function formatUsd(n: number | null): string {
   if (n >= 1_000_000_000) return '$' + (n / 1_000_000_000).toFixed(2) + 'B'
   if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(2) + 'M'
   if (n >= 1_000) return '$' + (n / 1_000).toFixed(2) + 'K'
-  return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 })
+  if (n >= 1) return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 })
+  if (n >= 0.01) return '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })
+  if (n >= 0.0001) return '$' + n.toLocaleString(undefined, { minimumFractionDigits: 4, maximumFractionDigits: 6 })
+  return '$' + n.toLocaleString(undefined, { minimumFractionDigits: 6, maximumFractionDigits: 8 })
 }
 
 function formatSupply(n: number): string {
@@ -29,7 +32,7 @@ function formatSupply(n: number): string {
 
 function formatNative(n: number | null): string {
   if (n === null || n === undefined) return '—'
-  if (n < 0.000001) return '< 0.000001 SOL'
+  if (n >= 1) return `${n.toFixed(4)} SOL`
   return `${n.toFixed(8)} SOL`
 }
 
