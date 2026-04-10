@@ -15,8 +15,9 @@ export const COMMUNITY_TOKEN = {
   creationTimeLabel: 'April 8, 2026, 05:27:48',
   holdersFallback: 49,
   pumpFunUrl: 'https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
-  dexScreenerUrl: 'https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
+  dexScreenerUrl: 'https://dexscreener.com/solana/l3lctrhv2geqzkrgccqqczqmuutgt6hklnpqv4fmhcp',
   solscanUrl: 'https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
+  solscanPairUrl: 'https://solscan.io/account/L3LcTrHV2gEQzKrgcCQqCzQMuuTGt6HkLNPQv4fMhcP',
   oklinkUrl: 'https://www.oklink.com/solana/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
 } as const
 

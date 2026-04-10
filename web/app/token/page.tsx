@@ -229,8 +229,9 @@ export default async function TokenPage() {
             <div className="mt-5 space-y-3">
               {[
                 { label: 'Pump.fun', href: COMMUNITY_TOKEN.pumpFunUrl, icon: Waves },
-                { label: 'DexScreener', href: stats.pairUrl, icon: Coins },
-                { label: 'Solscan', href: COMMUNITY_TOKEN.solscanUrl, icon: ExternalLink },
+                { label: 'DexScreener Pair', href: stats.pairUrl, icon: Coins },
+                { label: 'Solscan Token', href: COMMUNITY_TOKEN.solscanUrl, icon: ExternalLink },
+                { label: 'Solscan Pair', href: COMMUNITY_TOKEN.solscanPairUrl, icon: ExternalLink },
                 { label: 'OKLink', href: COMMUNITY_TOKEN.oklinkUrl, icon: ExternalLink },
               ].map((item) => {
                 const Icon = item.icon
@@ -257,18 +258,18 @@ export default async function TokenPage() {
         <section className="mt-12 rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
           <div className="grid gap-6 lg:grid-cols-2">
             <div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Official Agentbot Token Surface</div>
-              <div className="mt-3 text-xl font-bold uppercase tracking-tight text-white">Base Ecosystem Token</div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Official Links</div>
+              <div className="mt-3 text-xl font-bold uppercase tracking-tight text-white">Agentbot Surfaces</div>
               <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">
-                Agentbot also maintains its official Base ecosystem presence. The Solana token above is the live
-                community token surface; the Base links below point to the official platform-owned endpoints.
+                These are the official Agentbot links we can stand behind. The live token market above is the
+                community-run Solana token surface.
               </p>
             </div>
             <div className="space-y-3">
               {[
                 {
-                  label: 'Base Contract',
-                  href: 'https://basescan.org/token/0x986b41C76aB8B7350079613340ee692773B34bA3',
+                  label: 'Pump.fun Listing',
+                  href: COMMUNITY_TOKEN.pumpFunUrl,
                 },
                 {
                   label: 'Bankr Profile',

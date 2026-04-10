@@ -260,12 +260,12 @@ export default async function Home() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
               <div className="text-[10px] uppercase tracking-widest text-zinc-700">$AGENTBOT</div>
-              <div className="text-[10px] text-zinc-700 font-mono">/WETH · Base</div>
+              <div className="text-[10px] text-zinc-700 font-mono">Pump.fun · Solana</div>
             </div>
             <div className="flex items-center gap-3">
-              <a href="https://basescan.org/token/0x986b41c76ab8b7350079613340ee692773b34ba3" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Scanner</a>
+              <a href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Scanner</a>
               <span className="text-zinc-800">·</span>
-              <a href="https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Buy $AGENTBOT</a>
+              <a href="https://dexscreener.com/solana/l3lctrhv2geqzkrgccqqczqmuutgt6hklnpqv4fmhcp" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">View Market</a>
             </div>
           </div>
         </div>

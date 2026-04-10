@@ -11,7 +11,6 @@ import {
 const TOKENS = [
   { symbol: 'pathUSD', name: 'Path USD', icon: '💵', address: '0x20c0000000000000000000000000000000000000' },
   { symbol: 'ETH', name: 'Ethereum', icon: '⟠', address: '0x0000000000000000000000000000000000000000' },
-  { symbol: 'AGENTBOT', name: 'Agentbot', icon: '🤖', address: '0x986b41c76ab8b7350079613340ee692773b34ba3' },
 ]
 
 export default function TempoDexPage() {
