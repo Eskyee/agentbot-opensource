@@ -828,3 +828,21 @@ model community_governance_votes {
   @@index([proposal_id], map: "idx_community_votes_proposal")
   @@index([user_id], map: "idx_community_votes_user")
 }
+
+model dj_sessions {
+  id             Int       @id @default(autoincrement())
+  user_id        String
+  wallet         String
+  dj_name        String?
+  mux_stream_id  String    @unique
+  playback_id    String?
+  started_at     DateTime  @default(now())
+  ended_at       DateTime?
+  max_duration   Int       @default(7200) // 2 hours in seconds
+  status         String    @default("active") // active, ended, auto-ended
+  
+  @@index([user_id], map: "idx_dj_sessions_user")
+  @@index([wallet], map: "idx_dj_sessions_wallet")
+  @@index([status], map: "idx_dj_sessions_status")
+  @@index([started_at], map: "idx_dj_sessions_started")
+}

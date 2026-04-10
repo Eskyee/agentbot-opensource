@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession';
 import { getCommunityProgramForUser } from '@/app/lib/communityProgram';
+import { prisma } from '@/app/lib/prisma';
+
+const MAX_SESSION_SECONDS = 7200; // 2 hours
 
 const MUX_TOKEN_ID = process.env.MUX_TOKEN_ID;
 const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
@@ -100,6 +103,47 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     const stream = result.data;
 
+    // Check for existing active session
+    const existingSession = await prisma.dj_sessions.findFirst({
+      where: { wallet, status: 'active' },
+      orderBy: { started_at: 'desc' },
+    })
+
+    if (existingSession) {
+      const elapsed = Math.floor((Date.now() - existingSession.started_at.getTime()) / 1000)
+      const remaining = Math.max(0, MAX_SESSION_SECONDS - elapsed)
+      
+      if (remaining <= 0) {
+        // Auto-end the old session
+        await prisma.dj_sessions.update({
+          where: { id: existingSession.id },
+          data: { status: 'auto-ended', ended_at: new Date() },
+        })
+      } else {
+        return NextResponse.json(
+          {
+            error: 'active_session_exists',
+            message: `You already have an active stream. ${Math.floor(remaining / 60)} minutes remaining.`,
+            remaining,
+            sessionId: existingSession.id,
+          },
+          { status: 409 }
+        )
+      }
+    }
+
+    // Create session record
+    const sessionRecord = await prisma.dj_sessions.create({
+      data: {
+        user_id: session?.user?.id || 'anonymous',
+        wallet,
+        dj_name: name || 'Anonymous DJ',
+        mux_stream_id: stream.id,
+        playback_id: stream.playback_ids?.[0]?.id || null,
+        max_duration: MAX_SESSION_SECONDS,
+      },
+    })
+
     return NextResponse.json({
       success: true,
       stream: {
@@ -112,6 +156,12 @@ export async function POST(request: NextRequest) {
         playbackId: stream.playback_ids?.[0]?.id || null,
         status: stream.status,
         accessGrantedBy: hasRaveAccess ? 'rave' : 'community-pass',
+      },
+      session: {
+        id: sessionRecord.id,
+        maxDuration: MAX_SESSION_SECONDS,
+        remaining: MAX_SESSION_SECONDS,
+        expiresAt: new Date(Date.now() + MAX_SESSION_SECONDS * 1000).toISOString(),
       },
       obsSettings: {
         server: MUX_RTMP_URL,
@@ -131,4 +181,79 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * GET /api/basefm/streams?wallet=WALLET
+ * Check active session status and remaining time
+ */
+export async function GET(request: NextRequest) {
+  const wallet = request.nextUrl.searchParams.get('wallet')
+
+  if (!wallet) {
+    return NextResponse.json({ error: 'Wallet required' }, { status: 400 })
+  }
+
+  const activeSession = await prisma.dj_sessions.findFirst({
+    where: { wallet, status: 'active' },
+    orderBy: { started_at: 'desc' },
+  })
+
+  if (!activeSession) {
+    return NextResponse.json({
+      active: false,
+      message: 'No active session. Start a new stream!',
+    })
+  }
+
+  const elapsed = Math.floor((Date.now() - activeSession.started_at.getTime()) / 1000)
+  const remaining = Math.max(0, MAX_SESSION_SECONDS - elapsed)
+
+  if (remaining <= 0) {
+    await prisma.dj_sessions.update({
+      where: { id: activeSession.id },
+      data: { status: 'auto-ended', ended_at: new Date() },
+    })
+    return NextResponse.json({
+      active: false,
+      message: 'Session expired (2h max). Start a new stream!',
+    })
+  }
+
+  return NextResponse.json({
+    active: true,
+    session: {
+      id: activeSession.id,
+      djName: activeSession.dj_name,
+      playbackId: activeSession.playback_id,
+      startedAt: activeSession.started_at,
+      elapsed,
+      remaining,
+      remainingMinutes: Math.floor(remaining / 60),
+      expiresAt: new Date(activeSession.started_at.getTime() + MAX_SESSION_SECONDS * 1000).toISOString(),
+    },
+  })
+}
+
+/**
+ * DELETE /api/basefm/streams?wallet=WALLET
+ * End current session
+ */
+export async function DELETE(request: NextRequest) {
+  const wallet = request.nextUrl.searchParams.get('wallet')
+
+  if (!wallet) {
+    return NextResponse.json({ error: 'Wallet required' }, { status: 400 })
+  }
+
+  const result = await prisma.dj_sessions.updateMany({
+    where: { wallet, status: 'active' },
+    data: { status: 'ended', ended_at: new Date() },
+  })
+
+  return NextResponse.json({
+    success: true,
+    ended: result.count,
+    message: result.count > 0 ? 'Session ended' : 'No active session found',
+  })
 }
