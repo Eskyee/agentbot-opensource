@@ -9,8 +9,8 @@ const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvw
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex')
 
 export const COMMUNITY_REWARD_TIERS = [
-  { id: 'whale', label: 'Whale', minBalance: 100_000, credits: 1000 },
-  { id: 'builder', label: 'Builder', minBalance: 10_000, credits: 250 },
+  { id: 'whale', label: 'Whale', minBalance: 100_000, credits: 200 },
+  { id: 'builder', label: 'Builder', minBalance: 10_000, credits: 100 },
   { id: 'holder', label: 'Holder', minBalance: 1_000, credits: 50 },
 ] as const
 

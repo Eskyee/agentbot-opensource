@@ -61,8 +61,8 @@ export default function ClaimPage() {
   const tierCopy = useMemo(
     () => [
       { label: 'Holder', desc: '1,000+ tokens', credits: 50 },
-      { label: 'Builder', desc: '10,000+ tokens', credits: 250 },
-      { label: 'Whale', desc: '100,000+ tokens', credits: 1000 },
+      { label: 'Builder', desc: '10,000+ tokens', credits: 100 },
+      { label: 'Whale', desc: '100,000+ tokens', credits: 200 },
     ],
     []
   )
