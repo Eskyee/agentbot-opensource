@@ -2,6 +2,7 @@
 
 import { Heart, Coffee, Pizza, Code, Rocket, Building, Star, ExternalLink, Check, Bitcoin } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   DashboardShell,
   DashboardHeader,
@@ -74,6 +75,21 @@ export default function SponsorPage() {
               🎯 Goal: 5 monthly sponsors ($500/mo)
             </div>
           </div>
+
+          <figure className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 mb-12">
+            <Image
+              src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreifxvsch4xaqgxwu5u4lumddvvgh4gky2ocfvkg7i7gk64uaa4vpsy"
+              alt="Support Agentbot artwork"
+              width={1600}
+              height={900}
+              className="h-auto w-full object-cover"
+              priority
+              unoptimized
+            />
+            <figcaption className="border-t border-zinc-800 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+              Community support keeps Agentbot shipping
+            </figcaption>
+          </figure>
 
           {/* Payment Options */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
