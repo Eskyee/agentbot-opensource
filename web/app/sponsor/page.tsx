@@ -223,7 +223,7 @@ export default function SponsorPage() {
             </p>
             <div className="bg-black p-4 border border-zinc-800">
               <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
-              <code className="text-orange-400 text-sm break-all">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code>
+              <code className="text-orange-400 text-sm break-all">bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr</code>
             </div>
             <div className="mt-4 bg-black p-4 border border-zinc-800">
               <p className="text-zinc-500 text-xs uppercase mb-2">Lightning (LNURL)</p>
