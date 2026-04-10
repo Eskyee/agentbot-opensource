@@ -242,9 +242,20 @@ export default function SponsorPage() {
             <p className="text-zinc-400 text-sm mb-4">
               Send Bitcoin (on-chain or Lightning) to support agentbot development.
             </p>
-            <div className="bg-black p-4 border border-zinc-800">
-              <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
-              <code className="text-orange-400 text-sm break-all">bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr</code>
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="bg-black p-4 border border-zinc-800">
+                <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
+                <code className="text-orange-400 text-sm break-all">bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr</code>
+              </div>
+              <div className="bg-black p-4 border border-zinc-800 flex flex-col items-center justify-center">
+                <p className="text-zinc-500 text-xs uppercase mb-3">Scan To Donate</p>
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=bitcoin%3Abc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr"
+                  alt="QR code for the Agentbot Bitcoin donation address"
+                  className="h-[180px] w-[180px] border border-zinc-800 bg-white p-2"
+                  loading="lazy"
+                />
+              </div>
             </div>
             <div className="mt-4 bg-black p-4 border border-zinc-800">
               <p className="text-zinc-500 text-xs uppercase mb-2">Lightning (LNURL)</p>
