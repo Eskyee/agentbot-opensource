@@ -16,6 +16,40 @@ export const COMMUNITY_REWARD_TIERS = [
 
 export type CommunityRewardTier = typeof COMMUNITY_REWARD_TIERS[number]
 
+export interface CommunityRewardStatus {
+  connected: boolean
+  walletAddress: string | null
+  claimed: boolean
+  currentTier: {
+    id: string
+    label: string
+    credits: number
+    minBalance: number
+  } | null
+  balanceUi: number | null
+  creditsClaimed: number
+  claimedAt?: string | null
+  availability: 'live' | 'degraded'
+  detail?: string | null
+}
+
+export function getEmptyCommunityRewardStatus(
+  overrides: Partial<CommunityRewardStatus> = {}
+): CommunityRewardStatus {
+  return {
+    connected: false,
+    walletAddress: null,
+    claimed: false,
+    currentTier: null,
+    balanceUi: null,
+    creditsClaimed: 0,
+    claimedAt: null,
+    availability: 'live',
+    detail: null,
+    ...overrides,
+  }
+}
+
 function decodeBase58(input: string): Uint8Array {
   if (!input) throw new Error('Missing base58 value')
 
@@ -212,40 +246,42 @@ export async function getStoredSolanaRewardWallet(userId: string) {
   return setting?.value || null
 }
 
-export async function getUserCommunityRewardStatus(userId: string) {
+export async function getUserCommunityRewardStatus(userId: string): Promise<CommunityRewardStatus> {
   const walletAddress = await getStoredSolanaRewardWallet(userId)
   if (!walletAddress) {
-    return {
-      connected: false,
-      walletAddress: null,
-      claimed: false,
-      currentTier: null,
-      balanceUi: null,
-      creditsClaimed: 0,
-    }
+    return getEmptyCommunityRewardStatus()
   }
 
-  const [claim, balance] = await Promise.all([
-    getCreditClaimByWallet(walletAddress),
-    getSolanaTokenBalance(walletAddress),
-  ])
+  try {
+    const [claim, balance] = await Promise.all([
+      getCreditClaimByWallet(walletAddress),
+      getSolanaTokenBalance(walletAddress),
+    ])
 
-  const tier = getCommunityRewardTier(balance.ui)
+    const tier = getCommunityRewardTier(balance.ui)
 
-  return {
-    connected: true,
-    walletAddress,
-    claimed: Boolean(claim),
-    currentTier: tier
-      ? {
-          id: tier.id,
-          label: tier.label,
-          credits: tier.credits,
-          minBalance: tier.minBalance,
-        }
-      : null,
-    balanceUi: balance.ui,
-    creditsClaimed: claim?.credits || 0,
-    claimedAt: claim?.created_at?.toISOString?.() || null,
+    return getEmptyCommunityRewardStatus({
+      connected: true,
+      walletAddress,
+      claimed: Boolean(claim),
+      currentTier: tier
+        ? {
+            id: tier.id,
+            label: tier.label,
+            credits: tier.credits,
+            minBalance: tier.minBalance,
+          }
+        : null,
+      balanceUi: balance.ui,
+      creditsClaimed: claim?.credits || 0,
+      claimedAt: claim?.created_at?.toISOString?.() || null,
+    })
+  } catch {
+    return getEmptyCommunityRewardStatus({
+      connected: true,
+      walletAddress,
+      availability: 'degraded',
+      detail: 'Live Solana balance check is temporarily unavailable.',
+    })
   }
 }

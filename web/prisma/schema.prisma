@@ -768,16 +768,19 @@ model usage_logs {
 }
 
 model credit_claims {
-  id             Int       @id @default(autoincrement())
-  solana_address String    @unique
-  email          String
-  balance        Decimal   @db.Decimal(20, 6)
-  credits        Int
-  tier           String
-  user_id        String
-  created_at     DateTime  @default(now())
+  id            String   @id
+  user_id       String
+  wallet_address String   @unique
+  token_address String
+  tier          String
+  credits       Int
+  balance_raw   String
+  balance_ui    Decimal  @db.Decimal(20, 6)
+  claim_source  String   @default("solana-community")
+  tx_signature  String?
+  created_at    DateTime @default(now())
 
-  @@index([solana_address], map: "idx_credit_claims_solana")
+  @@index([wallet_address], map: "idx_credit_claims_wallet")
   @@index([user_id], map: "idx_credit_claims_user")
   @@index([created_at], map: "idx_credit_claims_created")
 }

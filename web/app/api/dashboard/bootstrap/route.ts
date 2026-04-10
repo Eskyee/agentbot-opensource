@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
-import { getUserCommunityRewardStatus } from '@/app/lib/solanaRewards'
+import { getEmptyCommunityRewardStatus, getUserCommunityRewardStatus } from '@/app/lib/solanaRewards'
 
 export async function GET() {
   const session = await getAuthSession()
@@ -35,7 +35,12 @@ export async function GET() {
     prisma.$queryRaw<{ gateway_token: string | null }[]>`
       SELECT gateway_token FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
     `,
-    getUserCommunityRewardStatus(userId),
+    getUserCommunityRewardStatus(userId).catch(() =>
+      getEmptyCommunityRewardStatus({
+        availability: 'degraded',
+        detail: 'Community reward status is temporarily unavailable.',
+      })
+    ),
   ])
 
   // Use user's specific token, fallback to shared token only if needed

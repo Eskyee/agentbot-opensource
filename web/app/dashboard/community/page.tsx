@@ -1,0 +1,177 @@
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { Coins, ShieldCheck, Sparkles, Wallet } from 'lucide-react'
+import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+import { prisma } from '@/app/lib/prisma'
+import { getUserCommunityRewardStatus } from '@/app/lib/solanaRewards'
+
+export const dynamic = 'force-dynamic'
+
+function DetailCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
+      <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{label}</div>
+      <div className="mt-3 text-lg font-bold text-white">{value}</div>
+      {detail ? <div className="mt-2 text-xs leading-5 text-zinc-500">{detail}</div> : null}
+    </div>
+  )
+}
+
+function PerkCard({ title, desc }: { title: string; desc: string }) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
+      <div className="text-sm font-bold uppercase tracking-[0.12em] text-white">{title}</div>
+      <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
+    </div>
+  )
+}
+
+export default async function CommunityDashboardPage() {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    redirect('/login?callbackUrl=/dashboard/community')
+  }
+
+  const [user, rewards] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        referralCredits: true,
+      },
+    }),
+    getUserCommunityRewardStatus(session.user.id),
+  ])
+
+  const unlockedPerks = rewards.currentTier
+    ? [
+        {
+          title: 'Claimed Agent Credits',
+          desc: `${rewards.creditsClaimed || rewards.currentTier.credits} credits are attached to your Agentbot account and usable across the platform.`,
+        },
+        {
+          title: 'Community Holder Status',
+          desc: `${rewards.currentTier.label} tier is now visible in your product status and rewards surface.`,
+        },
+        {
+          title: 'Priority Community Updates',
+          desc: 'Use this dashboard as the base for upcoming holder-only updates, claim windows, and future reward drops.',
+        },
+      ]
+    : [
+        {
+          title: 'Wallet Verification',
+          desc: 'Connect your Solana holder wallet and verify your live balance to unlock community rewards.',
+        },
+        {
+          title: 'Credits Unlock',
+          desc: 'Eligible holders can claim free Agentbot credits based on their current token balance tier.',
+        },
+        {
+          title: 'Future Community Perks',
+          desc: 'This is where token-gated perks, holder status, and future utility will keep expanding.',
+        },
+      ]
+
+  return (
+    <DashboardShell>
+      <DashboardHeader
+        title="Community Rewards"
+        subtitle="Holder status, claim access, and product utility for the Agentbot community token."
+        icon={<Coins className="h-5 w-5 text-blue-400" />}
+      />
+      <DashboardContent className="max-w-5xl mx-auto space-y-6">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <DetailCard
+            label="Wallet"
+            value={rewards.connected ? 'Connected' : 'Not connected'}
+            detail={rewards.walletAddress || 'No Solana wallet verified for rewards yet'}
+          />
+          <DetailCard
+            label="Tier"
+            value={rewards.currentTier?.label || 'None yet'}
+            detail={
+              rewards.availability === 'degraded'
+                ? rewards.detail || 'Live balance check is temporarily unavailable'
+                : rewards.balanceUi !== null
+                  ? `${rewards.balanceUi.toLocaleString()} tokens detected`
+                  : 'Connect wallet to check live balance'
+            }
+          />
+          <DetailCard
+            label="Claim"
+            value={rewards.claimed ? 'Claimed' : 'Available'}
+            detail={rewards.claimed ? `${rewards.creditsClaimed} credits claimed` : 'Claim your credits if eligible'}
+          />
+          <DetailCard
+            label="Credits"
+            value={`${user?.referralCredits ?? 0}`}
+            detail="Current Agentbot credit balance"
+          />
+        </div>
+
+        <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-2xl">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Community Status</div>
+              <h2 className="mt-3 text-2xl font-bold uppercase tracking-tight text-white">
+                {rewards.claimed
+                  ? `${rewards.currentTier?.label || 'Holder'} rewards are active`
+                  : 'Connect and claim your holder rewards'}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-zinc-400">
+                This surface turns the community token into product utility. Verified holders can claim credits today,
+                and future perks will build on the same wallet-linked status.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/claim"
+                className="inline-flex items-center gap-2 rounded-full border border-white bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-black hover:bg-zinc-200"
+              >
+                {rewards.claimed ? 'View claim' : 'Claim now'}
+                <Sparkles className="h-3.5 w-3.5" />
+              </Link>
+              <Link
+                href="/token"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 hover:border-zinc-500 hover:text-white"
+              >
+                Token page
+                <Wallet className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          {unlockedPerks.map((perk) => (
+            <PerkCard key={perk.title} title={perk.title} desc={perk.desc} />
+          ))}
+        </div>
+
+        <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-400" />
+            <div>
+              <div className="text-sm font-bold uppercase tracking-[0.12em] text-white">What&apos;s real now</div>
+              <div className="mt-2 text-sm leading-6 text-zinc-400">
+                Credits claims are live and tied to a verified Solana wallet signature. Global holder snapshots and larger
+                reward mechanics can build on top of this safely, but this phase already gives holders real product value.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {rewards.availability === 'degraded' ? (
+          <div className="rounded-[28px] border border-amber-500/20 bg-amber-500/10 p-6">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-amber-200">Live Check Delayed</div>
+            <div className="mt-3 text-sm leading-6 text-amber-50">
+              {rewards.detail || 'Solana balance checks are temporarily unavailable. Your connected wallet and prior claims are still preserved.'}
+            </div>
+          </div>
+        ) : null}
+      </DashboardContent>
+    </DashboardShell>
+  )
+}

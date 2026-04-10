@@ -15,6 +15,16 @@ function isValidSolanaAddress(address: string) {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)
 }
 
+function isValidClaimMessage(message: string, address: string, nonce: string) {
+  if (message.length > 500) return false
+  return (
+    message.startsWith('Agentbot community rewards claim\n') &&
+    message.includes(`Wallet: ${address}`) &&
+    message.includes(`Nonce: ${nonce}`) &&
+    message.includes('Issued At: ')
+  )
+}
+
 async function getOrCreateClaimUser(walletAddress: string) {
   const walletEmail = `${walletAddress.toLowerCase()}@wallet.solana.agentbot`
   let user = await prisma.user.findUnique({
@@ -42,10 +52,20 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Valid Solana address required' }, { status: 400 })
   }
 
-  const [claim, balance] = await Promise.all([
-    getCreditClaimByWallet(address),
-    getSolanaTokenBalance(address),
-  ])
+  let claim = null
+  let balance: Awaited<ReturnType<typeof getSolanaTokenBalance>>
+
+  try {
+    ;[claim, balance] = await Promise.all([
+      getCreditClaimByWallet(address),
+      getSolanaTokenBalance(address),
+    ])
+  } catch {
+    return NextResponse.json(
+      { error: 'Live Solana balance lookup is temporarily unavailable' },
+      { status: 502 }
+    )
+  }
 
   const tier = getCommunityRewardTier(balance.ui)
   const nonce = wantsNonce ? await issueWalletNonce() : null
@@ -87,6 +107,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid or expired nonce' }, { status: 401 })
   }
 
+  if (!isValidClaimMessage(message, address, nonce)) {
+    return NextResponse.json({ error: 'Invalid claim message' }, { status: 400 })
+  }
+
   const valid = await verifySolanaWalletMessage({
     address,
     message,
@@ -108,7 +132,15 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const balance = await getSolanaTokenBalance(address)
+  let balance: Awaited<ReturnType<typeof getSolanaTokenBalance>>
+  try {
+    balance = await getSolanaTokenBalance(address)
+  } catch {
+    return NextResponse.json(
+      { error: 'Live Solana balance lookup is temporarily unavailable' },
+      { status: 502 }
+    )
+  }
   const tier = getCommunityRewardTier(balance.ui)
   if (!tier) {
     return NextResponse.json(
@@ -129,14 +161,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unable to resolve user for claim' }, { status: 500 })
   }
 
-  const result = await recordCreditClaim({
-    userId: user.id,
-    walletAddress: address,
-    tier,
-    balanceRaw: balance.raw,
-    balanceUi: balance.ui,
-    txSignature: signature.slice(0, 24),
-  })
+  let result: Awaited<ReturnType<typeof recordCreditClaim>>
+  try {
+    result = await recordCreditClaim({
+      userId: user.id,
+      walletAddress: address,
+      tier,
+      balanceRaw: balance.raw,
+      balanceUi: balance.ui,
+      txSignature: signature.slice(0, 24),
+    })
+  } catch (error) {
+    const claim = await getCreditClaimByWallet(address)
+    if (claim) {
+      return NextResponse.json(
+        {
+          error: 'Wallet already claimed',
+          claim,
+        },
+        { status: 409 }
+      )
+    }
+
+    console.error('Failed to record Solana reward claim', error)
+    return NextResponse.json({ error: 'Unable to record claim right now' }, { status: 500 })
+  }
 
   await prisma.notification.create({
     data: {
