@@ -23,6 +23,16 @@ function formatUsd(n: number | null): string {
   return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 })
 }
 
+function formatSupply(n: number): string {
+  return n.toLocaleString()
+}
+
+function formatNative(n: number | null): string {
+  if (n === null || n === undefined) return '—'
+  if (n < 0.000001) return '< 0.000001 SOL'
+  return `${n.toFixed(8)} SOL`
+}
+
 function formatHolders(n: number | null): string {
   if (n === null || n === undefined) return '—'
   return n.toLocaleString()
@@ -145,6 +155,7 @@ export default async function TokenPage() {
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
             <StatCard label="Status" value={stats.status} detail={stats.statusNote} />
             <StatCard label="Progress" value={stats.progress === null ? '—' : `${stats.progress}%`} />
+            <StatCard label="Price" value={formatUsd(stats.priceUsd)} detail={formatNative(stats.priceNative)} />
             <StatCard label="Market Cap" value={formatUsd(stats.marketCapUsd)} />
             <StatCard label="24h Volume" value={formatUsd(stats.volume24hUsd)} />
             <StatCard
@@ -158,7 +169,7 @@ export default async function TokenPage() {
 
         <section className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
           <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
-            <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Profile</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Overview</div>
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
               <div>
                 <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Name</div>
@@ -175,6 +186,30 @@ export default async function TokenPage() {
               <div>
                 <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Primary Venue</div>
                 <div className="mt-2 text-sm font-bold uppercase text-white">{COMMUNITY_TOKEN.dex}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Max Total Supply</div>
+                <div className="mt-2 text-sm font-bold text-white">{formatSupply(COMMUNITY_TOKEN.maxTotalSupply)}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Circulating Supply</div>
+                <div className="mt-2 text-sm font-bold text-white">{formatSupply(COMMUNITY_TOKEN.circulatingSupply)}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Decimals</div>
+                <div className="mt-2 text-sm font-bold text-white">{COMMUNITY_TOKEN.decimals}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Extension</div>
+                <div className="mt-2 text-sm font-bold text-white">{COMMUNITY_TOKEN.tokenExtension ? 'True' : 'False'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Owner Program</div>
+                <div className="mt-2 break-all text-sm text-zinc-300">{COMMUNITY_TOKEN.ownerProgram}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Creation Time</div>
+                <div className="mt-2 text-sm font-bold text-white">{COMMUNITY_TOKEN.creationTimeLabel}</div>
               </div>
               <div className="sm:col-span-2">
                 <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Pair Source</div>
@@ -262,4 +297,3 @@ export default async function TokenPage() {
     </main>
   )
 }
-

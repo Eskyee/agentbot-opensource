@@ -7,6 +7,13 @@ export const COMMUNITY_TOKEN = {
   network: 'Solana',
   dex: 'Pump.fun',
   address: '9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
+  maxTotalSupply: 998_890_004,
+  circulatingSupply: 998_890_004,
+  decimals: 6,
+  tokenExtension: true,
+  ownerProgram: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+  creationTimeLabel: 'April 8, 2026, 05:27:48',
+  holdersFallback: 49,
   pumpFunUrl: 'https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
   dexScreenerUrl: 'https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
   solscanUrl: 'https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
@@ -19,6 +26,7 @@ interface DexScreenerPair {
   url?: string
   pairAddress?: string
   priceUsd?: string | null
+  priceNative?: string | null
   volume?: {
     h24?: number | string
   }
@@ -30,6 +38,8 @@ interface DexScreenerPair {
 }
 
 interface LiveTokenStats {
+  priceUsd: number | null
+  priceNative: number | null
   marketCapUsd: number | null
   volume24hUsd: number | null
   liquidityUsd: number | null
@@ -53,6 +63,8 @@ function asNumber(value: unknown): number | null {
 }
 
 async function fetchDexScreenerStats(): Promise<{
+  priceUsd: number | null
+  priceNative: number | null
   marketCapUsd: number | null
   volume24hUsd: number | null
   liquidityUsd: number | null
@@ -74,6 +86,8 @@ async function fetchDexScreenerStats(): Promise<{
     .sort((a, b) => (asNumber(b.liquidity?.usd) ?? 0) - (asNumber(a.liquidity?.usd) ?? 0))[0]
 
   return {
+    priceUsd: asNumber(bestPair?.priceUsd),
+    priceNative: asNumber(bestPair?.priceNative),
     marketCapUsd: asNumber(bestPair?.marketCap) ?? asNumber(bestPair?.fdv),
     volume24hUsd: asNumber(bestPair?.volume?.h24),
     liquidityUsd: asNumber(bestPair?.liquidity?.usd),
@@ -121,6 +135,8 @@ export async function getCommunityTokenStats(): Promise<LiveTokenStats> {
   const dex = dexResult.status === 'fulfilled'
     ? dexResult.value
     : {
+        priceUsd: null,
+        priceNative: null,
         marketCapUsd: null,
         volume24hUsd: null,
         liquidityUsd: null,
@@ -136,10 +152,12 @@ export async function getCommunityTokenStats(): Promise<LiveTokenStats> {
   const graduated = dex.hasLivePair
 
   return {
+    priceUsd: dex.priceUsd,
+    priceNative: dex.priceNative,
     marketCapUsd: dex.marketCapUsd,
     volume24hUsd: dex.volume24hUsd,
     liquidityUsd: dex.liquidityUsd,
-    holders: holders.holders,
+    holders: holders.holders ?? COMMUNITY_TOKEN.holdersFallback,
     holdersSource: holders.source,
     status: graduated ? 'GRADUATED' : 'WATCHING',
     progress: graduated ? 100 : null,
@@ -151,4 +169,3 @@ export async function getCommunityTokenStats(): Promise<LiveTokenStats> {
     updatedAt: new Date().toISOString(),
   }
 }
-
