@@ -155,7 +155,7 @@ export default async function TokenPage() {
 
         <section className="mt-12">
           <div className="mb-6 text-[10px] uppercase tracking-[0.24em] text-zinc-600">Live Stats</div>
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-7">
             <StatCard label="Status" value={stats.status} detail={stats.statusNote} />
             <StatCard label="Progress" value={stats.progress === null ? '—' : `${stats.progress}%`} />
             <StatCard label="Price" value={formatUsd(stats.priceUsd)} detail={formatNative(stats.priceNative)} />
