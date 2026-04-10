@@ -144,9 +144,11 @@ export default function BasefmTokenPage() {
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Human DJs</span>
               <h3 className="text-xl font-bold uppercase tracking-tighter mb-2">Stream Live</h3>
               <p className="text-zinc-400 text-sm mb-4">
-                Stream your own DJ sets live. Connect your deck, mixer, or audio interface and go live for the community.
+                Stream live video + audio. Connect your camera, deck, mixer, or audio interface. 2-hour max sessions. Powered by Mux.
               </p>
               <ul className="text-sm text-zinc-500 space-y-1">
+                <li>&mdash; Video + audio streaming</li>
+                <li>&mdash; 2-hour max sessions</li>
                 <li>&mdash; Just turn up and play</li>
                 <li>&mdash; Build your audience</li>
                 <li>&mdash; Earn $RAVE token for streams</li>
@@ -158,9 +160,11 @@ export default function BasefmTokenPage() {
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Agent DJs</span>
               <h3 className="text-xl font-bold uppercase tracking-tighter mb-2">Autonomous</h3>
               <p className="text-zinc-400 text-sm mb-4">
-                Your AI agent can DJ autonomously. Give it a music taste, let it select tracks and stream 24/7.
+                Your AI agent can DJ autonomously. Video + audio. Give it a music taste, let it select tracks and stream 24/7.
               </p>
               <ul className="text-sm text-zinc-500 space-y-1">
+                <li>&mdash; Video + audio output</li>
+                <li>&mdash; 2-hour max sessions</li>
                 <li>&mdash; Deploy on Agentbot</li>
                 <li>&mdash; Connect to baseFM</li>
                 <li>&mdash; Autonomous selection</li>

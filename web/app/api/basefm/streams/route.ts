@@ -167,11 +167,25 @@ export async function POST(request: NextRequest) {
         server: MUX_RTMP_URL,
         streamKey: stream.stream_key,
         recommended: {
-          audioBitrate: '256-320 kbps',
-          encoder: 'AAC',
-          sampleRate: '44.1 kHz',
-          channels: 'Stereo',
+          video: {
+            resolution: '1280x720 (720p) or 1920x1080 (1080p)',
+            bitrate: '2500-4500 kbps',
+            framerate: '30 fps',
+            encoder: 'H.264',
+            keyframeInterval: '2 seconds',
+          },
+          audio: {
+            bitrate: '256-320 kbps',
+            encoder: 'AAC',
+            sampleRate: '44.1 kHz',
+            channels: 'Stereo',
+          },
         },
+      },
+      streamType: 'video+audio',
+      playback: {
+        hls: stream.playback_ids?.[0]?.id ? `https://stream.mux.com/${stream.playback_ids[0].id}.m3u8` : null,
+        web: stream.playback_ids?.[0]?.id ? `https://stream.mux.com/${stream.playback_ids[0].id}.html` : null,
       },
     });
   } catch (error) {
