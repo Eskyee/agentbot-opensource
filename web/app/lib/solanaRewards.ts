@@ -212,3 +212,40 @@ export async function getStoredSolanaRewardWallet(userId: string) {
   return setting?.value || null
 }
 
+export async function getUserCommunityRewardStatus(userId: string) {
+  const walletAddress = await getStoredSolanaRewardWallet(userId)
+  if (!walletAddress) {
+    return {
+      connected: false,
+      walletAddress: null,
+      claimed: false,
+      currentTier: null,
+      balanceUi: null,
+      creditsClaimed: 0,
+    }
+  }
+
+  const [claim, balance] = await Promise.all([
+    getCreditClaimByWallet(walletAddress),
+    getSolanaTokenBalance(walletAddress),
+  ])
+
+  const tier = getCommunityRewardTier(balance.ui)
+
+  return {
+    connected: true,
+    walletAddress,
+    claimed: Boolean(claim),
+    currentTier: tier
+      ? {
+          id: tier.id,
+          label: tier.label,
+          credits: tier.credits,
+          minBalance: tier.minBalance,
+        }
+      : null,
+    balanceUi: balance.ui,
+    creditsClaimed: claim?.credits || 0,
+    claimedAt: claim?.created_at?.toISOString?.() || null,
+  }
+}

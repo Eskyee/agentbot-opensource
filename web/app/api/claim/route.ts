@@ -138,6 +138,21 @@ export async function POST(request: NextRequest) {
     txSignature: signature.slice(0, 24),
   })
 
+  await prisma.notification.create({
+    data: {
+      userId: user.id,
+      type: 'reward',
+      title: 'Community rewards claimed',
+      message: `${tier.credits} Agentbot credits unlocked for your ${tier.label} holder tier.`,
+      data: {
+        walletAddress: address,
+        tier: tier.id,
+        creditsGranted: tier.credits,
+        tokenAddress: '9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump',
+      },
+    },
+  }).catch(() => {})
+
   const response = NextResponse.json({
     success: true,
     walletAddress: address,
@@ -156,4 +171,3 @@ export async function POST(request: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
-
