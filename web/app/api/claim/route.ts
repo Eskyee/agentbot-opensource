@@ -20,15 +20,17 @@ const TIERS: TokenTier[] = [
  * POST /api/claim
  * Verify Solana Agentbot token balance and grant credits
  *
- * Body: { solana_address: string, email: string }
+ * Body: { solanaAddress: string, email: string }
  */
 export async function POST(req: NextRequest) {
   try {
-    const { solana_address, email } = await req.json()
+    const body = await req.json()
+    const solana_address = body.solana_address || body.solanaAddress
+    const { email } = body
 
     if (!solana_address || !email) {
       return NextResponse.json(
-        { error: 'Missing solana_address or email' },
+        { error: 'Missing solanaAddress or email' },
         { status: 400 }
       )
     }
