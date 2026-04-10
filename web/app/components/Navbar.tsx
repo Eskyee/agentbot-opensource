@@ -57,6 +57,7 @@ export default function Navbar() {
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href={SOUL_DASHBOARD_URL} current={pathname}>Borg</NavLink>
               <NavLink href="/jobs" current={pathname}>Jobs</NavLink>
+              <NavLink href="/claim" current={pathname}>Claim</NavLink>
               <NavLink href="/sponsor" current={pathname}>Sponsor</NavLink>
               <NavLink href="/news" current={pathname}>News</NavLink>
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
@@ -71,6 +72,7 @@ export default function Navbar() {
               <NavLink href="/why" current={pathname}>Why</NavLink>
               <NavLink href={SOUL_DASHBOARD_URL} current={pathname}>Borg</NavLink>
               <NavLink href="/jobs" current={pathname}>Jobs</NavLink>
+              <NavLink href="/claim" current={pathname}>Claim</NavLink>
               <NavLink href="/sponsor" current={pathname}>Sponsor</NavLink>
               <NavLink href="/news" current={pathname}>News</NavLink>
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
@@ -134,6 +136,7 @@ export default function Navbar() {
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                   <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu}>Borg</MobileLink>
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
+                  <MobileLink href="/claim" onClick={closeMenu}>Claim</MobileLink>
                   <MobileLink href="/sponsor" onClick={closeMenu}>Sponsor</MobileLink>
                   <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
                   <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
@@ -162,6 +165,7 @@ export default function Navbar() {
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
                   <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu}>Borg</MobileLink>
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
+                  <MobileLink href="/claim" onClick={closeMenu}>Claim</MobileLink>
                   <MobileLink href="/sponsor" onClick={closeMenu}>Sponsor</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agent Templates</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>

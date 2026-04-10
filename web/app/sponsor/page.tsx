@@ -172,6 +172,12 @@ export default function SponsorPage() {
               >
                 Self-Host Guide
               </a>
+              <a
+                href="/claim"
+                className="border border-blue-700 hover:border-blue-600 text-blue-400 font-bold text-sm px-6 py-3"
+              >
+                Claim Holder Credits
+              </a>
             </div>
           </div>
 

@@ -1,250 +1,259 @@
 'use client'
 
-import { useState } from 'react'
-import { Button } from '@/app/components/ui/button'
-import { Input } from '@/app/components/ui/input'
-import { Badge } from '@/app/components/ui/badge'
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import { Coins, Wallet, CheckCircle2, ArrowRight } from 'lucide-react'
 
-interface TierInfo {
-  minBalance: number
-  credits: number
-  label: string
-  current?: boolean
+type EligibilityResponse = {
+  address: string
+  eligible: boolean
+  alreadyClaimed: boolean
+  claim?: {
+    tier: string
+    credits: number
+  } | null
+  balance: {
+    raw: string
+    ui: number
+  }
+  tier: {
+    id: string
+    label: string
+    credits: number
+    minBalance: number
+  } | null
+  nonce?: string | null
 }
 
-interface ClaimResult {
-  success?: boolean
-  error?: string
-  tier?: string
-  credits?: number
-  balance?: number
-  message?: string
-  eligible?: boolean
-  alreadyClaimed?: boolean
-  tiers?: TierInfo[]
-  minimumRequired?: number
+declare global {
+  interface Window {
+    solana?: {
+      isPhantom?: boolean
+      connect: () => Promise<{ publicKey: { toString(): string } }>
+      signMessage: (message: Uint8Array, display?: string) => Promise<{ signature: Uint8Array }>
+    }
+      | undefined
+    phantom?: { solana?: Window['solana'] }
+    solflare?: Window['solana']
+  }
+}
+
+function getSolanaProvider() {
+  return window.phantom?.solana || window.solana || window.solflare
+}
+
+function encodeBase64(bytes: Uint8Array) {
+  let binary = ''
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte)
+  })
+  return btoa(binary)
 }
 
 export default function ClaimPage() {
-  const [solanaAddress, setSolanaAddress] = useState('')
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [address, setAddress] = useState('')
+  const [eligibility, setEligibility] = useState<EligibilityResponse | null>(null)
   const [checking, setChecking] = useState(false)
-  const [result, setResult] = useState<ClaimResult | null>(null)
-  const [step, setStep] = useState<'input' | 'verify' | 'claimed'>('input')
+  const [claiming, setClaiming] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  async function checkBalance() {
-    if (!solanaAddress) return
+  const tierCopy = useMemo(
+    () => [
+      { label: 'Holder', desc: '1,000+ tokens', credits: 50 },
+      { label: 'Builder', desc: '10,000+ tokens', credits: 250 },
+      { label: 'Whale', desc: '100,000+ tokens', credits: 1000 },
+    ],
+    []
+  )
+
+  async function checkEligibility(targetAddress: string) {
     setChecking(true)
+    setError(null)
+    setSuccess(null)
     try {
-      const res = await fetch(`/api/claim?address=${encodeURIComponent(solanaAddress)}`)
+      const res = await fetch(`/api/claim?address=${encodeURIComponent(targetAddress)}`)
       const data = await res.json()
-      setResult(data)
-
-      if (data.alreadyClaimed) {
-        setStep('claimed')
-      } else if (data.eligible) {
-        setStep('verify')
-      }
-    } catch {
-      setResult({ error: 'Failed to check balance' })
+      if (!res.ok) throw new Error(data.error || 'Eligibility check failed')
+      setEligibility(data)
+    } catch (err) {
+      setEligibility(null)
+      setError(err instanceof Error ? err.message : 'Eligibility check failed')
+    } finally {
+      setChecking(false)
     }
-    setChecking(false)
   }
 
-  async function claimCredits() {
-    if (!solanaAddress || !email) return
-    setLoading(true)
+  async function connectAndCheck() {
+    const provider = getSolanaProvider()
+    if (!provider) {
+      setError('Install Phantom or another Solana wallet to claim rewards.')
+      return
+    }
+
+    const result = await provider.connect()
+    const nextAddress = result.publicKey.toString()
+    setAddress(nextAddress)
+    await checkEligibility(nextAddress)
+  }
+
+  async function claim() {
+    const provider = getSolanaProvider()
+    if (!provider) {
+      setError('Install Phantom or another Solana wallet to claim rewards.')
+      return
+    }
+
+    const result = await provider.connect()
+    const nextAddress = result.publicKey.toString()
+    setAddress(nextAddress)
+
+    setClaiming(true)
+    setError(null)
+    setSuccess(null)
+
     try {
-      const res = await fetch('/api/claim', {
+      const eligibilityRes = await fetch(`/api/claim?address=${encodeURIComponent(nextAddress)}&nonce=1`)
+      const eligibilityData = await eligibilityRes.json()
+      if (!eligibilityRes.ok) throw new Error(eligibilityData.error || 'Eligibility check failed')
+
+      if (!eligibilityData.eligible || !eligibilityData.nonce) {
+        throw new Error(eligibilityData.error || 'Wallet is not eligible to claim')
+      }
+
+      const message = `Agentbot community rewards claim\nWallet: ${nextAddress}\nNonce: ${eligibilityData.nonce}\nIssued At: ${new Date().toISOString()}`
+      const encoded = new TextEncoder().encode(message)
+      const signed = await provider.signMessage(encoded, 'utf8')
+
+      const claimRes = await fetch('/api/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ solanaAddress, email }),
+        body: JSON.stringify({
+          address: nextAddress,
+          message,
+          nonce: eligibilityData.nonce,
+          signature: encodeBase64(signed.signature),
+        }),
       })
-      const data = await res.json()
-      setResult(data)
 
-      if (data.success) {
-        setStep('claimed')
-      }
-    } catch {
-      setResult({ error: 'Claim failed. Try again.' })
+      const claimData = await claimRes.json()
+      if (!claimRes.ok) throw new Error(claimData.error || 'Claim failed')
+
+      setEligibility({
+        ...eligibilityData,
+        eligible: false,
+        alreadyClaimed: true,
+      })
+      setSuccess(`Claim successful — ${claimData.creditsGranted} credits granted.`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Claim failed')
+    } finally {
+      setClaiming(false)
     }
-    setLoading(false)
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="max-w-2xl mx-auto px-4 py-16">
-        {/* Header */}
+    <main className="min-h-screen bg-black px-6 py-16 text-white font-mono">
+      <div className="mx-auto max-w-4xl">
         <div className="mb-12 text-center">
-          <Badge className="mb-4 bg-green-900/50 text-green-400 border-green-800">
-            PHASE 1 — COMMUNITY REWARDS
-          </Badge>
-          <h1 className="text-3xl font-bold tracking-tight mb-3 font-mono">
-            CLAIM FREE AGENT CREDITS
-          </h1>
-          <p className="text-zinc-500 text-sm max-w-md mx-auto">
-            Hold Solana Agentbot tokens? Claim free credits for agentbot.sh.
-            Your tokens, your rewards.
+          <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Community Rewards</p>
+          <h1 className="mt-4 text-4xl font-bold uppercase tracking-tighter md:text-6xl">Claim Your Agentbot Credits</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-zinc-400">
+            Hold the community Solana token, verify your wallet, and unlock credits for the Agentbot platform.
           </p>
         </div>
 
-        {/* Tier Table */}
-        <div className="border border-zinc-800 rounded-lg mb-8 overflow-hidden">
-          <div className="grid grid-cols-3 text-xs uppercase tracking-widest text-zinc-500 border-b border-zinc-800">
-            <div className="p-3">Tier</div>
-            <div className="p-3">Min. Tokens</div>
-            <div className="p-3">Credits/mo</div>
-          </div>
-          <div className="grid grid-cols-3 text-sm border-b border-zinc-800 hover:bg-zinc-900/50">
-            <div className="p-3 font-mono">🐋 Whale</div>
-            <div className="p-3 text-zinc-400">100,000+</div>
-            <div className="p-3 text-green-400 font-bold">500</div>
-          </div>
-          <div className="grid grid-cols-3 text-sm border-b border-zinc-800 hover:bg-zinc-900/50">
-            <div className="p-3 font-mono">🔧 Builder</div>
-            <div className="p-3 text-zinc-400">10,000+</div>
-            <div className="p-3 text-green-400 font-bold">150</div>
-          </div>
-          <div className="grid grid-cols-3 text-sm hover:bg-zinc-900/50">
-            <div className="p-3 font-mono">💎 Holder</div>
-            <div className="p-3 text-zinc-400">1,000+</div>
-            <div className="p-3 text-green-400 font-bold">50</div>
-          </div>
-        </div>
-
-        {/* Step 1: Enter Solana Address */}
-        {step === 'input' && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
-                Solana Wallet Address
-              </label>
-              <Input
-                value={solanaAddress}
-                onChange={(e) => setSolanaAddress(e.target.value)}
-                placeholder="Enter your Solana wallet address"
-                className="bg-zinc-900 border-zinc-800 text-white font-mono text-sm"
-              />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
+          <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+            <div className="flex items-start gap-3">
+              <Wallet className="mt-1 h-5 w-5 text-blue-400" />
+              <div>
+                <h2 className="text-lg font-bold uppercase tracking-tight text-white">Verify Solana Wallet</h2>
+                <p className="mt-2 text-sm leading-6 text-zinc-400">
+                  Connect your Solana wallet, check your live token balance, then sign once to claim credits.
+                </p>
+              </div>
             </div>
-            <Button
-              onClick={checkBalance}
-              disabled={!solanaAddress || checking}
-              className="w-full bg-white text-black hover:bg-zinc-200 font-mono uppercase tracking-widest text-xs"
-            >
-              {checking ? 'Checking...' : 'Check Balance'}
-            </Button>
 
-            {result?.error && (
-              <div className="p-3 border border-red-900 bg-red-900/20 rounded text-red-400 text-sm">
-                {result.error}
-                {result.minimumRequired && (
-                  <p className="mt-1 text-zinc-500">
-                    Minimum: {result.minimumRequired.toLocaleString()} tokens
-                  </p>
-                )}
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                onClick={connectAndCheck}
+                disabled={checking || claiming}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-black hover:bg-zinc-200 disabled:opacity-50"
+              >
+                <Wallet className="h-3.5 w-3.5" />
+                {checking ? 'Checking…' : 'Connect Wallet'}
+              </button>
+              <button
+                onClick={claim}
+                disabled={!eligibility?.eligible || checking || claiming}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 hover:border-zinc-500 hover:text-white disabled:opacity-40"
+              >
+                <Coins className="h-3.5 w-3.5" />
+                {claiming ? 'Claiming…' : 'Claim Credits'}
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-zinc-800 bg-black p-4">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Connected Address</div>
+              <div className="mt-2 break-all text-sm text-blue-300">{address || 'Connect your wallet to begin'}</div>
+            </div>
+
+            {eligibility && (
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Balance</div>
+                  <div className="mt-2 text-lg font-bold text-white">{eligibility.balance.ui.toLocaleString()}</div>
+                </div>
+                <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Tier</div>
+                  <div className="mt-2 text-lg font-bold text-white">{eligibility.tier?.label || 'Not eligible'}</div>
+                </div>
+                <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Credits</div>
+                  <div className="mt-2 text-lg font-bold text-white">{eligibility.tier?.credits || 0}</div>
+                </div>
               </div>
             )}
-          </div>
-        )}
 
-        {/* Step 2: Verify & Claim */}
-        {step === 'verify' && result?.eligible && (
+            {error ? <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div> : null}
+            {success ? <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{success}</div> : null}
+          </div>
+
           <div className="space-y-4">
-            <div className="p-4 border border-green-900 bg-green-900/20 rounded">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-zinc-400 text-sm">Your Balance</span>
-                <span className="text-white font-mono font-bold">
-                  {result.balance?.toLocaleString()} tokens
-                </span>
+            {tierCopy.map((tier) => (
+              <div key={tier.label} className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-bold uppercase text-white">{tier.label}</div>
+                  <div className="text-xs font-bold uppercase text-blue-300">{tier.credits} credits</div>
+                </div>
+                <div className="mt-2 text-sm text-zinc-400">{tier.desc}</div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-400 text-sm">Your Tier</span>
-                <Badge className="bg-green-900 text-green-400 border-green-700">
-                  {result.tier}
-                </Badge>
-              </div>
-              <div className="flex justify-between items-center mt-2">
-                <span className="text-zinc-400 text-sm">Credits</span>
-                <span className="text-green-400 font-bold font-mono">
-                  {result.credits}/mo
-                </span>
+            ))}
+
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-400" />
+                <div>
+                  <div className="text-sm font-bold uppercase text-white">One claim per wallet</div>
+                  <div className="mt-2 text-sm leading-6 text-zinc-400">
+                    Claims are tied to the verified Solana wallet address, so each holder can claim once.
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
-                Your Email (agentbot.sh account)
-              </label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="bg-zinc-900 border-zinc-800 text-white text-sm"
-              />
-              <p className="text-zinc-600 text-xs mt-1">
-                We&apos;ll link credits to this account. New accounts auto-created.
-              </p>
-            </div>
-
-            <Button
-              onClick={claimCredits}
-              disabled={!email || loading}
-              className="w-full bg-green-600 hover:bg-green-500 text-white font-mono uppercase tracking-widest text-xs"
+            <Link
+              href="/token"
+              className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-white"
             >
-              {loading ? 'Claiming...' : `Claim ${result.credits} Free Credits`}
-            </Button>
-
-            <button
-              onClick={() => {
-                setStep('input')
-                setResult(null)
-              }}
-              className="w-full text-zinc-600 text-xs hover:text-zinc-400 transition-colors"
-            >
-              ← Back
-            </button>
+              View community token details
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-        )}
-
-        {/* Step 3: Claimed */}
-        {step === 'claimed' && (
-          <div className="text-center space-y-4">
-            <div className="p-6 border border-green-900 bg-green-900/20 rounded">
-              <div className="text-4xl mb-3">🎉</div>
-              <h2 className="text-xl font-bold text-white mb-2">
-                {result?.alreadyClaimed ? 'Already Claimed' : 'Credits Claimed!'}
-              </h2>
-              <p className="text-zinc-400 text-sm">
-                {result?.message ||
-                  `${result?.credits} credits have been added to your account.`}
-              </p>
-            </div>
-
-            <a
-              href="/dashboard"
-              className="inline-block bg-white text-black px-6 py-3 rounded font-mono text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-            >
-              Go to Dashboard →
-            </a>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className="mt-12 pt-6 border-t border-zinc-900 text-center">
-          <p className="text-zinc-600 text-xs">
-            Solana token:{' '}
-            <code className="text-zinc-500">
-              9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
-            </code>
-          </p>
-          <p className="text-zinc-700 text-xs mt-2">
-            Only verified holders can claim. One claim per wallet.
-          </p>
         </div>
       </div>
     </main>
   )
 }
+
