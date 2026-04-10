@@ -21,11 +21,17 @@ export async function POST(
     return owned.error
   }
   const { user } = owned
-  const environmentId = getRailwayEnvironmentId()
-  const railwayService = await resolveRailwayService({
-    agentId: user.openclawInstanceId,
-    openclawUrl: user.openclawUrl,
-  })
+  let environmentId: string
+  let railwayService: Awaited<ReturnType<typeof resolveRailwayService>>
+  try {
+    environmentId = getRailwayEnvironmentId()
+    railwayService = await resolveRailwayService({
+      agentId: user.openclawInstanceId,
+      openclawUrl: user.openclawUrl,
+    })
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 503 })
+  }
 
   try {
     // Clear agent memories from DB
