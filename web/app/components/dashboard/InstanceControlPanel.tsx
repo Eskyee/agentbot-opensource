@@ -123,7 +123,7 @@ function ActionButton({ label, detail, icon: Icon, accent, loading, disabled, on
     : 'border-zinc-800 bg-zinc-950/70 text-zinc-300 hover:border-zinc-700 hover:text-white'
   return (
     <button onClick={onClick} disabled={disabled}
-      className={cn('group flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50', accentClass)}>
+      className={cn('group flex w-full items-center justify-between gap-4 overflow-hidden rounded-2xl border px-4 py-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50', accentClass)>
       <div className="flex items-start gap-3">
         <div className="mt-0.5 rounded-xl border border-current/20 p-2">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
@@ -156,7 +156,7 @@ export function InstanceSidebar({ instance, stats, skillsManagerUrl, configManag
 
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Instance Snapshot</p>
         <dl className="mt-4 space-y-3">
           {[
@@ -176,7 +176,7 @@ export function InstanceSidebar({ instance, stats, skillsManagerUrl, configManag
         </dl>
       </div>
 
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Launch Pads</p>
         <div className="mt-3 space-y-2">
           {quickLinks.map((link) => {
@@ -193,9 +193,9 @@ export function InstanceSidebar({ instance, stats, skillsManagerUrl, configManag
         </div>
       </div>
 
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
-        <div className="flex items-start gap-3">
-          <div className="rounded-xl border border-zinc-700 p-2 text-zinc-300">
+      <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-5">
+        <div className="flex items-start gap-3 min-w-0">
+          <div className="rounded-xl border border-zinc-700 p-2 text-zinc-300 flex-shrink-0">
             <LifeBuoy className="h-4 w-4" />
           </div>
           <div>
@@ -233,8 +233,8 @@ export function InstanceControlPanel({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-300/80">Instance Controls</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <h2 className="text-xl font-bold uppercase tracking-tight text-white">{instanceName}</h2>
+            <div className="mt-2 flex flex-wrap items-center gap-2 min-w-0">
+              <h2 className="text-lg font-bold uppercase tracking-tight text-white truncate max-w-full">{instanceName}</h2>
               <StatusBadge status={instance.status || 'unknown'} size="md" />
               <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-black/40 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
                 <StatusDot status={runtimeHealth === 'healthy' ? 'running' : 'starting'} />
@@ -242,7 +242,7 @@ export function InstanceControlPanel({
               </span>
             </div>
           </div>
-          <div className="min-w-0 rounded-xl border border-zinc-800 bg-black/40 p-3 lg:w-64">
+          <div className="min-w-0 overflow-hidden rounded-xl border border-zinc-800 bg-black/40 p-3 lg:w-64">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[9px] uppercase tracking-[0.18em] text-zinc-600">Gateway Pairing</p>
@@ -271,18 +271,18 @@ export function InstanceControlPanel({
       {/* Cards */}
       <div className="space-y-5 p-4 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Managed - {instance.userId.slice(0, 8)}</p>
-            <h3 className="mt-2 text-base font-bold uppercase tracking-tight text-white">{instanceName}</h3>
+          <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 truncate">Managed - {instance.userId.slice(0, 8)}</p>
+            <h3 className="mt-2 text-sm font-bold uppercase tracking-tight text-white truncate">{instanceName}</h3>
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-full border border-zinc-700 bg-black/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-100">{managedSpecs.cpuRam}</span>
               <span className="rounded-full border border-zinc-700 bg-black/40 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-zinc-100">{managedSpecs.storage}</span>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="flex items-start gap-2.5">
-              <div className="rounded-lg border border-amber-400/20 bg-amber-400/10 p-1.5 text-amber-200">
+          <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className="rounded-lg border border-amber-400/20 bg-amber-400/10 p-1.5 text-amber-200 flex-shrink-0">
                 <CalendarClock className="h-4 w-4" />
               </div>
               <div>
@@ -297,9 +297,9 @@ export function InstanceControlPanel({
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-            <div className="flex items-start gap-2.5">
-              <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-1.5 text-blue-300">
+          <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 p-1.5 text-blue-300 flex-shrink-0">
                 <Star className="h-4 w-4" />
               </div>
               <div>
@@ -321,7 +321,7 @@ export function InstanceControlPanel({
         </div>
 
         {/* Lifecycle */}
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
+        <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Lifecycle</p>
