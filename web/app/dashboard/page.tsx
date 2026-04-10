@@ -597,9 +597,9 @@ function DashboardContent() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-zinc-900 border border-zinc-800 p-6">
+              <div className="overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-6">
               <div className="mb-4 flex items-start justify-between gap-4">
-                <div>
+                <div className="min-w-0">
                   <h2 className="text-xs font-bold uppercase tracking-widest">
                     Agent Runtime
                   </h2>
@@ -652,7 +652,7 @@ function DashboardContent() {
               </dl>
             </div>
 
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
+            <div className="overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-6">
               <div className="mb-4">
                 <h2 className="text-xs font-bold uppercase tracking-widest">
                   Runtime Signals
@@ -702,7 +702,7 @@ function DashboardContent() {
               configManagerUrl={configManagerUrl}
             />
 
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
+            <div className="overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
                 Help & Support
               </h2>

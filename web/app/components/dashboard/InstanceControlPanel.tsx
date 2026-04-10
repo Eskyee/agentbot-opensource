@@ -231,9 +231,9 @@ export function InstanceControlPanel({
       {/* Header */}
       <div className="border-b border-zinc-800 bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(24,24,27,0.92),_rgba(9,9,11,0.96))] px-4 py-5 sm:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
+          <div className="min-w-0 flex-1 overflow-hidden">
             <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-amber-300/80">Instance Controls</p>
-            <div className="mt-2 flex flex-wrap items-center gap-2 min-w-0">
+            <div className="mt-2 flex flex-wrap items-center gap-2 overflow-hidden">
               <h2 className="text-lg font-bold uppercase tracking-tight text-white truncate max-w-full">{instanceName}</h2>
               <StatusBadge status={instance.status || 'unknown'} size="md" />
               <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-black/40 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
