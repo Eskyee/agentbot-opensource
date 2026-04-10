@@ -133,7 +133,7 @@ function ActionButton({ label, detail, icon: Icon, accent, loading, disabled, on
           <p className="mt-1 text-xs normal-case tracking-normal text-current/70">{detail}</p>
         </div>
       </div>
-      <ArrowUpRight className="h-4 w-4 opacity-40 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+      <ArrowUpRight className="h-4 w-4 shrink-0 opacity-40" />
     </button>
   )
 }
