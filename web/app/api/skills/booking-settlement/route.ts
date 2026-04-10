@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 interface Booking {
   id: string;
@@ -63,6 +64,8 @@ async function executeUSDCTransfer(
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('booking-settlement');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action, bookingId, booking } = body;

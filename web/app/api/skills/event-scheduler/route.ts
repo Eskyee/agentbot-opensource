@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 interface ScheduledEvent {
   id: string;
@@ -23,6 +24,8 @@ const VALID_CHANNELS = ['telegram', 'discord', 'whatsapp', 'email', 'twitter', '
 const VALID_RECURRING = ['daily', 'weekly', 'monthly', null];
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('event-scheduler');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action, ...data } = body;
@@ -105,6 +108,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('event-scheduler');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'event-scheduler',
     name: 'Event Scheduler',

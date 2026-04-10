@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 interface Venue {
   id: string;
@@ -37,6 +38,8 @@ const VALID_TYPES = ['underground', 'warehouse', 'club', 'rooftop', 'outdoor', '
 const VALID_AMENTIES = ['sound-system', 'bar', 'vip', 'stage', 'parking', 'catering', 'locker', 'booth', 'view'];
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('venue-finder');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action, ...data } = body;
@@ -148,6 +151,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('venue-finder');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'venue-finder',
     name: 'Venue Finder',

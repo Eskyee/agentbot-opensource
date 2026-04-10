@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 interface Track {
   id: string;
@@ -37,6 +38,8 @@ const camelotWheel: Record<string, string[]> = {
 };
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('setlist-oracle');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { 
@@ -224,6 +227,8 @@ function calculateFlowScore(tracks: Track[]): number {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('setlist-oracle');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'setlist-oracle',
     name: 'Setlist Oracle',

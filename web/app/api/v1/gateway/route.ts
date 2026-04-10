@@ -179,18 +179,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 6. Forward request to plugin
-    // For now, return a mock response (in production, forward to actual plugin)
-    const responseData = {
-      plugin: matchedPlugin.id,
-      message: `Request processed by ${matchedPlugin.id} plugin`,
-      timestamp: new Date().toISOString(),
-      payment: {
-        method: paymentMethod,
-        receipt: mppReceipt || sessionReceipt || null,
-      },
-    };
-
     // Build response headers
     const responseHeaders: Record<string, string> = {
       ...cors,
@@ -208,9 +196,24 @@ export async function POST(req: NextRequest) {
       )?.remaining || '0';
     }
 
-    return NextResponse.json(responseData, {
-      status: 200,
-      headers: responseHeaders,
+    const upstreamResponse = await fetch(matchedPlugin.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
+    const upstreamBody = await upstreamResponse.text();
+
+    return new NextResponse(upstreamBody, {
+      status: upstreamResponse.status,
+      headers: {
+        ...responseHeaders,
+        'Content-Type': contentType,
+      },
     });
 
   } catch (error) {

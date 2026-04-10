@@ -18,6 +18,10 @@ const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
 const OPENCLAW_HOME_DIR = '/root/.openclaw';
 const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`;
 const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`;
+const CONTROL_UI_ALLOWED_ORIGINS = [
+  process.env.CONTROL_UI_ORIGIN || process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh',
+  process.env.CONTROL_UI_COMPAT_ORIGIN,
+].filter(Boolean);
 
 // Plan → CPU (millicores) + Memory (MB)
 const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }> = {
@@ -160,9 +164,9 @@ export async function createContainer(
       auth: { mode: 'token', token: gatewayToken },
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
-        allowedOrigins: ['*'],
-        dangerouslyDisableDeviceAuth: true,
-        dangerouslyAllowHostHeaderOriginFallback: true,
+        allowedOrigins: CONTROL_UI_ALLOWED_ORIGINS,
+        dangerouslyDisableDeviceAuth: false,
+        dangerouslyAllowHostHeaderOriginFallback: false,
       },
       http: { endpoints: { chatCompletions: { enabled: true } } },
     },

@@ -34,18 +34,29 @@ export async function GET(
     })
 
     if (!response.ok) {
-      // Fallback to mock data if backend unavailable
-      const stats = {
-        agentId,
-        messagesProcessed: Math.floor(Math.random() * 10000),
-        messagesPerHour: Math.floor(Math.random() * 500),
-        averageResponseTime: Math.floor(Math.random() * 2000),
-        uptime: Math.floor(Math.random() * 864000),
-        successRate: (90 + Math.random() * 10).toFixed(2),
-        errorRate: (0 + Math.random() * 10).toFixed(2),
-        timestamp: new Date().toISOString(),
-      }
-      return NextResponse.json({ stats, status: 'mock' })
+      return NextResponse.json(
+        {
+          error: 'Agent stats temporarily unavailable',
+          stats: {
+            agentId,
+            cpu: null,
+            memory: null,
+            memoryPercent: null,
+            network: null,
+            uptime: null,
+            uptimeFormatted: null,
+            status: 'degraded',
+            pids: null,
+            messagesProcessed: null,
+            messagesPerHour: null,
+            averageResponseTime: null,
+            successRate: null,
+            errorRate: null,
+          },
+          status: 'degraded',
+        },
+        { status: 502 }
+      )
     }
 
     const data = await response.json()

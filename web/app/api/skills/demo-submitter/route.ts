@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 const mockQueue = [
   { id: 'd1', title: 'Dark Matter', artist: 'Techno Tom', status: 'pending', submitted: '2026-03-10' },
@@ -6,6 +7,8 @@ const mockQueue = [
 ];
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('demo-submitter');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action, ...data } = body;
@@ -33,6 +36,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('demo-submitter');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'demo-submitter',
     name: 'Demo Submitter',

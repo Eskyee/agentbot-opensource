@@ -7,11 +7,20 @@ import crypto from 'crypto'
  * Session tokens are HMAC-signed to prevent forgery
  */
 
-const SIGNING_SECRET = process.env.FARCASTER_SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'farcaster-fallback-secret'
+function getFarcasterSigningSecret(): string {
+  const secret = process.env.FARCASTER_SESSION_SECRET || process.env.NEXTAUTH_SECRET
+  if (secret) return secret
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FARCASTER_SESSION_SECRET or NEXTAUTH_SECRET must be set in production')
+  }
+
+  return 'build-placeholder'
+}
 
 function signSession(payload: object): string {
   const data = Buffer.from(JSON.stringify(payload)).toString('base64url')
-  const signature = crypto.createHmac('sha256', SIGNING_SECRET).update(data).digest('base64url')
+  const signature = crypto.createHmac('sha256', getFarcasterSigningSecret()).update(data).digest('base64url')
   return `${data}.${signature}`
 }
 
@@ -28,8 +37,10 @@ export async function POST(req: NextRequest) {
 
     // Token gating check
     if (address) {
+      const tokenCheckUrl = new URL('/api/auth/token-gating/verify', req.url)
+      tokenCheckUrl.searchParams.set('address', address)
       const tokenCheckResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/auth/token-gating/verify?address=${address}`,
+        tokenCheckUrl,
         { method: 'GET' }
       )
 

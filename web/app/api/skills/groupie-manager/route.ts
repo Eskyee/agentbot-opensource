@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 export const dynamic = 'force-dynamic';
 
@@ -54,6 +55,8 @@ const initialFans: Fan[] = [
 initialFans.forEach(f => fans.set(f.id, f));
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('groupie-manager');
+  if (disabled) return disabled;
   try {
     // Auth required in production, optional in demo mode
     const isDemoMode = process.env.SKIP_AUTH_FOR_DEMO === 'true';
@@ -218,6 +221,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('groupie-manager');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'groupie-manager',
     name: 'Groupie Manager',
