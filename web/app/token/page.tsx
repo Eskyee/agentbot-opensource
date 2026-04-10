@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowUpRight, Coins, ExternalLink, Waves } from 'lucide-react'
 import { COMMUNITY_TOKEN, getCommunityTokenStats } from '@/app/lib/communityTokenStats'
 
@@ -121,6 +122,21 @@ export default async function TokenPage() {
                 supply, treasury, or trading activity.
               </p>
             </div>
+
+            <figure className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
+              <Image
+                src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje"
+                alt="Agentbot community token artwork"
+                width={1600}
+                height={900}
+                className="h-auto w-full object-cover"
+                priority
+                unoptimized
+              />
+              <figcaption className="border-t border-zinc-800 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+                Community-run token supporting the Agentbot platform
+              </figcaption>
+            </figure>
 
             <div className="flex flex-wrap gap-3">
               <a
