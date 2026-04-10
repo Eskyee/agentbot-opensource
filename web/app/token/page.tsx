@@ -32,7 +32,8 @@ function formatUsdMoney(n: number | null): string {
   if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(2) + 'M'
   if (n >= 1_000) return '$' + (n / 1_000).toFixed(2) + 'K'
   if (n >= 1) return '$' + n.toFixed(2)
-  if (n >= 0.01) return '$' + n.toFixed(4)
+  if (n >= 0.000001) return '$' + n.toFixed(8)
+  if (n > 0) return '$' + n.toFixed(10)
   return '$0.00'
 }
 
@@ -174,9 +175,9 @@ export default async function TokenPage() {
             <StatCard label="Status" value={stats.status} detail={stats.statusNote} />
             <StatCard label="Progress" value={stats.progress === null ? '—' : `${stats.progress}%`} />
             <StatCard
-              label="Price (USD)"
+              label="Price USD"
               value={formatUsdMoney(stats.priceUsd)}
-              detail={`Exact: ${formatUsdExact(stats.priceUsd)} · ${formatNative(stats.priceNative)}`}
+              detail={formatNative(stats.priceNative)}
             />
             <StatCard label="Market Cap" value={formatUsd(stats.marketCapUsd)} />
             <StatCard label="24h Volume" value={formatUsd(stats.volume24hUsd)} />
