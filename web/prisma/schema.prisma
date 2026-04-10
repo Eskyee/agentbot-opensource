@@ -766,3 +766,18 @@ model usage_logs {
   @@index([user_id, created_at], map: "idx_usage_logs_user_created")
   @@index([agent_id, created_at], map: "idx_usage_logs_agent_created")
 }
+
+model credit_claims {
+  id             Int       @id @default(autoincrement())
+  solana_address String    @unique
+  email          String
+  balance        Decimal   @db.Decimal(20, 6)
+  credits        Int
+  tier           String
+  user_id        String
+  created_at     DateTime  @default(now())
+
+  @@index([solana_address], map: "idx_credit_claims_solana")
+  @@index([user_id], map: "idx_credit_claims_user")
+  @@index([created_at], map: "idx_credit_claims_created")
+}
