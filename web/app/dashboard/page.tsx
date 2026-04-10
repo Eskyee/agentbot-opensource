@@ -8,7 +8,7 @@ import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
-import { InstanceControlPanel } from '@/app/components/dashboard/InstanceControlPanel'
+import { InstanceControlPanel, InstanceSidebar } from '@/app/components/dashboard/InstanceControlPanel'
 import { StatusBadge } from '@/app/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
@@ -694,6 +694,13 @@ function DashboardContent() {
                 )}
               </dl>
             </div>
+
+            <InstanceSidebar
+              instance={instance!}
+              stats={stats}
+              skillsManagerUrl={skillsManagerUrl}
+              configManagerUrl={configManagerUrl}
+            />
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
