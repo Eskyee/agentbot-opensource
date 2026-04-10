@@ -571,7 +571,7 @@ function DashboardContent() {
             ))}
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.9fr)]">
+          <div className="grid gap-6 lg:grid-cols-2">
             <div>
               <InstanceControlPanel
                 instance={instance}

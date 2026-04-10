@@ -311,9 +311,8 @@ export function InstanceControlPanel({
         </div>
       </div>
 
-      <div className="grid gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:px-8">
-        <div className="space-y-6">
-          <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1.1fr)_minmax(0,0.8fr)]">
+      <div className="space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div className="rounded-[24px] border border-zinc-800 bg-[linear-gradient(180deg,_rgba(255,255,255,0.03),_rgba(9,9,11,0.9))] p-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -392,7 +391,7 @@ export function InstanceControlPanel({
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-zinc-800 bg-[linear-gradient(180deg,_rgba(24,24,27,0.78),_rgba(9,9,11,0.92))] p-5">
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-5 sm:col-span-2 xl:col-span-3">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Lifecycle</p>
