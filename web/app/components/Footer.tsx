@@ -77,6 +77,7 @@ export default function Footer() {
             {[
               { href: '/partner', label: 'Partner' },
               { href: '/token', label: '$AGENTBOT' },
+              { href: '/basefm', label: 'baseFM Live' },
               { href: '/solana', label: 'Solana' },
               { href: '/claim', label: 'Claim Credits' },
               { href: '/buddies', label: 'Buddies' },
