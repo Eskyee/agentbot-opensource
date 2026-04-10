@@ -78,6 +78,7 @@ export default function Footer() {
               { href: '/partner', label: 'Partner' },
               { href: '/token', label: '$AGENTBOT' },
               { href: '/solana', label: 'Solana' },
+              { href: '/claim', label: 'Claim Credits' },
               { href: '/buddies', label: 'Buddies' },
               { href: 'https://github.com/Eskyee/agentbot-opensource', label: 'GitHub' },
               { href: 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource', label: 'Gitlawb' },

@@ -62,6 +62,7 @@ export default function Navbar() {
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
+              <NavLink href="/claim" current={pathname}>Claim</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
             </>
           ) : (
@@ -75,6 +76,7 @@ export default function Navbar() {
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/marketplace" current={pathname}>Marketplace</NavLink>
+              <NavLink href="/claim" current={pathname}>Claim</NavLink>
               <NavLink href="/demo" current={pathname}>Demo</NavLink>
               <NavLink href="/documentation" current={pathname}>Docs</NavLink>
             </>
@@ -137,6 +139,7 @@ export default function Navbar() {
                   <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
+                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
                   <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                 </MobileSection>
                 <MobileSection label="Account">
@@ -162,6 +165,7 @@ export default function Navbar() {
                   <MobileLink href="/sponsor" onClick={closeMenu}>Sponsor</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agent Templates</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
+                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
                   <MobileLink href="/demo" onClick={closeMenu}>Try Demo</MobileLink>
                   <MobileLink href="https://docs.agentbot.raveculture.xyz" onClick={closeMenu}>Docs</MobileLink>
                 </MobileSection>

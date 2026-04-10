@@ -64,6 +64,21 @@ export default function SponsorPage() {
 
       <DashboardContent>
         <div className="max-w-4xl mx-auto">
+          {/* Solana Claim Banner */}
+          <div className="border border-purple-900 bg-purple-900/20 p-6 mb-12 text-center">
+            <h3 className="text-white font-bold text-lg mb-2">🐋 Solana Agentbot Holders — Claim Free Credits</h3>
+            <p className="text-zinc-400 text-sm mb-4">
+              Hold Solana Agentbot tokens? Claim free agent credits every month.
+              Three tiers based on your holdings — up to 500 credits/mo for Whales.
+            </p>
+            <Link
+              href="/claim"
+              className="inline-block bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm px-6 py-3 transition-colors"
+            >
+              Claim Your Credits →
+            </Link>
+          </div>
+
           {/* Hero */}
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-white mb-4">Support Open Source Development</h2>
