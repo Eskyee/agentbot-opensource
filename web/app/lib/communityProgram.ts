@@ -121,8 +121,10 @@ export async function ensureCommunityProgramTables() {
       status TEXT NOT NULL DEFAULT 'active',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE(user_id, badge_key)
-    );
+    )
+  `)
 
+  await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS community_governance_proposals (
       id TEXT PRIMARY KEY,
       slug TEXT NOT NULL UNIQUE,
@@ -134,8 +136,10 @@ export async function ensureCommunityProgramTables() {
       ends_at TIMESTAMPTZ,
       created_by TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
+    )
+  `)
 
+  await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS community_governance_votes (
       id TEXT PRIMARY KEY,
       proposal_id TEXT NOT NULL,
@@ -145,13 +149,23 @@ export async function ensureCommunityProgramTables() {
       voting_power INTEGER NOT NULL DEFAULT 1,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE(proposal_id, user_id)
-    );
+    )
+  `)
 
-    CREATE INDEX IF NOT EXISTS idx_community_badges_user ON community_badges(user_id);
-    CREATE INDEX IF NOT EXISTS idx_community_badges_key ON community_badges(badge_key);
-    CREATE INDEX IF NOT EXISTS idx_community_proposals_status ON community_governance_proposals(status);
-    CREATE INDEX IF NOT EXISTS idx_community_votes_proposal ON community_governance_votes(proposal_id);
-    CREATE INDEX IF NOT EXISTS idx_community_votes_user ON community_governance_votes(user_id);
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_community_badges_user ON community_badges(user_id)
+  `)
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_community_badges_key ON community_badges(badge_key)
+  `)
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_community_proposals_status ON community_governance_proposals(status)
+  `)
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_community_votes_proposal ON community_governance_votes(proposal_id)
+  `)
+  await prisma.$executeRawUnsafe(`
+    CREATE INDEX IF NOT EXISTS idx_community_votes_user ON community_governance_votes(user_id)
   `)
 }
 

@@ -175,9 +175,114 @@ export async function ensureCreditClaimsTable() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `)
+
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'credit_claims'
+          AND column_name = 'solana_address'
+      ) AND NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'credit_claims'
+          AND column_name = 'wallet_address'
+      ) THEN
+        ALTER TABLE credit_claims RENAME COLUMN solana_address TO wallet_address;
+      END IF;
+    END $$;
+  `)
+
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'credit_claims'
+          AND column_name = 'id'
+          AND data_type <> 'text'
+      ) THEN
+        ALTER TABLE credit_claims ALTER COLUMN id DROP DEFAULT;
+        ALTER TABLE credit_claims ALTER COLUMN id TYPE TEXT USING id::text;
+      END IF;
+    END $$;
+  `)
+
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE credit_claims
+      ADD COLUMN IF NOT EXISTS token_address TEXT,
+      ADD COLUMN IF NOT EXISTS balance_raw TEXT,
+      ADD COLUMN IF NOT EXISTS balance_ui NUMERIC,
+      ADD COLUMN IF NOT EXISTS claim_source TEXT NOT NULL DEFAULT 'solana-community',
+      ADD COLUMN IF NOT EXISTS tx_signature TEXT
+  `)
+
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'credit_claims'
+          AND column_name = 'email'
+          AND is_nullable = 'NO'
+      ) THEN
+        ALTER TABLE credit_claims ALTER COLUMN email DROP NOT NULL;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'credit_claims'
+          AND column_name = 'balance'
+          AND is_nullable = 'NO'
+      ) THEN
+        ALTER TABLE credit_claims ALTER COLUMN balance DROP NOT NULL;
+      END IF;
+    END $$;
+  `)
+
+  await prisma.$executeRawUnsafe(`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'credit_claims'
+          AND column_name = 'balance'
+      ) THEN
+        UPDATE credit_claims
+           SET token_address = COALESCE(token_address, '${COMMUNITY_REWARDS_TOKEN}'),
+               balance_ui = COALESCE(balance_ui, balance),
+               balance_raw = COALESCE(
+                 balance_raw,
+                 CASE
+                   WHEN balance IS NOT NULL THEN CAST(ROUND(balance * 1000000) AS BIGINT)::TEXT
+                   ELSE '0'
+                 END
+               )
+         WHERE token_address IS NULL
+            OR balance_ui IS NULL
+            OR balance_raw IS NULL;
+      ELSE
+        UPDATE credit_claims
+           SET token_address = COALESCE(token_address, '${COMMUNITY_REWARDS_TOKEN}'),
+               balance_ui = COALESCE(balance_ui, 0),
+               balance_raw = COALESCE(balance_raw, '0')
+         WHERE token_address IS NULL
+            OR balance_ui IS NULL
+            OR balance_raw IS NULL;
+      END IF;
+    END $$;
+  `)
 }
 
 export async function getCreditClaimByWallet(walletAddress: string) {
+  await ensureCreditClaimsTable()
+
   const rows = await prisma.$queryRawUnsafe<
     Array<{
       id: string
