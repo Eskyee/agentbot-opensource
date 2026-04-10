@@ -33,6 +33,9 @@ dotenv.config();
 
 // Deployment version: track app changes for cache busting
 const DEPLOYMENT_VERSION = '2026.03.14.002';
+const OPENCLAW_HOME_DIR = '/root/.openclaw';
+const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`;
+const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`;
 
 // Plan resources — matches pricing tiers (Solo £29, Collective £69, Label £149, Network £499)
 const PLAN_RESOURCES: Record<string, { memory: string; cpus: string }> = {
@@ -254,7 +257,7 @@ const healLegacyModelInContainer = async (containerName: string): Promise<{ heal
   try {
     const script = `
 const fs=require('fs');
-const p='/home/node/.openclaw/openclaw.json';
+const p='${OPENCLAW_CONFIG_PATH}';
 const legacy={"openrouter/google/gemini-2.0-flash-exp:free":"openrouter/openai/gpt-4o-mini"};
 if(!fs.existsSync(p)){console.log('skip:no-config');process.exit(0)}
 const c=JSON.parse(fs.readFileSync(p,'utf8'));
@@ -297,7 +300,7 @@ const getContainerInspect = async (containerName: string): Promise<ContainerInsp
 
 const backupContainerData = async (containerName: string, inspect: ContainerInspect): Promise<string | null> => {
   const instanceId = containerName.replace('openclaw-', '');
-  const mount = inspect.Mounts.find((m) => m.Destination === '/home/node/.openclaw');
+  const mount = inspect.Mounts.find((m) => m.Destination === OPENCLAW_HOME_DIR);
   if (!mount) {
     return null;
   }
@@ -333,7 +336,7 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
     throw new Error('Could not determine host port');
   }
 
-  const mount = inspect.Mounts.find((m) => m.Destination === '/home/node/.openclaw');
+  const mount = inspect.Mounts.find((m) => m.Destination === OPENCLAW_HOME_DIR);
   if (!mount) {
     throw new Error('Could not determine data mount');
   }
@@ -353,7 +356,7 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
     '-p', `${hostPort}:18789`,
     `--memory=${resources.memory}`,
     `--cpus=${resources.cpus}`,
-    '-v', `${mountSource}:/home/node/.openclaw`,
+    '-v', `${mountSource}:${OPENCLAW_HOME_DIR}`,
     image
   ];
 
@@ -364,7 +367,7 @@ const getContainerRuntimeVersion = async (containerName: string): Promise<string
   try {
     const script = `
 const fs=require('fs');
-const p='/home/node/.openclaw/openclaw.json';
+const p='${OPENCLAW_CONFIG_PATH}';
 if(!fs.existsSync(p)){console.log('');process.exit(0)}
 const c=JSON.parse(fs.readFileSync(p,'utf8'));
 console.log(c?.meta?.lastTouchedVersion||'');
@@ -606,7 +609,7 @@ const createOpenClawConfig = (
   const config: Record<string, unknown> = {
     agents: {
       defaults: {
-        workspace: '~/.openclaw/workspace',
+        workspace: OPENCLAW_WORKSPACE_DIR,
         model: { primary: model, fallbacks },
         imageMaxDimensionPx: 1200,
         userTimezone: userTimezone || 'Europe/London',
@@ -659,9 +662,9 @@ const createOpenClawConfig = (
           'awk', 'sed', 'tar', 'zip', 'unzip', 'docker', 'ps', 'df', 'du',
         ],
         allowedPaths: [
-          '~/.openclaw/workspace',
+          OPENCLAW_WORKSPACE_DIR,
           '/tmp',
-          '/home/node',
+          '/root',
         ],
         denyPaths: [
           '/etc/shadow',
@@ -950,7 +953,7 @@ app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, r
       '--memory', resources.memory,
       '--cpus', resources.cpus,
       ...envArgs,
-      '-v', `${volumeName}:/home/node/.openclaw`,
+      '-v', `${volumeName}:${OPENCLAW_HOME_DIR}`,
       '-p', `${assignedPort}:18789`,
       '-p', `${assignedPort + 2}:18791`,
       OPENCLAW_IMAGE,
@@ -1058,7 +1061,7 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
         '--restart', 'unless-stopped',
         '--memory', resources.memory,
         '--cpus', resources.cpus,
-        '-v', `openclaw-data-${agentId}:/home/node/.openclaw`,
+        '-v', `openclaw-data-${agentId}:${OPENCLAW_HOME_DIR}`,
         '-p', `${port}:18789`,
         newImage,
       ]);

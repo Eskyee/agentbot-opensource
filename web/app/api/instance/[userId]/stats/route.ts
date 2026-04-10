@@ -32,6 +32,11 @@ export async function GET(
       messages: null,
       errors: null,
       openclawVersion: DEFAULT_OPENCLAW_VERSION,
+      telemetry: {
+        resourceMetricsAvailable: false,
+        lifecycleMetricsAvailable: false,
+        messageMetricsAvailable: false,
+      },
     })
   }
 
@@ -44,6 +49,11 @@ export async function GET(
     uptime: 'unknown',
     messages: null,
     errors: null,
+    telemetry: {
+      resourceMetricsAvailable: false,
+      lifecycleMetricsAvailable: false,
+      messageMetricsAvailable: false,
+    },
   })
 }
 

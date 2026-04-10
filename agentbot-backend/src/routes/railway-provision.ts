@@ -17,6 +17,9 @@ import { authenticate } from '../middleware/auth'
 import * as crypto from 'crypto'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+const OPENCLAW_HOME_DIR = '/root/.openclaw'
+const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`
+const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`
 
 function buildOpenClawConfig(): string {
   // Each user's agent needs its own unique token
@@ -40,7 +43,7 @@ function buildOpenClawConfig(): string {
     },
     agents: {
       defaults: {
-        workspace: '/home/node/.openclaw/workspace',
+        workspace: OPENCLAW_WORKSPACE_DIR,
         model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
@@ -169,8 +172,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
   // Without this openclaw binds to loopback (127.0.0.1) and Railway proxy gets 502.
   // Sent as its own mutation so resource-limit failures don't block it.
   // Single-quoted sh -c body is safe: no single quotes appear inside it.
-  // Use $HOME (not hardcoded /home/node) so the config lands where openclaw looks for it.
-  const startCmd = `sh -c 'mkdir -p "$HOME/.openclaw" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "$HOME/.openclaw/openclaw.json" && exec openclaw gateway'`
+  const startCmd = `sh -c 'mkdir -p "${OPENCLAW_HOME_DIR}" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "${OPENCLAW_CONFIG_PATH}" && exec openclaw gateway'`
   try {
     await railwayGql(`
       mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {

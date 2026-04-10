@@ -61,19 +61,45 @@ export async function GET(
 
   const ownedUser = await prisma.user.findFirst({
     where: { openclawInstanceId: userId },
-    select: { openclawUrl: true, plan: true },
+    select: {
+      id: true,
+      openclawUrl: true,
+      plan: true,
+      subscriptionStatus: true,
+    },
   })
   const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
+  const [registration, latestAgent] = ownedUser?.id
+    ? await Promise.all([
+        prisma.$queryRaw<
+          { registered_at: Date | null; last_seen: Date | null; status: string | null }[]
+        >`
+          SELECT registered_at, last_seen, status
+          FROM agent_registrations
+          WHERE user_id = ${ownedUser.id}
+          LIMIT 1
+        `,
+        prisma.agent.findFirst({
+          where: { userId: ownedUser.id },
+          orderBy: { createdAt: 'desc' },
+          select: { createdAt: true },
+        }),
+      ])
+    : [[], null]
 
   const runtime = await probeRuntime(persistedUrl)
   return NextResponse.json({
     userId,
     status: runtime.status,
-    startedAt: new Date().toISOString(),
+    startedAt: registration[0]?.registered_at?.toISOString() || latestAgent?.createdAt?.toISOString() || null,
     subdomain: new URL(persistedUrl).host,
     url: persistedUrl,
     plan: ownedUser?.plan || 'free',
     openclawVersion: runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION,
+    provisionedAt: registration[0]?.registered_at?.toISOString() || latestAgent?.createdAt?.toISOString() || null,
+    lastSeenAt: registration[0]?.last_seen?.toISOString() || null,
+    gatewayProcessStatus: registration[0]?.status || null,
+    subscriptionStatus: ownedUser?.subscriptionStatus || null,
   })
 }
 

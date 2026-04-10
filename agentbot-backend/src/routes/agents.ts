@@ -62,6 +62,8 @@ const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
 const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
+const OPENCLAW_HOME_DIR = '/root/.openclaw';
+const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`;
 
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
@@ -200,7 +202,7 @@ const getContainerRuntimeVersion = async (containerName: string): Promise<string
   try {
     const script = `
 const fs=require('fs');
-const p='/home/node/.openclaw/openclaw.json';
+const p='${OPENCLAW_CONFIG_PATH}';
 if(!fs.existsSync(p)){console.log('');process.exit(0)}
 const c=JSON.parse(fs.readFileSync(p,'utf8'));
 console.log(c?.meta?.lastTouchedVersion||'');`;
@@ -217,7 +219,7 @@ const healLegacyModelInContainer = async (containerName: string): Promise<{ heal
   try {
     const script = `
 const fs=require('fs');
-const p='/home/node/.openclaw/openclaw.json';
+const p='${OPENCLAW_CONFIG_PATH}';
 const legacy={"openrouter/google/gemini-2.0-flash-exp:free":"openrouter/openai/gpt-4o-mini"};
 if(!fs.existsSync(p)){console.log('skip:no-config');process.exit(0)}
 const c=JSON.parse(fs.readFileSync(p,'utf8'));
@@ -240,7 +242,7 @@ console.log('healed:'+current+'->'+legacy[current]);`;
 
 const backupContainerData = async (containerName: string, inspect: ContainerInspect): Promise<string | null> => {
   const instanceId = containerName.replace('openclaw-', '');
-  const mount = inspect.Mounts.find((m) => m.Destination === '/home/node/.openclaw');
+  const mount = inspect.Mounts.find((m) => m.Destination === OPENCLAW_HOME_DIR);
   if (!mount) return null;
   const ts = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
   const backupDir = path.join(DATA_DIR, 'backups', 'openclaw-updates', instanceId);
@@ -261,7 +263,7 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
   const portMapping = inspect.NetworkSettings.Ports['18789/tcp'];
   const hostPort = portMapping?.[0]?.HostPort;
   if (!hostPort) throw new Error('Could not determine host port');
-  const mount = inspect.Mounts.find((m) => m.Destination === '/home/node/.openclaw');
+  const mount = inspect.Mounts.find((m) => m.Destination === OPENCLAW_HOME_DIR);
   if (!mount) throw new Error('Could not determine data mount');
   const mountSource = mount.Type === 'volume' ? mount.Name : mount.Source;
   if (!mountSource) throw new Error('Unsupported mount configuration');
@@ -269,7 +271,7 @@ const recreateContainerWithImage = async (containerName: string, inspect: Contai
   await runCommand('docker', [
     'run', '-d', '--name', containerName, '--restart', 'unless-stopped',
     '-p', `${hostPort}:18789`, `--memory=${resources.memory}`, `--cpus=${resources.cpus}`,
-    '-v', `${mountSource}:/home/node/.openclaw`, image
+    '-v', `${mountSource}:${OPENCLAW_HOME_DIR}`, image
   ]);
 };
 
@@ -586,10 +588,10 @@ router.post('/:id/reset-memory', async (req: Request, res: Response) => {
   try {
     const metadata = await assertOwnership(req, res, req.params.id);
     if (!metadata) return;
-    const mount = (await getContainerInspect(containerName)).Mounts.find((m) => m.Destination === '/home/node/.openclaw');
+    const mount = (await getContainerInspect(containerName)).Mounts.find((m) => m.Destination === OPENCLAW_HOME_DIR);
     if (!mount) { res.status(500).json({ error: 'Could not find data mount' }); return; }
     if (mount.Type === 'volume' && mount.Name) {
-      const child = spawn('docker', ['exec', containerName, 'sh', '-lc', 'rm -rf /home/node/.openclaw/agents/*/memory /home/node/.openclaw/agents/*/identity 2>/dev/null || true']);
+      const child = spawn('docker', ['exec', containerName, 'sh', '-lc', `rm -rf ${OPENCLAW_HOME_DIR}/agents/*/memory ${OPENCLAW_HOME_DIR}/agents/*/identity 2>/dev/null || true`]);
       await new Promise<void>((resolve, reject) => { child.on('close', (c) => c === 0 ? resolve() : reject(new Error('exec failed'))); child.on('error', reject); });
     } else if (mount.Type === 'bind' && mount.Source) {
       const child = spawn('sh', ['-lc', `rm -rf "${mount.Source}"/agents/*/memory "${mount.Source}"/agents/*/identity 2>/dev/null || true`]);

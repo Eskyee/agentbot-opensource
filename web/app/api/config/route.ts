@@ -20,7 +20,7 @@ const DEFAULT_CONFIG = {
   agents: {
     defaults: {
       model: 'anthropic/claude-opus-4-5',
-      workspace: '~/.openclaw/workspace',
+      workspace: '/root/.openclaw/workspace',
     },
   },
   tools: {

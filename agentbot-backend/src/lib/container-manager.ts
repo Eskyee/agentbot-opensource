@@ -15,6 +15,9 @@ import { DEFAULT_OPENCLAW_IMAGE } from './openclaw-version';
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2';
 const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
+const OPENCLAW_HOME_DIR = '/root/.openclaw';
+const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`;
+const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`;
 
 // Plan → CPU (millicores) + Memory (MB)
 const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }> = {
@@ -165,7 +168,7 @@ export async function createContainer(
     },
     agents: {
       defaults: {
-        workspace: '/home/node/.openclaw/workspace',
+        workspace: OPENCLAW_WORKSPACE_DIR,
         model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
@@ -204,7 +207,7 @@ export async function createContainer(
 
   // 3. Set start command — reads config from env var (no heredoc quoting issues).
   //    Single-quoted sh -c body is safe because no single quotes appear inside it.
-  const startCmd = `sh -c 'mkdir -p /home/node/.openclaw && printf "%s" "$OPENCLAW_CONFIG_JSON" > /home/node/.openclaw/openclaw.json && exec openclaw gateway'`;
+  const startCmd = `sh -c 'mkdir -p ${OPENCLAW_HOME_DIR} && printf "%s" "$OPENCLAW_CONFIG_JSON" > ${OPENCLAW_CONFIG_PATH} && exec openclaw gateway'`;
 
   const planResources = PLAN_RESOURCES[plan] ?? PLAN_RESOURCES.solo;
 

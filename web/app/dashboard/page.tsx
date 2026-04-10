@@ -1,45 +1,23 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams, usePathname } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
 import { DashboardSidebar } from '@/app/components/DashboardSidebar'
+import { InstanceControlPanel } from '@/app/components/dashboard/InstanceControlPanel'
 import { StatusBadge } from '@/app/components/shared/StatusBadge'
 import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog'
 import { PermissionGate } from '@/app/components/shared/PermissionGate'
-import { TrialBanner } from '@/app/components/TrialBanner'
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
-import { ensureCompatibility } from '@/app/lib/openclaw-compatibility'
-
-
-// Helper to convert percent string to Tailwind width class
-function getBarWidthClass(percent?: string) {
-  if (!percent) return 'w-0';
-  const num = parseInt(percent.replace('%', ''));
-    if (num >= 100) { return 'w-full'; }
-    if (num >= 90) { return 'w-11/12'; }
-    if (num >= 80) { return 'w-10/12'; }
-    if (num >= 70) { return 'w-9/12'; }
-    if (num >= 60) { return 'w-8/12'; }
-    if (num >= 50) { return 'w-7/12'; }
-    if (num >= 40) { return 'w-6/12'; }
-    if (num >= 30) { return 'w-5/12'; }
-    if (num >= 20) { return 'w-4/12'; }
-    if (num >= 10) { return 'w-3/12'; }
-    if (num > 0) { return 'w-2/12'; }
-  return 'w-0';
-}
 
 interface InstanceData {
   userId: string
   status: string
-  startedAt: string
   subdomain: string
   url: string
   plan: string
@@ -52,6 +30,10 @@ interface InstanceData {
   verificationType?: string | null
   attestationUid?: string | null
   verifiedAt?: string | null
+  provisionedAt?: string | null
+  lastSeenAt?: string | null
+  gatewayProcessStatus?: string | null
+  subscriptionStatus?: string | null
 }
 
 interface DashboardBootstrapData {
@@ -91,13 +73,24 @@ const CONFIRM_ACTIONS: Record<string, ConfirmAction> = {
 }
 
 function DashboardContent() {
-  const pathname = usePathname()
   const { data: session, status } = useCustomSession()
   const router = useRouter()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
-  const [stats, setStats] = useState<{ cpu: string; memory: string; uptime?: string; messages?: number; errors?: number; health?: string } | null>(null)
+  const [stats, setStats] = useState<{
+    cpu: string
+    memory: string
+    uptime?: string | null
+    messages?: number | null
+    errors?: number | null
+    health?: string | null
+    telemetry?: {
+      resourceMetricsAvailable?: boolean
+      lifecycleMetricsAvailable?: boolean
+      messageMetricsAvailable?: boolean
+    }
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState('')
@@ -196,16 +189,6 @@ function DashboardContent() {
       fetchInstance(userId, botUsername)
     })(); // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams, session])
-
-  const fetchCredits = async () => {
-    try {
-      const res = await fetch('/api/credits')
-      const data = await res.json()
-      setCredits(data.credits || 0)
-    } catch (e) {
-      console.error('Failed to fetch credits:', e)
-    }
-  }
 
   const fetchBootstrap = async () => {
     try {
@@ -337,6 +320,7 @@ function DashboardContent() {
           messages: data.messages,
           errors: data.errors,
           health: data.health,
+          telemetry: data.telemetry,
         })
       }
     } catch {}
@@ -505,7 +489,6 @@ function DashboardContent() {
   }
 
   const isRunning = instance.status === 'running'
-  const startedAt = instance.startedAt
   const statusTone = instance.status === 'running' ? 'text-green-400' : instance.status === 'starting' ? 'text-yellow-400' : 'text-zinc-400'
   const skillsManagerUrl = buildOpenClawControlUrl({
     view: 'skills',
@@ -569,7 +552,6 @@ function DashboardContent() {
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          <TrialBanner />
           <div className="p-4 lg:p-8">
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
@@ -589,8 +571,33 @@ function DashboardContent() {
             ))}
           </div>
 
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.9fr)]">
+            <div>
+              <InstanceControlPanel
+                instance={instance}
+                stats={stats}
+                controlsEnabled={controlsEnabled}
+                autoPairHealth={autoPairHealth}
+                actionLoading={actionLoading}
+                onCopyToken={() => {
+                  const token = instance?.gatewayToken || bootstrap?.gatewayToken
+                  if (token) {
+                    navigator.clipboard.writeText(token)
+                    toast.success('Token copied!')
+                  }
+                }}
+                onRefreshPairing={() => {
+                  setAutoPairHealth('loading')
+                  fetchInstance(instance.userId, instance.botUsername || '')
+                }}
+                onAction={performAction}
+                skillsManagerUrl={skillsManagerUrl}
+                configManagerUrl={configManagerUrl}
+              />
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-zinc-900 border border-zinc-800 p-6">
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-xs font-bold uppercase tracking-widest">
@@ -637,8 +644,10 @@ function DashboardContent() {
                   <dd className="font-mono text-zinc-400">{instance?.openclawVersion || 'unknown'}</dd>
                 </div>
                 <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>
-                  <dd className="text-zinc-400">{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
+                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Provisioned</dt>
+                  <dd className="text-zinc-400">
+                    {instance?.provisionedAt ? new Date(instance.provisionedAt).toLocaleString() : 'Unavailable'}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -688,199 +697,6 @@ function DashboardContent() {
 
             <div className="bg-zinc-900 border border-zinc-800 p-6">
               <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                OpenClaw Controls
-              </h2>
-              <div className="space-y-3">
-                <a
-                  href={instance?.controlUiUrl || instance?.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                >
-                  <span>Open OpenClaw</span>
-                  <span>→</span>
-                </a>
-                <a
-                  href={skillsManagerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  <span>Open Skills Manager</span>
-                  <span>→</span>
-                </a>
-                <a
-                  href={configManagerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  <span>Open Config</span>
-                  <span>→</span>
-                </a>
-                <div className="border border-zinc-800 px-4 py-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Gateway Token</p>
-                    <button
-                      onClick={() => {
-                        const token = instance?.gatewayToken || bootstrap?.gatewayToken
-                        if (token) {
-                          navigator.clipboard.writeText(token)
-                          toast.success('Token copied!')
-                        }
-                      }}
-                      className="text-[10px] text-blue-500 hover:text-blue-400 font-bold uppercase tracking-widest"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <code className="text-[10px] text-zinc-500 font-mono break-all block">
-                    {instance?.gatewayToken || bootstrap?.gatewayToken || 'No token available'}
-                  </code>
-                </div>
-                <div className="border border-zinc-800 px-4 py-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Auto Pairing</p>
-                    <span
-                      className={`h-2 w-2 rounded-full ${
-                        autoPairHealth === 'ready'
-                          ? 'bg-green-400'
-                          : autoPairHealth === 'missing'
-                            ? 'bg-yellow-400'
-                            : 'bg-zinc-600 animate-pulse'
-                      }`}
-                    />
-                  </div>
-                  <p className="text-[11px] text-zinc-500">
-                    {autoPairHealth === 'ready' && 'Control UI auto-connects with the stored gateway token.'}
-                    {autoPairHealth === 'missing' && 'No valid gateway token detected — refresh the dashboard or reauthenticate to restore pairing.'}
-                    {autoPairHealth === 'loading' && 'Checking gateway token…'}
-                  </p>
-                  <button
-                    onClick={() => {
-                      setAutoPairHealth('loading')
-                      fetchInstance(instance.userId, instance.botUsername || '')
-                    }}
-                    className="mt-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:text-white"
-                  >
-                    Refresh token
-                    <span className="text-[10px] text-zinc-500">↺</span>
-                  </button>
-                  {autoPairHealth === 'missing' && (
-                    <div className="mt-3 pt-3 border-t border-zinc-800">
-                      <p className="text-[10px] text-yellow-500 mb-2">Having connection issues?</p>
-                      <p className="text-[10px] text-zinc-500 mb-2">
-                        1. Copy your gateway token above<br/>
-                        2. Open <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{instance?.subdomain}</a><br/>
-                        3. Go to Settings → Paste token in "Gateway Token"
-                      </p>
-                    </div>
-                  )}
-                </div>
-                {instance?.botUsername && (
-                  <a
-                    href={`https://t.me/${instance?.botUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                  >
-                    <span>Open Telegram</span>
-                    <span>→</span>
-                  </a>
-                )}
-                {controlsEnabled ? (
-                  <>
-                    <button
-                      onClick={() => performAction('update')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                    >
-                      <span>Update</span>
-                      {actionLoading === 'update' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↑</span>}
-                    </button>
-                    <button
-                      onClick={() => performAction('restart')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                    >
-                      <span>Restart</span>
-                      {actionLoading === 'restart' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↻</span>}
-                    </button>
-                    {isRunning ? (
-                      <button
-                        onClick={() => performAction('stop')}
-                        disabled={!!actionLoading}
-                        className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                      >
-                        <span>Stop</span>
-                        {actionLoading === 'stop' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>■</span>}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => performAction('start')}
-                        disabled={!!actionLoading}
-                        className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
-                      >
-                        <span>Start</span>
-                        {actionLoading === 'start' ? <span className="w-2 h-2 rounded-full bg-black animate-pulse" /> : <span>▶</span>}
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <div className="border border-zinc-800 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Lifecycle Controls</p>
-                    <p className="mt-2 text-[11px] text-zinc-500">
-                      Managed restart, update, start, and stop actions are hidden until the Railway control path is fully verified. Runtime links above stay live.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Maintenance
-              </h2>
-              <div className="space-y-3">
-                {controlsEnabled ? (
-                  <>
-                    <button
-                      onClick={() => performAction('repair')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                    >
-                      <div className="text-left">
-                        <div>Repair Agent</div>
-                        <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-600 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
-                      </div>
-                      {actionLoading === 'repair' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>→</span>}
-                    </button>
-                    
-                    <button
-                      onClick={() => performAction('reset-memory')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                    >
-                      <div className="text-left">
-                        <div>Reset Agent Memory</div>
-                        <div className="text-[10px] font-normal normal-case tracking-normal text-red-400/60 mt-1">Wipe memory, identity & conversation history</div>
-                      </div>
-                      {actionLoading === 'reset-memory' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>→</span>}
-                    </button>
-                  </>
-                ) : (
-                  <div className="border border-zinc-800 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Managed Recovery</p>
-                    <p className="mt-2 text-[11px] text-zinc-500">
-                      Repair and memory-reset actions stay hidden until their managed Railway flow is verified end to end.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
                 Help & Support
               </h2>
               <div className="space-y-3 text-sm">
@@ -902,6 +718,7 @@ function DashboardContent() {
                   Contact
                 </a>
               </div>
+            </div>
             </div>
           </div>
         </div>
