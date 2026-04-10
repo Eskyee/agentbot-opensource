@@ -42,6 +42,7 @@ interface LiveTokenStats {
   priceUsd: number | null
   priceNative: number | null
   marketCapUsd: number | null
+  fdvUsd: number | null
   volume24hUsd: number | null
   liquidityUsd: number | null
   holders: number | null
@@ -67,6 +68,7 @@ async function fetchDexScreenerStats(): Promise<{
   priceUsd: number | null
   priceNative: number | null
   marketCapUsd: number | null
+  fdvUsd: number | null
   volume24hUsd: number | null
   liquidityUsd: number | null
   pairUrl: string
@@ -90,6 +92,7 @@ async function fetchDexScreenerStats(): Promise<{
     priceUsd: asNumber(bestPair?.priceUsd),
     priceNative: asNumber(bestPair?.priceNative),
     marketCapUsd: asNumber(bestPair?.marketCap) ?? asNumber(bestPair?.fdv),
+    fdvUsd: asNumber(bestPair?.fdv),
     volume24hUsd: asNumber(bestPair?.volume?.h24),
     liquidityUsd: asNumber(bestPair?.liquidity?.usd),
     pairUrl: bestPair?.url || COMMUNITY_TOKEN.dexScreenerUrl,
@@ -139,6 +142,7 @@ export async function getCommunityTokenStats(): Promise<LiveTokenStats> {
         priceUsd: null,
         priceNative: null,
         marketCapUsd: null,
+        fdvUsd: null,
         volume24hUsd: null,
         liquidityUsd: null,
         pairUrl: COMMUNITY_TOKEN.dexScreenerUrl,
@@ -156,6 +160,7 @@ export async function getCommunityTokenStats(): Promise<LiveTokenStats> {
     priceUsd: dex.priceUsd,
     priceNative: dex.priceNative,
     marketCapUsd: dex.marketCapUsd,
+    fdvUsd: dex.fdvUsd,
     volume24hUsd: dex.volume24hUsd,
     liquidityUsd: dex.liquidityUsd,
     holders: holders.holders ?? COMMUNITY_TOKEN.holdersFallback,

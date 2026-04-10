@@ -170,6 +170,51 @@ export default async function TokenPage() {
           </div>
         </section>
 
+        <section className="mt-12 rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">DexScreener Feed</div>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">priceUsd</div>
+              <div className="mt-2 text-sm font-bold text-white">{formatUsd(stats.priceUsd)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">priceNative</div>
+              <div className="mt-2 text-sm font-bold text-white">{formatNative(stats.priceNative)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">volume.h24</div>
+              <div className="mt-2 text-sm font-bold text-white">{formatUsd(stats.volume24hUsd)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">liquidity.usd</div>
+              <div className="mt-2 text-sm font-bold text-white">{formatUsd(stats.liquidityUsd)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">marketCap</div>
+              <div className="mt-2 text-sm font-bold text-white">{formatUsd(stats.marketCapUsd)}</div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">fdv</div>
+              <div className="mt-2 text-sm font-bold text-white">{formatUsd(stats.fdvUsd)}</div>
+            </div>
+            <div className="sm:col-span-2">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">pairAddress</div>
+              <div className="mt-2 break-all text-sm text-zinc-300">{stats.pairAddress || '—'}</div>
+            </div>
+            <div className="sm:col-span-2">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">url</div>
+              <a
+                href={stats.pairUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 block break-all text-sm text-blue-300 hover:text-white"
+              >
+                {stats.pairUrl}
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
           <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
             <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Overview</div>
