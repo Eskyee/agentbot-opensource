@@ -100,17 +100,17 @@ export default function ClaimPage() {
           <div className="grid grid-cols-3 text-sm border-b border-zinc-800 hover:bg-zinc-900/50">
             <div className="p-3 font-mono">🐋 Whale</div>
             <div className="p-3 text-zinc-400">100,000+</div>
-            <div className="p-3 text-green-400 font-bold">200</div>
+            <div className="p-3 text-green-400 font-bold">500</div>
           </div>
           <div className="grid grid-cols-3 text-sm border-b border-zinc-800 hover:bg-zinc-900/50">
             <div className="p-3 font-mono">🔧 Builder</div>
             <div className="p-3 text-zinc-400">10,000+</div>
-            <div className="p-3 text-green-400 font-bold">50</div>
+            <div className="p-3 text-green-400 font-bold">150</div>
           </div>
           <div className="grid grid-cols-3 text-sm hover:bg-zinc-900/50">
             <div className="p-3 font-mono">💎 Holder</div>
             <div className="p-3 text-zinc-400">1,000+</div>
-            <div className="p-3 text-green-400 font-bold">10</div>
+            <div className="p-3 text-green-400 font-bold">50</div>
           </div>
         </div>
 

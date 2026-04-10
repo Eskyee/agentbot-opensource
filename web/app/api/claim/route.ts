@@ -11,9 +11,9 @@ interface TokenTier {
 }
 
 const TIERS: TokenTier[] = [
-  { minBalance: 100_000, credits: 200, label: 'Whale 🐋' },
-  { minBalance: 10_000, credits: 50, label: 'Builder 🔧' },
-  { minBalance: 1_000, credits: 10, label: 'Holder 💎' },
+  { minBalance: 100_000, credits: 500, label: 'Whale 🐋' },
+  { minBalance: 10_000, credits: 150, label: 'Builder 🔧' },
+  { minBalance: 1_000, credits: 50, label: 'Holder 💎' },
 ]
 
 /**
