@@ -1,442 +1,265 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
+import { Metadata } from 'next'
+import Link from 'next/link'
+import { ArrowUpRight, Coins, ExternalLink, Waves } from 'lucide-react'
+import { COMMUNITY_TOKEN, getCommunityTokenStats } from '@/app/lib/communityTokenStats'
 
 export const metadata: Metadata = {
   title: 'AGENTBOT Token | $AGENTBOT',
-  description: 'AGENTBOT — The native token of the Agentbot AI agent deployment platform. Trade on Uniswap V4, track on GeckoTerminal.',
+  description: 'AGENTBOT token surfaces across Base and Solana. Track the live community Solana token and official Agentbot ecosystem links.',
   openGraph: {
     title: 'AGENTBOT Token | $AGENTBOT',
-    description: 'The native token of the Agentbot AI agent deployment platform. Deploy AI agents in 60 seconds.',
+    description: 'Track the live community-run Solana token and official Agentbot token surfaces.',
     images: ['/og-image.svg'],
   },
-};
+}
 
-export default function TokenPage() {
+export const dynamic = 'force-dynamic'
+
+function formatUsd(n: number | null): string {
+  if (n === null || n === undefined) return '—'
+  if (n >= 1_000_000_000) return '$' + (n / 1_000_000_000).toFixed(2) + 'B'
+  if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(2) + 'M'
+  if (n >= 1_000) return '$' + (n / 1_000).toFixed(2) + 'K'
+  return '$' + n.toLocaleString(undefined, { maximumFractionDigits: 2 })
+}
+
+function formatHolders(n: number | null): string {
+  if (n === null || n === undefined) return '—'
+  return n.toLocaleString()
+}
+
+function formatTimestamp(value: string): string {
+  return new Date(value).toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function StatCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
+  return (
+    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
+      <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{label}</div>
+      <div className="mt-3 text-2xl font-bold tracking-tight text-white">{value}</div>
+      {detail ? <div className="mt-2 text-xs text-zinc-500">{detail}</div> : null}
+    </div>
+  )
+}
+
+export default async function TokenPage() {
+  const stats = await getCommunityTokenStats()
+
   return (
     <main className="min-h-screen bg-black text-white font-mono">
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        {/* Header */}
-        <div className="mb-16 space-y-6">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Native Token</span>
+      <div className="mx-auto max-w-6xl px-6 py-16">
+        <section className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+          <div className="space-y-6">
+            <span className="block text-[10px] uppercase tracking-[0.24em] text-zinc-600">Token Surface</span>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-none">
-            AGENTBOT <br />
-            <span className="text-zinc-700">Token</span>
-          </h1>
+            <h1 className="text-5xl font-bold uppercase leading-none tracking-tighter md:text-7xl">
+              Agentbot
+              <br />
+              <span className="text-zinc-700">Token</span>
+            </h1>
 
-          <p className="text-zinc-400 text-sm max-w-xl leading-relaxed">
-            $AGENTBOT — the native token powering the Agentbot AI agent deployment platform on Base.
-          </p>
-
-          <div className="border border-emerald-500/30 bg-emerald-500/5 p-4 rounded-lg max-w-xl">
-            <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold mb-2">Community Token</div>
-            <p className="text-sm text-zinc-300">
-              <strong className="text-white">We didn&apos;t launch this token — the community did.</strong> The Solana $AGENTBOT was created by
-              community members on Pump.fun. The Agentbot team does not control the token, does not hold tokens,
-              and does not influence trading. We build the platform. The community owns the token.
+            <p className="max-w-2xl text-sm leading-7 text-zinc-400">
+              The Solana <span className="text-white">$AGENTBOT</span> token is community-run. Agentbot builds the
+              platform, while the market belongs to the community. The live trading stats below refresh from public
+              market data so the page stays current instead of drifting.
             </p>
-          </div>
-        </div>
 
-        {/* Solana Token */}
-        <section className="border-t border-zinc-800 pt-12 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-blue-400 block mb-8">Solana Token (Community)</span>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Name</span>
-              <span className="text-white text-sm font-bold uppercase">Agentbot</span>
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
+              <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">Community Token</div>
+              <p className="mt-3 text-sm leading-6 text-zinc-300">
+                We did not launch this Solana token. The community created it on Pump.fun. Agentbot does not control
+                supply, treasury, or trading activity.
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Symbol</span>
-              <span className="text-white text-sm font-bold uppercase">AGENTBOT</span>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Network</span>
-              <span className="text-white text-sm font-bold uppercase">Solana</span>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">DEX</span>
-              <span className="text-white text-sm font-bold uppercase">Pump.fun</span>
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Address</span>
-              <div className="flex items-center gap-4 flex-wrap">
-                <code className="text-blue-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
-                  9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
-                </code>
-            <a
-              href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Solscan</span>
-              <span className="text-sm text-white">Contract ↗</span>
-            </a>
-
-            <a
-              href="https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">DexScreener</span>
-              <span className="text-sm text-white">Chart ↗</span>
-            </a>
-
-            <a
-              href="https://www.oklink.com/solana/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Oklink</span>
-              <span className="text-sm text-white">Token Info ↗</span>
-            </a>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Status</span>
-              <span className="text-green-500 text-sm font-bold uppercase">Graduated</span>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Progress</span>
-              <span className="text-white text-sm font-bold uppercase">100%</span>
-            </div>
-          </div>
-
-          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="border border-zinc-800 bg-black p-4">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Market Cap</span>
-              <span className="text-white text-sm font-bold">$3.46K</span>
-            </div>
-            <div className="border border-zinc-800 bg-black p-4">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">24h Volume</span>
-              <span className="text-white text-sm font-bold">$107K</span>
-            </div>
-            <div className="border border-zinc-800 bg-black p-4">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Holders</span>
-              <span className="text-white text-sm font-bold">75</span>
-            </div>
-            <div className="border border-zinc-800 bg-black p-4">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Liquidity</span>
-              <span className="text-white text-sm font-bold">$4.51K</span>
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <a
-              href="https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block bg-blue-600 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-blue-500 transition-colors"
-            >
-              Trade on Pump.fun
-            </a>
-          </div>
-        </section>
-
-        {/* Token Information */}
-        <section className="border-t border-zinc-800 pt-12 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Token Information</span>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-16 gap-y-8">
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Name</span>
-              <span className="text-white text-sm font-bold uppercase">Agentbot</span>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Symbol</span>
-              <span className="text-white text-sm font-bold uppercase">AGENTBOT</span>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Network</span>
-              <span className="text-white text-sm font-bold uppercase">Base</span>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">DEX</span>
-              <span className="text-white text-sm font-bold uppercase">Uniswap V4 (Base)</span>
-            </div>
-
-            <div className="space-y-2 md:col-span-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Contract Address</span>
-              <div className="flex items-center gap-4 flex-wrap">
-                <code className="text-blue-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
-                  0x986b41C76aB8B7350079613340ee692773B34bA3
-                </code>
-                <a
-                  href="https://basescan.org/token/0x986b41C76aB8B7350079613340ee692773B34bA3"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-zinc-400 text-xs uppercase tracking-widest hover:text-white transition-colors"
-                >
-                  View on Basescan
-                </a>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Profile</span>
+            <div className="flex flex-wrap gap-3">
               <a
-                href="https://bankr.bot/agents/agentbot"
+                href={COMMUNITY_TOKEN.pumpFunUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-zinc-400 text-sm hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-200 transition-colors hover:border-blue-400/60 hover:text-white"
               >
-                View on Bankr
+                Trade on Pump.fun
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+              <a
+                href={stats.pairUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                View Live Chart
+                <ArrowUpRight className="h-3.5 w-3.5" />
               </a>
             </div>
           </div>
-        </section>
 
-        {/* Official Links */}
-        <section className="border-t border-zinc-800 pt-12 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Official Links</span>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <a
-              href="https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-blue-400 block mb-2">Solana</span>
-              <span className="text-sm text-white">Pump.fun ↗</span>
-            </a>
-
-            <a
-              href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Solscan</span>
-              <span className="text-sm text-white">View Token ↗</span>
-            </a>
-
-            <a
-              href="https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">DexScreener</span>
-              <span className="text-sm text-white">Chart ↗</span>
-            </a>
-
-            <a
-              href="https://www.oklink.com/solana/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Oklink</span>
-              <span className="text-sm text-white">Token Info ↗</span>
-            </a>
-
-            <a
-              href="https://opensea.io/token/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">OpenSea</span>
-              <span className="text-sm text-white">View NFT ↗</span>
-            </a>
-
-            <a
-              href="https://agentbot.raveculture.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Website</span>
-              <span className="text-sm text-white">agentbot.raveculture.xyz</span>
-            </a>
-
-            <a
-              href="https://bankr.bot/agents/agentbot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Bankr Profile</span>
-              <span className="text-sm text-white">View Agent</span>
-            </a>
-
-            <a
-              href="https://www.geckoterminal.com/base/pools/0xfe7d38e7d9357e61da8fcbd12484dae3609899e6449f84a2ef78625e5e9ec2fc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">GeckoTerminal (Base)</span>
-              <span className="text-sm text-white">AGENTBOT/WETH Pool</span>
-            </a>
-
-            <a
-              href="https://app.uniswap.org/swap?outputCurrency=0x986b41C76aB8B7350079613340ee692773B34bA3&chain=base"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Trade (Base)</span>
-              <span className="text-sm text-white">Buy on Uniswap</span>
-            </a>
-
-            <a
-              href="https://basescan.org/token/0x986b41C76aB8B7350079613340ee692773B34bA3"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Explorer (Base)</span>
-              <span className="text-sm text-white">View on Basescan</span>
-            </a>
-
-            <Link
-              href="/wristband"
-              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
-            >
-              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Wristband</span>
-              <span className="text-sm text-white">Get your wristband</span>
-            </Link>
-          </div>
-        </section>
-
-        {/* About */}
-        <section className="border-t border-zinc-800 pt-12 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">About</span>
-
-          <div className="max-w-2xl space-y-4">
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              AGENTBOT is the native token powering the Agentbot platform — an AI agent deployment platform
-              that lets anyone deploy autonomous AI agents in 60 seconds. No servers, no devops, no gatekeeping.
-            </p>
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              The token is built on Base, Coinbase&apos;s L2 network, enabling near-zero fees and instant finality.
-              AGENTBOT trades on Uniswap V4 against WETH and is tracked across major DeFi data aggregators.
-            </p>
-            <p className="text-zinc-400 text-sm leading-relaxed">
-              Holders gain access to the Agentbot ecosystem — deploying agents, accessing the A2A Bus,
-              governance participation, and priority feature rollouts.
-            </p>
-          </div>
-        </section>
-
-        {/* Deploy with AGENTBOT */}
-        <section className="border-t border-zinc-800 pt-12 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Deploy with Agentbot</span>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
-              <h3 className="text-lg font-bold uppercase tracking-tight mb-3">60-Second Deploy</h3>
-              <p className="text-zinc-400 text-sm mb-4 leading-relaxed">
-                Sign up, pick a plan, and your AI agent is running. No infrastructure knowledge required.
-              </p>
-              <ul className="text-sm text-zinc-500 space-y-2">
-                <li>&mdash; Telegram + WhatsApp out of the box</li>
-                <li>&mdash; Bring your own AI key (no markup)</li>
-                <li>&mdash; A2A Bus access for agent-to-agent comms</li>
-                <li>&mdash; Mission Control dashboard</li>
-              </ul>
-            </div>
-
-            <div className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
-              <h3 className="text-lg font-bold uppercase tracking-tight mb-3">Zero Human Company</h3>
-              <p className="text-zinc-400 text-sm mb-4 leading-relaxed">
-                Agentbot itself is run by AI agents. The platform is the proof of concept.
-              </p>
-              <ul className="text-sm text-zinc-500 space-y-2">
-                <li>&mdash; AI-native from day one</li>
-                <li>&mdash; Agents managing agents</li>
-                <li>&mdash; Built on Base — crypto-native payments</li>
-                <li>&mdash; USDC + card + crypto billing</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="mt-6 flex gap-4">
-            <Link
-              href="/pricing"
-              className="bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-            >
-              View Plans
-            </Link>
-            <Link
-              href="/signup"
-              className="border border-zinc-700 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
-            >
-              Create Account
-            </Link>
-          </div>
-        </section>
-
-        {/* Token Use Cases */}
-        <section className="border-t border-zinc-800 pt-12 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Token Use Cases</span>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[
-              { title: 'Platform Access', desc: 'Token holders unlock premium tiers and early access to new agent capabilities.' },
-              { title: 'Governance', desc: 'Vote on platform direction, feature priorities, and ecosystem integrations.' },
-              { title: 'Payments', desc: 'Pay for agent deployments, API credits, and enterprise add-ons using AGENTBOT.' },
-              { title: 'Partner Rewards', desc: 'Partners and integrators earn AGENTBOT for bringing new agents to the platform.' },
-            ].map((item) => (
-              <div key={item.title} className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors">
-                <h3 className="text-sm font-bold uppercase tracking-tight mb-2">{item.title}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{item.desc}</p>
+          <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Community Market</div>
+                <div className="mt-2 text-2xl font-bold uppercase tracking-tight text-white">{COMMUNITY_TOKEN.symbol}</div>
               </div>
-            ))}
+              <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
+                stats.status === 'GRADUATED'
+                  ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+                  : 'border-amber-400/30 bg-amber-400/10 text-amber-200'
+              }`}>
+                {stats.status}
+              </span>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Address</div>
+                <code className="mt-2 block break-all rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-sm text-blue-300">
+                  {COMMUNITY_TOKEN.address}
+                </code>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Progress</div>
+                  <div className="mt-2 text-xl font-bold text-white">
+                    {stats.progress === null ? '—' : `${stats.progress}%`}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Updated</div>
+                  <div className="mt-2 text-sm font-bold text-white">{formatTimestamp(stats.updatedAt)}</div>
+                </div>
+              </div>
+
+              <div className="text-xs leading-6 text-zinc-500">{stats.statusNote}</div>
+            </div>
           </div>
         </section>
 
-        {/* Built On */}
-        <section className="border-t border-zinc-800 pt-12 mb-16">
-          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-8">Built On</span>
-
-          <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">
-            AGENTBOT is deployed on <span className="text-blue-500 font-bold">Base</span> — Coinbase&apos;s
-            Ethereum L2. Low fees, high throughput, and native Coinbase Wallet support. The Agentbot platform
-            runs at{' '}
-            <a href="https://agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white transition-colors underline">
-              agentbot.raveculture.xyz
-            </a>
-          </p>
+        <section className="mt-12">
+          <div className="mb-6 text-[10px] uppercase tracking-[0.24em] text-zinc-600">Live Stats</div>
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <StatCard label="Status" value={stats.status} detail={stats.statusNote} />
+            <StatCard label="Progress" value={stats.progress === null ? '—' : `${stats.progress}%`} />
+            <StatCard label="Market Cap" value={formatUsd(stats.marketCapUsd)} />
+            <StatCard label="24h Volume" value={formatUsd(stats.volume24hUsd)} />
+            <StatCard
+              label="Holders"
+              value={formatHolders(stats.holders)}
+              detail={stats.holdersSource === 'solscan' ? 'Live via Solscan' : 'Add SOLSCAN_API_KEY for live count'}
+            />
+            <StatCard label="Liquidity" value={formatUsd(stats.liquidityUsd)} />
+          </div>
         </section>
 
-        {/* Back Link */}
-        <div className="border-t border-zinc-800 pt-8">
-          <Link
-            href="/"
-            className="border border-zinc-700 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors inline-block"
-          >
-            Back to Agentbot Platform
-          </Link>
-        </div>
+        <section className="mt-12 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+          <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Profile</div>
+            <div className="mt-6 grid gap-6 sm:grid-cols-2">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Name</div>
+                <div className="mt-2 text-sm font-bold uppercase text-white">{COMMUNITY_TOKEN.name}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Symbol</div>
+                <div className="mt-2 text-sm font-bold uppercase text-white">{COMMUNITY_TOKEN.symbol}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Network</div>
+                <div className="mt-2 text-sm font-bold uppercase text-white">{COMMUNITY_TOKEN.network}</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Primary Venue</div>
+                <div className="mt-2 text-sm font-bold uppercase text-white">{COMMUNITY_TOKEN.dex}</div>
+              </div>
+              <div className="sm:col-span-2">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Pair Source</div>
+                <div className="mt-2 text-sm text-zinc-300">
+                  {stats.pairAddress ? (
+                    <span className="break-all">{stats.pairAddress}</span>
+                  ) : (
+                    <span>Using token-level market lookup.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
-        {/* Footer */}
-        <div className="mt-32 pt-12 border-t border-zinc-800 flex flex-col md:flex-row justify-between gap-8">
-          <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
-            AGENTBOT Token
+          <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+            <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Track Live</div>
+            <div className="mt-5 space-y-3">
+              {[
+                { label: 'Pump.fun', href: COMMUNITY_TOKEN.pumpFunUrl, icon: Waves },
+                { label: 'DexScreener', href: stats.pairUrl, icon: Coins },
+                { label: 'Solscan', href: COMMUNITY_TOKEN.solscanUrl, icon: ExternalLink },
+                { label: 'OKLink', href: COMMUNITY_TOKEN.oklinkUrl, icon: ExternalLink },
+              ].map((item) => {
+                const Icon = item.icon
+                return (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black px-4 py-4 text-sm text-zinc-200 transition-colors hover:border-zinc-700 hover:text-white"
+                  >
+                    <span className="flex items-center gap-3">
+                      <Icon className="h-4 w-4 text-zinc-500" />
+                      {item.label}
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-zinc-600" />
+                  </a>
+                )
+              })}
+            </div>
           </div>
-          <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link>
-            <Link href="/wristband" className="hover:text-white transition-colors">Wristband</Link>
-            <Link href="/partner" className="hover:text-white transition-colors">Partner</Link>
+        </section>
+
+        <section className="mt-12 rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Official Agentbot Token Surface</div>
+              <div className="mt-3 text-xl font-bold uppercase tracking-tight text-white">Base Ecosystem Token</div>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">
+                Agentbot also maintains its official Base ecosystem presence. The Solana token above is the live
+                community token surface; the Base links below point to the official platform-owned endpoints.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {[
+                {
+                  label: 'Base Contract',
+                  href: 'https://basescan.org/token/0x986b41C76aB8B7350079613340ee692773B34bA3',
+                },
+                {
+                  label: 'Bankr Profile',
+                  href: 'https://bankr.bot/agents/agentbot',
+                },
+                {
+                  label: 'Agentbot Platform',
+                  href: 'https://agentbot.raveculture.xyz',
+                },
+              ].map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-2xl border border-zinc-800 bg-black px-4 py-4 text-sm text-zinc-200 transition-colors hover:border-zinc-700 hover:text-white"
+                >
+                  <span>{item.label}</span>
+                  <ArrowUpRight className="h-4 w-4 text-zinc-600" />
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
-  );
+  )
 }
+
