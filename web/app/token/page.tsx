@@ -66,11 +66,27 @@ function formatTimestamp(value: string): string {
   })
 }
 
-function StatCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
+function StatCard({
+  label,
+  value,
+  detail,
+  compact = false,
+}: {
+  label: string
+  value: string
+  detail?: string
+  compact?: boolean
+}) {
   return (
     <div className="min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="text-[9px] uppercase tracking-[0.16em] text-zinc-600">{label}</div>
-      <div className="mt-2 break-words text-base font-bold tracking-tight text-white sm:text-lg">{value}</div>
+      <div
+        className={`mt-2 break-words font-bold tracking-tight text-white ${
+          compact ? 'text-sm sm:text-base' : 'text-base sm:text-lg'
+        }`}
+      >
+        {value}
+      </div>
       {detail ? <div className="mt-1.5 break-words text-[10px] leading-4 text-zinc-500">{detail}</div> : null}
     </div>
   )
@@ -178,6 +194,7 @@ export default async function TokenPage() {
               label="Price USD"
               value={formatUsdMoney(stats.priceUsd)}
               detail={formatNative(stats.priceNative)}
+              compact
             />
             <StatCard label="Market Cap" value={formatUsd(stats.marketCapUsd)} />
             <StatCard label="24h Volume" value={formatUsd(stats.volume24hUsd)} />
