@@ -26,6 +26,16 @@ function formatUsd(n: number | null): string {
   return '$' + n.toLocaleString(undefined, { minimumFractionDigits: 6, maximumFractionDigits: 8 })
 }
 
+function formatUsdMoney(n: number | null): string {
+  if (n === null || n === undefined) return '$0.00'
+  if (n >= 1_000_000_000) return '$' + (n / 1_000_000_000).toFixed(2) + 'B'
+  if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(2) + 'M'
+  if (n >= 1_000) return '$' + (n / 1_000).toFixed(2) + 'K'
+  if (n >= 1) return '$' + n.toFixed(2)
+  if (n >= 0.01) return '$' + n.toFixed(4)
+  return '$' + n.toFixed(8)
+}
+
 function formatSupply(n: number): string {
   return n.toLocaleString()
 }
@@ -158,7 +168,7 @@ export default async function TokenPage() {
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-7">
             <StatCard label="Status" value={stats.status} detail={stats.statusNote} />
             <StatCard label="Progress" value={stats.progress === null ? '—' : `${stats.progress}%`} />
-            <StatCard label="Price" value={formatUsd(stats.priceUsd)} detail={formatNative(stats.priceNative)} />
+            <StatCard label="Price (USD)" value={formatUsdMoney(stats.priceUsd)} detail={formatNative(stats.priceNative)} />
             <StatCard label="Market Cap" value={formatUsd(stats.marketCapUsd)} />
             <StatCard label="24h Volume" value={formatUsd(stats.volume24hUsd)} />
             <StatCard
