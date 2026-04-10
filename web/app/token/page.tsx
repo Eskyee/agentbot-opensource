@@ -68,10 +68,10 @@ function formatTimestamp(value: string): string {
 
 function StatCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
-    <div className="min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
-      <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">{label}</div>
-      <div className="mt-3 break-words text-xl font-bold tracking-tight text-white sm:text-2xl">{value}</div>
-      {detail ? <div className="mt-2 break-words text-xs leading-5 text-zinc-500">{detail}</div> : null}
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4">
+      <div className="text-[9px] uppercase tracking-[0.16em] text-zinc-600">{label}</div>
+      <div className="mt-2 break-words text-base font-bold tracking-tight text-white sm:text-lg">{value}</div>
+      {detail ? <div className="mt-1.5 break-words text-[10px] leading-4 text-zinc-500">{detail}</div> : null}
     </div>
   )
 }
