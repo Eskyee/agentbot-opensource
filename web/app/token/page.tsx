@@ -67,10 +67,10 @@ export default function TokenPage() {
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Token Address</span>
               <div className="flex items-center gap-4 flex-wrap">
                 <code className="text-blue-500 border border-zinc-800 bg-black px-4 py-2 font-mono text-sm break-all">
-                  3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp
+                  9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
                 </code>
             <a
-              href="https://solscan.io/token/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
@@ -80,7 +80,7 @@ export default function TokenPage() {
             </a>
 
             <a
-              href="https://dexscreener.com/solana/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
@@ -90,7 +90,7 @@ export default function TokenPage() {
             </a>
 
             <a
-              href="https://www.oklink.com/solana/token/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://www.oklink.com/solana/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
@@ -133,7 +133,7 @@ export default function TokenPage() {
 
           <div className="mt-6">
             <a
-              href="https://pump.fun/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-blue-600 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-blue-500 transition-colors"
@@ -205,7 +205,7 @@ export default function TokenPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <a
-              href="https://pump.fun/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://pump.fun/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
@@ -215,7 +215,7 @@ export default function TokenPage() {
             </a>
 
             <a
-              href="https://solscan.io/token/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
@@ -225,7 +225,7 @@ export default function TokenPage() {
             </a>
 
             <a
-              href="https://dexscreener.com/solana/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://dexscreener.com/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
@@ -235,13 +235,23 @@ export default function TokenPage() {
             </a>
 
             <a
-              href="https://www.oklink.com/solana/token/3agiWckZVmrQoEQt3ukJwysBTJakVAZPjzmpo3RzzdZp"
+              href="https://www.oklink.com/solana/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
               target="_blank"
               rel="noopener noreferrer"
               className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
             >
               <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Oklink</span>
               <span className="text-sm text-white">Token Info ↗</span>
+            </a>
+
+            <a
+              href="https://opensea.io/token/solana/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border border-zinc-800 bg-black p-5 hover:bg-zinc-950 transition-colors"
+            >
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">OpenSea</span>
+              <span className="text-sm text-white">View NFT ↗</span>
             </a>
 
             <a
