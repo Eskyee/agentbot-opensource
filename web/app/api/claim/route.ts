@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { ensureFoundingCommunityBadge } from '@/app/lib/communityProgram'
 import { createUserSession, attachSessionCookie } from '@/app/lib/session'
 import { consumeWalletNonce, issueWalletNonce } from '@/app/lib/wallet-nonce'
 import {
@@ -186,6 +187,27 @@ export async function POST(request: NextRequest) {
     console.error('Failed to record Solana reward claim', error)
     return NextResponse.json({ error: 'Unable to record claim right now' }, { status: 500 })
   }
+
+  await ensureFoundingCommunityBadge({
+    userId: user.id,
+    walletAddress: address,
+    rewardStatus: {
+      connected: true,
+      walletAddress: address,
+      claimed: true,
+      currentTier: {
+        id: tier.id,
+        label: tier.label,
+        credits: tier.credits,
+        minBalance: tier.minBalance,
+      },
+      balanceUi: balance.ui,
+      creditsClaimed: tier.credits,
+      claimedAt: new Date().toISOString(),
+      availability: 'live',
+      detail: null,
+    },
+  }).catch(() => {})
 
   await prisma.notification.create({
     data: {

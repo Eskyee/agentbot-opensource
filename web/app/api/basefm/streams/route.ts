@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getAuthSession } from '@/app/lib/getAuthSession';
+import { getCommunityProgramForUser } from '@/app/lib/communityProgram';
 
 const MUX_TOKEN_ID = process.env.MUX_TOKEN_ID;
 const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
@@ -40,6 +42,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const session = await getAuthSession()
     const body = await request.json();
     const { wallet, name } = body;
 
@@ -50,11 +53,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify DJ has enough RAVE tokens
-    const hasAccess = await verifyRAVEBalance(wallet);
-    if (!hasAccess) {
+    const [hasRaveAccess, communityProgram] = await Promise.all([
+      verifyRAVEBalance(wallet),
+      session?.user?.id ? getCommunityProgramForUser(session.user.id).catch(() => null) : Promise.resolve(null),
+    ])
+
+    const hasCommunityPass = communityProgram?.perks.some(
+      (perk) => perk.key === 'basefm-pass' && perk.unlocked
+    ) || false
+
+    if (!hasRaveAccess && !hasCommunityPass) {
       return NextResponse.json(
-        { error: 'Insufficient RAVE tokens. Need 1,250,000 RAVE for DJ access.' },
+        { error: 'Insufficient RAVE tokens or community guest pass. Need 1,250,000 RAVE or a Builder/Whale Agentbot claim.' },
         { status: 403 }
       );
     }
@@ -101,6 +111,7 @@ export async function POST(request: NextRequest) {
         fullRtmpUrl: `${MUX_RTMP_URL}/${stream.stream_key}`,
         playbackId: stream.playback_ids?.[0]?.id || null,
         status: stream.status,
+        accessGrantedBy: hasRaveAccess ? 'rave' : 'community-pass',
       },
       obsSettings: {
         server: MUX_RTMP_URL,

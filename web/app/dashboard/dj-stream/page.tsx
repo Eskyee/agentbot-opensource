@@ -11,6 +11,20 @@ const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
 const RAVE_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 RAVE in wei
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
+interface CommunityProgramResponse {
+  perks: Array<{
+    key: string
+    unlocked: boolean
+    detail: string
+  }>
+  rewards: {
+    claimed: boolean
+    currentTier: {
+      label: string
+    } | null
+  }
+}
+
 export default function DJStreamPage() {
   const { address, isConnected } = useAccount()
   const { connect } = useConnect()
@@ -20,6 +34,7 @@ export default function DJStreamPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [djName, setDjName] = useState('DJ Escaba')
+  const [communityProgram, setCommunityProgram] = useState<CommunityProgramResponse | null>(null)
 
   const handleConnect = () => {
     connect({ connector: coinbaseWallet({ appName: 'Agentbot', preference: 'smartWalletOnly' }) })
@@ -28,6 +43,18 @@ export default function DJStreamPage() {
   useEffect(() => {
     if (address) checkRAVEBalance(address)
   }, [address])
+
+  useEffect(() => {
+    const loadCommunityProgram = async () => {
+      try {
+        const res = await fetch('/api/community/program')
+        if (!res.ok) return
+        setCommunityProgram(await res.json())
+      } catch {}
+    }
+
+    loadCommunityProgram()
+  }, [])
 
   const checkRAVEBalance = async (walletAddress: string) => {
     try {
@@ -75,7 +102,11 @@ export default function DJStreamPage() {
     }
   }
 
-  const hasAccess = raveBalance && BigInt(raveBalance) >= RAVE_THRESHOLD
+  const hasRaveAccess = Boolean(raveBalance && BigInt(raveBalance) >= RAVE_THRESHOLD)
+  const hasCommunityPass = Boolean(
+    communityProgram?.perks.some((perk) => perk.key === 'basefm-pass' && perk.unlocked)
+  )
+  const hasAccess = hasRaveAccess || hasCommunityPass
   const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
 
   return (
@@ -175,6 +206,15 @@ export default function DJStreamPage() {
               ) : (
                 <p className="text-zinc-600 text-xs">Reading on-chain balance...</p>
               )}
+
+              {hasCommunityPass && (
+                <div className="mt-4 border border-blue-500/20 bg-blue-500/10 p-4">
+                  <p className="text-blue-300 text-xs uppercase tracking-widest">Agentbot Community Pass</p>
+                  <p className="mt-2 text-sm text-zinc-200">
+                    Your {communityProgram?.rewards.currentTier?.label || 'claimed'} holder status unlocks a baseFM guest pass, so you can stream even without the full RAVE gate.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -240,11 +280,18 @@ export default function DJStreamPage() {
                     </code>
                   </div>
                   <div className="bg-black p-4">
-                    <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Playback ID</span>
-                    <code className="block text-xs text-zinc-400 break-all select-all">
+                  <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Playback ID</span>
+                  <code className="block text-xs text-zinc-400 break-all select-all">
                       {stream.playbackId || 'Pending...'}
-                    </code>
-                  </div>
+                  </code>
+                </div>
+              </div>
+
+                <div className="border border-zinc-800 p-4">
+                  <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Access Source</span>
+                  <span className="text-xs text-zinc-300 uppercase tracking-widest">
+                    {stream.accessGrantedBy === 'community-pass' ? 'Agentbot community pass' : 'RAVE gate'}
+                  </span>
                 </div>
 
                 {/* OBS Settings */}

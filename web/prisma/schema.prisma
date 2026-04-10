@@ -784,3 +784,47 @@ model credit_claims {
   @@index([user_id], map: "idx_credit_claims_user")
   @@index([created_at], map: "idx_credit_claims_created")
 }
+
+model community_badges {
+  id             String   @id
+  user_id        String
+  wallet_address String?
+  badge_key      String
+  title          String
+  detail         String?
+  status         String   @default("active")
+  created_at     DateTime @default(now())
+
+  @@unique([user_id, badge_key], map: "uniq_community_badges_user_key")
+  @@index([user_id], map: "idx_community_badges_user")
+  @@index([badge_key], map: "idx_community_badges_key")
+}
+
+model community_governance_proposals {
+  id         String   @id
+  slug       String   @unique
+  title      String
+  summary    String
+  details    String?
+  status     String   @default("draft")
+  starts_at  DateTime @default(now())
+  ends_at    DateTime?
+  created_by String?
+  created_at DateTime @default(now())
+
+  @@index([status], map: "idx_community_proposals_status")
+}
+
+model community_governance_votes {
+  id           String   @id
+  proposal_id  String
+  user_id      String
+  wallet_address String?
+  choice       String
+  voting_power Int      @default(1)
+  created_at   DateTime @default(now())
+
+  @@unique([proposal_id, user_id], map: "uniq_community_votes_proposal_user")
+  @@index([proposal_id], map: "idx_community_votes_proposal")
+  @@index([user_id], map: "idx_community_votes_user")
+}

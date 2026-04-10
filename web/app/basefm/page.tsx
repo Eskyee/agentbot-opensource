@@ -174,6 +174,14 @@ export default function BasefmTokenPage() {
               <strong>Get started:</strong> Visit <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="underline">basefm.space</a> to listen live, or deploy your own DJ agent on Agentbot.
             </p>
           </div>
+
+          <div className="mt-4 p-4 border border-blue-500/20 bg-blue-500/10">
+            <p className="text-blue-300 text-sm">
+              <strong>Agentbot community holders:</strong> Claimed Builder and Whale wallets now unlock a baseFM guest pass inside the Agentbot dashboard, even without the full RAVE gate.{' '}
+              <a href="/claim" className="underline hover:text-white">Claim your community rewards</a> or open the{' '}
+              <a href="/dashboard/community" className="underline hover:text-white">community dashboard</a>.
+            </p>
+          </div>
         </div>
 
         <div className="border border-zinc-800 bg-black p-5 mb-8">

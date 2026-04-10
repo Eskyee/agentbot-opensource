@@ -1,10 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Coins, ShieldCheck, Sparkles, Wallet } from 'lucide-react'
+import { CommunityProgramPanel } from '@/app/components/community/CommunityProgramPanel'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
+import { isAdminEmail } from '@/app/lib/admin'
+import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { getUserCommunityRewardStatus } from '@/app/lib/solanaRewards'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,60 +20,24 @@ function DetailCard({ label, value, detail }: { label: string; value: string; de
   )
 }
 
-function PerkCard({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
-      <div className="text-sm font-bold uppercase tracking-[0.12em] text-white">{title}</div>
-      <div className="mt-2 text-sm leading-6 text-zinc-400">{desc}</div>
-    </div>
-  )
-}
-
 export default async function CommunityDashboardPage() {
   const session = await getAuthSession()
   if (!session?.user?.id) {
     redirect('/login?callbackUrl=/dashboard/community')
   }
 
-  const [user, rewards] = await Promise.all([
+  const [user, program] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         referralCredits: true,
       },
     }),
-    getUserCommunityRewardStatus(session.user.id),
+    getCommunityProgramForUser(session.user.id),
   ])
 
-  const unlockedPerks = rewards.currentTier
-    ? [
-        {
-          title: 'Claimed Agent Credits',
-          desc: `${rewards.creditsClaimed || rewards.currentTier.credits} credits are attached to your Agentbot account and usable across the platform.`,
-        },
-        {
-          title: 'Community Holder Status',
-          desc: `${rewards.currentTier.label} tier is now visible in your product status and rewards surface.`,
-        },
-        {
-          title: 'Priority Community Updates',
-          desc: 'Use this dashboard as the base for upcoming holder-only updates, claim windows, and future reward drops.',
-        },
-      ]
-    : [
-        {
-          title: 'Wallet Verification',
-          desc: 'Connect your Solana holder wallet and verify your live balance to unlock community rewards.',
-        },
-        {
-          title: 'Credits Unlock',
-          desc: 'Eligible holders can claim free Agentbot credits based on their current token balance tier.',
-        },
-        {
-          title: 'Future Community Perks',
-          desc: 'This is where token-gated perks, holder status, and future utility will keep expanding.',
-        },
-      ]
+  const rewards = program.rewards
+  const isAdmin = isAdminEmail(session.user.email)
 
   return (
     <DashboardShell>
@@ -144,11 +110,7 @@ export default async function CommunityDashboardPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {unlockedPerks.map((perk) => (
-            <PerkCard key={perk.title} title={perk.title} desc={perk.desc} />
-          ))}
-        </div>
+        <CommunityProgramPanel initialProgram={program} admin={isAdmin} />
 
         <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
           <div className="flex items-start gap-3">
