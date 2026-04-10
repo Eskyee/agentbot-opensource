@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'baseFM Goes Open Source — Agentbot',
@@ -38,6 +39,21 @@ export default function BaseFMOpenSourcePost() {
             our onchain radio platform built on Base. Live DJs, crypto tipping, token-gated community, 
             and onchain events. The whole thing. Now it&apos;s yours.
           </p>
+
+          <figure className="mb-10 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
+            <Image
+              src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreiaf3pcxumy7e2yjcxsi2u3v7n4sliwok2ypk7ot7tbv4espkik3pi"
+              alt="baseFM open source announcement artwork"
+              width={1600}
+              height={900}
+              className="h-auto w-full object-cover"
+              priority
+              unoptimized
+            />
+            <figcaption className="border-t border-zinc-800 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+              baseFM is now open source on GitHub
+            </figcaption>
+          </figure>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
             What is baseFM?
