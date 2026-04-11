@@ -32,6 +32,8 @@
 </p>
 <br>
 
+The Contract Address is: 9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
+
 ## 🎯 The Problem We're Solving
 
 Open source powers the world. Millions use it. Few contribute back. Developers burn out. Projects die.
