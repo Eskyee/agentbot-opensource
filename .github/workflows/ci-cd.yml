@@ -59,7 +59,7 @@ jobs:
         run: cd web && npx prisma generate
 
       - name: Build
-        run: cd web && npx next build
+        run: cd web && npm run build
         env:
           NEXT_TELEMETRY_DISABLED: '1'
           DATABASE_URL: 'postgresql://stub:stub@localhost/stub'
