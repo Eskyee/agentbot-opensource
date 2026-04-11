@@ -14,10 +14,12 @@ type AgentStatus =
   | 'provisioning'
   | 'bootstrapping'
   | 'ready'
+  | 'setup'
 
 const STATUS_CONFIG: Record<AgentStatus, { label: string; color: string; icon: typeof CheckCircle }> = {
   running:        { label: 'Running',        color: 'bg-green-600/20 text-green-400 border-green-600/30',   icon: CheckCircle },
   ready:          { label: 'Ready',          color: 'bg-green-600/20 text-green-400 border-green-600/30',   icon: CheckCircle },
+  setup:          { label: 'Setup',          color: 'bg-blue-600/20 text-blue-400 border-blue-600/30',      icon: AlertTriangle },
   deploying:      { label: 'Deploying',      color: 'bg-orange-600/20 text-orange-400 border-orange-600/30', icon: Loader2 },
   provisioning:   { label: 'Provisioning',   color: 'bg-orange-600/20 text-orange-400 border-orange-600/30', icon: Loader2 },
   starting:       { label: 'Starting',       color: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30', icon: Clock },

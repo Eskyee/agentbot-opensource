@@ -54,6 +54,9 @@ interface StreamMuxStatus {
     playbackId: string | null
     recentAssetIds: string[]
   }
+  distribution?: BasefmDistributionState
+  streamHealth?: 'good' | 'waiting' | 'bad'
+  pickupRecommended?: boolean
   message?: string
   error?: string
 }
@@ -108,6 +111,59 @@ export default function DJStreamPage() {
 
     loadCommunityProgram()
   }, [])
+
+  useEffect(() => {
+    if (!stream || !streamSessionToken) return
+
+    let active = true
+
+    const checkAndMaybeSync = async () => {
+      try {
+        const res = await fetch('/api/basefm/streams/status', {
+          headers: { 'x-basefm-session': streamSessionToken },
+          cache: 'no-store',
+        })
+        const data = await res.json()
+        if (!active || !res.ok) return
+
+        setMuxStatus(data)
+
+        if (data?.pickupRecommended) {
+          const syncRes = await fetch('/api/basefm/streams/status', {
+            method: 'POST',
+            headers: { 'x-basefm-session': streamSessionToken },
+          })
+          const syncData = await syncRes.json()
+          if (!active || !syncRes.ok) return
+
+          const refreshed = await fetch('/api/basefm/streams/status', {
+            headers: { 'x-basefm-session': streamSessionToken },
+            cache: 'no-store',
+          })
+          const refreshedData = await refreshed.json()
+          if (active && refreshed.ok) {
+            setMuxStatus(refreshedData)
+          }
+
+          if (syncData?.synced) {
+            const distributionRes = await fetch('/api/basefm/distribution', { cache: 'no-store' })
+            const distributionData = await distributionRes.json()
+            if (active) setDistribution(distributionData?.distribution || null)
+          }
+        }
+      } catch {
+        // keep this silent; manual controls remain available
+      }
+    }
+
+    checkAndMaybeSync()
+    const interval = setInterval(checkAndMaybeSync, 10000)
+
+    return () => {
+      active = false
+      clearInterval(interval)
+    }
+  }, [stream, streamSessionToken])
 
   useEffect(() => {
     let active = true
@@ -748,12 +804,29 @@ export default function DJStreamPage() {
                         />
                       </div>
                       <div className="bg-black p-3">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Health</div>
+                        <StatusPill
+                          status={
+                            muxStatus.streamHealth === 'good'
+                              ? 'active'
+                              : muxStatus.streamHealth === 'waiting'
+                                ? 'idle'
+                                : 'error'
+                          }
+                          label={muxStatus.streamHealth || 'unknown'}
+                          size="sm"
+                        />
+                      </div>
+                      <div className="bg-black p-3">
                         <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Playback ID</div>
                         <div className="text-xs text-zinc-300 break-all">{muxStatus.mux?.playbackId || muxStatus.session?.playbackId || 'Pending'}</div>
                       </div>
                     </div>
                     {muxStatus.message ? (
                       <p className="mt-3 text-xs text-zinc-500">{muxStatus.message}</p>
+                    ) : null}
+                    {muxStatus.pickupRecommended ? (
+                      <p className="mt-2 text-xs text-amber-300">Mux is active but the station has not picked the stream up yet. Force Pickup is recommended.</p>
                     ) : null}
                     {muxStatus.mux?.recentAssetIds?.length ? (
                       <p className="mt-2 text-xs text-zinc-600">

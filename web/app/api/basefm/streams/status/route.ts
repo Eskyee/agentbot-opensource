@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { buildBasefmDistribution, listBasefmRelayDestinations } from '@/app/lib/basefmDistribution'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { verifyBasefmSessionToken } from '@/app/lib/basefmSession'
 import { prisma } from '@/app/lib/prisma'
@@ -26,7 +27,7 @@ async function getAuthorizedActiveSession(request: NextRequest) {
       where: { id: payload.sessionId },
     })
 
-    if (!activeSession || activeSession.status !== 'active') {
+    if (!activeSession || !['active', 'live'].includes(activeSession.status)) {
       return { activeSession: null }
     }
 
@@ -47,7 +48,7 @@ async function getAuthorizedActiveSession(request: NextRequest) {
   }
 
   const activeSession = await prisma.dj_sessions.findFirst({
-    where: { user_id: session.user.id, status: 'active' },
+    where: { user_id: session.user.id, status: { in: ['active', 'live'] } },
     orderBy: { started_at: 'desc' },
   })
 
@@ -88,6 +89,27 @@ export async function GET(request: NextRequest) {
     }
 
     const muxStream = await getMuxStream(activeSession.mux_stream_id)
+    const playbackId = muxStream.playback_ids?.[0]?.id || activeSession.playback_id || null
+    const relays = await listBasefmRelayDestinations().catch(() => [])
+    const distribution = buildBasefmDistribution({
+      availability: muxStream.status === 'active' && playbackId ? 'live' : 'degraded',
+      primaryDj: playbackId ? {
+        playbackId,
+        hlsUrl: `https://stream.mux.com/${playbackId}.m3u8`,
+      } : null,
+      relays,
+    })
+
+    const streamHealth =
+      muxStream.status === 'active' && playbackId
+        ? distribution.firstParty.status === 'healthy'
+          ? 'good'
+          : 'waiting'
+        : muxStream.status === 'idle'
+          ? 'waiting'
+          : 'bad'
+
+    const pickupRecommended = muxStream.status === 'active' && activeSession.status !== 'live'
     return NextResponse.json({
       active: true,
       session: {
@@ -95,13 +117,25 @@ export async function GET(request: NextRequest) {
         djName: activeSession.dj_name,
         muxStreamId: activeSession.mux_stream_id,
         playbackId: activeSession.playback_id,
+        status: activeSession.status,
       },
       mux: {
         id: muxStream.id,
         status: muxStream.status,
-        playbackId: muxStream.playback_ids?.[0]?.id || null,
+        playbackId,
         recentAssetIds: muxStream.recent_asset_ids || [],
       },
+      distribution,
+      streamHealth,
+      pickupRecommended,
+      message:
+        streamHealth === 'good'
+          ? 'Mux is active and the station should be ready for listeners.'
+          : pickupRecommended
+            ? 'Mux is active but the station has not picked the stream up yet.'
+            : muxStream.status === 'idle'
+              ? 'Mux stream is idle. OBS ingest has not connected yet.'
+              : 'Mux is not reporting a healthy live stream.',
     })
   } catch (error) {
     console.error('[basefm-stream-status] GET error:', error)
@@ -137,6 +171,7 @@ export async function POST(request: NextRequest) {
         synced: true,
         muxStatus: muxStream.status,
         playbackId,
+        streamHealth: playbackId ? 'good' : 'waiting',
         message: 'Mux stream is active. Session synced to live.',
       })
     }
@@ -146,6 +181,7 @@ export async function POST(request: NextRequest) {
       synced: false,
       muxStatus: muxStream.status,
       playbackId,
+      streamHealth: muxStream.status === 'idle' ? 'waiting' : 'bad',
       message: 'Mux stream is not active yet. OBS ingest still needs to connect.',
     })
   } catch (error) {

@@ -24,6 +24,13 @@ interface InstanceControlPanelProps {
   instance: {
     userId: string
     status: string
+    statusReason?: string | null
+    probeChecks?: Array<{
+      path: string
+      ok: boolean
+      status: number | null
+      reason: string | null
+    }>
     subdomain: string
     url: string
     plan: string
@@ -50,9 +57,11 @@ interface InstanceControlPanelProps {
   } | null
   controlsEnabled: boolean
   autoPairHealth: 'ready' | 'missing' | 'loading'
+  probeActionLoading: 'probe' | 'resync' | null
   actionLoading: string
   onCopyToken: () => void
   onRefreshPairing: () => void
+  onProbeAction: (action: 'probe' | 'resync') => void
   onAction: (action: RuntimeAction) => void
   skillsManagerUrl: string
   configManagerUrl: string
@@ -237,9 +246,11 @@ export function InstanceControlPanel({
   stats,
   controlsEnabled,
   autoPairHealth,
+  probeActionLoading,
   actionLoading,
   onCopyToken,
   onRefreshPairing,
+  onProbeAction,
   onAction,
   skillsManagerUrl,
   configManagerUrl,
@@ -411,6 +422,23 @@ export function InstanceControlPanel({
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <ActionButton
+                label="Retry Probe"
+                detail="Re-run the runtime checks against the current OpenClaw URL."
+                icon={RefreshCw}
+                loading={probeActionLoading === 'probe'}
+                disabled={probeActionLoading !== null}
+                onClick={() => onProbeAction('probe')}
+              />
+              <ActionButton
+                label="Resync Runtime URL"
+                detail="Retry runtime sync and refresh the saved OpenClaw endpoint."
+                icon={Wrench}
+                tone="warning"
+                loading={probeActionLoading === 'resync'}
+                disabled={probeActionLoading !== null}
+                onClick={() => onProbeAction('resync')}
+              />
+              <ActionButton
                 label={isRunning ? 'Restart Agentbot' : 'Start Machine'}
                 detail={isRunning ? 'Restart the running Agentbot instance.' : 'Bring this Agentbot instance online.'}
                 icon={isRunning ? RefreshCw : Power}
@@ -484,6 +512,40 @@ export function InstanceControlPanel({
                 Managed lifecycle actions are temporarily gated while the control path is being hardened.
               </div>
             ) : null}
+
+            <div className="mt-4 rounded-[24px] border border-zinc-800 bg-black p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Runtime Probe</p>
+              <div className="mt-3 space-y-3">
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Probed URL</p>
+                  <code className="mt-2 block break-all text-xs text-zinc-300">{instance.url}</code>
+                </div>
+                {instance.statusReason ? (
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Reason</p>
+                    <p className="mt-2 text-xs text-zinc-400">{instance.statusReason}</p>
+                  </div>
+                ) : null}
+                <div className="grid gap-px bg-zinc-800 sm:grid-cols-3">
+                  {(instance.probeChecks || []).map((check) => (
+                    <div key={check.path} className="bg-zinc-950 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">{check.path}</p>
+                        <StatusBadge
+                          status={check.ok ? 'running' : check.status === 404 ? 'stopped' : 'unknown'}
+                          size="sm"
+                          showIcon={false}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-zinc-300">
+                        {check.status ? `HTTP ${check.status}` : 'No response'}
+                      </p>
+                      {check.reason ? <p className="mt-1 text-xs text-zinc-500">{check.reason}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             {basefmError ? (
               <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">

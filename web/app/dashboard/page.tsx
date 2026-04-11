@@ -17,6 +17,13 @@ import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/op
 interface InstanceData {
   userId: string
   status: string
+  statusReason?: string | null
+  probeChecks?: Array<{
+    path: string
+    ok: boolean
+    status: number | null
+    reason: string | null
+  }>
   subdomain: string
   url: string
   plan: string
@@ -118,6 +125,7 @@ function DashboardContent() {
   const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
   const [healingAttempted, setHealingAttempted] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<ConfirmAction | null>(null)
+  const [probeActionLoading, setProbeActionLoading] = useState<'probe' | 'resync' | null>(null)
   const controlsEnabled = OPENCLAW_CONTROLS_ENABLED
 
   useEffect(() => {
@@ -323,6 +331,31 @@ function DashboardContent() {
         })
       }
     } catch {}
+  }
+
+  const handleRuntimeProbeAction = async (action: 'probe' | 'resync') => {
+    if (!instance) return
+
+    setProbeActionLoading(action)
+    try {
+      const res = await fetch(`/api/instance/${instance.userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Failed to ${action} runtime`)
+      }
+
+      await fetchInstance(instance.userId, instance.botUsername || '')
+      toast.success(action === 'probe' ? 'Runtime probe refreshed' : 'Runtime resync triggered')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Failed to ${action} runtime`)
+    } finally {
+      setProbeActionLoading(null)
+    }
   }
 
   const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
@@ -597,6 +630,7 @@ function DashboardContent() {
             stats={stats}
             controlsEnabled={controlsEnabled}
             autoPairHealth={autoPairHealth}
+            probeActionLoading={probeActionLoading}
             actionLoading={actionLoading}
             onCopyToken={() => {
               const token = instance?.gatewayToken || bootstrap?.gatewayToken
@@ -609,6 +643,7 @@ function DashboardContent() {
               setAutoPairHealth('loading')
               fetchInstance(instance.userId, instance.botUsername || '')
             }}
+            onProbeAction={handleRuntimeProbeAction}
             onAction={performAction}
             skillsManagerUrl={skillsManagerUrl}
             configManagerUrl={configManagerUrl}

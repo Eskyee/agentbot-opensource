@@ -66,6 +66,27 @@ export async function GET() {
     result.ready = false
   }
 
+  try {
+    const statusRes = await fetch(`${railwayUrl}/api/status`, { signal: AbortSignal.timeout(5000) })
+    const statusData = await statusRes.json().catch(() => ({}))
+
+    if (statusRes.ok) {
+      if (statusData?.configured === false) {
+        result.status = 'setup'
+      } else if (statusData?.running === true || statusData?.state === 'running') {
+        result.status = 'healthy'
+      } else if (statusData?.state === 'stopped' || statusData?.running === false) {
+        result.status = 'stopped'
+      } else {
+        result.status = result.healthy && result.ready ? 'healthy' : result.healthy ? 'starting' : 'unknown'
+      }
+      result.version = result.version || statusData?.version || null
+      return NextResponse.json(result)
+    }
+  } catch {
+    // fall back to legacy healthz / readyz logic below
+  }
+
   result.status = result.healthy && result.ready ? 'healthy' : result.healthy ? 'starting' : 'unreachable'
 
   return NextResponse.json(result)

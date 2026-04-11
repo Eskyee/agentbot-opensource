@@ -96,7 +96,7 @@ async function getAuthorizedActiveSession(request: NextRequest) {
       where: { id: payload.sessionId },
     })
 
-    if (!activeSession || activeSession.status !== 'active') {
+    if (!activeSession || !['active', 'live'].includes(activeSession.status)) {
       return { activeSession: null }
     }
 
@@ -117,7 +117,7 @@ async function getAuthorizedActiveSession(request: NextRequest) {
   }
 
   const activeSession = await prisma.dj_sessions.findFirst({
-    where: { user_id: session.user.id, status: 'active' },
+    where: { user_id: session.user.id, status: { in: ['active', 'live'] } },
     orderBy: { started_at: 'desc' },
   })
 
