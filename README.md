@@ -91,18 +91,6 @@ Agentbot is a modular framework for deploying autonomous AI agents:
 3. **Fee Sharing** — Get a cut of protocol revenue
 4. **Access** — Premium features and priority compute
 
-### Tokenomics
-
-| Allocation | Percentage | Purpose |
-|------------|------------|---------|
-| Community Treasury | 40% | Development, grants, incentives |
-| Liquidity Pool | 25% | DEX liquidity |
-| Founding Team | 15% | Core dev (vested 4 years) |
-| Public Sale | 15% | Fair launch on Pump.fun |
-| Reserve | 5% | Strategic partnerships |
-
-**Transaction Fees:** 3% (1% LP, 1% stakers, 1% treasury) + 0.5% burn
-
 📄 **[Read the Full Litepaper](./AGENTBOT_LITEPAPER.md)** · 📄 **[Read the Whitepaper](./AGENTBOT_WHITEPAPER.md)**
 
 ---
