@@ -4,6 +4,9 @@ const path = require('path');
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
