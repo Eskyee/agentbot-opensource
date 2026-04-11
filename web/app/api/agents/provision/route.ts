@@ -384,79 +384,9 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Helper: Provision agent on OpenClaw backend via /api/deployments
- */
-async function provisionAgentOnGateway(
-  agentId: string,
-  config: {
-    userId: string;
-    name: string;
-    model: string;
-    config: Record<string, any>;
-  }
-): Promise<{ gatewayId: string; token: string; status: string }> {
-  const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://openclaw-gateway-lqma:10000';
-  const apiSecret = (process.env.BACKEND_API_SECRET || process.env.INTERNAL_API_KEY)?.trim();
-
-  const gatewayPayload = {
-    type: 'provision_agent',
-    agentId,
-    userId: config.userId,
-    name: config.name,
-    model: config.model,
-    config: {
-      ...config.config,
-      telegramToken: config.config.telegramToken,
-      aiProvider: config.model === 'claude-opus-4-6' ? 'anthropic' : (config.config.aiProvider || 'openrouter'),
-      apiKey: config.config.apiKey,
-      plan: config.config.tier || 'label',
-      ownerIds: config.config.ownerIds,
-    },
-    timestamp: new Date().toISOString(),
-  };
-
-  try {
-    const response = await fetch(`${GATEWAY_HTTP_URL}/api/provision`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
-      },
-      body: JSON.stringify(gatewayPayload),
-      signal: AbortSignal.timeout(15000),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => 'Unknown error');
-      throw new Error(`Gateway responded ${response.status}: ${errorBody}`);
-    }
-
-    const data = await response.json() as { gatewayId?: string; id?: string; token?: string; status?: string };
-
-    return {
-      gatewayId: data.gatewayId || data.id || `gw-${agentId}`,
-      token: data.token || generateAuthToken(),
-      status: data.status || 'provisioned',
-    };
-  } catch (error) {
-    // If gateway is unreachable (e.g. local dev), provision with a local token
-    // so the agent record is still created — gateway sync happens on next heartbeat
-    console.warn(`[Provision] Gateway unreachable, provisioning locally: ${error instanceof Error ? error.message : error}`);
-
-    return {
-      gatewayId: `local-${agentId}`,
-      token: generateAuthToken(),
-      status: 'pending_gateway_sync',
-    };
-  }
-}
-
-/**
  * Helper: Generate auth token for agent
  */
 function generateAuthToken(): string {
   // Cryptographically secure token — never use Math.random() for auth
   return crypto.randomBytes(32).toString('base64url');
 }
-
-// metadata removed: not a valid Next.js Route export

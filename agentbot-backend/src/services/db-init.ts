@@ -39,12 +39,22 @@ CREATE TABLE IF NOT EXISTS agents (
 CREATE TABLE IF NOT EXISTS wallets (
   id SERIAL PRIMARY KEY,
   address TEXT UNIQUE NOT NULL,
-  encrypted_private_key TEXT NOT NULL,
+  encrypted_private_key TEXT,              -- legacy column name (kept for compatibility)
+  wallet_seed_encrypted TEXT,              -- CDP wallet metadata (encrypted)
   balance_usdc NUMERIC DEFAULT 0,
+  user_id TEXT,                            -- owner user ID
   agent_id INTEGER REFERENCES agents(id) ON DELETE CASCADE,
+  network TEXT DEFAULT 'base',             -- chain/network identifier
+  wallet_type TEXT DEFAULT 'cdp',          -- cdp | local
   last_balance_check TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add columns that wallet.ts inserts (safe on existing DBs)
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS wallet_seed_encrypted TEXT;
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS user_id TEXT;
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS network TEXT DEFAULT 'base';
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS wallet_type TEXT DEFAULT 'cdp';
 
 CREATE TABLE IF NOT EXISTS bitcoin_wallets (
   id SERIAL PRIMARY KEY,
@@ -74,12 +84,22 @@ CREATE TABLE IF NOT EXISTS treasury_transactions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id),
   agent_id INTEGER REFERENCES agents(id),
-  category TEXT NOT NULL,
+  type TEXT,                               -- transfer | coordination | orphan_wallet | etc.
+  category TEXT NOT NULL DEFAULT 'general',
   action TEXT,
+  description TEXT,                        -- human-readable description
   amount_usdc NUMERIC DEFAULT 0,
+  tx_hash TEXT,                            -- on-chain transaction hash
+  status TEXT DEFAULT 'confirmed',         -- confirmed | pending | failed | needs_reconciliation
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add columns used by bus.ts and wallet.ts (safe on existing DBs)
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS type TEXT;
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS tx_hash TEXT;
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'confirmed';
 
 -- Royalty splits
 CREATE TABLE IF NOT EXISTS royalty_splits (

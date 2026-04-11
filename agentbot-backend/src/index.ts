@@ -105,11 +105,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.raveculture.xyz,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin only from localhost (server-to-server)
+    // Reject null-origin requests in production (file://, Electron-style attacks)
+    // Only permit null origin in non-production for local dev convenience
     if (!origin) {
-      // In production, null origin means server-to-server from localhost
-      // Block null origin from remote clients (file:// protocol attacks)
-      return callback(null, true); // Keep permissive for server-to-server
+      if (process.env.NODE_ENV !== 'production') return callback(null, true);
+      return callback(new Error('Null origin not permitted'));
     }
     if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));

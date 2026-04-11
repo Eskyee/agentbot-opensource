@@ -173,7 +173,8 @@ export class AgentBusService {
         'Content-Type': 'application/json',
         'X-Agent-Protocol-Version': message.version
       },
-      body: JSON.stringify(message)
+      body: JSON.stringify(message),
+      signal: AbortSignal.timeout(10_000), // 10s — prevent indefinite hang on slow agents
     });
 
     if (!response.ok) {
