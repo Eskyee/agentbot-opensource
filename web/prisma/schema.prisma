@@ -38,6 +38,7 @@ model User {
   installedSkills       InstalledSkill[]
   pairedDevices         PairedDevice[]
   userSettings          UserSetting[]
+  managedAgentSessions  ManagedAgentSession[]
   referredByUser        Referral?           @relation("Referred")
   referrals             Referral[]          @relation("Referrer")
   scheduledTasks        ScheduledTask[]
@@ -372,6 +373,23 @@ model UserSetting {
 
   @@unique([userId, key])
   @@index([userId])
+}
+
+model ManagedAgentSession {
+  id                String   @id
+  userId            String
+  type              String
+  title             String
+  workflowRunId     String?  @unique
+  providerSessionId String?
+  agentId           String?
+  environmentId     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+  @@index([type])
 }
 
 model Buddy {

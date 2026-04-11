@@ -1,4 +1,5 @@
 const path = require('path');
+const { withWorkflow } = require('workflow/next');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -113,4 +114,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withWorkflow(nextConfig);
