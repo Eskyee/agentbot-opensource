@@ -41,7 +41,11 @@ export async function listAutoBlogPosts(): Promise<AutoBlogPost[]> {
   if (!redis) return []
 
   try {
-    const posts = await redis.get<AutoBlogPost[]>(INDEX_KEY)
+    const timeoutMs = 800
+    const posts = await Promise.race([
+      redis.get<AutoBlogPost[]>(INDEX_KEY),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), timeoutMs)),
+    ])
     if (!Array.isArray(posts)) return []
     return sortPosts(posts)
   } catch (error) {
@@ -55,7 +59,11 @@ export async function getAutoBlogPost(slug: string): Promise<AutoBlogPost | null
   if (!redis) return null
 
   try {
-    const post = await redis.get<AutoBlogPost>(`${POST_KEY_PREFIX}${slug}`)
+    const timeoutMs = 800
+    const post = await Promise.race([
+      redis.get<AutoBlogPost>(`${POST_KEY_PREFIX}${slug}`),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), timeoutMs)),
+    ])
     return post || null
   } catch (error) {
     console.error('[AutoBlog] get error:', error)
