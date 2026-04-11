@@ -443,7 +443,7 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">What if Agentbot doesn&apos;t respond to messages?</h3>
               <p className="text-sm text-zinc-400">
-                First, try refreshing your chat or reconnecting. If that doesn&apos;t work, go to your <Link href="/dashboard" className="text-blue-500 hover:underline">Dashboard</Link> and click &quot;Restart Agent.&quot; Wait for it to restart, then message again. If neither solution works, contact support from the dashboard.
+                First, try refreshing your chat or reconnecting. If that doesn&apos;t work, go to your <Link href="/dashboard" className="text-blue-500 hover:underline">Dashboard</Link>{' '}and click &quot;Restart Agent.&quot; Wait for it to restart, then message again. If neither solution works, contact support from the dashboard.
               </p>
             </div>
 

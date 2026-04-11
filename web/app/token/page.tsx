@@ -252,43 +252,67 @@ export default async function TokenPage() {
             </div>
           </div>
 
-          <div className="min-w-0 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Community Market</div>
-                <div className="mt-2 text-2xl font-bold uppercase tracking-tight text-white">{COMMUNITY_TOKEN.symbol}</div>
-              </div>
-              <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
-                stats.status === 'GRADUATED'
-                  ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
-                  : 'border-amber-400/30 bg-amber-400/10 text-amber-200'
-              }`}>
-                {stats.status}
-              </span>
-            </div>
-
-            <div className="mt-6 space-y-4">
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Address</div>
-                <code className="mt-2 block break-all rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-sm text-blue-300">
-                  {COMMUNITY_TOKEN.address}
-                </code>
+          <div className="space-y-6">
+            <div className="min-w-0 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Community Market</div>
+                  <div className="mt-2 text-2xl font-bold uppercase tracking-tight text-white">{COMMUNITY_TOKEN.symbol}</div>
+                </div>
+                <span className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
+                  stats.status === 'GRADUATED'
+                    ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300'
+                    : 'border-amber-400/30 bg-amber-400/10 text-amber-200'
+                }`}>
+                  {stats.status}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-zinc-800 bg-black p-4">
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Progress</div>
-                  <div className="mt-2 text-xl font-bold text-white">
-                    {stats.progress === null ? '—' : `${stats.progress}%`}
+              <div className="mt-6 space-y-4">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Address</div>
+                  <code className="mt-2 block break-all rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-sm text-blue-300">
+                    {COMMUNITY_TOKEN.address}
+                  </code>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Progress</div>
+                    <div className="mt-2 text-xl font-bold text-white">
+                      {stats.progress === null ? '—' : `${stats.progress}%`}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-800 bg-black p-4">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Updated</div>
+                    <div className="mt-2 text-sm font-bold text-white">{formatTimestamp(stats.updatedAt)}</div>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-zinc-800 bg-black p-4">
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Updated</div>
-                  <div className="mt-2 text-sm font-bold text-white">{formatTimestamp(stats.updatedAt)}</div>
-                </div>
-              </div>
 
-              <div className="text-xs leading-6 text-zinc-500">{stats.statusNote}</div>
+                <div className="text-xs leading-6 text-zinc-500">{stats.statusNote}</div>
+              </div>
+            </div>
+
+            <div className="min-w-0 overflow-hidden rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">How To Buy</div>
+              <div className="mt-3 text-2xl font-bold uppercase tracking-tight text-white">
+                Buy {COMMUNITY_TOKEN.symbol} on Solana
+              </div>
+              <div className="mt-6 space-y-4">
+                {[
+                  'Get a Solana wallet (Phantom, Solflare, or Backpack).',
+                  'Fund it with SOL for the swap and gas fees.',
+                  `Go to Pump.fun and search for ${COMMUNITY_TOKEN.symbol} — verify the contract address before swapping.`,
+                  'Track your position from the chart and explorer links below.',
+                ].map((step, index) => (
+                  <div key={index} className="flex items-start gap-4 rounded-2xl border border-zinc-800 bg-black p-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-zinc-700 text-[10px] font-bold uppercase text-zinc-400">
+                      {index + 1}
+                    </div>
+                    <div className="text-sm leading-6 text-zinc-300">{step}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
