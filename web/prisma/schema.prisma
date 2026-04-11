@@ -8,24 +8,24 @@ datasource db {
 }
 
 model User {
-  id                    String           @id @default(cuid())
+  id                    String              @id @default(cuid())
   name                  String?
-  email                 String?          @unique
+  email                 String?             @unique
   emailVerified         DateTime?
   image                 String?
   password              String?
-  role                  String           @default("user")
-  storageLimit          Int              @default(10)
-  plan                  String           @default("free")
+  role                  String              @default("user")
+  storageLimit          Int                 @default(10)
+  plan                  String              @default("free")
   stripeCustomerId      String?
   stripeSubscriptionId  String?
   subscriptionEndDate   DateTime?
   subscriptionStartDate DateTime?
-  subscriptionStatus    String           @default("inactive")
+  subscriptionStatus    String              @default("inactive")
   openclawUrl           String?
   openclawInstanceId    String?
-  referralCode          String?          @unique
-  referralCredits       Int              @default(0)
+  referralCode          String?             @unique
+  referralCredits       Int                 @default(0)
   referredBy            String?
   trialEndsAt           DateTime?
   accounts              Account[]
@@ -38,8 +38,8 @@ model User {
   installedSkills       InstalledSkill[]
   pairedDevices         PairedDevice[]
   userSettings          UserSetting[]
-  referredByUser        Referral?        @relation("Referred")
-  referrals             Referral[]       @relation("Referrer")
+  referredByUser        Referral?           @relation("Referred")
+  referrals             Referral[]          @relation("Referrer")
   scheduledTasks        ScheduledTask[]
   sessions              Session[]
   wallets               Wallet[]
@@ -85,21 +85,21 @@ model VerificationToken {
 }
 
 model Agent {
-  id              String           @id @default(cuid())
-  userId          String
-  name            String
-  model           String?
-  status          String           @default("pending")
-  websocketUrl    String?
-  config          Json?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  tier            String           @default("free")
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  files           AgentFile[]
-  memories        AgentMemory[]
-  installedSkills InstalledSkill[]
-  scheduledTasks  ScheduledTask[]
+  id                  String           @id @default(cuid())
+  userId              String
+  name                String
+  model               String?
+  status              String           @default("pending")
+  websocketUrl        String?
+  config              Json?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  tier                String           @default("free")
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files               AgentFile[]
+  memories            AgentMemory[]
+  installedSkills     InstalledSkill[]
+  scheduledTasks      ScheduledTask[]
   showcaseOptIn       Boolean          @default(false)
   showcaseDescription String           @default("")
 
@@ -173,7 +173,7 @@ model Skill {
   downloads       Int              @default(0)
   rating          Float            @default(0)
   featured        Boolean          @default(false)
-  mcpConfig       Json?            // MCP (Model Context Protocol) configuration
+  mcpConfig       Json? // MCP (Model Context Protocol) configuration
   mcpEnabled      Boolean          @default(false)
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -314,16 +314,16 @@ model ApiKey {
 }
 
 model CalendarToken {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  accessToken  String   // AES-256-GCM encrypted
-  refreshToken String   // AES-256-GCM encrypted
-  calendarId   String   @default("primary")
-  timezone     String   @default("UTC")
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  accessToken  String // AES-256-GCM encrypted
+  refreshToken String // AES-256-GCM encrypted
+  calendarId   String    @default("primary")
+  timezone     String    @default("UTC")
   expiresAt    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -331,11 +331,11 @@ model CalendarToken {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // achievement | badge | referral | system | agent | message | billing
+  type      String // achievement | badge | referral | system | agent | message | billing
   title     String
   message   String
   read      Boolean  @default(false)
-  data      Json?    // Additional data (badge info, referral details, etc.)
+  data      Json? // Additional data (badge info, referral details, etc.)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -365,7 +365,7 @@ model UserSetting {
   id        String   @id @default(cuid())
   userId    String
   key       String
-  value     String   // AES-256-GCM encrypted
+  value     String // AES-256-GCM encrypted
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -378,7 +378,7 @@ model Buddy {
   id         String   @id @default(cuid())
   userId     String
   name       String
-  type       String   // crab | robot | ghost | dragon | alien
+  type       String // crab | robot | ghost | dragon | alien
   level      Int      @default(1)
   xp         Int      @default(0)
   energy     Int      @default(100)
@@ -625,7 +625,7 @@ model wallets {
 // Agent-to-Agent Bridge — private message bus for Atlas coordination
 model bridge_messages {
   id         String   @id @default(cuid())
-  sender     String   // "atlas-main", "atlas-agentbot", "eskyee"
+  sender     String // "atlas-main", "atlas-agentbot", "eskyee"
   channel    String   @default("general") // general, tasks, alerts
   content    String   @db.Text
   priority   String   @default("normal") // normal, urgent, fyi
@@ -657,39 +657,39 @@ model JobCompany {
 }
 
 model JobListing {
-  id              String        @id @default(cuid())
-  companyId       String
-  title           String
-  description     String        @db.Text
-  salaryMin       Int
-  salaryMax       Int
-  salaryCurrency  String        @default("USD")
-  roleType        String
-  techStack       String[]
-  seniority       String
-  contractType    String
-  webType         String        @default("both")
-  applyUrl        String
-  language        String        @default("en")
-  languagePtBr   String?
-  badgeResponseGuaranteed Boolean @default(false)
-  badgeNoAiScreening      Boolean @default(false)
-  status          String        @default("draft")
-  tier            String        @default("standard")
-  rejectionReason String?
-  stripeSessionId String?
-  stripePaymentIntent String?
-  viewCount       Int           @default(0)
-  applyCount      Int           @default(0)
-  profileCount   Int           @default(0)
-  publishedAt     DateTime?
-  expiresAt       DateTime?
-  filledAt        DateTime?
-  pausedAt        DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  company         JobCompany    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  applications    JobApplication[]
+  id                      String           @id @default(cuid())
+  companyId               String
+  title                   String
+  description             String           @db.Text
+  salaryMin               Int
+  salaryMax               Int
+  salaryCurrency          String           @default("USD")
+  roleType                String
+  techStack               String[]
+  seniority               String
+  contractType            String
+  webType                 String           @default("both")
+  applyUrl                String
+  language                String           @default("en")
+  languagePtBr            String?
+  badgeResponseGuaranteed Boolean          @default(false)
+  badgeNoAiScreening      Boolean          @default(false)
+  status                  String           @default("draft")
+  tier                    String           @default("standard")
+  rejectionReason         String?
+  stripeSessionId         String?
+  stripePaymentIntent     String?
+  viewCount               Int              @default(0)
+  applyCount              Int              @default(0)
+  profileCount            Int              @default(0)
+  publishedAt             DateTime?
+  expiresAt               DateTime?
+  filledAt                DateTime?
+  pausedAt                DateTime?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  company                 JobCompany       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications            JobApplication[]
 
   @@index([companyId])
   @@index([status])
@@ -720,12 +720,12 @@ model CareerProfile {
 }
 
 model JobApplication {
-  id          String      @id @default(cuid())
-  listingId   String
-  userId      String
-  hasProfile  Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  listing     JobListing? @relation(fields: [listingId], references: [id])
+  id         String      @id @default(cuid())
+  listingId  String
+  userId     String
+  hasProfile Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  listing    JobListing? @relation(fields: [listingId], references: [id])
 
   @@unique([listingId, userId])
   @@index([listingId])
@@ -733,13 +733,13 @@ model JobApplication {
 }
 
 model JobAlert {
-  id         String   @id @default(cuid())
-  email      String
-  skills     String[]
-  seniority  String[]
-  webType    String   @default("both")
-  createdAt  DateTime @default(now())
-  verified   Boolean  @default(false)
+  id          String   @id @default(cuid())
+  email       String
+  skills      String[]
+  seniority   String[]
+  webType     String   @default("both")
+  createdAt   DateTime @default(now())
+  verified    Boolean  @default(false)
   verifyToken String?
 
   @@index([email])
@@ -768,17 +768,17 @@ model usage_logs {
 }
 
 model credit_claims {
-  id            String   @id
-  user_id       String
+  id             String   @id
+  user_id        String
   wallet_address String   @unique
-  token_address String
-  tier          String
-  credits       Int
-  balance_raw   String
-  balance_ui    Decimal  @db.Decimal(20, 6)
-  claim_source  String   @default("solana-community")
-  tx_signature  String?
-  created_at    DateTime @default(now())
+  token_address  String
+  tier           String
+  credits        Int
+  balance_raw    String
+  balance_ui     Decimal  @db.Decimal(20, 6)
+  claim_source   String   @default("solana-community")
+  tx_signature   String?
+  created_at     DateTime @default(now())
 
   @@index([wallet_address], map: "idx_credit_claims_wallet")
   @@index([user_id], map: "idx_credit_claims_user")
@@ -801,28 +801,28 @@ model community_badges {
 }
 
 model community_governance_proposals {
-  id         String   @id
-  slug       String   @unique
+  id         String    @id
+  slug       String    @unique
   title      String
   summary    String
   details    String?
-  status     String   @default("draft")
-  starts_at  DateTime @default(now())
+  status     String    @default("draft")
+  starts_at  DateTime  @default(now())
   ends_at    DateTime?
   created_by String?
-  created_at DateTime @default(now())
+  created_at DateTime  @default(now())
 
   @@index([status], map: "idx_community_proposals_status")
 }
 
 model community_governance_votes {
-  id           String   @id
-  proposal_id  String
-  user_id      String
+  id             String   @id
+  proposal_id    String
+  user_id        String
   wallet_address String?
-  choice       String
-  voting_power Int      @default(1)
-  created_at   DateTime @default(now())
+  choice         String
+  voting_power   Int      @default(1)
+  created_at     DateTime @default(now())
 
   @@unique([proposal_id, user_id], map: "uniq_community_votes_proposal_user")
   @@index([proposal_id], map: "idx_community_votes_proposal")
@@ -830,17 +830,17 @@ model community_governance_votes {
 }
 
 model dj_sessions {
-  id             Int       @id @default(autoincrement())
-  user_id        String
-  wallet         String
-  dj_name        String?
-  mux_stream_id  String    @unique
-  playback_id    String?
-  started_at     DateTime  @default(now())
-  ended_at       DateTime?
-  max_duration   Int       @default(7200) // 2 hours in seconds
-  status         String    @default("active") // active, ended, auto-ended
-  
+  id            Int       @id @default(autoincrement())
+  user_id       String
+  wallet        String
+  dj_name       String?
+  mux_stream_id String    @unique
+  playback_id   String?
+  started_at    DateTime  @default(now())
+  ended_at      DateTime?
+  max_duration  Int       @default(7200) // 2 hours in seconds
+  status        String    @default("active") // active, ended, auto-ended
+
   @@index([user_id], map: "idx_dj_sessions_user")
   @@index([wallet], map: "idx_dj_sessions_wallet")
   @@index([status], map: "idx_dj_sessions_status")
