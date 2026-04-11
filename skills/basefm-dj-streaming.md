@@ -82,6 +82,68 @@ const stream = await createStream("0xabc", "DJ Snake");
 Default visual:
 - `https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje`
 
+## Operational Lessons
+
+### Treat HLS as the real playback source
+
+When verifying playback, prefer the HLS URL:
+
+```
+https://stream.mux.com/<playbackId>.m3u8
+```
+
+Do not rely on the Mux hosted `.html` page as the only proof of playback. The hosted wrapper can fail or lag while the HLS stream itself is healthy.
+
+### `created` is not `live`
+
+A successful stream-creation response only means:
+- stream object exists
+- stream key exists
+- playback ID exists
+
+It does not mean the stream is already on air.
+
+To count as live, verify:
+- Mux live stream `status: active`
+- `connected: true`
+- an active asset exists
+
+### If ingest keeps dropping, normalize the source media first
+
+For long DJ sets and archived MP3s, clean the source before trying to stream it live.
+
+Observed working pattern:
+1. Convert the source to clean AAC audio
+2. Feed the cleaned file into ffmpeg
+3. Use the BaseFM app-created RTMP key, not an ad hoc raw Mux test stream
+
+This matters because messy source containers can create short-lived assets or broken-pipe failures even when the RTMP target is correct.
+
+### Use fresh app-created streams when an older key gets weird
+
+If repeated reconnects on an older stream key stay `idle`, mint a fresh stream through:
+
+```
+POST /api/basefm/streams
+```
+
+That is usually faster and safer than repeatedly trying to resurrect a poisoned live stream endpoint.
+
+### Agentbot token path is first-class
+
+The community pass path should not be treated as a side note.
+
+If the user is eligible through the Agentbot Builder/Whale claim flow:
+- the claimed wallet is the actual stream wallet
+- the UI should show that clearly
+- stream creation should post that wallet back to `/api/basefm/streams`
+
+### Naming fallback
+
+If Mux live metadata is thin, the current set title should come from the session row (`dj_sessions`) using `mux_stream_id` as the join key.
+
+That prevents active streams from falling back to `Anonymous DJ` when the session already has the right title.
+
 ## Pricing
 - **Free**: baseFM token access or Agentbot token perk access
 - **£10/month**: For non-RAVE holders (covers Mux costs)
