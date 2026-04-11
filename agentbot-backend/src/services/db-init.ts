@@ -137,9 +137,13 @@ CREATE TABLE IF NOT EXISTS bookings (
   id SERIAL PRIMARY KEY,
   agent_id INTEGER REFERENCES agents(id),
   event_id INTEGER REFERENCES events(id),
+  talent_agent_id TEXT,              -- agent ID of the talent being booked (A2A)
+  talent_name TEXT,                  -- display name of talent
   status TEXT DEFAULT 'pending',
   proposed_price_usdc NUMERIC,
+  offer_amount_usdc NUMERIC,         -- alias used by negotiation service
   final_price_usdc NUMERIC,
+  metadata JSONB DEFAULT '{}',       -- full offer payload
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -235,6 +239,12 @@ ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS tier TEXT;
 ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS latency_ms INTEGER;
 ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS success BOOLEAN;
 ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS source TEXT;
+
+-- Migration: bookings — add columns used by negotiation service (safe on existing DBs)
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS talent_agent_id TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS talent_name TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS offer_amount_usdc NUMERIC;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';
 
 -- Scheduled tasks (used by inline scheduler in scheduler.ts)
 CREATE TABLE IF NOT EXISTS scheduled_tasks (
