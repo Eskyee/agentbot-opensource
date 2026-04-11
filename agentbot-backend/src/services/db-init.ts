@@ -316,6 +316,10 @@ CREATE INDEX IF NOT EXISTS idx_container_metrics_user_time ON container_metrics(
 CREATE INDEX IF NOT EXISTS idx_model_metrics_user ON model_metrics(user_id, created_at DESC);
 -- Invite codes
 CREATE INDEX IF NOT EXISTS idx_invite_codes_used ON invite_codes(used);
+-- Composite indexes for common query patterns (agent+date, agent+status, user+category)
+CREATE INDEX IF NOT EXISTS idx_events_agent_date ON events(agent_id, event_date DESC);
+CREATE INDEX IF NOT EXISTS idx_bookings_agent_status ON bookings(agent_id, status);
+CREATE INDEX IF NOT EXISTS idx_treasury_user_category ON treasury_transactions(user_id, category);
 `;
 
 export async function initDatabase(): Promise<void> {
