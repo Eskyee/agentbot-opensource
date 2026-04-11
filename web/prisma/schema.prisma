@@ -24,6 +24,7 @@ model User {
   subscriptionStatus    String              @default("inactive")
   openclawUrl           String?
   openclawInstanceId    String?
+  vaultId               String?             @unique
   referralCode          String?             @unique
   referralCredits       Int                 @default(0)
   referredBy            String?

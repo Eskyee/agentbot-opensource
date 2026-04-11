@@ -58,6 +58,7 @@ async function processTurn(userId: string, text: string, tone: string) {
 
 export async function xSocialSessionWorkflow(input: {
   userId: string;
+  vaultId: string;
   internalSessionId: string;
   initialMessage: string;
   initialTone: string;
