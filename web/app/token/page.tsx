@@ -344,7 +344,7 @@ export default async function TokenPage() {
               <div className="mt-3 text-xl font-bold uppercase tracking-tight text-white">Agentbot Surfaces</div>
               <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-400">
                 These are the official Agentbot links we can stand behind. The live token market above is the
-                community-run Solana token surface.
+                community-run Solana token surface. The Base section below covers the official onchain token.
               </p>
             </div>
             <div className="space-y-3">
@@ -360,6 +360,14 @@ export default async function TokenPage() {
                 {
                   label: 'Agentbot Platform',
                   href: 'https://agentbot.raveculture.xyz',
+                },
+                {
+                  label: 'Basescan Token',
+                  href: baseTokenLinks.explorerUrl || '#',
+                },
+                {
+                  label: 'Base Chart',
+                  href: baseTokenLinks.chartUrl || 'https://www.geckoterminal.com/base',
                 },
               ].map((item) => (
                 <a
