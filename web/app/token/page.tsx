@@ -151,6 +151,15 @@ export default async function TokenPage() {
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </a>
               <a
+                href={`https://jup.ag/swap/SOL-${COMMUNITY_TOKEN.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-200 transition-colors hover:border-emerald-400/60 hover:text-white"
+              >
+                Buy on Jupiter
+                <ArrowUpRight className="h-3.5 w-3.5" />
+              </a>
+              <a
                 href={stats.pairUrl}
                 target="_blank"
                 rel="noopener noreferrer"
