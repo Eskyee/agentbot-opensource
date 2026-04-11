@@ -6,9 +6,9 @@
   <a href="https://github.com/sponsors/Eskyee">
     <img src="https://img.shields.io/github/sponsors/Eskyee?style=social" alt="GitHub Sponsors">
   </a>
-  <a href="https://twitter.com/agentbot_ai">
-    <img src="https://img.shields.io/twitter/follow/agentbot_ai?style=social" alt="Twitter">
-  </a>
+  <a href="https://x.com/i/communities/2031495203002134740">
+  <img src="https://img.shields.io/badge/X-Community-blue?style=social&logo=x" alt="X Community">
+</a>
 </p>
 <p align="center">
   <a href="https://github.com/OpenClaw/openclaw">
