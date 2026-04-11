@@ -2,6 +2,22 @@ import Link from 'next/link';
 
 const communityUpdates = [
   {
+    source: 'Agentbot',
+    date: '11 April 2026',
+    title: 'Dual-Chain Token: Base + Solana 🪙',
+    excerpt: 'Agentbot now supports community tokens on two chains. Base = official engine. Solana = community crowd. Two tokens, one platform. This is our genesis stamp — no future tokens will ever be created.',
+    url: '/token',
+    type: 'feature',
+  },
+  {
+    source: 'Agentbot',
+    date: '11 April 2026',
+    title: 'Genesis Stamp — Two Tokens. Forever. 🔒',
+    excerpt: 'Agentbot commits to never producing another token. Base $AGENTBOT and Solana $AGENTBOT are the only two. No dilution. No forks. Community holders today hold the original.',
+    url: '/token',
+    type: 'release',
+  },
+  {
     source: 'baseFM',
     date: '9 April 2026',
     title: 'baseFM Goes Open Source 📻',
@@ -156,6 +172,8 @@ const communityUpdates = [
 ];
 
 const trendingTopics = [
+  { tag: 'Dual-Chain Token', count: 489 },
+  { tag: 'Genesis Stamp', count: 421 },
   { tag: 'Jobs Board', count: 312 },
   { tag: 'Agent Swarms', count: 247 },
   { tag: 'x402 Payments', count: 183 },
