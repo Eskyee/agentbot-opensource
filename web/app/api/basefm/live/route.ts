@@ -81,6 +81,21 @@ async function getCachedLiveSessions() {
   return sessions.map(fromSessionRow)
 }
 
+async function getSessionByMuxStreamId(muxStreamIds: string[]) {
+  if (muxStreamIds.length === 0) {
+    return new Map<string, DjSessionRow>()
+  }
+
+  const sessions = await prisma.dj_sessions.findMany({
+    where: {
+      mux_stream_id: { in: muxStreamIds },
+    },
+    orderBy: { started_at: 'desc' },
+  })
+
+  return new Map(sessions.map((session) => [session.mux_stream_id, session]))
+}
+
 export async function GET() {
   try {
     const { tokenId, tokenSecret } = getMuxCredentials()
@@ -123,20 +138,24 @@ export async function GET() {
     const data = await response.json()
     const streams: MuxLiveStream[] = data.data || []
 
+    const sessionByStreamId = await getSessionByMuxStreamId(streams.map((stream) => stream.id))
+
     const liveDJs = streams
       .filter(stream => stream.status === 'active')
-      .map((stream) =>
+      .map((stream) => {
+        const session = sessionByStreamId.get(stream.id)
+
         toLiveDj({
           id: stream.id,
-          name: stream.metadata?.dj_name || 'Anonymous DJ',
-          wallet: stream.metadata?.dj_wallet || null,
-          playbackId: stream.playback_ids?.[0]?.id || null,
+          name: stream.metadata?.dj_name || session?.dj_name || 'Anonymous DJ',
+          wallet: stream.metadata?.dj_wallet || session?.wallet || null,
+          playbackId: stream.playback_ids?.[0]?.id || session?.playback_id || null,
           streamKey: stream.stream_key,
           status: stream.status,
-          startedAt: stream.created_at,
+          startedAt: session?.started_at?.toISOString() || stream.created_at,
           source: 'mux',
         })
-      )
+      })
 
     if (liveDJs.length > 0) {
       await Promise.all(
