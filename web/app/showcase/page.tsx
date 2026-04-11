@@ -173,6 +173,67 @@ export default async function ShowcasePage() {
           </>
         )}
 
+        {/* Open Source Agents */}
+        <div className="mt-24">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Open Source</p>
+              <h2 className="text-2xl font-bold uppercase tracking-tighter">Example Agents</h2>
+            </div>
+            <a
+              href="https://github.com/Eskyee/agentbot-sdk/tree/main/examples"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] uppercase tracking-widest text-zinc-500 border border-zinc-800 px-4 py-2 hover:border-zinc-600 hover:text-white transition-colors"
+            >
+              View on GitHub →
+            </a>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
+            {[
+              { name: 'Research Agent', desc: 'Web research and analysis. Scans sources, synthesizes findings, produces structured reports.', tools: ['bash', 'read', 'web', 'think', 'memory'], href: 'https://github.com/Eskyee/agentbot-sdk/tree/main/examples/research-agent' },
+              { name: 'Outreach Agent', desc: 'Lead generation and cold messaging. Researches prospects, crafts personalized messages, tracks campaigns.', tools: ['read', 'write', 'web', 'think', 'memory'], href: 'https://github.com/Eskyee/agentbot-sdk/tree/main/examples/outreach-agent' },
+              { name: 'Content Agent', desc: 'Blog posts, social media, documentation. Adapts tone for different audiences.', tools: ['read', 'write', 'web', 'think', 'memory'], href: 'https://github.com/Eskyee/agentbot-sdk/tree/main/examples/content-agent' },
+              { name: 'Crypto Analyst', desc: 'Autonomous 24/7 market scanner. Checks top movers, analyzes projects, produces daily reports.', tools: ['bash', 'read', 'write', 'web', 'think', 'memory'], href: 'https://github.com/Eskyee/agentbot-sdk/tree/main/examples/crypto-analyst' },
+              { name: 'Barista Agent', desc: 'Morning motivation and terrible programming jokes. 5 AM survival mode.', tools: ['think', 'memory'], href: 'https://github.com/Eskyee/agentbot-sdk/tree/main/examples/barista-agent' },
+              { name: 'Multi-Agent Workflow', desc: 'Compose agents into pipelines: researcher → outreach → content. Full workflow example.', tools: ['bash', 'read', 'write', 'web', 'think', 'memory'], href: 'https://github.com/Eskyee/agentbot-sdk/tree/main/examples/multi-agent-workflow' },
+            ].map((agent) => (
+              <a
+                key={agent.name}
+                href={agent.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-black p-6 flex flex-col gap-4 hover:bg-zinc-950 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-sm font-bold uppercase tracking-tight">{agent.name}</h3>
+                  <span className="text-[10px] text-zinc-700 shrink-0">MIT</span>
+                </div>
+                <p className="text-xs text-zinc-500 leading-relaxed line-clamp-3">{agent.desc}</p>
+                <div className="flex flex-wrap gap-1 mt-auto">
+                  {agent.tools.map((tool) => (
+                    <span key={tool} className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-0.5">
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <div className="mt-6 text-center">
+            <a
+              href="https://github.com/Eskyee/agentbot-sdk"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-zinc-500 hover:text-white transition-colors"
+            >
+              Build your own agent → agentbot-sdk on GitHub
+            </a>
+          </div>
+        </div>
+
         {/* CTA */}
         <div className="mt-24 border border-zinc-800 p-12 text-center">
           <h2 className="text-2xl font-bold uppercase tracking-tighter mb-4">
