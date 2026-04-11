@@ -3,7 +3,7 @@
 **Version 1.0 | April 2025**
 ---
 ## Abstract
-Agentbot is open-source infrastructure for autonomous AI agents. Built by the community, for the community. There is no company. There is no VC. There is no team allocation. Just code, contributors, and a shared vision for sustainable open source.
+Agentbot is open-source infrastructure for autonomous AI agents. Built by the community, for the community. There is no company. zero human company.. There is no VC. There is no team allocation. Just code, contributors, and a shared vision for sustainable open source.
 The $AGENT token exists on Solana as a community experiment. It was launched fairly with no pre-mine, no team allocation, and no VC backing. The token is 100% community-owned and governed.
 ---
 ## 1. Vision & Mission
