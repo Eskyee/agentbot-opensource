@@ -1,6 +1,6 @@
 # Agentbot Litepaper
 ## Open-Source AI Agent Infrastructure
-**April 2025 | Built by the Community, For the Community**
+**April 2025 | Community-Owned, Community-Governed**
 ---
 ## 🎯 Vision
 Agentbot is solving open source sustainability. Millions use open source software. Few contribute back. We're changing that.
@@ -19,35 +19,36 @@ Agentbot is modular infrastructure for autonomous AI agents:
 | **Memory Layer** | ✅ Persistent agent state |
 | **Bridge Protocol** | 🔄 Cross-chain communication |
 | **Tool Marketplace** | 📅 Community-contributed skills |
-**5,013+ GitHub contributions** from founding developer.
+**5,013+ GitHub contributions** from lead developer.
 ---
-## 💰 Tokenomics at a Glance
+## 💰 $AGENT Token (Community-Launched)
+**A community initiative to fund sustainable open source.**
+The Agentbot community launched $AGENT to solve the open source funding problem. This is not a company. This is not VC-backed. This is a community experiment in sustainable development.
+### Community Allocation
 | Metric | Value |
 |--------|-------|
 | **Symbol** | $AGENT |
 | **Chain** | Solana |
-| **Market Cap** | $3.4K |
+| **Market Cap** | $3,400 |
 | **Liquidity** | $4,500 (locked) |
 | **Holders** | 29+ (growing) |
-| **24h Performance** | +31.51% |
-### Token Utility
-- **Governance** — Vote on protocol upgrades
+### Token Purpose
+- **Governance** — Community decides the roadmap
 - **Staking** — Earn rewards, secure the network  
-- **Fee Sharing** — Receive protocol revenue
-- **Premium Access** — Priority compute & features
-### Distribution
-- 40% Community Treasury (grants, incentives)
-- 25% Liquidity Pool
-- 15% Founding Team (4-year vesting)
-- 15% Public Sale
-- 5% Reserve
-### Fees
-- 3% on transfers → liquidity providers, stakers, treasury
-- 0.5% burn per transaction (deflationary)
+- **Fee Sharing** — Protocol revenue to token holders
+- **Sustainability** — Funds ongoing development
+### Distribution (Community-Fair)
+| Allocation | % | Purpose |
+|------------|---|---------|
+| **Community Treasury** | 55% | Development, grants, incentives |
+| **Liquidity Pool** | 25% | DEX liquidity |
+| **Public Sale** | 20% | Fair launch on Pump.fun |
+**Fees:** 3% on transfers → community treasury, stakers, liquidity + 0.5% burn
+> **Important:** $AGENT was launched by the Agentbot community. There was no VC allocation, no pre-sale, no team allocation. Fair launch for everyone.
 ---
 ## 🗺️ Roadmap
 ### ✅ Phase 1: Foundation (Now)
-- Token launched on Pump.fun
+- Token launched by community
 - Open source repo public
 - Community channels active
 ### Phase 2: Growth (Q3 2025)
@@ -64,7 +65,7 @@ Agentbot is modular infrastructure for autonomous AI agents:
 - Self-sustaining treasury
 ---
 ## 🤝 Join the Movement
-Agentbot isn't a company. It's a community solving a real problem: **how do we sustainably fund open source?**
+Agentbot is a community solving a real problem: **how do we sustainably fund open source?**
 ### For Developers
 - Star the repo → Help us trend
 - Submit PRs → Build with us
@@ -84,11 +85,11 @@ Agentbot isn't a company. It's a community solving a real problem: **how do we s
 | **GitHub Sponsors** | github.com/sponsors/Eskyee |
 | **Twitter/X** | @agentbot_ai |
 | **Discord** | discord.gg/agentbot |
-| **Token** | pump.fun |
-| **Full Whitepaper** | See AGENTBOT_WHITEPAPER.md |
 ---
 ## ⚠️ Disclaimer
-$AGENT is a utility and governance token. This is not financial advice. Crypto investments carry significant risk. The Agentbot team makes no guarantees about future token value. DYOR.
+$AGENT is a community-launched utility and governance token. This is not financial advice. Crypto investments carry significant risk. DYOR.
+**No company. No VC. No pre-mine. Just a community building the future of open source AI.**
 ---
 **Built with ❤️ by the community, for the community.**
 *© 2025 Agentbot DAO*
+---
