@@ -2,13 +2,14 @@
 <p align="center">
   <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje" alt="Agentbot" width="500" />
 </p>
-> Open-source infrastructure for autonomous AI agents. Built by the community, funded by usage.
+<h2 align="center">Open-source infrastructure for autonomous AI agents.<br>Built by the community, funded by usage.</h2>
 
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/Eskyee?style=social)](https://github.com/sponsors/Eskyee)
-[![Twitter Follow](https://img.shields.io/twitter/follow/agentbot_ai?style=social)](https://twitter.com/agentbot_ai)
-[![Discord](https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/agentbot)
-
----
+<p align="center">
+  <a href="https://github.com/sponsors/Eskyee"><img src="https://img.shields.io/github/sponsors/Eskyee?style=social" alt="GitHub Sponsors"></a>
+  <a href="https://twitter.com/agentbot_ai"><img src="https://img.shields.io/twitter/follow/agentbot_ai?style=social" alt="Twitter"></a>
+  <a href="https://discord.gg/agentbot"><img src="https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white" alt="Discord"></a>
+</p>
+<br>
 
 ## 🎯 The Problem We're Solving
 
