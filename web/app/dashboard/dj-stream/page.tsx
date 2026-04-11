@@ -40,6 +40,24 @@ interface RelayRow {
   lastErrorMessage: string | null
 }
 
+interface StreamMuxStatus {
+  active: boolean
+  session?: {
+    id: number
+    djName: string | null
+    muxStreamId: string
+    playbackId: string | null
+  }
+  mux?: {
+    id: string
+    status: string
+    playbackId: string | null
+    recentAssetIds: string[]
+  }
+  message?: string
+  error?: string
+}
+
 function toStatusPillStatus(status: string): 'active' | 'idle' | 'error' | 'offline' {
   if (status === 'healthy' || status === 'active') return 'active'
   if (status === 'pending' || status === 'degraded' || status === 'idle') return 'idle'
@@ -67,6 +85,9 @@ export default function DJStreamPage() {
   const [youtubeProbeUrl, setYoutubeProbeUrl] = useState('')
   const [savingYoutubeRelay, setSavingYoutubeRelay] = useState(false)
   const [endingStream, setEndingStream] = useState(false)
+  const [muxStatus, setMuxStatus] = useState<StreamMuxStatus | null>(null)
+  const [muxStatusLoading, setMuxStatusLoading] = useState(false)
+  const [muxSyncing, setMuxSyncing] = useState(false)
 
   const handleConnect = () => {
     connect({ connector: coinbaseWallet({ appName: 'Agentbot', preference: 'smartWalletOnly' }) })
@@ -250,6 +271,7 @@ export default function DJStreamPage() {
 
       setStream(null)
       setStreamSessionToken(null)
+      setMuxStatus(null)
 
       const [distributionRes, relaysRes] = await Promise.all([
         fetch('/api/basefm/distribution', { cache: 'no-store' }),
@@ -264,6 +286,48 @@ export default function DJStreamPage() {
       setError(err instanceof Error ? err.message : 'Failed to end current stream')
     } finally {
       setEndingStream(false)
+    }
+  }
+
+  const fetchMuxStatus = async () => {
+    setMuxStatusLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/basefm/streams/status', {
+        headers: streamSessionToken ? { 'x-basefm-session': streamSessionToken } : undefined,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to fetch Mux status')
+      }
+      setMuxStatus(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch Mux status')
+    } finally {
+      setMuxStatusLoading(false)
+    }
+  }
+
+  const syncFromMux = async () => {
+    setMuxSyncing(true)
+    setError('')
+    try {
+      const res = await fetch('/api/basefm/streams/status', {
+        method: 'POST',
+        headers: streamSessionToken ? { 'x-basefm-session': streamSessionToken } : undefined,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to sync from Mux')
+      }
+      await fetchMuxStatus()
+      const distributionRes = await fetch('/api/basefm/distribution', { cache: 'no-store' })
+      const distributionData = await distributionRes.json()
+      setDistribution(distributionData?.distribution || null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to sync from Mux')
+    } finally {
+      setMuxSyncing(false)
     }
   }
 
@@ -651,7 +715,53 @@ export default function DJStreamPage() {
                   >
                     {endingStream ? 'Cutting Feed' : 'Stop Broadcast'}
                   </button>
+                  <button
+                    onClick={fetchMuxStatus}
+                    disabled={muxStatusLoading}
+                    className="border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:border-zinc-800 disabled:text-zinc-600"
+                  >
+                    {muxStatusLoading ? 'Checking Mux' : 'Check Mux Status'}
+                  </button>
+                  <button
+                    onClick={syncFromMux}
+                    disabled={muxSyncing}
+                    className="border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:border-zinc-800 disabled:text-zinc-600"
+                  >
+                    {muxSyncing ? 'Syncing' : 'Force Pickup'}
+                  </button>
                 </div>
+
+                {muxStatus ? (
+                  <div className="border border-zinc-800 p-4">
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Mux Status</div>
+                    <div className="grid gap-px bg-zinc-800 sm:grid-cols-3">
+                      <div className="bg-black p-3">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Mux Stream</div>
+                        <div className="text-xs text-zinc-300 break-all">{muxStatus.session?.muxStreamId || muxStatus.mux?.id || 'Unknown'}</div>
+                      </div>
+                      <div className="bg-black p-3">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Mux State</div>
+                        <StatusPill
+                          status={toStatusPillStatus(muxStatus.mux?.status || 'offline')}
+                          label={muxStatus.mux?.status || 'unknown'}
+                          size="sm"
+                        />
+                      </div>
+                      <div className="bg-black p-3">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Playback ID</div>
+                        <div className="text-xs text-zinc-300 break-all">{muxStatus.mux?.playbackId || muxStatus.session?.playbackId || 'Pending'}</div>
+                      </div>
+                    </div>
+                    {muxStatus.message ? (
+                      <p className="mt-3 text-xs text-zinc-500">{muxStatus.message}</p>
+                    ) : null}
+                    {muxStatus.mux?.recentAssetIds?.length ? (
+                      <p className="mt-2 text-xs text-zinc-600">
+                        Recent assets: {muxStatus.mux.recentAssetIds.length}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 <div className="grid gap-px bg-zinc-800 sm:grid-cols-3">
                   <div className="bg-black p-4">
