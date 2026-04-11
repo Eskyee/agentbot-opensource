@@ -1,7 +1,7 @@
 # baseFM DJ Streaming Skill
 
 ## Overview
-Connect your Agentbot to baseFM onchain radio. Agents can check who's live, verify DJ wallets for streaming access, and tune listeners into live Mux streams.
+Connect your Agentbot to baseFM onchain radio. Agents can check who's live, create streams, generate ffmpeg broadcaster commands, and tune listeners into the live BaseFM player.
 
 ## What Agents Can Do
 
@@ -13,17 +13,17 @@ getLiveDJs() → [{ name, wallet, genre, listeners, playbackId }]
 ```
 
 ### 2. Verify DJ Access
-Check if a wallet has 5,000+ RAVE tokens for DJ access.
+Check if a wallet has DJ access. That can come from the baseFM token on Base or the Agentbot token perks flow.
 
 ```
 verifyDJ(walletAddress) → { wallet, balance, hasAccess }
 ```
 
 ### 3. Create Stream (Verified DJs Only)
-Provision a new Mux RTMP stream for a verified DJ.
+Provision a new Mux RTMP stream for a verified DJ and receive RTMP plus ffmpeg broadcaster details.
 
 ```
-createStream(djWallet, djName) → { streamKey, rtmpUrl, playbackId }
+createStream(djWallet, djName) → { streamKey, rtmpUrl, playbackId, ffmpeg }
 ```
 
 ### 4. Get Stream URLs
@@ -33,7 +33,14 @@ Generate listener playback URLs.
 getStreamUrl(playbackId) → { hls, embed, thumbnail }
 ```
 
-### 5. Announce Live
+### 5. Get ffmpeg Broadcaster Command
+Generate a runtime-ready ffmpeg command template for agent DJs.
+
+```
+getFfmpegCommand(fullRtmpUrl) → "ffmpeg ..."
+```
+
+### 6. Announce Live
 Format a live announcement for the agent to post.
 
 ```
@@ -62,15 +69,18 @@ const stream = await createStream("0xabc", "DJ Snake");
 
 ## DJ Setup Instructions
 
-1. **Verify**: Ensure wallet holds 5,000+ RAVE tokens
+1. **Verify**: Ensure the wallet is eligible through the baseFM token or Agentbot token perks
 2. **Request Stream**: Agent calls `createStream()` 
-3. **OBS Settings**:
+3. **Broadcast**:
+   - Use the returned `ffmpeg` command in the runtime, or
+   - Use OBS manually with the returned RTMP target
+4. **OBS Settings**:
    - Server: `rtmp://global-live.mux.com:5222/app`
    - Stream Key: `[from createStream response]`
-4. **Go Live**: Start streaming, listeners auto-tune via baseFM
+5. **Go Live**: Start streaming, listeners auto-tune via the BaseFM live player
 
 ## Pricing
-- **Free**: 5,000+ RAVE tokens (community perk)
+- **Free**: baseFM token access or Agentbot token perk access
 - **£10/month**: For non-RAVE holders (covers Mux costs)
 
 ## Requirements

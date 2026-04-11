@@ -25,6 +25,7 @@ import {
   deployAgentToGateway, 
   fetchAgentDataForDeployment,
 } from '@/app/lib/agent-deploy'
+import { ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
 
 export const dynamic = 'force-dynamic';
 
@@ -166,10 +167,41 @@ export async function POST(request: NextRequest) {
           ...(body.config || {}),
           managedRuntime: true,
           runtimePlan: requestedPlan,
+          basefm: {
+            enabled: true,
+            access: 'basefm-or-agentbot-token',
+            broadcaster: 'ffmpeg',
+            defaultDjName: body.name.trim(),
+          },
         },
         websocketUrl: existingRuntimeUrl,
       }
     });
+
+    const basefmSkill = await ensureBasefmDjSkill().catch((error) => {
+      console.error('[Agent Provision] Failed to ensure baseFM skill exists:', error)
+      return null
+    })
+
+    if (basefmSkill?.id) {
+      await prisma.installedSkill.upsert({
+        where: {
+          userId_agentId_skillId: {
+            userId,
+            agentId: agent.id,
+            skillId: basefmSkill.id,
+          },
+        },
+        update: { enabled: true },
+        create: {
+          userId,
+          agentId: agent.id,
+          skillId: basefmSkill.id,
+        },
+      }).catch((error) => {
+        console.error('[Agent Provision] Failed to auto-install baseFM skill:', error)
+      })
+    }
 
     // First deploy for a user: create the managed Railway runtime and persist it.
     // This is the path the frontend one-click deploy flow needs.

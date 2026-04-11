@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { buildBasefmFfmpegCommandTemplate } from '@/app/lib/basefmDjSkill'
 import { createBasefmSessionToken, verifyBasefmSessionToken } from '@/app/lib/basefmSession'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
@@ -291,6 +292,10 @@ export async function POST(request: NextRequest) {
       playback: {
         hls: stream.playback_ids?.[0]?.id ? `https://stream.mux.com/${stream.playback_ids[0].id}.m3u8` : null,
         web: stream.playback_ids?.[0]?.id ? `https://stream.mux.com/${stream.playback_ids[0].id}.html` : null,
+      },
+      ffmpeg: {
+        command: buildBasefmFfmpegCommandTemplate(`${MUX_RTMP_URL}/${stream.stream_key}`),
+        inputHint: 'Replace INPUT_MEDIA with your rendered video/audio source inside the agent runtime.',
       },
     })
   } catch (error) {

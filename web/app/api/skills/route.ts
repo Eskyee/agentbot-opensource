@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { deploySkillToAgent, removeSkillFromAgent } from '@/app/lib/agent-deploy'
+import { BASEFM_DJ_SKILL_CODE, BASEFM_DJ_SKILL_NAME, ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
 
 // Default skills catalog — used as seed data if Skill table is empty
 const DEFAULT_SKILLS = [
-  { name: 'DJ Streaming', description: 'Stream live DJ sets via Mux. Verify RAVE token holders for DJ access.', category: 'streaming', author: 'Agentbot', downloads: 150, rating: 5.0, featured: true },
+  { name: BASEFM_DJ_SKILL_NAME, description: 'Create baseFM streams, fetch live DJs, and generate ffmpeg broadcaster commands for agent DJs.', category: 'streaming', author: 'Agentbot', downloads: 150, rating: 5.0, featured: true },
   { name: 'Guestlist Manager', description: 'Manage event guestlists, RSVPs, check-ins, and capacity limits.', category: 'events', author: 'Agentbot', downloads: 280, rating: 4.9, featured: true },
   { name: 'USDC Payments', description: 'Accept USDC payments on Base. Generate payment links, track transactions.', category: 'payments', author: 'Agentbot', downloads: 420, rating: 4.8, featured: true },
   { name: 'Community Treasury', description: 'Track spending, reimbursements, and multi-sig treasury management.', category: 'finance', author: 'Agentbot', downloads: 320, rating: 4.7, featured: true },
@@ -69,12 +70,17 @@ export const dynamic = 'force-dynamic'
  */
 async function ensureSkillsSeeded() {
   const count = await prisma.skill.count()
-  if (count > 0) return
+  if (count === 0) {
+    await prisma.skill.createMany({
+      data: DEFAULT_SKILLS.map((s) => ({
+        ...s,
+        code: s.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '',
+      })),
+      skipDuplicates: true,
+    })
+  }
 
-  await prisma.skill.createMany({
-    data: DEFAULT_SKILLS.map(s => ({ ...s, code: '' })),
-    skipDuplicates: true,
-  })
+  await ensureBasefmDjSkill()
 }
 
 export async function GET(request: Request) {

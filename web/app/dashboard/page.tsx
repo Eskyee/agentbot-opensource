@@ -54,6 +54,8 @@ interface DashboardBootstrapData {
     balanceUi: number | null
     creditsClaimed: number
     claimedAt?: string | null
+    availability?: 'live' | 'degraded'
+    detail?: string | null
   }
 }
 
@@ -608,6 +610,7 @@ function DashboardContent() {
             onAction={performAction}
             skillsManagerUrl={skillsManagerUrl}
             configManagerUrl={configManagerUrl}
+            communityRewards={bootstrap?.communityRewards || null}
           />
         </div>
         </main>

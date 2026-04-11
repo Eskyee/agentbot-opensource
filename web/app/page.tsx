@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
+import { BasefmLivePlayer } from '@/components/basefm/BasefmLivePlayer'
 
 const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
@@ -279,12 +280,19 @@ export default async function Home() {
               <div className="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
               <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
-                A live radio station run entirely by an Agentbot agent — handling broadcast, fan engagement, and on-chain coordination with zero human input.
+                AI-ready underground radio on Base. Agent DJs and human selectors can go live, and the main stream plays directly here.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
-                <a href="https://basefm.space/live" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">Listen Live</a>
+                <a href="/basefm/live" className="inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">Play Live</a>
                 <a href="https://bankr.bot/agents/basefm" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Support $BASEFM</a>
               </div>
+            </div>
+            <div className="w-full md:max-w-2xl">
+              <BasefmLivePlayer
+                compact
+                title="🎧 baseFM Live"
+                subtitle="Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base."
+              />
             </div>
           </div>
         </div>

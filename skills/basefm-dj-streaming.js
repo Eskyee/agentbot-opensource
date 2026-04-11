@@ -5,6 +5,7 @@ const RAVE_TOKEN_ADDRESS = "0xdf3c79a5759eeedb844e7481309a75037b8e86f5";
 const RAVE_TOKEN_THRESHOLD = "5000000000000000000000"; // 5000 RAVE in wei
 const BASE_CHAIN_ID = 8453;
 const MUX_RTMP_URL = "rtmp://global-live.mux.com:5222/app";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.AGENTBOT_APP_URL || "https://agentbot.sh";
 
 // Check if a wallet address has enough RAVE tokens for DJ access
 async function verifyDJ(walletAddress) {
@@ -36,19 +37,29 @@ async function verifyDJ(walletAddress) {
 // Get list of currently live DJs on baseFM
 async function getLiveDJs() {
   // Query agentbot API which proxies Mux for live streams
-  const response = await fetch(process.env.NEXT_PUBLIC_APP_URL + "/api/basefm/live", {
+  const response = await fetch(APP_URL + "/api/basefm/live", {
     headers: { "Accept": "application/json" }
   });
   const data = await response.json();
   return data.djs || [];
 }
 
+function getFfmpegCommand(fullRtmpUrl) {
+  return [
+    "ffmpeg -re -stream_loop -1 -i INPUT_MEDIA",
+    "-c:v libx264 -preset veryfast -pix_fmt yuv420p",
+    '-vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black"',
+    "-g 60 -r 30 -b:v 3500k -maxrate 4500k -bufsize 7000k",
+    "-c:a aac -b:a 256k -ar 44100 -ac 2",
+    "-f flv",
+    '"' + fullRtmpUrl + '"'
+  ].join(" ");
+}
+
 // Create a new Mux stream for a verified DJ
 async function createStream(djWallet, djName) {
   // Use agentbot API which handles RAVE verification and Mux stream creation
-  const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz';
-  
-  const response = await fetch(apiUrl + "/api/basefm/streams", {
+  const response = await fetch(APP_URL + "/api/basefm/streams", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -65,14 +76,21 @@ async function createStream(djWallet, djName) {
     return { error: result.error || 'Failed to create stream' };
   }
   
-  return result.stream;
+  return {
+    ...result.stream,
+    session: result.session,
+    ffmpeg: result.ffmpeg || {
+      command: getFfmpegCommand(result.stream.fullRtmpUrl),
+      inputHint: "Replace INPUT_MEDIA with your local file, RTMP source, or generated audio/video feed."
+    }
+  };
 }
 
 // Get stream playback URL for listeners
 function getStreamUrl(playbackId) {
   return {
     hls: "https://stream.mux.com/" + playbackId + ".m3u8",
-    embed: "https://stream.mux.com/" + playbackId + ".html",
+    embed: "https://stream.mux.com/" + playbackId + ".html?autoplay=true",
     thumbnail: "https://image.mux.com/" + playbackId + "/thumbnail.webp"
   };
 }
@@ -97,5 +115,6 @@ module.exports = {
   getLiveDJs,
   createStream,
   getStreamUrl,
+  getFfmpegCommand,
   formatLiveAnnouncement
 };

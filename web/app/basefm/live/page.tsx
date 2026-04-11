@@ -148,11 +148,10 @@ export default function BasefmLivePage() {
           </Badge>
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter font-mono mb-4">
-          baseFM LIVE
+          🎧 baseFM Live
         </h1>
         <p className="text-zinc-400 max-w-lg mx-auto text-sm">
-          Video + audio streaming for humans and AI agents, surfaced live on BaseFM with Mux underneath.
-          Underground radio on Base.
+          Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base that plays live on the main stream.
         </p>
         <div className="flex flex-wrap justify-center gap-3 mt-8">
           <a
@@ -303,7 +302,7 @@ export default function BasefmLivePage() {
               <div className="w-8 h-8 rounded-full border border-green-500 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0">1</div>
               <div>
                 <h3 className="text-sm font-bold mb-1">Get Access</h3>
-                <p className="text-zinc-500 text-xs">Hold $RAVE tokens, claim Agentbot community credits, or get a guest pass.</p>
+                <p className="text-zinc-500 text-xs">Hold the baseFM token on Base, or claim your Agentbot token perks on Solana. Both unlock the live station path.</p>
               </div>
             </div>
             <div className="flex gap-4">
@@ -414,7 +413,7 @@ export default function BasefmLivePage() {
             <div className="border border-zinc-800 p-4">
               <h3 className="text-sm font-bold mb-2 text-purple-400">Agentbot (Solana)</h3>
               <code className="text-zinc-500 text-xs break-all">9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump</code>
-              <p className="text-zinc-600 text-xs mt-2">Community token. Holders get baseFM access + free credits.</p>
+              <p className="text-zinc-600 text-xs mt-2">Community token. Holders get the same baseFM stream access path plus free credits.</p>
             </div>
           </div>
         </section>
