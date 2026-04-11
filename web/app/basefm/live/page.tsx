@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Mic, Video, Radio, Music, Users, Zap, Clock, Shield, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { Mic, Video, Music, Users, Zap, Clock, Shield, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { BasefmLivePlayer } from '@/components/basefm/BasefmLivePlayer'
 
 const FEATURES = [
   {
@@ -74,213 +75,19 @@ const OBS_SETTINGS = {
   },
 }
 
-type LiveDj = {
-  id: string
-  name: string
-  wallet: string | null
-  playbackId: string | null
-  status: string
-  startedAt: number | string
-  source: 'mux' | 'session-cache'
-  hlsUrl: string | null
-  embedUrl: string | null
-}
-
-type LiveResponse = {
-  djs: LiveDj[]
-  count: number
-  primaryDj: LiveDj | null
-  availability: 'live' | 'degraded'
-  error?: string
-}
-
 export default function BasefmLivePage() {
   const [showOBS, setShowOBS] = useState(false)
-  const [liveData, setLiveData] = useState<LiveResponse | null>(null)
-  const [loadingLive, setLoadingLive] = useState(true)
-  const [liveError, setLiveError] = useState<string | null>(null)
-
-  useEffect(() => {
-    let active = true
-
-    const loadLive = async () => {
-      try {
-        const response = await fetch('/api/basefm/live', { cache: 'no-store' })
-        const data = await response.json()
-
-        if (!active) return
-
-        if (!response.ok && !data?.primaryDj) {
-          throw new Error(data?.error || 'Unable to load baseFM live state')
-        }
-
-        setLiveData(data)
-        setLiveError(data?.error || null)
-      } catch (error) {
-        if (!active) return
-        setLiveError(error instanceof Error ? error.message : 'Unable to load baseFM live state')
-      } finally {
-        if (active) setLoadingLive(false)
-      }
-    }
-
-    loadLive()
-    const interval = setInterval(loadLive, 15000)
-
-    return () => {
-      active = false
-      clearInterval(interval)
-    }
-  }, [])
-
-  const primaryDj = liveData?.primaryDj || null
-  const liveDjs = liveData?.djs || []
-  const stationLive = Boolean(primaryDj?.embedUrl)
 
   return (
     <main className="min-h-screen bg-black text-white">
-      {/* Hero */}
       <div className="border-b border-zinc-800 px-6 py-16 text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <Radio className={`w-8 h-8 ${stationLive ? 'text-green-400 animate-pulse' : 'text-zinc-500'}`} />
-          <Badge className={stationLive ? 'bg-green-900/50 text-green-400 border-green-800 text-[10px]' : 'bg-zinc-900 text-zinc-400 border-zinc-700 text-[10px]'}>
-            {stationLive ? 'ON AIR' : 'STANDBY'}
-          </Badge>
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter font-mono mb-4">
-          🎧 baseFM Live
-        </h1>
-        <p className="text-zinc-400 max-w-lg mx-auto text-sm">
-          Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base that plays live on the main stream.
-        </p>
-        <div className="flex flex-wrap justify-center gap-3 mt-8">
-          <a
-            href="/dashboard/dj-stream"
-            className="bg-green-600 hover:bg-green-500 text-white font-mono text-xs uppercase tracking-widest px-6 py-3 transition-colors"
-          >
-            Start Streaming →
-          </a>
-          <a
-            href={primaryDj?.embedUrl || '#live-player'}
-            className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white font-mono text-xs uppercase tracking-widest px-6 py-3 transition-colors"
-          >
-            {stationLive ? 'Watch Live' : 'Live Player'}
-          </a>
-        </div>
+        <BasefmLivePlayer
+          title="🎧 baseFM Live"
+          subtitle="Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base that auto-plays the main stream when a DJ is live."
+        />
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
-        <section id="live-player" className="border border-zinc-800 bg-zinc-950 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Now Playing</p>
-              <h2 className="mt-2 text-2xl font-bold uppercase tracking-tighter font-mono">
-                {primaryDj ? primaryDj.name : loadingLive ? 'Loading live station' : 'No DJ live right now'}
-              </h2>
-            </div>
-            <Badge className={stationLive ? 'bg-green-900/50 text-green-400 border-green-800 text-[10px]' : 'bg-zinc-900 text-zinc-400 border-zinc-700 text-[10px]'}>
-              {stationLive ? `${liveData?.count || 1} LIVE` : 'OFF AIR'}
-            </Badge>
-          </div>
-
-          {stationLive && primaryDj?.embedUrl ? (
-            <div className="space-y-4">
-              <div className="overflow-hidden border border-zinc-800 bg-black aspect-video">
-                <iframe
-                  src={primaryDj.embedUrl}
-                  title={`baseFM live stream for ${primaryDj.name}`}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                  allowFullScreen
-                  className="h-full w-full"
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="border border-zinc-800 bg-black p-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">DJ</div>
-                  <div className="mt-2 text-sm font-bold text-white">{primaryDj.name}</div>
-                </div>
-                <div className="border border-zinc-800 bg-black p-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playback</div>
-                  <div className="mt-2 text-xs font-mono text-zinc-300 break-all">{primaryDj.playbackId}</div>
-                </div>
-                <div className="border border-zinc-800 bg-black p-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Source</div>
-                  <div className="mt-2 text-xs uppercase tracking-widest text-zinc-300">
-                    {primaryDj.source === 'mux' ? 'Mux live' : 'Session cache'}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={primaryDj.embedUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 hover:border-zinc-500 hover:text-white"
-                >
-                  Open Player
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-                {primaryDj.hlsUrl ? (
-                  <a
-                    href={primaryDj.hlsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 border border-zinc-800 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
-                  >
-                    HLS Feed
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                ) : null}
-              </div>
-            </div>
-          ) : (
-            <div className="border border-dashed border-zinc-800 bg-black px-6 py-10 text-center">
-              <p className="text-sm text-zinc-300">
-                {loadingLive ? 'Checking the station…' : 'No live DJ is on air right now.'}
-              </p>
-              <p className="mt-2 text-xs text-zinc-500">
-                When a DJ or agent goes live, the player appears here automatically.
-              </p>
-            </div>
-          )}
-
-          {liveError ? (
-            <div className="mt-4 border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-              {liveError}
-            </div>
-          ) : null}
-
-          {liveDjs.length > 1 ? (
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {liveDjs.slice(1).map((dj) => (
-                <div key={dj.id} className="border border-zinc-800 bg-black p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-bold text-white">{dj.name}</div>
-                      <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
-                        {dj.source === 'mux' ? 'Live now' : 'Cached live state'}
-                      </div>
-                    </div>
-                    {dj.embedUrl ? (
-                      <a
-                        href={dj.embedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-zinc-400 underline hover:text-white"
-                      >
-                        Watch
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </section>
-
-        {/* Features Grid */}
         <section>
           <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">What You Can Do</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -294,7 +101,6 @@ export default function BasefmLivePage() {
           </div>
         </section>
 
-        {/* How to Stream */}
         <section className="border border-zinc-800 p-6">
           <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">How to Stream</h2>
           <div className="space-y-4">
@@ -309,21 +115,21 @@ export default function BasefmLivePage() {
               <div className="w-8 h-8 rounded-full border border-green-500 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0">2</div>
               <div>
                 <h3 className="text-sm font-bold mb-1">Connect Wallet</h3>
-                <p className="text-zinc-500 text-xs">Connect your Coinbase Wallet on Base. We verify your token balance automatically.</p>
+                <p className="text-zinc-500 text-xs">Connect your wallet or claim your Agentbot holder perks. The platform verifies your access automatically.</p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="w-8 h-8 rounded-full border border-green-500 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0">3</div>
               <div>
                 <h3 className="text-sm font-bold mb-1">Get Stream Key</h3>
-                <p className="text-zinc-500 text-xs">Hit &quot;Go Live&quot; on the dashboard. We give you an RTMP URL + stream key.</p>
+                <p className="text-zinc-500 text-xs">Hit &quot;Create baseFM Stream&quot; in the runtime panel or the DJ dashboard. We give you an RTMP URL, playback ID, and ffmpeg broadcaster path.</p>
               </div>
             </div>
             <div className="flex gap-4">
               <div className="w-8 h-8 rounded-full border border-green-500 flex items-center justify-center text-green-400 text-xs font-bold flex-shrink-0">4</div>
               <div>
-                <h3 className="text-sm font-bold mb-1">Open OBS & Stream</h3>
-                <p className="text-zinc-500 text-xs">Paste the URL + key into OBS. Start streaming. 2-hour max per session.</p>
+                <h3 className="text-sm font-bold mb-1">Broadcast</h3>
+                <p className="text-zinc-500 text-xs">Use OBS for humans, or the provided ffmpeg command for agent DJs. When the stream goes live, it appears here automatically.</p>
               </div>
             </div>
           </div>
@@ -332,12 +138,11 @@ export default function BasefmLivePage() {
               href="/dashboard/dj-stream"
               className="inline-block bg-green-600 hover:bg-green-500 text-white font-mono text-xs uppercase tracking-widest px-6 py-3 transition-colors"
             >
-              Go to Dashboard →
+              Open DJ Dashboard →
             </a>
           </div>
         </section>
 
-        {/* Access Options */}
         <section>
           <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">Access Options</h2>
           <div className="space-y-3">
@@ -359,7 +164,6 @@ export default function BasefmLivePage() {
           </div>
         </section>
 
-        {/* OBS Settings */}
         <section className="border border-zinc-800 p-6">
           <button
             onClick={() => setShowOBS(!showOBS)}
@@ -395,13 +199,12 @@ export default function BasefmLivePage() {
               <div className="p-4 border border-zinc-800 bg-zinc-900/50">
                 <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Stream URL</h3>
                 <code className="text-green-400 text-sm break-all">rtmp://global-live.mux.com:5222/app</code>
-                <p className="text-zinc-600 text-xs mt-2">Stream key is generated when you go live from the dashboard.</p>
+                <p className="text-zinc-600 text-xs mt-2">The runtime panel now also provides an ffmpeg broadcaster command for agent DJs.</p>
               </div>
             </div>
           )}
         </section>
 
-        {/* Token Info */}
         <section className="border border-zinc-800 p-6">
           <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">Tokens</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -418,7 +221,6 @@ export default function BasefmLivePage() {
           </div>
         </section>
 
-        {/* Footer Links */}
         <div className="flex flex-wrap gap-4 justify-center pt-8 border-t border-zinc-900">
           <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-zinc-500 text-xs hover:text-white flex items-center gap-1">
             basefm.space <ExternalLink className="w-3 h-3" />

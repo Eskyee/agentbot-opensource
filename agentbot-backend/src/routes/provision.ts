@@ -47,12 +47,15 @@ const generateMuxCredentials = async () => {
   const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
   
   if (!MUX_TOKEN_ID || !MUX_TOKEN_SECRET) {
-    // Fallback to placeholder if Mux not configured
+    // Dev-only fallback — Mux not configured, generate placeholder credentials
+    // Use randomBytes instead of Math.random for unpredictable placeholder values
+    const seg = () => randomBytes(3).toString('hex');
+    const id = () => randomBytes(6).toString('hex');
     return {
-      streamKey: `sk-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`,
-      liveStreamId: Math.random().toString(36).substring(2, 12),
+      streamKey: `sk-${seg()}-${seg()}-${seg()}`,
+      liveStreamId: id(),
       rtmpServer: 'rtmps://live.mux.com/app',
-      playbackUrl: `https://image.mux.com/${Math.random().toString(36).substring(2, 12)}/playlist.m3u8`,
+      playbackUrl: `https://image.mux.com/${id()}/playlist.m3u8`,
     };
   }
   

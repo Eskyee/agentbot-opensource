@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 export async function GET(
   req: NextRequest,
@@ -13,6 +14,12 @@ export async function GET(
 ) {
   try {
     const { userId } = await params
+
+    // Auth: only allow users to fetch their own agents
+    const session = await getAuthSession()
+    if (!session?.user?.id || session.user.id !== userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     const agents = await prisma.agent.findMany({
       where: { userId },

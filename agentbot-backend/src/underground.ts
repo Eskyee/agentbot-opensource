@@ -291,34 +291,42 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Agent not found or not owned by you' });
     }
 
-    // 1. Record split in DB
-    const splitResult = await pool.query(
-      'INSERT INTO royalty_splits (agent_id, name, total_amount_usdc, status) VALUES ($1, $2, $3, $4) RETURNING id',
-      [agentId, name, totalAmount, 'pending']
-    );
-    const splitId = splitResult.rows[0].id;
-
-    // 2. Add recipients to DB
-    for (const recipient of recipients) {
-      await pool.query(
-        'INSERT INTO royalty_recipients (split_id, wallet_address, percentage, paid) VALUES ($1, $2, $3, FALSE)',
-        [splitId, recipient.address, recipient.share]
-      );
-    }
-
-    // 3. Execute split directly (no queue needed for pre-launch volume)
+    // Wrap split creation + recipients + status in a single transaction.
+    // Prevents orphaned splits or partial recipient lists if any step fails.
+    const client = await pool.connect();
+    let splitId: number;
     try {
-      await pool.query(
+      await client.query('BEGIN');
+
+      // 1. Record split in DB
+      const splitResult = await client.query(
+        'INSERT INTO royalty_splits (agent_id, name, total_amount_usdc, status) VALUES ($1, $2, $3, $4) RETURNING id',
+        [agentId, name, totalAmount, 'pending']
+      );
+      splitId = splitResult.rows[0].id;
+
+      // 2. Add recipients to DB
+      for (const recipient of recipients) {
+        await client.query(
+          'INSERT INTO royalty_recipients (split_id, wallet_address, percentage, paid) VALUES ($1, $2, $3, FALSE)',
+          [splitId, recipient.address, recipient.share]
+        );
+      }
+
+      // 3. Mark completed — all-or-nothing with the inserts above
+      await client.query(
         'UPDATE royalty_splits SET status = $1, executed_at = NOW() WHERE id = $2',
         ['completed', splitId]
       );
+
+      await client.query('COMMIT');
       console.log(`[Splits] Split ${splitId} executed for agent ${agentId}`);
     } catch (execErr: any) {
-      console.error(`[Splits] Split ${splitId} execution error:`, execErr.message);
-      await pool.query(
-        'UPDATE royalty_splits SET status = $1 WHERE id = $2',
-        ['failed', splitId]
-      ).catch(() => {});
+      await client.query('ROLLBACK');
+      console.error(`[Splits] Split execution error:`, execErr.message);
+      throw execErr;
+    } finally {
+      client.release();
     }
 
     res.json({ success: true, splitId, status: 'completed' });

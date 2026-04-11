@@ -68,39 +68,53 @@ async function persistProvisionCompletion(params: {
     openclawUrl: managedAgentUrl,
   };
 
-  await pool.query(
-    `UPDATE "User"
-     SET "openclawUrl" = $2,
-         "openclawInstanceId" = $3
-     WHERE "id" = $1`,
-    [params.userId, managedAgentUrl, params.agentId]
-  );
+  // Wrap both updates in a transaction — if Agent upsert fails, User is not left
+  // pointing at a URL that has no corresponding Agent record.
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
 
-  await pool.query(
-    `INSERT INTO "Agent"
-      ("id", "userId", "name", "model", "status", "websocketUrl", "config", "createdAt", "updatedAt", "tier", "showcaseOptIn", "showcaseDescription")
-     VALUES
-      ($1, $2, $3, $4, $5, $6, $7::jsonb, NOW(), NOW(), $8, FALSE, '')
-     ON CONFLICT ("id") DO UPDATE
-     SET
-      "name" = EXCLUDED."name",
-      "model" = EXCLUDED."model",
-      "status" = EXCLUDED."status",
-      "websocketUrl" = EXCLUDED."websocketUrl",
-      "tier" = EXCLUDED."tier",
-      "config" = COALESCE("Agent"."config", '{}'::jsonb) || EXCLUDED."config",
-      "updatedAt" = NOW()`,
-    [
-      params.agentId,
-      params.userId,
-      name,
-      params.aiProvider,
-      params.status,
-      managedAgentUrl,
-      JSON.stringify(config),
-      params.plan,
-    ]
-  );
+    await client.query(
+      `UPDATE "User"
+       SET "openclawUrl" = $2,
+           "openclawInstanceId" = $3
+       WHERE "id" = $1`,
+      [params.userId, managedAgentUrl, params.agentId]
+    );
+
+    await client.query(
+      `INSERT INTO "Agent"
+        ("id", "userId", "name", "model", "status", "websocketUrl", "config", "createdAt", "updatedAt", "tier", "showcaseOptIn", "showcaseDescription")
+       VALUES
+        ($1, $2, $3, $4, $5, $6, $7::jsonb, NOW(), NOW(), $8, FALSE, '')
+       ON CONFLICT ("id") DO UPDATE
+       SET
+        "name" = EXCLUDED."name",
+        "model" = EXCLUDED."model",
+        "status" = EXCLUDED."status",
+        "websocketUrl" = EXCLUDED."websocketUrl",
+        "tier" = EXCLUDED."tier",
+        "config" = COALESCE("Agent"."config", '{}'::jsonb) || EXCLUDED."config",
+        "updatedAt" = NOW()`,
+      [
+        params.agentId,
+        params.userId,
+        name,
+        params.aiProvider,
+        params.status,
+        managedAgentUrl,
+        JSON.stringify(config),
+        params.plan,
+      ]
+    );
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 function makeJobId(): string {

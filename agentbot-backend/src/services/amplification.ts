@@ -29,6 +29,12 @@ export class AmplificationService {
    * Delivers in parallel batches of 20 to avoid overwhelming the host.
    */
   static async broadcastCampaign(campaignId: number, userId: number): Promise<void> {
+    // NOTE: deliverMessage requires a valid Ed25519/ECDSA wallet signature.
+    // broadcastCampaign currently sends unsigned messages (walletAddress: '', signature: ''),
+    // which means ALL deliveries are silently rejected by the bus signature check.
+    // TODO: wire up a platform signing key (CDP account or local key) before using this in production.
+    console.warn('[Amplification] broadcastCampaign: messages are unsigned — deliveries will be rejected by bus. Requires signing key integration.');
+
     // SECURITY: Verify the campaign belongs to the calling user before broadcasting.
     // Without this check any authenticated user could broadcast another user's campaign.
     const campaign = await pool.query(
