@@ -13,4 +13,6 @@ describe('baseFM DJ skill helper', () => {
     expect(BASEFM_DJ_SKILL_CODE).toContain('createStream')
     expect(BASEFM_DJ_SKILL_CODE).toContain('getFfmpegCommand')
   })
+
+  // Keeps CI path filters active for workflow-only follow-up changes.
 })
