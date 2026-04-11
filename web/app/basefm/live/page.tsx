@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Mic, Video, Radio, Music, Users, Zap, Clock, Shield, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 
@@ -74,24 +74,84 @@ const OBS_SETTINGS = {
   },
 }
 
+type LiveDj = {
+  id: string
+  name: string
+  wallet: string | null
+  playbackId: string | null
+  status: string
+  startedAt: number | string
+  source: 'mux' | 'session-cache'
+  hlsUrl: string | null
+  embedUrl: string | null
+}
+
+type LiveResponse = {
+  djs: LiveDj[]
+  count: number
+  primaryDj: LiveDj | null
+  availability: 'live' | 'degraded'
+  error?: string
+}
+
 export default function BasefmLivePage() {
   const [showOBS, setShowOBS] = useState(false)
+  const [liveData, setLiveData] = useState<LiveResponse | null>(null)
+  const [loadingLive, setLoadingLive] = useState(true)
+  const [liveError, setLiveError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+
+    const loadLive = async () => {
+      try {
+        const response = await fetch('/api/basefm/live', { cache: 'no-store' })
+        const data = await response.json()
+
+        if (!active) return
+
+        if (!response.ok && !data?.primaryDj) {
+          throw new Error(data?.error || 'Unable to load baseFM live state')
+        }
+
+        setLiveData(data)
+        setLiveError(data?.error || null)
+      } catch (error) {
+        if (!active) return
+        setLiveError(error instanceof Error ? error.message : 'Unable to load baseFM live state')
+      } finally {
+        if (active) setLoadingLive(false)
+      }
+    }
+
+    loadLive()
+    const interval = setInterval(loadLive, 15000)
+
+    return () => {
+      active = false
+      clearInterval(interval)
+    }
+  }, [])
+
+  const primaryDj = liveData?.primaryDj || null
+  const liveDjs = liveData?.djs || []
+  const stationLive = Boolean(primaryDj?.embedUrl)
 
   return (
     <main className="min-h-screen bg-black text-white">
       {/* Hero */}
       <div className="border-b border-zinc-800 px-6 py-16 text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <Radio className="w-8 h-8 text-green-400 animate-pulse" />
-          <Badge className="bg-green-900/50 text-green-400 border-green-800 text-[10px]">
-            LIVE 24/7
+          <Radio className={`w-8 h-8 ${stationLive ? 'text-green-400 animate-pulse' : 'text-zinc-500'}`} />
+          <Badge className={stationLive ? 'bg-green-900/50 text-green-400 border-green-800 text-[10px]' : 'bg-zinc-900 text-zinc-400 border-zinc-700 text-[10px]'}>
+            {stationLive ? 'ON AIR' : 'STANDBY'}
           </Badge>
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter font-mono mb-4">
           baseFM LIVE
         </h1>
         <p className="text-zinc-400 max-w-lg mx-auto text-sm">
-          Video + audio streaming for humans and AI agents. Powered by Mux. Gated by tokens.
+          Video + audio streaming for humans and AI agents, surfaced live on BaseFM with Mux underneath.
           Underground radio on Base.
         </p>
         <div className="flex flex-wrap justify-center gap-3 mt-8">
@@ -102,17 +162,125 @@ export default function BasefmLivePage() {
             Start Streaming →
           </a>
           <a
-            href="https://basefm.space/live"
-            target="_blank"
-            rel="noopener noreferrer"
+            href={primaryDj?.embedUrl || '#live-player'}
             className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white font-mono text-xs uppercase tracking-widest px-6 py-3 transition-colors"
           >
-            Listen Live
+            {stationLive ? 'Watch Live' : 'Live Player'}
           </a>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-12 space-y-12">
+        <section id="live-player" className="border border-zinc-800 bg-zinc-950 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-600">Now Playing</p>
+              <h2 className="mt-2 text-2xl font-bold uppercase tracking-tighter font-mono">
+                {primaryDj ? primaryDj.name : loadingLive ? 'Loading live station' : 'No DJ live right now'}
+              </h2>
+            </div>
+            <Badge className={stationLive ? 'bg-green-900/50 text-green-400 border-green-800 text-[10px]' : 'bg-zinc-900 text-zinc-400 border-zinc-700 text-[10px]'}>
+              {stationLive ? `${liveData?.count || 1} LIVE` : 'OFF AIR'}
+            </Badge>
+          </div>
+
+          {stationLive && primaryDj?.embedUrl ? (
+            <div className="space-y-4">
+              <div className="overflow-hidden border border-zinc-800 bg-black aspect-video">
+                <iframe
+                  src={primaryDj.embedUrl}
+                  title={`baseFM live stream for ${primaryDj.name}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                  allowFullScreen
+                  className="h-full w-full"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">DJ</div>
+                  <div className="mt-2 text-sm font-bold text-white">{primaryDj.name}</div>
+                </div>
+                <div className="border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playback</div>
+                  <div className="mt-2 text-xs font-mono text-zinc-300 break-all">{primaryDj.playbackId}</div>
+                </div>
+                <div className="border border-zinc-800 bg-black p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">Source</div>
+                  <div className="mt-2 text-xs uppercase tracking-widest text-zinc-300">
+                    {primaryDj.source === 'mux' ? 'Mux live' : 'Session cache'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={primaryDj.embedUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 hover:border-zinc-500 hover:text-white"
+                >
+                  Open Player
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                {primaryDj.hlsUrl ? (
+                  <a
+                    href={primaryDj.hlsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 border border-zinc-800 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-400 hover:border-zinc-600 hover:text-zinc-200"
+                  >
+                    HLS Feed
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+            <div className="border border-dashed border-zinc-800 bg-black px-6 py-10 text-center">
+              <p className="text-sm text-zinc-300">
+                {loadingLive ? 'Checking the station…' : 'No live DJ is on air right now.'}
+              </p>
+              <p className="mt-2 text-xs text-zinc-500">
+                When a DJ or agent goes live, the player appears here automatically.
+              </p>
+            </div>
+          )}
+
+          {liveError ? (
+            <div className="mt-4 border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+              {liveError}
+            </div>
+          ) : null}
+
+          {liveDjs.length > 1 ? (
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {liveDjs.slice(1).map((dj) => (
+                <div key={dj.id} className="border border-zinc-800 bg-black p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-bold text-white">{dj.name}</div>
+                      <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                        {dj.source === 'mux' ? 'Live now' : 'Cached live state'}
+                      </div>
+                    </div>
+                    {dj.embedUrl ? (
+                      <a
+                        href={dj.embedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-zinc-400 underline hover:text-white"
+                      >
+                        Watch
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </section>
+
         {/* Features Grid */}
         <section>
           <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">What You Can Do</h2>

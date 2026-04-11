@@ -1,76 +1,179 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { prisma } from '@/app/lib/prisma'
 
-const MUX_TOKEN_ID = process.env.MUX_TOKEN_ID;
-const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
+interface DjSessionRow {
+  id: number
+  wallet: string
+  dj_name: string | null
+  playback_id: string | null
+  mux_stream_id: string
+  started_at: Date
+  status: string
+}
 
 interface MuxLiveStream {
-  id: string;
-  stream_key: string;
-  status: 'active' | 'idle' | 'disabled';
-  playback_ids?: Array<{ id: string; policy: string }>;
+  id: string
+  stream_key: string
+  status: 'active' | 'idle' | 'disabled'
+  playback_ids?: Array<{ id: string; policy: string }>
   metadata?: {
-    dj_wallet?: string;
-    dj_name?: string;
-  };
-  created_at: number;
+    dj_wallet?: string
+    dj_name?: string
+  }
+  created_at: number
+}
+
+function getMuxCredentials() {
+  return {
+    tokenId: process.env.MUX_TOKEN_ID,
+    tokenSecret: process.env.MUX_TOKEN_SECRET,
+  }
+}
+
+function toLiveDj(args: {
+  id: string
+  name: string
+  wallet: string | null
+  playbackId: string | null
+  streamKey?: string | null
+  status: string
+  startedAt: number | string
+  source: 'mux' | 'session-cache'
+}) {
+  const playbackId = args.playbackId || null
+
+  return {
+    id: args.id,
+    name: args.name,
+    wallet: args.wallet,
+    playbackId,
+    streamKey: args.streamKey || null,
+    status: args.status,
+    startedAt: args.startedAt,
+    source: args.source,
+    hlsUrl: playbackId ? `https://stream.mux.com/${playbackId}.m3u8` : null,
+    embedUrl: playbackId ? `https://stream.mux.com/${playbackId}.html` : null,
+  }
+}
+
+function fromSessionRow(session: DjSessionRow) {
+  return toLiveDj({
+    id: session.mux_stream_id,
+    name: session.dj_name || 'Anonymous DJ',
+    wallet: session.wallet,
+    playbackId: session.playback_id,
+    status: session.status,
+    startedAt: session.started_at.toISOString(),
+    source: 'session-cache',
+  })
+}
+
+async function getCachedLiveSessions() {
+  const sessions = await prisma.dj_sessions.findMany({
+    where: {
+      status: 'live',
+      playback_id: { not: null },
+    },
+    orderBy: { started_at: 'desc' },
+    take: 8,
+  })
+
+  return sessions.map(fromSessionRow)
 }
 
 export async function GET() {
-  if (!MUX_TOKEN_ID || !MUX_TOKEN_SECRET) {
-    return NextResponse.json(
-      { error: 'Mux not configured' },
-      { status: 500 }
-    );
-  }
-
   try {
-    const auth = Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString('base64');
-    
+    const { tokenId, tokenSecret } = getMuxCredentials()
+
+    if (!tokenId || !tokenSecret) {
+      const cached = await getCachedLiveSessions()
+      return NextResponse.json({
+        djs: cached,
+        count: cached.length,
+        primaryDj: cached[0] || null,
+        availability: 'degraded',
+      })
+    }
+
+    const auth = Buffer.from(`${tokenId}:${tokenSecret}`).toString('base64')
+
     const response = await fetch('https://api.mux.com/video/v1/live-streams?status=active&limit=100', {
       headers: {
         'Authorization': `Basic ${auth}`,
       },
-    });
+      cache: 'no-store',
+    })
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Mux API error:', error);
+      const error = await response.text()
+      console.error('Mux API error:', error)
+      const cached = await getCachedLiveSessions()
       return NextResponse.json(
-        { error: 'Failed to fetch streams from Mux' },
-        { status: response.status }
-      );
+        {
+          djs: cached,
+          count: cached.length,
+          primaryDj: cached[0] || null,
+          availability: 'degraded',
+          error: 'Failed to fetch streams from Mux',
+        },
+        { status: cached.length ? 200 : response.status }
+      )
     }
 
-    const data = await response.json();
-    const streams: MuxLiveStream[] = data.data || [];
+    const data = await response.json()
+    const streams: MuxLiveStream[] = data.data || []
 
     const liveDJs = streams
       .filter(stream => stream.status === 'active')
-      .map(stream => ({
-        id: stream.id,
-        name: stream.metadata?.dj_name || 'Anonymous DJ',
-        wallet: stream.metadata?.dj_wallet || null,
-        playbackId: stream.playback_ids?.[0]?.id || null,
-        streamKey: stream.stream_key,
-        status: stream.status,
-        startedAt: stream.created_at,
-        hlsUrl: stream.playback_ids?.[0]?.id 
-          ? `https://stream.mux.com/${stream.playback_ids[0].id}.m3u8`
-          : null,
-        embedUrl: stream.playback_ids?.[0]?.id
-          ? `https://stream.mux.com/${stream.playback_ids[0].id}.html`
-          : null,
-      }));
+      .map((stream) =>
+        toLiveDj({
+          id: stream.id,
+          name: stream.metadata?.dj_name || 'Anonymous DJ',
+          wallet: stream.metadata?.dj_wallet || null,
+          playbackId: stream.playback_ids?.[0]?.id || null,
+          streamKey: stream.stream_key,
+          status: stream.status,
+          startedAt: stream.created_at,
+          source: 'mux',
+        })
+      )
+
+    if (liveDJs.length > 0) {
+      await Promise.all(
+        liveDJs.map((dj) =>
+          prisma.dj_sessions.updateMany({
+            where: { mux_stream_id: dj.id },
+            data: {
+              status: 'live',
+              ...(dj.playbackId ? { playback_id: dj.playbackId } : {}),
+            },
+          })
+        )
+      ).catch((error) => {
+        console.error('[basefm-live] Failed to sync live session cache:', error)
+      })
+    }
 
     return NextResponse.json({
       djs: liveDJs,
       count: liveDJs.length,
-    });
+      primaryDj: liveDJs[0] || null,
+      availability: 'live',
+    })
   } catch (error) {
-    console.error('Error fetching live DJs:', error);
+    console.error('Error fetching live DJs:', error)
+    const cached = await getCachedLiveSessions().catch(() => [])
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+      {
+        djs: cached,
+        count: cached.length,
+        primaryDj: cached[0] || null,
+        availability: 'degraded',
+        error: cached.length ? 'Live stream sync is temporarily degraded' : 'Internal server error',
+      },
+      { status: cached.length ? 200 : 500 }
+    )
   }
 }
+
+export const dynamic = 'force-dynamic'

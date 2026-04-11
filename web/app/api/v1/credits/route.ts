@@ -15,11 +15,29 @@ const ALLOWED_MODELS = [
   'openrouter/openai/gpt-4o-mini',
 ]
 
+async function refundCredit(userId: string) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { referralCredits: { increment: COST_PER_CALL } },
+  })
+}
+
+async function getRemainingCredits(userId: string) {
+  const remaining = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { referralCredits: true },
+  })
+
+  return remaining?.referralCredits ?? 0
+}
+
 /**
  * POST /api/v1/credits
  * Free credits gateway — each call costs 1 credit from referralCredits
  */
 export async function POST(req: NextRequest) {
+  let debitedUserId: string | null = null
+
   try {
     const session = await getAuthSession()
     if (!session?.user?.email) {
@@ -49,8 +67,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const body = await req.json()
-    body.model = ALLOWED_MODELS.includes(body.model) ? body.model : DEFAULT_MODEL
+    const parsedBody = await req.json().catch(() => ({}))
+    const body = (parsedBody && typeof parsedBody === 'object'
+      ? { ...(parsedBody as Record<string, unknown>) }
+      : {}) as Record<string, unknown>
+    const requestedModel = typeof body.model === 'string' ? body.model : ''
+    body.model = ALLOWED_MODELS.includes(requestedModel) ? requestedModel : DEFAULT_MODEL
 
     // Debit before call (prevent double-spend)
     const updated = await prisma.user.updateMany({
@@ -64,6 +86,7 @@ export async function POST(req: NextRequest) {
         { status: 402 }
       )
     }
+    debitedUserId = user.id
 
     // Proxy to gateway
     let gwRes: Response
@@ -78,23 +101,32 @@ export async function POST(req: NextRequest) {
         signal: AbortSignal.timeout(60_000),
       })
     } catch {
-      // Refund on failure
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { referralCredits: { increment: COST_PER_CALL } },
-      })
+      await refundCredit(user.id)
+      debitedUserId = null
       return NextResponse.json(
         { error: 'gateway_error', message: 'AI gateway unavailable. Credit refunded.' },
         { status: 502 }
       )
     }
 
-    const remaining = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { referralCredits: true },
-    })
+    if (!gwRes.ok) {
+      const contentType = gwRes.headers.get('content-type') || 'application/json'
+      const upstreamBody = await gwRes.text()
+      await refundCredit(user.id)
+      debitedUserId = null
+      const creditsLeft = await getRemainingCredits(user.id)
 
-    const creditsLeft = remaining?.referralCredits ?? 0
+      return new NextResponse(upstreamBody, {
+        status: gwRes.status,
+        headers: {
+          'Content-Type': contentType,
+          'X-Credits-Remaining': String(creditsLeft),
+          'X-Credits-Refunded': '1',
+        },
+      })
+    }
+
+    const creditsLeft = await getRemainingCredits(user.id)
 
     // Stream or JSON response
     const ct = gwRes.headers.get('content-type') || ''
@@ -118,6 +150,11 @@ export async function POST(req: NextRequest) {
       { status: gwRes.status, headers: { 'X-Credits-Remaining': String(creditsLeft) } }
     )
   } catch (error) {
+    if (debitedUserId) {
+      await refundCredit(debitedUserId).catch((refundError) => {
+        console.error('[Credits Gateway] Refund failed after unexpected error:', refundError)
+      })
+    }
     console.error('[Credits Gateway] Error:', error)
     return NextResponse.json({ error: 'internal' }, { status: 500 })
   }
