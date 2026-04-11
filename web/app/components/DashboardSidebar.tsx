@@ -1,12 +1,14 @@
 /**
  * Dashboard Sidebar — Shared Navigation Component
- * 
+ *
  * Used across all dashboard pages. Consistent sections, icons, and active state.
+ * Sections are collapsible (state persisted in localStorage).
+ * Links use prefetch={false} to avoid eager-prefetching 35+ routes.
  */
 
 'use client'
 
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control'
@@ -16,62 +18,74 @@ export const navSections = [
   {
     label: 'Runtime',
     items: [
-      { label: 'Dashboard', href: '/dashboard', icon: '◈' },
-      { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
-      { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
-      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
-      { label: 'Verify Agent', href: '/dashboard/verify', icon: '🛡' },
-      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
-      { label: 'Solana', href: '/dashboard/solana', icon: '◎' },
-      { label: 'Buddies', href: '/buddies', icon: '🐚' },
-      { label: 'Dreams', href: '/dashboard/dreams', icon: '☾' },
-      { label: 'Character QA', href: '/dashboard/character-qa', icon: '♫' },
-      { label: 'Devices', href: '/dashboard/devices', icon: '▪' },
-      { label: 'Git City', href: '/dashboard/git-city', icon: '⌂' },
-      { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
-      { label: 'Jobs', href: '/jobs', icon: '◈' },
-    ]
+      { label: 'Dashboard',    href: '/dashboard',              icon: '◈' },
+      { label: 'Skills',       href: '/dashboard/skills',       icon: '✳' },
+      { label: 'Maintenance',  href: '/dashboard/maintenance',  icon: '✦' },
+      { label: 'Wallet',       href: '/dashboard/wallet',       icon: '◎' },
+      { label: 'Verify Agent', href: '/dashboard/verify',       icon: '🛡' },
+    ],
+  },
+  {
+    label: 'Chain',
+    items: [
+      { label: 'Bitcoin',      href: '/dashboard/bitcoin',     icon: '₿' },
+      { label: 'Solana',       href: '/dashboard/solana',      icon: '◑' },
+      { label: 'X402 Gateway', href: '/dashboard/x402',        icon: '⟡' },
+      { label: 'Tempo DEX',    href: '/dashboard/tempo-dex',   icon: '💱' },
+      { label: 'Bankr',        href: '/dashboard/trading',     icon: '◇' },
+    ],
+  },
+  {
+    label: 'Network',
+    items: [
+      { label: 'Buddies',          href: '/buddies',                      icon: '🐚' },
+      { label: 'Dreams',           href: '/dashboard/dreams',             icon: '☾' },
+      { label: 'Character QA',     href: '/dashboard/character-qa',       icon: '♫' },
+      { label: 'Git City',         href: '/dashboard/git-city',           icon: '⌂' },
+      { label: 'Gitlawb Network',  href: '/dashboard/gitlawb-network',    icon: '◉' },
+      { label: 'Community',        href: '/dashboard/community',          icon: '✦' },
+      { label: 'Jobs',             href: '/jobs',                         icon: '◈' },
+    ],
   },
   {
     label: 'Agents',
     items: [
-      { label: 'Team', href: '/dashboard/team', icon: '⬢' },
-      { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
-      { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
-    ]
+      { label: 'Team',      href: '/dashboard/team',   icon: '⬢' },
+      { label: 'Fleet',     href: '/dashboard/fleet',  icon: '⬡' },
+      { label: 'Colony',    href: '/dashboard/colony', icon: '◆' },
+      { label: 'Borg Soul', href: '/dashboard/borg',   icon: '◭' },
+    ],
   },
   {
     label: 'Operations',
     items: [
-      { label: 'ClawMerchants', href: '/dashboard/market-intel', icon: '◭' },
-      { label: 'Metrics', href: '/dashboard/analytics', icon: '▣' },
-      { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '◌' },
-      { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '☼' },
-      { label: 'Workflows', href: '/dashboard/workflows', icon: '⇄' },
-      { label: 'Support', href: '/dashboard/support', icon: '☰' },
-      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
-      { label: 'Tempo DEX', href: '/dashboard/tempo-dex', icon: '💱' },
-      { label: 'Browser', href: '/dashboard/browser', icon: '🌐' },
-      { label: 'Sandbox', href: '/dashboard/sandbox', icon: '🖥' },
-      { label: 'Borg Soul', href: '/dashboard/borg', icon: '⬢' },
-    ]
+      { label: 'ClawMerchants', href: '/dashboard/market-intel',  icon: '▣' },
+      { label: 'Metrics',       href: '/dashboard/analytics',     icon: '◌' },
+      { label: 'System Pulse',  href: '/dashboard/system-pulse',  icon: '☼' },
+      { label: 'Daily Brief',   href: '/dashboard/daily-brief',   icon: '⇄' },
+      { label: 'Workflows',     href: '/dashboard/workflows',     icon: '⊞' },
+      { label: 'Devices',       href: '/dashboard/devices',       icon: '▪' },
+      { label: 'Browser',       href: '/dashboard/browser',       icon: '🌐' },
+      { label: 'Sandbox',       href: '/dashboard/sandbox',       icon: '🖥' },
+      { label: 'Support',       href: '/dashboard/support',       icon: '☰' },
+    ],
   },
   {
     label: 'Account',
     items: [
-      { label: 'Billing', href: '/billing', icon: '☆' },
-      { label: 'Community', href: '/dashboard/community', icon: '✦' },
-      { label: 'Bankr', href: '/dashboard/trading', icon: '◈' },
-      { label: 'Domains', href: '/dashboard/domains', icon: '🌍' },
-      { label: 'Feedback', href: '/dashboard/feedback', icon: '💬' },
-      { label: 'Settings', href: '/settings', icon: '⚙' },
-      { label: 'Showcase', href: '/showcase', icon: '✧' },
-    ]
+      { label: 'Billing',   href: '/billing',             icon: '☆' },
+      { label: 'Domains',   href: '/dashboard/domains',   icon: '🌍' },
+      { label: 'Feedback',  href: '/dashboard/feedback',  icon: '💬' },
+      { label: 'Settings',  href: '/settings',            icon: '⚙' },
+      { label: 'Showcase',  href: '/showcase',            icon: '✧' },
+    ],
   },
 ]
 
 // Flat list for breadcrumb lookups
 export const allNavItems = navSections.flatMap(s => s.items)
+
+const COLLAPSED_KEY = 'agentbot_sidebar_collapsed'
 
 interface DashboardSidebarProps {
   userName?: string
@@ -97,6 +111,15 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   const pathname = usePathname()
   const [openclawUrl, setOpenclawUrl] = useState<string | null>(null)
   const [gatewayToken, setGatewayToken] = useState<string | null>(null)
+  // Start fully expanded (safe for SSR), hydrate from localStorage in effect
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(COLLAPSED_KEY)
+      if (stored) setCollapsed(JSON.parse(stored))
+    } catch {}
+  }, [])
 
   useEffect(() => {
     if (runtimeUrl) {
@@ -110,16 +133,11 @@ export const DashboardSidebar = memo(function DashboardSidebar({
       return
     }
 
-    // Use localStorage as a fast first paint, but always refresh from DB
-    // so stale shared-gateway URLs do not linger in the user dashboard.
     try {
       const stored = localStorage.getItem('agentbot_instance')
       if (stored) {
         const data = JSON.parse(stored)
-        if (data.url) {
-          const normalizedUrl = String(data.url).replace(/\/$/, '')
-          setOpenclawUrl(normalizedUrl)
-        }
+        if (data.url) setOpenclawUrl(String(data.url).replace(/\/$/, ''))
       }
     } catch {}
 
@@ -139,6 +157,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({
       })
       .catch(() => {})
   }, [runtimeGatewayToken, runtimeInstanceId, runtimeUrl])
+
+  const toggleSection = useCallback((label: string) => {
+    setCollapsed((prev: Record<string, boolean>) => {
+      const next = { ...prev, [label]: !prev[label] }
+      try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next)) } catch {}
+      return next
+    })
+  }, [])
 
   const runtimeStatus = openclawUrl ? (gatewayToken ? 'paired' : 'live') : 'undeployed'
   const runtimeTone = runtimeStatus === 'paired'
@@ -190,6 +216,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
         </button>
 
         <nav className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4">
+          {/* Runtime status card */}
           <div className="mx-4 mb-5 border border-zinc-800 bg-zinc-950 p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -209,13 +236,14 @@ export const DashboardSidebar = memo(function DashboardSidebar({
             </div>
           </div>
 
+          {/* Quick-access runtime links */}
           <div className="mx-4 mb-5">
             {openclawUrl ? (
               <div className="space-y-1.5">
                 {[
-                  { label: 'Open Chat', href: openclawChatUrl, icon: '↗' },
-                  { label: 'Open Skills', href: openclawSkillsUrl, icon: '↗' },
-                  { label: 'Open Config', href: openclawConfigUrl, icon: '↗' },
+                  { label: 'Open Chat',   href: openclawChatUrl },
+                  { label: 'Open Skills', href: openclawSkillsUrl },
+                  { label: 'Open Config', href: openclawConfigUrl },
                 ].map((item) => (
                   <a
                     key={item.label}
@@ -225,7 +253,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                     className="flex items-center justify-between border border-blue-500/20 bg-blue-500/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:border-blue-500/50 hover:text-white transition-colors"
                   >
                     <span>{item.label}</span>
-                    <span className="text-[10px] text-blue-400/70">{item.icon}</span>
+                    <span className="text-[10px] text-blue-400/70">↗</span>
                   </a>
                 ))}
               </div>
@@ -240,41 +268,69 @@ export const DashboardSidebar = memo(function DashboardSidebar({
             )}
           </div>
 
-          {navSections.map((section, i) => (
-            <div key={section.label} className={i > 0 ? 'mt-4' : ''}>
-              <div className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 pl-10 pr-4 mb-1.5">
-                {section.label}
+          {/* Nav sections */}
+          {navSections.map((section, i) => {
+            const sectionHasActive = section.items.some(
+              item => pathname === item.href || pathname.startsWith(item.href + '/')
+            )
+            // Never collapse the section containing the current page
+            const isCollapsed = !sectionHasActive && !!collapsed[section.label]
+
+            return (
+              <div key={section.label} className={i > 0 ? 'mt-3' : ''}>
+                <button
+                  onClick={() => toggleSection(section.label)}
+                  className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
+                  aria-expanded={!isCollapsed}
+                >
+                  <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 group-hover:text-zinc-500 transition-colors">
+                    {section.label}
+                  </span>
+                  <span className={`text-[8px] text-zinc-700 group-hover:text-zinc-500 transition-all duration-200 ${isCollapsed ? '' : 'rotate-180'}`}>
+                    ▲
+                  </span>
+                </button>
+
+                {!isCollapsed && (
+                  <div className="mt-0.5 space-y-0.5">
+                    {section.items.map((item) => {
+                      const isExternal = 'external' in item && item.external
+                      const isActive = !isExternal && (pathname === item.href || pathname.startsWith(item.href + '/'))
+                      const cls = `flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
+                        isActive
+                          ? 'bg-zinc-900 text-white'
+                          : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                      }`
+                      if (isExternal) {
+                        return (
+                          <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                            <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                            <span>{item.label}</span>
+                            <span className="text-[8px] text-zinc-700 ml-auto">↗</span>
+                          </a>
+                        )
+                      }
+                      return (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          prefetch={false}
+                          onClick={onToggle}
+                          className={cls}
+                        >
+                          <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </Link>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
-              <div className="space-y-0.5">
-                {section.items.map((item) => {
-                  const isExternal = 'external' in item && item.external
-                  const isActive = !isExternal && (pathname === item.href || pathname.startsWith(item.href + '/'))
-                  const cls = `flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
-                    isActive
-                      ? 'bg-zinc-900 text-white'
-                      : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
-                  }`
-                  if (isExternal) {
-                    return (
-                      <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={cls}>
-                        <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
-                        <span>{item.label}</span>
-                        <span className="text-[8px] text-zinc-700 ml-auto">↗</span>
-                      </a>
-                    )
-                  }
-                  return (
-                    <Link key={item.label} href={item.href} onClick={onToggle} className={cls}>
-                      <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
-                      <span>{item.label}</span>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </nav>
 
+        {/* User footer */}
         <div className="p-4 border-t border-zinc-900">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-white">
