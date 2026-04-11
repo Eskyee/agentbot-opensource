@@ -21,7 +21,7 @@ RUN npm install --omit=dev
 
 FROM node:22-bookworm-slim
 
-ARG OPENCLAW_VERSION=latest
+ARG OPENCLAW_VERSION=2026.4.10
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
