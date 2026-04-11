@@ -27,6 +27,7 @@ import { requestLogger } from './middleware/logger.js';
 import { requireAdminAuth, setAuthCookie, clearAuthCookie } from './middleware/auth.js';
 import { ensureDataDir } from './utils/fs.js';
 import { log } from './utils/log.js';
+import { probeRuntimeCapabilities } from './services/runtimeProbe.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -39,6 +40,12 @@ async function main() {
     log.error('   PATH = ' + process.env.PATH);
     log.error('   Check that node_modules/.bin is in PATH (Dockerfile ENV PATH setting).');
     process.exit(1);
+  }
+
+  const runtimeCapabilities = probeRuntimeCapabilities();
+  if (!runtimeCapabilities.ffmpeg.available) {
+    log.warn('⚠️ `ffmpeg` is not available in the managed runtime image.');
+    log.warn('   Autonomous baseFM DJ output will not work until the image includes ffmpeg.');
   }
 
   // 1. Ensure all required directories exist on the volume

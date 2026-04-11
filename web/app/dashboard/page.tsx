@@ -21,6 +21,8 @@ interface InstanceData {
   url: string
   plan: string
   openclawVersion?: string
+  ffmpegAvailable?: boolean
+  ffmpegVersion?: string | null
   botUsername?: string
   gatewayToken?: string
   /** Auto-connect URL with token in #fragment */
@@ -54,6 +56,8 @@ interface DashboardBootstrapData {
     balanceUi: number | null
     creditsClaimed: number
     claimedAt?: string | null
+    availability?: 'live' | 'degraded'
+    detail?: string | null
   }
 }
 
@@ -608,6 +612,7 @@ function DashboardContent() {
             onAction={performAction}
             skillsManagerUrl={skillsManagerUrl}
             configManagerUrl={configManagerUrl}
+            communityRewards={bootstrap?.communityRewards || null}
           />
         </div>
         </main>
