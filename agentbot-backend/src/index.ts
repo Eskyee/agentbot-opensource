@@ -1171,6 +1171,13 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
 // /api/agents, and /api/openclaw are already mounted above with Bearer token
 // authentication. Do NOT re-mount them here without auth.
 
+// Global error handler — must be registered after all routes.
+// Prevents Express from leaking stack traces on unhandled route errors.
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  console.error('[Unhandled Error]', err.message, err.stack);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 // Initialize database schema on startup.
 // In production, a DB failure is fatal — don't serve traffic with a broken schema.
 initDatabase().then(() => {
