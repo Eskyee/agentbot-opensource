@@ -58,6 +58,42 @@ describe('/api/basefm/live', () => {
     })
   })
 
+  test('ends stale live sessions when Mux no longer reports them active', async () => {
+    mockedDjSessions.findMany
+      .mockResolvedValueOnce([
+        {
+          id: 3,
+          wallet: '0xabc',
+          dj_name: 'Old Live DJ',
+          playback_id: 'playback-old',
+          mux_stream_id: 'stream-old',
+          started_at: new Date('2026-04-11T12:00:00.000Z'),
+          status: 'live',
+        },
+      ])
+      .mockResolvedValueOnce([])
+
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        data: [],
+      }),
+    })
+
+    const response = await GET()
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.count).toBe(0)
+    expect(mockedDjSessions.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: [3] } },
+      data: {
+        status: 'ended',
+        ended_at: expect.any(Date),
+      },
+    })
+  })
+
   test('falls back to cached live sessions when Mux is unavailable', async () => {
     ;(global.fetch as jest.Mock).mockRejectedValue(new Error('Mux unavailable'))
     mockedDjSessions.findMany.mockResolvedValue([

@@ -97,6 +97,28 @@ async function getSessionByMuxStreamId(muxStreamIds: string[]) {
   return new Map(sessions.map((session) => [session.mux_stream_id, session]))
 }
 
+async function reconcileLiveSessionsAgainstMux(streams: MuxLiveStream[]) {
+  const knownStatuses = new Map(streams.map((stream) => [stream.id, stream.status]))
+  const liveSessions = await prisma.dj_sessions.findMany({
+    where: { status: 'live' },
+    orderBy: { started_at: 'desc' },
+  })
+
+  const staleSessionIds = liveSessions
+    .filter((session) => knownStatuses.get(session.mux_stream_id) !== 'active')
+    .map((session) => session.id)
+
+  if (staleSessionIds.length === 0) return
+
+  await prisma.dj_sessions.updateMany({
+    where: { id: { in: staleSessionIds } },
+    data: {
+      status: 'ended',
+      ended_at: new Date(),
+    },
+  })
+}
+
 export async function GET() {
   try {
     const { tokenId, tokenSecret } = getMuxCredentials()
@@ -120,7 +142,7 @@ export async function GET() {
 
     const auth = Buffer.from(`${tokenId}:${tokenSecret}`).toString('base64')
 
-    const response = await fetch('https://api.mux.com/video/v1/live-streams?status=active&limit=100', {
+    const response = await fetch('https://api.mux.com/video/v1/live-streams?limit=100', {
       headers: {
         'Authorization': `Basic ${auth}`,
       },
@@ -152,6 +174,9 @@ export async function GET() {
 
     const data = await response.json()
     const streams: MuxLiveStream[] = data.data || []
+    await reconcileLiveSessionsAgainstMux(streams).catch((error) => {
+      console.error('[basefm-live] Failed to reconcile stale live sessions:', error)
+    })
 
     const sessionByStreamId = await getSessionByMuxStreamId(streams.map((stream) => stream.id))
 
@@ -171,6 +196,7 @@ export async function GET() {
           source: 'mux',
         })
       })
+      .sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt)))
 
     if (liveDJs.length > 0) {
       await Promise.all(
