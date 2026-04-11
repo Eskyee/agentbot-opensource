@@ -846,3 +846,23 @@ model dj_sessions {
   @@index([status], map: "idx_dj_sessions_status")
   @@index([started_at], map: "idx_dj_sessions_started")
 }
+
+model basefm_relay_destinations {
+  id                 Int       @id @default(autoincrement())
+  key                String    @unique
+  name               String
+  type               String
+  required           Boolean   @default(false)
+  enabled            Boolean   @default(true)
+  viewer_url         String?
+  probe_url          String?
+  status             String    @default("pending")
+  last_healthy_at    DateTime?
+  last_error_at      DateTime?
+  last_error_message String?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  @@index([enabled], map: "idx_basefm_relays_enabled")
+  @@index([status], map: "idx_basefm_relays_status")
+}

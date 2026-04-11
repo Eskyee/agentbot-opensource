@@ -6,6 +6,7 @@ export default function TestStreamClient() {
   const [wallet, setWallet] = useState('')
   const [name, setName] = useState('')
   const [result, setResult] = useState<any>(null)
+  const [sessionToken, setSessionToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -26,6 +27,9 @@ export default function TestStreamClient() {
       })
       const data = await res.json()
       setResult(data)
+      if (data?.session?.accessToken) {
+        setSessionToken(data.session.accessToken)
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -39,6 +43,24 @@ export default function TestStreamClient() {
     setResult(null)
     try {
       const res = await fetch('/api/basefm/live')
+      const data = await res.json()
+      setResult(data)
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const endStream = async () => {
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const res = await fetch('/api/basefm/streams', {
+        method: 'DELETE',
+        headers: sessionToken ? { 'x-basefm-session': sessionToken } : undefined,
+      })
       const data = await res.json()
       setResult(data)
     } catch (e: any) {
@@ -92,13 +114,27 @@ export default function TestStreamClient() {
 
           <div className="bg-zinc-800 p-6 rounded-xl">
             <h2 className="text-xl font-semibold mb-4">Check Live DJs</h2>
-            <button
-              onClick={checkLive}
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
-            >
-              {loading ? 'Loading...' : 'Get Live DJs'}
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={checkLive}
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+              >
+                {loading ? 'Loading...' : 'Get Live DJs'}
+              </button>
+              <button
+                onClick={endStream}
+                disabled={loading}
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+              >
+                {loading ? 'Ending...' : 'End Current Stream'}
+              </button>
+              {sessionToken ? (
+                <p className="text-xs text-zinc-400 break-all">
+                  Session token captured for teardown
+                </p>
+              ) : null}
+            </div>
           </div>
 
           {error && (

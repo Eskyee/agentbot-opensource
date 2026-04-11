@@ -112,12 +112,12 @@ export function BasefmLivePageClient({
         </section>
 
         <section className="border border-zinc-800 p-6">
-          <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">How to Stream</h2>
+          <h2 className="text-xl font-bold uppercase tracking-tighter font-mono mb-6">How To Broadcast</h2>
           <div className="space-y-4">
-            <Step index="1" title="Get Access" body="Hold the baseFM token on Base, or claim your Agentbot token perks on Solana. Both unlock the live station path." />
-            <Step index="2" title="Connect Wallet" body="Connect your wallet or claim your Agentbot holder perks. The platform verifies your access automatically." />
-            <Step index="3" title="Get Stream Key" body="Hit &quot;Create baseFM Stream&quot; in the runtime panel or the DJ dashboard. We give you an RTMP URL, playback ID, and ffmpeg broadcaster path." />
-            <Step index="4" title="Broadcast" body="Use OBS for humans, or the provided ffmpeg command for agent DJs. When the stream goes live, it appears here automatically." />
+            <Step index="1" title="Get Access" body="Hold the baseFM token on Base, or claim your Agentbot token perks on Solana. Both unlock the station path." />
+            <Step index="2" title="Decks + Mixer" body="Keep your normal Pioneer / Rekordbox workflow for track selection, cueing, EQ, loops, and transitions." />
+            <Step index="3" title="Broadcast Key" body="Hit &quot;Go Live&quot; in the DJ dashboard. Agentbot gives you the RTMP target, playback ID, and encoder path." />
+            <Step index="4" title="Program Feed" body="Use OBS for humans, or the provided ffmpeg command for agent DJs. Send the mixer master out into the station path and the live player will pick it up automatically." />
           </div>
           <div className="mt-6">
             <a
@@ -155,11 +155,18 @@ export function BasefmLivePageClient({
             onClick={() => setShowOBS(!showOBS)}
             className="w-full flex items-center justify-between text-left"
           >
-            <h2 className="text-xl font-bold uppercase tracking-tighter font-mono">OBS Settings</h2>
+            <h2 className="text-xl font-bold uppercase tracking-tighter font-mono">Encoder / OBS Settings</h2>
             <span className="text-zinc-500 text-xs">{showOBS ? '▲ Hide' : '▼ Show'}</span>
           </button>
           {showOBS ? (
             <div className="mt-6 space-y-6">
+              <div className="border border-zinc-800 p-4">
+                <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Pioneer Mental Model</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Keep deck control, cueing, beatmatch, EQ, and performance pads in Rekordbox or on your Pioneer hardware.
+                  Agentbot sits after the mixer as the station and relay layer.
+                </p>
+              </div>
               <div>
                 <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-3">Video</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -183,9 +190,9 @@ export function BasefmLivePageClient({
                 </div>
               </div>
               <div className="p-4 border border-zinc-800 bg-zinc-900/50">
-                <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Stream URL</h3>
+                <h3 className="text-xs uppercase tracking-widest text-zinc-500 mb-2">Program Feed Target</h3>
                 <code className="text-green-400 text-sm break-all">rtmp://global-live.mux.com:5222/app</code>
-                <p className="text-zinc-600 text-xs mt-2">The runtime panel now also provides an ffmpeg broadcaster command for agent DJs.</p>
+                <p className="text-zinc-600 text-xs mt-2">The DJ dashboard also provides an ffmpeg broadcaster command for agent DJs and relay controls for downstream destinations.</p>
               </div>
             </div>
           ) : null}

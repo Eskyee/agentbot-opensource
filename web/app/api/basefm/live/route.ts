@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { buildBasefmDistribution, listBasefmRelayDestinations } from '@/app/lib/basefmDistribution'
 
 interface DjSessionRow {
   id: number
@@ -102,11 +103,18 @@ export async function GET() {
 
     if (!tokenId || !tokenSecret) {
       const cached = await getCachedLiveSessions()
+      const relays = await listBasefmRelayDestinations().catch(() => [])
+      const distribution = buildBasefmDistribution({
+        availability: 'degraded',
+        primaryDj: cached[0] || null,
+        relays,
+      })
       return NextResponse.json({
         djs: cached,
         count: cached.length,
         primaryDj: cached[0] || null,
         availability: 'degraded',
+        distribution,
       })
     }
 
@@ -123,12 +131,19 @@ export async function GET() {
       const error = await response.text()
       console.error('Mux API error:', error)
       const cached = await getCachedLiveSessions()
+      const relays = await listBasefmRelayDestinations().catch(() => [])
+      const distribution = buildBasefmDistribution({
+        availability: 'degraded',
+        primaryDj: cached[0] || null,
+        relays,
+      })
       return NextResponse.json(
         {
           djs: cached,
           count: cached.length,
           primaryDj: cached[0] || null,
           availability: 'degraded',
+          distribution,
           error: 'Failed to fetch streams from Mux',
         },
         { status: cached.length ? 200 : response.status }
@@ -173,21 +188,37 @@ export async function GET() {
       })
     }
 
+    const primaryDj = liveDJs[0] || null
+    const relays = await listBasefmRelayDestinations().catch(() => [])
+    const distribution = buildBasefmDistribution({
+      availability: liveDJs.length > 0 ? 'live' : 'degraded',
+      primaryDj,
+      relays,
+    })
+
     return NextResponse.json({
       djs: liveDJs,
       count: liveDJs.length,
-      primaryDj: liveDJs[0] || null,
-      availability: 'live',
+      primaryDj,
+      availability: liveDJs.length > 0 ? 'live' : 'degraded',
+      distribution,
     })
   } catch (error) {
     console.error('Error fetching live DJs:', error)
     const cached = await getCachedLiveSessions().catch(() => [])
+    const relays = await listBasefmRelayDestinations().catch(() => [])
+    const distribution = buildBasefmDistribution({
+      availability: 'degraded',
+      primaryDj: cached[0] || null,
+      relays,
+    })
     return NextResponse.json(
       {
         djs: cached,
         count: cached.length,
         primaryDj: cached[0] || null,
         availability: 'degraded',
+        distribution,
         error: cached.length ? 'Live stream sync is temporarily degraded' : 'Internal server error',
       },
       { status: cached.length ? 200 : 500 }

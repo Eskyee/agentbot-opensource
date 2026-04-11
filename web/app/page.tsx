@@ -33,7 +33,7 @@ export default async function Home() {
         <div className="relative z-10 max-w-3xl">
           <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
             <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
-              Built for the Creative Industry
+              Production Private Cloud
             </div>
             <a
               href="https://github.com/Eskyee/agentbot-opensource"
@@ -42,20 +42,21 @@ export default async function Home() {
               className="inline-flex items-center gap-2 px-3 py-1 border border-zinc-800 hover:border-zinc-600 text-zinc-400 hover:text-white text-[10px] uppercase tracking-widest transition-colors"
             >
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-              Open Source
+              Open Source Starter
               <span className="text-green-400 ml-1">⭐ {githubStars}</span>
-              <span className="text-zinc-500 ml-1">🍴 {githubForks}</span>
+              <span className="text-zinc-500 ml-1">forks {githubForks}</span>
             </a>
           </div>
 
           <h1 className="text-[2.5rem] sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.9]">
-            Focus on the Work.<br />
-            <span className="text-zinc-700">Agents Handle the Rest.</span>
+            Deploy an<br />
+            <span className="text-zinc-700">Autonomous X Team.</span>
           </h1>
 
           <p className="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed mt-6 sm:mt-8">
-            Your autonomous crew handles contracts, outreach, and client comms —
-            while you stay focused on your craft.
+            Agentbot gives you private-cloud social agents for X: monitor mentions,
+            draft replies and threads, detect opportunities, and route actions
+            through approvals. Run it with us, or fork the open-source starter.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-8 sm:mt-10">
@@ -68,17 +69,17 @@ export default async function Home() {
               </Link>
             ) : (
               <Link
-                href="/onboard?plan=solo"
+                href="/onboard?plan=collective"
                 className="inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
-                Deploy Your Crew
+                Deploy Private Cloud
               </Link>
             )}
             <Link
-              href="/demo"
+              href="https://github.com/Eskyee/agentbot-opensource"
               className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
             >
-              Try Demo
+              View Open Source
             </Link>
           </div>
         </div>
@@ -98,16 +99,16 @@ export default async function Home() {
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
           <div className="text-center space-y-6">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Built in the open</div>
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Private cloud + open source</div>
             <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">78</div>
-                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Dashboard Pages</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">Vercel</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Managed web control plane</div>
               </div>
               <div className="w-px h-8 bg-zinc-800" />
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">130+</div>
-                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">API Routes</div>
+                <div className="text-2xl sm:text-3xl font-bold text-white">Railway</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Private runtime ops</div>
               </div>
               <div className="w-px h-8 bg-zinc-800" />
               <div className="text-center">
@@ -147,33 +148,106 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Value Prop */}
+      {/* Audience */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+          <div className="max-w-2xl mb-10 sm:mb-16">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Teams</div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+              Built For Teams<br />
+              <span className="text-zinc-700">That Already Live On X.</span>
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+            {[
+              {
+                label: 'Founders',
+                body: 'Run signal capture, draft replies, and move faster without living in your notifications.',
+              },
+              {
+                label: 'Crypto Teams',
+                body: 'Monitor the timeline, respond faster, and connect attention to onchain payment flows.',
+              },
+              {
+                label: 'Creators',
+                body: 'Keep the conversation moving while protecting voice, approvals, and publishing quality.',
+              },
+              {
+                label: 'Agencies',
+                body: 'Operate multiple social workflows with a command center instead of fragmented tooling.',
+              },
+            ].map((item) => (
+              <div key={item.label} className="bg-black p-6 sm:p-8">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">{item.label}</div>
+                <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Product Split */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+          <div className="max-w-2xl mb-10 sm:mb-16">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Product</div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+              Private Cloud<br />
+              <span className="text-zinc-700">Or Open Source.</span>
+            </h2>
+            <p className="text-zinc-500 text-sm max-w-xl leading-relaxed mt-6">
+              Use Agentbot as a managed production control plane for X-native social agents,
+              or fork the open-source starter and self-host the workflow yourself.
+            </p>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-px bg-zinc-900">
+            <div className="bg-black p-6 sm:p-8">
+              <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-4">Production Private Cloud</div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Managed runtime for teams that need speed and control.</h3>
+              <div className="space-y-3 text-zinc-500 text-sm">
+                <p>Approval queues, dashboards, billing, and operator tooling around your X workflow.</p>
+                <p>Agentbot handles provisioning, observability, and the command center so your team stays focused on output.</p>
+              </div>
+            </div>
+            <div className="bg-black p-6 sm:p-8">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-400 mb-4">Open Source Starter</div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Forkable self-host path for builders.</h3>
+              <div className="space-y-3 text-zinc-500 text-sm">
+                <p>Connect one X account, monitor mentions, draft replies and threads, and extend the workflow with your own logic.</p>
+                <p>Own the runtime, inspect the code, and use the starter as the public entrypoint into the wider Agentbot platform.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* X Workflow */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
           <div className="max-w-2xl space-y-8 sm:space-y-10">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
-              Your 24/7<br />
-              <span className="text-zinc-700">Autonomous Crew</span>
+              Monitor.<br />
+              <span className="text-zinc-700">Draft. Detect. Monetize.</span>
             </h2>
             <div className="space-y-6 sm:space-y-8 pt-2 sm:pt-4">
               <div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Built around your workflow.</h3>
-                <p className="text-zinc-500 text-sm">Name it, shape its voice, and it carries context across every client, project, and conversation.</p>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Watch the signal.</h3>
+                <p className="text-zinc-500 text-sm">Monitor mentions, keywords, and high-signal posts without running a custom ops stack.</p>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Always on, zero wait.</h3>
-                <p className="text-zinc-500 text-sm">Live in 10 seconds, running 24/7 — handling inbound while you sleep.</p>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Draft with approvals.</h3>
+                <p className="text-zinc-500 text-sm">Generate reply and thread drafts fast, but keep a clear human approval step for public actions.</p>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Right where your clients are.</h3>
-                <p className="text-zinc-500 text-sm">Telegram, WhatsApp, Discord — meets people where they already message.</p>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Turn attention into action.</h3>
+                <p className="text-zinc-500 text-sm">Route the right conversations into bookings, payments, or paid API actions with x402.</p>
               </div>
             </div>
             <Link
-              href="/use-cases"
+              href="/documentation"
               className="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
             >
-              See use cases →
+              Read docs →
             </Link>
           </div>
         </div>
@@ -185,20 +259,20 @@ export default async function Home() {
       {/* Free Trial CTA */}
       <section className="border-t border-zinc-900 bg-zinc-950">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20 text-center space-y-6">
-          <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">No credit card required</div>
+          <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Managed product + open source starter</div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase">
-            Try Free<br />
-            <span className="text-zinc-700">For 7 Days</span>
+            Launch On X.<br />
+            <span className="text-zinc-700">Then Scale The Team.</span>
           </h2>
           <p className="text-zinc-400 text-sm max-w-md mx-auto leading-relaxed">
-            Deploy your AI agent in 60 seconds. BYOK — bring your own key, pay wholesale rates. Cancel anytime.
+            Start with one narrow workflow, validate the signal, then scale into a full private-cloud social agent team with Agentbot + OpenClaw.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link href="/signup" className="inline-flex items-center justify-center bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors w-full sm:w-auto">
-              Start Free Trial →
+              Start Private Cloud →
             </Link>
-            <Link href="/demo" className="inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors w-full sm:w-auto">
-              Watch Demo
+            <Link href="https://github.com/Eskyee/agentbot-opensource" className="inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors w-full sm:w-auto">
+              Fork Starter
             </Link>
           </div>
         </div>

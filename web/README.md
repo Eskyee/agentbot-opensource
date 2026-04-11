@@ -50,6 +50,13 @@ docker compose up -d
 
 Open http://localhost:3000
 
+Local docker compose uses:
+
+- Postgres: `postgresql://agentbot:agentbot_local_dev@localhost:5432/agentbot`
+- Redis: `redis://localhost:6379`
+
+If your local app points at a different `DATABASE_URL`, the compose database and the app will drift.
+
 ### Manual
 
 ```bash

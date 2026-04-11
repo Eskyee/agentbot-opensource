@@ -17,7 +17,14 @@
 
 ---
 
-This repository contains the live product code for Agentbot: the managed dashboard, billing, provisioning, support, analytics, trading, and operations surfaces around the OpenClaw runtime.
+This repository contains the live product code for Agentbot: the managed private-cloud dashboard, billing, provisioning, support, analytics, and operations surfaces around the OpenClaw runtime.
+
+Current product direction:
+
+- `Production Private Cloud`
+- `Open Source Starter`
+
+The private repository is where the managed product ships. The public repository is where the contributor-facing, self-host, and starter story lives.
 
 If you want the public architecture and contributor-facing codebase, use:
 
@@ -57,6 +64,7 @@ Agentbot provisions and manages OpenClaw agents with:
 
 - managed Railway runtimes
 - Vercel-hosted dashboard and APIs
+- private-cloud operations around X-native social agent workflows
 - Stripe billing and trials
 - Coinbase/Base wallet flows
 - channel integrations
@@ -135,10 +143,12 @@ Current review priorities:
 
 The open-source version is the right place for:
 
+- self-host setup
 - architecture overviews
 - public CI signals
 - contributor onboarding
 - community issues and feature requests
+- the narrow starter workflow for X-native social agents
 
 Go to:
 

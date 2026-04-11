@@ -28,6 +28,35 @@ interface SignalsData {
   signals: Signal[];
 }
 
+interface XStatusResponse {
+  app?: {
+    bearerTokenConfigured?: boolean;
+    oauthClientConfigured?: boolean;
+    appKeyConfigured?: boolean;
+    callbackUrl?: string | null;
+  };
+  user?: {
+    connected?: boolean;
+    account?: {
+      username?: string | null;
+      accountId?: string | null;
+      scopes?: string[] | null;
+    } | null;
+  };
+}
+
+interface XDraft {
+  id: string;
+  sourceText: string;
+  draftText: string;
+  tone: string;
+  status: 'draft' | 'approved' | 'rejected' | 'published';
+  createdAt: string;
+  updatedAt: string;
+  publishedPostId?: string | null;
+  publishedUrl?: string | null;
+}
+
 const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
   reddit:        { label: 'Reddit',  color: 'text-orange-400' },
   twitter:       { label: 'X',       color: 'text-sky-400' },
@@ -38,6 +67,13 @@ const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: st
 export default function SignalsPage() {
   const [data, setData] = useState<SignalsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [xStatus, setXStatus] = useState<XStatusResponse | null>(null);
+  const [drafts, setDrafts] = useState<XDraft[]>([]);
+  const [draftSourceText, setDraftSourceText] = useState('');
+  const [draftTone, setDraftTone] = useState('direct');
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftError, setDraftError] = useState('');
+  const [publishingDraftId, setPublishingDraftId] = useState<string | null>(null);
   const [platform, setPlatform] = useState<Platform>('all');
   const [relevance, setRelevance] = useState<Relevance>('all');
   const [lastGenerated, setLastGenerated] = useState('');
@@ -61,9 +97,91 @@ export default function SignalsPage() {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    const loadXStatus = async () => {
+      try {
+        const res = await fetch('/api/x/status', { cache: 'no-store' });
+        if (!res.ok) return;
+        setXStatus(await res.json());
+      } catch (e) {
+        console.error('X status fetch failed:', e);
+      }
+    };
+
+    loadXStatus();
+  }, []);
+
+  useEffect(() => {
+    const loadDrafts = async () => {
+      try {
+        const res = await fetch('/api/x/drafts', { cache: 'no-store' });
+        if (!res.ok) return;
+        const json = await res.json();
+        setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+      } catch (e) {
+        console.error('X drafts fetch failed:', e);
+      }
+    };
+
+    loadDrafts();
+  }, []);
+
   const filtered = (data?.signals || [])
     .filter(s => platform === 'all' || s.platform === platform)
     .filter(s => relevance === 'all' || s.relevance === relevance);
+
+  const generateDraft = async () => {
+    if (!draftSourceText.trim()) return;
+    setDraftLoading(true);
+    setDraftError('');
+    try {
+      const res = await fetch('/api/x/drafts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceText: draftSourceText, tone: draftTone }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to generate draft');
+      setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+      setDraftSourceText('');
+    } catch (e) {
+      setDraftError(e instanceof Error ? e.message : 'Failed to generate draft');
+    } finally {
+      setDraftLoading(false);
+    }
+  };
+
+  const updateDraftStatus = async (draftId: string, status: 'approved' | 'rejected') => {
+    try {
+      const res = await fetch(`/api/x/drafts/${draftId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to update draft');
+      setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+    } catch (e) {
+      setDraftError(e instanceof Error ? e.message : 'Failed to update draft');
+    }
+  };
+
+  const publishDraft = async (draftId: string) => {
+    setPublishingDraftId(draftId);
+    setDraftError('');
+    try {
+      const res = await fetch(`/api/x/drafts/${draftId}/publish`, {
+        method: 'POST',
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to publish draft');
+      setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+    } catch (e) {
+      setDraftError(e instanceof Error ? e.message : 'Failed to publish draft');
+    } finally {
+      setPublishingDraftId(null);
+    }
+  };
 
   return (
     <DashboardShell>
@@ -94,11 +212,148 @@ export default function SignalsPage() {
           </p>
         )}
 
+        <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-3 mb-8">
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">X App Credentials</div>
+            <StatusPill
+              status={xStatus?.app?.appKeyConfigured ? 'active' : 'offline'}
+              label={xStatus?.app?.appKeyConfigured ? 'Configured' : 'Missing'}
+              size="sm"
+            />
+          </div>
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">X OAuth</div>
+            <StatusPill
+              status={xStatus?.app?.oauthClientConfigured ? 'active' : 'offline'}
+              label={xStatus?.app?.oauthClientConfigured ? 'Ready' : 'Missing'}
+              size="sm"
+            />
+            {xStatus?.app?.callbackUrl ? (
+              <p className="mt-2 text-[10px] text-zinc-600 font-mono break-all">{xStatus.app.callbackUrl}</p>
+            ) : null}
+          </div>
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Connected X Account</div>
+            <StatusPill
+              status={xStatus?.user?.connected ? 'active' : 'offline'}
+              label={xStatus?.user?.connected ? 'Connected' : 'Not Connected'}
+              size="sm"
+            />
+            {xStatus?.user?.account?.username ? (
+              <p className="mt-2 text-[10px] text-zinc-600 font-mono">@{xStatus.user.account.username}</p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] mb-8">
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">X Draft Generator</div>
+            <textarea
+              value={draftSourceText}
+              onChange={(e) => setDraftSourceText(e.target.value)}
+              placeholder="Paste a mention, signal, or idea to turn into an X draft..."
+              className="w-full min-h-28 bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono resize-none"
+            />
+            <div className="mt-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <select
+                value={draftTone}
+                onChange={(e) => setDraftTone(e.target.value)}
+                className="bg-black border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-white focus:outline-none focus:border-zinc-600 font-mono"
+              >
+                <option value="direct">Direct</option>
+                <option value="operator">Operator</option>
+                <option value="founder">Founder</option>
+                <option value="protocol">Protocol</option>
+              </select>
+              <button
+                onClick={generateDraft}
+                disabled={draftLoading || !draftSourceText.trim()}
+                className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+              >
+                {draftLoading ? 'Generating' : 'Generate Draft'}
+              </button>
+            </div>
+            {draftError ? (
+              <div className="mt-3 border border-red-500/30 p-3 text-red-400 text-xs">
+                {draftError}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Approval Queue</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-700">{drafts.length} drafts</div>
+            </div>
+            <div className="space-y-3 max-h-[420px] overflow-y-auto">
+              {drafts.map((draft) => (
+                <div key={draft.id} className="border border-zinc-800 bg-black p-4">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <StatusPill
+                      status={
+                        draft.status === 'approved' || draft.status === 'published'
+                          ? 'active'
+                          : draft.status === 'rejected'
+                            ? 'error'
+                            : 'idle'
+                      }
+                      label={draft.status}
+                      size="sm"
+                    />
+                    <span className="text-[10px] text-zinc-700 font-mono">{new Date(draft.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Source</p>
+                  <p className="text-xs text-zinc-500 leading-relaxed mb-4">{draft.sourceText}</p>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Draft</p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">{draft.draftText}</p>
+                  {draft.status === 'draft' ? (
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        onClick={() => updateDraftStatus(draft.id, 'approved')}
+                        className="border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => updateDraftStatus(draft.id, 'rejected')}
+                        className="border border-red-500/30 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:border-red-500 transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  ) : null}
+                  {draft.status === 'approved' ? (
+                    <div className="mt-4 flex gap-2">
+                      <button
+                        onClick={() => publishDraft(draft.id)}
+                        disabled={publishingDraftId === draft.id}
+                        className="bg-white text-black px-3 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                      >
+                        {publishingDraftId === draft.id ? 'Publishing' : 'Publish To X'}
+                      </button>
+                    </div>
+                  ) : null}
+                  {draft.status === 'published' && draft.publishedUrl ? (
+                    <div className="mt-4 text-xs text-zinc-500">
+                      Published: <a href={draft.publishedUrl} target="_blank" rel="noopener noreferrer" className="text-zinc-300 underline hover:text-white">{draft.publishedUrl}</a>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+              {drafts.length === 0 ? (
+                <div className="border border-zinc-800 bg-black p-4 text-xs text-zinc-500">
+                  No X drafts yet. Generate one from a signal or incoming mention.
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
         {/* Filters */}
         <div className="mb-8">
           <div className="flex flex-wrap gap-px mb-4">
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 mr-3 self-center">Platform</span>
-            {(['all', 'hacker-news', 'reddit'] as Platform[]).map(p => (
+            {(['all', 'twitter', 'hacker-news', 'reddit'] as Platform[]).map(p => (
               <button
                 key={p}
                 onClick={() => setPlatform(p)}

@@ -14,6 +14,7 @@ const LOGGED_IN_NAV = [
   { href: "/jobs", label: "Jobs" },
   { href: "/agents", label: "Agents" },
   { href: "/marketplace", label: "Marketplace" },
+  { href: "/basefm/live", label: "baseFM Live" },
   { href: "/sponsor", label: "Sponsor" },
   { href: "/news", label: "News" },
   { href: "/blog", label: "Blog" },
@@ -32,6 +33,7 @@ const LOGGED_OUT_NAV = [
   { href: "/blog", label: "Blog" },
   { href: "/agents", label: "Agents" },
   { href: "/marketplace", label: "Marketplace" },
+  { href: "/basefm/live", label: "baseFM Live" },
   { href: "/demo", label: "Demo" },
   { href: "/documentation", label: "Docs" },
   { href: SOUL_DASHBOARD_URL, label: "Borg" },
@@ -173,7 +175,7 @@ export default function Navbar() {
                   <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
                   <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
                   <MobileLink href="/token" onClick={closeMenu}>$AGENTBOT</MobileLink>
-                  <MobileLink href="/basefm" onClick={closeMenu}>$BASEFM</MobileLink>
+                  <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                   <MobileLink href="/partner" onClick={closeMenu}>Partner</MobileLink>
                 </MobileSection>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">

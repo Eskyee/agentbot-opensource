@@ -23,6 +23,34 @@ Important rule:
 - Treat the Mux hosted `.html` page as optional and sometimes flaky.
 - Treat the HLS `.m3u8` stream plus the site player as the real playback path.
 
+## Relay Requirement
+
+BaseFM should not be treated as a single-destination stream product.
+
+Current requirement:
+- the stream must play correctly on Agentbot
+- the stream must relay correctly to `basefm.space`
+
+Forward requirement:
+- users will want one origin stream fan out to multiple destinations
+- expected destinations include `basefm.space`, YouTube, and future third-party endpoints
+
+Product rule:
+- Agentbot/baseFM is the canonical first-party stream surface.
+- design the stream path as `origin ingest -> canonical live asset -> downstream relays`
+- do not couple the product to a single consumer surface
+- do not assume the first listener surface is the only one that matters
+
+Ownership rule:
+- `agentbot.sh/basefm/live` is first-party and canonical
+- `basefm.space` is important, but it is a downstream relay consumer
+- future YouTube or external relays are also downstream consumers
+- no downstream destination should become the source of truth for stream state, naming, or control
+
+Operational implication:
+- if `basefm.space` is not relaying correctly, treat that as a real streaming failure, not a cosmetic issue
+- future relay health needs to be first-class in both the API and dashboard
+
 ## Access Model
 
 There are two supported stream-access paths:
@@ -173,6 +201,12 @@ For BaseFM live playback:
 - source of truth for naming fallback: `dj_sessions`
 - source of truth for final listener playback: site page + HLS
 
+For BaseFM distribution:
+- first-party origin and first-party playback stay canonical
+- origin stream health and relay health are separate concerns
+- `Agentbot page works` is not enough if `basefm.space` or future external relays are broken
+- relay status should eventually be exposed per destination
+
 ## Recommended Verification Order
 
 When debugging again, do it in this order:
@@ -202,6 +236,9 @@ When debugging again, do it in this order:
 - Do not let the standby state become a blank player shell.
 - Do not trust a dirty source media file when ingest is dropping; normalize/transcode first.
 - Do not treat `created` as `live`.
+- Do not let an external relay become the canonical product surface over `agentbot.sh/basefm/live`.
+- Do not treat successful playback on `agentbot.sh/basefm/live` as sufficient if `basefm.space` relay is unhealthy.
+- Do not hardcode the architecture around one destination when downstream multi-relay demand is expected.
 
 ## Good Final State
 
@@ -211,6 +248,17 @@ The product should feel like this:
 - create stream
 - ingest starts
 - BaseFM page plays it directly
+- downstream relays receive the stream reliably
 - off-air still looks branded
 - current set title is visible
 - users never need to care whether the underlying issue was Mux, CSP, or ingest
+
+## Next Architecture Expectation
+
+The next durable version of BaseFM streaming should support:
+
+- a canonical origin ingest
+- destination relay tracking
+- per-destination health states
+- future multi-destination publishing
+- YouTube-ready relay support without redesigning the pipeline later

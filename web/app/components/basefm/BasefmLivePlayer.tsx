@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ExternalLink, Radio } from 'lucide-react'
 import Script from 'next/script'
 import { BASEFM_DEFAULT_STREAM_IMAGE } from '@/app/lib/basefmDjSkill'
+import type { BasefmDistributionState, BasefmRelayStatus } from '@/app/lib/basefmDistribution'
 
 export type LiveDj = {
   id: string
@@ -23,7 +24,16 @@ export type LiveResponse = {
   count: number
   primaryDj: LiveDj | null
   availability: 'live' | 'degraded'
+  distribution?: BasefmDistributionState
   error?: string
+}
+
+function statusColor(status: BasefmRelayStatus) {
+  if (status === 'healthy') return 'bg-green-400'
+  if (status === 'degraded') return 'bg-yellow-400'
+  if (status === 'failed') return 'bg-red-400'
+  if (status === 'pending') return 'bg-blue-500'
+  return 'bg-zinc-600'
 }
 
 export function BasefmLivePlayer({
@@ -168,6 +178,35 @@ export function BasefmLivePlayer({
             </div>
           </div>
 
+          {liveData?.distribution ? (
+            <div className="border border-zinc-800 bg-black p-4">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Distribution</div>
+              <div className="mt-3 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs text-zinc-400 uppercase tracking-widest">Agentbot</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${statusColor(liveData.distribution.firstParty.status)}`} />
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-300">
+                      {liveData.distribution.firstParty.status}
+                    </span>
+                  </div>
+                </div>
+                {liveData.distribution.relays.map((relay) => (
+                  <div key={relay.key} className="flex items-center justify-between gap-3">
+                    <span className="text-xs text-zinc-500 uppercase tracking-widest">
+                      {relay.name}
+                      {relay.required ? ' required' : ' optional'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${statusColor(relay.status)}`} />
+                      <span className="text-[10px] uppercase tracking-widest text-zinc-300">{relay.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex flex-wrap gap-3">
             <Link
               href="/dashboard/dj-stream"
@@ -200,6 +239,35 @@ export function BasefmLivePlayer({
       {minimal && error ? (
         <div className="mt-4 border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
           {error}
+        </div>
+      ) : null}
+
+      {minimal && liveData?.distribution ? (
+        <div className="mt-4 border border-zinc-800 bg-black p-4">
+          <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Distribution</div>
+          <div className="mt-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs text-zinc-400 uppercase tracking-widest">Agentbot</span>
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${statusColor(liveData.distribution.firstParty.status)}`} />
+                <span className="text-[10px] uppercase tracking-widest text-zinc-300">
+                  {liveData.distribution.firstParty.status}
+                </span>
+              </div>
+            </div>
+            {liveData.distribution.relays.map((relay) => (
+              <div key={relay.key} className="flex items-center justify-between gap-3">
+                <span className="text-xs text-zinc-500 uppercase tracking-widest">
+                  {relay.name}
+                  {relay.required ? ' required' : ' optional'}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${statusColor(relay.status)}`} />
+                  <span className="text-[10px] uppercase tracking-widest text-zinc-300">{relay.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : null}
     </section>

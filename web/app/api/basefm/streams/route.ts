@@ -17,6 +17,7 @@ type ActiveDjSession = {
   user_id: string
   wallet: string
   dj_name: string | null
+  mux_stream_id: string
   playback_id: string | null
   started_at: Date
   ended_at: Date | null
@@ -34,6 +35,30 @@ async function markSessionAutoEnded(sessionId: number) {
     where: { id: sessionId },
     data: { status: 'auto-ended', ended_at: new Date() },
   })
+}
+
+async function stopMuxLiveStream(streamId: string) {
+  const { tokenId, tokenSecret } = getMuxCredentials()
+  if (!tokenId || !tokenSecret) {
+    return { ok: false, reason: 'Mux not configured' as const }
+  }
+
+  const auth = Buffer.from(`${tokenId}:${tokenSecret}`).toString('base64')
+  const response = await fetch(`https://api.mux.com/video/v1/live-streams/${streamId}/disable`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Basic ${auth}`,
+      'Content-Type': 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('[basefm-streams] failed to disable Mux live stream:', streamId, response.status, errorText)
+    return { ok: false, reason: `Mux disable failed: ${response.status}` as const }
+  }
+
+  return { ok: true as const }
 }
 
 function buildActiveSessionResponse(activeSession: ActiveDjSession) {
@@ -359,9 +384,12 @@ export async function DELETE(request: NextRequest) {
     data: { status: 'ended', ended_at: new Date() },
   })
 
+  const muxStop = await stopMuxLiveStream(activeSession.mux_stream_id)
+
   return NextResponse.json({
     success: true,
     ended: 1,
-    message: 'Session ended',
+    muxStopped: muxStop.ok,
+    message: muxStop.ok ? 'Session ended and Mux stream disabled' : 'Session ended, but Mux stream disable needs attention',
   })
 }
