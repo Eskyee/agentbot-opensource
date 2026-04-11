@@ -2,12 +2,33 @@
 <p align="center">
   <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje" alt="Agentbot" width="500" />
 </p>
-<h2 align="center">Open-source infrastructure for autonomous AI agents.<br>Built by the community, funded by usage.</h2>
-
 <p align="center">
-  <a href="https://github.com/sponsors/Eskyee"><img src="https://img.shields.io/github/sponsors/Eskyee?style=social" alt="GitHub Sponsors"></a>
-  <a href="https://twitter.com/agentbot_ai"><img src="https://img.shields.io/twitter/follow/agentbot_ai?style=social" alt="Twitter"></a>
-  <a href="https://discord.gg/agentbot"><img src="https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://github.com/sponsors/Eskyee">
+    <img src="https://img.shields.io/github/sponsors/Eskyee?style=social" alt="GitHub Sponsors">
+  </a>
+  <a href="https://twitter.com/agentbot_ai">
+    <img src="https://img.shields.io/twitter/follow/agentbot_ai?style=social" alt="Twitter">
+  </a>
+</p>
+<p align="center">
+  <a href="https://github.com/OpenClaw/openclaw">
+    <img src="https://img.shields.io/badge/runtime-OpenClaw_2026.4.7-blue" alt="Runtime">
+  </a>
+  <a href="https://agentbot.sh">
+    <img src="https://img.shields.io/badge/site-agentbot.sh-black" alt="Website">
+  </a>
+  <a href="https://docs.agentbot.raveculture.xyz">
+    <img src="https://img.shields.io/badge/docs-live-0ea5e9" alt="Docs">
+  </a>
+  <a href="https://discord.gg/vTPG4vdV6D">
+    <img src="https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white" alt="Discord">
+  </a>
+</p>
+<p align="center">
+  <a href="https://agentbot.sh"><strong>Website</strong></a> · 
+  <a href="https://docs.agentbot.raveculture.xyz"><strong>Docs</strong></a> · 
+  <a href="https://discord.gg/vTPG4vdV6D"><strong>Discord</strong></a> · 
+  <a href="https://github.com/Eskyee/agentbot-opensource"><strong>Open Source Repo</strong></a>
 </p>
 <br>
 
