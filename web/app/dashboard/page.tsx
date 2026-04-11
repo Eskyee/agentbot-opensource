@@ -21,6 +21,8 @@ interface InstanceData {
   url: string
   plan: string
   openclawVersion?: string
+  ffmpegAvailable?: boolean
+  ffmpegVersion?: string | null
   botUsername?: string
   gatewayToken?: string
   /** Auto-connect URL with token in #fragment */

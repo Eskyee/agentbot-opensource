@@ -31,6 +31,8 @@ interface InstanceControlPanelProps {
     gatewayToken?: string
     controlUiUrl?: string
     openclawVersion?: string
+    ffmpegAvailable?: boolean
+    ffmpegVersion?: string | null
     provisionedAt?: string | null
     lastSeenAt?: string | null
     gatewayProcessStatus?: string | null
@@ -554,6 +556,11 @@ export function InstanceControlPanel({
               <SummaryCard label="Last Exit" value="—" detail="Not exposed by the runtime API yet" />
               <SummaryCard label="Provisioned" value={formatRelativeTime(instance.provisionedAt)} detail={instance.subdomain} />
               <SummaryCard label="Version" value={instance.openclawVersion || 'unknown'} detail={instance.userId} />
+              <SummaryCard
+                label="FFmpeg"
+                value={instance.ffmpegAvailable ? 'Ready' : 'Missing'}
+                detail={instance.ffmpegVersion || 'Needed for autonomous baseFM DJ output'}
+              />
             </div>
 
             <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">

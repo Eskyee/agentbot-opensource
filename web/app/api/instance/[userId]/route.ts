@@ -7,13 +7,17 @@ async function probeRuntime(url: string) {
   const normalized = String(url).replace(/\/$/, '')
 
   try {
-    const [healthRes, readyRes] = await Promise.allSettled([
+    const [healthRes, readyRes, statusRes] = await Promise.allSettled([
       fetch(`${normalized}/healthz`, {
         signal: AbortSignal.timeout(5000),
         cache: 'no-store',
       }),
       fetch(`${normalized}/readyz`, {
         signal: AbortSignal.timeout(4000),
+        cache: 'no-store',
+      }),
+      fetch(`${normalized}/api/status`, {
+        signal: AbortSignal.timeout(5000),
         cache: 'no-store',
       }),
     ])
@@ -23,22 +27,35 @@ async function probeRuntime(url: string) {
     const healthPayload = healthRes.status === 'fulfilled'
       ? await healthRes.value.json().catch(() => ({}))
       : {}
+    const statusPayload = statusRes.status === 'fulfilled'
+      ? await statusRes.value.json().catch(() => ({}))
+      : {}
 
     const runtimeVersion = typeof healthPayload?.version === 'string'
       ? healthPayload.version
       : DEFAULT_OPENCLAW_VERSION
+    const ffmpeg = {
+      available: Boolean(statusPayload?.runtime?.ffmpeg?.available),
+      version: typeof statusPayload?.runtime?.ffmpeg?.version === 'string'
+        ? statusPayload.runtime.ffmpeg.version
+        : null,
+    }
 
     if (healthOk && readyOk) {
-      return { status: 'running', openclawVersion: runtimeVersion }
+      return { status: 'running', openclawVersion: runtimeVersion, ffmpeg }
     }
 
     if (healthOk) {
-      return { status: 'starting', openclawVersion: runtimeVersion }
+      return { status: 'starting', openclawVersion: runtimeVersion, ffmpeg }
     }
 
-    return { status: 'unknown', openclawVersion: runtimeVersion }
+    return { status: 'unknown', openclawVersion: runtimeVersion, ffmpeg }
   } catch {
-    return { status: 'unknown', openclawVersion: DEFAULT_OPENCLAW_VERSION }
+    return {
+      status: 'unknown',
+      openclawVersion: DEFAULT_OPENCLAW_VERSION,
+      ffmpeg: { available: false, version: null },
+    }
   }
 }
 
@@ -96,6 +113,8 @@ export async function GET(
     url: persistedUrl,
     plan: ownedUser?.plan || 'free',
     openclawVersion: runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION,
+    ffmpegAvailable: runtime.ffmpeg?.available || false,
+    ffmpegVersion: runtime.ffmpeg?.version || null,
     provisionedAt: registration[0]?.registered_at?.toISOString() || latestAgent?.createdAt?.toISOString() || null,
     lastSeenAt: registration[0]?.last_seen?.toISOString() || null,
     gatewayProcessStatus: registration[0]?.status || null,
