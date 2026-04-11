@@ -80,14 +80,16 @@ export default function DJStreamPage() {
   }
 
   const createStream = async () => {
-    if (!address) return
+    const streamWallet = hasRaveAccess ? address : claimedWallet
+    if (!streamWallet) return
+
     setLoading(true)
     setError('')
     try {
       const res = await fetch('/api/basefm/streams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet: address, name: djName })
+        body: JSON.stringify({ wallet: streamWallet, name: djName })
       })
       const data = await res.json()
       if (!res.ok) {
@@ -103,10 +105,12 @@ export default function DJStreamPage() {
   }
 
   const hasRaveAccess = Boolean(raveBalance && BigInt(raveBalance) >= RAVE_THRESHOLD)
+  const claimedWallet = communityProgram?.rewards.walletAddress || null
   const hasCommunityPass = Boolean(
     communityProgram?.perks.some((perk) => perk.key === 'basefm-pass' && perk.unlocked)
   )
   const hasAccess = hasRaveAccess || hasCommunityPass
+  const streamWallet = hasRaveAccess ? address || null : claimedWallet
   const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
 
   return (
@@ -129,7 +133,7 @@ export default function DJStreamPage() {
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 01</span>
                 <span className="text-sm font-bold tracking-tight uppercase">Connect Wallet</span>
               </div>
-              {isConnected && <StatusPill status="active" label="Connected" />}
+              {(isConnected || hasCommunityPass) && <StatusPill status="active" label={isConnected ? 'Connected' : 'Claimed'} />}
             </div>
 
             {!isConnected ? (
@@ -143,16 +147,40 @@ export default function DJStreamPage() {
                 <p className="mt-4 text-zinc-600 text-[10px] uppercase tracking-widest">
                   Base network · Coinbase Smart Wallet
                 </p>
+
+                {hasCommunityPass && claimedWallet && (
+                  <div className="mt-4 border border-blue-500/20 bg-blue-500/10 p-4">
+                    <p className="text-blue-300 text-[10px] uppercase tracking-widest">Agentbot Claimed Wallet</p>
+                    <div className="mt-2 flex items-center gap-3">
+                      <code className="text-sm text-zinc-200 font-mono">{formatAddress(claimedWallet)}</code>
+                      <StatusPill status="active" label="Ready" />
+                    </div>
+                    <p className="mt-2 text-sm text-zinc-300">
+                      Your Agentbot community pass is already linked, so you can stream with the claimed wallet even before connecting a Base wallet.
+                    </p>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <code className="text-sm text-zinc-400 font-mono">{formatAddress(address!)}</code>
-                <button
-                  onClick={() => disconnect()}
-                  className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors"
-                >
-                  Disconnect
-                </button>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <code className="text-sm text-zinc-400 font-mono">{formatAddress(address!)}</code>
+                  <button
+                    onClick={() => disconnect()}
+                    className="text-zinc-600 hover:text-white text-[10px] uppercase tracking-widest transition-colors"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+
+                {hasCommunityPass && claimedWallet && claimedWallet.toLowerCase() !== address!.toLowerCase() ? (
+                  <div className="border border-blue-500/20 bg-blue-500/10 p-4">
+                    <p className="text-blue-300 text-[10px] uppercase tracking-widest">Agentbot Claimed Wallet</p>
+                    <p className="mt-2 text-sm text-zinc-300">
+                      If you use the Agentbot token pass instead of the RAVE gate, the stream will mint against {formatAddress(claimedWallet)}.
+                    </p>
+                  </div>
+                ) : null}
               </div>
             )}
 
@@ -169,7 +197,7 @@ export default function DJStreamPage() {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 02</span>
-                  <span className="text-sm font-bold tracking-tight uppercase">Verify RAVE</span>
+                  <span className="text-sm font-bold tracking-tight uppercase">Verify Access</span>
                 </div>
                 {hasAccess ? (
                   <StatusPill status="active" label="Eligible" />
@@ -180,8 +208,9 @@ export default function DJStreamPage() {
                 )}
               </div>
 
-              {raveBalance ? (
-                <div>
+              <div className="space-y-4">
+                {raveBalance ? (
+                  <div>
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-3xl font-bold tracking-tight">
                       {(Number(raveBalance) / 1e18).toLocaleString()}
@@ -202,19 +231,23 @@ export default function DJStreamPage() {
                       </p>
                     </div>
                   )}
-                </div>
-              ) : (
-                <p className="text-zinc-600 text-xs">Reading on-chain balance...</p>
-              )}
+                  </div>
+                ) : isConnected ? (
+                  <p className="text-zinc-600 text-xs">Reading on-chain balance...</p>
+                ) : null}
 
-              {hasCommunityPass && (
-                <div className="mt-4 border border-blue-500/20 bg-blue-500/10 p-4">
+                {hasCommunityPass && claimedWallet && (
+                  <div className="border border-blue-500/20 bg-blue-500/10 p-4">
                   <p className="text-blue-300 text-xs uppercase tracking-widest">Agentbot Community Pass</p>
                   <p className="mt-2 text-sm text-zinc-200">
                     Your {communityProgram?.rewards.currentTier?.label || 'claimed'} holder status unlocks a baseFM guest pass, so you can stream even without the full RAVE gate.
                   </p>
+                  <p className="mt-2 text-xs text-zinc-400">
+                    Claimed wallet: <span className="font-mono text-zinc-200">{claimedWallet}</span>
+                  </p>
                 </div>
-              )}
+                )}
+              </div>
             </div>
           )}
 
@@ -239,11 +272,18 @@ export default function DJStreamPage() {
 
               <button
                 onClick={createStream}
-                disabled={loading}
+                disabled={loading || !streamWallet}
                 className="w-full bg-white text-black py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
               >
                 {loading ? 'Creating...' : 'Start Streaming'}
               </button>
+
+              {streamWallet ? (
+                <p className="mt-3 text-xs text-zinc-500">
+                  Stream wallet: <span className="font-mono text-zinc-300">{streamWallet}</span>
+                  {hasCommunityPass && !hasRaveAccess ? ' · using Agentbot token claim path' : ' · using RAVE gate path'}
+                </p>
+              ) : null}
             </div>
           )}
 
