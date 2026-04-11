@@ -34,6 +34,7 @@ Agentbot is modular infrastructure for autonomous AI agents:
 - ✅ Community-owned
 - ✅ Community-governed
 - ✅ An experiment in sustainable open source
+- ✅ Zero Human Company
 ### Current Status
 | Metric | Value |
 |--------|-------|
