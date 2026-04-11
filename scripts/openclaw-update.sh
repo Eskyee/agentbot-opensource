@@ -1,28 +1,27 @@
 #!/bin/bash
-# OpenClaw Auto-Update — checks for new versions and updates Dockerfiles
-# Run via cron or OpenClaw heartbeat
+# OpenClaw Auto-Update — checks, updates, commits, and pushes
 set -euo pipefail
 
 REPO_DIR="/Users/raveculture/agentbot"
-CURRENT_PINNED="2026.4.10"
+LOG_FILE="/tmp/openclaw-update.log"
+
+# Read current pinned version from Dockerfile.agent
+CURRENT_PINNED=$(grep -o 'openclaw:[0-9]*\.[0-9]*\.[0-9]*' "$REPO_DIR/agentbot-backend/docker/Dockerfile.agent" | head -1 | cut -d: -f2)
 
 # Get latest version from npm
 LATEST=$(npm view openclaw version 2>/dev/null)
 
 if [ -z "$LATEST" ]; then
-  echo "Could not fetch latest OpenClaw version"
+  echo "FAIL: Could not fetch latest OpenClaw version" > "$LOG_FILE"
   exit 1
 fi
 
-echo "Current: $CURRENT_PINNED"
-echo "Latest:  $LATEST"
-
 if [ "$LATEST" = "$CURRENT_PINNED" ]; then
-  echo "Already up to date."
+  echo "OK: Already on $CURRENT_PINNED" > "$LOG_FILE"
   exit 0
 fi
 
-echo "New version available! Updating..."
+echo "UPDATE: $CURRENT_PINNED → $LATEST" > "$LOG_FILE"
 
 cd "$REPO_DIR"
 
@@ -38,16 +37,9 @@ sed -i '' "s|ARG OPENCLAW_VERSION=.*|ARG OPENCLAW_VERSION=$LATEST|" \
 sed -i '' "s|OpenClaw [0-9]\{4\}\.[0-9]*\.[0-9]*|OpenClaw $LATEST|" \
   web/app/learn/developers/page.tsx
 
-# Update the pinned version in this script
-sed -i '' "s|CURRENT_PINNED=\".*\"|CURRENT_PINNED=\"$LATEST\"|" \
-  "$0"
-
-# Commit
+# Commit and push
 git add -A
-git commit -m "Auto-update OpenClaw to $LATEST
+git commit -m "Auto-update OpenClaw to $LATEST" --author="Atlas (Agentbot Ops) <djescaba@icloud.com>"
+git push origin main
 
-- Docker agent image → $LATEST
-- Gateway Dockerfile → $LATEST
-- Learn page → $LATEST"
-
-echo "Updated to $LATEST. Committed. Push when ready."
+echo "DONE: Updated and pushed $CURRENT_PINNED → $LATEST" >> "$LOG_FILE"
