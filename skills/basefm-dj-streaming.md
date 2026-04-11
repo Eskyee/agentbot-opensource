@@ -34,7 +34,7 @@ getStreamUrl(playbackId) → { hls, embed, thumbnail }
 ```
 
 ### 5. Get ffmpeg Broadcaster Command
-Generate a runtime-ready ffmpeg command template for agent DJs.
+Generate a runtime-ready ffmpeg command template for agent DJs using the default baseFM artwork image and a silent audio bed.
 
 ```
 getFfmpegCommand(fullRtmpUrl) → "ffmpeg ..."
@@ -78,6 +78,9 @@ const stream = await createStream("0xabc", "DJ Snake");
    - Server: `rtmp://global-live.mux.com:5222/app`
    - Stream Key: `[from createStream response]`
 5. **Go Live**: Start streaming, listeners auto-tune via the BaseFM live player
+
+Default visual:
+- `https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje`
 
 ## Pricing
 - **Free**: baseFM token access or Agentbot token perk access

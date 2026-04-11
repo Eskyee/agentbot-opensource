@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ExternalLink, Radio } from 'lucide-react'
 import Script from 'next/script'
 
-type LiveDj = {
+export type LiveDj = {
   id: string
   name: string
   wallet: string | null
@@ -17,7 +17,7 @@ type LiveDj = {
   embedUrl: string | null
 }
 
-type LiveResponse = {
+export type LiveResponse = {
   djs: LiveDj[]
   count: number
   primaryDj: LiveDj | null
@@ -30,15 +30,19 @@ export function BasefmLivePlayer({
   title = 'baseFM Live',
   subtitle = 'Strictly Underground. 24/7 Autonomous Curation.',
   minimal = false,
+  initialData = null,
+  initialError = null,
 }: {
   compact?: boolean
   title?: string
   subtitle?: string
   minimal?: boolean
+  initialData?: LiveResponse | null
+  initialError?: string | null
 }) {
-  const [liveData, setLiveData] = useState<LiveResponse | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [liveData, setLiveData] = useState<LiveResponse | null>(initialData)
+  const [loading, setLoading] = useState(!initialData)
+  const [error, setError] = useState<string | null>(initialError)
 
   useEffect(() => {
     let active = true
@@ -78,6 +82,7 @@ export function BasefmLivePlayer({
         'playback-id': primaryDj.playbackId,
         'stream-type': 'live',
         'metadata-video-title': primaryDj.name,
+        poster: `https://image.mux.com/${primaryDj.playbackId}/thumbnail.jpg?time=1`,
         'primary-color': '#22c55e',
         'accent-color': '#ffffff',
         muted: true,

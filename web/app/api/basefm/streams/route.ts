@@ -295,7 +295,7 @@ export async function POST(request: NextRequest) {
       },
       ffmpeg: {
         command: buildBasefmFfmpegCommandTemplate(`${MUX_RTMP_URL}/${stream.stream_key}`),
-        inputHint: 'Replace INPUT_MEDIA with your rendered video/audio source inside the agent runtime.',
+        inputHint: 'Uses the default baseFM artwork image and generated silent audio. Swap the image URL if you want a different visual.',
       },
     })
   } catch (error) {

@@ -6,6 +6,7 @@ const RAVE_TOKEN_THRESHOLD = "5000000000000000000000"; // 5000 RAVE in wei
 const BASE_CHAIN_ID = 8453;
 const MUX_RTMP_URL = "rtmp://global-live.mux.com:5222/app";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.AGENTBOT_APP_URL || "https://agentbot.sh";
+const DEFAULT_STREAM_IMAGE = "https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje";
 
 // Check if a wallet address has enough RAVE tokens for DJ access
 async function verifyDJ(walletAddress) {
@@ -46,9 +47,10 @@ async function getLiveDJs() {
 
 function getFfmpegCommand(fullRtmpUrl) {
   return [
-    "ffmpeg -re -stream_loop -1 -i INPUT_MEDIA",
-    "-c:v libx264 -preset veryfast -pix_fmt yuv420p",
-    '-vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black"',
+    'ffmpeg -re -loop 1 -i "' + DEFAULT_STREAM_IMAGE + '"',
+    "-f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100",
+    "-c:v libx264 -preset veryfast -tune stillimage -pix_fmt yuv420p",
+    '-vf "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black,format=yuv420p"',
     "-g 60 -r 30 -b:v 3500k -maxrate 4500k -bufsize 7000k",
     "-c:a aac -b:a 256k -ar 44100 -ac 2",
     "-f flv",
@@ -81,7 +83,7 @@ async function createStream(djWallet, djName) {
     session: result.session,
     ffmpeg: result.ffmpeg || {
       command: getFfmpegCommand(result.stream.fullRtmpUrl),
-      inputHint: "Replace INPUT_MEDIA with your local file, RTMP source, or generated audio/video feed."
+      inputHint: "Uses the default baseFM artwork image. Swap DEFAULT_STREAM_IMAGE if you want a different visual source."
     }
   };
 }
