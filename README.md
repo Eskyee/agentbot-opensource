@@ -12,7 +12,7 @@
 </p>
 <p align="center">
   <a href="https://github.com/OpenClaw/openclaw">
-    <img src="https://img.shields.io/badge/runtime-OpenClaw_2026.4.7-blue" alt="Runtime">
+    <img src="https://img.shields.io/badge/runtime-OpenClaw_2026.4.10-blue" alt="Runtime">
   </a>
   <a href="https://agentbot.sh">
     <img src="https://img.shields.io/badge/site-agentbot.sh-black" alt="Website">
