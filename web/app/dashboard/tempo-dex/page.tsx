@@ -60,7 +60,7 @@ export default function TempoDexPage() {
           </div>
 
           {/* From */}
-          <div className="border border-zinc-800 bg-zinc-900 rounded-lg p-4 mb-2">
+          <div className="border border-zinc-800 bg-zinc-900 rounded-lg p-4 mb-2 overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] text-zinc-500 uppercase">From</span>
               <span className="text-[10px] text-zinc-600">Balance: 0.00</span>
@@ -71,9 +71,9 @@ export default function TempoDexPage() {
                 value={fromAmount}
                 onChange={e => setFromAmount(e.target.value)}
                 placeholder="0.00"
-                className="flex-1 bg-transparent text-2xl font-bold text-white outline-none placeholder:text-zinc-700"
+                className="flex-1 min-w-0 bg-transparent text-2xl font-bold text-white outline-none placeholder:text-zinc-700"
               />
-              <button className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white">
+              <button className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white flex-shrink-0">
                 <span>{fromToken.icon}</span>
                 <span className="font-bold">{fromToken.symbol}</span>
               </button>
@@ -91,7 +91,7 @@ export default function TempoDexPage() {
           </div>
 
           {/* To */}
-          <div className="border border-zinc-800 bg-zinc-900 rounded-lg p-4 mt-2 mb-4">
+          <div className="border border-zinc-800 bg-zinc-900 rounded-lg p-4 mt-2 mb-4 overflow-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[10px] text-zinc-500 uppercase">To</span>
               <span className="text-[10px] text-zinc-600">Balance: 0.00</span>
@@ -102,9 +102,9 @@ export default function TempoDexPage() {
                 value={toAmount}
                 readOnly
                 placeholder="0.00"
-                className="flex-1 bg-transparent text-2xl font-bold text-white outline-none placeholder:text-zinc-700"
+                className="flex-1 min-w-0 bg-transparent text-2xl font-bold text-white outline-none placeholder:text-zinc-700"
               />
-              <button className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white">
+              <button className="flex items-center gap-2 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white flex-shrink-0">
                 <span>{toToken.icon}</span>
                 <span className="font-bold">{toToken.symbol}</span>
               </button>
