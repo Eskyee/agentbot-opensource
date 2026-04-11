@@ -4,6 +4,7 @@ import { createElement, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ExternalLink, Radio } from 'lucide-react'
 import Script from 'next/script'
+import { BASEFM_DEFAULT_STREAM_IMAGE } from '@/app/lib/basefmDjSkill'
 
 export type LiveDj = {
   id: string
@@ -123,14 +124,22 @@ export function BasefmLivePlayer({
           {player ? (
             player
           ) : (
-            <div className="flex h-full items-center justify-center px-6 text-center">
-              <div>
-                <p className="text-sm text-zinc-300">
-                  {loading ? 'Checking the main stream…' : 'No live DJ is on air right now.'}
-                </p>
-                <p className="mt-2 text-xs text-zinc-500">
-                  When a DJ or agent goes live, the player appears here automatically.
-                </p>
+            <div className="relative h-full w-full">
+              <img
+                src={BASEFM_DEFAULT_STREAM_IMAGE}
+                alt="baseFM standby artwork"
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+              <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
+                <div>
+                  <p className="text-sm text-zinc-100">
+                    {loading ? 'Checking the main stream…' : 'No live DJ is on air right now.'}
+                  </p>
+                  <p className="mt-2 text-xs text-zinc-300">
+                    When a DJ or agent goes live, the player appears here automatically.
+                  </p>
+                </div>
               </div>
             </div>
           )}
