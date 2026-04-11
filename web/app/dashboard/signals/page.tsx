@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
 import StatusPill from '@/app/components/shared/StatusPill';
 import { RefreshCw } from 'lucide-react';
@@ -57,6 +57,13 @@ interface XDraft {
   publishedUrl?: string | null;
 }
 
+interface ManagedAgentEvent {
+  id: string;
+  type: string;
+  payload: Record<string, unknown>;
+  occurredAt: string;
+}
+
 const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
   reddit:        { label: 'Reddit',  color: 'text-orange-400' },
   twitter:       { label: 'X',       color: 'text-sky-400' },
@@ -74,9 +81,15 @@ export default function SignalsPage() {
   const [draftLoading, setDraftLoading] = useState(false);
   const [draftError, setDraftError] = useState('');
   const [publishingDraftId, setPublishingDraftId] = useState<string | null>(null);
+  const [managedSessionId, setManagedSessionId] = useState<string | null>(null);
+  const [managedRunId, setManagedRunId] = useState<string | null>(null);
+  const [managedEvents, setManagedEvents] = useState<ManagedAgentEvent[]>([]);
+  const [managedTailing, setManagedTailing] = useState(false);
   const [platform, setPlatform] = useState<Platform>('all');
   const [relevance, setRelevance] = useState<Relevance>('all');
   const [lastGenerated, setLastGenerated] = useState('');
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const seenIdsRef = useRef<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -126,6 +139,52 @@ export default function SignalsPage() {
     loadDrafts();
   }, []);
 
+  const loadDrafts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/x/drafts', { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = await res.json();
+      setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+    } catch (e) {
+      console.error('X drafts fetch failed:', e);
+    }
+  }, []);
+
+  const connectToStream = useCallback((runId: string) => {
+    eventSourceRef.current?.close();
+
+    const es = new EventSource(`/api/readable/${runId}`);
+    eventSourceRef.current = es;
+    setManagedTailing(true);
+
+    es.onmessage = (msg) => {
+      try {
+        const event = JSON.parse(msg.data) as ManagedAgentEvent;
+        if (seenIdsRef.current.has(event.id)) return;
+        seenIdsRef.current.add(event.id);
+        setManagedEvents((prev) => [...prev, event]);
+
+        if (event.type === 'approval.required' || event.type === 'draft.generated') {
+          void loadDrafts();
+        }
+      } catch (error) {
+        console.error('Managed event parse failed:', error);
+      }
+    };
+
+    es.onerror = () => {
+      es.close();
+      eventSourceRef.current = null;
+      setManagedTailing(false);
+    };
+  }, [loadDrafts]);
+
+  useEffect(() => {
+    return () => {
+      eventSourceRef.current?.close();
+    };
+  }, []);
+
   const filtered = (data?.signals || [])
     .filter(s => platform === 'all' || s.platform === platform)
     .filter(s => relevance === 'all' || s.relevance === relevance);
@@ -135,15 +194,30 @@ export default function SignalsPage() {
     setDraftLoading(true);
     setDraftError('');
     try {
-      const res = await fetch('/api/x/drafts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sourceText: draftSourceText, tone: draftTone }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error || 'Failed to generate draft');
-      setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+      if (!managedSessionId || !managedRunId) {
+        const res = await fetch('/api/managed-agents/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: draftSourceText, tone: draftTone }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Failed to create managed session');
+        setManagedSessionId(json.id);
+        setManagedRunId(json.runId);
+        connectToStream(json.runId);
+      } else {
+        const res = await fetch('/api/managed-agents/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: managedSessionId, text: draftSourceText, tone: draftTone }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.error || 'Failed to resume managed session');
+        connectToStream(managedRunId);
+      }
+
       setDraftSourceText('');
+      void loadDrafts();
     } catch (e) {
       setDraftError(e instanceof Error ? e.message : 'Failed to generate draft');
     } finally {
@@ -276,6 +350,38 @@ export default function SignalsPage() {
             {draftError ? (
               <div className="mt-3 border border-red-500/30 p-3 text-red-400 text-xs">
                 {draftError}
+              </div>
+            ) : null}
+            <div className="mt-4 border border-zinc-800 bg-black p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600">Managed Session</div>
+                <StatusPill
+                  status={managedTailing ? 'active' : managedRunId ? 'idle' : 'offline'}
+                  label={managedTailing ? 'Streaming' : managedRunId ? 'Paused' : 'Not Started'}
+                  size="sm"
+                />
+              </div>
+              {managedSessionId ? (
+                <p className="mt-3 text-[10px] text-zinc-600 font-mono break-all">Session: {managedSessionId}</p>
+              ) : null}
+              {managedRunId ? (
+                <p className="mt-2 text-[10px] text-zinc-600 font-mono break-all">Run: {managedRunId}</p>
+              ) : null}
+            </div>
+            {managedEvents.length > 0 ? (
+              <div className="mt-4 border border-zinc-800 bg-black p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Event Timeline</div>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {managedEvents.map((event) => (
+                    <div key={event.id} className="border border-zinc-800 p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-300">{event.type}</span>
+                        <span className="text-[10px] text-zinc-700 font-mono">{new Date(event.occurredAt).toLocaleTimeString()}</span>
+                      </div>
+                      <pre className="mt-2 whitespace-pre-wrap break-words text-[10px] text-zinc-500">{JSON.stringify(event.payload, null, 2)}</pre>
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : null}
           </div>

@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
 
     const run = await start(xSocialSessionWorkflow, [
       {
+        userId: session.user.id,
         internalSessionId: id,
         initialMessage: text.trim(),
         initialTone: String(tone),
