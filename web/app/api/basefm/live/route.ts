@@ -160,7 +160,7 @@ export async function GET() {
       .map((stream) => {
         const session = sessionByStreamId.get(stream.id)
 
-        toLiveDj({
+        return toLiveDj({
           id: stream.id,
           name: stream.metadata?.dj_name || session?.dj_name || 'Anonymous DJ',
           wallet: stream.metadata?.dj_wallet || session?.wallet || null,
