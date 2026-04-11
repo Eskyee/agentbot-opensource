@@ -1,180 +1,192 @@
 # Agentbot Whitepaper
-## Community-Owned AI Agent Infrastructure
+## Community-Built AI Agent Infrastructure
 **Version 1.0 | April 2025**
 ---
 ## Abstract
-Agentbot represents a paradigm shift in AI agent development—an open-source, community-driven infrastructure that democratizes access to autonomous AI agents. Born from 5,013+ contributions and powered by the Solana blockchain, Agentbot enables developers, creators, and organizations to deploy, manage, and monetize AI agents without proprietary gatekeepers.
-The $AGENT token was launched by the community as an experiment in sustainable open source funding. This is not a company. This is not VC-backed. This is a community-owned protocol.
+Agentbot is open-source infrastructure for autonomous AI agents. Built by the community, for the community. There is no company. There is no VC. There is no team allocation. Just code, contributors, and a shared vision for sustainable open source.
+The $AGENT token exists on Solana as a community experiment. It was launched fairly with no pre-mine, no team allocation, and no VC backing. The token is 100% community-owned and governed.
 ---
 ## 1. Vision & Mission
 ### 1.1 The Problem
-The AI agent landscape is increasingly centralized:
-- **Closed ecosystems** lock developers into proprietary platforms
-- **High barriers to entry** prevent grassroots innovation
-- **Value extraction** flows to corporations, not contributors
-- **Open source sustainability** remains unsolved
+Open source powers the world, but the model is broken:
+- Developers build, users take, nobody pays
+- Projects die when maintainers burn out
+- Value flows to corporations, not contributors
+- Sustainability is an afterthought
 ### 1.2 Our Vision
-Agentbot envisions a world where:
-- AI agents are **open, composable, and community-owned**
-- Contributors are **directly rewarded** for their work
-- Anyone can **deploy autonomous agents** without permission
-- The infrastructure is **sustained by usage**, not donations or VC
+A world where:
+- AI agents are open, transparent, and community-owned
+- Contributors are rewarded for their work
+- Anyone can build without permission
+- Infrastructure sustains itself through usage
 ### 1.3 Mission Statement
-> "Build the foundational infrastructure for autonomous AI agents—owned by the community, governed by token holders, and sustained by usage."
+> "Build the foundational infrastructure for autonomous AI agents—owned by the community, governed by token holders, and sustained by those who use it."
 ---
 ## 2. What is Agentbot?
 ### 2.1 Core Infrastructure
-Agentbot is a modular AI agent framework:
+Agentbot is a modular framework for AI agents:
 | Component | Description |
 |-----------|-------------|
-| **Agent Core** | Base runtime for autonomous decision-making |
-| **Skill System** | Pluggable capabilities (trading, scraping, analysis) |
-| **Memory Layer** | Persistent agent state and learning |
-| **Bridge Protocol** | Cross-chain and cross-agent communication |
+| **Agent Core** | Runtime for autonomous decision-making |
+| **Skill System** | Pluggable capabilities (trading, research, automation) |
+| **Memory Layer** | Persistent agent state |
+| **Bridge Protocol** | Cross-chain and agent-to-agent communication |
 | **Tool Marketplace** | Community-contributed capabilities |
 ### 2.2 Open Source Foundation
-Agentbot is 100% open source under the MIT license:
-- **5,013+ contributions** from lead developer
-- **Community-driven development** with transparent governance
-- **Modular architecture** enabling custom agent compositions
-### 2.3 The $AGENT Token (Community-Launched)
-The $AGENT token was launched by the Agentbot community as an experiment in sustainable funding:
-1. **Governance**: Community votes on protocol upgrades
-2. **Staking**: Secure the network and earn rewards
-3. **Fee Sharing**: Receive protocol-generated fees
-4. **Sustainability**: Funds ongoing open source development
-> **Important:** There was no VC allocation, no pre-sale, and no team allocation. The community launched this token together.
+- **5,013+ contributions** from lead developer (Eskyee)
+- **MIT License** — 100% open source
+- **Community-driven** — transparent governance
+- **Modular** — build what you need
 ---
-## 3. Tokenomics (Community-Fair Launch)
-### 3.1 Token Distribution
-| Allocation | Percentage | Purpose |
-|------------|------------|---------|
-| **Community Treasury** | 55% | Development, grants, incentives |
-| **Liquidity Pool** | 25% | DEX liquidity |
-| **Public Sale** | 20% | Fair launch on Pump.fun |
-### 3.2 No Team Allocation
-Unlike typical projects, Agentbot had:
-- ❌ No VC allocation
-- ❌ No pre-sale  
-- ❌ No team/founder allocation
-- ✅ 100% fair launch to the community
-### 3.3 Token Utility
-**Transaction Fees**: 3% on all transfers
-- 1% to liquidity providers
-- 1% to stakers
-- 1% to community treasury
-**Burn Mechanism**: 0.5% of every transaction is permanently burned.
-### 3.4 Current Metrics (April 2025)
+## 3. The $AGENT Token (Community Experiment)
+### 3.1 What It Is
+$AGENT is a community-launched token on Solana. It exists as an experiment in sustainable open source funding.
+**Key Facts:**
+- ✅ **No company** behind it
+- ✅ **No VC allocation**
+- ✅ **No pre-mine**
+- ✅ **No team/founder allocation**
+- ✅ **100% fair launch** on Pump.fun
+- ✅ **Community-owned** and governed
+### 3.2 Current Status (April 2025)
 | Metric | Value |
 |--------|-------|
-| Market Cap | $3,400 |
-| Liquidity | $4,500 |
-| Holders | 29+ |
-| Age | 2.5 days |
-| 24H Performance | +31.51% |
+| Symbol | $AGENT |
+| Chain | Solana (SPL) |
+| Contract | 9V4m19...x5pump |
+| Market Cap | $3.4K |
+| Holders | 53+ |
+| Status | Graduated from Pump.fun |
+### 3.3 Fees (If Any)
+The token contract may have standard fees for:
+- Liquidity providers (if applicable)
+- Platform fees (Pump.fun / DEX)
+**Eskyee receives:**
+- GitHub Sponsorships (direct support)
+- Pump.fun dev fee (standard platform fee)
+- **No token allocation. No special rights.**
+### 3.4 Governance
+The community decides:
+- Protocol upgrades
+- Feature priorities
+- Treasury usage (if any)
+- Development direction
+**One token = One vote.** No special privileges.
 ---
 ## 4. Technology Architecture
-[Same as before - technology section unchanged]
+┌─────────────────────────────────────────┐
+│        Agent Interface Layer            │
+│   (CLI, API, Web UI, Discord Bot)       │
+├─────────────────────────────────────────┤
+│          Agent Runtime                  │
+│   (Decision Engine, Memory, State)      │
+├─────────────────────────────────────────┤
+│          Skill Registry                 │
+│  (Trading, Research, Analysis, etc.)    │
+├─────────────────────────────────────────┤
+│          Bridge Protocol                │
+│   (Cross-chain, Agent-to-Agent)         │
+└─────────────────────────────────────────┘
+### Key Technologies
+- **Solana** — Primary blockchain
+- **Next.js** — Web interface
+- **AI SDK** — LLM orchestration
+- **Bankr** — DeFi operations
+- **OpenClaw** — Agent runtime
 ---
 ## 5. Use Cases
-[Same as before - use cases unchanged]
+### For Developers
+- Build custom agents
+- Contribute skills
+- Monetize through marketplace
+### For Traders
+- Automated strategies
+- Market analysis
+- Risk management
+### For Organizations
+- Customer service automation
+- Data analysis
+- Community management
+### For Creators
+- Content generation
+- Social media management
+- Research assistance
 ---
-## 6. Governance (Community-Owned)
-### 6.1 DAO Structure
-Agentbot operates as a DAO:
-- **Proposal Threshold**: 1% of circulating supply
-- **Voting Period**: 7 days
-- **Execution Delay**: 2 days after passing
-- **Quorum**: 10% of staked tokens
-### 6.2 Community Governance
-All decisions made by token holders:
-- Protocol upgrades
-- Treasury allocation
-- Fee structure
-- Partnerships
-- Development priorities
+## 6. How to Contribute
+### Ways to Help
+| Action | How |
+|--------|-----|
+| ⭐ **Star the repo** | github.com/Eskyee/agentbot-opensource |
+| 🔧 **Submit code** | Open a PR |
+| 🐛 **Report bugs** | Open an issue |
+| 💡 **Suggest features** | Start a discussion |
+| 💰 **Sponsor** | github.com/sponsors/Eskyee |
+| 🪙 **Buy $AGENT** | Support the community experiment |
 ---
 ## 7. Roadmap
-### Phase 1: Foundation (Q2 2025) ✅
-- [x] Community token launch on Pump.fun
-- [x] Initial liquidity provision
+### Phase 1: Foundation ✅
+- [x] Community token launch (fair launch)
 - [x] Open source repository public
-- [x] Community channels established
-### Phase 2: Growth (Q3 2025)
-- [ ] Skill marketplace launch
-- [ ] Staking mechanism live
-- [ ] 1,000+ holders
-### Phase 3: Expansion (Q4 2025)
-- [ ] Cross-chain support (Base, Polygon)
-- [ ] DAO governance activation
-- [ ] Developer grants program
-### Phase 4: Maturity (2026)
+- [x] Core infrastructure built
+### Phase 2: Growth
+- [ ] Skill marketplace
+- [ ] More integrations
+- [ ] 1,000+ community members
+### Phase 3: Expansion
+- [ ] Cross-chain support
+- [ ] DAO tooling
+- [ ] Developer grants
+### Phase 4: Maturity
 - [ ] Agent-to-agent communication
-- [ ] Autonomous agent swarms
-- [ ] Self-sustaining treasury
+- [ ] Self-sustaining ecosystem
+- [ ] Global adoption
 ---
-## 8. Community & Contributors
-### 8.1 Lead Developer
-- **GitHub**: 5,013+ contributions
-- **Role**: Building the foundation, not owning the protocol
-- **Philosophy**: Open source first, community-driven
-- **Funding**: Community support via GitHub Sponsors
-> The lead developer does not control the protocol. The community does.
-### 8.2 Community Values
-1. **Transparency** — All decisions public
-2. **Meritocracy** — Contributions rewarded
-3. **Sustainability** — Long-term thinking
+## 8. Community Values
+1. **Transparency** — Everything is public
+2. **Meritocracy** — Best ideas win
+3. **Sustainability** — Build for the long term
 4. **Accessibility** — Lower barriers to entry
 5. **Decentralization** — No single point of control
-### 8.3 How to Contribute
-- **Develop**: Submit PRs
-- **Use**: Deploy agents
-- **Stake**: Secure the network
-- **Govern**: Participate in DAO
-- **Sponsor**: Support via GitHub Sponsors
 ---
-## 9. Economic Model
-### 9.1 Revenue Streams
-| Source | Description |
-|--------|-------------|
-| **Transaction Fees** | 3% on all $AGENT transfers |
-| **Skill Marketplace** | 5% fee on skill purchases |
-| **Premium Features** | Subscription for advanced capabilities |
-All revenue flows to:
-- Community treasury (governance-controlled)
-- Stakers (reward for securing network)
-- Liquidity providers
-### 9.2 Treasury Management
-- **Multi-sig wallet**: Community-controlled
-- **Monthly reports**: Public financial statements
-- **Budget**: Decided by DAO vote
+## 9. Economic Model (Simple)
+### Revenue to Eskyee (Lead Developer)
+- GitHub Sponsorships — Direct community support
+- Pump.fun dev fee — Standard platform fee
+### Revenue to Community
+- Any token fees (if implemented by community vote)
+- Marketplace fees (if/when built)
+- Sponsorships and grants
+**No company. No VC. No pre-mine. Just community.**
 ---
-## 10. Risk Factors
-[Same risk disclosures as before]
+## 10. Risks
+- **Volatility** — Crypto markets are volatile
+- **Experimental** — This is a community experiment
+- **Regulatory** — Uncertain regulations
+- **Technical** — Bugs and vulnerabilities possible
 ---
 ## 11. Conclusion
-Agentbot represents a new model for AI infrastructure—one that is open, community-owned, and sustainably funded. 
-**This is not a company. This is not VC-backed. This is a community experiment.**
-The journey is just beginning. But the foundation is solid: proven code, committed contributors, and a community that believes in open source sustainability.
-**Join us in building the future of autonomous AI agents.**
+Agentbot is an experiment. Can a community build and sustain open source AI infrastructure without a company, without VC, without a team allocation?
+We think so.
+**Join us and find out.**
 ---
-## 12. Resources & Links
+## 12. Links
 | Resource | Link |
 |----------|------|
 | **GitHub** | github.com/Eskyee/agentbot-opensource |
 | **GitHub Sponsors** | github.com/sponsors/Eskyee |
-| **Twitter/X** | @agentbot_ai |
-| **Discord** | discord.gg/agentbot |
+| **X Community** | x.com/i/communities/2031495203002134740 |
+| **Solscan** | solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump |
+| **Pump.fun** | pump.fun |
 ---
-## 13. Legal Disclaimer
-This whitepaper is for informational purposes only and does not constitute financial advice. 
-**$AGENT is a community-launched utility and governance token.**
-- No company behind it
-- No VC allocation
+## 13. Disclaimer
+This is not financial advice. $AGENT is a community-launched token experiment.
+- No company
+- No VC  
 - No pre-mine
+- No team allocation
 - 100% community fair launch
-Cryptocurrency investments carry significant risk. DYOR.
+DYOR. Crypto is risky.
 ---
-*Built with ❤️ by the community, for the community.*
-**© 2025 Agentbot DAO**
+**Built with ❤️ by the community, for the community.**
+*© 2025 Agentbot Community*
 ---
