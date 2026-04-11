@@ -103,3 +103,22 @@ Playable first.
 Proud-to-use first.
 
 That is the standard.
+
+## Rule
+
+We learn from our mistakes.
+
+Not quietly.
+Not defensively.
+Not by pretending they did not happen.
+
+We learn by:
+- finding the real cause
+- fixing it properly
+- writing it down
+- turning it into docs, skills, memory, and better defaults
+
+Mistakes are not the end of the process.
+They are part of the process.
+
+If we learn, the platform gets stronger.
