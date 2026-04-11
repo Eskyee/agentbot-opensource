@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { createElement, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ExternalLink, Radio } from 'lucide-react'
+import Script from 'next/script'
 
 type LiveDj = {
   id: string
@@ -28,10 +29,12 @@ export function BasefmLivePlayer({
   compact = false,
   title = 'baseFM Live',
   subtitle = 'Strictly Underground. 24/7 Autonomous Curation.',
+  minimal = false,
 }: {
   compact?: boolean
   title?: string
   subtitle?: string
+  minimal?: boolean
 }) {
   const [liveData, setLiveData] = useState<LiveResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -70,9 +73,23 @@ export function BasefmLivePlayer({
 
   const primaryDj = liveData?.primaryDj || null
   const stationLive = Boolean(primaryDj?.embedUrl)
+  const player = stationLive && primaryDj?.playbackId
+    ? createElement('mux-player', {
+        'playback-id': primaryDj.playbackId,
+        'stream-type': 'live',
+        'metadata-video-title': primaryDj.name,
+        'primary-color': '#22c55e',
+        'accent-color': '#ffffff',
+        muted: true,
+        autoplay: 'muted',
+        controls: true,
+        style: { width: '100%', height: '100%', border: '0' },
+      })
+    : null
 
   return (
     <section className={`border border-zinc-800 bg-zinc-950/80 ${compact ? 'p-4 sm:p-5' : 'p-6 sm:p-8'}`}>
+      <Script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" strategy="afterInteractive" />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-zinc-500">
@@ -96,16 +113,10 @@ export function BasefmLivePlayer({
         </div>
       </div>
 
-      <div className={`mt-6 ${compact ? 'grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]' : 'grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]'}`}>
+      <div className={`mt-6 ${minimal ? '' : compact ? 'grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]' : 'grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]'}`}>
         <div className="overflow-hidden border border-zinc-800 bg-black aspect-video">
-          {stationLive && primaryDj?.embedUrl ? (
-            <iframe
-              src={`${primaryDj.embedUrl}${primaryDj.embedUrl.includes('?') ? '&' : '?'}autoplay=true`}
-              title={`baseFM live stream for ${primaryDj.name}`}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              allowFullScreen
-              className="h-full w-full"
-            />
+          {player ? (
+            player
           ) : (
             <div className="flex h-full items-center justify-center px-6 text-center">
               <div>
@@ -120,6 +131,7 @@ export function BasefmLivePlayer({
           )}
         </div>
 
+        {minimal ? null : (
         <div className="space-y-4">
           <div className="border border-zinc-800 bg-black p-4">
             <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Now Playing</div>
@@ -168,7 +180,14 @@ export function BasefmLivePlayer({
             </div>
           ) : null}
         </div>
+        )}
       </div>
+
+      {minimal && error ? (
+        <div className="mt-4 border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+          {error}
+        </div>
+      ) : null}
     </section>
   )
 }

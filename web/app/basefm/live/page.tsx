@@ -84,6 +84,7 @@ export default function BasefmLivePage() {
         <BasefmLivePlayer
           title="🎧 baseFM Live"
           subtitle="Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base that auto-plays the main stream when a DJ is live."
+          minimal
         />
       </div>
 
