@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { deploySkillToAgent, removeSkillFromAgent } from '@/app/lib/agent-deploy'
 import { BASEFM_DJ_SKILL_CODE, BASEFM_DJ_SKILL_NAME, ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
@@ -81,6 +82,51 @@ async function ensureSkillsSeeded() {
   }
 
   await ensureBasefmDjSkill()
+}
+
+async function getSkillTargetContext(agentId: string, session: NonNullable<Awaited<ReturnType<typeof getAuthSession>>>) {
+  const directAgent = await prisma.agent.findFirst({
+    where: { id: agentId, userId: session.user.id },
+  })
+
+  if (directAgent) {
+    return { agent: directAgent, targetUserId: session.user.id }
+  }
+
+  const targetUser = await prisma.user.findFirst({
+    where: {
+      openclawInstanceId: agentId,
+      ...(isAdminEmail(session.user.email) ? {} : { id: session.user.id }),
+    },
+    select: {
+      id: true,
+      openclawInstanceId: true,
+      openclawUrl: true,
+    },
+  })
+
+  if (!targetUser?.openclawInstanceId) {
+    return null
+  }
+
+  const synthesizedAgent = await prisma.agent.upsert({
+    where: { id: targetUser.openclawInstanceId },
+    update: {
+      userId: targetUser.id,
+      websocketUrl: targetUser.openclawUrl,
+      status: 'running',
+    },
+    create: {
+      id: targetUser.openclawInstanceId,
+      userId: targetUser.id,
+      name: 'Managed OpenClaw Runtime',
+      model: 'openclaw',
+      status: 'running',
+      websocketUrl: targetUser.openclawUrl,
+    },
+  })
+
+  return { agent: synthesizedAgent, targetUserId: targetUser.id }
 }
 
 export async function GET(request: Request) {
@@ -171,10 +217,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'skillId and agentId are required' }, { status: 400 })
     }
 
-    // Verify agent belongs to user
-    const agent = await prisma.agent.findFirst({
-      where: { id: agentId, userId: session.user.id },
-    })
+    const target = await getSkillTargetContext(agentId, session)
+    const agent = target?.agent
 
     if (!agent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
@@ -190,15 +234,15 @@ export async function POST(request: Request) {
     const installed = await prisma.installedSkill.upsert({
       where: {
         userId_agentId_skillId: {
-          userId: session.user.id,
-          agentId,
+          userId: target!.targetUserId,
+          agentId: agent.id,
           skillId,
         },
       },
       update: { enabled: true },
       create: {
-        userId: session.user.id,
-        agentId,
+        userId: target!.targetUserId,
+        agentId: agent.id,
         skillId,
       },
     })
@@ -211,7 +255,7 @@ export async function POST(request: Request) {
 
     // Deploy skill to OpenClaw gateway (don't fail if gateway is down)
     try {
-      const deployResult = await deploySkillToAgent(agentId, skillId)
+      const deployResult = await deploySkillToAgent(agent.id, skillId)
       if (!deployResult.success) {
         console.warn(`[Skill Install] Gateway deploy warning: ${deployResult.error}`)
         return NextResponse.json({ 
@@ -250,17 +294,24 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'skillId and agentId are required' }, { status: 400 })
     }
 
+    const target = await getSkillTargetContext(agentId, session)
+    const agent = target?.agent
+
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
     await prisma.installedSkill.deleteMany({
       where: {
-        userId: session.user.id,
-        agentId,
+        userId: target!.targetUserId,
+        agentId: agent.id,
         skillId,
       },
     })
 
     // Remove skill from OpenClaw gateway (don't fail if gateway is down)
     try {
-      await removeSkillFromAgent(agentId, skillId)
+      await removeSkillFromAgent(agent.id, skillId)
     } catch (gatewayError) {
       console.warn('[Skill Uninstall] Gateway removal failed:', gatewayError)
     }
