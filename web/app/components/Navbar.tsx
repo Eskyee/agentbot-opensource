@@ -9,6 +9,8 @@ import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
 
 const LOGGED_IN_NAV = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/learn", label: "Learn" },
+  { href: "/search", label: "Search" },
   { href: "/dashboard/community", label: "Community" },
   { href: "/claim", label: "Claim" },
   { href: "/jobs", label: "Jobs" },
@@ -25,6 +27,8 @@ const LOGGED_IN_NAV = [
 const LOGGED_OUT_NAV = [
   { href: "/pricing", label: "Pricing" },
   { href: "/why", label: "Why" },
+  { href: "/learn", label: "Learn" },
+  { href: "/search", label: "Search" },
   { href: "/jobs", label: "Jobs" },
   { href: "/claim", label: "Claim" },
   { href: "/token", label: "$AGENTBOT" },

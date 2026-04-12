@@ -75,6 +75,7 @@ export default function Footer() {
           </div>
           <div className="flex flex-wrap gap-6">
             {[
+              { href: '/learn', label: 'Guide' },
               { href: '/partner', label: 'Partner' },
               { href: '/token', label: '$AGENTBOT' },
               { href: '/basefm', label: 'baseFM Live' },

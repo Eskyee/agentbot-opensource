@@ -156,10 +156,33 @@ export default function ViewDocsPage() {
   return (
     <main className="min-h-screen bg-black text-white font-mono">
       <div className="max-w-5xl mx-auto px-6 py-16">
+        <div className="mb-8 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-zinc-600">
+          <Link href="/learn" className="hover:text-white transition-colors">Learn</Link>
+          <span>/</span>
+          <span className="text-zinc-400">Docs</span>
+        </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter uppercase mb-4">Docs</h1>
         <p className="text-sm text-zinc-400 mb-10">
-          Everything you need to deploy, operate, and grow your AI agents.
+          This is the structured reference and operator guide for Agentbot. If you want guided walkthroughs instead, start with Learn.
         </p>
+
+        <div className="grid gap-px bg-zinc-800 mb-10 sm:grid-cols-3">
+          <Link href="/learn" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Guided Path</span>
+            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">Learn Agentbot</h2>
+            <p className="text-xs text-zinc-500 mt-2">User-facing walkthroughs, onboarding, and practical “what do I do first?” guidance.</p>
+          </Link>
+          <Link href="/why" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Platform Story</span>
+            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">Why Agentbot</h2>
+            <p className="text-xs text-zinc-500 mt-2">Best product explanation for how Agentbot fits against local OpenClaw and why the platform exists.</p>
+          </Link>
+          <Link href="/learn/developers" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Builder Path</span>
+            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">For Developers</h2>
+            <p className="text-xs text-zinc-500 mt-2">Developer docs, APIs, SDKs, runtime guides, and architecture pages.</p>
+          </Link>
+        </div>
 
         <div className="border border-zinc-800 bg-zinc-950 p-5 mb-10">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Full Docs Site</span>

@@ -132,9 +132,30 @@ export default function LearnPage() {
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 block">Documentation</span>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase mb-4">Learn Agentbot</h1>
           <p className="text-zinc-400 text-sm max-w-lg">
-            From zero to production. Everything you need to deploy and scale AI agents.
+            This is the main “how to use Agentbot” hub. Start here if you want guided paths, platform walkthroughs, and the cleanest route from zero to a working agent.
           </p>
         </div>
+
+        <section className="mb-16">
+          <div className="mb-8">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 block">Start Here</span>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase">Choose The Right Guide</h2>
+          </div>
+          <div className="grid gap-px bg-zinc-800 sm:grid-cols-3">
+            <Link href="/why" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
+              <h3 className="text-sm font-bold tracking-tight uppercase mb-2 group-hover:text-white transition-colors">Why Agentbot</h3>
+              <p className="text-xs text-zinc-500">Best starting point for understanding what Agentbot is, why it exists, and how it compares to running OpenClaw locally.</p>
+            </Link>
+            <Link href="/documentation" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
+              <h3 className="text-sm font-bold tracking-tight uppercase mb-2 group-hover:text-white transition-colors">Docs & Operator Guide</h3>
+              <p className="text-xs text-zinc-500">Use this when you need structured reference material for plans, runtime behavior, models, features, and platform operations.</p>
+            </Link>
+            <Link href="/learn/developers" className="bg-black p-6 hover:bg-zinc-950 transition-colors group">
+              <h3 className="text-sm font-bold tracking-tight uppercase mb-2 group-hover:text-white transition-colors">For Developers</h3>
+              <p className="text-xs text-zinc-500">Use this when you want APIs, SDKs, architecture, Gitlawb, runtime guides, and implementation-facing documentation.</p>
+            </Link>
+          </div>
+        </section>
 
         {/* Getting Started */}
         <section className="mb-16">
@@ -142,7 +163,7 @@ export default function LearnPage() {
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 block">Section 01</span>
             <h2 className="text-2xl font-bold tracking-tighter uppercase">Getting Started</h2>
           </div>
-          <p className="text-zinc-500 text-xs mb-6 max-w-md">New to Agentbot? Start here. Deploy your first agent in under a minute.</p>
+          <p className="text-zinc-500 text-xs mb-6 max-w-md">New to Agentbot? Start here. This section is about using the platform, not building the platform.</p>
 
           <div className="grid gap-px bg-zinc-800 sm:grid-cols-2">
             {beginnerGuides.map((guide) => (
@@ -178,7 +199,7 @@ export default function LearnPage() {
             </Link>
             <Link href="/learn/developers" className="group block bg-black p-8 hover:bg-zinc-950 transition-colors">
               <h3 className="text-lg font-bold tracking-tighter uppercase mb-3 group-hover:text-white transition-colors">For Developers →</h3>
-              <p className="text-zinc-400 text-sm mb-4">APIs, SDKs, code examples, architecture docs, open source repos. Build on Agentbot.</p>
+              <p className="text-zinc-400 text-sm mb-4">APIs, SDKs, code examples, runtime guides, architecture docs, open source repos. Build on Agentbot.</p>
               <div className="flex flex-wrap gap-2">
                 {['API', 'SDKs', 'x402', 'Open Source', 'Architecture'].map(tag => (
                   <span key={tag} className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-1">{tag}</span>
@@ -327,6 +348,15 @@ Reasoning: DeepSeek R1
 Vision: Claude 3.5 Sonnet`}
               </pre>
             </div>
+          </div>
+        </section>
+
+        <section className="mt-16 border border-zinc-800 bg-zinc-950 p-6">
+          <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Still Not Sure?</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Link href="/why" className="text-sm text-zinc-400 hover:text-white transition-colors">Read why Agentbot exists →</Link>
+            <Link href="/documentation" className="text-sm text-zinc-400 hover:text-white transition-colors">Open docs and operator guide →</Link>
+            <Link href="/learn/developers/openclaw-dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">Open runtime & skills setup guide →</Link>
           </div>
         </section>
       </div>

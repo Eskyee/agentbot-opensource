@@ -130,6 +130,17 @@ export default function OpenClawDashboardGuidePage() {
             This is the clean next product step for DJs who do not want to go live manually every time.
             It should be sold as a managed broadcast service, not a free storage sink.
           </p>
+          <p className="mt-4 text-sm leading-7 text-zinc-400">
+            Official replay and asset reference:{' '}
+            <a
+              href="https://www.mux.com/docs/api-reference/video/assets"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-white"
+            >
+              Mux Assets API
+            </a>
+          </p>
           <ul className="mt-4 space-y-2 text-sm text-zinc-300">
             {broadcastService.map((item) => (
               <li key={item}>• {item}</li>

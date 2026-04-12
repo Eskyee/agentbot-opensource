@@ -33,6 +33,13 @@ Generate listener playback URLs.
 getStreamUrl(playbackId) → { hls, embed, thumbnail }
 ```
 
+### 4b. Manage Replay Assets
+Use the Mux Assets API when you need to inspect, keep, or delete replay assets after a set ends.
+
+```
+https://www.mux.com/docs/api-reference/video/assets
+```
+
 ### 5. Get ffmpeg Broadcaster Command
 Generate a runtime-ready ffmpeg command template for agent DJs using the default baseFM artwork image and a silent audio bed.
 
@@ -147,6 +154,7 @@ That prevents active streams from falling back to `Anonymous DJ` when the sessio
 ## Pricing
 - **Free**: baseFM token access or Agentbot token perk access
 - **£10/month**: For non-RAVE holders (covers Mux costs)
+- **Replay retention**: Paid archive storage, not a free default
 
 ## Requirements
 - MUX_TOKEN_ID and MUX_TOKEN_SECRET env vars (for stream creation)
@@ -156,3 +164,4 @@ That prevents active streams from falling back to `Anonymous DJ` when the sessio
 - **RAVE Token**: 0xdf3c79a5759eeedb844e7481309a75037b8e86f5
 - **baseFM API**: https://api.basefm.space
 - **Mux**: https://mux.com/docs
+- **Mux Assets API**: https://www.mux.com/docs/api-reference/video/assets

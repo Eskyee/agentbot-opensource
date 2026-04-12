@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { searchGuideIndex } from '@/app/lib/guideSearch'
 
 const MCP_SERVER_URL = 'https://raveculture.mintlify.app/mcp';
+
+export async function GET(req: NextRequest) {
+  const query = req.nextUrl.searchParams.get('q') || ''
+  const limit = Number.parseInt(req.nextUrl.searchParams.get('limit') || '12', 10)
+
+  if (!query.trim()) {
+    return NextResponse.json({ query, count: 0, results: [] })
+  }
+
+  const results = searchGuideIndex(query, Number.isFinite(limit) ? limit : 12)
+  return NextResponse.json({
+    query,
+    count: results.length,
+    results,
+  })
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,6 +25,16 @@ export async function POST(req: NextRequest) {
 
     if (!query) {
       return NextResponse.json({ error: 'Query required' }, { status: 400 });
+    }
+
+    const localResults = searchGuideIndex(query, 12)
+    if (localResults.length > 0) {
+      return NextResponse.json({
+        query,
+        count: localResults.length,
+        results: localResults,
+        source: 'agentbot-local-guides',
+      });
     }
 
     const response = await fetch(MCP_SERVER_URL, {

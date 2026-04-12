@@ -63,6 +63,12 @@ const devSections = [
         href: '/learn/developers/openclaw-dashboard',
         tags: ['OpenClaw', 'Guide'],
       },
+      {
+        title: 'Mux Assets API',
+        description: 'Official Mux Assets API docs for replay retention, archive cleanup, and post-broadcast asset management.',
+        href: 'https://www.mux.com/docs/api-reference/video/assets',
+        tags: ['Mux', 'Assets'],
+      },
     ],
   },
   {
