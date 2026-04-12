@@ -80,7 +80,7 @@ function Dropdown({ label, items, current }: { label: string; items: DropdownIte
       </button>
 
       {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 rounded-2xl border border-zinc-800 bg-zinc-950/98 backdrop-blur-sm shadow-2xl z-50 overflow-hidden">
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl z-50 overflow-hidden">
           <div className="py-2">
             {items.map((item) => (
               <Link
