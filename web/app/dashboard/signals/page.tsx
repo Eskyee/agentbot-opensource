@@ -73,6 +73,10 @@ interface ManagedSession {
   updatedAt: string;
 }
 
+function formatManagedEventLabel(type: string) {
+  return type.replace(/\./g, ' ');
+}
+
 const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
   reddit:        { label: 'Reddit',  color: 'text-orange-400' },
   twitter:       { label: 'X',       color: 'text-sky-400' },
@@ -487,10 +491,22 @@ export default function SignalsPage() {
                   {managedEvents.map((event) => (
                     <div key={event.id} className="border border-zinc-800 p-3">
                       <div className="flex items-center justify-between gap-3">
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-300">{event.type}</span>
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-300">{formatManagedEventLabel(event.type)}</span>
                         <span className="text-[10px] text-zinc-700 font-mono">{new Date(event.occurredAt).toLocaleTimeString()}</span>
                       </div>
-                      <pre className="mt-2 whitespace-pre-wrap break-words text-[10px] text-zinc-500">{JSON.stringify(event.payload, null, 2)}</pre>
+                      <div className="mt-2 text-[11px] text-zinc-400 leading-relaxed">
+                        {typeof event.payload?.draft === 'string' ? (
+                          <p>{event.payload.draft}</p>
+                        ) : typeof event.payload?.text === 'string' ? (
+                          <p>{event.payload.text}</p>
+                        ) : event.payload?.url ? (
+                          <a href={String(event.payload.url)} target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+                            {String(event.payload.url)}
+                          </a>
+                        ) : (
+                          <pre className="whitespace-pre-wrap break-words text-[10px] text-zinc-500">{JSON.stringify(event.payload, null, 2)}</pre>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

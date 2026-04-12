@@ -1,6 +1,6 @@
 'use client'
 
-import { createElement, useEffect, useState } from 'react'
+import { createElement, memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ExternalLink, Radio } from 'lucide-react'
 import Script from 'next/script'
@@ -28,6 +28,30 @@ export type LiveResponse = {
   error?: string
 }
 
+const LIVE_REFRESH_MS = 30000
+const MUX_PLAYER_STYLE = { width: '100%', height: '100%', border: '0' }
+
+const StableMuxLiveSurface = memo(function StableMuxLiveSurface({
+  playbackId,
+  title,
+}: {
+  playbackId: string
+  title: string
+}) {
+  return createElement('mux-player', {
+    'playback-id': playbackId,
+    'stream-type': 'live',
+    'metadata-video-title': title,
+    poster: `https://image.mux.com/${playbackId}/thumbnail.jpg?time=1`,
+    'primary-color': '#22c55e',
+    'accent-color': '#ffffff',
+    muted: true,
+    autoplay: 'muted',
+    controls: true,
+    style: MUX_PLAYER_STYLE,
+  })
+})
+
 function statusColor(status: BasefmRelayStatus) {
   if (status === 'healthy') return 'bg-green-400'
   if (status === 'degraded') return 'bg-yellow-400'
@@ -54,6 +78,11 @@ export function BasefmLivePlayer({
   const [liveData, setLiveData] = useState<LiveResponse | null>(initialData)
   const [loading, setLoading] = useState(!initialData)
   const [error, setError] = useState<string | null>(initialError)
+  const livePlaybackRef = useRef<string | null>(initialData?.primaryDj?.playbackId || null)
+
+  useEffect(() => {
+    livePlaybackRef.current = liveData?.primaryDj?.playbackId || null
+  }, [liveData?.primaryDj?.playbackId])
 
   useEffect(() => {
     let active = true
@@ -64,22 +93,35 @@ export function BasefmLivePlayer({
         const data = await res.json()
         if (!active) return
 
-        if (!res.ok && !data?.primaryDj) {
+        const nextPrimaryDj = data?.primaryDj || null
+        const nextStationLive = Boolean(nextPrimaryDj?.embedUrl)
+
+        if (!res.ok && !nextPrimaryDj) {
           throw new Error(data?.error || 'Unable to load live station')
         }
 
-        setLiveData(data)
-        setError(data?.error || null)
+        setLiveData((current) => {
+          const currentStationLive = Boolean(current?.primaryDj?.embedUrl)
+
+          if (currentStationLive && !nextStationLive) {
+            return current
+          }
+
+          return data
+        })
+        setError(nextStationLive ? null : data?.error || null)
       } catch (err) {
         if (!active) return
-        setError(err instanceof Error ? err.message : 'Unable to load live station')
+        if (!livePlaybackRef.current) {
+          setError(err instanceof Error ? err.message : 'Unable to load live station')
+        }
       } finally {
         if (active) setLoading(false)
       }
     }
 
     load()
-    const interval = setInterval(load, 15000)
+    const interval = setInterval(load, LIVE_REFRESH_MS)
     return () => {
       active = false
       clearInterval(interval)
@@ -88,19 +130,14 @@ export function BasefmLivePlayer({
 
   const primaryDj = liveData?.primaryDj || null
   const stationLive = Boolean(primaryDj?.embedUrl)
+  const listenerFacingError = stationLive ? null : error
   const player = stationLive && primaryDj?.playbackId
-    ? createElement('mux-player', {
-        'playback-id': primaryDj.playbackId,
-        'stream-type': 'live',
-        'metadata-video-title': primaryDj.name,
-        poster: `https://image.mux.com/${primaryDj.playbackId}/thumbnail.jpg?time=1`,
-        'primary-color': '#22c55e',
-        'accent-color': '#ffffff',
-        muted: true,
-        autoplay: 'muted',
-        controls: true,
-        style: { width: '100%', height: '100%', border: '0' },
-      })
+    ? (
+        <StableMuxLiveSurface
+          playbackId={primaryDj.playbackId}
+          title={primaryDj.name}
+        />
+      )
     : null
 
   return (
@@ -227,18 +264,18 @@ export function BasefmLivePlayer({
             ) : null}
           </div>
 
-          {error ? (
+          {listenerFacingError ? (
             <div className="border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-              {error}
+              {listenerFacingError}
             </div>
           ) : null}
         </div>
         )}
       </div>
 
-      {minimal && error ? (
+      {minimal && listenerFacingError ? (
         <div className="mt-4 border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
-          {error}
+          {listenerFacingError}
         </div>
       ) : null}
 
