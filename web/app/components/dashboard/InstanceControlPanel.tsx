@@ -146,8 +146,9 @@ function formatSubscriptionLabel(value?: string | null, fallbackPlan?: string) {
 function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | null) {
   if (!plan || plan === 'free' || subscriptionStatus === 'inactive') {
     return {
-      cpuRam: '2 vCPU, 3 GB RAM',
+      cpuRam: '1 vCPU, 2 GB RAM',
       storage: '10 GB SSD',
+      note: 'Trial / light workloads only',
     }
   }
 
@@ -155,6 +156,7 @@ function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | nul
     return {
       cpuRam: '8 vCPU, 16 GB RAM',
       storage: '500 GB SSD',
+      note: 'High-throughput production',
     }
   }
 
@@ -162,6 +164,7 @@ function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | nul
     return {
       cpuRam: '4 vCPU, 8 GB RAM',
       storage: '100 GB SSD',
+      note: 'Heavy production + browser/tool work',
     }
   }
 
@@ -169,12 +172,14 @@ function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | nul
     return {
       cpuRam: '2 vCPU, 4 GB RAM',
       storage: '50 GB SSD',
+      note: 'Recommended production floor',
     }
   }
 
   return {
     cpuRam: '1 vCPU, 2 GB RAM',
     storage: '10 GB SSD',
+    note: 'Minimum viable only',
   }
 }
 
@@ -368,6 +373,11 @@ export function InstanceControlPanel({
           <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
             {managedSpecs.storage}
           </span>
+          {managedSpecs.note ? (
+            <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+              {managedSpecs.note}
+            </span>
+          ) : null}
           <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
             {formatSubscriptionLabel(instance.subscriptionStatus, instance.plan)}
           </span>
