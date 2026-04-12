@@ -45,6 +45,12 @@ const devSections = [
         href: 'https://docs.openclaw.ai/cli',
         tags: ['CLI', 'Automation'],
       },
+      {
+        title: 'Gitlawb Network Guide',
+        description: 'Use the Gitlawb Network operator surface in Agentbot, browse the decentralized mirror, and clone via DID.',
+        href: '/learn/developers/gitlawb-network',
+        tags: ['Gitlawb', 'DID'],
+      },
     ],
   },
   {
