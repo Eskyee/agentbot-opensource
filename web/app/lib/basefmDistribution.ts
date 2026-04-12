@@ -257,7 +257,7 @@ export function buildBasefmDistribution({
     availability === 'live' && primaryDj?.hlsUrl ? 'active' : availability === 'degraded' ? 'degraded' : 'idle'
 
   const firstPartyStatus: BasefmRelayStatus =
-    availability === 'live' && primaryDj?.hlsUrl ? 'healthy' : availability === 'degraded' ? 'degraded' : 'stopped'
+    availability === 'live' && primaryDj?.hlsUrl ? 'healthy' : primaryDj?.hlsUrl ? 'degraded' : 'stopped'
 
   const requiredRelayStatus = summarizeRequiredRelayStatus(relays)
 
