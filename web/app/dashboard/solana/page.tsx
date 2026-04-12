@@ -186,6 +186,11 @@ export default function SolanaDashboard() {
           <div className="text-xs text-zinc-500 mt-1">Get Phantom wallet</div>
         </a>
         <a href="https://jup.ag/" target="_blank" rel="noopener noreferrer" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors text-left block">
+          <Globe className="w-6 h-6 mb-3 text-white" />
+          <div className="font-bold">Jupiter Wallet</div>
+          <div className="text-xs text-zinc-500 mt-1">Use Jupiter as the better Solana system path</div>
+        </a>
+        <a href="https://jup.ag/" target="_blank" rel="noopener noreferrer" className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors text-left block">
           <TrendingUp className="w-6 h-6 mb-3 text-white" />
           <div className="font-bold">Token Swap</div>
           <div className="text-xs text-zinc-500 mt-1">Trade on Jupiter</div>
