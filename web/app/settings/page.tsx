@@ -11,6 +11,7 @@ import {
   ApiKeysTab,
   ReferralsTab,
   AgentsTab,
+  BasefmTab,
 } from './tabs'
 import { buildAppUrl } from '@/app/lib/app-url'
 
@@ -21,6 +22,7 @@ const TABS = [
   { id: 'referrals', label: 'Referrals', icon: '🎁' },
   { id: 'security', label: 'Security', icon: '🔒' },
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
+  { id: 'basefm', label: 'baseFM', icon: '📻' },
 ]
 
 export default function SettingsPage() {
@@ -337,6 +339,8 @@ export default function SettingsPage() {
             {activeTab === 'security' && <SecurityTab twoFactorEnabled={twoFactorEnabled} />}
 
             {activeTab === 'notifications' && <NotificationsTab initialNotifications={notifications} />}
+
+            {activeTab === 'basefm' && <BasefmTab />}
           </div>
         </main>
       </div>

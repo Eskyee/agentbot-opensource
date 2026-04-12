@@ -633,6 +633,7 @@ model users {
   email                  String                  @unique
   plan                   String?                 @default("solo")
   stripe_subscription_id String?
+  basefm_wallet          String?                 // Base wallet address for baseFM DJ identity
   created_at             DateTime?               @default(now()) @db.Timestamptz(6)
   updated_at             DateTime?               @default(now()) @db.Timestamptz(6)
   agents                 agents[]
