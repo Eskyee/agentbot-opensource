@@ -30,7 +30,7 @@ const FEATURES = [
   {
     icon: <Shield className="w-5 h-5" />,
     title: 'Token-Gated',
-    desc: 'Hold $RAVE or Solana Agentbot tokens for access. Community-first.',
+    desc: 'Hold $BASEFM or Solana Agentbot tokens for access. Community-first.',
   },
   {
     icon: <Users className="w-5 h-5" />,
@@ -41,8 +41,8 @@ const FEATURES = [
 
 const ACCESS_OPTIONS = [
   {
-    method: '$RAVE Token',
-    requirement: '1,250,000 $RAVE on Base',
+    method: '$BASEFM Token',
+    requirement: '1,250,000 $BASEFM on Base',
     chain: 'Base',
     status: 'Live',
   },

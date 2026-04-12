@@ -8,8 +8,8 @@ import { SectionHeader } from '@/app/components/shared/SectionHeader'
 import StatusPill from '@/app/components/shared/StatusPill'
 import type { BasefmDistributionState } from '@/app/lib/basefmDistribution'
 
-const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
-const RAVE_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 RAVE in wei
+const BASEFM_TOKEN_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
+const BASEFM_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 BASEFM in wei
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
 interface CommunityProgramResponse {
@@ -72,7 +72,7 @@ export default function DJStreamPage() {
   const { address, isConnected } = useAccount()
   const { connect } = useConnect()
   const { disconnect } = useDisconnect()
-  const [raveBalance, setRaveBalance] = useState<string | null>(null)
+  const [basefmBalance, setBasefmBalance] = useState<string | null>(null)
   const [stream, setStream] = useState<any>(null)
   const [streamSessionToken, setStreamSessionToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -99,7 +99,7 @@ export default function DJStreamPage() {
   }
 
   useEffect(() => {
-    if (address) checkRAVEBalance(address)
+    if (address) checkBASEFMBalance(address)
   }, [address])
 
   useEffect(() => {
@@ -201,7 +201,7 @@ export default function DJStreamPage() {
     }
   }, [])
 
-  const checkRAVEBalance = async (walletAddress: string) => {
+  const checkBASEFMBalance = async (walletAddress: string) => {
     try {
       const response = await fetch('https://mainnet.base.org', {
         method: 'POST',
@@ -210,7 +210,7 @@ export default function DJStreamPage() {
           jsonrpc: '2.0',
           method: 'eth_call',
           params: [{
-            to: RAVE_TOKEN_ADDRESS,
+            to: BASEFM_TOKEN_ADDRESS,
             data: '0x70a08231000000000000000000000000' + walletAddress.replace('0x', '')
           }, 'latest'],
           id: 1
@@ -218,7 +218,7 @@ export default function DJStreamPage() {
       })
       const result = await response.json()
       const balance = BigInt(result.result || '0x0')
-      setRaveBalance(balance.toString())
+      setBasefmBalance(balance.toString())
     } catch (e) {
       console.error('Error checking balance:', e)
     }
@@ -414,13 +414,13 @@ export default function DJStreamPage() {
     }
   }
 
-  const hasRaveAccess = Boolean(raveBalance && BigInt(raveBalance) >= RAVE_THRESHOLD)
+  const hasBasefmAccess = Boolean(basefmBalance && BigInt(basefmBalance) >= BASEFM_THRESHOLD)
   const claimedWallet = communityProgram?.rewards.walletAddress || null
   const hasCommunityPass = Boolean(
     communityProgram?.perks.some((perk) => perk.key === 'basefm-pass' && perk.unlocked)
   )
-  const hasAccess = hasRaveAccess || hasCommunityPass
-  const streamWallet = hasRaveAccess ? address || null : claimedWallet
+  const hasAccess = hasBasefmAccess || hasCommunityPass
+  const streamWallet = hasBasefmAccess ? address || null : claimedWallet
   const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
 
   return (
@@ -447,6 +447,16 @@ export default function DJStreamPage() {
               title="Rekordbox-Friendly Layout"
               description="Keep your normal Pioneer / Rekordbox muscle memory. Agentbot handles broadcast and relay control, not your deck workflow."
             />
+
+            <div className="mb-4 border border-blue-500/20 bg-blue-500/10 p-4">
+              <div className="text-[10px] uppercase tracking-widest text-blue-300 mb-2">Do This First</div>
+              <div className="space-y-2 text-sm text-zinc-200">
+                <p>1. Connect your wallet.</p>
+                <p>2. Confirm your access is eligible.</p>
+                <p>3. Name your set and press Go Live.</p>
+                <p>4. Send your mixer master out through OBS to the RTMP target below.</p>
+              </div>
+            </div>
 
             <div className="grid gap-px bg-zinc-800 sm:grid-cols-2 lg:grid-cols-4">
               <div className="bg-black p-4">
@@ -498,7 +508,7 @@ export default function DJStreamPage() {
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 01</span>
-                <span className="text-sm font-bold tracking-tight uppercase">Access Key</span>
+                <span className="text-sm font-bold tracking-tight uppercase">Connect Wallet</span>
               </div>
               {(isConnected || hasCommunityPass) && <StatusPill status="active" label={isConnected ? 'Connected' : 'Claimed'} />}
             </div>
@@ -558,17 +568,17 @@ export default function DJStreamPage() {
             )}
           </div>
 
-          {/* Step 2: RAVE Balance */}
+          {/* Step 2: BASEFM Balance */}
           {isConnected && (
             <div className="border border-zinc-800 bg-zinc-950 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 02</span>
-                  <span className="text-sm font-bold tracking-tight uppercase">Gate Check</span>
+                  <span className="text-sm font-bold tracking-tight uppercase">Check Access</span>
                 </div>
                 {hasAccess ? (
                   <StatusPill status="active" label="Eligible" />
-                ) : raveBalance ? (
+                ) : basefmBalance ? (
                   <StatusPill status="error" label="Insufficient" />
                 ) : (
                   <StatusPill status="idle" label="Checking" />
@@ -576,22 +586,22 @@ export default function DJStreamPage() {
               </div>
 
               <div className="space-y-4">
-                {raveBalance ? (
+                {basefmBalance ? (
                   <div>
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-3xl font-bold tracking-tight">
-                      {(Number(raveBalance) / 1e18).toLocaleString()}
+                      {(Number(basefmBalance) / 1e18).toLocaleString()}
                     </span>
-                    <span className="text-xs text-zinc-500 uppercase tracking-widest">RAVE</span>
+                    <span className="text-xs text-zinc-500 uppercase tracking-widest">BASEFM</span>
                   </div>
                   <p className="text-zinc-600 text-xs">
-                    Required: 1,250,000 RAVE · Gate: $RAVE token on Base
+                    Required: 1,250,000 BASEFM · Gate: $BASEFM token on Base
                   </p>
 
                   {!hasAccess && (
                     <div className="mt-4 border border-zinc-800 p-4">
                       <p className="text-zinc-500 text-xs mb-1">
-                        Need 1,250,000 RAVE to stream. Acquire on Uniswap or earn through baseFM.
+                        Need 1,250,000 BASEFM to stream. Acquire on Base and come back here.
                       </p>
                       <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
                         Stripe payment option coming soon
@@ -607,7 +617,7 @@ export default function DJStreamPage() {
                   <div className="border border-blue-500/20 bg-blue-500/10 p-4">
                   <p className="text-blue-300 text-xs uppercase tracking-widest">Agentbot Community Pass</p>
                   <p className="mt-2 text-sm text-zinc-200">
-                    Your {communityProgram?.rewards.currentTier?.label || 'claimed'} holder status unlocks a baseFM guest pass, so you can stream even without the full RAVE gate.
+                    Your {communityProgram?.rewards.currentTier?.label || 'claimed'} holder status unlocks a baseFM guest pass, so you can stream even without the full BASEFM gate.
                   </p>
                   <p className="mt-2 text-xs text-zinc-400">
                     Claimed wallet: <span className="font-mono text-zinc-200">{claimedWallet}</span>
@@ -623,7 +633,7 @@ export default function DJStreamPage() {
             <div className="border border-zinc-800 bg-zinc-950 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 03</span>
-                <span className="text-sm font-bold tracking-tight uppercase">Broadcast Arm</span>
+                <span className="text-sm font-bold tracking-tight uppercase">Name Your Set</span>
               </div>
 
               <div className="mb-6">
@@ -648,7 +658,7 @@ export default function DJStreamPage() {
               {streamWallet ? (
                 <p className="mt-3 text-xs text-zinc-500">
                   Access wallet: <span className="font-mono text-zinc-300">{streamWallet}</span>
-                  {hasCommunityPass && !hasRaveAccess ? ' · using Agentbot token claim path' : ' · using RAVE gate path'}
+                  {hasCommunityPass && !hasBasefmAccess ? ' · using Agentbot token claim path' : ' · using BASEFM gate path'}
                 </p>
               ) : null}
             </div>
@@ -657,8 +667,8 @@ export default function DJStreamPage() {
           <div className="border border-zinc-800 bg-zinc-950 p-6">
             <SectionHeader
               label="Distribution"
-              title="Origin + Relay Health"
-              description="Agentbot is canonical. Relays are downstream and tracked separately."
+              title="Station Health"
+              description="Agentbot is the main station. Relays like basefm.space sit downstream and are tracked separately."
             />
 
             <div className="space-y-4">
@@ -921,7 +931,7 @@ export default function DJStreamPage() {
                 <div className="border border-zinc-800 p-4">
                   <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Gate Source</span>
                   <span className="text-xs text-zinc-300 uppercase tracking-widest">
-                    {stream.accessGrantedBy === 'community-pass' ? 'Agentbot community pass' : 'RAVE gate'}
+                    {stream.accessGrantedBy === 'community-pass' ? 'Agentbot community pass' : 'BASEFM gate'}
                   </span>
                 </div>
 

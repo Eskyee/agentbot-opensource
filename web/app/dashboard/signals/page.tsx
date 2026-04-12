@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
 import StatusPill from '@/app/components/shared/StatusPill';
@@ -363,6 +364,20 @@ export default function SignalsPage() {
       />
 
       <DashboardContent>
+        <div className="mb-8 border border-zinc-800 bg-zinc-950 p-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">X Workflow</div>
+              <p className="mt-2 text-sm text-zinc-400">
+                Use this dashboard to monitor X signals, generate drafts, approve them, and publish from a connected X account.
+              </p>
+            </div>
+            <Link href="/learn/developers/x-agentbot" className="text-xs uppercase tracking-widest text-blue-400 hover:text-white">
+              Read the X guide →
+            </Link>
+          </div>
+        </div>
+
         {lastGenerated && (
           <p className="text-[10px] text-zinc-600 font-mono mb-4">
             Live from {data?.sources?.join(' + ')} · {lastGenerated}

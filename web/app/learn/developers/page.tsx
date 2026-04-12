@@ -64,6 +64,12 @@ const devSections = [
         tags: ['OpenClaw', 'Guide'],
       },
       {
+        title: 'Use X With Agentbot',
+        description: 'Set up X account publishing, signals, drafts, approvals, and the realistic X Live relay path for your agents.',
+        href: '/learn/developers/x-agentbot',
+        tags: ['X', 'Social'],
+      },
+      {
         title: 'Mux Assets API',
         description: 'Official Mux Assets API docs for replay retention, archive cleanup, and post-broadcast asset management.',
         href: 'https://www.mux.com/docs/api-reference/video/assets',

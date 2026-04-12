@@ -10,8 +10,8 @@ const MAX_SESSION_SECONDS = 7200 // 2 hours
 
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
-const RAVE_TOKEN_ADDRESS = '0xdf3c79a5759eeedb844e7481309a75037b8e86f5'
-const RAVE_TOKEN_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 RAVE in wei
+const BASEFM_TOKEN_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
+const BASEFM_TOKEN_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 BASEFM in wei
 
 type ActiveDjSession = {
   id: number
@@ -131,7 +131,7 @@ async function getAuthorizedActiveSession(request: NextRequest) {
   return { activeSession }
 }
 
-async function verifyRAVEBalance(walletAddress: string): Promise<boolean> {
+async function verifyBASEFMBalance(walletAddress: string): Promise<boolean> {
   try {
     const response = await fetch('https://mainnet.base.org', {
       method: 'POST',
@@ -141,7 +141,7 @@ async function verifyRAVEBalance(walletAddress: string): Promise<boolean> {
         method: 'eth_call',
         params: [
           {
-            to: RAVE_TOKEN_ADDRESS,
+            to: BASEFM_TOKEN_ADDRESS,
             data: '0x70a08231000000000000000000000000' + walletAddress.replace('0x', ''),
           },
           'latest',
@@ -151,9 +151,9 @@ async function verifyRAVEBalance(walletAddress: string): Promise<boolean> {
     })
     const result = await response.json()
     const balance = BigInt(result.result || '0x0')
-    return balance >= RAVE_TOKEN_THRESHOLD
+    return balance >= BASEFM_TOKEN_THRESHOLD
   } catch (error) {
-    console.error('Error verifying RAVE balance:', error)
+    console.error('Error verifying BASEFM balance:', error)
     return false
   }
 }
@@ -203,8 +203,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Wallet address required' }, { status: 400 })
     }
 
-    const [hasRaveAccess, communityProgram] = await Promise.all([
-      verifyRAVEBalance(wallet),
+    const [hasBasefmAccess, communityProgram] = await Promise.all([
+      verifyBASEFMBalance(wallet),
       session?.user?.id ? getCommunityProgramForUser(session.user.id).catch(() => null) : Promise.resolve(null),
     ])
     const claimedWallet = communityProgram?.rewards.walletAddress || null
@@ -215,16 +215,16 @@ export async function POST(request: NextRequest) {
 
     const claimedWalletMatches =
       Boolean(claimedWallet) && claimedWallet!.toLowerCase() === wallet.toLowerCase()
-    const canUseCommunityPass = !hasRaveAccess && hasCommunityPass && claimedWalletMatches
+    const canUseCommunityPass = !hasBasefmAccess && hasCommunityPass && claimedWalletMatches
 
-    if (!hasRaveAccess && !hasCommunityPass) {
+    if (!hasBasefmAccess && !hasCommunityPass) {
       return NextResponse.json(
-        { error: 'Insufficient RAVE tokens or community guest pass. Need 1,250,000 RAVE or a Builder/Whale Agentbot claim.' },
+        { error: 'Insufficient BASEFM tokens or community guest pass. Need 1,250,000 BASEFM or a Builder/Whale Agentbot claim.' },
         { status: 403 }
       )
     }
 
-    if (!hasRaveAccess && hasCommunityPass && !canUseCommunityPass) {
+    if (!hasBasefmAccess && hasCommunityPass && !canUseCommunityPass) {
       return NextResponse.json(
         {
           error: 'Community guest pass only works with your claimed Agentbot wallet.',
@@ -234,7 +234,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const streamWallet = hasRaveAccess ? wallet : claimedWallet!
+    const streamWallet = hasBasefmAccess ? wallet : claimedWallet!
 
     const existingSessions = await getCurrentSessionsForWallet(streamWallet)
     const activeExistingSession = existingSessions[0] || null
@@ -322,7 +322,7 @@ export async function POST(request: NextRequest) {
         fullRtmpUrl: `${MUX_RTMP_URL}/${stream.stream_key}`,
         playbackId: stream.playback_ids?.[0]?.id || null,
         status: stream.status,
-        accessGrantedBy: hasRaveAccess ? 'rave' : 'community-pass',
+        accessGrantedBy: hasBasefmAccess ? 'basefm' : 'community-pass',
       },
       session: {
         id: sessionRecord.id,
