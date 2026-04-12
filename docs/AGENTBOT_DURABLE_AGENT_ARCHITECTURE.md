@@ -12,6 +12,17 @@ The Vercel guide for Claude Managed Agents has several strong architectural idea
 
 Agentbot should steal those ideas.
 
+Primary upstream references:
+
+- Vercel Workflow DevKit for Next.js:
+  `https://useworkflow.dev/docs/getting-started/next`
+- Vercel Sign in with Vercel:
+  `https://vercel.com/docs/sign-in-with-vercel/getting-started`
+- Anthropic Managed Agent vaults:
+  `https://platform.claude.com/docs/en/managed-agents/vaults`
+- Anthropic Managed Agent tools:
+  `https://platform.claude.com/docs/en/managed-agents/tools`
+
 It should **not** copy the product identity.
 
 Agentbot still remains:
@@ -134,6 +145,14 @@ Use durable workflows for:
 - event replay to the UI
 - pause/resume interaction loops
 
+This follows the Workflow DevKit pattern directly:
+
+- wrap Next config with `withWorkflow()`
+- use `"use workflow"` for orchestration
+- use `"use step"` for side effects
+- start runs from route handlers
+- expose replayable history through server-side readable routes
+
 ## Recommended Data Model
 
 Add a session metadata table for durable workflow-backed sessions.
@@ -254,6 +273,12 @@ These should be:
 - encrypted at rest
 - stored per user
 - exposed to workflows/tools only when needed
+
+Auth direction:
+
+- keep the current Agentbot auth working
+- evaluate `Sign in with Vercel` as a strong future auth/provider option for operator and team-facing lanes
+- do not block current product work on a full auth migration before the session/orchestration layer is mature
 
 ## Recommended Interfaces
 

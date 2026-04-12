@@ -3,6 +3,7 @@
 import { defineHook, getWritable } from "workflow";
 import { generateXDraft } from "@/app/lib/xDraftGenerator";
 import { appendXDraft } from "@/app/lib/xDrafts";
+import { prisma } from "@/app/lib/prisma";
 
 export type ManagedAgentEvent = {
   id: string;
@@ -13,17 +14,56 @@ export type ManagedAgentEvent = {
 
 export const xSocialMessageHook = defineHook<{ text: string; tone?: string }>();
 
-function makeEvent(type: string, payload: Record<string, unknown>): ManagedAgentEvent {
+function makeEvent(eventId: string, type: string, payload: Record<string, unknown>): ManagedAgentEvent {
   return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+    id: eventId,
     type,
     payload,
     occurredAt: new Date().toISOString(),
   };
 }
 
-async function emit(writer: WritableStreamDefaultWriter<ManagedAgentEvent>, type: string, payload: Record<string, unknown>) {
-  await writer.write(makeEvent(type, payload));
+async function persistEventStep(input: {
+  sessionId: string;
+  eventId: string;
+  type: string;
+  payload: Record<string, unknown>;
+  occurredAt: string;
+}) {
+  "use step";
+  await prisma.managedAgentEvent.upsert({
+    where: { eventId: input.eventId },
+    update: {
+      type: input.type,
+      payload: input.payload,
+      occurredAt: new Date(input.occurredAt),
+    },
+    create: {
+      sessionId: input.sessionId,
+      eventId: input.eventId,
+      type: input.type,
+      payload: input.payload,
+      occurredAt: new Date(input.occurredAt),
+    },
+  });
+}
+
+async function emit(
+  writer: WritableStreamDefaultWriter<ManagedAgentEvent>,
+  sessionId: string,
+  eventId: string,
+  type: string,
+  payload: Record<string, unknown>
+) {
+  const event = makeEvent(eventId, type, payload);
+  await persistEventStep({
+    sessionId,
+    eventId,
+    type,
+    payload,
+    occurredAt: event.occurredAt,
+  });
+  await writer.write(event);
 }
 
 async function generateDraftStep(input: { text: string; tone: string }) {
@@ -40,17 +80,17 @@ async function saveDraftStep(input: { userId: string; text: string; draft: strin
   });
 }
 
-async function processTurn(userId: string, text: string, tone: string) {
+async function processTurn(sessionId: string, userId: string, turnIndex: number, text: string, tone: string) {
   const writer = getWritable<ManagedAgentEvent>().getWriter();
   try {
-    await emit(writer, "user.message", { text, tone });
-    await emit(writer, "signal.detected", { text });
+    await emit(writer, sessionId, `${sessionId}:turn-${turnIndex}:user-message`, "user.message", { text, tone });
+    await emit(writer, sessionId, `${sessionId}:turn-${turnIndex}:signal-detected`, "signal.detected", { text });
 
     const draft = await generateDraftStep({ text, tone });
     const savedDraft = await saveDraftStep({ userId, text, draft, tone });
 
-    await emit(writer, "draft.generated", { draft, tone, draftId: savedDraft.id });
-    await emit(writer, "approval.required", { draft, tone, draftId: savedDraft.id });
+    await emit(writer, sessionId, `${sessionId}:turn-${turnIndex}:draft-generated`, "draft.generated", { draft, tone, draftId: savedDraft.id });
+    await emit(writer, sessionId, `${sessionId}:turn-${turnIndex}:approval-required`, "approval.required", { draft, tone, draftId: savedDraft.id });
   } finally {
     writer.releaseLock();
   }
@@ -63,13 +103,15 @@ export async function xSocialSessionWorkflow(input: {
   initialMessage: string;
   initialTone: string;
 }) {
-  await processTurn(input.userId, input.initialMessage, input.initialTone);
+  let turnIndex = 0;
+  await processTurn(input.internalSessionId, input.userId, turnIndex, input.initialMessage, input.initialTone);
 
   const hook = xSocialMessageHook.create({
     token: `x-social:${input.internalSessionId}`,
   });
 
   for await (const { text, tone } of hook) {
-    await processTurn(input.userId, text, tone || "direct");
+    turnIndex += 1;
+    await processTurn(input.internalSessionId, input.userId, turnIndex, text, tone || "direct");
   }
 }

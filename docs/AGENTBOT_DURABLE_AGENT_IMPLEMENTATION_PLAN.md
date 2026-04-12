@@ -4,6 +4,17 @@
 
 Implement durable, replayable, resumable agent sessions in Agentbot using the workflow primitives already present in the repo, while keeping OpenClaw as the managed runtime layer.
 
+Reference docs:
+
+- Workflow DevKit for Next.js:
+  `https://useworkflow.dev/docs/getting-started/next`
+- Vercel Sign in with Vercel:
+  `https://vercel.com/docs/sign-in-with-vercel/getting-started`
+- Anthropic Managed Agent vaults:
+  `https://platform.claude.com/docs/en/managed-agents/vaults`
+- Anthropic Managed Agent tools:
+  `https://platform.claude.com/docs/en/managed-agents/tools`
+
 ## Why Now
 
 Agentbot now has:
@@ -163,6 +174,12 @@ Medium term:
   - scope
   - access policy
 
+Auth note:
+
+- keep the current auth path working
+- evaluate `Sign in with Vercel` as a future auth/provider option for managed-session and operator-facing lanes
+- do not block workflow/session rollout on a full auth migration
+
 Suggested internal API:
 
 - `getOrCreateVaultForUser(userId)`
@@ -250,6 +267,7 @@ Do not use it for:
 ### Phase 4
 
 - reuse the same session architecture for runtime diagnostics
+- decide whether `Sign in with Vercel` should become a first-class auth provider for managed-session/operator flows
 
 ## Success Criteria
 

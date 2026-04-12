@@ -35,7 +35,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    return NextResponse.json(row);
+    const events = await prisma.managedAgentEvent.findMany({
+      where: { sessionId: row.id },
+      orderBy: { occurredAt: 'asc' },
+      select: {
+        id: true,
+        eventId: true,
+        type: true,
+        payload: true,
+        occurredAt: true,
+        processedAt: true,
+      },
+    });
+
+    return NextResponse.json({
+      ...row,
+      tailing: Boolean(row.workflowRunId),
+      events,
+    });
   } catch (error) {
     console.error("Managed agent transcript error:", error);
     return NextResponse.json({ error: "Failed to load session metadata" }, { status: 500 });
