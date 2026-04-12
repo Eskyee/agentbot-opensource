@@ -634,14 +634,14 @@ export function InstanceControlPanel({
                   instance.ffmpegAvailable
                     ? 'Ready'
                     : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
-                      ? 'Missing'
+                      ? 'Not Installed'
                       : 'Unknown'
                 }
                 detail={
                   instance.ffmpegAvailable
                     ? (instance.ffmpegVersion || 'Installed')
                     : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
-                      ? 'Needed for autonomous baseFM DJ output'
+                      ? 'Upgrade your runtime to install — needed for baseFM broadcasting'
                       : 'Status unavailable — runtime not fully reachable'
                 }
               />

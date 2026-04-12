@@ -52,6 +52,9 @@ export default function GuidePage() {
           <Q q="What does 'FFmpeg: Unknown' mean?">
             When your runtime&apos;s <code className="text-zinc-300">/api/status</code> endpoint is unreachable, we cannot confirm whether FFmpeg is installed. It does not mean FFmpeg is missing — it means the runtime is not fully responding. If your runtime shows Healthy but FFmpeg shows Unknown, try a Redeploy or Upgrade to get the latest managed image, which includes FFmpeg pre-installed.
           </Q>
+          <Q q="What does 'FFmpeg: Not Installed' mean?">
+            Your runtime responded and reported that FFmpeg is not present on this image. FFmpeg is required for autonomous baseFM broadcasting. To fix it: hit <strong className="text-zinc-300">Upgrade</strong> on your dashboard — this redeploys with the latest managed OpenClaw image which has FFmpeg pre-installed. If Upgrade does not fix it, use <strong className="text-zinc-300">Agentbot Recovery</strong> to repair the runtime config. The install typically takes under 2 minutes.
+          </Q>
           <Q q="How do I restart or repair my runtime?">
             From the Instance Controls panel on your dashboard:
             <ul className="mt-1 space-y-1 list-disc list-inside">

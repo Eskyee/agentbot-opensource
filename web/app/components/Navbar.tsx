@@ -8,39 +8,36 @@ import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
 
 // ─── Nav structure ────────────────────────────────────────────────────────────
-// Logged-out: segments visitors into Platform / Music / Developers / Community
+// Logged-out: Explore ▾ | Build ▾ | Community ▾ | Pricing (flat)
+//   — grouped by user intent, not taxonomy
+//   — Pricing stays flat (highest-intent conversion page)
 // Logged-in:  task-focused — Dashboard, baseFM, Agents, Network ▾
 
-const PLATFORM_LINKS = [
-  { href: "/demo",         label: "Demo",         detail: "See Agentbot in action" },
-  { href: "/pricing",      label: "Pricing",      detail: "Plans from £29/mo" },
-  { href: "/agents",       label: "Agents",       detail: "Browse available agents" },
-  { href: "/marketplace",  label: "Marketplace",  detail: "Skills, tools and integrations" },
-  { href: "/capabilities", label: "Capabilities", detail: "What agents can do" },
-  { href: "/use-cases",    label: "Use Cases",    detail: "Real-world applications" },
+const EXPLORE_LINKS = [
+  { href: "/demo",        label: "Demo",         detail: "See Agentbot in action" },
+  { href: "/why",         label: "Why Agentbot", detail: "The case for agent infrastructure" },
+  { href: "/basefm/live", label: "baseFM Live",  detail: "Live underground radio — on now" },
+  { href: "/agents",      label: "Agents",       detail: "Browse available agents" },
+  { href: "/marketplace", label: "Marketplace",  detail: "Skills, tools and integrations" },
+  { href: "/advertise",   label: "Sponsor",      detail: "Reach the underground" },
 ]
 
-const MUSIC_LINKS = [
-  { href: "/basefm/live",  label: "baseFM Live",   detail: "Live underground radio" },
-  { href: "/basefm",       label: "DJ Streaming",  detail: "Go live with your set" },
-  { href: "/advertise",    label: "Advertise",     detail: "Reach the underground" },
-]
-
-const DEVELOPER_LINKS = [
-  { href: "/documentation", label: "Docs",          detail: "Platform documentation" },
+const BUILD_LINKS = [
+  { href: "/documentation", label: "Docs",        detail: "Platform documentation" },
+  { href: "/guide",          label: "Guide",       detail: "Dashboard, skills and OpenClaw" },
+  { href: SOUL_DASHBOARD_URL, label: "Borg",       detail: "Soul dashboard for agents", external: true },
+  { href: "/skills",         label: "Skills API",  detail: "Build and publish agent skills" },
   { href: "https://github.com/Eskyee/agentbot-opensource", label: "Open Source", detail: "GitHub — MIT licensed", external: true },
-  { href: "https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource", label: "Gitlawb", detail: "Decentralised git for agents", external: true },
-  { href: "https://deepwiki.com/Eskyee/agentbot-opensource", label: "DeepWiki",    detail: "AI-generated codebase docs", external: true },
-  { href: "/skills",        label: "Skills API",    detail: "Build and publish skills" },
+  { href: "https://deepwiki.com/Eskyee/agentbot-opensource", label: "DeepWiki", detail: "AI-generated codebase docs", external: true },
 ]
 
 const COMMUNITY_LINKS = [
-  { href: "/blog",          label: "Blog",          detail: "Updates and thinking" },
-  { href: "/jobs",          label: "Jobs",          detail: "Work with AI-native teams" },
-  { href: "/token",         label: "$AGENTBOT",     detail: "Community token on Solana" },
-  { href: "/claim",         label: "Claim Credits", detail: "Holders earn platform credits" },
-  { href: "/buddies",       label: "Buddies",       detail: "Agent network" },
-  { href: "/news",          label: "News",          detail: "Platform and ecosystem news" },
+  { href: "/blog",    label: "Blog",         detail: "Updates, thinking and releases" },
+  { href: "/news",    label: "News",         detail: "Platform and ecosystem news" },
+  { href: "/jobs",    label: "Jobs",         detail: "Work with AI-native teams" },
+  { href: "/token",   label: "$AGENTBOT",    detail: "Community token on Solana" },
+  { href: "/claim",   label: "Claim Credits",detail: "Holders earn platform credits" },
+  { href: "/buddies", label: "Buddies",      detail: "Agent network and community" },
 ]
 
 const NETWORK_LINKS = [
@@ -158,12 +155,12 @@ export default function Navbar() {
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
             </>
           ) : (
-            // Logged-out: discovery-focused
+            // Logged-out: intent-focused
             <>
-              <Dropdown label="Platform"    items={PLATFORM_LINKS}   current={pathname} />
-              <Dropdown label="Music"       items={MUSIC_LINKS}      current={pathname} />
-              <Dropdown label="Developers"  items={DEVELOPER_LINKS}  current={pathname} />
-              <Dropdown label="Community"   items={COMMUNITY_LINKS}  current={pathname} />
+              <Dropdown label="Explore"    items={EXPLORE_LINKS}    current={pathname} />
+              <Dropdown label="Build"      items={BUILD_LINKS}      current={pathname} />
+              <Dropdown label="Community"  items={COMMUNITY_LINKS}  current={pathname} />
+              <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
             </>
           )}
         </div>
@@ -195,6 +192,9 @@ export default function Navbar() {
             </>
           ) : (
             <>
+              <Link href="/guide" className="text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider">
+                Guide
+              </Link>
               <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
                 Sign in
               </Link>
@@ -262,28 +262,25 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <MobileSection label="Platform">
+                <MobileSection label="Explore">
                   <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
-                  <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
+                  <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
+                  <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="/capabilities" onClick={closeMenu}>Capabilities</MobileLink>
-                  <MobileLink href="/use-cases" onClick={closeMenu}>Use Cases</MobileLink>
+                  <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
+                  <MobileLink href="/advertise" onClick={closeMenu}>Sponsor</MobileLink>
                 </MobileSection>
-                <MobileSection label="Music">
-                  <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
-                  <MobileLink href="/basefm" onClick={closeMenu}>DJ Streaming</MobileLink>
-                  <MobileLink href="/advertise" onClick={closeMenu}>Advertise on baseFM</MobileLink>
-                </MobileSection>
-                <MobileSection label="Developers">
+                <MobileSection label="Build">
                   <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
-                  <MobileLink href="https://github.com/Eskyee/agentbot-opensource" onClick={closeMenu} external>Open Source</MobileLink>
-                  <MobileLink href="https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource" onClick={closeMenu} external>Gitlawb</MobileLink>
-                  <MobileLink href="https://deepwiki.com/Eskyee/agentbot-opensource" onClick={closeMenu} external>DeepWiki</MobileLink>
+                  <MobileLink href="/guide" onClick={closeMenu}>Guide</MobileLink>
+                  <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu} external>Borg</MobileLink>
                   <MobileLink href="/skills" onClick={closeMenu}>Skills API</MobileLink>
+                  <MobileLink href="https://github.com/Eskyee/agentbot-opensource" onClick={closeMenu} external>Open Source</MobileLink>
                 </MobileSection>
                 <MobileSection label="Community">
                   <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
+                  <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
                   <MobileLink href="/token" onClick={closeMenu}>$AGENTBOT Token</MobileLink>
                   <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
