@@ -44,6 +44,8 @@ function VerifyContent() {
   const [verified, setVerified] = useState(false)
   const [verifiedResult, setVerifiedResult] = useState<VerifiedResult | null>(null)
   const [widgetReady, setWidgetReady] = useState(false)
+  const [statusLoading, setStatusLoading] = useState(false)
+  const [verificationError, setVerificationError] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetMounted = useRef(false)
   const urlAgentId = searchParams.get('id')
@@ -88,9 +90,57 @@ function VerifyContent() {
     document.head.appendChild(script)
   }, [agent?.agentId])
 
+  useEffect(() => {
+    if (!agent?.agentId) return
+
+    let active = true
+
+    const fetchVerificationStatus = async () => {
+      setStatusLoading(true)
+      setVerificationError(null)
+
+      try {
+        const response = await fetch(`/api/agents/${agent.agentId}/verify`, {
+          cache: 'no-store',
+        })
+
+        const data = await response.json().catch(() => ({}))
+
+        if (!active) return
+
+        if (!response.ok) {
+          throw new Error(data?.error || 'Failed to load verification status')
+        }
+
+        if (data?.verified) {
+          setVerified(true)
+          setVerifiedResult({
+            agentPublicKey: data.verifierAddress || '',
+            agentKeyHash: data.attestationUid || '',
+            humanId: data.verificationType || undefined,
+          })
+        } else {
+          setVerified(false)
+          setVerifiedResult(null)
+        }
+      } catch (error) {
+        if (!active) return
+        setVerificationError(error instanceof Error ? error.message : 'Failed to load verification status')
+      } finally {
+        if (active) setStatusLoading(false)
+      }
+    }
+
+    fetchVerificationStatus()
+
+    return () => {
+      active = false
+    }
+  }, [agent?.agentId])
+
   // Mount the widget once script is ready + container exists
   useEffect(() => {
-    if (!widgetReady || !containerRef.current || !agent?.agentId || widgetMounted.current) return
+    if (!widgetReady || !containerRef.current || !agent?.agentId || widgetMounted.current || verified) return
     if (!window.SelfClaw) return
     widgetMounted.current = true
 
@@ -105,7 +155,7 @@ function VerifyContent() {
         setVerifiedResult(result)
         // Record verification on our backend
         try {
-          await fetch(`/api/agents/${agent.agentId}/verify`, {
+          const response = await fetch(`/api/agents/${agent.agentId}/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -114,15 +164,20 @@ function VerifyContent() {
               walletAddress: result.agentPublicKey,
             }),
           })
+          const data = await response.json().catch(() => ({}))
+          if (!response.ok) {
+            throw new Error(data?.error || 'Failed to record verification')
+          }
         } catch (e) {
           console.error('Failed to record verification:', e)
+          setVerificationError(e instanceof Error ? e.message : 'Failed to record verification')
         }
       },
       onError: (err) => {
         console.error('SelfClaw verification error:', err)
       },
     })
-  }, [widgetReady, agent?.agentId])
+  }, [widgetReady, agent?.agentId, verified])
 
   if (loading) {
     return (
@@ -206,6 +261,19 @@ function VerifyContent() {
             Loading verification widget…
           </div>
         )}
+
+        {statusLoading ? (
+          <div className="flex items-center gap-2 text-zinc-500 text-xs mt-3">
+            <span className="w-2 h-2 rounded-full bg-zinc-600 animate-pulse" />
+            Loading current verification status…
+          </div>
+        ) : null}
+
+        {verificationError ? (
+          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            {verificationError}
+          </div>
+        ) : null}
 
         <p className="text-[10px] text-zinc-600 mt-4 leading-relaxed">
           You&apos;ll need the <strong className="text-zinc-400">Self app</strong> on your phone.
