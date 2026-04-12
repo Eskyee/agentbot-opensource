@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { start } from "@workflow/core/runtime";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/app/lib/getAuthSession";
+import { appendManagedAgentEvent } from "@/app/lib/managedAgentEvents";
 import { prisma } from "@/app/lib/prisma";
 import { buildManagedVaultContextForUser } from "@/app/lib/vault";
 import { xSocialSessionWorkflow } from "@/app/workflows/x-social-session";
@@ -71,6 +72,18 @@ export async function POST(request: NextRequest) {
         environmentId: vault.vaultId,
       },
     });
+
+    await appendManagedAgentEvent({
+      sessionId: id,
+      type: 'session.created',
+      payload: {
+        text: text.trim(),
+        tone: String(tone),
+        workflowRunId: run.runId,
+      },
+    }).catch((error) => {
+      console.error('Managed agent session.created append failed:', error)
+    })
 
     return NextResponse.json({ id, runId: run.runId, vaultId: vault.vaultId, credentialIds: vault.credentialIds });
   } catch (error) {

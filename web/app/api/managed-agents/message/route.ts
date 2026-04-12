@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/app/lib/getAuthSession";
+import { appendManagedAgentEvent } from "@/app/lib/managedAgentEvents";
 import { prisma } from "@/app/lib/prisma";
 import { xSocialMessageHook } from "@/app/workflows/x-social-session";
 
@@ -32,6 +33,17 @@ export async function POST(request: NextRequest) {
       where: { id: row.id },
       data: { updatedAt: new Date() },
     });
+
+    await appendManagedAgentEvent({
+      sessionId,
+      type: 'session.resumed',
+      payload: {
+        text: text.trim(),
+        tone: String(tone),
+      },
+    }).catch((error) => {
+      console.error('Managed agent session.resumed append failed:', error)
+    })
 
     await xSocialMessageHook.resume(`x-social:${sessionId}`, {
       text: text.trim(),
