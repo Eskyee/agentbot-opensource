@@ -44,6 +44,7 @@ export const navSections = [
       { label: 'Git City',         href: '/dashboard/git-city',           icon: '⌂' },
       { label: 'Gitlawb Network',  href: '/dashboard/gitlawb-network',    icon: '◉' },
       { label: 'Community',        href: '/dashboard/community',          icon: '✦' },
+      { label: 'Mix Uploads',      href: '/dashboard/mixtape',            icon: '⏶' },
       { label: 'Jobs',             href: '/jobs',                         icon: '◈' },
     ],
   },
@@ -61,6 +62,7 @@ export const navSections = [
     items: [
       { label: 'ClawMerchants', href: '/dashboard/market-intel',  icon: '▣' },
       { label: 'Metrics',       href: '/dashboard/analytics',     icon: '◌' },
+      { label: 'Usage & Spend', href: '/dashboard/cost',          icon: '⬡' },
       { label: 'System Pulse',  href: '/dashboard/system-pulse',  icon: '☼' },
       { label: 'Daily Brief',   href: '/dashboard/daily-brief',   icon: '⇄' },
       { label: 'Workflows',     href: '/dashboard/workflows',     icon: '⊞' },
@@ -75,6 +77,7 @@ export const navSections = [
     items: [
       { label: 'Billing',   href: '/billing',             icon: '☆' },
       { label: 'Domains',   href: '/dashboard/domains',   icon: '🌍' },
+      { label: 'Guide',     href: '/guide',               icon: '?' },
       { label: 'Feedback',  href: '/dashboard/feedback',  icon: '💬' },
       { label: 'Settings',  href: '/settings',            icon: '⚙' },
       { label: 'Showcase',  href: '/showcase',            icon: '✧' },
