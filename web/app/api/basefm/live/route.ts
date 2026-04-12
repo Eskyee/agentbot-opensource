@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
-import { buildBasefmDistribution, listBasefmRelayDestinations } from '@/app/lib/basefmDistribution'
+import { buildBasefmDistribution, listBasefmRelayDestinations, verifyRelayPlaybackCoverage } from '@/app/lib/basefmDistribution'
 
 interface DjSessionRow {
   id: number
@@ -216,10 +216,11 @@ export async function GET() {
 
     const primaryDj = liveDJs[0] || null
     const relays = await listBasefmRelayDestinations().catch(() => [])
+    const verifiedRelays = await verifyRelayPlaybackCoverage(primaryDj, relays).catch(() => relays)
     const distribution = buildBasefmDistribution({
       availability: liveDJs.length > 0 ? 'live' : 'degraded',
       primaryDj,
-      relays,
+      relays: verifiedRelays,
     })
 
     return NextResponse.json({

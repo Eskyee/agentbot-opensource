@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { buildBasefmDistribution, listBasefmRelayDestinations } from '@/app/lib/basefmDistribution'
+import { buildBasefmDistribution, listBasefmRelayDestinations, verifyRelayPlaybackCoverage } from '@/app/lib/basefmDistribution'
 import { prisma } from '@/app/lib/prisma'
 
 interface CachedSessionRow {
@@ -94,10 +94,11 @@ export async function GET() {
       : null
 
     const relays = await listBasefmRelayDestinations().catch(() => [])
+    const verifiedRelays = await verifyRelayPlaybackCoverage(primaryDj, relays).catch(() => relays)
     const distribution = buildBasefmDistribution({
       availability: primaryDj?.hlsUrl ? 'live' : 'degraded',
       primaryDj,
-      relays,
+      relays: verifiedRelays,
     })
 
     return NextResponse.json({ distribution })

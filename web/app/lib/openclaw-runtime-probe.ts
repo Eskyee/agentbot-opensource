@@ -92,11 +92,27 @@ export async function probeOpenClawRuntime(url: string): Promise<OpenClawRuntime
         ? statusPayload.version
         : DEFAULT_OPENCLAW_VERSION
 
+    const healthFfmpegAvailable =
+      typeof healthPayload?.ffmpeg?.available === 'boolean'
+        ? healthPayload.ffmpeg.available
+        : typeof healthPayload?.runtime?.ffmpeg?.available === 'boolean'
+          ? healthPayload.runtime.ffmpeg.available
+          : null
+    const healthFfmpegVersion =
+      typeof healthPayload?.ffmpeg?.version === 'string'
+        ? healthPayload.ffmpeg.version
+        : typeof healthPayload?.runtime?.ffmpeg?.version === 'string'
+          ? healthPayload.runtime.ffmpeg.version
+          : null
+
     const ffmpeg = {
-      available: Boolean(statusPayload?.runtime?.ffmpeg?.available),
+      available:
+        typeof statusPayload?.runtime?.ffmpeg?.available === 'boolean'
+          ? statusPayload.runtime.ffmpeg.available
+          : healthFfmpegAvailable === true,
       version: typeof statusPayload?.runtime?.ffmpeg?.version === 'string'
         ? statusPayload.runtime.ffmpeg.version
-        : null,
+        : healthFfmpegVersion,
     }
 
     const configured = statusPayload?.configured
@@ -147,6 +163,7 @@ export async function probeOpenClawRuntime(url: string): Promise<OpenClawRuntime
 
     if (healthOk && readyOk) {
       result.status = 'healthy'
+      result.reason = 'Legacy /api/status unavailable; using /healthz and /readyz'
       return result
     }
 

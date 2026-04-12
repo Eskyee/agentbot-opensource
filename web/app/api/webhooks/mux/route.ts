@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { deleteMuxAsset } from '@/app/lib/basefmMux'
 import { prisma } from '@/app/lib/prisma'
 
 /**
@@ -122,6 +123,11 @@ export async function POST(request: NextRequest) {
           // TRIGGER: Social Archive Post
         } else {
           console.log(`[PRUNE] Low res or short set detected (${data.id}). Queued for deletion.`)
+          if (data.id) {
+            await deleteMuxAsset(data.id).catch((error) => {
+              console.error('[MUX WEBHOOK] Failed to prune low-value asset:', error)
+            })
+          }
         }
         break
 

@@ -331,6 +331,7 @@ export function InstanceControlPanel({
     { label: 'Open Agentbot', href: instance.controlUiUrl || instance.url, external: true },
     { label: 'Skills Manager', href: skillsManagerUrl, external: true },
     { label: 'Config', href: configManagerUrl, external: true },
+    { label: 'Runtime Guide', href: '/learn/developers/openclaw-dashboard', external: false },
     { label: 'Billing', href: '/billing', external: false },
     { label: 'Channels', href: '/dashboard/channels', external: false },
     { label: 'Updates', href: '/dashboard/tech-updates', external: false },

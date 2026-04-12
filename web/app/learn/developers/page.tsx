@@ -57,6 +57,24 @@ const devSections = [
         href: '/learn/developers/gitlawb-network',
         tags: ['Gitlawb', 'DID'],
       },
+      {
+        title: 'OpenClaw Dashboard Guide',
+        description: 'Understand Mission Control, missing skill dependencies, runtime setup, and the DJ workflow without getting lost in operator details.',
+        href: '/learn/developers/openclaw-dashboard',
+        tags: ['OpenClaw', 'Guide'],
+      },
+      {
+        title: 'Use X With Agentbot',
+        description: 'Set up X account publishing, signals, drafts, approvals, and the realistic X Live relay path for your agents.',
+        href: '/learn/developers/x-agentbot',
+        tags: ['X', 'Social'],
+      },
+      {
+        title: 'Mux Assets API',
+        description: 'Official Mux Assets API docs for replay retention, archive cleanup, and post-broadcast asset management.',
+        href: 'https://www.mux.com/docs/api-reference/video/assets',
+        tags: ['Mux', 'Assets'],
+      },
     ],
   },
   {

@@ -5,6 +5,7 @@ const RAVE_TOKEN_ADDRESS = "0xdf3c79a5759eeedb844e7481309a75037b8e86f5";
 const RAVE_TOKEN_THRESHOLD = "5000000000000000000000"; // 5000 RAVE in wei
 const BASE_CHAIN_ID = 8453;
 const MUX_RTMP_URL = "rtmp://global-live.mux.com:5222/app";
+const MUX_ASSETS_DOCS_URL = "https://www.mux.com/docs/api-reference/video/assets";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.AGENTBOT_APP_URL || "https://agentbot.sh";
 const DEFAULT_STREAM_IMAGE = "https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje";
 
@@ -97,6 +98,13 @@ function getStreamUrl(playbackId) {
   };
 }
 
+function getMuxAssetDocs() {
+  return {
+    url: MUX_ASSETS_DOCS_URL,
+    note: "Use the Mux Assets API for replay retention, asset inspection, and cleanup after a baseFM set ends."
+  };
+}
+
 // Announce DJ going live (for agent to post)
 function formatLiveAnnouncement(djName, genre, listeners) {
   return {
@@ -117,6 +125,7 @@ module.exports = {
   getLiveDJs,
   createStream,
   getStreamUrl,
+  getMuxAssetDocs,
   getFfmpegCommand,
   formatLiveAnnouncement
 };

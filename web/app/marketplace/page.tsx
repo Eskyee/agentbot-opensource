@@ -94,6 +94,29 @@ export default async function MarketplacePage() {
 
         <MarketplaceClient templates={templates} />
 
+        <section className="mt-12 sm:mt-16 pt-8 border-t border-zinc-800">
+          <div className="max-w-3xl">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Verified Skill Market</span>
+            <h3 className="text-lg font-bold uppercase tracking-tight mb-3">Trust Before Money</h3>
+            <p className="text-sm text-zinc-400 leading-relaxed mb-6">
+              Users can sell and buy skills here, but every listing should pass staged verification first: static scan, publisher identity, install guardrails, and human review for anything non-trivial. The goal is closer to a verified plugin registry than a raw code dump.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                ['Scan', 'Block obvious risky code before listing'],
+                ['Verify', 'Bind listings to a real publisher identity'],
+                ['Sandbox', 'Test install and runtime behavior safely'],
+                ['Review', 'Manual approval before paid promotion'],
+              ].map(([label, body]) => (
+                <div key={label} className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">{label}</div>
+                  <p className="mt-2 text-xs text-zinc-400 leading-relaxed">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <div className="mt-12 sm:mt-16 pt-8 border-t border-zinc-800">
           <div className="max-w-2xl">
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Platform Integrity</span>

@@ -228,6 +228,88 @@ export async function probeRelayDestinationUrl(url: string): Promise<ProbeResult
   }
 }
 
+function extractPlaybackIdFromHlsUrl(value: string | null | undefined) {
+  if (!value) return null
+  const match = value.match(/stream\.mux\.com\/([^./?]+)\.m3u8/i)
+  return match?.[1] || null
+}
+
+async function verifyBasefmSpaceRelayPlayback(
+  relay: BasefmRelayDestination,
+  primaryDj: BasefmLiveDjLike
+): Promise<BasefmRelayDestination> {
+  if (!relay.viewerUrl || !primaryDj.playbackId) {
+    return relay
+  }
+
+  try {
+    const relayUrl = new URL(relay.viewerUrl)
+    const response = await fetch(`${relayUrl.origin}/api/streams?status=LIVE&limit=10`, {
+      cache: 'no-store',
+      headers: {
+        'User-Agent': 'Agentbot/baseFM relay playback verification',
+        Accept: 'application/json',
+      },
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    })
+
+    if (!response.ok) {
+      return {
+        ...relay,
+        status: 'degraded',
+        note: `Relay live API returned HTTP ${response.status}.`,
+      }
+    }
+
+    const payload = await response.json().catch(() => ({}))
+    const streams = Array.isArray(payload?.streams) ? payload.streams : []
+    const playbackIds = streams
+      .map((stream: { muxPlaybackId?: string | null; hlsPlaybackUrl?: string | null }) =>
+        stream.muxPlaybackId || extractPlaybackIdFromHlsUrl(stream.hlsPlaybackUrl)
+      )
+      .filter(Boolean)
+
+    if (playbackIds.includes(primaryDj.playbackId)) {
+      return {
+        ...relay,
+        status: 'healthy',
+        note: null,
+      }
+    }
+
+    return {
+      ...relay,
+      status: 'degraded',
+      note: 'Relay live API is not serving the current Agentbot playback id.',
+    }
+  } catch (error) {
+    return {
+      ...relay,
+      status: 'degraded',
+      note: error instanceof Error ? error.message : 'Relay playback verification failed.',
+    }
+  }
+}
+
+export async function verifyRelayPlaybackCoverage(
+  primaryDj: BasefmLiveDjLike | null,
+  relays: BasefmRelayDestination[]
+): Promise<BasefmRelayDestination[]> {
+  if (!primaryDj?.playbackId) {
+    return relays
+  }
+
+  return Promise.all(
+    relays.map(async (relay) => {
+      if (relay.key === 'basefm-space' && relay.enabled) {
+        return verifyBasefmSpaceRelayPlayback(relay, primaryDj)
+      }
+
+      return relay
+    })
+  )
+}
+
 export async function updateRelayProbeStatus(relayKey: string, result: ProbeResult) {
   const now = new Date()
 

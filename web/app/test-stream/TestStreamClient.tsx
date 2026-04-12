@@ -9,6 +9,7 @@ export default function TestStreamClient() {
   const [sessionToken, setSessionToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [archiveMode, setArchiveMode] = useState(false)
 
   const createStream = async () => {
     if (!wallet) {
@@ -59,7 +60,11 @@ export default function TestStreamClient() {
     try {
       const res = await fetch('/api/basefm/streams', {
         method: 'DELETE',
-        headers: sessionToken ? { 'x-basefm-session': sessionToken } : undefined,
+        headers: {
+          ...(sessionToken ? { 'x-basefm-session': sessionToken } : {}),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ archive: archiveMode }),
       })
       const data = await res.json()
       setResult(data)
@@ -127,8 +132,16 @@ export default function TestStreamClient() {
                 disabled={loading}
                 className="w-full bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
               >
-                {loading ? 'Ending...' : 'End Current Stream'}
+                {loading ? 'Ending...' : archiveMode ? 'End Set and Save Replay' : 'End Set'}
               </button>
+              <label className="flex items-center gap-2 text-sm text-zinc-400">
+                <input
+                  type="checkbox"
+                  checked={archiveMode}
+                  onChange={(e) => setArchiveMode(e.target.checked)}
+                />
+                Keep the replay instead of deleting it if archive credits are configured
+              </label>
               {sessionToken ? (
                 <p className="text-xs text-zinc-400 break-all">
                   Session token captured for teardown

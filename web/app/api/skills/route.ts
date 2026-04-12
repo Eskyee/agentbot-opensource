@@ -4,6 +4,7 @@ import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { deploySkillToAgent, removeSkillFromAgent } from '@/app/lib/agent-deploy'
 import { BASEFM_DJ_SKILL_CODE, BASEFM_DJ_SKILL_NAME, ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
+import { scanSkillMarketplaceInput } from '@/app/lib/skillMarketplaceSafety'
 
 // Default skills catalog — used as seed data if Skill table is empty
 const DEFAULT_SKILLS = [
@@ -165,6 +166,7 @@ export async function GET(request: Request) {
           downloads: true,
           rating: true,
           featured: true,
+          code: true,
         },
       }),
       prisma.skill.findMany({
@@ -188,19 +190,47 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
-      skills,
+      skills: skills.map((skill) => ({
+        ...skill,
+        scan: scanSkillMarketplaceInput({
+          name: skill.name,
+          description: skill.description,
+          code: skill.code,
+          author: skill.author,
+          featured: skill.featured,
+        }),
+      })),
       categories: categories.map(c => c.category),
-      featured: skills.filter(s => s.featured),
+      featured: skills.filter(s => s.featured).map((skill) => ({
+        ...skill,
+        scan: scanSkillMarketplaceInput({
+          name: skill.name,
+          description: skill.description,
+          code: skill.code,
+          author: skill.author,
+          featured: skill.featured,
+        }),
+      })),
       installedSkillIds,
     })
   } catch (error) {
     console.error('Skills fetch error:', error)
     // Graceful fallback to defaults if DB unavailable
-    let skills = DEFAULT_SKILLS.map((s, i) => ({ id: `default-${i}`, ...s }))
+    let skills = DEFAULT_SKILLS.map((s, i) => ({ id: `default-${i}`, ...s, code: s.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '' }))
     if (category && category !== 'all') skills = skills.filter(s => s.category === category)
     if (featured === 'true') skills = skills.filter(s => s.featured)
     const categories = [...new Set(DEFAULT_SKILLS.map(s => s.category))]
-    return NextResponse.json({ skills, categories, featured: skills.filter(s => s.featured), installedSkillIds: [] })
+    const withScan = skills.map((skill) => ({
+      ...skill,
+      scan: scanSkillMarketplaceInput({
+        name: skill.name,
+        description: skill.description,
+        code: skill.code,
+        author: skill.author,
+        featured: skill.featured,
+      }),
+    }))
+    return NextResponse.json({ skills: withScan, categories, featured: withScan.filter(s => s.featured), installedSkillIds: [] })
   }
 }
 
@@ -228,6 +258,21 @@ export async function POST(request: Request) {
     const skill = await prisma.skill.findUnique({ where: { id: skillId } })
     if (!skill) {
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 })
+    }
+
+    const scan = scanSkillMarketplaceInput({
+      name: skill.name,
+      description: skill.description,
+      code: skill.code,
+      author: skill.author,
+      featured: skill.featured,
+    })
+
+    if (!scan.installAllowed) {
+      return NextResponse.json(
+        { error: 'Skill blocked by marketplace safety checks', scan },
+        { status: 400 }
+      )
     }
 
     // Install skill (upsert to handle duplicates)
