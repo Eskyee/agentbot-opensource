@@ -78,16 +78,32 @@ function getApiKey(): string {
   return key;
 }
 
+function getRailwayTokenType(): 'project' | 'workspace' | 'account' | 'oauth' {
+  const raw = (process.env.RAILWAY_TOKEN_TYPE || 'account').trim().toLowerCase();
+  if (raw === 'project' || raw === 'workspace' || raw === 'account' || raw === 'oauth') {
+    return raw;
+  }
+  return 'account';
+}
+
 async function railwayGql<T = any>(
   query: string,
   variables: Record<string, unknown> = {}
 ): Promise<T> {
+  const key = getApiKey();
+  const headers = getRailwayTokenType() === 'project'
+    ? {
+        'Project-Access-Token': key,
+        'Content-Type': 'application/json',
+      }
+    : {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      };
+
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${getApiKey()}`,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30000),
   });

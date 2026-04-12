@@ -1,11 +1,35 @@
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
 
 type RailwayServiceNode = { id: string; name: string }
+type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
 
 function getRailwayApiKey() {
   const key = process.env.RAILWAY_API_KEY?.trim()
   if (!key) throw new Error('RAILWAY_API_KEY not configured')
   return key
+}
+
+function getRailwayTokenType(): RailwayTokenType {
+  const raw = process.env.RAILWAY_TOKEN_TYPE?.trim().toLowerCase()
+  if (raw === 'project' || raw === 'workspace' || raw === 'account' || raw === 'oauth') {
+    return raw
+  }
+  return 'account'
+}
+
+function getRailwayAuthHeaders() {
+  const key = getRailwayApiKey()
+  const tokenType = getRailwayTokenType()
+
+  return tokenType === 'project'
+    ? {
+        'Project-Access-Token': key,
+        'Content-Type': 'application/json',
+      }
+    : {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      }
 }
 
 export function getRailwayEnvironmentId() {
@@ -26,10 +50,7 @@ export async function railwayGql<T = unknown>(
 ): Promise<T> {
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${getRailwayApiKey()}`,
-      'Content-Type': 'application/json',
-    },
+    headers: getRailwayAuthHeaders(),
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
   })

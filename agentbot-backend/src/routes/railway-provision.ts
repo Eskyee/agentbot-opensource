@@ -17,6 +17,7 @@ import { authenticate } from '../middleware/auth'
 import * as crypto from 'crypto'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
 const OPENCLAW_HOME_DIR = '/root/.openclaw'
 const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`
 const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`
@@ -99,14 +100,23 @@ async function railwayGql<T = unknown>(
 ): Promise<T> {
   const key = process.env.RAILWAY_API_KEY
   if (!key) throw new Error('RAILWAY_API_KEY not configured')
+  const tokenType = ((process.env.RAILWAY_TOKEN_TYPE || 'account').trim().toLowerCase()) as RailwayTokenType
+  const headers =
+    tokenType === 'project'
+      ? {
+          'Project-Access-Token': key,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      : {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
 
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
   })

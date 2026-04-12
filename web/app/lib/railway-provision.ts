@@ -15,6 +15,7 @@
  */
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
 
 /**
  * Gateway wrapper image — built from gateway/ directory in the agentbot repo.
@@ -22,6 +23,28 @@ const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
  * The wrapper manages the gateway process — no start command needed.
  */
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.11'
+
+function getRailwayTokenType(): RailwayTokenType {
+  const raw = process.env.RAILWAY_TOKEN_TYPE?.trim().toLowerCase()
+  if (raw === 'project' || raw === 'workspace' || raw === 'account' || raw === 'oauth') {
+    return raw
+  }
+  return 'account'
+}
+
+function getRailwayAuthHeaders(key: string) {
+  return getRailwayTokenType() === 'project'
+    ? {
+        'Project-Access-Token': key,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      }
+    : {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      }
+}
 
 export function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
@@ -48,11 +71,7 @@ async function railwayGql<T = unknown>(
 
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
+    headers: getRailwayAuthHeaders(key),
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
   })
