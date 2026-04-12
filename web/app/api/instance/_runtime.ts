@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 
-export const OPENCLAW_CONTROLS_ENABLED =
-  process.env.ENABLE_OPENCLAW_CONTROLS !== 'false' &&
-  process.env.NEXT_PUBLIC_ENABLE_OPENCLAW_CONTROLS !== 'false'
+export const OPENCLAW_CONTROLS_ENABLED = true
 
 export function controlsDisabledResponse() {
   return NextResponse.json(
@@ -20,6 +19,24 @@ export async function getOwnedOpenClawUser(instanceId: string) {
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  }
+
+  if (isAdminEmail(session.user.email)) {
+    const user = await prisma.user.findFirst({
+      where: { openclawInstanceId: instanceId },
+      select: {
+        id: true,
+        openclawInstanceId: true,
+        openclawUrl: true,
+        plan: true,
+      },
+    })
+
+    if (!user?.openclawInstanceId) {
+      return { error: NextResponse.json({ error: 'No instance found. Please deploy first.' }, { status: 404 }) }
+    }
+
+    return { user }
   }
 
   const user = await prisma.user.findUnique({

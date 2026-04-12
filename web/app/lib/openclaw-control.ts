@@ -4,8 +4,7 @@ export const DEFAULT_OPENCLAW_CONTROL_UI_BASE = DEFAULT_OPENCLAW_GATEWAY_URL
   .replace(/\/(chat|skills|config)\/?$/, '')
   .replace(/\/$/, '')
 
-export const OPENCLAW_CONTROLS_ENABLED =
-  process.env.NEXT_PUBLIC_ENABLE_OPENCLAW_CONTROLS !== 'false'
+export const OPENCLAW_CONTROLS_ENABLED = true
 
 type ControlView = 'chat' | 'skills' | 'config'
 
