@@ -69,14 +69,26 @@ export async function POST(request: Request) {
               await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
             }
           } catch (err) {
-            console.error(`[Webhook] Failed to update by userId, trying email:`, err)
+            console.error(`[Webhook] Failed to update by userId ${userId}, trying email:`, err)
             if (customerEmail) {
-              await prisma.user.upsert({
-                where: { email: customerEmail },
-                update: subscriptionData,
-                create: { email: customerEmail, ...subscriptionData },
-              })
-              await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
+              // Update only — never create. Creating a new user here risks duplicate
+              // accounts when the userId in metadata is stale or incorrect.
+              try {
+                await prisma.user.update({
+                  where: { email: customerEmail },
+                  data: subscriptionData,
+                })
+                console.log(`[Webhook] Updated user by email ${customerEmail} to plan ${mappedPlan}`)
+                await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
+              } catch (emailErr) {
+                console.error(`[Webhook] No user found for email ${customerEmail} — skipping to avoid duplicate account`)
+                await sendAlert({
+                  title: 'Stripe Webhook Issue',
+                  message: `userId ${userId} not found and no user with email ${customerEmail} — skipping to avoid duplicate account.`,
+                  severity: 'warning',
+                  fields: { UserId: userId, Email: customerEmail, Issue: 'userId update failed, email fallback also failed' },
+                })
+              }
             }
           }
         } else if (customerEmail) {
