@@ -1,7 +1,7 @@
 /**
  * POST /api/openclaw/ensure-compatibility
- * 
- * Ensures user's OpenClaw setup is compatible with 2026.4.2
+ *
+ * Ensures user's OpenClaw setup is compatible with 2026.4.11
  * - Migrates plugin configs
  * - Fixes agent pairing scope
  * - Generates proper tokens
