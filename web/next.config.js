@@ -11,7 +11,7 @@ const nextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
-  turbopack: {},  // Silence Next.js 16 Turbopack/webpack conflict warning
+  turbopack: {}, // Silence Next.js 16 Turbopack/webpack conflict warning
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
