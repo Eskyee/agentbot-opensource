@@ -4,6 +4,10 @@ jest.mock('@/app/lib/prisma', () => ({
       findMany: jest.fn(),
       updateMany: jest.fn(),
     },
+    basefm_relay_destinations: {
+      upsert: jest.fn(),
+      findMany: jest.fn(),
+    },
   },
 }))
 
@@ -15,13 +19,23 @@ describe('/api/basefm/live', () => {
     findMany: jest.Mock
     updateMany: jest.Mock
   }
+  const mockedRelayDestinations = prisma.basefm_relay_destinations as unknown as {
+    upsert: jest.Mock
+    findMany: jest.Mock
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockedDjSessions.findMany.mockReset()
+    mockedDjSessions.updateMany.mockReset()
+    mockedRelayDestinations.upsert.mockReset()
+    mockedRelayDestinations.findMany.mockReset()
     process.env.MUX_TOKEN_ID = 'mux-token-id'
     process.env.MUX_TOKEN_SECRET = 'mux-token-secret'
     mockedDjSessions.findMany.mockResolvedValue([])
     mockedDjSessions.updateMany.mockResolvedValue({ count: 1 })
+    mockedRelayDestinations.upsert.mockResolvedValue({})
+    mockedRelayDestinations.findMany.mockResolvedValue([])
     global.fetch = jest.fn()
   })
 

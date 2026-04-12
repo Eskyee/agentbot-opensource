@@ -18,9 +18,11 @@ jest.mock('@/app/lib/prisma', () => ({
   prisma: {
     dj_sessions: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
   },
 }))
@@ -38,16 +40,25 @@ describe('/api/basefm/streams', () => {
   const mockedCommunityProgram = getCommunityProgramForUser as jest.Mock
   const mockedDjSessions = prisma.dj_sessions as unknown as {
     findFirst: jest.Mock
+    findMany: jest.Mock
     findUnique: jest.Mock
     create: jest.Mock
     update: jest.Mock
+    updateMany: jest.Mock
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockedDjSessions.findFirst.mockReset()
+    mockedDjSessions.findMany.mockReset()
+    mockedDjSessions.findUnique.mockReset()
+    mockedDjSessions.create.mockReset()
+    mockedDjSessions.update.mockReset()
+    mockedDjSessions.updateMany.mockReset()
     mockedSession.mockResolvedValue(null)
     mockedCommunityProgram.mockResolvedValue(null)
     mockedDjSessions.findFirst.mockResolvedValue(null)
+    mockedDjSessions.findMany.mockResolvedValue([])
     mockedDjSessions.findUnique.mockResolvedValue(null)
     mockedDjSessions.create.mockResolvedValue({
       id: 7,
@@ -61,6 +72,7 @@ describe('/api/basefm/streams', () => {
       status: 'active',
     })
     mockedDjSessions.update.mockResolvedValue({})
+    mockedDjSessions.updateMany.mockResolvedValue({ count: 1 })
     global.fetch = jest.fn()
   })
 
@@ -92,11 +104,19 @@ describe('/api/basefm/streams', () => {
     expect(mockedDjSessions.create).not.toHaveBeenCalled()
   })
 
-  test('checks for an active session before creating a new Mux stream', async () => {
-    mockedDjSessions.findFirst.mockResolvedValue({
+  test('checks for a current live session before creating a new Mux stream', async () => {
+    mockedDjSessions.findMany.mockResolvedValue([{
       id: 11,
+      wallet: '0xrave',
+      user_id: 'anonymous',
+      dj_name: 'DJ Test',
+      mux_stream_id: 'mux-stream-live',
+      playback_id: 'playback-live',
       started_at: new Date(Date.now() - 60_000),
-    })
+      ended_at: null,
+      max_duration: 7200,
+      status: 'live',
+    }])
     ;(global.fetch as jest.Mock).mockResolvedValue({
       json: jest.fn().mockResolvedValue({ result: '0x1000000000000000000000000' }),
     })
@@ -113,6 +133,52 @@ describe('/api/basefm/streams', () => {
     expect(body.error).toBe('active_session_exists')
     expect((global.fetch as jest.Mock).mock.calls).toHaveLength(1)
     expect((global.fetch as jest.Mock).mock.calls[0][0]).toBe('https://mainnet.base.org')
+  })
+
+  test('auto-ends expired current sessions before allowing a new stream', async () => {
+    mockedDjSessions.findMany.mockResolvedValue([{
+      id: 12,
+      wallet: '0xrave',
+      user_id: 'anonymous',
+      dj_name: 'DJ Old',
+      mux_stream_id: 'mux-stream-old',
+      playback_id: 'playback-old',
+      started_at: new Date(Date.now() - 8_000_000),
+      ended_at: null,
+      max_duration: 7200,
+      status: 'live',
+    }])
+    ;(global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        json: jest.fn().mockResolvedValue({ result: '0x1000000000000000000000000' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          data: {
+            id: 'mux-stream-new',
+            stream_key: 'stream-key',
+            status: 'idle',
+            playback_ids: [{ id: 'playback-new' }],
+            metadata: { dj_name: 'DJ Test' },
+          },
+        }),
+      })
+
+    const request = new NextRequest('http://localhost/api/basefm/streams', {
+      method: 'POST',
+      body: JSON.stringify({ wallet: '0xrave', name: 'DJ Test' }),
+    })
+
+    const response = await POST(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.success).toBe(true)
+    expect(mockedDjSessions.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: [12] } },
+      data: { status: 'auto-ended', ended_at: expect.any(Date) },
+    })
   })
 
   test('requires authenticated ownership or a valid session token to inspect a stream', async () => {
@@ -141,6 +207,37 @@ describe('/api/basefm/streams', () => {
       max_duration: 7200,
       status: 'active',
     })
+    mockedDjSessions.findMany.mockResolvedValue([
+      {
+        id: 9,
+        user_id: 'anonymous',
+        wallet: '0xowner',
+        dj_name: 'DJ Test',
+        mux_stream_id: 'mux-stream-a',
+        playback_id: 'playback',
+        started_at: new Date(Date.now() - 30_000),
+        ended_at: null,
+        max_duration: 7200,
+        status: 'active',
+      },
+      {
+        id: 10,
+        user_id: 'anonymous',
+        wallet: '0xowner',
+        dj_name: 'DJ Older',
+        mux_stream_id: 'mux-stream-b',
+        playback_id: 'playback-2',
+        started_at: new Date(Date.now() - 120_000),
+        ended_at: null,
+        max_duration: 7200,
+        status: 'live',
+      },
+    ])
+    mockedDjSessions.updateMany.mockResolvedValueOnce({ count: 2 })
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      text: jest.fn().mockResolvedValue(''),
+    })
 
     const request = new NextRequest('http://localhost/api/basefm/streams?sessionToken=signed-session-token', {
       method: 'DELETE',
@@ -150,9 +247,9 @@ describe('/api/basefm/streams', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body).toMatchObject({ success: true, ended: 1 })
-    expect(mockedDjSessions.update).toHaveBeenCalledWith({
-      where: { id: 9 },
+    expect(body).toMatchObject({ success: true, ended: 2, muxStopped: true })
+    expect(mockedDjSessions.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: [9, 10] } },
       data: { status: 'ended', ended_at: expect.any(Date) },
     })
   })

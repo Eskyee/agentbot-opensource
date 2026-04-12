@@ -25,16 +25,32 @@ type ActiveDjSession = {
   status: string
 }
 
+const CURRENT_SESSION_STATUSES = ['active', 'live'] as const
+
 function getSessionRemainingSeconds(activeSession: Pick<ActiveDjSession, 'started_at'>) {
   const elapsed = Math.floor((Date.now() - activeSession.started_at.getTime()) / 1000)
   return Math.max(0, MAX_SESSION_SECONDS - elapsed)
 }
 
-async function markSessionAutoEnded(sessionId: number) {
-  await prisma.dj_sessions.update({
-    where: { id: sessionId },
-    data: { status: 'auto-ended', ended_at: new Date() },
+async function getCurrentSessionsForWallet(wallet: string) {
+  return prisma.dj_sessions.findMany({
+    where: {
+      wallet,
+      status: { in: [...CURRENT_SESSION_STATUSES] },
+    },
+    orderBy: { started_at: 'desc' },
   })
+}
+
+async function endSessions(sessionIds: number[], status: 'ended' | 'auto-ended') {
+  if (sessionIds.length === 0) return 0
+
+  const result = await prisma.dj_sessions.updateMany({
+    where: { id: { in: sessionIds } },
+    data: { status, ended_at: new Date() },
+  })
+
+  return result.count
 }
 
 async function stopMuxLiveStream(streamId: string) {
@@ -96,7 +112,7 @@ async function getAuthorizedActiveSession(request: NextRequest) {
       where: { id: payload.sessionId },
     })
 
-    if (!activeSession || !['active', 'live'].includes(activeSession.status)) {
+    if (!activeSession || !CURRENT_SESSION_STATUSES.includes(activeSession.status as (typeof CURRENT_SESSION_STATUSES)[number])) {
       return { activeSession: null }
     }
 
@@ -117,7 +133,7 @@ async function getAuthorizedActiveSession(request: NextRequest) {
   }
 
   const activeSession = await prisma.dj_sessions.findFirst({
-    where: { user_id: session.user.id, status: { in: ['active', 'live'] } },
+    where: { user_id: session.user.id, status: { in: [...CURRENT_SESSION_STATUSES] } },
     orderBy: { started_at: 'desc' },
   })
 
@@ -208,23 +224,28 @@ export async function POST(request: NextRequest) {
 
     const streamWallet = hasRaveAccess ? wallet : claimedWallet!
 
-    const existingSession = await prisma.dj_sessions.findFirst({
-      where: { wallet: streamWallet, status: 'active' },
-      orderBy: { started_at: 'desc' },
-    })
+    const existingSessions = await getCurrentSessionsForWallet(streamWallet)
+    const activeExistingSession = existingSessions[0] || null
 
-    if (existingSession) {
-      const remaining = getSessionRemainingSeconds(existingSession)
+    if (activeExistingSession) {
+      const expiredSessionIds = existingSessions
+        .filter((session) => getSessionRemainingSeconds(session) <= 0)
+        .map((session) => session.id)
 
-      if (remaining <= 0) {
-        await markSessionAutoEnded(existingSession.id)
-      } else {
+      if (expiredSessionIds.length > 0) {
+        await endSessions(expiredSessionIds, 'auto-ended')
+      }
+
+      const blockingSession = existingSessions.find((session) => !expiredSessionIds.includes(session.id))
+
+      if (blockingSession) {
+        const remaining = getSessionRemainingSeconds(blockingSession)
         return NextResponse.json(
           {
             error: 'active_session_exists',
             message: `You already have an active stream. ${Math.floor(remaining / 60)} minutes remaining.`,
             remaining,
-            sessionId: existingSession.id,
+            sessionId: blockingSession.id,
           },
           { status: 409 }
         )
@@ -350,7 +371,7 @@ export async function GET(request: NextRequest) {
   const remaining = getSessionRemainingSeconds(activeSession)
 
   if (remaining <= 0) {
-    await markSessionAutoEnded(activeSession.id)
+    await endSessions([activeSession.id], 'auto-ended')
     return NextResponse.json({
       active: false,
       message: 'Session expired (2h max). Start a new stream!',
@@ -379,17 +400,23 @@ export async function DELETE(request: NextRequest) {
     })
   }
 
-  await prisma.dj_sessions.update({
-    where: { id: activeSession.id },
-    data: { status: 'ended', ended_at: new Date() },
-  })
+  const currentSessions = await getCurrentSessionsForWallet(activeSession.wallet)
+  const ended = await endSessions(
+    currentSessions.map((session) => session.id),
+    'ended'
+  )
 
-  const muxStop = await stopMuxLiveStream(activeSession.mux_stream_id)
+  const muxStops = await Promise.all(
+    [...new Set(currentSessions.map((session) => session.mux_stream_id))].map((streamId) =>
+      stopMuxLiveStream(streamId)
+    )
+  )
+  const allMuxStopped = muxStops.every((result) => result.ok)
 
   return NextResponse.json({
     success: true,
-    ended: 1,
-    muxStopped: muxStop.ok,
-    message: muxStop.ok ? 'Session ended and Mux stream disabled' : 'Session ended, but Mux stream disable needs attention',
+    ended,
+    muxStopped: allMuxStopped,
+    message: allMuxStopped ? 'Session ended and Mux stream disabled' : 'Session ended, but Mux stream disable needs attention',
   })
 }
