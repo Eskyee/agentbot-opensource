@@ -64,6 +64,7 @@ interface AgentGitlawbRecord {
 }
 
 export default function GitlawbNetworkPage() {
+  const agentbotRepoUrl = 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource'
   const [nodes, setNodes] = useState<NetworkNode[]>([])
   const [events, setEvents] = useState<NetworkEvent[]>([])
   const [stats, setStats] = useState<NetworkStats>({
@@ -251,6 +252,34 @@ export default function GitlawbNetworkPage() {
             >
               Learn Gitlawb
             </Link>
+          </div>
+        </div>
+
+        <div className="border border-zinc-800 mb-6">
+          <div className="p-4 border-b border-zinc-800">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <GitBranch className="h-4 w-4 text-blue-400" />
+              AGENTBOT REPO ON GITLAWB
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="border border-zinc-800 bg-black p-5">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Live Repo Card</div>
+              <div className="text-lg font-bold text-white">agentbot-opensource</div>
+              <p className="mt-2 text-sm text-zinc-400 max-w-2xl">
+                This is the Agentbot open-source mirror on the Gitlawb network. Use it as the public repo card for the network
+                and as the direct path into Agentbot&apos;s Gitlawb presence.
+              </p>
+              <a
+                href={agentbotRepoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                Open Repo Card
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+            </div>
           </div>
         </div>
 

@@ -4,6 +4,7 @@ const AGENTBOT_GITLAWB_DID = 'did:key:z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1
 const AGENTBOT_GITLAWB_REPO = 'agentbot-opensource'
 const AGENTBOT_GITLAWB_WEB_URL = `https://gitlawb.com/${AGENTBOT_GITLAWB_DID.replace('did:key:', '')}/${AGENTBOT_GITLAWB_REPO}`
 const AGENTBOT_GITLAWB_CLONE = `git clone gitlawb://${AGENTBOT_GITLAWB_DID}/${AGENTBOT_GITLAWB_REPO}`
+const AGENTBOT_GITLAWB_REPO_CARD_URL = 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource'
 
 const steps = [
   {
@@ -63,6 +64,21 @@ export default function GitlawbNetworkGuidePage() {
               Use this when you want the decentralized Gitlawb path rather than GitHub.
             </p>
           </div>
+        </div>
+
+        <div className="border border-zinc-800 bg-zinc-950 p-6 mt-8">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Repo Card</div>
+          <div className="text-sm text-zinc-400 mb-4">
+            The Gitlawb repo card is the cleanest direct public link for Agentbot&apos;s mirrored open-source repository on the network.
+          </div>
+          <a
+            href={AGENTBOT_GITLAWB_REPO_CARD_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-400 hover:text-white break-all"
+          >
+            {AGENTBOT_GITLAWB_REPO_CARD_URL}
+          </a>
         </div>
 
         <section className="border border-zinc-800 mt-8">
