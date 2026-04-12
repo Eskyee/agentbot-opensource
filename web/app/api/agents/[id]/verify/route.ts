@@ -17,6 +17,69 @@ interface VerifyRequestBody {
 // This would be created by the platform or use a known schema
 const EAS_HUMAN_SCHEMA_UID = '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef'
 
+async function getManagedRuntimeAgent(userId: string, agentId: string) {
+  const directAgent = await prisma.agent.findFirst({
+    where: { id: agentId, userId },
+    select: { id: true, config: true, name: true, model: true, status: true, websocketUrl: true },
+  })
+
+  if (directAgent) return directAgent
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { openclawInstanceId: true, openclawUrl: true },
+  })
+
+  if (!user?.openclawInstanceId || user.openclawInstanceId !== agentId) {
+    return null
+  }
+
+  return prisma.agent.upsert({
+    where: { id: agentId },
+    update: {
+      userId,
+      websocketUrl: user.openclawUrl,
+      status: 'running',
+    },
+    create: {
+      id: agentId,
+      userId,
+      name: 'Managed OpenClaw Runtime',
+      model: 'openclaw',
+      status: 'running',
+      websocketUrl: user.openclawUrl,
+    },
+    select: { id: true, config: true, name: true, model: true, status: true, websocketUrl: true },
+  })
+}
+
+function readLocalVerification(config: unknown) {
+  const source = (config as Record<string, unknown> | null)?.verification as Record<string, unknown> | undefined
+  return {
+    verified: Boolean(source?.verified),
+    verificationType: typeof source?.verificationType === 'string' ? source.verificationType : null,
+    attestationUid: typeof source?.attestationUid === 'string' ? source.attestationUid : null,
+    verifierAddress: typeof source?.verifierAddress === 'string' ? source.verifierAddress : null,
+    verifiedAt: typeof source?.verifiedAt === 'string' ? source.verifiedAt : null,
+  }
+}
+
+async function writeLocalVerification(agentId: string, existingConfig: unknown, update: Record<string, unknown>) {
+  const config = (existingConfig as Record<string, unknown> | null) || {}
+  await prisma.agent.update({
+    where: { id: agentId },
+    data: {
+      config: {
+        ...config,
+        verification: {
+          ...(config.verification as Record<string, unknown> | undefined),
+          ...update,
+        },
+      },
+    },
+  })
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -30,6 +93,10 @@ export async function GET(
     const { id: agentId } = await params
     const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
+    const managedAgent = await getManagedRuntimeAgent(session.user.id, agentId)
+    if (!managedAgent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
 
     // Fetch current verification status from backend
     const response = await fetch(`${API_URL}/api/agents/${agentId}/verification`, {
@@ -40,6 +107,9 @@ export async function GET(
     })
 
     if (!response.ok) {
+      if (response.status === 404) {
+        return NextResponse.json(readLocalVerification(managedAgent.config))
+      }
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: errorData.error || 'Failed to fetch verification status' },
@@ -71,6 +141,10 @@ export async function POST(
     const { id: agentId } = await params
     const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
+    const managedAgent = await getManagedRuntimeAgent(session.user.id, agentId)
+    if (!managedAgent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
     const body: VerifyRequestBody = await request.json()
     const { verificationType, attestationUid, walletAddress, signature } = body
 
@@ -194,6 +268,22 @@ export async function POST(
     })
 
     if (!updateResponse.ok) {
+      if (updateResponse.status === 404) {
+        await writeLocalVerification(agentId, managedAgent.config, {
+          verified: verificationResult.verified,
+          verificationType,
+          attestationUid: verificationResult.attestationUid || null,
+          verifierAddress: verificationResult.verifierAddress || null,
+          verifiedAt: verificationResult.metadata?.verifiedAt || new Date().toISOString(),
+        })
+        return NextResponse.json({
+          success: true,
+          verified: verificationResult.verified,
+          verificationType,
+          attestationUid: verificationResult.attestationUid,
+          verifiedAt: verificationResult.metadata?.verifiedAt,
+        })
+      }
       const errorData = await updateResponse.json().catch(() => ({}))
       return NextResponse.json(
         { error: errorData.error || 'Failed to update verification' },
@@ -231,6 +321,10 @@ export async function DELETE(
     const { id: agentId } = await params
     const API_URL = getBackendApiUrl()
     const API_KEY = getInternalApiKey()
+    const managedAgent = await getManagedRuntimeAgent(session.user.id, agentId)
+    if (!managedAgent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
 
     // Remove verification from agent
     const response = await fetch(`${API_URL}/api/agents/${agentId}/verify`, {
@@ -242,6 +336,16 @@ export async function DELETE(
     })
 
     if (!response.ok) {
+      if (response.status === 404) {
+        await writeLocalVerification(agentId, managedAgent.config, {
+          verified: false,
+          verificationType: null,
+          attestationUid: null,
+          verifierAddress: null,
+          verifiedAt: null,
+        })
+        return NextResponse.json({ success: true })
+      }
       const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
         { error: errorData.error || 'Failed to remove verification' },
