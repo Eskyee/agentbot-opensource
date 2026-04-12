@@ -251,7 +251,7 @@ export default function LearnDevelopersPage() {
           </div>
           <div className="grid gap-px bg-zinc-800 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { label: 'Runtime', value: 'OpenClaw 2026.4.10' },
+              { label: 'Runtime', value: 'OpenClaw 2026.4.11' },
               { label: 'Frontend', value: 'Next.js 14 + React 19' },
               { label: 'Backend', value: 'Express + Prisma' },
               { label: 'Database', value: 'Neon Postgres' },

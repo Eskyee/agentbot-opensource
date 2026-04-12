@@ -1,4 +1,4 @@
-export const DEFAULT_OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/eskyee/agentbot-openclaw:latest'
+export const DEFAULT_OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.11'
 
 export function deriveOpenClawVersionFromImage(image: string = DEFAULT_OPENCLAW_IMAGE): string {
   const match = image.match(/:([^:@]+)$/)

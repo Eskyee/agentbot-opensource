@@ -21,7 +21,7 @@ const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
  * Includes OpenClaw + Express wrapper with health checks, auto-restart, volume support.
  * The wrapper manages the gateway process — no start command needed.
  */
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/eskyee/agentbot-openclaw:latest'
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.11'
 
 export function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
   return {
