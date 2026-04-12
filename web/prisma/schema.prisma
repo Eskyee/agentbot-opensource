@@ -899,3 +899,65 @@ model basefm_relay_destinations {
   @@index([enabled], map: "idx_basefm_relays_enabled")
   @@index([status], map: "idx_basefm_relays_status")
 }
+
+model mixtapes {
+  id              String    @id @default(cuid())
+  user_id         String
+  title           String
+  artist_name     String?
+  mux_upload_id   String    @unique
+  mux_asset_id    String?
+  playback_id     String?
+  duration_secs   Int?
+  status          String    @default("pending") // pending, ready, scheduled, broadcasting, done, failed
+  scheduled_at    DateTime?
+  broadcast_at    DateTime?
+  ended_at        DateTime?
+  file_size_bytes BigInt?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([user_id], map: "idx_mixtapes_user")
+  @@index([status], map: "idx_mixtapes_status")
+  @@index([scheduled_at], map: "idx_mixtapes_scheduled")
+}
+
+model ad_campaigns {
+  id               String    @id @default(cuid())
+  // Advertiser info
+  advertiser_name  String
+  advertiser_email String
+  advertiser_url   String?
+  contact_handle   String?   // X/Twitter handle, etc.
+  // Campaign
+  title            String
+  description      String?
+  category         String    @default("general") // ai-tech, dj, music, events, promoter, general
+  slot_type        String    @default("spot")    // spot (30s), feature (60s), campaign (60s x4wk)
+  // Audio
+  mux_upload_id    String?   @unique
+  mux_asset_id     String?
+  playback_id      String?
+  duration_secs    Int?
+  // Scheduling
+  scheduled_slots  Int       @default(1)         // how many broadcast slots purchased
+  broadcasts_done  Int       @default(0)
+  starts_at        DateTime?
+  ends_at          DateTime?
+  // Payment
+  stripe_session_id    String?  @unique
+  stripe_payment_id    String?
+  amount_pence         Int?                     // what they paid (GBP pence)
+  currency             String   @default("gbp")
+  // Status
+  status           String    @default("pending_payment") // pending_payment, paid, approved, live, complete, rejected, refunded
+  admin_notes      String?
+  // Timestamps
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  @@index([advertiser_email], map: "idx_ad_campaigns_email")
+  @@index([status], map: "idx_ad_campaigns_status")
+  @@index([category], map: "idx_ad_campaigns_category")
+  @@index([starts_at], map: "idx_ad_campaigns_starts")
+}

@@ -115,6 +115,34 @@ export async function POST(request: Request) {
           console.error('[Webhook] No userId or email in checkout session!')
         }
 
+        // Ad campaign payment confirmed
+        if (session.metadata?.type === 'ad_campaign' && session.metadata?.campaignId) {
+          const campaignId = session.metadata.campaignId
+          const paymentId  = typeof session.payment_intent === 'string' ? session.payment_intent : null
+          try {
+            await prisma.ad_campaigns.update({
+              where: { id: campaignId },
+              data:  {
+                status:            'paid',
+                stripe_payment_id: paymentId,
+              },
+            })
+            console.log(`[Webhook] Ad campaign ${campaignId} marked paid`)
+            await sendAlert({
+              title:    '💰 Ad Campaign Paid',
+              message:  `Campaign ${campaignId} payment confirmed. Review and approve in /admin/ads.`,
+              severity: 'info',
+              fields: {
+                Campaign:  campaignId,
+                Amount:    `£${((session.amount_total ?? 0) / 100).toFixed(2)}`,
+                Advertiser: session.customer_details?.email ?? 'unknown',
+              },
+            }).catch(() => null)
+          } catch (err) {
+            console.error(`[Webhook] Failed to update ad campaign ${campaignId}:`, err)
+          }
+        }
+
         // Storage upgrades
         if (session.metadata?.type === 'storage_upgrade' && session.metadata?.userId) {
           const storageGB = 50

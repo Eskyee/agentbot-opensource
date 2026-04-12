@@ -630,8 +630,20 @@ export function InstanceControlPanel({
               <SummaryCard label="Version" value={instance.openclawVersion || 'unknown'} detail={instance.userId} />
               <SummaryCard
                 label="FFmpeg"
-                value={instance.ffmpegAvailable ? 'Ready' : 'Missing'}
-                detail={instance.ffmpegVersion || 'Needed for autonomous baseFM DJ output'}
+                value={
+                  instance.ffmpegAvailable
+                    ? 'Ready'
+                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
+                      ? 'Missing'
+                      : 'Unknown'
+                }
+                detail={
+                  instance.ffmpegAvailable
+                    ? (instance.ffmpegVersion || 'Installed')
+                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
+                      ? 'Needed for autonomous baseFM DJ output'
+                      : 'Status unavailable — runtime not fully reachable'
+                }
               />
             </div>
 

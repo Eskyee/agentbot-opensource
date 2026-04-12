@@ -44,6 +44,7 @@ export const navSections = [
       { label: 'Git City',         href: '/dashboard/git-city',           icon: '⌂' },
       { label: 'Gitlawb Network',  href: '/dashboard/gitlawb-network',    icon: '◉' },
       { label: 'Community',        href: '/dashboard/community',          icon: '✦' },
+      { label: 'Mix Uploads',      href: '/dashboard/mixtape',            icon: '⏶' },
       { label: 'Jobs',             href: '/jobs',                         icon: '◈' },
     ],
   },
@@ -75,6 +76,7 @@ export const navSections = [
     items: [
       { label: 'Billing',   href: '/billing',             icon: '☆' },
       { label: 'Domains',   href: '/dashboard/domains',   icon: '🌍' },
+      { label: 'Guide',     href: '/guide',               icon: '?' },
       { label: 'Feedback',  href: '/dashboard/feedback',  icon: '💬' },
       { label: 'Settings',  href: '/settings',            icon: '⚙' },
       { label: 'Showcase',  href: '/showcase',            icon: '✧' },
