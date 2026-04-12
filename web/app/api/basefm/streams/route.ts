@@ -3,6 +3,7 @@ import { buildBasefmFfmpegCommandTemplate } from '@/app/lib/basefmDjSkill'
 import { createBasefmSessionToken, verifyBasefmSessionToken } from '@/app/lib/basefmSession'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
+import { getMuxCredentials, retireMuxLiveStream } from '@/app/lib/basefmMux'
 import { prisma } from '@/app/lib/prisma'
 
 const MAX_SESSION_SECONDS = 7200 // 2 hours
@@ -42,7 +43,7 @@ async function getCurrentSessionsForWallet(wallet: string) {
   })
 }
 
-async function endSessions(sessionIds: number[], status: 'ended' | 'auto-ended') {
+async function endSessions(sessionIds: number[], status: 'ended' | 'auto-ended' | 'archived') {
   if (sessionIds.length === 0) return 0
 
   const result = await prisma.dj_sessions.updateMany({
@@ -53,28 +54,18 @@ async function endSessions(sessionIds: number[], status: 'ended' | 'auto-ended')
   return result.count
 }
 
-async function stopMuxLiveStream(streamId: string) {
-  const { tokenId, tokenSecret } = getMuxCredentials()
-  if (!tokenId || !tokenSecret) {
-    return { ok: false, reason: 'Mux not configured' as const }
-  }
+async function retireSessionStreams(
+  sessions: Array<Pick<ActiveDjSession, 'mux_stream_id'>>,
+  options: { preserveAssets?: boolean } = {}
+) {
+  const streamIds = [...new Set(sessions.map((session) => session.mux_stream_id))]
+  if (streamIds.length === 0) return []
 
-  const auth = Buffer.from(`${tokenId}:${tokenSecret}`).toString('base64')
-  const response = await fetch(`https://api.mux.com/video/v1/live-streams/${streamId}/disable`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error('[basefm-streams] failed to disable Mux live stream:', streamId, response.status, errorText)
-    return { ok: false, reason: `Mux disable failed: ${response.status}` as const }
-  }
-
-  return { ok: true as const }
+  return Promise.all(
+    streamIds.map((streamId) =>
+      retireMuxLiveStream(streamId, { preserveAssets: options.preserveAssets })
+    )
+  )
 }
 
 function buildActiveSessionResponse(activeSession: ActiveDjSession) {
@@ -167,11 +158,32 @@ async function verifyRAVEBalance(walletAddress: string): Promise<boolean> {
   }
 }
 
-function getMuxCredentials() {
-  return {
-    tokenId: process.env.MUX_TOKEN_ID,
-    tokenSecret: process.env.MUX_TOKEN_SECRET,
+function getArchiveCreditCost() {
+  const raw = process.env.BASEFM_ARCHIVE_CREDIT_COST
+  if (!raw) return null
+
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null
   }
+
+  return parsed
+}
+
+async function debitArchiveCredits(userId: string, cost: number) {
+  const result = await prisma.user.updateMany({
+    where: { id: userId, referralCredits: { gte: cost } },
+    data: { referralCredits: { decrement: cost } },
+  })
+
+  return result.count > 0
+}
+
+async function refundArchiveCredits(userId: string, cost: number) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { referralCredits: { increment: cost } },
+  })
 }
 
 export async function POST(request: NextRequest) {
@@ -234,6 +246,11 @@ export async function POST(request: NextRequest) {
 
       if (expiredSessionIds.length > 0) {
         await endSessions(expiredSessionIds, 'auto-ended')
+        await retireSessionStreams(
+          existingSessions.filter((session) => expiredSessionIds.includes(session.id))
+        ).catch((error) => {
+          console.error('[basefm-streams] failed to retire expired Mux stream resources:', error)
+        })
       }
 
       const blockingSession = existingSessions.find((session) => !expiredSessionIds.includes(session.id))
@@ -372,6 +389,9 @@ export async function GET(request: NextRequest) {
 
   if (remaining <= 0) {
     await endSessions([activeSession.id], 'auto-ended')
+    await retireSessionStreams([activeSession]).catch((error) => {
+      console.error('[basefm-streams] failed to retire expired current session:', error)
+    })
     return NextResponse.json({
       active: false,
       message: 'Session expired (2h max). Start a new stream!',
@@ -400,23 +420,72 @@ export async function DELETE(request: NextRequest) {
     })
   }
 
+  const body = await request.json().catch(() => null)
+  const preserveArchive = Boolean(body?.archive)
+  const archiveCreditCost = getArchiveCreditCost()
+  let chargedArchiveUserId: string | null = null
+
+  if (preserveArchive) {
+    const session = await getAuthSession()
+    if (!session?.user?.id || session.user.id !== activeSession.user_id) {
+      return NextResponse.json(
+        { error: 'Archive requires the owning logged-in Agentbot account.' },
+        { status: 403 }
+      )
+    }
+
+    if (!archiveCreditCost) {
+      return NextResponse.json(
+        { error: 'Archive is temporarily unavailable until BASEFM archive pricing is configured.' },
+        { status: 503 }
+      )
+    }
+
+    const charged = await debitArchiveCredits(session.user.id, archiveCreditCost)
+    if (!charged) {
+      return NextResponse.json(
+        {
+          error: 'insufficient_credits',
+          message: `Need ${archiveCreditCost} credits to save a DJ archive.`,
+          archiveCreditCost,
+        },
+        { status: 402 }
+      )
+    }
+
+    chargedArchiveUserId = session.user.id
+  }
+
   const currentSessions = await getCurrentSessionsForWallet(activeSession.wallet)
   const ended = await endSessions(
     currentSessions.map((session) => session.id),
-    'ended'
+    preserveArchive ? 'archived' : 'ended'
   )
 
-  const muxStops = await Promise.all(
-    [...new Set(currentSessions.map((session) => session.mux_stream_id))].map((streamId) =>
-      stopMuxLiveStream(streamId)
-    )
-  )
-  const allMuxStopped = muxStops.every((result) => result.ok)
+  const muxRetirements = await retireSessionStreams(currentSessions, { preserveAssets: preserveArchive })
+  const allMuxStopped = muxRetirements.every((result) => result.ok)
+
+  if (preserveArchive && chargedArchiveUserId && !allMuxStopped && archiveCreditCost) {
+    await refundArchiveCredits(chargedArchiveUserId, archiveCreditCost).catch((error) => {
+      console.error('[basefm-streams] failed to refund archive credits after Mux cleanup failure:', error)
+    })
+    chargedArchiveUserId = null
+  }
 
   return NextResponse.json({
     success: true,
     ended,
     muxStopped: allMuxStopped,
-    message: allMuxStopped ? 'Session ended and Mux stream disabled' : 'Session ended, but Mux stream disable needs attention',
+    archived: preserveArchive,
+    archiveCreditCost: preserveArchive ? archiveCreditCost : null,
+    deletedAssetIds: muxRetirements.flatMap((result) => result.deletedAssetIds),
+    retainedAssetIds: muxRetirements.flatMap((result) => result.retainedAssetIds),
+    message: preserveArchive
+      ? allMuxStopped
+        ? 'Session archived. Live stream retired and Mux assets kept for paid archive storage.'
+        : 'Session archived, but Mux cleanup needs attention.'
+      : allMuxStopped
+        ? 'Session ended. Live stream and recent Mux assets deleted to avoid archive cost.'
+        : 'Session ended, but Mux cleanup needs attention.',
   })
 }

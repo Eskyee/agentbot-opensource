@@ -14,6 +14,14 @@ jest.mock('@/app/lib/communityProgram', () => ({
   getCommunityProgramForUser: jest.fn(),
 }))
 
+jest.mock('@/app/lib/basefmMux', () => ({
+  getMuxCredentials: jest.fn(() => ({
+    tokenId: process.env.MUX_TOKEN_ID,
+    tokenSecret: process.env.MUX_TOKEN_SECRET,
+  })),
+  retireMuxLiveStream: jest.fn(),
+}))
+
 jest.mock('@/app/lib/prisma', () => ({
   prisma: {
     dj_sessions: {
@@ -24,12 +32,17 @@ jest.mock('@/app/lib/prisma', () => ({
       update: jest.fn(),
       updateMany: jest.fn(),
     },
+    user: {
+      update: jest.fn(),
+      updateMany: jest.fn(),
+    },
   },
 }))
 
 import { NextRequest } from 'next/server'
 import { verifyBasefmSessionToken } from '@/app/lib/basefmSession'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { retireMuxLiveStream } from '@/app/lib/basefmMux'
 import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
 import { prisma } from '@/app/lib/prisma'
 import { DELETE, GET, POST } from '@/app/api/basefm/streams/route'
@@ -37,6 +50,7 @@ import { DELETE, GET, POST } from '@/app/api/basefm/streams/route'
 describe('/api/basefm/streams', () => {
   const mockedVerifySessionToken = verifyBasefmSessionToken as jest.Mock
   const mockedSession = getAuthSession as jest.Mock
+  const mockedRetireMuxLiveStream = retireMuxLiveStream as jest.Mock
   const mockedCommunityProgram = getCommunityProgramForUser as jest.Mock
   const mockedDjSessions = prisma.dj_sessions as unknown as {
     findFirst: jest.Mock
@@ -46,15 +60,22 @@ describe('/api/basefm/streams', () => {
     update: jest.Mock
     updateMany: jest.Mock
   }
+  const mockedUsers = prisma.user as unknown as {
+    update: jest.Mock
+    updateMany: jest.Mock
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
+    delete process.env.BASEFM_ARCHIVE_CREDIT_COST
     mockedDjSessions.findFirst.mockReset()
     mockedDjSessions.findMany.mockReset()
     mockedDjSessions.findUnique.mockReset()
     mockedDjSessions.create.mockReset()
     mockedDjSessions.update.mockReset()
     mockedDjSessions.updateMany.mockReset()
+    mockedUsers.update.mockReset()
+    mockedUsers.updateMany.mockReset()
     mockedSession.mockResolvedValue(null)
     mockedCommunityProgram.mockResolvedValue(null)
     mockedDjSessions.findFirst.mockResolvedValue(null)
@@ -73,6 +94,18 @@ describe('/api/basefm/streams', () => {
     })
     mockedDjSessions.update.mockResolvedValue({})
     mockedDjSessions.updateMany.mockResolvedValue({ count: 1 })
+    mockedUsers.update.mockResolvedValue({})
+    mockedUsers.updateMany.mockResolvedValue({ count: 1 })
+    mockedRetireMuxLiveStream.mockResolvedValue({
+      ok: true,
+      streamId: 'mux-stream',
+      streamDisabled: true,
+      streamDeleted: true,
+      preserveAssets: false,
+      deletedAssetIds: [],
+      retainedAssetIds: [],
+      errors: [],
+    })
     global.fetch = jest.fn()
   })
 
@@ -179,6 +212,9 @@ describe('/api/basefm/streams', () => {
       where: { id: { in: [12] } },
       data: { status: 'auto-ended', ended_at: expect.any(Date) },
     })
+    expect(mockedRetireMuxLiveStream).toHaveBeenCalledWith('mux-stream-old', {
+      preserveAssets: undefined,
+    })
   })
 
   test('requires authenticated ownership or a valid session token to inspect a stream', async () => {
@@ -234,10 +270,6 @@ describe('/api/basefm/streams', () => {
       },
     ])
     mockedDjSessions.updateMany.mockResolvedValueOnce({ count: 2 })
-    ;(global.fetch as jest.Mock).mockResolvedValue({
-      ok: true,
-      text: jest.fn().mockResolvedValue(''),
-    })
 
     const request = new NextRequest('http://localhost/api/basefm/streams?sessionToken=signed-session-token', {
       method: 'DELETE',
@@ -252,5 +284,128 @@ describe('/api/basefm/streams', () => {
       where: { id: { in: [9, 10] } },
       data: { status: 'ended', ended_at: expect.any(Date) },
     })
+    expect(mockedRetireMuxLiveStream).toHaveBeenNthCalledWith(1, 'mux-stream-a', {
+      preserveAssets: false,
+    })
+    expect(mockedRetireMuxLiveStream).toHaveBeenNthCalledWith(2, 'mux-stream-b', {
+      preserveAssets: false,
+    })
+  })
+
+  test('allows DJs to preserve archive assets when explicitly requested', async () => {
+    process.env.BASEFM_ARCHIVE_CREDIT_COST = '25'
+    mockedVerifySessionToken.mockReturnValue({
+      sessionId: 9,
+      wallet: '0xowner',
+      userId: null,
+      exp: Math.floor(Date.now() / 1000) + 600,
+    })
+    mockedSession.mockResolvedValue({
+      user: { id: 'owner-user', email: 'owner@example.com' },
+    })
+    mockedDjSessions.findUnique.mockResolvedValue({
+      id: 9,
+      user_id: 'owner-user',
+      wallet: '0xowner',
+      dj_name: 'DJ Test',
+      playback_id: 'playback',
+      mux_stream_id: 'mux-stream-a',
+      started_at: new Date(Date.now() - 30_000),
+      ended_at: null,
+      max_duration: 7200,
+      status: 'active',
+    })
+    mockedDjSessions.findMany.mockResolvedValue([
+      {
+        id: 9,
+        user_id: 'owner-user',
+        wallet: '0xowner',
+        dj_name: 'DJ Test',
+        mux_stream_id: 'mux-stream-a',
+        playback_id: 'playback',
+        started_at: new Date(Date.now() - 30_000),
+        ended_at: null,
+        max_duration: 7200,
+        status: 'active',
+      },
+    ])
+    mockedDjSessions.updateMany.mockResolvedValueOnce({ count: 1 })
+    mockedRetireMuxLiveStream.mockResolvedValueOnce({
+      ok: true,
+      streamId: 'mux-stream-a',
+      streamDisabled: true,
+      streamDeleted: true,
+      preserveAssets: true,
+      deletedAssetIds: [],
+      retainedAssetIds: ['asset-a', 'asset-b'],
+      errors: [],
+    })
+
+    const request = new NextRequest('http://localhost/api/basefm/streams?sessionToken=signed-session-token', {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ archive: true }),
+    })
+
+    const response = await DELETE(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toMatchObject({
+      success: true,
+      archived: true,
+      archiveCreditCost: 25,
+      retainedAssetIds: ['asset-a', 'asset-b'],
+      deletedAssetIds: [],
+    })
+    expect(mockedDjSessions.updateMany).toHaveBeenCalledWith({
+      where: { id: { in: [9] } },
+      data: { status: 'archived', ended_at: expect.any(Date) },
+    })
+    expect(mockedRetireMuxLiveStream).toHaveBeenCalledWith('mux-stream-a', {
+      preserveAssets: true,
+    })
+    expect(mockedUsers.updateMany).toHaveBeenCalledWith({
+      where: { id: 'owner-user', referralCredits: { gte: 25 } },
+      data: { referralCredits: { decrement: 25 } },
+    })
+  })
+
+  test('fails archive closed when archive pricing is not configured', async () => {
+    mockedVerifySessionToken.mockReturnValue({
+      sessionId: 9,
+      wallet: '0xowner',
+      userId: null,
+      exp: Math.floor(Date.now() / 1000) + 600,
+    })
+    mockedSession.mockResolvedValue({
+      user: { id: 'owner-user', email: 'owner@example.com' },
+    })
+    mockedDjSessions.findUnique.mockResolvedValue({
+      id: 9,
+      user_id: 'owner-user',
+      wallet: '0xowner',
+      dj_name: 'DJ Test',
+      playback_id: 'playback',
+      mux_stream_id: 'mux-stream-a',
+      started_at: new Date(Date.now() - 30_000),
+      ended_at: null,
+      max_duration: 7200,
+      status: 'active',
+    })
+
+    const request = new NextRequest('http://localhost/api/basefm/streams?sessionToken=signed-session-token', {
+      method: 'DELETE',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ archive: true }),
+    })
+
+    const response = await DELETE(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(503)
+    expect(body.error).toBe('Archive is temporarily unavailable until BASEFM archive pricing is configured.')
+    expect(mockedUsers.updateMany).not.toHaveBeenCalled()
+    expect(mockedRetireMuxLiveStream).not.toHaveBeenCalled()
   })
 })

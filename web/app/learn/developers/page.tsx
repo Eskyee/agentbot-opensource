@@ -57,6 +57,12 @@ const devSections = [
         href: '/learn/developers/gitlawb-network',
         tags: ['Gitlawb', 'DID'],
       },
+      {
+        title: 'OpenClaw Dashboard Guide',
+        description: 'Understand Mission Control, missing skill dependencies, runtime setup, and the DJ workflow without getting lost in operator details.',
+        href: '/learn/developers/openclaw-dashboard',
+        tags: ['OpenClaw', 'Guide'],
+      },
     ],
   },
   {

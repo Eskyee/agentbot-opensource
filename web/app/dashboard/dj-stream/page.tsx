@@ -88,6 +88,8 @@ export default function DJStreamPage() {
   const [youtubeProbeUrl, setYoutubeProbeUrl] = useState('')
   const [savingYoutubeRelay, setSavingYoutubeRelay] = useState(false)
   const [endingStream, setEndingStream] = useState(false)
+  const [archivingStream, setArchivingStream] = useState(false)
+  const [streamActionMessage, setStreamActionMessage] = useState('')
   const [muxStatus, setMuxStatus] = useState<StreamMuxStatus | null>(null)
   const [muxStatusLoading, setMuxStatusLoading] = useState(false)
   const [muxSyncing, setMuxSyncing] = useState(false)
@@ -292,6 +294,7 @@ export default function DJStreamPage() {
 
     setLoading(true)
     setError('')
+    setStreamActionMessage('')
     try {
       const res = await fetch('/api/basefm/streams', {
         method: 'POST',
@@ -304,6 +307,7 @@ export default function DJStreamPage() {
       } else {
         setStream(data.stream)
         setStreamSessionToken(data?.session?.accessToken || null)
+        setStreamActionMessage('')
       }
     } catch (e: any) {
       setError(e.message)
@@ -312,13 +316,22 @@ export default function DJStreamPage() {
     }
   }
 
-  const endCurrentStream = async () => {
-    setEndingStream(true)
+  const retireCurrentStream = async (archive: boolean) => {
+    if (archive) {
+      setArchivingStream(true)
+    } else {
+      setEndingStream(true)
+    }
     setError('')
+    setStreamActionMessage('')
     try {
       const res = await fetch('/api/basefm/streams', {
         method: 'DELETE',
-        headers: streamSessionToken ? { 'x-basefm-session': streamSessionToken } : undefined,
+        headers: {
+          ...(streamSessionToken ? { 'x-basefm-session': streamSessionToken } : {}),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ archive }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -338,12 +351,26 @@ export default function DJStreamPage() {
       const relaysData = await relaysRes.json()
       setDistribution(distributionData?.distribution || null)
       setRelays(Array.isArray(relaysData?.relays) ? relaysData.relays : [])
+      setStreamActionMessage(
+        data?.message ||
+          (archive
+            ? 'Archive saved. Mux storage remains billable while those assets are kept.'
+            : 'Broadcast stopped and recent Mux assets removed.')
+      )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to end current stream')
     } finally {
-      setEndingStream(false)
+      if (archive) {
+        setArchivingStream(false)
+      } else {
+        setEndingStream(false)
+      }
     }
   }
+
+  const endCurrentStream = async () => retireCurrentStream(false)
+
+  const archiveCurrentStream = async () => retireCurrentStream(true)
 
   const fetchMuxStatus = async () => {
     setMuxStatusLoading(true)
@@ -409,6 +436,11 @@ export default function DJStreamPage() {
 
       <DashboardContent>
         <div className="max-w-3xl space-y-px">
+          {streamActionMessage ? (
+            <div className="border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-xs text-emerald-200">
+              {streamActionMessage}
+            </div>
+          ) : null}
           <div className="border border-zinc-800 bg-zinc-950 p-6">
             <SectionHeader
               label="Pioneer Mode"
@@ -769,7 +801,14 @@ export default function DJStreamPage() {
                     disabled={endingStream}
                     className="border border-red-500/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-red-400 transition-colors hover:border-red-500 disabled:border-zinc-800 disabled:text-zinc-600"
                   >
-                    {endingStream ? 'Cutting Feed' : 'Stop Broadcast'}
+                    {endingStream ? 'Ending Set' : 'End Set'}
+                  </button>
+                  <button
+                    onClick={archiveCurrentStream}
+                    disabled={archivingStream}
+                    className="border border-amber-500/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-amber-300 transition-colors hover:border-amber-400 disabled:border-zinc-800 disabled:text-zinc-600"
+                  >
+                    {archivingStream ? 'Saving Replay' : 'End Set and Save Replay'}
                   </button>
                   <button
                     onClick={fetchMuxStatus}
@@ -783,9 +822,13 @@ export default function DJStreamPage() {
                     disabled={muxSyncing}
                     className="border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:border-zinc-800 disabled:text-zinc-600"
                   >
-                    {muxSyncing ? 'Syncing' : 'Force Pickup'}
+                    {muxSyncing ? 'Refreshing' : 'Refresh Station'}
                   </button>
                 </div>
+
+                <p className="text-xs text-zinc-500">
+                  Ending a set normally removes replay files to keep costs down. End Set and Save Replay keeps the finished recording for the owning logged-in account and uses archive credits when that pricing is enabled.
+                </p>
 
                 {muxStatus ? (
                   <div className="border border-zinc-800 p-4">
@@ -826,7 +869,7 @@ export default function DJStreamPage() {
                       <p className="mt-3 text-xs text-zinc-500">{muxStatus.message}</p>
                     ) : null}
                     {muxStatus.pickupRecommended ? (
-                      <p className="mt-2 text-xs text-amber-300">Mux is active but the station has not picked the stream up yet. Force Pickup is recommended.</p>
+                      <p className="mt-2 text-xs text-amber-300">Your feed is active but the station has not picked it up yet. Refresh Station is recommended.</p>
                     ) : null}
                     {muxStatus.mux?.recentAssetIds?.length ? (
                       <p className="mt-2 text-xs text-zinc-600">
@@ -913,6 +956,18 @@ export default function DJStreamPage() {
                     <p>3. Treat Agentbot like the broadcast rack after the mixer, not a CDJ or mixer replacement.</p>
                     <p>4. If you already know Pioneer workflow, you only need the go-live, stop, and relay controls here.</p>
                   </div>
+                </div>
+
+                <div className="border border-zinc-800 p-4">
+                  <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Upload a Mix Set Service</span>
+                  <div className="space-y-2 text-xs text-zinc-500">
+                    <p>Let DJs upload a finished mix, choose a title and schedule, and have Agentbot broadcast it automatically.</p>
+                    <p>Bill separately for the scheduled broadcast and replay retention. Stored replays should never stay live for free.</p>
+                    <p>Best next step: package it as a managed service for DJs who do not want to run OBS every time.</p>
+                  </div>
+                  <Link href="/learn/developers/openclaw-dashboard" className="mt-4 inline-flex text-xs uppercase tracking-widest text-blue-400 hover:text-white">
+                    Read the product flow →
+                  </Link>
                 </div>
               </div>
             </div>

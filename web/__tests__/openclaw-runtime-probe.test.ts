@@ -56,4 +56,38 @@ describe('probeOpenClawRuntime', () => {
       },
     ])
   })
+
+  test('uses ffmpeg details from health payload when legacy status endpoint is unavailable', async () => {
+    ;(global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue({
+          version: '2026.4.11',
+          ffmpeg: {
+            available: true,
+            version: 'ffmpeg 5.1.8',
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValue({}),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        json: jest.fn().mockResolvedValue({}),
+      })
+
+    const result = await probeOpenClawRuntime('https://runtime.example.com')
+
+    expect(result.status).toBe('healthy')
+    expect(result.reason).toBe('Legacy /api/status unavailable; using /healthz and /readyz')
+    expect(result.ffmpeg).toEqual({
+      available: true,
+      version: 'ffmpeg 5.1.8',
+    })
+  })
 })
