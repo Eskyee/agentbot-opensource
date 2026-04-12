@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { appendManagedAgentEvent } from '@/app/lib/managedAgentEvents'
 import { publishPostToX } from '@/app/lib/xApi'
 import { getXDraftQueue, saveXDraftQueue } from '@/app/lib/xDrafts'
 
@@ -42,6 +43,19 @@ export async function POST(
     )
 
     await saveXDraftQueue(session.user.id, nextQueue)
+    if (draft.sessionId) {
+      await appendManagedAgentEvent({
+        sessionId: draft.sessionId,
+        type: 'publish.succeeded',
+        payload: {
+          draftId: draft.id,
+          postId: published.postId,
+          url: published.url,
+        },
+      }).catch((error) => {
+        console.error('Managed agent publish event append failed:', error)
+      })
+    }
 
     return NextResponse.json({
       success: true,

@@ -6,6 +6,7 @@ export type XDraftStatus = 'draft' | 'approved' | 'rejected' | 'published'
 
 export interface XDraft {
   id: string
+  sessionId?: string | null
   sourceText: string
   draftText: string
   tone: string
@@ -44,6 +45,7 @@ export async function saveXDraftQueue(userId: string, drafts: XDraft[]) {
 }
 
 export async function appendXDraft(userId: string, input: {
+  sessionId?: string | null
   sourceText: string
   draftText: string
   tone: string
@@ -52,6 +54,7 @@ export async function appendXDraft(userId: string, input: {
   const now = new Date().toISOString()
   const draft: XDraft = {
     id: makeDraftId(),
+    sessionId: input.sessionId || null,
     sourceText: input.sourceText,
     draftText: input.draftText,
     tone: input.tone,

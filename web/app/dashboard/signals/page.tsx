@@ -64,6 +64,15 @@ interface ManagedAgentEvent {
   occurredAt: string;
 }
 
+interface ManagedSession {
+  id: string;
+  title: string;
+  type: string;
+  workflowRunId?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
   reddit:        { label: 'Reddit',  color: 'text-orange-400' },
   twitter:       { label: 'X',       color: 'text-sky-400' },
@@ -85,6 +94,7 @@ export default function SignalsPage() {
   const [managedRunId, setManagedRunId] = useState<string | null>(null);
   const [managedEvents, setManagedEvents] = useState<ManagedAgentEvent[]>([]);
   const [managedTailing, setManagedTailing] = useState(false);
+  const [managedSessions, setManagedSessions] = useState<ManagedSession[]>([]);
   const [platform, setPlatform] = useState<Platform>('all');
   const [relevance, setRelevance] = useState<Relevance>('all');
   const [lastGenerated, setLastGenerated] = useState('');
@@ -150,6 +160,17 @@ export default function SignalsPage() {
     }
   }, []);
 
+  const loadManagedSessions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/managed-agents/session', { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = await res.json();
+      setManagedSessions(Array.isArray(json?.sessions) ? json.sessions : []);
+    } catch (e) {
+      console.error('Managed sessions fetch failed:', e);
+    }
+  }, []);
+
   const connectToStream = useCallback((runId: string) => {
     eventSourceRef.current?.close();
 
@@ -185,6 +206,37 @@ export default function SignalsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    loadManagedSessions();
+  }, [loadManagedSessions]);
+
+  const openManagedSession = async (sessionId: string) => {
+    try {
+      const res = await fetch(`/api/managed-agents/transcript?sessionId=${sessionId}`, { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to load managed transcript');
+
+      setManagedSessionId(json.id);
+      setManagedRunId(json.workflowRunId || null);
+      const events = Array.isArray(json?.events)
+        ? json.events.map((event: any) => ({
+            id: event.eventId || event.id,
+            type: event.type,
+            payload: event.payload || {},
+            occurredAt: event.occurredAt,
+          }))
+        : [];
+      setManagedEvents(events);
+      seenIdsRef.current = new Set(events.map((event) => event.id));
+
+      if (json.workflowRunId) {
+        connectToStream(json.workflowRunId);
+      }
+    } catch (e) {
+      setDraftError(e instanceof Error ? e.message : 'Failed to open managed session');
+    }
+  };
+
   const filtered = (data?.signals || [])
     .filter(s => platform === 'all' || s.platform === platform)
     .filter(s => relevance === 'all' || s.relevance === relevance);
@@ -204,7 +256,10 @@ export default function SignalsPage() {
         if (!res.ok) throw new Error(json?.error || 'Failed to create managed session');
         setManagedSessionId(json.id);
         setManagedRunId(json.runId);
+        setManagedEvents([]);
+        seenIdsRef.current = new Set();
         connectToStream(json.runId);
+        void loadManagedSessions();
       } else {
         const res = await fetch('/api/managed-agents/message', {
           method: 'POST',
@@ -322,6 +377,27 @@ export default function SignalsPage() {
         <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] mb-8">
           <div className="bg-zinc-950 border border-zinc-800 p-5">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">X Draft Generator</div>
+            {managedSessions.length > 0 ? (
+              <div className="mb-4 border border-zinc-800 bg-black p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Managed Sessions</div>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {managedSessions.map((session) => (
+                    <button
+                      key={session.id}
+                      onClick={() => openManagedSession(session.id)}
+                      className={`w-full border px-3 py-3 text-left transition-colors ${
+                        managedSessionId === session.id
+                          ? 'border-white text-white'
+                          : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white'
+                      }`}
+                    >
+                      <div className="text-[10px] uppercase tracking-widest">{session.type}</div>
+                      <div className="mt-1 text-xs font-mono">{session.title}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
             <textarea
               value={draftSourceText}
               onChange={(e) => setDraftSourceText(e.target.value)}

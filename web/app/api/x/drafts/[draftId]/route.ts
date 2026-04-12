@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { appendManagedAgentEvent } from '@/app/lib/managedAgentEvents'
 import { getXDraftQueue, saveXDraftQueue, type XDraftStatus } from '@/app/lib/xDrafts'
 
 export const dynamic = 'force-dynamic'
@@ -33,6 +34,20 @@ export async function PATCH(
     )
 
     await saveXDraftQueue(session.user.id, nextQueue)
+    const updatedDraft = nextQueue.find((draft) => draft.id === draftId)
+    if (updatedDraft?.sessionId) {
+      await appendManagedAgentEvent({
+        sessionId: updatedDraft.sessionId,
+        type: status === 'approved' ? 'draft.approved' : status === 'rejected' ? 'draft.rejected' : `draft.${status}`,
+        payload: {
+          draftId: updatedDraft.id,
+          status,
+          draftText: updatedDraft.draftText,
+        },
+      }).catch((error) => {
+        console.error('Managed agent event append failed:', error)
+      })
+    }
     return NextResponse.json({ drafts: nextQueue })
   } catch (error) {
     console.error('X draft PATCH error:', error)

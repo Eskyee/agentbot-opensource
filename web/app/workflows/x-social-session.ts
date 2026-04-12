@@ -71,9 +71,10 @@ async function generateDraftStep(input: { text: string; tone: string }) {
   return generateXDraft(input.text, input.tone);
 }
 
-async function saveDraftStep(input: { userId: string; text: string; draft: string; tone: string }) {
+async function saveDraftStep(input: { userId: string; sessionId: string; text: string; draft: string; tone: string }) {
   "use step";
   return appendXDraft(input.userId, {
+    sessionId: input.sessionId,
     sourceText: input.text,
     draftText: input.draft,
     tone: input.tone,
@@ -87,7 +88,7 @@ async function processTurn(sessionId: string, userId: string, turnIndex: number,
     await emit(writer, sessionId, `${sessionId}:turn-${turnIndex}:signal-detected`, "signal.detected", { text });
 
     const draft = await generateDraftStep({ text, tone });
-    const savedDraft = await saveDraftStep({ userId, text, draft, tone });
+    const savedDraft = await saveDraftStep({ userId, sessionId, text, draft, tone });
 
     await emit(writer, sessionId, `${sessionId}:turn-${turnIndex}:draft-generated`, "draft.generated", { draft, tone, draftId: savedDraft.id });
     await emit(writer, sessionId, `${sessionId}:turn-${turnIndex}:approval-required`, "approval.required", { draft, tone, draftId: savedDraft.id });
