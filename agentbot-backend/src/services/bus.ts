@@ -183,8 +183,8 @@ export class AgentBusService {
 
     // 3. Log the successful coordination
     await pool.query(
-      'INSERT INTO treasury_transactions (type, category, amount_usdc, description, metadata) VALUES ($1, $2, $3, $4, $5)',
-      ['coordination', 'agent_message', 0, `Message ${message.action} delivered to ${message.to.agentId}`, JSON.stringify(message)]
+      'INSERT INTO treasury_transactions (category, action, amount_usdc, metadata) VALUES ($1, $2, $3, $4)',
+      ['agent_message', `Message ${message.action} delivered to ${message.to.agentId}`, 0, JSON.stringify(message)]
     );
   }
 }
