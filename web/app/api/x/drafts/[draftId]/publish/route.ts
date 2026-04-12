@@ -28,7 +28,24 @@ export async function POST(
       return NextResponse.json({ error: 'Draft must be approved before publishing' }, { status: 400 })
     }
 
-    const published = await publishPostToX(session.user.id, draft.draftText)
+    let published
+    try {
+      published = await publishPostToX(session.user.id, draft.draftText)
+    } catch (error) {
+      if (draft.sessionId) {
+        await appendManagedAgentEvent({
+          sessionId: draft.sessionId,
+          type: 'publish.failed',
+          payload: {
+            draftId: draft.id,
+            error: error instanceof Error ? error.message : 'publish failed',
+          },
+        }).catch((appendError) => {
+          console.error('Managed agent publish.failed append failed:', appendError)
+        })
+      }
+      throw error
+    }
 
     const nextQueue = queue.map((item) =>
       item.id === draftId

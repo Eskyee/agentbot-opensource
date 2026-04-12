@@ -237,6 +237,30 @@ export default function SignalsPage() {
     }
   };
 
+  const deleteManagedSession = async (sessionId: string) => {
+    try {
+      const res = await fetch(`/api/managed-agents/session?sessionId=${sessionId}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to delete managed session');
+
+      if (managedSessionId === sessionId) {
+        setManagedSessionId(null);
+        setManagedRunId(null);
+        setManagedEvents([]);
+        seenIdsRef.current = new Set();
+        eventSourceRef.current?.close();
+        eventSourceRef.current = null;
+        setManagedTailing(false);
+      }
+
+      await loadManagedSessions();
+    } catch (e) {
+      setDraftError(e instanceof Error ? e.message : 'Failed to delete managed session');
+    }
+  };
+
   const filtered = (data?.signals || [])
     .filter(s => platform === 'all' || s.platform === platform)
     .filter(s => relevance === 'all' || s.relevance === relevance);
@@ -382,18 +406,30 @@ export default function SignalsPage() {
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Managed Sessions</div>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {managedSessions.map((session) => (
-                    <button
+                    <div
                       key={session.id}
-                      onClick={() => openManagedSession(session.id)}
-                      className={`w-full border px-3 py-3 text-left transition-colors ${
+                      className={`w-full border px-3 py-3 transition-colors ${
                         managedSessionId === session.id
                           ? 'border-white text-white'
-                          : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white'
+                          : 'border-zinc-800 text-zinc-400'
                       }`}
                     >
-                      <div className="text-[10px] uppercase tracking-widest">{session.type}</div>
-                      <div className="mt-1 text-xs font-mono">{session.title}</div>
-                    </button>
+                      <button
+                        onClick={() => openManagedSession(session.id)}
+                        className="w-full text-left"
+                      >
+                        <div className="text-[10px] uppercase tracking-widest">{session.type}</div>
+                        <div className="mt-1 text-xs font-mono">{session.title}</div>
+                      </button>
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          onClick={() => deleteManagedSession(session.id)}
+                          className="border border-red-500/30 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:border-red-500 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -615,6 +651,12 @@ export default function SignalsPage() {
                         label={signal.relevance}
                         size="sm"
                       />
+                      <button
+                        onClick={() => setDraftSourceText(signal.content)}
+                        className="border border-zinc-800 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:border-zinc-600 hover:text-white transition-colors"
+                      >
+                        Use Signal
+                      </button>
                     </div>
                   </div>
                 );
