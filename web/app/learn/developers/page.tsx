@@ -46,6 +46,12 @@ const devSections = [
         tags: ['CLI', 'Automation'],
       },
       {
+        title: 'Agentbot SDK',
+        description: 'Official SDK kit for building against Agentbot services and managed runtime flows.',
+        href: 'https://github.com/Eskyee/agentbot-sdk',
+        tags: ['SDK', 'GitHub'],
+      },
+      {
         title: 'Gitlawb Network Guide',
         description: 'Use the Gitlawb Network operator surface in Agentbot, browse the decentralized mirror, and clone via DID.',
         href: '/learn/developers/gitlawb-network',
