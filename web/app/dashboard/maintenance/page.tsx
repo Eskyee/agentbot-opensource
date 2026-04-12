@@ -27,22 +27,22 @@ interface HealthData {
   }>
 }
 
-const MATRIX_STEPS = [
+const MAINTENANCE_STEPS = [
   {
     cmd: 'openclaw update',
     description: 'Fetches the latest version and runs doctor automatically.',
   },
   {
     cmd: 'openclaw doctor --fix',
-    description: 'Migrates Matrix state, creates a recovery snapshot, and repairs config.',
+    description: 'Repairs config drift, runtime issues, and migration problems.',
   },
   {
     cmd: 'openclaw gateway restart',
-    description: 'Restarts the gateway so startup-phase Matrix migration completes.',
+    description: 'Restarts the gateway process after config or runtime repair.',
   },
   {
-    cmd: 'openclaw matrix verify status',
-    description: 'Checks verification and backup state.',
+    cmd: 'curl http://localhost:18789/api/status',
+    description: 'Checks the wrapper status endpoint directly inside the container.',
   },
 ]
 
@@ -70,7 +70,7 @@ export default function MaintenancePage() {
   const [restarting, setRestarting] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [restartMsg, setRestartMsg] = useState<string | null>(null)
-  const [showMatrix, setShowMatrix] = useState(false)
+  const [showMaintenanceGuide, setShowMaintenanceGuide] = useState(false)
   const [showDocker, setShowDocker] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -330,28 +330,28 @@ export default function MaintenancePage() {
           )}
         </div>
 
-        {/* Matrix Migration Guide */}
+        {/* Managed Runtime Guide */}
         <div className="border border-zinc-800 bg-zinc-950">
           <button
-            onClick={() => setShowMatrix(v => !v)}
+            onClick={() => setShowMaintenanceGuide(v => !v)}
             className="w-full flex items-center justify-between p-5 hover:bg-zinc-900 transition-colors"
           >
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              <span className="text-xs font-bold uppercase tracking-widest">Matrix Migration Guide</span>
+              <span className="text-xs font-bold uppercase tracking-widest">Managed Runtime Guide</span>
             </div>
-            {showMatrix ? <ChevronDown className="h-4 w-4 text-zinc-500" /> : <ChevronRight className="h-4 w-4 text-zinc-500" />}
+            {showMaintenanceGuide ? <ChevronDown className="h-4 w-4 text-zinc-500" /> : <ChevronRight className="h-4 w-4 text-zinc-500" />}
           </button>
 
-          {showMatrix && (
+          {showMaintenanceGuide && (
             <div className="px-6 pb-6 border-t border-zinc-800 pt-5 space-y-4">
               <p className="text-[11px] text-zinc-400 leading-relaxed">
-                If your Matrix channel is not connecting after an OpenClaw update, the migration may need to complete. Click <strong>Run Maintenance</strong> above — it restarts the agent and automatically applies all Matrix migrations on startup.
+                If the managed runtime is reachable but stuck in <strong>Stopped</strong> or <strong>Setup Required</strong>, use <strong>Run Maintenance</strong> first. It restarts the wrapper and runs the doctor path on startup.
               </p>
-              <p className="text-[11px] text-zinc-500">If issues persist, run these commands manually in your container:</p>
+              <p className="text-[11px] text-zinc-500">If issues persist, use these commands inside the container:</p>
 
               <div className="space-y-3">
-                {MATRIX_STEPS.map((step, i) => (
+                {MAINTENANCE_STEPS.map((step, i) => (
                   <div key={i} className="border border-zinc-800 bg-black p-4">
                     <div className="flex items-center justify-between gap-3 mb-1.5">
                       <code className="text-xs text-green-400 font-mono">{step.cmd}</code>
@@ -363,23 +363,19 @@ export default function MaintenancePage() {
               </div>
 
               <div className="border border-zinc-800 bg-zinc-900 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">If encrypted history is missing</p>
-                <p className="text-[11px] text-zinc-500 leading-relaxed">
-                  If you have a Matrix recovery key, run:
-                </p>
-                <div className="mt-2 flex items-center justify-between border border-zinc-700 bg-black p-3">
-                  <code className="text-xs text-green-400 font-mono">openclaw matrix verify backup restore --recovery-key &quot;&lt;your-recovery-key&gt;&quot;</code>
-                  <CopyButton text='openclaw matrix verify backup restore --recovery-key "<your-recovery-key>"' />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">How to read the state</p>
+                <div className="space-y-2 text-[11px] text-zinc-500 leading-relaxed">
+                  <p><strong className="text-zinc-300">Healthy</strong> means the wrapper is reachable and the runtime is running.</p>
+                  <p><strong className="text-zinc-300">Stopped</strong> means the wrapper is reachable but the process is not running.</p>
+                  <p><strong className="text-zinc-300">Setup Required</strong> means the wrapper is reachable but no final OpenClaw config has been written yet.</p>
+                  <p><strong className="text-zinc-300">Unreachable</strong> should only mean the wrapper itself is not answering its status endpoint.</p>
                 </div>
-                <p className="text-[10px] text-zinc-600 mt-2">
-                  To start fresh (losing unrecoverable old history): <code className="font-mono">openclaw matrix verify backup reset --yes</code>
-                </p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Docker / Container Guide */}
+        {/* Runtime Probe Guide */}
         <div className="border border-zinc-800 bg-zinc-950">
           <button
             onClick={() => setShowDocker(v => !v)}
@@ -387,7 +383,7 @@ export default function MaintenancePage() {
           >
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-blue-400" />
-              <span className="text-xs font-bold uppercase tracking-widest">Container Health Checks</span>
+              <span className="text-xs font-bold uppercase tracking-widest">Runtime Probe Checks</span>
             </div>
             {showDocker ? <ChevronDown className="h-4 w-4 text-zinc-500" /> : <ChevronRight className="h-4 w-4 text-zinc-500" />}
           </button>
@@ -395,12 +391,13 @@ export default function MaintenancePage() {
           {showDocker && (
             <div className="px-6 pb-6 border-t border-zinc-800 pt-5 space-y-3">
               <p className="text-[11px] text-zinc-400 leading-relaxed">
-                Your agent container exposes two health endpoints (no auth required):
+                This wrapper uses <code className="font-mono text-zinc-300">/api/status</code> as the authoritative health check. Legacy <code className="font-mono text-zinc-300">/healthz</code> and <code className="font-mono text-zinc-300">/readyz</code> may return 404 depending on the wrapper build.
               </p>
               <div className="space-y-2">
                 {[
-                  { path: '/healthz', label: 'Liveness — container is alive', color: 'text-green-400' },
-                  { path: '/readyz', label: 'Readiness — container is accepting traffic', color: 'text-blue-400' },
+                  { path: '/api/status', label: 'Authoritative wrapper status', color: 'text-green-400' },
+                  { path: '/healthz', label: 'Legacy liveness probe (optional)', color: 'text-yellow-400' },
+                  { path: '/readyz', label: 'Legacy readiness probe (optional)', color: 'text-yellow-400' },
                 ].map(({ path, label, color }) => (
                   <div key={path} className="border border-zinc-800 bg-black p-3 flex items-center justify-between gap-3">
                     <div>
@@ -414,7 +411,7 @@ export default function MaintenancePage() {
                 ))}
               </div>
               <p className="text-[11px] text-zinc-500">
-                If both checks pass but the agent still isn&apos;t responding, click <strong>Run Maintenance</strong> to restart and rerun doctor.
+                If <code className="font-mono text-zinc-300">/api/status</code> returns 200 but the dashboard still says unreachable, that is a dashboard interpretation bug, not a runtime outage.
               </p>
             </div>
           )}
