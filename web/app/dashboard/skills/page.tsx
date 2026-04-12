@@ -177,9 +177,17 @@ export default function SkillsPage() {
         setInstalledSkillIds((prev) => new Set(prev).add(skillId))
         
         if (data.deployed) {
-          toast.success('Skill installed!')
+          toast.success(
+            data.message || (data.runtimeHydrated
+              ? 'Skill installed and runtime agent prepared.'
+              : 'Skill installed!')
+          )
         } else {
-          toast.success('Skill saved! It will sync to your agent automatically.')
+          toast.success(
+            data.message || (data.runtimeHydrated
+              ? 'Skill saved and runtime agent prepared. It will sync automatically.'
+              : 'Skill saved! It will sync to your agent automatically.')
+          )
         }
       } catch (err: unknown) {
         const message =

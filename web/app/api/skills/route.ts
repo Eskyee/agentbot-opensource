@@ -90,7 +90,7 @@ async function getSkillTargetContext(agentId: string, session: NonNullable<Await
   })
 
   if (directAgent) {
-    return { agent: directAgent, targetUserId: session.user.id }
+    return { agent: directAgent, targetUserId: session.user.id, runtimeHydrated: false }
   }
 
   const targetUser = await prisma.user.findFirst({
@@ -126,7 +126,7 @@ async function getSkillTargetContext(agentId: string, session: NonNullable<Await
     },
   })
 
-  return { agent: synthesizedAgent, targetUserId: targetUser.id }
+  return { agent: synthesizedAgent, targetUserId: targetUser.id, runtimeHydrated: true }
 }
 
 export async function GET(request: Request) {
@@ -261,18 +261,34 @@ export async function POST(request: Request) {
         return NextResponse.json({ 
           success: true, 
           installed,
+          runtimeHydrated: target!.runtimeHydrated,
           deployed: false,
-          deployWarning: deployResult.error
+          deployWarning: deployResult.error,
+          message: target!.runtimeHydrated
+            ? 'Skill saved and the managed runtime agent record was created. Gateway deploy still needs attention.'
+            : 'Skill saved, but gateway deploy still needs attention.',
         })
       }
-      return NextResponse.json({ success: true, installed, deployed: true })
+      return NextResponse.json({
+        success: true,
+        installed,
+        runtimeHydrated: target!.runtimeHydrated,
+        deployed: true,
+        message: target!.runtimeHydrated
+          ? 'Skill installed and the managed runtime agent record was created successfully.'
+          : 'Skill installed successfully.',
+      })
     } catch (gatewayError) {
       console.warn('[Skill Install] Gateway deploy failed (will retry on sync):', gatewayError)
       return NextResponse.json({ 
         success: true, 
         installed,
+        runtimeHydrated: target!.runtimeHydrated,
         deployed: false,
-        deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically'
+        deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically',
+        message: target!.runtimeHydrated
+          ? 'Skill saved, the managed runtime agent record was created, and the runtime will pick it up when gateway sync recovers.'
+          : 'Skill saved to the database and will sync to the runtime automatically.',
       })
     }
   } catch (error) {
@@ -316,7 +332,13 @@ export async function DELETE(request: Request) {
       console.warn('[Skill Uninstall] Gateway removal failed:', gatewayError)
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      runtimeHydrated: target!.runtimeHydrated,
+      message: target!.runtimeHydrated
+        ? 'Skill removed and the managed runtime agent record remains available for future installs.'
+        : 'Skill removed successfully.',
+    })
   } catch (error) {
     console.error('Skill uninstall error:', error)
     return NextResponse.json({ error: 'Failed to uninstall skill' }, { status: 500 })
