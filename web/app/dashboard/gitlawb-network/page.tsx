@@ -44,6 +44,25 @@ interface NetworkStats {
   pushes: number
 }
 
+interface AgentGitlawbRecord {
+  id: string
+  name: string
+  status: string
+  model: string | null
+  updatedAt: string
+  gitlawb: null | {
+    status: 'disconnected' | 'identity_ready'
+    did: string
+    publicKeyMultibase: string
+    repo: string
+    webUrl: string
+    cloneUrl: string
+    topic: string
+    enrolledAt: string
+    lastUpdatedAt: string
+  }
+}
+
 export default function GitlawbNetworkPage() {
   const [nodes, setNodes] = useState<NetworkNode[]>([])
   const [events, setEvents] = useState<NetworkEvent[]>([])
@@ -57,12 +76,19 @@ export default function GitlawbNetworkPage() {
     pushes: 527,
   })
   const [loading, setLoading] = useState(false)
+  const [agents, setAgents] = useState<AgentGitlawbRecord[]>([])
+  const [agentActionLoading, setAgentActionLoading] = useState<string | null>(null)
+  const [agentError, setAgentError] = useState('')
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
   const eventsEndRef = useRef<HTMLDivElement>(null)
 
   const fetchNetworkData = async () => {
     setLoading(true)
     try {
+      const agentRes = await fetch('/api/gitlawb/agents', { cache: 'no-store' })
+      const agentData = await agentRes.json().catch(() => ({ agents: [] }))
+      setAgents(Array.isArray(agentData.agents) ? agentData.agents : [])
+
       setNodes([
         {
           id: 'node-1',
@@ -134,6 +160,7 @@ export default function GitlawbNetworkPage() {
       setLastUpdate(new Date())
     } catch (error) {
       console.error('Failed to fetch network data:', error)
+      setAgentError(error instanceof Error ? error.message : 'Failed to load Gitlawb network data')
     } finally {
       setLoading(false)
     }
@@ -147,6 +174,48 @@ export default function GitlawbNetworkPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
+  }
+
+  const connectAgent = async (agentId: string) => {
+    setAgentActionLoading(agentId)
+    setAgentError('')
+    try {
+      const res = await fetch('/api/gitlawb/agents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to connect agent to Gitlawb')
+      }
+      await fetchNetworkData()
+    } catch (error) {
+      setAgentError(error instanceof Error ? error.message : 'Failed to connect agent to Gitlawb')
+    } finally {
+      setAgentActionLoading(null)
+    }
+  }
+
+  const disconnectAgent = async (agentId: string) => {
+    setAgentActionLoading(agentId)
+    setAgentError('')
+    try {
+      const res = await fetch('/api/gitlawb/agents', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to disconnect agent from Gitlawb')
+      }
+      await fetchNetworkData()
+    } catch (error) {
+      setAgentError(error instanceof Error ? error.message : 'Failed to disconnect agent from Gitlawb')
+    } finally {
+      setAgentActionLoading(null)
+    }
   }
 
   const getEventIcon = (type: string) => {
@@ -183,6 +252,83 @@ export default function GitlawbNetworkPage() {
               Learn Gitlawb
             </Link>
           </div>
+        </div>
+
+        <div className="border border-zinc-800 mb-6">
+          <div className="p-4 border-b border-zinc-800">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <Users className="h-4 w-4 text-purple-400" />
+              YOUR AGENTS ON GITLAWB
+            </h3>
+          </div>
+          <div className="divide-y divide-zinc-800">
+            {agents.length === 0 ? (
+              <div className="p-6 text-sm text-zinc-500">No agents found yet.</div>
+            ) : (
+              agents.map((agent) => (
+                <div key={agent.id} className="p-6">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-3">
+                        <h4 className="text-white font-bold">{agent.name}</h4>
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-600">{agent.status}</span>
+                      </div>
+                      <p className="mt-2 text-xs text-zinc-500">
+                        {agent.gitlawb?.status === 'identity_ready'
+                          ? 'Gitlawb identity ready for repo and ref workflows.'
+                          : 'Not connected to Gitlawb yet.'}
+                      </p>
+                    </div>
+                    <div className="flex gap-3">
+                      {agent.gitlawb?.status === 'identity_ready' ? (
+                        <button
+                          onClick={() => disconnectAgent(agent.id)}
+                          disabled={agentActionLoading === agent.id}
+                          className="border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors disabled:opacity-50"
+                        >
+                          {agentActionLoading === agent.id ? 'Working' : 'Disconnect'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => connectAgent(agent.id)}
+                          disabled={agentActionLoading === agent.id}
+                          className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                        >
+                          {agentActionLoading === agent.id ? 'Connecting' : 'Connect to Gitlawb'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {agent.gitlawb ? (
+                    <div className="mt-4 grid gap-px bg-zinc-800 lg:grid-cols-2">
+                      <div className="bg-black p-4">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">DID</div>
+                        <code className="text-xs text-purple-400 break-all">{agent.gitlawb.did}</code>
+                      </div>
+                      <div className="bg-black p-4">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Repo</div>
+                        <code className="text-xs text-zinc-300 break-all">{agent.gitlawb.repo}</code>
+                      </div>
+                      <div className="bg-black p-4">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Web</div>
+                        <a href={agent.gitlawb.webUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-white break-all">
+                          {agent.gitlawb.webUrl}
+                        </a>
+                      </div>
+                      <div className="bg-black p-4">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Clone</div>
+                        <code className="text-xs text-green-400 break-all whitespace-pre-wrap">{agent.gitlawb.cloneUrl}</code>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </div>
+          {agentError ? (
+            <div className="border-t border-zinc-800 p-4 text-sm text-red-400">{agentError}</div>
+          ) : null}
         </div>
 
         {/* Operator Surface - Hero Stats */}
