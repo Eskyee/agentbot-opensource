@@ -57,6 +57,7 @@ function Dropdown({ label, items, current }: { label: string; items: DropdownIte
   const ref = useRef<HTMLDivElement>(null)
   const isActive = items.some((i) => current === i.href || current.startsWith(i.href + '/'))
 
+  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -65,10 +66,24 @@ function Dropdown({ label, items, current }: { label: string; items: DropdownIte
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  // Close on Escape key
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
+
+  // Close on route change
+  useEffect(() => { setOpen(false) }, [current])
+
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-haspopup="true"
         className={`flex items-center gap-1 text-[11px] uppercase tracking-widest transition-colors ${
           isActive || open ? 'text-white' : 'text-zinc-500 hover:text-white'
         }`}
@@ -132,7 +147,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black/95 backdrop-blur-sm border-b border-zinc-900 font-mono">
+      <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black border-b border-zinc-900 font-mono">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={closeMenu}>
