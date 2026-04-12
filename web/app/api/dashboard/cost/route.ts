@@ -22,6 +22,19 @@ const PLAN_MONTHLY_COST: Record<string, number> = {
   enterprise: 499,
 };
 
+// Monthly token quota per plan (input + output combined)
+const PLAN_TOKEN_QUOTA: Record<string, number> = {
+  solo:       500_000,
+  underground:500_000,
+  starter:    500_000,
+  collective: 2_000_000,
+  pro:        2_000_000,
+  label:      5_000_000,
+  scale:      5_000_000,
+  network:    20_000_000,
+  enterprise: 20_000_000,
+};
+
 interface DailyCost {
   date: string;
   cost: number;
@@ -140,6 +153,16 @@ export async function GET(req: NextRequest) {
       { model: planKey, percent: 100, cost: periodCost },
     ];
 
+    // Monthly token quota and usage
+    const monthlyQuota = PLAN_TOKEN_QUOTA[planKey] ?? 500_000;
+    // Use MTD tokens from backend if available, else scale period tokens to month
+    const mtdTokens = period === 'mtd'
+      ? totalTokens
+      : Math.round(totalTokens * (new Date().getDate() / days));
+    const quotaPercent = monthlyQuota > 0
+      ? Math.min(100, Math.round((mtdTokens / monthlyQuota) * 100))
+      : 0;
+
     return NextResponse.json({
       period,
       summary: {
@@ -149,6 +172,16 @@ export async function GET(req: NextRequest) {
         avgCostPerCall: totalCalls > 0
           ? parseFloat((aiCostTotal / totalCalls).toFixed(4))
           : 0,
+      },
+      quota: {
+        monthlyTokens: monthlyQuota,
+        usedTokens: mtdTokens,
+        percent: quotaPercent,
+        overageWarning: quotaPercent >= 80,
+        nextPlan: planKey === 'solo' || planKey === 'underground' ? 'collective'
+          : planKey === 'collective' ? 'label'
+          : planKey === 'label' ? 'network'
+          : null,
       },
       agents,
       daily,

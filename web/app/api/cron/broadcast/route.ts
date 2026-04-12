@@ -80,6 +80,7 @@ interface BroadcastJob {
   title:        string
   sourceHlsUrl: string
   durationSecs: number
+  userId?:      number | null
 }
 
 export async function GET(req: NextRequest) {
@@ -113,6 +114,7 @@ export async function GET(req: NextRequest) {
       title:        m.title,
       sourceHlsUrl: `https://stream.mux.com/${m.playback_id}.m3u8`,
       durationSecs: m.duration_secs ?? 7200,
+      userId:       m.user_id,
     })
   }
 
@@ -172,6 +174,16 @@ export async function GET(req: NextRequest) {
       if (triggered) {
         console.info(`[broadcast] triggered ${job.kind}=${job.id} via OpenClaw`)
         results.push({ id: job.id, kind: job.kind, outcome: 'triggered' })
+        // Record outcome for spend dashboard "Value Delivered" feed
+        await prisma.platform_outcomes.create({
+          data: {
+            user_id:      job.userId ?? null,
+            outcome_type: 'broadcast_complete',
+            title:        `Broadcast: ${job.title}`,
+            description:  `${job.kind === 'mixtape' ? 'Mix' : 'Ad'} aired on baseFM`,
+            metadata:     { jobId: job.id, kind: job.kind },
+          },
+        }).catch(() => null)
       } else {
         // Alert admin with the exact ffmpeg command ready to paste
         const ffmpegCmd = [

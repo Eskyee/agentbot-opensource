@@ -961,3 +961,18 @@ model ad_campaigns {
   @@index([category], map: "idx_ad_campaigns_category")
   @@index([starts_at], map: "idx_ad_campaigns_starts")
 }
+
+model platform_outcomes {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  agent_id    Int?
+  outcome_type String   // negotiation_complete, amplification_complete, deal_closed, broadcast_complete
+  title       String
+  description String?
+  value_usd   Decimal?  @db.Decimal  // estimated value of the outcome if known
+  metadata    Json?     // any extra context (deal ID, partner agent, etc.)
+  created_at  DateTime  @default(now())
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_platform_outcomes_user")
+  @@index([outcome_type], map: "idx_platform_outcomes_type")
+}

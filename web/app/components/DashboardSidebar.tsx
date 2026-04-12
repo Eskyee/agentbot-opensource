@@ -62,6 +62,7 @@ export const navSections = [
     items: [
       { label: 'ClawMerchants', href: '/dashboard/market-intel',  icon: '▣' },
       { label: 'Metrics',       href: '/dashboard/analytics',     icon: '◌' },
+      { label: 'Usage & Spend', href: '/dashboard/cost',          icon: '⬡' },
       { label: 'System Pulse',  href: '/dashboard/system-pulse',  icon: '☼' },
       { label: 'Daily Brief',   href: '/dashboard/daily-brief',   icon: '⇄' },
       { label: 'Workflows',     href: '/dashboard/workflows',     icon: '⊞' },
