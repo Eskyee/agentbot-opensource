@@ -18,6 +18,13 @@ interface HealthData {
   version?: string | null
   uptime?: string | null
   status: string
+  statusReason?: string | null
+  checks?: Array<{
+    path: string
+    ok: boolean
+    status: number | null
+    reason: string | null
+  }>
 }
 
 const MATRIX_STEPS = [
@@ -153,11 +160,13 @@ export default function MaintenancePage() {
 
   const statusLabel = health?.status === 'healthy' ? 'Healthy'
     : health?.status === 'starting' ? 'Starting'
+    : health?.status === 'stopped' ? 'Stopped'
+    : health?.status === 'setup' ? 'Setup Required'
     : health?.status === 'no_agent' ? 'No Agent'
     : 'Unreachable'
 
   const statusVariant: 'active' | 'idle' | 'error' = health?.status === 'healthy' ? 'active'
-    : health?.status === 'starting' ? 'idle'
+    : health?.status === 'starting' || health?.status === 'stopped' || health?.status === 'setup' ? 'idle'
     : 'error'
 
   return (
@@ -199,12 +208,12 @@ export default function MaintenancePage() {
           ) : health?.status === 'no_agent' ? (
             <p className="text-xs text-zinc-500">No agent deployed yet. Deploy from the dashboard to get started.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1">
-                  <Activity className="h-3 w-3" /> Liveness
-                </p>
-                <div className="flex items-center gap-1.5">
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-1">
+                    <Activity className="h-3 w-3" /> Liveness
+                  </p>
+                  <div className="flex items-center gap-1.5">
                   {health?.healthy
                     ? <CheckCircle className="h-4 w-4 text-green-500" />
                     : <XCircle className="h-4 w-4 text-red-500" />}
@@ -220,6 +229,29 @@ export default function MaintenancePage() {
                   <span className="text-sm">{health?.ready ? 'Ready' : 'Not ready'}</span>
                 </div>
               </div>
+              {health?.railwayUrl && (
+                <div className="mb-6 border border-zinc-800 bg-black p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Runtime URL</p>
+                  <code className="text-xs text-zinc-300 break-all">{health.railwayUrl}</code>
+                </div>
+              )}
+              {health?.statusReason && (
+                <div className="mb-6 border border-zinc-800 bg-black p-4">
+                  <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Reason</p>
+                  <p className="text-xs text-zinc-400">{health.statusReason}</p>
+                </div>
+              )}
+              {health?.checks?.length ? (
+                <div className="mb-6 grid gap-px bg-zinc-800 sm:grid-cols-3">
+                  {health.checks.map((check) => (
+                    <div key={check.path} className="bg-black p-4">
+                      <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">{check.path}</p>
+                      <p className="text-sm text-white">{check.status ? `HTTP ${check.status}` : 'No response'}</p>
+                      {check.reason ? <p className="mt-1 text-[10px] text-zinc-500">{check.reason}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               {health?.version && (
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Version</p>

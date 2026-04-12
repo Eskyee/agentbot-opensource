@@ -44,6 +44,8 @@ export async function GET() {
     version: null as string | null,
     uptime: null as string | null,
     status: 'unknown' as string,
+    statusReason: null as string | null,
+    checks: [] as Array<{ path: string; ok: boolean; status: number | null; reason: string | null }>,
   }
 
   // Check /healthz
@@ -53,8 +55,20 @@ export async function GET() {
     result.healthy = r.ok && (d?.ok === true || r.ok)
     result.version = d?.version || null
     result.uptime = d?.uptime || null
+    result.checks.push({
+      path: '/healthz',
+      ok: r.ok,
+      status: r.status,
+      reason: r.ok ? null : `HTTP ${r.status}`,
+    })
   } catch {
     result.healthy = false
+    result.checks.push({
+      path: '/healthz',
+      ok: false,
+      status: null,
+      reason: 'request failed',
+    })
   }
 
   // Check /readyz
@@ -62,32 +76,66 @@ export async function GET() {
     const r = await fetch(`${railwayUrl}/readyz`, { signal: AbortSignal.timeout(4000) })
     const d = await r.json().catch(() => ({}))
     result.ready = r.ok && (d?.ready === true || r.ok)
+    result.checks.push({
+      path: '/readyz',
+      ok: r.ok,
+      status: r.status,
+      reason: r.ok ? null : `HTTP ${r.status}`,
+    })
   } catch {
     result.ready = false
+    result.checks.push({
+      path: '/readyz',
+      ok: false,
+      status: null,
+      reason: 'request failed',
+    })
   }
 
   try {
     const statusRes = await fetch(`${railwayUrl}/api/status`, { signal: AbortSignal.timeout(5000) })
     const statusData = await statusRes.json().catch(() => ({}))
+    result.checks.push({
+      path: '/api/status',
+      ok: statusRes.ok,
+      status: statusRes.status,
+      reason: statusRes.ok ? null : `HTTP ${statusRes.status}`,
+    })
 
     if (statusRes.ok) {
       if (statusData?.configured === false) {
         result.status = 'setup'
+        result.statusReason = 'Runtime reachable but setup is not complete'
       } else if (statusData?.running === true || statusData?.state === 'running') {
         result.status = 'healthy'
+        result.statusReason = null
       } else if (statusData?.state === 'stopped' || statusData?.running === false) {
         result.status = 'stopped'
+        result.statusReason = 'Runtime reachable but process is stopped'
       } else {
         result.status = result.healthy && result.ready ? 'healthy' : result.healthy ? 'starting' : 'unknown'
+        result.statusReason = 'Runtime reachable but returned a non-standard state'
       }
       result.version = result.version || statusData?.version || null
+      result.uptime = result.uptime || statusData?.uptime || null
       return NextResponse.json(result)
     }
   } catch {
+    result.checks.push({
+      path: '/api/status',
+      ok: false,
+      status: null,
+      reason: 'request failed',
+    })
     // fall back to legacy healthz / readyz logic below
   }
 
   result.status = result.healthy && result.ready ? 'healthy' : result.healthy ? 'starting' : 'unreachable'
+  result.statusReason = result.status === 'unreachable'
+    ? 'Runtime did not answer /api/status and the legacy probes were not healthy'
+    : result.status === 'starting'
+      ? 'Health probe is up but readiness is not complete'
+      : null
 
   return NextResponse.json(result)
 }
