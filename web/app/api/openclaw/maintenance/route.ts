@@ -82,6 +82,13 @@ export async function POST(request: Request) {
     // no body = restart
   }
 
+  const latestAgent = await prisma.agent.findFirst({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'desc' },
+    select: { config: true },
+  })
+  const runtimeServiceId = (latestAgent?.config as Record<string, unknown> | null)?.runtimeServiceId as string | null | undefined
+
   let environmentId: string
   let projectId: string
   let railwayService: Awaited<ReturnType<typeof resolveRailwayService>>
@@ -91,6 +98,7 @@ export async function POST(request: Request) {
     railwayService = await resolveRailwayService({
       agentId: info.openclawInstanceId,
       openclawUrl: info.openclawUrl,
+      serviceId: runtimeServiceId,
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Railway configuration error'

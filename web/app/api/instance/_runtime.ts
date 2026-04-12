@@ -36,7 +36,18 @@ export async function getOwnedOpenClawUser(instanceId: string) {
       return { error: NextResponse.json({ error: 'No instance found. Please deploy first.' }, { status: 404 }) }
     }
 
-    return { user }
+    const targetAgent = await prisma.agent.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      select: { config: true },
+    })
+
+    return {
+      user: {
+        ...user,
+        runtimeServiceId: (targetAgent?.config as Record<string, unknown> | null)?.runtimeServiceId as string | null | undefined,
+      },
+    }
   }
 
   const user = await prisma.user.findUnique({
@@ -53,5 +64,16 @@ export async function getOwnedOpenClawUser(instanceId: string) {
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   }
 
-  return { user }
+  const latestAgent = await prisma.agent.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+    select: { config: true },
+  })
+
+  return {
+    user: {
+      ...user,
+      runtimeServiceId: (latestAgent?.config as Record<string, unknown> | null)?.runtimeServiceId as string | null | undefined,
+    },
+  }
 }

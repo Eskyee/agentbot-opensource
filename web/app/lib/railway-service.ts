@@ -71,7 +71,15 @@ function getServiceNameCandidates(agentId?: string | null, openclawUrl?: string 
 export async function resolveRailwayService(params: {
   agentId?: string | null
   openclawUrl?: string | null
+  serviceId?: string | null
 }): Promise<RailwayServiceNode> {
+  if (params.serviceId) {
+    return {
+      id: params.serviceId,
+      name: params.agentId || params.serviceId,
+    }
+  }
+
   const candidates = getServiceNameCandidates(params.agentId, params.openclawUrl)
   if (!candidates.length) throw new Error('No managed service reference found')
 

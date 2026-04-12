@@ -25,6 +25,7 @@ export async function POST(
     railwayService = await resolveRailwayService({
       agentId: user.openclawInstanceId,
       openclawUrl: user.openclawUrl,
+      serviceId: user.runtimeServiceId,
     })
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 503 })
