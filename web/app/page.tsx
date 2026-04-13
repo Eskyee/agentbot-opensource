@@ -85,6 +85,86 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Co-DJ B2B — Flagship Feature */}
+      <section className="border-t border-amber-900/40 bg-gradient-to-b from-amber-950/20 to-black">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 text-amber-400 text-[10px] uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+              Flagship Feature — baseFM × Agentbot
+            </span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-3 py-1">Underground Network</span>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+            <div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-[0.95] mb-6">
+                Co-DJ B2B.<br />
+                <span className="text-amber-500">Two DJs.</span><br />
+                <span className="text-zinc-700">One Live Stream.</span>
+              </h2>
+              <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-lg">
+                The first streaming platform to let two DJs run a live B2B show from different locations and time zones — fully autonomous, pirate radio style. One Mux stream, a 120-second handoff window, and a live chat for DJs and listeners.
+              </p>
+              <p className="text-zinc-600 text-sm leading-relaxed mb-8 max-w-lg">
+                No extra software. No complex setup. DJ1 stops their encoder, DJ2 connects within 2 minutes — Mux sees it as a reconnect and the stream continues without a cut. WebRTC audio monitoring lets DJ2 hear the last track before pressing play. Pioneer style.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href="https://basefm.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-amber-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors"
+                >
+                  Launch baseFM
+                </a>
+                <Link
+                  href="/onboard?plan=collective"
+                  className="inline-flex items-center justify-center border border-amber-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-amber-400 hover:border-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  Get Access →
+                </Link>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {[
+                {
+                  num: '01',
+                  title: 'Invite Your Co-DJ',
+                  body: 'Generate a unique B2B invite link from your stream dashboard. Share it anywhere — no accounts needed on their end.',
+                },
+                {
+                  num: '02',
+                  title: 'Coordinated Handoff',
+                  body: 'When you finish your set, stop your encoder. Your co-DJ connects within 2 minutes. Mux reconnects seamlessly — the stream never drops.',
+                },
+                {
+                  num: '03',
+                  title: 'WebRTC Audio Monitoring',
+                  body: 'Your co-DJ hears your last track live via WebRTC so they know exactly when to drop their first record.',
+                },
+                {
+                  num: '04',
+                  title: 'Live Chat — DJs + Crowd',
+                  body: 'Real-time chat for both DJs to coordinate and for listeners to interact. DJ messages highlighted — the crowd sees the handoff coming.',
+                },
+              ].map((step) => (
+                <div key={step.num} className="flex gap-4 border border-zinc-800 hover:border-amber-900/60 transition-colors p-4 sm:p-5 bg-black">
+                  <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
+                  <div>
+                    <div className="text-xs font-bold text-white uppercase tracking-wider mb-1">{step.title}</div>
+                    <p className="text-zinc-500 text-xs leading-relaxed">{step.body}</p>
+                  </div>
+                </div>
+              ))}
+              <div className="border border-zinc-800 p-4 sm:p-5 bg-zinc-950">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Underground Network</div>
+                <p className="text-zinc-500 text-xs leading-relaxed">For DJs, artists, sound systems, live rigs, podcasters, and agents from the underground music and rave culture scene. baseFM × Agentbot — built by the community, for the community.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Hero Image */}
       <div className="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
         <HeroImage />
