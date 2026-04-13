@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agent-to-agent-protocol',
+    dateLabel: '13 Apr',
+    isoDate: '2026-04-13',
+    title: 'Agent-to-Agent Protocol: How Agentbot Agents Talk to Each Other',
+    excerpt:
+      'The A2A bus that lets agents negotiate, delegate, and settle USDC payments autonomously. SSRF-protected, cryptographically signed, MCP-compatible. First settlement at block 9,556,940.',
+    tags: ['A2A', 'Protocol', 'Architecture', 'Autonomous Payments'],
+    track: 'Build Log',
+  },
+  {
     slug: 'agentbot-open-source-community-token',
     dateLabel: '13 Apr',
     isoDate: '2026-04-13',
