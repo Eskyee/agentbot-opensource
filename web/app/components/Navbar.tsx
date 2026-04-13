@@ -175,6 +175,7 @@ export default function Navbar() {
             <>
               <Dropdown label="Explore"    items={EXPLORE_LINKS}    current={pathname} />
               <Dropdown label="Build"      items={BUILD_LINKS}      current={pathname} />
+              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
               <Dropdown label="Community"  items={COMMUNITY_LINKS}  current={pathname} />
               <NavLink href="/blog" current={pathname}>Blog</NavLink>
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
