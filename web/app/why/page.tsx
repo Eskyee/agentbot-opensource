@@ -27,7 +27,7 @@ const faqSchema = {
       name: 'Is Agentbot free?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Plans start at £29/mo for the Underground plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free.',
+        text: 'Plans start at £29/mo for the Solo plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free.',
       },
     },
     {
@@ -149,7 +149,7 @@ export default function WhyAgentbotPage() {
                 </tr>
                 <tr className="border-b border-zinc-800">
                   <td className="p-4 font-medium text-white">Cost</td>
-                  <td className="p-4 bg-zinc-950">{PRICE_START} Underground plan</td>
+                  <td className="p-4 bg-zinc-950">{PRICE_START} Solo plan</td>
                   <td className="p-4">VPS costs or dedicated hardware needed for 24/7 use</td>
                 </tr>
               </tbody>
@@ -429,7 +429,7 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Is Agentbot free?</h3>
               <p className="text-sm text-zinc-400">
-                Plans start at {PRICE_START} for the Underground plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-500 hover:underline">pricing page</Link> for details.
+                Plans start at {PRICE_START} for the Solo plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-500 hover:underline">pricing page</Link> for details.
               </p>
             </div>
 
