@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'agentbot-open-source-community-token',
+    dateLabel: '13 Apr',
+    isoDate: '2026-04-13',
+    title: 'AgentBot: Open-Source Infrastructure for the AI Agent Economy',
+    excerpt:
+      'What Agentbot is, why it exists, how the community token works, and a realistic view of trading on Pump.fun. The platform is the destination — not the token.',
+    tags: ['Open Source', 'Community', 'Token', 'AI Agents'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'hardening-agentic-stack',
     dateLabel: '10 Apr',
     isoDate: '2026-04-10',
