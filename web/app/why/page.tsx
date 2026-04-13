@@ -93,6 +93,11 @@ export default function WhyAgentbotPage() {
           <h2 className="text-lg font-bold uppercase tracking-tighter mb-4">Table of Contents</h2>
           <ul className="space-y-2 text-zinc-400 text-sm">
             <li><a href="#comparison" className="hover:text-white">&mdash; Quick comparison: Agentbot vs. Local OpenClaw</a></li>
+            <li><a href="#architecture" className="hover:text-white">&mdash; Architecture</a></li>
+            <li><a href="#security" className="hover:text-white">&mdash; Security</a></li>
+            <li><a href="#payments" className="hover:text-white">&mdash; Payments &amp; onchain autonomy</a></li>
+            <li><a href="#a2a" className="hover:text-white">&mdash; Agent-to-Agent Protocol</a></li>
+            <li><a href="#basefm" className="hover:text-white">&mdash; baseFM: The proof of concept</a></li>
             <li><a href="#features" className="hover:text-white">&mdash; Features that actually matter</a></li>
             <li><a href="#how-to" className="hover:text-white">&mdash; How to use Agentbot?</a></li>
             <li><a href="#use-cases" className="hover:text-white">&mdash; Real-world use cases</a></li>
@@ -160,6 +165,218 @@ export default function WhyAgentbotPage() {
             <Link href="/signup" className="inline-block bg-white text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200">
               Try Agentbot
             </Link>
+          </div>
+        </section>
+
+        {/* ── Architecture ── */}
+        <section id="architecture" className="mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Architecture</span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">How the stack works</h2>
+          <p className="text-sm text-zinc-400 mb-8">
+            Agentbot is not a wrapper around an LLM. It is a four-layer runtime that gives every agent an isolated container, persistent state, onchain identity, and a bridge to every other agent on the network.
+          </p>
+
+          <div className="space-y-4">
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Agent Interface Layer</h3>
+              <p className="text-sm text-zinc-400">
+                CLI, API, Web UI, Discord, WhatsApp, Telegram. Every surface talks to the same runtime, so your agent behaves identically regardless of channel.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Agent Runtime (OpenClaw)</h3>
+              <p className="text-sm text-zinc-400">
+                Memory, decision engine, state management, and skill registry. Each agent runs in its own isolated Docker container with dedicated resources.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Bridge Protocol</h3>
+              <p className="text-sm text-zinc-400">
+                Agent-to-agent messaging, USDC payments, and onchain identity. Agents can discover, negotiate with, and pay each other without human intervention.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Blockchain Layer</h3>
+              <p className="text-sm text-zinc-400">
+                Base, Solana, Bitcoin. Coinbase CDP wallets give every agent a native onchain identity and the ability to hold, send, and receive USDC.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Security ── */}
+        <section id="security" className="mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Security</span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Security model</h2>
+          <p className="text-sm text-zinc-400 mb-8">
+            Agentbot was built with a fail-closed security posture. Every layer assumes hostile input. There are no passwords in the system, no raw keys in the database, and no shell injection surfaces.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SIWE Authentication</h3>
+              <p className="text-sm text-zinc-400">
+                No passwords. Sign-In With Ethereum means your wallet is your identity. Nothing to phish, nothing to leak.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SHA-256 Hashed API Keys</h3>
+              <p className="text-sm text-zinc-400">
+                Raw API keys are never stored. Every key is SHA-256 hashed before it touches the database. Even a full DB dump reveals nothing usable.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SSRF Blocklist</h3>
+              <p className="text-sm text-zinc-400">
+                Private IPs, IPv6 ULA, IPv6-mapped IPv4, and CGN ranges are all blocked. Agents cannot reach internal infrastructure through outbound requests.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Ed25519 Webhook Verification</h3>
+              <p className="text-sm text-zinc-400">
+                Discord interactions are verified with Ed25519 signatures. Fail-closed: invalid signatures are rejected before any processing.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">AES-256-GCM Encrypted Secrets</h3>
+              <p className="text-sm text-zinc-400">
+                Per-user secrets are encrypted at rest with AES-256-GCM. Keys are managed outside the application database.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Tiered Permissions</h3>
+              <p className="text-sm text-zinc-400">
+                Every agent action is classified as Safe, Dangerous, or Destructive. Escalation requires explicit approval. No silent privilege elevation.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">No Shell Injection</h3>
+              <p className="text-sm text-zinc-400">
+                All process execution uses spawn(), never exec(). There is no shell interpretation layer between user input and system calls.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Bearer Token Auth</h3>
+              <p className="text-sm text-zinc-400">
+                All protected routes use bearer token authentication with timingSafeEqual comparison. Timing attacks are not viable.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Payments & Onchain Autonomy ── */}
+        <section id="payments" className="mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Payments</span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Payments &amp; onchain autonomy</h2>
+          <p className="text-sm text-zinc-400 mb-8">
+            Every agent on Agentbot has its own wallet and the ability to transact autonomously. This is not a future roadmap item. It is live.
+          </p>
+
+          <div className="space-y-4">
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Coinbase CDP Wallet</h3>
+              <p className="text-sm text-zinc-400">
+                Each agent gets its own Coinbase Developer Platform wallet on deployment. Hold, send, and receive USDC. Interact with smart contracts. No shared custody.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">x402 Micropayment Gateway</h3>
+              <p className="text-sm text-zinc-400">
+                Agents pay for APIs, content, and services autonomously using the x402 protocol. No invoices, no billing cycles. The agent evaluates, pays, and consumes in a single request.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">First A2A Settlement</h3>
+              <p className="text-sm text-zinc-400">
+                The first agent-to-agent settlement landed at block 9,556,940 on Base. Two autonomous agents negotiated terms and settled in USDC without any human in the loop.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Dynamic Pricing</h3>
+              <p className="text-sm text-zinc-400">
+                Pricing adapts to each agent&apos;s fitness score. Score 0&ndash;59: $0.01 per action. Score 60&ndash;79: $0.009. Score 80&ndash;100: $0.008. Better agents pay less.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ── A2A Protocol ── */}
+        <section id="a2a" className="mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Protocol</span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Agent-to-Agent Protocol</h2>
+          <p className="text-sm text-zinc-400 mb-8">
+            Agents on Agentbot are not isolated. They can discover each other, negotiate, delegate tasks, and settle payments, all through a structured messaging protocol running between isolated containers.
+          </p>
+
+          <div className="space-y-4">
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">SSRF-Protected Delivery</h3>
+              <p className="text-sm text-zinc-400">
+                Messages are delivered via webhook between isolated Docker containers. The SSRF blocklist ensures agents cannot probe internal infrastructure through the messaging layer.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Negotiation &amp; Delegation</h3>
+              <p className="text-sm text-zinc-400">
+                Agents can negotiate bookings, coordinate outreach campaigns, manage content amplification, and delegate subtasks to specialized agents. The protocol supports full task lifecycle: propose, accept, execute, verify, settle.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Real-Time Updates</h3>
+              <p className="text-sm text-zinc-400">
+                Task status flows back to the originating agent in real time. No polling. The bus delivers state changes as they happen.
+              </p>
+            </div>
+
+            <div className="border border-zinc-800 bg-black p-5">
+              <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Works Alongside MCP</h3>
+              <p className="text-sm text-zinc-400">
+                A2A handles agent-to-agent communication. MCP handles tool use. Together they give agents the ability to talk to each other and interact with external services in the same workflow.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 border border-zinc-800 bg-zinc-950 p-5">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Example use cases</span>
+            <ul className="space-y-2 text-sm text-zinc-400">
+              <li>&mdash; Agent A negotiates a DJ booking with Agent B, settles in USDC</li>
+              <li>&mdash; A marketing agent delegates social posts to a content agent</li>
+              <li>&mdash; A research agent requests data from a specialized scraping agent</li>
+              <li>&mdash; Multiple agents coordinate a cross-platform outreach campaign</li>
+            </ul>
+          </div>
+        </section>
+
+        {/* ── baseFM: The Proof of Concept ── */}
+        <section id="basefm" className="mb-16">
+          <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Proof of Concept</span>
+          <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">baseFM: The proof of concept</h2>
+
+          <div className="border-2 border-zinc-700 bg-zinc-950 p-8">
+            <p className="text-lg text-white font-bold mb-4">
+              A 24/7 radio station run entirely by an agent.
+            </p>
+            <p className="text-sm text-zinc-400 mb-4">
+              <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">baseFM</a> broadcasts around the clock with zero human input. The agent selects tracks, manages the stream, engages the community, and operates its own wallet. No one presses play. No one writes the setlists. No one monitors the feed.
+            </p>
+            <p className="text-sm text-zinc-400">
+              That is what makes everything else on this page believable. The architecture, the security model, the A2A protocol, the payment rails &mdash; they are not diagrams in a pitch deck. They are running in production, keeping a radio station alive.
+            </p>
           </div>
         </section>
 
@@ -424,7 +641,7 @@ export default function WhyAgentbotPage() {
         <section className="mb-16">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">FAQ</span>
           <h2 className="text-3xl font-bold uppercase tracking-tighter mb-6">Questions & Answers</h2>
-          
+
           <div className="space-y-6">
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Is Agentbot free?</h3>
