@@ -372,6 +372,25 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Community tweet */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">From the community</div>
+          <div className="max-w-lg">
+            <blockquote className="twitter-tweet" data-theme="dark">
+              <p lang="zxx" dir="ltr">
+                <a href="https://t.co/SbyUPtltwe">https://t.co/SbyUPtltwe</a>
+              </p>
+              &mdash; esky33 (@Esky33junglist){' '}
+              <a href="https://twitter.com/Esky33junglist/status/2043491562479329427?ref_src=twsrc%5Etfw">
+                April 13, 2026
+              </a>
+            </blockquote>
+            <script async src="https://platform.twitter.com/widgets.js" charSet="utf-8" />
+          </div>
+        </div>
+      </section>
+
       {/* Explore links */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
