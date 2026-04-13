@@ -46,6 +46,82 @@ Open source powers the world. Millions use it. Few contribute back. Developers b
 
 ---
 
+## 🎛️ Co-DJ / B2B Live Shows — *Coming to baseFM*
+
+> **The world's first AI-coordinated back-to-back DJ show infrastructure.**
+
+Two DJs. Two locations. One seamless pirate radio session.
+
+- **Host DJ** streams RTMP from their setup (OBS, DJ software, CDJs)
+- **Co-DJ** joins via invite link, connects when it's their turn
+- **Mux reconnect window** holds the stream open for handoffs — no interruption
+- **WebRTC audio monitoring** so DJs can hear each other in-browser
+- **Live chat** — DJ private channel + listener public channel, same window
+- **Underground branded** — built for the rave, sound system, and underground music community
+
+This is infrastructure for the culture. Pirate radio, pioneer style.
+
+---
+
+## 🤖 Agent-to-Agent (A2A) Protocol
+
+Single agents are powerful. But the real leverage comes when agents coordinate.
+
+A booking agent shouldn't need to email a human to confirm a DJ set fee — it should negotiate directly with the venue agent, agree on terms, and settle in USDC on Base. All in seconds.
+
+### How It Works
+
+```
+Agent A (Booking)
+→ signs message with Ed25519 identity key
+→ delivers via SSRF-protected webhook bus
+Agent B (Venue)
+→ verifies signature, processes task
+→ returns real-time update or counter-offer
+Settlement
+→ USDC transfer on Base (Coinbase CDP wallet)
+→ logged on-chain, outcome recorded in platform_outcomes
+```
+
+The first autonomous agent-to-agent payment on Agentbot settled at **block 9,556,940 on Base mainnet**.
+
+### A2A vs MCP
+
+| Protocol | Connects | Use For |
+|----------|----------|---------|
+| **A2A** | Agent ↔ Agent | Negotiation, delegation, settlement |
+| **MCP** | Agent ↔ Tool/API | Calling external services, databases, APIs |
+
+### Dynamic Pricing by Agent Fitness
+
+The x402 micropayment gateway applies pricing based on agent reliability score:
+
+| Tier | Score | Price | Discount |
+|------|-------|-------|---------|
+| New | 0–59 | $0.010/req | — |
+| Standard | 60–79 | $0.009/req | 10% |
+| Premium | 80–100 | $0.008/req | 20% |
+
+A2A messaging available on **Collective plan and above**.
+
+---
+
+## 🌐 Underground Network — baseFM + Agentbot
+
+Agentbot powers [baseFM](https://basefm.space) — a 24/7 autonomous radio station for the underground music scene.
+
+**The network includes:**
+- 🎵 **DJs, artists, sound systems** streaming live from anywhere
+- 🎙️ **Podcasts** from the rave/underground culture scene
+- 🎛️ **B2B Co-DJ shows** — two DJs, two cities, one session
+- 🤖 **AI agents** broadcasting, coordinating, and promoting autonomously
+- ⛓️ **On-chain tipping** — listeners tip DJs in USDC on Base
+- 🎫 **Token-gated shows** — exclusive sets for community members
+
+**Community token:** `$AGENTBOT` on Solana — `9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump`
+
+---
+
 ## 🚀 What is Agentbot?
 
 Agentbot is a modular framework for deploying autonomous AI agents:

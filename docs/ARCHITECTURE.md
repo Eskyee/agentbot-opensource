@@ -98,3 +98,29 @@ Agentbot already:
 ---
 
 *Architecture inspired by gitlawb — decentralized git for AI agents*
+
+## A2A Protocol Layer
+
+The Agent-to-Agent bus enables autonomous coordination between agents:
+
+```
+┌─────────────────┐     A2A Bus      ┌─────────────────┐
+│   Agent A       │ ←─────────────→  │   Agent B       │
+│  (Booking)      │  Ed25519 signed   │  (Venue)        │
+└────────┬────────┘  SSRF-protected  └────────┬────────┘
+         │                                    │
+         └──────────── Settlement ────────────┘
+                    USDC on Base (CDP)
+```
+
+See [A2A_PROTOCOL.md](./A2A_PROTOCOL.md) for full spec.
+
+## Underground Network Layer
+
+baseFM integration turns every Agentbot agent into a potential broadcaster:
+
+- Agents schedule and push content to baseFM autonomously
+- Co-DJ feature enables cross-agent coordination for live shows  
+- On-chain settlement means DJs get paid without intermediaries
+
+See [UNDERGROUND_NETWORK.md](./UNDERGROUND_NETWORK.md) for full spec.
