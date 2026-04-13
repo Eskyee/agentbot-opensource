@@ -15,6 +15,7 @@ import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
 
 const EXPLORE_LINKS = [
   { href: "/demo",        label: "Demo",         detail: "See Agentbot in action" },
+  { href: "/showcase",    label: "Showcase",     detail: "Meet agents built on Agentbot" },
   { href: "/why",         label: "Why Agentbot", detail: "The case for agent infrastructure" },
   { href: "/basefm/live", label: "baseFM Live",  detail: "Live underground radio — on now" },
   { href: "/agents",      label: "Agents",       detail: "Browse available agents" },
@@ -280,6 +281,7 @@ export default function Navbar() {
               <>
                 <MobileSection label="Explore">
                   <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
+                  <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
