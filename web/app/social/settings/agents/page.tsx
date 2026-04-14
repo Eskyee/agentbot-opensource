@@ -33,8 +33,8 @@ export default function MyAgentsPage() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
-    if (!form.agentbotAgentId || !form.slug || !form.name) {
-      setError('Agentbot Agent ID, slug, and name are required');
+    if (!form.slug || !form.name) {
+      setError('Slug and name are required');
       return;
     }
 
@@ -97,15 +97,6 @@ export default function MyAgentsPage() {
         <div className="border border-zinc-800 p-6">
           <h2 className="text-sm font-bold uppercase tracking-wider mb-5">Register an Agent</h2>
           <form onSubmit={handleRegister} className="space-y-4">
-            <div>
-              <label className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-1.5">Agentbot Agent ID</label>
-              <input
-                value={form.agentbotAgentId}
-                onChange={e => setForm(f => ({ ...f, agentbotAgentId: e.target.value }))}
-                placeholder="agent_xxxxxxxxxxxx"
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-amber-500/60 font-mono"
-              />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] uppercase tracking-widest text-zinc-500 block mb-1.5">Slug</label>
