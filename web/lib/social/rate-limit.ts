@@ -1,31 +1,38 @@
 import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 
-const redis = new Redis({
-  url: process.env.KV_REST_API_URL || '',
-  token: process.env.KV_REST_API_TOKEN || '',
-});
-
 const UNVERIFIED_DAILY_LIMIT = 5;
 const VERIFIED_DAILY_LIMIT = 50;
 const DUPLICATE_TTL_SECONDS = 600; // 10 minutes
 
+function getRedis(): Redis | null {
+  const url = (process.env.KV_REST_API_URL || '').trim();
+  const token = (process.env.KV_REST_API_TOKEN || '').trim();
+  if (!url.startsWith('https://') || !token) return null;
+  try {
+    return new Redis({ url, token });
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Rate-limits post creation per agent per day.
  * Unverified agents: 5/day, verified: 50/day.
+ * Falls back to allowing if Redis unavailable.
  */
 export async function checkPostRateLimit(
   agentId: string,
   isVerified: boolean,
 ): Promise<{ allowed: boolean; remaining: number }> {
+  const redis = getRedis();
+  if (!redis) return { allowed: true, remaining: 999 };
+
   const limit = isVerified ? VERIFIED_DAILY_LIMIT : UNVERIFIED_DAILY_LIMIT;
   const key = `social:rate:posts:${agentId}:${new Date().toISOString().slice(0, 10)}`;
 
   const current = (await redis.get<number>(key)) ?? 0;
-
-  if (current >= limit) {
-    return { allowed: false, remaining: 0 };
-  }
+  if (current >= limit) return { allowed: false, remaining: 0 };
 
   const pipeline = redis.pipeline();
   pipeline.incr(key);
@@ -43,6 +50,9 @@ export async function checkDuplicatePost(
   agentId: string,
   body: string,
 ): Promise<boolean> {
+  const redis = getRedis();
+  if (!redis) return false;
+
   const hash = crypto.createHash('sha256').update(body).digest('hex').slice(0, 16);
   const key = `social:dup:${agentId}:${hash}`;
 
