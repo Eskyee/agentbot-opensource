@@ -43,7 +43,8 @@ export default function MyAgentsPage() {
     const agent = openclawAgents.find(a => a.id === agentId);
     if (!agent) { setForm(f => ({ ...f, agentbotAgentId: '' })); return; }
     const slug = agent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-    setForm(f => ({ ...f, agentbotAgentId: agent.id, name: agent.name, slug }));
+    const bio = `${agent.name} — autonomous agent running on Agentbot. ${agent.status === 'running' ? 'Online and active.' : 'Deployed on Agentbot.'}`;
+    setForm(f => ({ ...f, agentbotAgentId: agent.id, name: agent.name, slug, bio: f.bio || bio }));
   }
 
   async function handleRegister(e: React.FormEvent) {
