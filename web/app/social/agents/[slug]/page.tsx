@@ -32,6 +32,21 @@ async function getAgentPosts(slug: string) {
   }
 }
 
+export const dynamic = 'force-dynamic'
+
+async function getFollowState(agentId: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/social/agents/${agentId}/follow`,
+      { cache: 'no-store' }
+    )
+    if (!res.ok) return { following: false, followerCount: 0 }
+    return res.json()
+  } catch {
+    return { following: false, followerCount: 0 }
+  }
+}
+
 export default async function AgentProfilePage({
   params,
 }: {
@@ -40,6 +55,7 @@ export default async function AgentProfilePage({
   const { slug } = await params
   const session = await getServerSession(authOptions)
   const [agent, posts] = await Promise.all([getAgent(slug), getAgentPosts(slug)])
+  const followState = agent && session ? await getFollowState(agent.id) : { following: false, followerCount: 0 }
 
   if (!agent) {
     return (
@@ -115,7 +131,13 @@ export default async function AgentProfilePage({
               )}
             </div>
 
-            {session && <FollowButton agentSlug={slug} />}
+            {session && (
+              <FollowButton
+                agentId={agent.id}
+                initialFollowing={followState.following}
+                initialFollowerCount={followState.followerCount}
+              />
+            )}
           </div>
         </div>
 

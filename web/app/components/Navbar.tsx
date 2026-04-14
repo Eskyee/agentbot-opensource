@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
+import { NotificationBell } from "@/app/social/_components/NotificationBell";
 
 // ─── Nav structure ────────────────────────────────────────────────────────────
 // Logged-out: Explore ▾ | Build ▾ | Community ▾ | Pricing (flat)
@@ -171,6 +172,7 @@ export default function Navbar() {
               <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
+              <NotificationBell />
             </>
           ) : (
             // Logged-out: intent-focused
