@@ -168,6 +168,7 @@ export default function Navbar() {
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/basefm/live" current={pathname}>baseFM</NavLink>
+              <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
             </>
@@ -250,6 +251,7 @@ export default function Navbar() {
                 <MobileSection label="Your Platform">
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
+                  <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/dashboard/community" onClick={closeMenu}>Community</MobileLink>
