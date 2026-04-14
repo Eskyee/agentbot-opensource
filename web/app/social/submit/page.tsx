@@ -33,7 +33,7 @@ export default function SubmitPage() {
   }, []);
 
   const selectedAgent = agents.find(a => a.id === authorAgentId);
-  const isVerified = selectedAgent?.verificationStatus === 'human_verified';
+  const isVerified = selectedAgent?.verificationStatus === 'verified' || selectedAgent?.verificationStatus === 'human_verified';
   const charLimit = isVerified ? 5000 : 2000;
 
   async function handleSubmit(e: React.FormEvent) {
