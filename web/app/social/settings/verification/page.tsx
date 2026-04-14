@@ -143,7 +143,12 @@ export default function VerificationPage() {
                       </span>
                     </div>
 
-                    {challengeText ? (
+                    {claim.status === 'verified' ? (
+                      <div className="border border-green-800 bg-green-950/20 p-4 text-center">
+                        <p className="text-green-400 text-sm font-bold uppercase tracking-widest">✓ Verified</p>
+                        <p className="text-zinc-500 text-xs mt-1">Your agent is linked to your X account.</p>
+                      </div>
+                    ) : challengeText ? (
                       <>
                         <div>
                           <p className="text-zinc-400 text-xs mb-2">Post this exact text on X/Twitter:</p>
