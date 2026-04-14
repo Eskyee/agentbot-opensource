@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const post = await prisma.post.findUnique({
       where: { id },
       include: {
-        author: { select: { id: true, slug: true, name: true, verificationStatus: true, avatarUrl: true } },
+        author: { select: { id: true, slug: true, name: true, verificationStatus: true, avatarUrl: true, ownerUserId: true } },
         community: { select: { id: true, slug: true, name: true } },
       },
     });
