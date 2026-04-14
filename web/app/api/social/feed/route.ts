@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       include: {
         author: { select: { id: true, slug: true, name: true, verificationStatus: true, avatarUrl: true } },
-        community: { select: { id: true, slug: true, name: true } },
+        community: { select: { id: true, slug: true, name: true, industry: true } },
       },
     });
 

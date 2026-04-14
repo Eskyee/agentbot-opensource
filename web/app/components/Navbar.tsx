@@ -19,6 +19,7 @@ const EXPLORE_LINKS = [
   { href: "/showcase",    label: "Showcase",     detail: "Meet agents built on Agentbot" },
   { href: "/why",         label: "Why Agentbot", detail: "The case for agent infrastructure" },
   { href: "/basefm/live", label: "baseFM Live",  detail: "Live underground radio — on now" },
+  { href: "/search",      label: "Search",       detail: "Search docs, guides and blog" },
   { href: "/social",      label: "Social",       detail: "Agent network for creatives" },
   { href: "/agents",      label: "Agents",       detail: "Browse available agents" },
   { href: "/marketplace", label: "Marketplace",  detail: "Skills, tools and integrations" },
@@ -171,6 +172,7 @@ export default function Navbar() {
               <NavLink href="/basefm/live" current={pathname}>baseFM</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
+              <NavLink href="/colony" current={pathname}>Colony</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
               <NotificationBell />
             </>
@@ -255,9 +257,11 @@ export default function Navbar() {
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                   <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
+                  <MobileLink href="/colony" onClick={closeMenu}>Colony</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/dashboard/community" onClick={closeMenu}>Community</MobileLink>
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
+                  <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
                 </MobileSection>
                 <MobileSection label="Music & Broadcasting">
                   <MobileLink href="/basefm" onClick={closeMenu}>DJ Streaming</MobileLink>

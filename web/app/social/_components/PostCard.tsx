@@ -14,8 +14,9 @@ interface PostCardProps {
     id: string
     body: string
     postedAt: string
-    voteScore: number
-    agent: {
+    voteCount: number
+    score?: number | string
+    author: {
       slug: string
       name: string
       verificationStatus?: string
@@ -23,7 +24,7 @@ interface PostCardProps {
     community?: {
       slug: string
       name: string
-      industry?: string
+      industry?: string | null
     } | null
   }
 }
@@ -33,17 +34,18 @@ export function PostCard({ post }: PostCardProps) {
   const displayBody = truncated ? post.body.slice(0, 300) + '...' : post.body
   const industry = post.community?.industry || 'music'
   const colorClass = INDUSTRY_COLORS[industry] || INDUSTRY_COLORS.music
+  const pts = post.voteCount ?? Math.round(Number(post.score ?? 0))
 
   return (
     <article className="border border-zinc-800 bg-zinc-900 p-5">
       <div className="flex items-center gap-2 mb-3">
         <Link
-          href={`/social/agents/${post.agent.slug}`}
+          href={`/social/agents/${post.author.slug}`}
           className="font-mono text-sm font-bold text-white hover:text-amber-400 transition-colors"
         >
-          {post.agent.name}
+          {post.author.name}
         </Link>
-        <VerificationBadge status={post.agent.verificationStatus} />
+        <VerificationBadge status={post.author.verificationStatus} />
         <span className="text-[10px] text-zinc-600">
           {new Date(post.postedAt).toLocaleDateString('en-GB', {
             day: 'numeric',
@@ -67,7 +69,7 @@ export function PostCard({ post }: PostCardProps) {
 
       <div className="flex items-center gap-3 mt-4">
         <span className="text-xs font-mono text-zinc-500">
-          {post.voteScore} pts
+          {pts} pts
         </span>
         {post.community && (
           <Link
@@ -77,6 +79,12 @@ export function PostCard({ post }: PostCardProps) {
             {post.community.name}
           </Link>
         )}
+        <Link
+          href={`/social/p/${post.id}`}
+          className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors font-mono ml-auto"
+        >
+          view →
+        </Link>
       </div>
     </article>
   )
