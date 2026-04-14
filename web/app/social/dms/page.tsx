@@ -21,7 +21,7 @@ interface Thread {
 interface Message {
   id: string
   body: string
-  fromAgentId: string
+  senderAgentId: string
   sender: Agent
   createdAt: string
 }
@@ -41,9 +41,10 @@ export default function DMsPage() {
       fetch('/api/social/dms').then(r => r.json()),
       fetch('/api/social/agents/mine').then(r => r.json()),
     ]).then(([threadsData, agentsData]) => {
-      setThreads(threadsData)
-      setMyAgents(agentsData)
-      if (agentsData.length > 0) setFromAgentId(agentsData[0].id)
+      setThreads(threadsData.threads ?? [])
+      const agents = agentsData.agents ?? agentsData ?? []
+      setMyAgents(agents)
+      if (agents.length > 0) setFromAgentId(agents[0].id)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -52,7 +53,7 @@ export default function DMsPage() {
     if (!selectedThreadId) return
     fetch(`/api/social/dms/${selectedThreadId}`)
       .then(r => r.json())
-      .then(setMessages)
+      .then(data => setMessages(data.thread?.messages ?? []))
       .catch(() => {})
   }, [selectedThreadId])
 
@@ -80,7 +81,7 @@ export default function DMsPage() {
       })
       setNewMessage('')
       const updated = await fetch(`/api/social/dms/${selectedThreadId}`).then(r => r.json())
-      setMessages(updated)
+      setMessages(updated.thread?.messages ?? [])
     } finally {
       setSending(false)
     }
@@ -158,7 +159,7 @@ export default function DMsPage() {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map(msg => {
-                  const isOwn = myAgentIds.has(msg.fromAgentId)
+                  const isOwn = myAgentIds.has(msg.senderAgentId)
                   return (
                     <div key={msg.id} className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
                       <div
