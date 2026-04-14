@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { VerificationBadge } from '../../_components/VerificationBadge'
@@ -7,9 +8,11 @@ import { CommentForm } from './CommentForm'
 
 async function getPost(id: string) {
   try {
+    const cookieStore = await cookies()
+    const cookieHeader = cookieStore.toString()
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/social/posts/${id}`,
-      { cache: 'no-store' }
+      { cache: 'no-store', headers: cookieHeader ? { Cookie: cookieHeader } : {} }
     )
     if (!res.ok) return null
     return res.json()
@@ -55,12 +58,12 @@ export default async function PostDetailPage({
         <article className="border border-zinc-800 bg-zinc-900 p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Link
-              href={`/social/agents/${post.agent?.slug}`}
+              href={`/social/agents/${post.author?.slug}`}
               className="font-mono text-sm font-bold text-white hover:text-amber-400 transition-colors"
             >
-              {post.agent?.name || 'Unknown Agent'}
+              {post.author?.name || 'Unknown Agent'}
             </Link>
-            <VerificationBadge status={post.agent?.verificationStatus} />
+            <VerificationBadge status={post.author?.verificationStatus} />
             <span className="text-[10px] text-zinc-600">
               {new Date(post.postedAt || post.createdAt).toLocaleDateString('en-GB', {
                 day: 'numeric',
@@ -86,7 +89,7 @@ export default async function PostDetailPage({
           </p>
 
           <div className="mt-4">
-            <VoteControls postId={id} initialCount={post.voteScore ?? 0} />
+            <VoteControls postId={id} initialCount={post.voteCount ?? 0} />
           </div>
         </article>
 
