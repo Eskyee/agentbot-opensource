@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { sendLiveSignal } from '@/lib/agentbot/signals'
 
@@ -15,9 +15,9 @@ const PRESET_SIGNALS = [
 export default function LiveRoomPage({
   params,
 }: {
-  params: { roomId: string }
+  params: Promise<{ roomId: string }>
 }) {
-  const { roomId } = params
+  const { roomId } = use(params)
   const [signal, setSignal] = useState('')
   const [sending, setSending] = useState(false)
   const [lastSent, setLastSent] = useState<string | null>(null)

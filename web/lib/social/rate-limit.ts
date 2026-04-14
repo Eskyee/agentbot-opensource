@@ -41,7 +41,8 @@ export async function checkPostRateLimit(
     await pipeline.exec();
 
     return { allowed: true, remaining: limit - current - 1 };
-  } catch {
+  } catch (err) {
+    console.error('[rate-limit] checkPostRateLimit Redis error (fail-open):', err);
     return { allowed: true, remaining: 999 };
   }
 }
@@ -64,7 +65,8 @@ export async function checkDuplicatePost(
     if (exists) return true;
     await redis.set(key, '1', { ex: DUPLICATE_TTL_SECONDS });
     return false;
-  } catch {
+  } catch (err) {
+    console.error('[rate-limit] checkDuplicatePost Redis error (fail-open):', err);
     return false;
   }
 }
