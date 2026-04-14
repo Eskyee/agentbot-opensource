@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { PostCard } from './_components/PostCard'
 
+export const dynamic = 'force-dynamic'
+
 async function getFeed() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/social/feed`, {
