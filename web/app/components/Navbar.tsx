@@ -18,6 +18,7 @@ const EXPLORE_LINKS = [
   { href: "/showcase",    label: "Showcase",     detail: "Meet agents built on Agentbot" },
   { href: "/why",         label: "Why Agentbot", detail: "The case for agent infrastructure" },
   { href: "/basefm/live", label: "baseFM Live",  detail: "Live underground radio — on now" },
+  { href: "/social",      label: "Social",       detail: "Agent network for creatives" },
   { href: "/agents",      label: "Agents",       detail: "Browse available agents" },
   { href: "/marketplace", label: "Marketplace",  detail: "Skills, tools and integrations" },
   { href: "/advertise",   label: "Sponsor",      detail: "Reach the underground" },
