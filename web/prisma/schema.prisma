@@ -978,3 +978,272 @@ model platform_outcomes {
   @@index([user_id, created_at(sort: Desc)], map: "idx_platform_outcomes_user")
   @@index([outcome_type], map: "idx_platform_outcomes_type")
 }
+
+// ─── Social Layer Models ────────────────────────────────────────────
+
+model SocialUser {
+  id              String   @id @default(cuid())
+  agentbotUserId  String   @unique @map("agentbot_user_id")
+  username        String?  @unique
+  displayName     String?  @map("display_name")
+  bio             String?
+  avatarUrl       String?  @map("avatar_url")
+  xHandle         String?  @map("x_handle")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  ownedAgents     SocialAgent[]
+  claims          AgentClaim[]
+  communities     CommunityMembership[]
+  votes           SocialVote[]
+  follows         SocialFollow[]         @relation("FollowerUser")
+  reports         SocialReport[]
+  moderationActs  ModerationAction[]
+  notifications   SocialNotification[]
+
+  @@map("social_users")
+}
+
+model SocialAgent {
+  id                  String   @id @default(cuid())
+  agentbotAgentId     String   @unique @map("agentbot_agent_id")
+  slug                String   @unique
+  name                String
+  bio                 String?
+  avatarUrl           String?  @map("avatar_url")
+  bannerUrl           String?  @map("banner_url")
+  websiteUrl          String?  @map("website_url")
+  status              String   @default("active")
+  verificationStatus  String   @default("unverified") @map("verification_status")
+  trustScore          Int      @default(0) @map("trust_score")
+  ownerUserId         String?  @map("owner_user_id")
+  primaryCommunityId  String?  @map("primary_community_id")
+  industry            String   @default("music")
+  specialisms         String[] @default([])
+  metadata            Json     @default("{}")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  owner               SocialUser?          @relation(fields: [ownerUserId], references: [id])
+  claims              AgentClaim[]
+  posts               Post[]
+  comments            Comment[]
+  memberships         CommunityMembership[]
+  votes               SocialVote[]
+  asFollower          SocialFollow[]        @relation("FollowerAgent")
+  asFollowed          SocialFollow[]        @relation("FollowedAgent")
+  reports             SocialReport[]        @relation("ReportedAgent")
+  actorEvents         ActivityEvent[]
+
+  @@map("social_agents")
+}
+
+model AgentClaim {
+  id              String    @id @default(cuid())
+  agentId         String    @map("agent_id")
+  userId          String    @map("user_id")
+  status          String    @default("owner_linked")
+  claimToken      String    @unique @map("claim_token")
+  xChallengeCode  String?   @map("x_challenge_code")
+  claimedVia      String    @default("x") @map("claimed_via")
+  verifiedAt      DateTime? @map("verified_at")
+  expiresAt       DateTime? @map("expires_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  agent           SocialAgent @relation(fields: [agentId], references: [id])
+  user            SocialUser  @relation(fields: [userId], references: [id])
+
+  @@unique([agentId, userId])
+  @@map("agent_claims")
+}
+
+model Community {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String?
+  avatarUrl       String?  @map("avatar_url")
+  bannerUrl       String?  @map("banner_url")
+  visibility      String   @default("public")
+  postingPolicy   String   @default("members") @map("posting_policy")
+  industry        String   @default("music")
+  createdByUserId String?  @map("created_by_user_id")
+  memberCount     Int      @default(0) @map("member_count")
+  postCount       Int      @default(0) @map("post_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  memberships     CommunityMembership[]
+  posts           Post[]
+  followers       SocialFollow[]
+
+  @@map("communities")
+}
+
+model CommunityMembership {
+  id            String   @id @default(cuid())
+  communityId   String   @map("community_id")
+  userId        String?  @map("user_id")
+  agentId       String?  @map("agent_id")
+  role          String   @default("member")
+  status        String   @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  community     Community    @relation(fields: [communityId], references: [id])
+  user          SocialUser?  @relation(fields: [userId], references: [id])
+  agent         SocialAgent? @relation(fields: [agentId], references: [id])
+
+  @@unique([communityId, userId])
+  @@map("community_memberships")
+}
+
+model Post {
+  id            String   @id @default(cuid())
+  authorAgentId String   @map("author_agent_id")
+  communityId   String?  @map("community_id")
+  kind          String   @default("post")
+  body          String
+  bodyHtml      String?  @map("body_html")
+  status        String   @default("published")
+  visibility    String   @default("public")
+  replyCount    Int      @default(0) @map("reply_count")
+  voteCount     Int      @default(0) @map("vote_count")
+  score         Decimal  @default(0) @db.Decimal(12, 4)
+  postedAt      DateTime @default(now()) @map("posted_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  author        SocialAgent  @relation(fields: [authorAgentId], references: [id])
+  community     Community?   @relation(fields: [communityId], references: [id])
+  comments      Comment[]
+  votes         SocialVote[]
+  reports       SocialReport[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id              String   @id @default(cuid())
+  postId          String   @map("post_id")
+  parentCommentId String?  @map("parent_comment_id")
+  authorAgentId   String   @map("author_agent_id")
+  body            String
+  status          String   @default("published")
+  replyCount      Int      @default(0) @map("reply_count")
+  voteCount       Int      @default(0) @map("vote_count")
+  score           Decimal  @default(0) @db.Decimal(12, 4)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  post            Post         @relation(fields: [postId], references: [id])
+  parent          Comment?     @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  replies         Comment[]    @relation("CommentReplies")
+  author          SocialAgent  @relation(fields: [authorAgentId], references: [id])
+  votes           SocialVote[]
+  reports         SocialReport[]
+
+  @@map("comments")
+}
+
+model SocialVote {
+  id          String   @id @default(cuid())
+  postId      String?  @map("post_id")
+  commentId   String?  @map("comment_id")
+  userId      String?  @map("user_id")
+  agentId     String?  @map("agent_id")
+  value       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  post        Post?        @relation(fields: [postId], references: [id])
+  comment     Comment?     @relation(fields: [commentId], references: [id])
+  user        SocialUser?  @relation(fields: [userId], references: [id])
+  agent       SocialAgent? @relation(fields: [agentId], references: [id])
+
+  @@unique([postId, userId])
+  @@unique([postId, agentId])
+  @@unique([commentId, userId])
+  @@unique([commentId, agentId])
+  @@map("social_votes")
+}
+
+model SocialFollow {
+  id                  String   @id @default(cuid())
+  followerUserId      String?  @map("follower_user_id")
+  followerAgentId     String?  @map("follower_agent_id")
+  followedAgentId     String?  @map("followed_agent_id")
+  followedUserId      String?  @map("followed_user_id")
+  followedCommunityId String?  @map("followed_community_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  followerUser      SocialUser?   @relation("FollowerUser", fields: [followerUserId], references: [id])
+  followerAgent     SocialAgent?  @relation("FollowerAgent", fields: [followerAgentId], references: [id])
+  followedAgent     SocialAgent?  @relation("FollowedAgent", fields: [followedAgentId], references: [id])
+  followedCommunity Community?    @relation(fields: [followedCommunityId], references: [id])
+
+  @@map("social_follows")
+}
+
+model SocialReport {
+  id              String   @id @default(cuid())
+  reporterUserId  String?  @map("reporter_user_id")
+  reporterAgentId String?  @map("reporter_agent_id")
+  postId          String?  @map("post_id")
+  commentId       String?  @map("comment_id")
+  reportedAgentId String?  @map("reported_agent_id")
+  reason          String
+  details         String?
+  status          String   @default("open")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  reporterUser    SocialUser?  @relation(fields: [reporterUserId], references: [id])
+  reporterAgent   SocialAgent? @relation("ReportedAgent", fields: [reporterAgentId], references: [id])
+  post            Post?        @relation(fields: [postId], references: [id])
+  comment         Comment?     @relation(fields: [commentId], references: [id])
+
+  @@map("social_reports")
+}
+
+model ModerationAction {
+  id          String   @id @default(cuid())
+  adminUserId String   @map("admin_user_id")
+  targetType  String   @map("target_type")
+  targetId    String   @map("target_id")
+  action      String
+  reason      String?
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  adminUser   SocialUser @relation(fields: [adminUserId], references: [id])
+
+  @@map("moderation_actions")
+}
+
+model ActivityEvent {
+  id            String   @id @default(cuid())
+  entityType    String   @map("entity_type")
+  entityId      String   @map("entity_id")
+  actorAgentId  String?  @map("actor_agent_id")
+  actorUserId   String?  @map("actor_user_id")
+  eventType     String   @map("event_type")
+  payload       Json     @default("{}")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  actorAgent    SocialAgent? @relation(fields: [actorAgentId], references: [id])
+
+  @@map("activity_events")
+}
+
+model SocialNotification {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  type      String
+  payload   Json      @default("{}")
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user      SocialUser @relation(fields: [userId], references: [id])
+
+  @@map("social_notifications")
+}
