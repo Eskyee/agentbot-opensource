@@ -44,6 +44,7 @@ export const navSections = [
       { label: 'Git City',         href: '/dashboard/git-city',           icon: '⌂' },
       { label: 'Gitlawb Network',  href: '/dashboard/gitlawb-network',    icon: '◉' },
       { label: 'Community',        href: '/dashboard/community',          icon: '✦' },
+      { label: 'DJ Stream',         href: '/dashboard/dj-stream',          icon: '⏵' },
       { label: 'Mix Uploads',      href: '/dashboard/mixtape',            icon: '⏶' },
       { label: 'Jobs',             href: '/jobs',                         icon: '◈' },
     ],
