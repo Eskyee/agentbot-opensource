@@ -143,8 +143,8 @@ export function BasefmLivePlayer({
   return (
     <section className={`border border-zinc-800 bg-zinc-950/80 ${compact ? 'p-4 sm:p-5' : 'p-6 sm:p-8'}`}>
       <Script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" strategy="afterInteractive" />
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div className={`flex flex-wrap gap-3 ${minimal ? 'flex-col items-center text-center' : 'items-center justify-between'}`}>
+        <div className={minimal ? 'flex flex-col items-center' : ''}>
           <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-zinc-500">
             <Radio className={`h-3.5 w-3.5 ${stationLive ? 'text-green-400' : 'text-zinc-600'}`} />
             {stationLive ? 'On Air' : 'Standby'}
@@ -152,7 +152,7 @@ export function BasefmLivePlayer({
           <h2 className={`${compact ? 'mt-3 text-xl sm:text-2xl' : 'mt-3 text-2xl sm:text-4xl'} font-bold uppercase tracking-tighter text-white`}>
             {title}
           </h2>
-          <p className={`mt-2 max-w-2xl ${compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} text-zinc-400`}>
+          <p className={`mt-2 ${minimal ? 'max-w-xl' : 'max-w-2xl'} ${compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'} text-zinc-400`}>
             {subtitle}
           </p>
         </div>
