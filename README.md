@@ -34,6 +34,11 @@
 
 The Contract Address is: 9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
 
+Agentbot originated from a project open-sourced by developer Esky33 after 5,013 contributions in the past year, and is associated with the pumpfun GitHub sponsorship mechanism. 
+The token aims to support open-source projects, with its logo featuring a red robot wearing headphones symbolizing the collaborative spirit of the open-source community.
+
+
+
 ## 🎯 The Problem We're Solving
 
 Open source powers the world. Millions use it. Few contribute back. Developers burn out. Projects die.
