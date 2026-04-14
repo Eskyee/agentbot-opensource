@@ -10,7 +10,7 @@ export function NotificationBell() {
     fetch('/api/social/notifications')
       .then((r) => r.json())
       .then((data) => {
-        const notifications = data.notifications ?? data ?? []
+        const notifications = data.notifications ?? []
         const count = Array.isArray(notifications)
           ? notifications.filter((n: { readAt: string | null }) => !n.readAt).length
           : 0

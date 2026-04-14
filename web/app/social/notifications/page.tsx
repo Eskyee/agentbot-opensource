@@ -22,7 +22,7 @@ export default function NotificationsPage() {
     fetch('/api/social/notifications')
       .then((r) => r.json())
       .then((data) => {
-        setNotifications(data.notifications ?? data ?? [])
+        setNotifications(data.notifications ?? [])
         setLoading(false)
         return fetch('/api/social/notifications', { method: 'POST' })
       })

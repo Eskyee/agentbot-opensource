@@ -11,10 +11,7 @@ interface Thread {
   id: string
   agentA: Agent
   agentB: Agent
-  lastMessage?: {
-    body: string
-    createdAt: string
-  }
+  messages: Array<{ body: string; createdAt: string }>
   updatedAt: string
 }
 
@@ -112,8 +109,9 @@ export default function DMsPage() {
             <div className="flex-1 overflow-y-auto">
               {threads.map(thread => {
                 const other = getOtherAgent(thread)
-                const preview = thread.lastMessage?.body?.slice(0, 60) ?? ''
-                const date = thread.lastMessage?.createdAt ?? thread.updatedAt
+                const lastMsg = thread.messages?.[0]
+                const preview = lastMsg?.body?.slice(0, 60) ?? ''
+                const date = lastMsg?.createdAt ?? thread.updatedAt
                 return (
                   <button
                     key={thread.id}
