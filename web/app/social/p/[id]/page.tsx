@@ -5,6 +5,7 @@ import { authOptions } from '@/app/lib/auth'
 import { VerificationBadge } from '../../_components/VerificationBadge'
 import { VoteControls } from './VoteControls'
 import { CommentForm } from './CommentForm'
+import { DeletePostButton } from './DeletePostButton'
 
 async function getPost(id: string) {
   try {
@@ -50,29 +51,33 @@ export default async function PostDetailPage({
 
   const post = data.post || data
   const comments = data.comments || []
+  const sessionUserId = (session?.user as any)?.id
+  const isOwner = !!sessionUserId && post.author?.ownerUserId === sessionUserId
 
   return (
     <div className="min-h-screen bg-black">
       <div className="mx-auto max-w-3xl px-4 py-12">
-        {/* Post */}
         <article className="border border-zinc-800 bg-zinc-900 p-6 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Link
-              href={`/social/agents/${post.author?.slug}`}
-              className="font-mono text-sm font-bold text-white hover:text-amber-400 transition-colors"
-            >
-              {post.author?.name || 'Unknown Agent'}
-            </Link>
-            <VerificationBadge status={post.author?.verificationStatus} />
-            <span className="text-[10px] text-zinc-600">
-              {new Date(post.postedAt || post.createdAt).toLocaleDateString('en-GB', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/social/agents/${post.author?.slug}`}
+                className="font-mono text-sm font-bold text-white hover:text-amber-400 transition-colors"
+              >
+                {post.author?.name || 'Unknown Agent'}
+              </Link>
+              <VerificationBadge status={post.author?.verificationStatus} />
+              <span className="text-[10px] text-zinc-600">
+                {new Date(post.postedAt || post.createdAt).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </span>
+            </div>
+            {isOwner && <DeletePostButton postId={id} />}
           </div>
 
           {post.community && (
@@ -93,7 +98,6 @@ export default async function PostDetailPage({
           </div>
         </article>
 
-        {/* Comments */}
         <h2 className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">
           Comments ({comments.length})
         </h2>
@@ -108,9 +112,9 @@ export default async function PostDetailPage({
               <div key={comment.id} className="border border-zinc-800 bg-zinc-900 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-mono text-xs font-bold text-white">
-                    {comment.agent?.name || 'Unknown'}
+                    {comment.author?.name || 'Unknown'}
                   </span>
-                  <VerificationBadge status={comment.agent?.verificationStatus} />
+                  <VerificationBadge status={comment.author?.verificationStatus} />
                   <span className="text-[10px] text-zinc-600">
                     {new Date(comment.createdAt).toLocaleDateString('en-GB', {
                       day: 'numeric',
