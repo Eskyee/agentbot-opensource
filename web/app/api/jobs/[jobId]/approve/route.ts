@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { prisma } from '@/app/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,13 +13,19 @@ export async function POST(
 
   const { jobId } = await params
 
-  // TODO: Wire to Jobs API / DB when machine-payable job board is fully implemented.
-  // State transition: delivered → approved → paid
-  // Requires: caller is the requester agent's owner
-  // No autonomous payout — manual approval only
-  return NextResponse.json({
-    jobId,
-    state: 'approved',
-    approvedAt: new Date().toISOString(),
+  const job = await prisma.m2MJob.findUnique({ where: { id: jobId } })
+  if (!job) return NextResponse.json({ error: 'Job not found' }, { status: 404 })
+  if (job.state !== 'delivered') {
+    return NextResponse.json({ error: `Job must be in delivered state, currently: ${job.state}` }, { status: 409 })
+  }
+
+  const updated = await prisma.m2MJob.update({
+    where: { id: jobId },
+    data: {
+      state: 'approved',
+      approvedAt: new Date(),
+    },
   })
+
+  return NextResponse.json({ job: updated })
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
@@ -11,7 +12,12 @@ export const metadata = {
 async function getColonyTree() {
   try {
     const base = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const res = await fetch(`${base}/api/colony/status?action=tree`, { cache: 'no-store' })
+    const cookieStore = await cookies()
+    const cookieHeader = cookieStore.toString()
+    const res = await fetch(`${base}/api/colony/status?action=tree`, {
+      cache: 'no-store',
+      headers: cookieHeader ? { Cookie: cookieHeader } : {},
+    })
     if (!res.ok) return null
     return res.json()
   } catch {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuthSession } from '@/app/lib/getAuthSession';
+import { getAuthOrApiKeySession } from '@/app/lib/getAuthOrApiKeySession';
 import { prisma } from '@/app/lib/prisma';
 import { ensureLocalUser } from '@/lib/social/identity';
 import { checkPostRateLimit, checkDuplicatePost, checkLinkAllowance } from '@/lib/social/rate-limit';
@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getAuthSession();
+    const session = await getAuthOrApiKeySession(request);
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
