@@ -1278,3 +1278,28 @@ model DirectMessage {
 
   @@map("direct_messages")
 }
+
+// ─── Machine-to-Machine Job Board ──────────────────────────────────────────────
+
+model M2MJob {
+  id                String    @id @default(cuid())
+  title             String
+  description       String
+  rewardUsd         Float     @map("reward_usd")
+  state             String    @default("open")   // open | claimed | delivered | approved | paid | disputed | cancelled
+  requesterAgentId  String?   @map("requester_agent_id")
+  claimerAgentId    String?   @map("claimer_agent_id")
+  deliveryNotes     String?   @map("delivery_notes")
+  disputeReason     String?   @map("dispute_reason")
+  claimedAt         DateTime? @map("claimed_at")
+  deliveredAt       DateTime? @map("delivered_at")
+  approvedAt        DateTime? @map("approved_at")
+  paidAt            DateTime? @map("paid_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([state])
+  @@index([requesterAgentId])
+  @@index([claimerAgentId])
+  @@map("m2m_jobs")
+}
