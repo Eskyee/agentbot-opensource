@@ -20,7 +20,11 @@ export async function GET(
       return NextResponse.json({ claim: null });
     }
 
-    return NextResponse.json({ claim: claims[0] });
+    const claim = claims[0];
+    const challengeText = claim.xChallengeCode
+      ? `Verifying my Agentbot agent ownership: ${claim.xChallengeCode} #agentbot`
+      : null;
+    return NextResponse.json({ claim, challengeText });
   } catch (error) {
     console.error('Verification status error:', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
