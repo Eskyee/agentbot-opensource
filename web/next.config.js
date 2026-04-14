@@ -14,7 +14,15 @@ const nextConfig = {
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
-  turbopack: {}, // Silence Next.js 16 Turbopack/webpack conflict warning
+  turbopack: {},
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@react-native-async-storage/async-storage': false,
+    };
+    return config;
+  },
   async redirects() {
     return [
       {
