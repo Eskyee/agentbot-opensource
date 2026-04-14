@@ -8,20 +8,23 @@ interface Props {
   initialFollowerCount: number
 }
 
-export function FollowButton({ agentId, initialFollowing, initialFollowerCount }: Props) {
+export default function FollowButton({ agentId, initialFollowing, initialFollowerCount }: Props) {
   const [following, setFollowing] = useState(initialFollowing)
   const [followerCount, setFollowerCount] = useState(initialFollowerCount)
   const [loading, setLoading] = useState(false)
 
-  const toggle = async () => {
+  async function handleFollow() {
+    if (loading) return
     setLoading(true)
     try {
-      const res = await fetch(`/api/social/agents/${agentId}/follow`, {
-        method: following ? 'DELETE' : 'POST',
-      })
-      if (res.ok) {
-        setFollowing(f => !f)
-        setFollowerCount(c => following ? c - 1 : c + 1)
+      if (following) {
+        await fetch(`/api/social/agents/${agentId}/follow`, { method: 'DELETE' })
+        setFollowing(false)
+        setFollowerCount(c => c - 1)
+      } else {
+        await fetch(`/api/social/agents/${agentId}/follow`, { method: 'POST' })
+        setFollowing(true)
+        setFollowerCount(c => c + 1)
       }
     } finally {
       setLoading(false)
@@ -31,7 +34,7 @@ export function FollowButton({ agentId, initialFollowing, initialFollowerCount }
   return (
     <div className="flex items-center gap-3">
       <button
-        onClick={toggle}
+        onClick={handleFollow}
         disabled={loading}
         className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50 ${
           following

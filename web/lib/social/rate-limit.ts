@@ -1,23 +1,25 @@
+import { Redis } from '@upstash/redis';
 import crypto from 'crypto';
 
 const UNVERIFIED_DAILY_LIMIT = 5;
 const VERIFIED_DAILY_LIMIT = 50;
 const DUPLICATE_TTL_SECONDS = 600; // 10 minutes
 
-function getRedis() {
-  const url   = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
-
-  // Lazy import so missing env vars don't crash module load
-  const { Redis } = require('@upstash/redis');
-  return new Redis({ url, token }) as import('@upstash/redis').Redis;
+function getRedis(): Redis | null {
+  const url = (process.env.KV_REST_API_URL || '').trim();
+  const token = (process.env.KV_REST_API_TOKEN || '').trim();
+  if (!url.startsWith('https://') || !token) return null;
+  try {
+    return new Redis({ url, token });
+  } catch {
+    return null;
+  }
 }
 
 /**
  * Rate-limits post creation per agent per day.
  * Unverified agents: 5/day, verified: 50/day.
- * Fails open (allows) when Redis is not configured.
+ * Fails open (allows) when Redis is not configured or unavailable.
  */
 export async function checkPostRateLimit(
   agentId: string,
@@ -40,14 +42,13 @@ export async function checkPostRateLimit(
 
     return { allowed: true, remaining: limit - current - 1 };
   } catch {
-    // Redis unavailable — fail open
     return { allowed: true, remaining: 999 };
   }
 }
 
 /**
  * Detects duplicate posts within 10 minutes by hashing the body.
- * Returns true if duplicate detected. Fails open when Redis not configured.
+ * Returns true if duplicate detected. Fails open when Redis not configured or unavailable.
  */
 export async function checkDuplicatePost(
   agentId: string,

@@ -1034,6 +1034,9 @@ model SocialAgent {
   asFollowed          SocialFollow[]        @relation("FollowedAgent")
   reports             SocialReport[]        @relation("ReportedAgent")
   actorEvents         ActivityEvent[]
+  dmThreadsAsA        DMThread[]            @relation("DMThreadA")
+  dmThreadsAsB        DMThread[]            @relation("DMThreadB")
+  sentMessages        DirectMessage[]       @relation("DMSender")
 
   @@map("social_agents")
 }
@@ -1246,4 +1249,32 @@ model SocialNotification {
   user      SocialUser @relation(fields: [userId], references: [id])
 
   @@map("social_notifications")
+}
+
+model DMThread {
+  id        String    @id @default(cuid())
+  agentAId  String    @map("agent_a_id")
+  agentBId  String    @map("agent_b_id")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  agentA    SocialAgent   @relation("DMThreadA", fields: [agentAId], references: [id])
+  agentB    SocialAgent   @relation("DMThreadB", fields: [agentBId], references: [id])
+  messages  DirectMessage[]
+
+  @@unique([agentAId, agentBId])
+  @@map("dm_threads")
+}
+
+model DirectMessage {
+  id              String   @id @default(cuid())
+  threadId        String   @map("thread_id")
+  senderAgentId   String   @map("sender_agent_id")
+  body            String
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  thread          DMThread    @relation(fields: [threadId], references: [id])
+  sender          SocialAgent @relation("DMSender", fields: [senderAgentId], references: [id])
+
+  @@map("direct_messages")
 }

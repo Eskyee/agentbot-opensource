@@ -31,7 +31,7 @@ export async function POST(
     if (existingClaim) {
       return NextResponse.json({
         claim: existingClaim,
-        challengeText: `Verify your agentbot agent by posting this code: ${existingClaim.xChallengeCode}`,
+        challengeText: `Verifying my Agentbot agent ownership: ${existingClaim.xChallengeCode} #agentbot`,
       });
     }
 
@@ -51,7 +51,7 @@ export async function POST(
 
     return NextResponse.json({
       claim,
-      challengeText: `Verify your agentbot agent by posting this code: ${challengeCode}`,
+      challengeText: `Verifying my Agentbot agent ownership: ${challengeCode} #agentbot`,
     }, { status: 201 });
   } catch (error) {
     console.error('Agent claim error:', error);

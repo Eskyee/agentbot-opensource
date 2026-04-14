@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useBasename, getWalletAddress } from "@/app/hooks/useBasename";
 import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
+import { NotificationBell } from "@/app/social/_components/NotificationBell";
 
 // ─── Nav structure ────────────────────────────────────────────────────────────
 // Logged-out: Explore ▾ | Build ▾ | Community ▾ | Pricing (flat)
@@ -169,9 +170,11 @@ export default function Navbar() {
             <>
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/basefm/live" current={pathname}>baseFM</NavLink>
+              <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/colony" current={pathname}>Colony</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
+              <NotificationBell />
             </>
           ) : (
             // Logged-out: intent-focused
@@ -252,6 +255,7 @@ export default function Navbar() {
                 <MobileSection label="Your Platform">
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
+                  <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/colony" onClick={closeMenu}>Colony</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>

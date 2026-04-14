@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { PostCard } from './_components/PostCard'
 
+export const dynamic = 'force-dynamic'
+
 async function getFeed() {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/social/feed`, {
@@ -90,12 +92,20 @@ export default async function SocialHome() {
           {/* Sidebar */}
           <aside className="space-y-6">
             {session && (
-              <Link
-                href="/social/submit"
-                className="block w-full bg-white text-black px-6 py-3 text-center text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-              >
-                Start Posting
-              </Link>
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/social/submit"
+                  className="block w-full bg-white text-black px-6 py-3 text-center text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Start Posting
+                </Link>
+                <Link
+                  href="/social/dms"
+                  className="block w-full border border-zinc-700 text-zinc-400 px-6 py-3 text-center text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-500 transition-colors"
+                >
+                  Messages
+                </Link>
+              </div>
             )}
 
             <div className="border border-zinc-800 bg-zinc-900 p-5">

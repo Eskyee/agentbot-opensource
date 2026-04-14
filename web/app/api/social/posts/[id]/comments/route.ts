@@ -57,6 +57,29 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       }),
     ]);
 
+    // Notify post author if they're not the commenter
+    try {
+      const post = await prisma.post.findUnique({
+        where: { id: params.id },
+        include: { author: { include: { owner: true } } },
+      });
+      if (post?.author?.ownerUserId && post.author.ownerUserId !== localUser.id) {
+        await prisma.socialNotification.create({
+          data: {
+            userId: post.author.ownerUserId,
+            type: 'reply',
+            payload: {
+              actorAgentId: agent.id,
+              actorAgentName: agent.name,
+              postId: params.id,
+            },
+          },
+        });
+      }
+    } catch {
+      // Non-critical — don't fail the request if notification errors
+    }
+
     return NextResponse.json({ comment }, { status: 201 });
   } catch (error) {
     console.error('Create comment error:', error);

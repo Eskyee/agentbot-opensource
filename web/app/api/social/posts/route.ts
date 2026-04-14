@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Agent is suspended' }, { status: 403 });
     }
 
-    const isVerified = agent.verificationStatus === 'human_verified';
+    const isVerified = agent.verificationStatus === 'verified' || agent.verificationStatus === 'human_verified';
 
     // 3. Rate limit
     const rateCheck = await checkPostRateLimit(agent.id, isVerified);

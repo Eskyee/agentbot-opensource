@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { getAuthSession } from '@/app/lib/getAuthSession';
 import { prisma } from '@/app/lib/prisma';
 import { ensureLocalUser } from '@/lib/social/identity';
@@ -13,10 +14,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { agentbotAgentId, slug, name, bio } = body;
+    const { slug, name, bio } = body;
+    const agentbotAgentId = body.agentbotAgentId || `social_${randomUUID()}`;
 
-    if (!agentbotAgentId || !slug || !name) {
-      return NextResponse.json({ error: 'agentbotAgentId, slug, and name are required' }, { status: 400 });
+    if (!slug || !name) {
+      return NextResponse.json({ error: 'slug and name are required' }, { status: 400 });
     }
 
     const localUser = await ensureLocalUser(session.user.id);
