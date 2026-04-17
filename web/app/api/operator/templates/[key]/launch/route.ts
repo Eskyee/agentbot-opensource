@@ -35,52 +35,57 @@ export async function POST(
     const body = await req.json().catch(() => ({}))
     const agentName = (body.agentName as string) || `${template.name} Agent`
 
-    // Create workflow using existing Workflow model
-    const workflow = await prisma.workflow.create({
-      data: {
-        userId: session.user.id,
-        name: `${template.name} Workflow`,
-        description: template.description,
-        enabled: true,
-        nodes: {
-          create: template.nodes.map((node) => ({
-            type: node.type,
-            config: JSON.stringify(node.config),
-            position: node.position,
-          })),
+    // All three records created atomically — no orphan Workflows or Agents on partial failure
+    const { workflow, agent } = await prisma.$transaction(async (tx) => {
+      // Create workflow using existing Workflow model
+      const workflow = await tx.workflow.create({
+        data: {
+          userId: session.user.id,
+          name: `${template.name} Workflow`,
+          description: template.description,
+          enabled: true,
+          nodes: {
+            create: template.nodes.map((node) => ({
+              type: node.type,
+              config: JSON.stringify(node.config),
+              position: node.position,
+            })),
+          },
         },
-      },
-    })
+      })
 
-    // Create agent using existing Agent model
-    const agent = await prisma.agent.create({
-      data: {
-        userId: session.user.id,
-        name: agentName,
-        model: template.agentDefaults.model,
-        status: 'pending',
-        config: {
-          templateKey: template.key,
-          skills: template.agentDefaults.skills,
-          agentType: template.agentDefaults.agentType,
-        },
-      },
-    })
-
-    // Record the template launch
-    await prisma.templateLaunch.create({
-      data: {
-        userId: session.user.id,
-        templateKey: template.key,
-        workflowId: workflow.id,
-        agentId: agent.id,
-        status: 'pending',
-        config: {
-          agentName,
+      // Create agent using existing Agent model
+      const agent = await tx.agent.create({
+        data: {
+          userId: session.user.id,
+          name: agentName,
           model: template.agentDefaults.model,
-          skills: template.agentDefaults.skills,
+          status: 'pending',
+          config: {
+            templateKey: template.key,
+            skills: template.agentDefaults.skills,
+            agentType: template.agentDefaults.agentType,
+          },
         },
-      },
+      })
+
+      // Record the template launch
+      await tx.templateLaunch.create({
+        data: {
+          userId: session.user.id,
+          templateKey: template.key,
+          workflowId: workflow.id,
+          agentId: agent.id,
+          status: 'pending',
+          config: {
+            agentName,
+            model: template.agentDefaults.model,
+            skills: template.agentDefaults.skills,
+          },
+        },
+      })
+
+      return { workflow, agent }
     })
 
     return NextResponse.json({

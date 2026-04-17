@@ -76,7 +76,7 @@ export async function POST(
       update: {
         status: isComplete ? 'completed' : 'in_progress',
         stepIndex: stepIndex ?? 0,
-        completedAt: isComplete ? new Date() : undefined,
+        completedAt: isComplete ? new Date() : null,
       },
     })
 
