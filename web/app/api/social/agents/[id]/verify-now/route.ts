@@ -79,12 +79,18 @@ export async function POST(
       return NextResponse.json({ error: 'No challenge code on this claim' }, { status: 400 })
     }
 
-    // Check expiry
+    // Check expiry — use updateMany with status guard so we don't overwrite
+    // a concurrent cron verification that already flipped this claim to 'verified'.
     if (claim.expiresAt && claim.expiresAt < new Date()) {
-      await prisma.agentClaim.update({
-        where: { id: claim.id },
+      const { count } = await prisma.agentClaim.updateMany({
+        where: { id: claim.id, status: 'x_pending' },
         data: { status: 'expired', updatedAt: new Date() },
       })
+      if (count === 0) {
+        // Claim was already resolved (e.g. verified by cron) — return fresh state
+        const refreshed = await prisma.agentClaim.findUnique({ where: { id: claim.id } })
+        return NextResponse.json({ status: refreshed?.status === 'verified' ? 'already_verified' : 'expired', claim: refreshed })
+      }
       return NextResponse.json({ status: 'expired', error: 'Claim has expired — start a new one' }, { status: 410 })
     }
 
