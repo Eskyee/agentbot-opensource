@@ -23,6 +23,8 @@ export default function VerificationPage() {
   const [challengeText, setChallengeText] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verifyMsg, setVerifyMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -84,6 +86,36 @@ export default function VerificationPage() {
     if (challengeText) {
       const url = `https://x.com/intent/post?text=${encodeURIComponent(challengeText)}`;
       window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  }
+
+  async function verifyNow() {
+    if (!selectedAgentId) return;
+    setVerifying(true);
+    setVerifyMsg(null);
+    setError(null);
+    try {
+      const res = await fetch(`/api/social/agents/${selectedAgentId}/verify-now`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.status === 'verified') {
+        setClaim({ ...claim!, status: 'verified', xChallengeCode: claim?.xChallengeCode ?? null, challengeText: challengeText });
+        setVerifyMsg(null);
+      } else if (data.status === 'not_found') {
+        setVerifyMsg(data.message ?? 'Challenge code not found on X yet. Try again in a minute.');
+      } else if (data.status === 'already_verified') {
+        setClaim({ ...claim!, status: 'verified', xChallengeCode: claim?.xChallengeCode ?? null, challengeText: challengeText });
+      } else if (data.status === 'expired') {
+        setClaim({ ...claim!, status: 'expired', xChallengeCode: claim?.xChallengeCode ?? null, challengeText: challengeText });
+        setError(data.error ?? 'Claim expired');
+      } else if (!res.ok) {
+        setError(data.error ?? 'Verification check failed');
+      }
+    } catch {
+      setError('Network error — try again');
+    } finally {
+      setVerifying(false);
     }
   }
 
@@ -198,10 +230,22 @@ export default function VerificationPage() {
             {/* Step 3 */}
             {claim?.status === 'x_pending' && (
               <div className="border border-amber-900/40 bg-amber-950/10 p-5">
-                <div className="text-[10px] uppercase tracking-widest text-amber-600 mb-2">Step 3 — Awaiting review</div>
-                <p className="text-zinc-400 text-sm">
-                  Once posted, our team verifies it within 24 hours.
-                  You&apos;ll see <span className="text-amber-400">✓ Verified</span> on your agent profile when approved.
+                <div className="text-[10px] uppercase tracking-widest text-amber-600 mb-2">Step 3 — Verify</div>
+                <p className="text-zinc-400 text-sm mb-4">
+                  Once you&apos;ve posted the challenge on X, click below to verify instantly.
+                </p>
+                <button
+                  onClick={verifyNow}
+                  disabled={verifying}
+                  className="w-full bg-amber-500 text-black px-5 py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors disabled:opacity-50"
+                >
+                  {verifying ? 'Checking X…' : 'Check Now'}
+                </button>
+                {verifyMsg && (
+                  <p className="text-amber-400 text-xs mt-3">{verifyMsg}</p>
+                )}
+                <p className="text-zinc-600 text-[10px] mt-3">
+                  Automatic checks also run hourly in case you miss this.
                 </p>
               </div>
             )}

@@ -17,7 +17,7 @@ interface SoulStatus {
   dormant: boolean;
   total_cycles: number;
   mode: string;
-  fitness: {
+  fitness?: {
     total: number;
     coordination: number;
     economic: number;
@@ -26,8 +26,8 @@ interface SoulStatus {
     introspection: number;
     prediction: number;
     trend: number;
-  };
-  free_energy: {
+  } | null;
+  free_energy?: {
     F: string;
     regime: string;
     trend: string;
@@ -37,16 +37,16 @@ interface SoulStatus {
       contribution: string;
       weight: string;
     }>;
-  };
-  brain: { parameters: number; running_loss: number; train_steps: number };
-  transformer: { param_count: number; train_steps: number; running_loss: number };
-  benchmark: {
+  } | null;
+  brain?: { parameters: number; running_loss: number; train_steps: number } | null;
+  transformer?: { param_count: number; train_steps: number; running_loss: number } | null;
+  benchmark?: {
     elo_rating: number;
     elo_display: string;
     opus_iq: string;
     pass_at_1: number;
     problems_attempted: number;
-  };
+  } | null;
   goals: Array<{
     id: string;
     description: string;
@@ -62,7 +62,7 @@ interface SoulStatus {
     confidence: string;
     confirmation_count: number;
   }>;
-  capability_profile: {
+  capability_profile?: {
     overall_success_rate: number;
     strongest: string;
     weakest: string;
@@ -73,22 +73,22 @@ interface SoulStatus {
       successes: number;
       success_rate: number;
     }>;
-  };
-  role: {
+  } | null;
+  role?: {
     colony_size: number;
     rank: number;
     self_fitness: number;
     psi: number;
     phase3_ready: boolean;
     can_spawn: boolean;
-  };
-  acceleration: { alpha: string; regime: string };
-  lifecycle: { phase: string; own_commits: number; lines_diverged: number };
-  cortex: {
+  } | null;
+  acceleration?: { alpha: string; regime: string } | null;
+  lifecycle?: { phase: string; own_commits: number; lines_diverged: number } | null;
+  cortex?: {
     total_experiences: number;
     global_curiosity: number;
     emotion: { valence: number; arousal: number; drive: string };
-  };
+  } | null;
 }
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
@@ -113,6 +113,7 @@ function Bar({ value, max = 1, color = 'bg-blue-500' }: { value: number; max?: n
 }
 
 function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
+  if (!fitness) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Fitness data unavailable</div>;
   const dims = [
     { key: 'prediction', label: 'Prediction', val: fitness.prediction },
     { key: 'introspection', label: 'Introspection', val: fitness.introspection },
@@ -154,6 +155,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
 }
 
 function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
+  if (!fe) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Free energy data unavailable</div>;
   const F = parseFloat(fe.F);
   const regimeColor = fe.regime === 'LEARN' ? 'text-blue-400' : fe.regime === 'EXPLOIT' ? 'text-emerald-400' : 'text-amber-400';
   return (
@@ -222,6 +224,7 @@ function GoalsPanel({ goals }: { goals: SoulStatus['goals'] }) {
 }
 
 function BrainPanel({ brain, transformer, benchmark }: Pick<SoulStatus, 'brain' | 'transformer' | 'benchmark'>) {
+  if (!brain && !transformer && !benchmark) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Cognitive data unavailable</div>;
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center gap-2 mb-3">
@@ -231,31 +234,34 @@ function BrainPanel({ brain, transformer, benchmark }: Pick<SoulStatus, 'brain' 
       <div className="grid grid-cols-3 gap-3 text-[10px] font-mono mb-4">
         <div>
           <div className="text-zinc-600 mb-1">Brain params</div>
-          <div className="text-white">{(brain.parameters / 1000).toFixed(0)}K</div>
-          <div className="text-zinc-500">{brain.train_steps} steps</div>
-          <div className="text-zinc-500">loss {brain.running_loss.toFixed(3)}</div>
+          <div className="text-white">{brain ? `${(brain.parameters / 1000).toFixed(0)}K` : '—'}</div>
+          <div className="text-zinc-500">{brain?.train_steps ?? '—'} steps</div>
+          <div className="text-zinc-500">loss {brain?.running_loss?.toFixed(3) ?? '—'}</div>
         </div>
         <div>
           <div className="text-zinc-600 mb-1">Transformer</div>
-          <div className="text-white">{(transformer.param_count / 1000).toFixed(0)}K</div>
-          <div className="text-zinc-500">{transformer.train_steps} steps</div>
-          <div className="text-zinc-500">loss {transformer.running_loss.toFixed(3)}</div>
+          <div className="text-white">{transformer ? `${(transformer.param_count / 1000).toFixed(0)}K` : '—'}</div>
+          <div className="text-zinc-500">{transformer?.train_steps ?? '—'} steps</div>
+          <div className="text-zinc-500">loss {transformer?.running_loss?.toFixed(3) ?? '—'}</div>
         </div>
         <div>
           <div className="text-zinc-600 mb-1">IQ Benchmark</div>
-          <div className="text-white">{benchmark.opus_iq}</div>
-          <div className="text-zinc-500">{benchmark.elo_display.split('(')[0].trim()}</div>
-          <div className="text-zinc-500">{benchmark.pass_at_1.toFixed(1)}% pass@1</div>
+          <div className="text-white">{benchmark?.opus_iq ?? '—'}</div>
+          <div className="text-zinc-500">{benchmark?.elo_display?.split('(')[0].trim() ?? '—'}</div>
+          <div className="text-zinc-500">{benchmark?.pass_at_1 != null ? `${benchmark.pass_at_1.toFixed(1)}% pass@1` : '—'}</div>
         </div>
       </div>
-      <div className="text-[10px] font-mono text-zinc-500 border-t border-zinc-800 pt-3">
-        ELO {benchmark.elo_rating.toFixed(0)} · {benchmark.problems_attempted} problems attempted
-      </div>
+      {benchmark && (
+        <div className="text-[10px] font-mono text-zinc-500 border-t border-zinc-800 pt-3">
+          ELO {benchmark.elo_rating.toFixed(0)} · {benchmark.problems_attempted} problems attempted
+        </div>
+      )}
     </div>
   );
 }
 
 function CapabilityPanel({ profile }: { profile: SoulStatus['capability_profile'] }) {
+  if (!profile) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Capability data unavailable</div>;
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center justify-between mb-3">
@@ -405,15 +411,15 @@ export default function BorgDashboardPage() {
               <StatCard label="Soul Cycles" value={data.total_cycles} sub={`mode: ${data.mode}`} />
               <StatCard
                 label="Fitness"
-                value={`${Math.round(data.fitness.total * 100)}%`}
-                sub={`trend ${data.fitness.trend >= 0 ? '+' : ''}${(data.fitness.trend * 100).toFixed(3)}`}
-                accent={data.fitness.total >= 0.6 ? 'text-emerald-400' : data.fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400'}
+                value={data.fitness ? `${Math.round(data.fitness.total * 100)}%` : '—'}
+                sub={data.fitness ? `trend ${data.fitness.trend >= 0 ? '+' : ''}${(data.fitness.trend * 100).toFixed(3)}` : undefined}
+                accent={data.fitness ? (data.fitness.total >= 0.6 ? 'text-emerald-400' : data.fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400') : undefined}
               />
-              <StatCard label="IQ Score" value={data.benchmark.opus_iq} sub={`ELO ${data.benchmark.elo_rating.toFixed(0)}`} />
+              <StatCard label="IQ Score" value={data.benchmark?.opus_iq ?? '—'} sub={data.benchmark ? `ELO ${data.benchmark.elo_rating.toFixed(0)}` : undefined} />
               <StatCard
                 label="Colony Ψ"
-                value={data.role.psi.toFixed(4)}
-                sub={`${data.role.colony_size} node${data.role.colony_size !== 1 ? 's' : ''} · phase3 ${data.role.phase3_ready ? '✓' : '✗'}`}
+                value={data.role?.psi?.toFixed(4) ?? '—'}
+                sub={data.role ? `${data.role.colony_size} node${data.role.colony_size !== 1 ? 's' : ''} · phase3 ${data.role.phase3_ready ? '✓' : '✗'}` : undefined}
               />
             </div>
 
@@ -437,13 +443,19 @@ export default function BorgDashboardPage() {
 
             {/* Footer: lifecycle + emotion */}
             <div className="flex flex-wrap gap-4 text-[10px] font-mono text-zinc-600 border-t border-zinc-800 pt-4">
-              <span>phase: <span className="text-zinc-400">{data.lifecycle.phase}</span></span>
-              <span>commits: <span className="text-zinc-400">{data.lifecycle.own_commits}</span></span>
-              <span>diverged: <span className="text-zinc-400">{data.lifecycle.lines_diverged} lines</span></span>
-              <span>acceleration: <span className="text-zinc-400">α={data.acceleration.alpha} ({data.acceleration.regime})</span></span>
-              <span>emotion: <span className="text-zinc-400">valence={data.cortex.emotion.valence.toFixed(2)} arousal={data.cortex.emotion.arousal.toFixed(2)} drive={data.cortex.emotion.drive}</span></span>
-              <span>curiosity: <span className="text-zinc-400">{(data.cortex.global_curiosity * 100).toFixed(1)}%</span></span>
-              <span>experiences: <span className="text-zinc-400">{data.cortex.total_experiences}</span></span>
+              <span>phase: <span className="text-zinc-400">{data.lifecycle?.phase ?? '—'}</span></span>
+              <span>commits: <span className="text-zinc-400">{data.lifecycle?.own_commits ?? '—'}</span></span>
+              <span>diverged: <span className="text-zinc-400">{data.lifecycle?.lines_diverged != null ? `${data.lifecycle.lines_diverged} lines` : '—'}</span></span>
+              <span>acceleration: <span className="text-zinc-400">{data.acceleration ? `α=${data.acceleration.alpha} (${data.acceleration.regime})` : '—'}</span></span>
+              {data.cortex?.emotion && (
+                <span>emotion: <span className="text-zinc-400">valence={data.cortex.emotion.valence.toFixed(2)} arousal={data.cortex.emotion.arousal.toFixed(2)} drive={data.cortex.emotion.drive}</span></span>
+              )}
+              {data.cortex && (
+                <>
+                  <span>curiosity: <span className="text-zinc-400">{(data.cortex.global_curiosity * 100).toFixed(1)}%</span></span>
+                  <span>experiences: <span className="text-zinc-400">{data.cortex.total_experiences}</span></span>
+                </>
+              )}
             </div>
           </>
         )}
