@@ -287,13 +287,17 @@ export async function POST(request: NextRequest) {
     }
 
     // 24-hour cooldown between streams — applies to ALL users, no admin bypass
+    // For auto-ended sessions, ended_at may be set to detection time (not actual expiry).
+    // Use the earlier of ended_at and (started_at + MAX_SESSION_SECONDS) as the effective end.
     const lastEnded = await getLastEndedSessionForWallet(streamWallet)
     if (lastEnded?.ended_at) {
-      const elapsed = Date.now() - lastEnded.ended_at.getTime()
+      const actualExpiry = new Date(lastEnded.started_at.getTime() + MAX_SESSION_SECONDS * 1000)
+      const effectiveEnd = lastEnded.ended_at < actualExpiry ? lastEnded.ended_at : actualExpiry
+      const elapsed = Date.now() - effectiveEnd.getTime()
       if (elapsed < COOLDOWN_MS) {
         const remainingMs = COOLDOWN_MS - elapsed
         const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000))
-        const availableAt = new Date(lastEnded.ended_at.getTime() + COOLDOWN_MS).toISOString()
+        const availableAt = new Date(effectiveEnd.getTime() + COOLDOWN_MS).toISOString()
         return NextResponse.json(
           {
             error: 'cooldown_active',
