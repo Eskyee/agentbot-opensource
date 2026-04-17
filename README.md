@@ -177,11 +177,11 @@ Agentbot is a modular framework for deploying autonomous AI agents:
 
 ---
 
-## 💎 The $AGENT Token
+## 💎 The $AGENTBOT Token
 
 | Metric | Value |
 |--------|-------|
-| **Symbol** | $AGENT |
+| **Symbol** | $AGENTBOT |
 | **Chain** | Solana (SPL) |
 | **Market Cap** | ~$3,400 |
 | **Liquidity** | $4,500 (locked) |
