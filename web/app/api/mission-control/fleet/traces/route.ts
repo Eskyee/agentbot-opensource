@@ -5,7 +5,7 @@ import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config'
 export const dynamic = 'force-dynamic';
 
 // Known borg-0 public URL — always included as fallback even if env var is stale
-const BORG_0_URL = 'https://borg-0-production.up.railway.app'
+const BORG_0_URL = 'https://YOUR_SERVICE_URL'
 
 function getSoulCandidates() {
   const candidates = [DEFAULT_SOUL_SERVICE_URL, BORG_0_URL]

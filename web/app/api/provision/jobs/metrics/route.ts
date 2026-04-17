@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
 
-const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+const ADMIN_EMAILS = ['YOUR_ADMIN_EMAIL_1', 'YOUR_ADMIN_EMAIL_4', 'YOUR_ADMIN_EMAIL_2']
 
 export async function GET() {
   const session = await getAuthSession()

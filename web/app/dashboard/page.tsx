@@ -898,7 +898,7 @@ function DashboardContent() {
                 <a href="https://discord.gg/vTPG4vdV6D" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Discord
                 </a>
-                <a href="mailto:rbasefm@icloud.com" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
+                <a href="mailto:YOUR_ADMIN_EMAIL_2" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
                   Contact
                 </a>
               </div>

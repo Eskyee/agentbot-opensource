@@ -165,7 +165,7 @@ export async function provisionOnRailway(
   })
 
   // 3. Generate public domain (must happen before deploy)
-  let url = `https://${serviceName}.up.railway.app`
+  let url = `https://${serviceName}YOUR_SERVICE_URL`
   try {
     const domainResult = await railwayGql<{
       serviceDomainCreate: { domain: string }

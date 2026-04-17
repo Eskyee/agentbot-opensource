@@ -78,6 +78,20 @@ Agentbot uses git-backed collaboration (via gitlawb):
 | Identity | did:key + HTTP Signatures |
 | Storage | Vercel + Railway + gitlawb |
 
+## Public API Surface
+
+The open-source repo exposes a narrow integration layer that is safe to build against publicly:
+
+- `GET /health`
+- `GET /api/agents`
+- `GET /api/agents/:id`
+- `POST /api/agents`
+- `PUT /api/agents/:id`
+- `DELETE /api/agents/:id`
+- `POST /api/provision`
+
+The starter SDK in [`../sdk/agentbot`](../sdk/agentbot) is a typed wrapper around those endpoints.
+
 ## Self-Hosted from Day One
 
 Agentbot follows gitlawb's philosophy:

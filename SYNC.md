@@ -74,7 +74,7 @@ It checks for:
 | iCloud addresses | `yourname@icloud.com` |
 | Personal domain emails | `rbasefm@`, `eskyjunglelab@` |
 | Real 40-char wallet addresses | `0x...` (filters obvious placeholders) |
-| Railway private URLs | `*.up.railway.app` |
+| Railway private URLs | `*YOUR_SERVICE_URL` |
 | Private subdomain patterns | `borg-0-production` |
 | Real Resend API keys | `re_XXXX` |
 | Real OpenAI keys | `sk-XXXX` |
@@ -87,7 +87,7 @@ It checks for:
 |------|-----------------|
 | `web/app/onboard/page.tsx` | `ADMIN_EMAILS` array → `YOUR_ADMIN_EMAIL_*` placeholders |
 | `web/app/api/provision/route.ts` | `HARDCODED_ADMINS` array → placeholders |
-| `web/app/api/partner/route.ts` | `to: ['rbasefm@icloud.com']` → placeholder |
+| `web/app/api/partner/route.ts` | `to: ['YOUR_ADMIN_EMAIL_2']` → placeholder |
 | `web/app/api/bankr/prompt/route.ts` | fallback email → placeholder |
 | `web/app/api/bankr/balances/route.ts` | fallback email → placeholder |
 | `web/app/components/DashboardSidebar.tsx` | Borg URL → `https://YOUR_BORG_SERVICE_URL` |

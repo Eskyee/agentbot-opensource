@@ -5,7 +5,7 @@ const BRAND = {
   from: 'Agentbot <noreply@raveculture.space>',
   logo: '🦞',
   url: 'https://agentbot.sh',
-  support: 'rbasefm@icloud.com',
+  support: 'YOUR_ADMIN_EMAIL_2',
   discord: 'https://discord.gg/vTPG4vdV6D',
 }
 

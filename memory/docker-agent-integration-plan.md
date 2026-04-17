@@ -93,9 +93,9 @@ async function provisionAgent(userId, plan, yamlConfig) {
 
   return {
     serviceId: service.id,
-    url: `https://${service.slug}.up.railway.app`,
-    agentCard: `https://${service.slug}.up.railway.app/.well-known/agent-card`,
-    invokeEndpoint: `https://${service.slug}.up.railway.app/invoke`,
+    url: `https://${service.slug}YOUR_SERVICE_URL`,
+    agentCard: `https://${service.slug}YOUR_SERVICE_URL/.well-known/agent-card`,
+    invokeEndpoint: `https://${service.slug}YOUR_SERVICE_URL/invoke`,
   }
 }
 ```
@@ -360,7 +360,7 @@ Docker Agent's agent card format maps directly to our marketplace:
     { "id": "advisor", "name": "Legal Advisor", "tags": ["legal", "contracts"] },
     { "id": "drafter", "name": "Contract Drafter", "tags": ["legal", "drafting"] }
   ],
-  "url": "https://agent-xyz.up.railway.app/invoke",
+  "url": "https://YOUR_SERVICE_URL/invoke",
   "capabilities": { "streaming": true }
 }
 ```

@@ -9,7 +9,7 @@ const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'm
 const DEPLOY_FLOW_STEPS: Step[] = ['ai', 'deploy', 'done']
 // Note: Payment is handled inline — deploy() redirects to Stripe if !isPaid
 
-const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+const ADMIN_EMAILS = ['YOUR_ADMIN_EMAIL_1', 'YOUR_ADMIN_EMAIL_4', 'YOUR_ADMIN_EMAIL_2']
 
 function OnboardContent() {
   const searchParams = useSearchParams()

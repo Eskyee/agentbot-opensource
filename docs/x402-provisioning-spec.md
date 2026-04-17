@@ -6,8 +6,8 @@
 
 ## Live Service Map
 
-- Borg / soul service: `https://borg-0-production.up.railway.app`
-- x402 gateway: `https://x402-gateway-production.up.railway.app`
+- Borg / soul service: `https://YOUR_SERVICE_URL`
+- x402 gateway: `https://YOUR_SERVICE_URL`
 - Agentbot web root: `web/` on Vercel
 
 ## What Exists In Repo Today
@@ -38,7 +38,7 @@
 
 ### External Dependencies Already Live
 
-- Borg / soul health is served by `borg-0-production`.
+- Borg / soul health is served by the configured soul service host.
 - x402 payment gateway health is served by `x402-gateway-production`.
 - Agentbot already links these services in the dashboard and API layer.
 

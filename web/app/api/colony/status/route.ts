@@ -16,7 +16,7 @@ const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
 const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
 
 // Known borg-0 public URL — always included as fallback even if env var is stale
-const BORG_0_URL = 'https://borg-0-production.up.railway.app'
+const BORG_0_URL = 'https://YOUR_SERVICE_URL'
 
 function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
   const value = String(raw ?? '').toLowerCase();

@@ -7,7 +7,7 @@ Quick reference for troubleshooting Agentbot platform issues.
 | Issue | Check | Fix |
 |-------|-------|-----|
 | Token mismatch | User's unique token in `agent_registrations` | Re-fetch from DB via `/api/user/openclaw` |
-| Gateway down | Railway service status | Check `agentbot-agent-{userId}.up.railway.app` |
+| Gateway down | Railway service status | Check `agentbot-agent-{userId}YOUR_SERVICE_URL` |
 | OpenClaw not loading | moltx.io status | External - wait or notify users |
 | DB connection | Neon connection string | Check env vars in Railway |
 | Provisioning fails | Railway API key | Verify in `.env` |

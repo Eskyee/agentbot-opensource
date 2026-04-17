@@ -63,7 +63,7 @@ export async function GET(
     where: { openclawInstanceId: userId },
     select: { openclawUrl: true, plan: true },
   })
-  const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
+  const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}YOUR_SERVICE_URL`
 
   const runtime = await probeRuntime(persistedUrl)
   return NextResponse.json({

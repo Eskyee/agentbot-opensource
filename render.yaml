@@ -46,9 +46,9 @@ services:
         generateValue: true
       # Soul/Railway service URL — backend needs this to proxy to borg/x402
       - key: SOUL_SERVICE_URL
-        value: "https://x402-gateway-production.up.railway.app"
+        value: "https://YOUR_SERVICE_URL"
       - key: OPENCLAW_GATEWAY_URL
-        value: "https://x402-gateway-production.up.railway.app"
+        value: "https://YOUR_SERVICE_URL"
       - key: AGENTS_DOMAIN
         value: "agents.raveculture.xyz"
       # Set these in Render dashboard (sync: false = not in source control)

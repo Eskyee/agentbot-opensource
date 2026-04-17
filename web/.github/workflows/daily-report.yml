@@ -53,6 +53,6 @@ jobs:
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           from: Agentbot Report <${{ secrets.MAIL_USERNAME }}>
-          to: eskyjunglelab@gmail.com
+          to: YOUR_ADMIN_EMAIL_1
           subject: 📊 Agentbot Daily Report - ${{ steps.date.outputs.date }}
           body: ${{ steps.report.outputs.report }}

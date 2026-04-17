@@ -18,7 +18,7 @@ import { createServer } from 'http';
 import { readFile, writeFile } from 'fs/promises';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
-const BORG_0_URL = (process.env.BORG_0_URL || 'https://borg-0-production.up.railway.app').replace(/\/$/, '');
+const BORG_0_URL = (process.env.BORG_0_URL || 'https://YOUR_SERVICE_URL').replace(/\/$/, '');
 const DATA_FILE = process.env.DATA_FILE || '/tmp/x402-gateway-data.json';
 
 const log = {

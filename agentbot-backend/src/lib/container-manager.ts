@@ -256,17 +256,17 @@ export async function createContainer(
   // Use the Railway-provided domain (with targetPort: 18789)
   const serviceUrl = serviceDomain?.domain
     ? `https://${serviceDomain.domain}`
-    : `https://${serviceName}.up.railway.app`;
+    : `https://${serviceName}YOUR_SERVICE_URL`;
 
   const controlUiBase = (
     process.env.OPENCLAW_CONTROL_UI_URL ||
     process.env.OPENCLAW_GATEWAY_URL ||
-    'https://openclaw-production-a09d.up.railway.app'
+    'https://YOUR_SERVICE_URL'
   )
     .replace(/\/(chat|skills|config)\/?$/, '')
     .replace(/\/$/, '');
   const controlSession = process.env.OPENCLAW_CONTROL_UI_SESSION || 'agent:main:main';
-  const gatewayUrl = `wss://${serviceDomain?.domain || `${serviceName}.up.railway.app`}`;
+  const gatewayUrl = `wss://${serviceDomain?.domain || `${serviceName}YOUR_SERVICE_URL`}`;
 
   const controlUiUrl = gatewayToken
     ? `${controlUiBase}/chat?session=${encodeURIComponent(controlSession)}#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(gatewayUrl)}`

@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     // Gateway WebSocket URL
     const runtimeHost = user.openclawUrl
       ? new URL(user.openclawUrl).host
-      : `agentbot-agent-${user.openclawInstanceId}-production.up.railway.app`
+      : `agentbot-agent-${user.openclawInstanceId}YOUR_SERVICE_URL`
     const gatewayUrl = `wss://${runtimeHost}`
 
     const enqueueRes = await fetch(`${getBackendApiUrl()}/api/platform-jobs/chat`, {

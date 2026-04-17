@@ -112,7 +112,7 @@ strip_all 'raveculture@icloud\.com'            'YOUR_ADMIN_EMAIL_3'
 strip_all 'admin@agentbot\.raveculture\.xyz'   'YOUR_ADMIN_EMAIL_4'
 strip_all 'djescaba@icloud\.com'               'YOUR_ADMIN_EMAIL_5'
 
-# Private infrastructure URLs — strip ALL *.up.railway.app hostnames
+# Private infrastructure URLs — strip ALL *YOUR_SERVICE_URL hostnames
 strip_all 'https://[a-zA-Z0-9_-]*\.up\.railway\.app' 'https://YOUR_SERVICE_URL'
 strip_all '[a-zA-Z0-9_-]*\.up\.railway\.app'          'YOUR_SERVICE_URL'
 

@@ -17,6 +17,14 @@ cd web && npm install && npm run dev           # frontend → :3000
 cd agentbot-backend && npm install && npm run dev  # backend  → :4000
 ```
 
+## SDK Development
+
+The public starter SDK lives in [`sdk/agentbot`](./sdk/agentbot).
+
+- Keep it aligned with the public routes in this repo
+- Do not wire managed-platform-only endpoints into it
+- Prefer typed `fetch` wrappers over generated clients or private assumptions
+
 ## Project Structure
 
 ```
@@ -62,6 +70,7 @@ agentbot-opensource/
 Copy `web/.env.example` to `web/.env`. Required fields are documented in the [README](README.md#environment-variables).
 
 > Never commit real API keys. The CI pipeline runs GitLeaks + TruffleHog on every push.
+> Never commit personal email addresses or live infrastructure hostnames to the public repo.
 
 ## Before Opening a PR
 

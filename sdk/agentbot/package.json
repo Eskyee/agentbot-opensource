@@ -1,0 +1,10 @@
+{
+  "name": "@agentbot/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal TypeScript SDK starter for the public Agentbot API",
+  "license": "MIT",
+  "type": "module",
+  "main": "./index.ts",
+  "types": "./index.ts"
+}

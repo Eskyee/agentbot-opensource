@@ -7,7 +7,7 @@ npx prisma migrate deploy
 
 echo "Making your email admin..."
 npx prisma db execute --stdin <<SQL
-UPDATE "User" SET role = 'admin' WHERE email = 'rbasefm@icloud.com';
+UPDATE "User" SET role = 'admin' WHERE email = 'YOUR_ADMIN_EMAIL_2';
 SQL
 
 echo "Done! Check https://agentbot.raveculture.xyz/admin"

@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
     // have no saved instance URL yet.
     const gatewayUrl = String(
       userGateway?.openclawUrl ||
-      `https://agentbot-agent-${agent.id}-production.up.railway.app` ||
+      `https://agentbot-agent-${agent.id}YOUR_SERVICE_URL` ||
       DEFAULT_OPENCLAW_GATEWAY_URL
     ).replace(/\/$/, '')
 

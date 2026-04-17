@@ -37,6 +37,26 @@ The Contract Address is: 9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
 Agentbot originated from a project open-sourced by developer Esky33 after 5,013 contributions in the past year, and is associated with the pumpfun GitHub sponsorship mechanism. 
 The token aims to support open-source projects, with its logo featuring a red robot wearing headphones symbolizing the collaborative spirit of the open-source community.
 
+## New In This Catch-Up Release
+
+- Added a public starter SDK in [`sdk/agentbot`](./sdk/agentbot) for typed API access
+- Replaced live admin emails and Railway hosts with placeholders where they appeared in the public tree
+- Removed internal-only artifacts that do not belong in the open-source repo
+
+The SDK is intentionally narrow. It targets the public reference routes in this repository, not the managed private platform.
+
+```ts
+import { createAgentbotClient } from './sdk/agentbot/index'
+
+const client = createAgentbotClient({
+  baseUrl: 'http://localhost:3001',
+  apiKey: process.env.AGENTBOT_API_KEY,
+})
+
+const health = await client.getHealth()
+const agents = await client.listAgents()
+```
+
 
 
 ## 🎯 The Problem We're Solving
@@ -197,19 +217,30 @@ cp .env.example .env
 npm run start
 ```
 
-### Basic Usage
+### SDK Usage
 
 ```javascript
-import { Agent } from 'agentbot';
+import { createAgentbotClient } from './sdk/agentbot/index';
 
-const agent = new Agent({
-  name: 'MyFirstAgent',
-  skills: ['trading', 'research'],
-  memory: true
+const client = createAgentbotClient({
+  baseUrl: 'http://localhost:3001',
+  apiKey: process.env.AGENTBOT_API_KEY
 });
 
-await agent.initialize();
-await agent.run('Analyze ETH price and alert if it drops 5%');
+const created = await client.createAgent({
+  name: 'MyFirstAgent',
+  config: {
+    plan: 'solo',
+    aiProvider: 'openrouter'
+  }
+});
+
+const provisioned = await client.provisionAgent({
+  email: 'builder@example.com',
+  plan: 'solo',
+  aiProvider: 'openrouter',
+  paymentSubscriptionId: 'sub_placeholder'
+});
 ```
 
 ---
@@ -218,6 +249,8 @@ await agent.run('Analyze ETH price and alert if it drops 5%');
 
 - [Litepaper](./AGENTBOT_LITEPAPER.md) — 1-page summary
 - [Full Whitepaper](./AGENTBOT_WHITEPAPER.md) — Complete details
+- [Architecture](./docs/ARCHITECTURE.md) — system layout and public API surface
+- [SDK starter](./sdk/agentbot/README.md) — typed client for `/health`, `/api/agents`, and `/api/provision`
 - [Examples](./examples/) — Sample agents
 
 ---

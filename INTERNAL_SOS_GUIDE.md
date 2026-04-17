@@ -9,8 +9,8 @@ Last Updated: April 7, 2026
 
 | Symptom | Run This |
 |---------|----------|
-| Agent not responding | `curl https://[agent-subdomain].up.railway.app/health` |
-| Gateway down | `curl https://openclaw-production-a09d.up.railway.app/health` |
+| Agent not responding | `curl https://[agent-subdomain]YOUR_SERVICE_URL/health` |
+| Gateway down | `curl https://YOUR_SERVICE_URL/health` |
 | WebSocket fails | Check browser console for "origin not allowed" |
 | Skills won't install | Verify agent is online first |
 
@@ -111,10 +111,10 @@ Last Updated: April 7, 2026
 
 ```bash
 # Check gateway health
-curl https://openclaw-production-a09d.up.railway.app/health
+curl https://YOUR_SERVICE_URL/health
 
 # Check specific agent
-curl https://[subdomain].up.railway.app/api/status
+curl https://[subdomain]YOUR_SERVICE_URL/api/status
 
 # Database query (via prisma)
 npx prisma db execute --sql="SELECT COUNT(*) FROM Agent"

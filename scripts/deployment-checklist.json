@@ -57,10 +57,10 @@
         "title": "Railway Services",
         "items": [
           { "id": "railway-1", "task": "Confirm linked project/service status", "command": "railway status", "status": "pending", "required": true },
-          { "id": "railway-2", "task": "Verify agentbot backend health", "command": "curl https://agentbot-prod-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": true },
-          { "id": "railway-3", "task": "Verify Borg / soul health", "command": "curl https://borg-0-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": true },
-          { "id": "railway-4", "task": "Verify x402 gateway health", "command": "curl https://x402-gateway-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": true },
-          { "id": "railway-5", "task": "Verify shared OpenClaw UI health if used by current surfaces", "command": "curl https://openclaw-gw-ui-production.up.railway.app/health", "expect": "200 ok", "status": "pending", "required": false }
+          { "id": "railway-2", "task": "Verify agentbot backend health", "command": "curl https://YOUR_SERVICE_URL/health", "expect": "200 ok", "status": "pending", "required": true },
+          { "id": "railway-3", "task": "Verify Borg / soul health", "command": "curl https://YOUR_SERVICE_URL/health", "expect": "200 ok", "status": "pending", "required": true },
+          { "id": "railway-4", "task": "Verify x402 gateway health", "command": "curl https://YOUR_SERVICE_URL/health", "expect": "200 ok", "status": "pending", "required": true },
+          { "id": "railway-5", "task": "Verify shared OpenClaw UI health if used by current surfaces", "command": "curl https://YOUR_SERVICE_URL/health", "expect": "200 ok", "status": "pending", "required": false }
         ]
       }
     },
@@ -102,7 +102,7 @@
           { "id": "rb-1", "task": "Confirm rollback need from live impact", "check": "monitoring and user impact", "status": "pending", "required": true },
           { "id": "rb-2", "task": "Rollback Vercel deployment", "command": "npx vercel rollback", "status": "pending", "required": true },
           { "id": "rb-3", "task": "Rollback or redeploy affected Railway service", "check": "railway dashboard or cli", "status": "pending", "required": true },
-          { "id": "rb-4", "task": "Re-run core health checks", "command": "curl https://agentbot-prod-production.up.railway.app/health && curl https://borg-0-production.up.railway.app/health && curl https://x402-gateway-production.up.railway.app/health", "status": "pending", "required": true },
+          { "id": "rb-4", "task": "Re-run core health checks", "command": "curl https://YOUR_SERVICE_URL/health && curl https://YOUR_SERVICE_URL/health && curl https://YOUR_SERVICE_URL/health", "status": "pending", "required": true },
           { "id": "rb-5", "task": "Verify production web recovers", "command": "curl -I https://agentbot.sh", "status": "pending", "required": true },
           { "id": "rb-6", "task": "Document rollback action and cause", "check": "rollback log", "status": "pending", "required": true }
         ]

@@ -34,7 +34,7 @@ export async function GET() {
   }
 
   const instanceId = info.openclawInstanceId
-  const railwayUrl = info.openclawUrl || `https://agentbot-agent-${instanceId}-production.up.railway.app`
+  const railwayUrl = info.openclawUrl || `https://agentbot-agent-${instanceId}YOUR_SERVICE_URL`
 
   const result = {
     instanceId,
