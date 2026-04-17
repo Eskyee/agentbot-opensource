@@ -251,7 +251,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const streamWallet = hasBasefmAccess ? wallet : claimedWallet!
+    const streamWallet = (hasBasefmAccess ? wallet : claimedWallet!).toLowerCase()
 
     const existingSessions = await getCurrentSessionsForWallet(streamWallet)
     const activeExistingSession = existingSessions[0] || null
