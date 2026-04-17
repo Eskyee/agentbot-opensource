@@ -32,6 +32,8 @@
 </p>
 <br>
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Eskyee/agentbot-opensource)
+
 The Contract Address is: 9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
 
 Agentbot originated from a project open-sourced by developer Esky33 after 5,013 contributions in the past year, and is associated with the pumpfun GitHub sponsorship mechanism. 
