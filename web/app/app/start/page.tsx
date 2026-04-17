@@ -45,8 +45,8 @@ export default function StartPage() {
         return
       }
 
-      // Mark onboarding complete
-      await fetch('/api/operator/complete-onboarding', { method: 'POST' })
+      // Mark onboarding complete (fire-and-forget — non-critical side-effect)
+      fetch('/api/operator/complete-onboarding', { method: 'POST' }).catch(() => {})
 
       // Redirect to dashboard
       router.push('/dashboard')
