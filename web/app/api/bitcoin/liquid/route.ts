@@ -6,7 +6,10 @@ const LIQUID_RPC_URL = process.env.LIQUID_RPC_URL || 'https://elements-liquid-pr
 const LIQUID_RPC_USER = process.env.LIQUID_RPC_USER || 'liquidrpc'
 const LIQUID_RPC_PASS = process.env.LIQUID_RPC_PASS || ''
 
-// ── In-memory cache to reduce RPC calls when node is healthy ──
+// ── Per-instance cache to reduce RPC calls to the Liquid node ──
+// Intentionally in-memory (not DB-backed): the goal is reducing total RPC calls
+// across cold-starts, not sharing cache across Vercel instances. Each instance
+// independently backs off, which is sufficient to cut bandwidth costs.
 let cachedResponse: { data: Record<string, unknown>; ts: number } | null = null
 const CACHE_TTL_MS = 30_000 // 30 seconds — fresh enough for dashboard
 const UNREACHABLE_CACHE_TTL_MS = 60_000 // 60 seconds — back off harder when node is down

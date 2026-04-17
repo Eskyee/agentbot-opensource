@@ -98,24 +98,35 @@ export async function POST(
       })
     }
 
-    // Verify! Update claim + agent in a transaction
-    const now = new Date()
-    const [updatedClaim] = await prisma.$transaction([
-      prisma.agentClaim.update({
-        where: { id: claim.id },
+    // Verify using interactive transaction to prevent TOCTOU race
+    // (concurrent "Check Now" click or hourly cron could double-increment trustScore)
+    const result = await prisma.$transaction(async (tx) => {
+      const freshClaim = await tx.agentClaim.findUnique({ where: { id: claim.id } })
+      if (!freshClaim || freshClaim.status !== 'x_pending') {
+        return { alreadyHandled: true, claim: freshClaim }
+      }
+
+      const now = new Date()
+      const updatedClaim = await tx.agentClaim.update({
+        where: { id: freshClaim.id },
         data: { status: 'verified', verifiedAt: now, updatedAt: now },
-      }),
-      prisma.socialAgent.update({
-        where: { id: claim.agentId },
+      })
+      await tx.socialAgent.update({
+        where: { id: freshClaim.agentId },
         data: {
           verificationStatus: 'verified',
           trustScore: { increment: 50 },
           updatedAt: now,
         },
-      }),
-    ])
+      })
+      return { alreadyHandled: false, claim: updatedClaim }
+    })
 
-    return NextResponse.json({ status: 'verified', claim: updatedClaim })
+    if (result.alreadyHandled) {
+      return NextResponse.json({ status: 'already_verified', claim: result.claim })
+    }
+
+    return NextResponse.json({ status: 'verified', claim: result.claim })
   } catch (error) {
     console.error('[verify-now] Error:', error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
