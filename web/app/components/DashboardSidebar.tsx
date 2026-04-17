@@ -294,21 +294,27 @@ export const DashboardSidebar = memo(function DashboardSidebar({
           </div>
 
           {/* Operator Mode nav — additive, shown when feature flag is on */}
-          {operatorEnabled && (
+          {operatorEnabled && (() => {
+            const operatorHasActive = operatorNavSection.items.some(
+              item => pathname === item.href || pathname.startsWith(item.href + '/')
+            )
+            // Never collapse the section containing the current page
+            const isOperatorCollapsed = !operatorHasActive && !!collapsed[operatorNavSection.label]
+            return (
             <div className="mb-3">
               <button
                 onClick={() => toggleSection(operatorNavSection.label)}
                 className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
-                aria-expanded={!collapsed[operatorNavSection.label]}
+                aria-expanded={!isOperatorCollapsed}
               >
                 <span className="text-[9px] uppercase tracking-[0.15em] text-purple-500 group-hover:text-purple-400 transition-colors">
                   {operatorNavSection.label}
                 </span>
-                <span className={`text-[8px] text-purple-500 group-hover:text-purple-400 transition-all duration-200 ${collapsed[operatorNavSection.label] ? '' : 'rotate-180'}`}>
+                <span className={`text-[8px] text-purple-500 group-hover:text-purple-400 transition-all duration-200 ${isOperatorCollapsed ? '' : 'rotate-180'}`}>
                   ▲
                 </span>
               </button>
-              {!collapsed[operatorNavSection.label] && (
+              {!isOperatorCollapsed && (
                 <div className="mt-0.5 space-y-0.5">
                   {operatorNavSection.items.map((item) => {
                     const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -332,7 +338,8 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                 </div>
               )}
             </div>
-          )}
+            )
+          })()}
 
           {/* Nav sections */}
           {navSections.map((section, i) => {

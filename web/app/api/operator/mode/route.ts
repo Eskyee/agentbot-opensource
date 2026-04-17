@@ -24,6 +24,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!isOperatorModeEnabled()) {
+    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
+  }
+
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
