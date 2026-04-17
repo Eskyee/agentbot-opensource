@@ -110,7 +110,7 @@ export default async function Home() {
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a
-                  href="https://basefm.io"
+                  href="https://basefm.space"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center bg-amber-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors"

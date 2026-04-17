@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'basefm-b2b-co-dj',
+    dateLabel: '17 Apr',
+    isoDate: '2026-04-17',
+    title: 'baseFM × Agentbot: B2B Co-DJ Underground Network',
+    excerpt:
+      'The first streaming platform to let two DJs run a live B2B show from different locations. One Mux stream, a 120-second handoff window, WebRTC audio monitoring, and live chat for DJs and listeners.',
+    tags: ['baseFM', 'B2B', 'Live Streaming', 'Underground'],
+    track: 'Shipping',
+  },
+  {
     slug: 'agent-to-agent-protocol',
     dateLabel: '13 Apr',
     isoDate: '2026-04-13',
