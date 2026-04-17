@@ -440,7 +440,7 @@ export default function BorgDashboardPage() {
               <span>phase: <span className="text-zinc-400">{data.lifecycle.phase}</span></span>
               <span>commits: <span className="text-zinc-400">{data.lifecycle.own_commits}</span></span>
               <span>diverged: <span className="text-zinc-400">{data.lifecycle.lines_diverged} lines</span></span>
-              <span>acceleration: <span className="text-zinc-400">α={data.acceleration.alpha} ({data.acceleration.regime})</span></span>
+              {data.acceleration && <span>acceleration: <span className="text-zinc-400">α={data.acceleration.alpha} ({data.acceleration.regime})</span></span>}
               <span>emotion: <span className="text-zinc-400">valence={data.cortex.emotion.valence.toFixed(2)} arousal={data.cortex.emotion.arousal.toFixed(2)} drive={data.cortex.emotion.drive}</span></span>
               <span>curiosity: <span className="text-zinc-400">{(data.cortex.global_curiosity * 100).toFixed(1)}%</span></span>
               <span>experiences: <span className="text-zinc-400">{data.cortex.total_experiences}</span></span>
