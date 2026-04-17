@@ -80,23 +80,30 @@ export async function GET(req: NextRequest) {
       const found = await searchXForCode(claim.xChallengeCode, bearerToken)
 
       if (found) {
-        // Approve claim and update agent in a transaction
-        await prisma.$transaction([
-          prisma.agentClaim.update({
-            where: { id: claim.id },
+        // Atomic verify: updateMany with status guard inside interactive tx
+        // prevents double-increment if verify-now endpoint races with cron.
+        const didVerify = await prisma.$transaction(async (tx) => {
+          const { count } = await tx.agentClaim.updateMany({
+            where: { id: claim.id, status: 'x_pending' },
             data: { status: 'verified', verifiedAt: now, updatedAt: now },
-          }),
-          prisma.socialAgent.update({
+          })
+          if (count === 0) return false // already verified by verify-now
+          await tx.socialAgent.update({
             where: { id: claim.agentId },
             data: {
               verificationStatus: 'verified',
               trustScore: { increment: 50 },
               updatedAt: now,
             },
-          }),
-        ])
-        verified++
-        console.log(`[verify-x-claims] Verified claim ${claim.id} for agent ${claim.agentId}`)
+          })
+          return true
+        })
+        if (didVerify) {
+          verified++
+          console.log(`[verify-x-claims] Verified claim ${claim.id} for agent ${claim.agentId}`)
+        } else {
+          console.log(`[verify-x-claims] Claim ${claim.id} already verified — skipped`)
+        }
       } else {
         console.log(`[verify-x-claims] Code ${claim.xChallengeCode} not found on X yet`)
       }
