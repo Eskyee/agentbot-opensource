@@ -12,7 +12,7 @@
 </p>
 <p align="center">
   <a href="https://github.com/OpenClaw/openclaw">
-    <img src="https://img.shields.io/badge/runtime-OpenClaw_2026.4.10-blue" alt="Runtime">
+    <img src="https://img.shields.io/badge/runtime-OpenClaw_2026.4.15-blue" alt="Runtime">
   </a>
   <a href="https://agentbot.sh">
     <img src="https://img.shields.io/badge/site-agentbot.sh-black" alt="Website">
@@ -28,7 +28,8 @@
   <a href="https://agentbot.sh"><strong>Website</strong></a> · 
   <a href="https://docs.agentbot.raveculture.xyz"><strong>Docs</strong></a> · 
   <a href="https://discord.gg/vTPG4vdV6D"><strong>Discord</strong></a> · 
-  <a href="https://github.com/Eskyee/agentbot-opensource"><strong>Open Source Repo</strong></a>
+  <a href="https://github.com/Eskyee/agentbot-opensource"><strong>Open Source Repo</strong></a> · 
+  <a href="https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource"><strong>gitlawb Mirror</strong></a>
 </p>
 <br>
 
@@ -288,9 +289,9 @@ Agentbot is built by [Eskyee](https://github.com/Eskyee) with **5,013+ contribut
 ## 🗺️ Roadmap
 
 - [x] **Phase 1: Foundation** — Token launch, open source repo
-- [ ] **Phase 2: Growth** — Skill marketplace, staking, 1K holders
-- [ ] **Phase 3: Expansion** — Cross-chain, DAO governance
-- [ ] **Phase 4: Maturity** — Agent swarms, self-sustaining treasury
+- [x] **Phase 2: Platform** — Operator Mode, DJ streaming, token gating, baseFM integration
+- [ ] **Phase 3: Growth** — Skill marketplace, staking, 1K holders
+- [ ] **Phase 4: Expansion** — Cross-chain, DAO governance, agent swarms
 
 ---
 
@@ -319,5 +320,5 @@ MIT License — See [LICENSE](./LICENSE) for details.
 
 <p align="center">
   <b>Built with ❤️ by the community, for the community.</b><br>
-  <sub>© 2025 Agentbot DAO</sub>
+  <sub>© 2025-2026 Agentbot DAO</sub>
 </p>
