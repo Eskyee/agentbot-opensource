@@ -65,12 +65,18 @@ export async function GET(req: NextRequest) {
   for (const claim of pending) {
     // Expire overdue claims
     if (claim.expiresAt && claim.expiresAt < now) {
-      await prisma.agentClaim.update({
-        where: { id: claim.id },
+      // Use updateMany with status guard so we don't overwrite a concurrent
+      // verify-now that already flipped this claim to 'verified'.
+      const { count: expCount } = await prisma.agentClaim.updateMany({
+        where: { id: claim.id, status: 'x_pending' },
         data: { status: 'expired', updatedAt: now },
       })
-      expired++
-      console.log(`[verify-x-claims] Expired claim ${claim.id} for agent ${claim.agentId}`)
+      if (expCount > 0) {
+        expired++
+        console.log(`[verify-x-claims] Expired claim ${claim.id} for agent ${claim.agentId}`)
+      } else {
+        console.log(`[verify-x-claims] Claim ${claim.id} already resolved — skipped expiry`)
+      }
       continue
     }
 
