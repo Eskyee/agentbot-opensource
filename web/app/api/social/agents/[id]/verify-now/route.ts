@@ -136,6 +136,14 @@ export async function POST(
     })
 
     if (result.alreadyHandled) {
+      // Check actual claim state — could be verified OR expired by cron
+      const actualStatus = result.claim?.status
+      if (actualStatus === 'expired') {
+        return NextResponse.json(
+          { status: 'expired', error: 'Claim has expired — start a new one' },
+          { status: 410 },
+        )
+      }
       return NextResponse.json({ status: 'already_verified', claim: result.claim })
     }
 
