@@ -10,7 +10,7 @@ import StatusPill from '@/app/components/shared/StatusPill'
 import type { BasefmDistributionState } from '@/app/lib/basefmDistribution'
 
 const BASEFM_TOKEN_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
-const BASEFM_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 BASEFM in wei
+const BASEFM_THRESHOLD = BigInt('2500000000000000000000000') // 2,500,000 BASEFM in wei — covers Mux USDC costs + profit
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
 interface CommunityProgramResponse {
@@ -597,13 +597,13 @@ export default function DJStreamPage() {
                     <span className="text-xs text-zinc-500 uppercase tracking-widest">BASEFM</span>
                   </div>
                   <p className="text-zinc-600 text-xs">
-                    Required: 1,250,000 BASEFM · Gate: $BASEFM token on Base
+                    Required: 2,500,000 BASEFM · Gate: $BASEFM token on Base
                   </p>
 
                   {!hasAccess && (
                     <div className="mt-4 border border-zinc-800 p-4">
                       <p className="text-zinc-500 text-xs mb-1">
-                        Need 1,250,000 BASEFM to stream. Acquire on Base and come back here.
+                        Need 2,500,000 BASEFM to stream. Acquire on Base and come back here.
                       </p>
                       <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
                         Stripe payment option coming soon

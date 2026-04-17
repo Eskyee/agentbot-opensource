@@ -13,7 +13,7 @@ const COOLDOWN_MS = COOLDOWN_HOURS * 60 * 60 * 1000
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
 const BASEFM_TOKEN_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
-const BASEFM_TOKEN_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 BASEFM in wei
+const BASEFM_TOKEN_THRESHOLD = BigInt('2500000000000000000000000') // 2,500,000 BASEFM in wei — covers Mux USDC costs + profit
 
 type ActiveDjSession = {
   id: number
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
 
     if (!hasBasefmAccess && !hasCommunityPass) {
       return NextResponse.json(
-        { error: 'Insufficient BASEFM tokens or community guest pass. Need 1,250,000 BASEFM or a Builder/Whale Agentbot claim.' },
+        { error: 'Insufficient BASEFM tokens or community guest pass. Need 2,500,000 BASEFM or a Builder/Whale Agentbot claim.' },
         { status: 403 }
       )
     }
