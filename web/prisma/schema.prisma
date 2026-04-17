@@ -1303,3 +1303,46 @@ model M2MJob {
   @@index([claimerAgentId])
   @@map("m2m_jobs")
 }
+
+// ── Operator Mode (additive tables only) ─────────────────────────────────────
+
+model UserPreference {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String   // preferred_mode | onboarding_complete | operator_theme
+  value     String   // "operator" | "advanced" | "true" | "false"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+model TemplateLaunch {
+  id           String   @id @default(cuid())
+  userId       String
+  templateKey  String   // e.g. "music-promoter", "community-manager"
+  workflowId   String?  // links to the Workflow created from this template
+  agentId      String?  // links to the Agent created from this template
+  status       String   @default("pending") // pending | provisioning | running | failed
+  config       Json?    // snapshot of launch config
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([templateKey])
+}
+
+model TutorialProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  tutorialKey String    // e.g. "deploy-first-agent", "connect-telegram"
+  status      String    @default("not_started") // not_started | in_progress | completed
+  stepIndex   Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, tutorialKey])
+  @@index([userId])
+}

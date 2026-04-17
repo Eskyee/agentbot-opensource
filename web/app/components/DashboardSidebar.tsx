@@ -14,6 +14,18 @@ import { usePathname } from 'next/navigation'
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control'
 import { customSignOut } from '@/app/lib/useCustomSession'
 
+// Operator Mode nav — additive only, shown when feature flag is on
+export const operatorNavSection = {
+  label: 'Start Here',
+  items: [
+    { label: 'Get Started',  href: '/app/start',     icon: '▶' },
+    { label: 'Activity',     href: '/app/activity',   icon: '◉' },
+    { label: 'Templates',    href: '/app/templates',  icon: '◫' },
+    { label: 'Learn',        href: '/app/tutorials',  icon: '?' },
+    { label: 'Advanced',     href: '/app/advanced',   icon: '◈' },
+  ],
+}
+
 export const navSections = [
   {
     label: 'Runtime',
@@ -117,6 +129,15 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   const [gatewayToken, setGatewayToken] = useState<string | null>(null)
   // Start fully expanded (safe for SSR), hydrate from localStorage in effect
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  // Operator mode flag — fetched client-side so SSR doesn't break
+  const [operatorEnabled, setOperatorEnabled] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/operator/mode')
+      .then(r => r.json())
+      .then(data => { if (data.operatorEnabled) setOperatorEnabled(true) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     try {
@@ -271,6 +292,47 @@ export const DashboardSidebar = memo(function DashboardSidebar({
               </a>
             )}
           </div>
+
+          {/* Operator Mode nav — additive, shown when feature flag is on */}
+          {operatorEnabled && (
+            <div className="mb-3">
+              <button
+                onClick={() => toggleSection(operatorNavSection.label)}
+                className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
+                aria-expanded={!collapsed[operatorNavSection.label]}
+              >
+                <span className="text-[9px] uppercase tracking-[0.15em] text-purple-500 group-hover:text-purple-400 transition-colors">
+                  {operatorNavSection.label}
+                </span>
+                <span className={`text-[8px] text-purple-500 group-hover:text-purple-400 transition-all duration-200 ${collapsed[operatorNavSection.label] ? '' : 'rotate-180'}`}>
+                  ▲
+                </span>
+              </button>
+              {!collapsed[operatorNavSection.label] && (
+                <div className="mt-0.5 space-y-0.5">
+                  {operatorNavSection.items.map((item) => {
+                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        prefetch={false}
+                        onClick={onToggle}
+                        className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
+                          isActive
+                            ? 'bg-purple-900/20 text-purple-300'
+                            : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                        }`}
+                      >
+                        <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Nav sections */}
           {navSections.map((section, i) => {
