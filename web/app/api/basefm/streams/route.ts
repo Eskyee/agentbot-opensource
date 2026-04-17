@@ -7,6 +7,8 @@ import { getMuxCredentials, retireMuxLiveStream } from '@/app/lib/basefmMux'
 import { prisma } from '@/app/lib/prisma'
 
 const MAX_SESSION_SECONDS = 7200 // 2 hours
+const COOLDOWN_HOURS = 24
+const COOLDOWN_MS = COOLDOWN_HOURS * 60 * 60 * 1000
 
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
@@ -158,6 +160,21 @@ async function verifyBASEFMBalance(walletAddress: string): Promise<boolean> {
   }
 }
 
+/**
+ * 24-hour cooldown between DJ streams — applies to ALL users, no admin bypass.
+ * Returns the most recent ended session if still within cooldown window.
+ */
+async function getLastEndedSessionForWallet(wallet: string) {
+  return prisma.dj_sessions.findFirst({
+    where: {
+      wallet,
+      status: { in: ['ended', 'auto-ended', 'archived'] },
+      ended_at: { not: null },
+    },
+    orderBy: { ended_at: 'desc' },
+  })
+}
+
 function getArchiveCreditCost() {
   const raw = process.env.BASEFM_ARCHIVE_CREDIT_COST
   if (!raw) return null
@@ -265,6 +282,26 @@ export async function POST(request: NextRequest) {
             sessionId: blockingSession.id,
           },
           { status: 409 }
+        )
+      }
+    }
+
+    // 24-hour cooldown between streams — applies to ALL users, no admin bypass
+    const lastEnded = await getLastEndedSessionForWallet(streamWallet)
+    if (lastEnded?.ended_at) {
+      const elapsed = Date.now() - lastEnded.ended_at.getTime()
+      if (elapsed < COOLDOWN_MS) {
+        const remainingMs = COOLDOWN_MS - elapsed
+        const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000))
+        const availableAt = new Date(lastEnded.ended_at.getTime() + COOLDOWN_MS).toISOString()
+        return NextResponse.json(
+          {
+            error: 'cooldown_active',
+            message: `${COOLDOWN_HOURS}-hour cooldown between streams. Available in ~${remainingHours}h.`,
+            cooldownRemaining: Math.ceil(remainingMs / 1000),
+            availableAt,
+          },
+          { status: 429 }
         )
       }
     }

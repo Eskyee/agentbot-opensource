@@ -305,7 +305,7 @@ export default function DJStreamPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error || 'Failed to create stream')
+        setError(data.message || data.error || 'Failed to create stream')
       } else {
         setStream(data.stream)
         setStreamSessionToken(data?.session?.accessToken || null)
