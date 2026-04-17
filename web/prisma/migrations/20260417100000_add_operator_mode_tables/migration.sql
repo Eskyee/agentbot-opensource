@@ -47,3 +47,8 @@ CREATE INDEX "TemplateLaunch_templateKey_idx" ON "TemplateLaunch"("templateKey")
 
 CREATE INDEX "TutorialProgress_userId_idx" ON "TutorialProgress"("userId");
 CREATE UNIQUE INDEX "TutorialProgress_userId_tutorialKey_key" ON "TutorialProgress"("userId", "tutorialKey");
+
+-- Foreign key constraints with cascading delete
+ALTER TABLE "UserPreference" ADD CONSTRAINT "UserPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "TemplateLaunch" ADD CONSTRAINT "TemplateLaunch_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "TutorialProgress" ADD CONSTRAINT "TutorialProgress_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
