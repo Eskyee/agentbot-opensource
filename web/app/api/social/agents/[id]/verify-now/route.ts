@@ -98,35 +98,33 @@ export async function POST(
       })
     }
 
-    // Verify using interactive transaction to prevent TOCTOU race
-    // (concurrent "Check Now" click or hourly cron could double-increment trustScore)
-    const result = await prisma.$transaction(async (tx) => {
-      const freshClaim = await tx.agentClaim.findUnique({ where: { id: claim.id } })
-      if (!freshClaim || freshClaim.status !== 'x_pending') {
-        return { alreadyHandled: true, claim: freshClaim }
-      }
-
-      const now = new Date()
-      const updatedClaim = await tx.agentClaim.update({
-        where: { id: freshClaim.id },
-        data: { status: 'verified', verifiedAt: now, updatedAt: now },
-      })
-      await tx.socialAgent.update({
-        where: { id: freshClaim.agentId },
-        data: {
-          verificationStatus: 'verified',
-          trustScore: { increment: 50 },
-          updatedAt: now,
-        },
-      })
-      return { alreadyHandled: false, claim: updatedClaim }
+    // Atomic verify: updateMany with status guard prevents double-increment
+    // under Read Committed isolation (concurrent "Check Now" or hourly cron).
+    // If count === 0, another request already flipped the status.
+    const now = new Date()
+    const { count } = await prisma.agentClaim.updateMany({
+      where: { id: claim.id, status: 'x_pending' },
+      data: { status: 'verified', verifiedAt: now, updatedAt: now },
     })
 
-    if (result.alreadyHandled) {
-      return NextResponse.json({ status: 'already_verified', claim: result.claim })
+    if (count === 0) {
+      // Another request (or the cron) already verified this claim
+      const refreshed = await prisma.agentClaim.findUnique({ where: { id: claim.id } })
+      return NextResponse.json({ status: 'already_verified', claim: refreshed })
     }
 
-    return NextResponse.json({ status: 'verified', claim: result.claim })
+    // Claim flipped — now safe to increment trustScore exactly once
+    await prisma.socialAgent.update({
+      where: { id: claim.agentId },
+      data: {
+        verificationStatus: 'verified',
+        trustScore: { increment: 50 },
+        updatedAt: now,
+      },
+    })
+
+    const updatedClaim = await prisma.agentClaim.findUnique({ where: { id: claim.id } })
+    return NextResponse.json({ status: 'verified', claim: updatedClaim })
   } catch (error) {
     console.error('[verify-now] Error:', error)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
