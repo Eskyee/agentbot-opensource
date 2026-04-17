@@ -38,7 +38,7 @@ function getSessionRemainingSeconds(activeSession: Pick<ActiveDjSession, 'starte
 async function getCurrentSessionsForWallet(wallet: string) {
   return prisma.dj_sessions.findMany({
     where: {
-      wallet,
+      wallet: { equals: wallet, mode: 'insensitive' },
       status: { in: [...CURRENT_SESSION_STATUSES] },
     },
     orderBy: { started_at: 'desc' },
@@ -167,7 +167,7 @@ async function verifyBASEFMBalance(walletAddress: string): Promise<boolean> {
 async function getLastEndedSessionForWallet(wallet: string) {
   return prisma.dj_sessions.findFirst({
     where: {
-      wallet,
+      wallet: { equals: wallet, mode: 'insensitive' },
       status: { in: ['ended', 'auto-ended', 'archived'] },
       ended_at: { not: null },
     },
