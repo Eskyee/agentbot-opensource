@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { getLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
 
 const BASEFM_URL = process.env.BASEFM_SPACE_URL || 'https://basefm.space'
 
@@ -15,8 +16,11 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const legacyId = await getLegacyUserIdByEmail(session.user.email)
+  if (!legacyId) return NextResponse.json({ linked: false })
+
   const user = await prisma.users.findUnique({
-    where: { id: session.user.id },
+    where: { id: legacyId },
     select: { basefm_wallet: true },
   })
 

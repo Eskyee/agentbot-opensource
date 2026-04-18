@@ -192,8 +192,12 @@ CREATE TABLE IF NOT EXISTS invite_codes (
   used BOOLEAN NOT NULL DEFAULT FALSE,
   used_at TIMESTAMPTZ,
   created_by TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ
 );
+-- Backfill-safe: add expires_at for deployments that created the table before this column existed.
+-- NULL expires_at means "never expires" (preserves existing codes).
+ALTER TABLE invite_codes ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
 
 -- Agent registrations (replaces in-memory registrations map — survives restarts)
 CREATE TABLE IF NOT EXISTS agent_registrations (

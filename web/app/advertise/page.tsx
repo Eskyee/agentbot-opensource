@@ -125,7 +125,7 @@ export default function AdvertisePage() {
                       : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'
                   }`}
                 >
-                  {s.highlighted && (
+                  {'highlighted' in s && s.highlighted && (
                     <span className="absolute -top-2.5 left-4 rounded-full bg-white px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-black">
                       Best Value
                     </span>

@@ -232,7 +232,7 @@ export default function SignalsPage() {
           }))
         : [];
       setManagedEvents(events);
-      seenIdsRef.current = new Set(events.map((event) => event.id));
+      seenIdsRef.current = new Set(events.map((event: { id: string }) => event.id));
 
       if (json.workflowRunId) {
         connectToStream(json.workflowRunId);

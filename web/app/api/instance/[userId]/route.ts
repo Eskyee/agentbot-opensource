@@ -3,6 +3,7 @@ import { verifyInstanceOwnership } from '../_auth'
 import { prisma } from '@/app/lib/prisma'
 import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
 import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
+import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 
 export async function GET(
   request: NextRequest,

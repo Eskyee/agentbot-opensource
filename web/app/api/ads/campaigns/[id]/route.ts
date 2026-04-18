@@ -136,7 +136,7 @@ export async function PATCH(
   if (action === 'complete') {
     await prisma.ad_campaigns.update({
       where: { id },
-      data:  { status: 'complete', ended_at: new Date() },
+      data:  { status: 'complete', ends_at: new Date() },
     })
     return NextResponse.json({ success: true, status: 'complete' })
   }

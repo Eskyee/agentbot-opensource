@@ -29,7 +29,7 @@ router.post('/generate', requireInternalAuth, async (req: Request, res: Response
   const code = randomBytes(6).toString('hex');
   try {
     await pool.query(
-      'INSERT INTO invite_codes (code, used, created_at) VALUES ($1, FALSE, NOW())',
+      "INSERT INTO invite_codes (code, used, created_at, expires_at) VALUES ($1, FALSE, NOW(), NOW() + INTERVAL '30 days')",
       [code]
     );
     res.json({ code });
@@ -52,6 +52,7 @@ router.post('/validate', async (req: Request, res: Response) => {
       `UPDATE invite_codes
          SET used = TRUE, used_at = NOW()
        WHERE code = $1 AND used = FALSE
+         AND (expires_at IS NULL OR expires_at > NOW())
        RETURNING code`,
       [code]
     );

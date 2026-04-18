@@ -56,10 +56,10 @@ export async function getAuthSession(): Promise<AuthSession | null> {
   if (nextAuthSession?.user) {
     return {
       user: {
-        id: (nextAuthSession.user as any).id || '',
+        id: nextAuthSession.user.id || '',
         name: nextAuthSession.user.name || null,
         email: nextAuthSession.user.email || null,
-        isAdmin: (nextAuthSession.user as any).isAdmin ?? false,
+        isAdmin: nextAuthSession.user.isAdmin ?? false,
       },
     };
   }

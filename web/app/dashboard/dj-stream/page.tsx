@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { coinbaseWallet } from 'wagmi/connectors'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
@@ -23,6 +24,7 @@ interface CommunityProgramResponse {
     currentTier: {
       label: string
     } | null
+    walletAddress?: string | null
   }
 }
 
@@ -289,7 +291,7 @@ export default function DJStreamPage() {
   }
 
   const createStream = async () => {
-    const streamWallet = hasRaveAccess ? address : claimedWallet
+    const streamWallet = hasBasefmAccess ? address : claimedWallet
     if (!streamWallet) return
 
     setLoading(true)

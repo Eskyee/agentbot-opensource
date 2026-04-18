@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { stripe } from '@/app/lib/stripe'
+import type Stripe from 'stripe'
 import { sendAlert } from '@/app/lib/alerts'
 
 const ADMIN_EMAILS = (
@@ -113,7 +114,7 @@ export async function POST(request: NextRequest) {
   // Build Stripe checkout line items.
   // Subscriber discount bypasses pre-configured price IDs so we can apply the 50% amount directly.
   const priceId = subscriberDiscount ? null : getStripePrice(slotType)
-  const lineItems: Parameters<typeof stripe.checkout.sessions.create>[0]['line_items'] = priceId
+  const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priceId
     ? [{ price: priceId, quantity: 1 }]
     : [{
         quantity: 1,

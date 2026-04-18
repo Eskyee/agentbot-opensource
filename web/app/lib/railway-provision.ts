@@ -32,7 +32,7 @@ function getRailwayTokenType(): RailwayTokenType {
   return 'account'
 }
 
-function getRailwayAuthHeaders(key: string) {
+function getRailwayAuthHeaders(key: string): Record<string, string> {
   return getRailwayTokenType() === 'project'
     ? {
         'Project-Access-Token': key,

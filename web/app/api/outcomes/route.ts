@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { getLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
 
 const VALID_TYPES = [
   'negotiation_complete',
@@ -63,7 +64,10 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  userId = session.user.id
+  userId = await getLegacyUserIdByEmail(session.user.email)
+  if (!userId) {
+    return NextResponse.json({ error: 'Legacy user record not found' }, { status: 404 })
+  }
 
   const body = await req.json()
 
@@ -100,8 +104,11 @@ export async function GET(req: NextRequest) {
 
   const limit = Math.min(50, parseInt(req.nextUrl.searchParams.get('limit') || '20'))
 
+  const legacyId = await getLegacyUserIdByEmail(session.user.email)
+  if (!legacyId) return NextResponse.json({ outcomes: [] })
+
   const outcomes = await prisma.platform_outcomes.findMany({
-    where:   { user_id: session.user.id },
+    where:   { user_id: legacyId },
     orderBy: { created_at: 'desc' },
     take:    limit,
   })

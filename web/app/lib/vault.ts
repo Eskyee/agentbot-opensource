@@ -61,7 +61,7 @@ export async function listVaultCredentialsForUser(userId: string): Promise<Manag
     hasEncryptedUserSetting(userId, BANKR_API_KEY_SETTING_KEY),
   ])
 
-  return [
+  const creds: ManagedVaultCredential[] = [
     {
       id: `x:${userId}`,
       provider: 'x',
@@ -78,7 +78,8 @@ export async function listVaultCredentialsForUser(userId: string): Promise<Manag
       mcpServerUrl: getConfiguredMcpUrl('bankr'),
       displayName: 'Bankr API Key',
     },
-  ].filter((credential) => credential.configured)
+  ]
+  return creds.filter((credential) => credential.configured)
 }
 
 export async function buildManagedVaultContextForUser(userId: string) {

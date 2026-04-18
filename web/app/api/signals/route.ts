@@ -139,8 +139,11 @@ export async function GET() {
     }),
   ])
 
+  // Tag X signals with platform to conform to Signal shape
+  const xSignalsTagged: Signal[] = xSignals.map((s) => ({ ...s, platform: 'twitter' as const }))
+
   // Deduplicate by content similarity
-  const all = [...hnSignals, ...redditSignals, ...xSignals]
+  const all: Signal[] = [...hnSignals, ...redditSignals, ...xSignalsTagged]
   const seen = new Set<string>()
   const unique: Signal[] = []
   for (const sig of all) {

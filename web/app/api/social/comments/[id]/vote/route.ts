@@ -5,8 +5,9 @@ import { ensureLocalUser } from '@/lib/social/identity';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getAuthSession();
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -18,29 +19,29 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       return NextResponse.json({ error: 'Vote value must be 1 or -1' }, { status: 400 });
     }
 
-    const comment = await prisma.comment.findUnique({ where: { id: params.id } });
+    const comment = await prisma.comment.findUnique({ where: { id } });
     if (!comment || comment.status === 'removed') {
       return NextResponse.json({ error: 'Comment not found' }, { status: 404 });
     }
 
     const existing = await prisma.socialVote.findFirst({
-      where: { commentId: params.id, userId: localUser.id },
+      where: { commentId: id, userId: localUser.id },
     });
 
     if (existing) {
       const diff = value - existing.value;
       await prisma.$transaction([
         prisma.socialVote.update({ where: { id: existing.id }, data: { value } }),
-        prisma.comment.update({ where: { id: params.id }, data: { voteCount: { increment: diff } } }),
+        prisma.comment.update({ where: { id }, data: { voteCount: { increment: diff } } }),
       ]);
     } else {
       await prisma.$transaction([
-        prisma.socialVote.create({ data: { commentId: params.id, userId: localUser.id, value } }),
-        prisma.comment.update({ where: { id: params.id }, data: { voteCount: { increment: value } } }),
+        prisma.socialVote.create({ data: { commentId: id, userId: localUser.id, value } }),
+        prisma.comment.update({ where: { id }, data: { voteCount: { increment: value } } }),
       ]);
     }
 
-    const updated = await prisma.comment.findUnique({ where: { id: params.id }, select: { voteCount: true } });
+    const updated = await prisma.comment.findUnique({ where: { id }, select: { voteCount: true } });
     return NextResponse.json({ voteCount: updated?.voteCount ?? 0 });
   } catch (error) {
     console.error('Comment vote error:', error);

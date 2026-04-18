@@ -4,6 +4,7 @@ import { sendWelcomeEmail } from "@/lib/email/welcome";
 import { prisma } from "@/app/lib/prisma";
 import { isRateLimited, getClientIP } from "@/app/lib/security-middleware";
 import { alertNewUser } from "@/app/lib/alerts";
+import { checkPasswordPolicy, isPasswordPwned } from "@/lib/password-policy";
 
 export async function POST(request: NextRequest) {
   // BotID protection
@@ -29,8 +30,15 @@ export async function POST(request: NextRequest) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
   }
-  if (password.length < 8) {
-    return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 });
+  const policy = checkPasswordPolicy(password);
+  if (!policy.ok) {
+    return NextResponse.json({ error: policy.error }, { status: 400 });
+  }
+  if (await isPasswordPwned(password)) {
+    return NextResponse.json(
+      { error: "This password has appeared in a known data breach. Please choose another." },
+      { status: 400 },
+    );
   }
   if (referralCode && (referralCode.length > 20 || !/^[a-zA-Z0-9-]+$/.test(referralCode))) {
     return NextResponse.json({ error: "Invalid referral code" }, { status: 400 });

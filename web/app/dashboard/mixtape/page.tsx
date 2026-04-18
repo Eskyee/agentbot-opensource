@@ -129,7 +129,7 @@ export default function MixtapePage() {
     <DashboardShell>
       <DashboardHeader
         title="Mix Uploads"
-        description="Upload a pre-recorded mix and Agentbot will auto-broadcast it on baseFM."
+        subtitle="Upload a pre-recorded mix and Agentbot will auto-broadcast it on baseFM."
       />
       <DashboardContent>
         <div className="max-w-2xl space-y-8">
