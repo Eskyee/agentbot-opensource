@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { getLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
+import { getLegacyUserIdByEmail, ensureLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
 
 const BASE_WALLET_RE = /^0x[0-9a-fA-F]{40}$/
 
@@ -35,8 +35,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid Base wallet address' }, { status: 400 })
   }
 
-  const legacyId = await getLegacyUserIdByEmail(session.user.email)
-  if (!legacyId) return NextResponse.json({ error: 'Legacy user record not found' }, { status: 404 })
+  const legacyId = await ensureLegacyUserIdByEmail(session.user.email)
+  if (!legacyId) return NextResponse.json({ error: 'Session missing email' }, { status: 400 })
 
   await prisma.users.update({
     where: { id: legacyId },

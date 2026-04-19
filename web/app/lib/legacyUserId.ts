@@ -13,3 +13,21 @@ export async function getLegacyUserIdByEmail(email: string | null | undefined): 
   const row = await prisma.users.findUnique({ where: { email }, select: { id: true } })
   return row?.id ?? null
 }
+
+/**
+ * Same bridge as `getLegacyUserIdByEmail` but creates a legacy `users` row on
+ * first call if one does not yet exist. Use this on write paths (wallet link,
+ * outcomes, etc) where a missing legacy row should not fail the request —
+ * NextAuth-created accounts don't get a legacy row until they hit a feature
+ * that requires it.
+ */
+export async function ensureLegacyUserIdByEmail(email: string | null | undefined): Promise<number | null> {
+  if (!email) return null
+  const row = await prisma.users.upsert({
+    where:  { email },
+    update: {},
+    create: { email },
+    select: { id: true },
+  })
+  return row.id
+}

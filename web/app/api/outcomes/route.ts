@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { getLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
+import { getLegacyUserIdByEmail, ensureLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
 
 const VALID_TYPES = [
   'negotiation_complete',
@@ -64,9 +64,9 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  userId = await getLegacyUserIdByEmail(session.user.email)
+  userId = await ensureLegacyUserIdByEmail(session.user.email)
   if (!userId) {
-    return NextResponse.json({ error: 'Legacy user record not found' }, { status: 404 })
+    return NextResponse.json({ error: 'Session missing email' }, { status: 400 })
   }
 
   const body = await req.json()

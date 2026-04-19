@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { getLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
+import { getLegacyUserIdByEmail, ensureLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
 
 // Allow letters, numbers, underscores — X handle rules
 const X_HANDLE_RE = /^[a-zA-Z0-9_]{1,50}$/
@@ -36,8 +36,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid X handle' }, { status: 400 })
   }
 
-  const legacyId = await getLegacyUserIdByEmail(session.user.email)
-  if (!legacyId) return NextResponse.json({ error: 'Legacy user record not found' }, { status: 404 })
+  const legacyId = await ensureLegacyUserIdByEmail(session.user.email)
+  if (!legacyId) return NextResponse.json({ error: 'Session missing email' }, { status: 400 })
 
   await prisma.users.update({
     where: { id: legacyId },
