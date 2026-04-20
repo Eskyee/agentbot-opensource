@@ -3,6 +3,7 @@ import { prisma } from '@/app/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import { getSessionTokenFromCookies } from '@/app/lib/session';
+import { isAdminEmail } from '@/app/lib/admin';
 
 interface AuthSessionUser {
   id: string;
@@ -33,16 +34,12 @@ export async function getAuthSession(): Promise<AuthSession | null> {
       });
 
       if (session && session.expires > new Date()) {
-        const adminEmails = (process.env.ADMIN_EMAILS || '')
-          .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-        const isAdmin = adminEmails.includes((session.user.email || '').toLowerCase());
-
         return {
           user: {
             id: session.user.id,
             name: session.user.name,
             email: session.user.email,
-            isAdmin,
+            isAdmin: isAdminEmail(session.user.email),
           },
         };
       }
