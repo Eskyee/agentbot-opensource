@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, Zap, Brain, Target, Activity, GitBranch, WifiOff, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, Zap, Brain, Target, Activity, GitBranch, WifiOff, ExternalLink, ChevronDown, ChevronUp, Wallet, Copy, Check } from 'lucide-react';
 import {
   DashboardShell,
   DashboardHeader,
@@ -303,6 +303,68 @@ function BeliefPanel({ beliefs }: { beliefs: SoulStatus['beliefs'] }) {
   );
 }
 
+function WalletPanel({
+  address,
+  designation,
+  balance,
+}: {
+  address: string;
+  designation: string | null;
+  balance: { formatted: string; token: string } | null;
+}) {
+  const [copied, setCopied] = useState(false);
+  const short = `${address.slice(0, 6)}…${address.slice(-4)}`;
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked — user can select & copy manually */
+    }
+  };
+  return (
+    <div className="border border-zinc-800 bg-zinc-950 p-4 mb-4">
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Wallet className="w-3 h-3 text-emerald-400 shrink-0" />
+          <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Borg Wallet</span>
+          {designation && (
+            <span className="text-[10px] font-mono text-zinc-500 truncate">· {designation}</span>
+          )}
+          <span className="text-[10px] font-mono text-zinc-600">· Tempo network</span>
+        </div>
+        {balance && (
+          <span className="text-[10px] font-mono text-zinc-300">
+            {balance.formatted} <span className="text-zinc-500">{balance.token}</span>
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <code
+          className="flex-1 text-[11px] font-mono text-zinc-300 bg-black/40 border border-zinc-800 px-2 py-1.5 break-all select-all"
+          title={address}
+          aria-label="Borg wallet address"
+        >
+          <span className="hidden sm:inline">{address}</span>
+          <span className="sm:hidden">{short}</span>
+        </code>
+        <button
+          onClick={handleCopy}
+          className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 flex items-center gap-1.5 shrink-0"
+          aria-label="Copy Borg wallet address"
+        >
+          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <p className="mt-2 text-[10px] font-mono text-zinc-600">
+        Send USDC.e, pathUSD, or USDT0 on the Tempo network to fund the Borg. Do NOT send on Base or Ethereum — funds would be unrecoverable.
+      </p>
+    </div>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function BorgDashboardPage() {
@@ -310,6 +372,11 @@ export default function BorgDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
+  const [wallet, setWallet] = useState<{
+    address: string;
+    designation: string | null;
+    balance: { formatted: string; token: string } | null;
+  } | null>(null);
 
   const fetchSoul = useCallback(async () => {
     setLoading(true);
@@ -327,11 +394,39 @@ export default function BorgDashboardPage() {
     }
   }, []);
 
+  const fetchWallet = useCallback(async () => {
+    try {
+      const res = await fetch('/api/colony/status');
+      if (!res.ok) return;
+      const json = await res.json();
+      const root = json?.root;
+      if (
+        root?.address &&
+        typeof root.address === 'string' &&
+        root.address !== '0x0000000000000000000000000000000000000000'
+      ) {
+        setWallet({
+          address: root.address,
+          designation: root.designation ?? null,
+          balance: root.wallet_balance ?? null,
+        });
+      }
+    } catch {
+      /* silent — wallet panel just won't render on failure */
+    }
+  }, []);
+
   useEffect(() => {
     fetchSoul();
     const id = setInterval(fetchSoul, 30_000);
     return () => clearInterval(id);
   }, [fetchSoul]);
+
+  useEffect(() => {
+    fetchWallet();
+    const id = setInterval(fetchWallet, 60_000);
+    return () => clearInterval(id);
+  }, [fetchWallet]);
 
   const status = data?.dormant ? 'idle' : data?.active ? 'active' : 'offline';
 
@@ -400,6 +495,15 @@ export default function BorgDashboardPage() {
 
         {data && (
           <>
+            {/* Borg wallet — address + live balance, so funds can be sent in */}
+            {wallet && (
+              <WalletPanel
+                address={wallet.address}
+                designation={wallet.designation}
+                balance={wallet.balance}
+              />
+            )}
+
             {/* Top stat row */}
             <div className="grid gap-px bg-zinc-800 grid-cols-2 sm:grid-cols-4 mb-6">
               <StatCard label="Soul Cycles" value={data.total_cycles} sub={`mode: ${data.mode}`} />
