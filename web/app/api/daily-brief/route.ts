@@ -56,15 +56,19 @@ export async function GET() {
   const [healthResults, agentStats, recentAgents, recentAgentsCount, activeTasks] = await Promise.all([
     Promise.all(HEALTH_CHECKS.map(checkHealth)),
     prisma.agent.groupBy({ by: ['status'], _count: { _all: true } }).catch(() => []),
+    // Only surface individual agent names/tiers in the public brief if the
+    // agent has opted in to the showcase — matches /api/showcase. The
+    // aggregate count below intentionally includes all agents (it's already
+    // exposed publicly as a platform total on /marketplace).
     prisma.agent
       .findMany({
-        where: { createdAt: { gte: weekAgo } },
+        where: { createdAt: { gte: weekAgo }, showcaseOptIn: true },
         select: { id: true, name: true, status: true, tier: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
         take: 5,
       })
       .catch(() => []),
-    // Separate count so the weekly activity figure isn't capped by `take: 5`.
+    // Aggregate weekly count (not capped by `take: 5`, no agent-level PII).
     prisma.agent.count({ where: { createdAt: { gte: weekAgo } } }).catch(() => 0),
     prisma.scheduledTask.count({ where: { enabled: true } }).catch(() => 0),
   ])

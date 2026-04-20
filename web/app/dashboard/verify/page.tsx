@@ -67,6 +67,8 @@ function VerifyContent() {
   const [scriptFailed, setScriptFailed] = useState(false)
   const [selfDeeplink, setSelfDeeplink] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  // Bump to trigger re-mount of the SelfClaw widget after an error.
+  const [retryAttempt, setRetryAttempt] = useState(0)
 
   // Load agent from session
   useEffect(() => {
@@ -247,7 +249,14 @@ function VerifyContent() {
       setVerificationError(msg)
       widgetMounted.current = false
     }
-  }, [widgetReady, agent?.agentId, verified])
+  }, [widgetReady, agent?.agentId, verified, retryAttempt])
+
+  const retryWidget = () => {
+    setVerificationError(null)
+    widgetMounted.current = false
+    if (containerRef.current) containerRef.current.innerHTML = ''
+    setRetryAttempt((n) => n + 1)
+  }
 
   if (loading) {
     return (
@@ -365,8 +374,15 @@ function VerifyContent() {
         ) : null}
 
         {verificationError ? (
-          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-            {verificationError}
+          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300 flex items-start justify-between gap-3">
+            <span className="flex-1">{verificationError}</span>
+            <button
+              type="button"
+              onClick={retryWidget}
+              className="shrink-0 border border-red-500/40 hover:border-red-400 text-red-200 hover:text-white text-[10px] font-bold uppercase tracking-widest py-1 px-2"
+            >
+              Retry
+            </button>
           </div>
         ) : null}
 
