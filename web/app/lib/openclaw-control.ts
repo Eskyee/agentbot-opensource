@@ -28,16 +28,22 @@ export function buildOpenClawControlUrl({
   gatewayToken?: string | null
   session?: string
 }): string {
-  // Use the user's actual gateway URL as the base, not the platform default
-  const userGatewayBase = gatewayUrl 
-    ? new URL(gatewayUrl).origin
-    : DEFAULT_OPENCLAW_CONTROL_UI_BASE
+  // Keep the UI on the shared control origin. Sending users to their raw
+  // Railway runtime origin strands them on a different auth domain, and
+  // runtime-local routes like /dreaming can break session/login flows.
+  const controlUiBase = DEFAULT_OPENCLAW_CONTROL_UI_BASE || (() => {
+    try {
+      return gatewayUrl ? new URL(gatewayUrl).origin : ''
+    } catch {
+      return ''
+    }
+  })()
 
-  if (!userGatewayBase) {
+  if (!controlUiBase) {
     return '#'
   }
 
-  const base = `${userGatewayBase}/${view}`
+  const base = `${controlUiBase}/${view}`
   const href = view === 'chat'
     ? `${base}?session=${encodeURIComponent(session)}`
     : base
