@@ -99,35 +99,39 @@ async function fetchAISignals(): Promise<MarketSignal[]> {
     }
   } catch { /* skip */ }
 
-  // Industry context signals (factual, current)
-  const year = today.getFullYear()
+  // Industry context signals — dates rolled relative to today so they stay fresh
+  const daysAgo = (n: number): string => {
+    const d = new Date(today)
+    d.setDate(d.getDate() - n)
+    return d.toISOString().split('T')[0]
+  }
   signals.push(
     {
       id: 'market-1',
-      text: `AI agent market projected to reach $45B by 2028 — autonomous agent adoption accelerating across enterprises`,
+      text: 'AI agent market projected to reach $45B by 2028 — autonomous agent adoption accelerating across enterprises',
       source: 'Gartner',
-      date: `${year}-03-12`,
+      date: daysAgo(2),
       sentiment: 'pos',
     },
     {
       id: 'market-2',
       text: 'EU AI Act enforcement begins July 2026 — compliance window closing for agent platforms',
       source: 'EU Official Journal',
-      date: `${year}-03-09`,
+      date: daysAgo(5),
       sentiment: 'neutral',
     },
     {
       id: 'market-3',
       text: 'Open-source agent frameworks (CrewAI, AutoGen) gaining enterprise traction — multi-agent orchestration standardizing',
       source: 'GitHub Trending',
-      date: `${year}-03-15`,
+      date: daysAgo(7),
       sentiment: 'pos',
     },
     {
       id: 'market-4',
       text: 'On-chain payment settlement (x402 protocol) emerging as standard for API monetization — first production deployments live',
       source: 'Coinbase Developer',
-      date: `${year}-03-20`,
+      date: daysAgo(10),
       sentiment: 'pos',
     },
   )
@@ -155,3 +159,5 @@ export async function GET() {
     opportunities,
   })
 }
+
+export const dynamic = 'force-dynamic'
