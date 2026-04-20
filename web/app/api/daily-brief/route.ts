@@ -53,7 +53,7 @@ export async function GET() {
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
   // Run health checks + platform counts in parallel
-  const [healthResults, agentStats, recentAgents, activeTasks] = await Promise.all([
+  const [healthResults, agentStats, recentAgents, recentAgentsCount, activeTasks] = await Promise.all([
     Promise.all(HEALTH_CHECKS.map(checkHealth)),
     prisma.agent.groupBy({ by: ['status'], _count: { _all: true } }).catch(() => []),
     prisma.agent
@@ -64,6 +64,8 @@ export async function GET() {
         take: 5,
       })
       .catch(() => []),
+    // Separate count so the weekly activity figure isn't capped by `take: 5`.
+    prisma.agent.count({ where: { createdAt: { gte: weekAgo } } }).catch(() => 0),
     prisma.scheduledTask.count({ where: { enabled: true } }).catch(() => 0),
   ])
 
@@ -87,10 +89,12 @@ export async function GET() {
 
   const activityItems: string[] = []
   activityItems.push(`${liveAgents} live agents, ${totalAgents} deployed on the platform`)
-  if (recentAgents.length > 0) {
-    activityItems.push(`${recentAgents.length} new agents provisioned in the last 7 days`)
-    const last = recentAgents[0]
-    activityItems.push(`Latest: ${last.name} (${last.tier}) — ${formatDaysAgo(last.createdAt, now)}`)
+  if (recentAgentsCount > 0) {
+    activityItems.push(`${recentAgentsCount} new agents provisioned in the last 7 days`)
+    if (recentAgents.length > 0) {
+      const last = recentAgents[0]
+      activityItems.push(`Latest: ${last.name} (${last.tier}) — ${formatDaysAgo(last.createdAt, now)}`)
+    }
   } else {
     activityItems.push('No new agents provisioned this week')
   }

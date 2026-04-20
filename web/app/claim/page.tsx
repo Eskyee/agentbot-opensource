@@ -154,13 +154,20 @@ export default function ClaimPage() {
       return
     }
 
-    const result = await provider.connect()
-    const nextAddress = result.publicKey.toString()
-    setAddress(nextAddress)
-
     setClaiming(true)
     setError(null)
     setSuccess(null)
+
+    let nextAddress: string
+    try {
+      const result = await provider.connect()
+      nextAddress = result.publicKey.toString()
+      setAddress(nextAddress)
+    } catch (err) {
+      setClaiming(false)
+      setError(err instanceof Error ? err.message : 'Wallet connect rejected')
+      return
+    }
 
     try {
       const eligibilityRes = await fetch(`/api/claim?address=${encodeURIComponent(nextAddress)}&nonce=1`)
