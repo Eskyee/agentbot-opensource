@@ -12,7 +12,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
-import { isOperatorModeEnabled } from '@/app/lib/feature-flags'
+import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
 export const dynamic = 'force-dynamic'
 
@@ -27,13 +27,13 @@ interface ActivityItem {
 }
 
 export async function GET() {
-  if (!isOperatorModeEnabled()) {
-    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
-  }
-
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!isOperatorModeEnabledForUser(session.user.email)) {
+    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
   }
 
   const userId = session.user.id

@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getTutorialByKey } from '@/app/lib/operator-tutorials'
-import { isOperatorModeEnabled } from '@/app/lib/feature-flags'
+import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,13 +16,13 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ key: string }> },
 ) {
-  if (!isOperatorModeEnabled()) {
-    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
-  }
-
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!isOperatorModeEnabledForUser(session.user.email)) {
+    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
   }
 
   const { key } = await params
@@ -45,13 +45,13 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ key: string }> },
 ) {
-  if (!isOperatorModeEnabled()) {
-    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
-  }
-
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!isOperatorModeEnabledForUser(session.user.email)) {
+    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
   }
 
   const { key } = await params

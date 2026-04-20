@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { resolveUserMode, setUserMode, UserMode } from '@/app/lib/operator-routing'
-import { isOperatorModeEnabled } from '@/app/lib/feature-flags'
+import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,20 +17,20 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const mode = await resolveUserMode(session.user.id)
-  const operatorEnabled = isOperatorModeEnabled()
+  const operatorEnabled = isOperatorModeEnabledForUser(session.user.email)
+  const mode = await resolveUserMode(session.user.id, session.user.email)
 
   return NextResponse.json({ mode, operatorEnabled })
 }
 
 export async function POST(req: NextRequest) {
-  if (!isOperatorModeEnabled()) {
-    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
-  }
-
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  if (!isOperatorModeEnabledForUser(session.user.email)) {
+    return NextResponse.json({ error: 'Operator Mode is not enabled' }, { status: 403 })
   }
 
   try {

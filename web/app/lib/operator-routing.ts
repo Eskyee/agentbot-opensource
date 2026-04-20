@@ -10,7 +10,7 @@
  */
 
 import { prisma } from './prisma'
-import { isOperatorModeEnabled, getGlobalFlags } from './feature-flags'
+import { isOperatorModeEnabledForUser, getGlobalFlags } from './feature-flags'
 
 export type UserMode = 'operator' | 'advanced'
 
@@ -24,8 +24,11 @@ export type UserMode = 'operator' | 'advanced'
  *  4. If NEW_USER_OPERATOR_DEFAULT is on → 'operator' (new user)
  *  5. Fallback → 'advanced'
  */
-export async function resolveUserMode(userId: string): Promise<UserMode> {
-  if (!isOperatorModeEnabled()) return 'advanced'
+export async function resolveUserMode(
+  userId: string,
+  email?: string | null,
+): Promise<UserMode> {
+  if (!isOperatorModeEnabledForUser(email)) return 'advanced'
 
   // Check explicit preference
   const pref = await prisma.userPreference.findUnique({
