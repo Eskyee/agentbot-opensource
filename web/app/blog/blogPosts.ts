@@ -21,6 +21,16 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Shipping',
   },
   {
+    slug: 'openclaw-v2026-4-15-operator-mode',
+    dateLabel: '17 Apr',
+    isoDate: '2026-04-17',
+    title: 'OpenClaw v2026.4.15 + Operator Mode',
+    excerpt:
+      'OpenClaw 2026.4.15 ships dreaming fixes, security hardening, and 60+ contributor patches. Plus: Operator Mode — a guided onboarding layer for new users that deploys agents in under 2 minutes.',
+    tags: ['OpenClaw', 'Operator Mode', 'Onboarding', 'Release'],
+    track: 'Release',
+  },
+  {
     slug: 'agent-to-agent-protocol',
     dateLabel: '13 Apr',
     isoDate: '2026-04-13',
