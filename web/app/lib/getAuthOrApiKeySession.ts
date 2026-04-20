@@ -12,6 +12,7 @@
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { verifyApiKey } from '@/app/lib/verifyApiKey'
 import { prisma } from '@/app/lib/prisma'
+import { isAdminEmail } from '@/app/lib/admin'
 
 interface AuthSession {
   user: {
@@ -37,9 +38,5 @@ export async function getAuthOrApiKeySession(req: Request): Promise<AuthSession 
   })
   if (!user) return null
 
-  const adminEmails = (process.env.ADMIN_EMAILS || '')
-    .split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-  const isAdmin = adminEmails.includes((user.email || '').toLowerCase())
-
-  return { user: { id: user.id, name: user.name, email: user.email, isAdmin } }
+  return { user: { id: user.id, name: user.name, email: user.email, isAdmin: isAdminEmail(user.email) } }
 }
