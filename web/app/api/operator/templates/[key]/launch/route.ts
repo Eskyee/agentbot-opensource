@@ -9,6 +9,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getTemplateByKey } from '@/app/lib/operator-templates'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
+import { assertUserCanProvisionAgent } from '@/app/lib/agent-provision-guards'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +30,16 @@ export async function POST(
   const template = getTemplateByKey(key)
   if (!template) {
     return NextResponse.json({ error: `Template "${key}" not found` }, { status: 404 })
+  }
+
+  // Enforce the same subscription + plan limits as /api/agents/provision.
+  // Without this, users could bypass plan caps by launching templates (Codex P1).
+  const guard = await assertUserCanProvisionAgent(session.user.id, session.user.email)
+  if (!guard.ok) {
+    return NextResponse.json(
+      { error: guard.error, current: guard.current, limit: guard.limit },
+      { status: guard.status },
+    )
   }
 
   try {
