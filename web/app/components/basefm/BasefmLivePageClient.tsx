@@ -42,7 +42,7 @@ const FEATURES = [
 const ACCESS_OPTIONS = [
   {
     method: '$BASEFM Token',
-    requirement: '1,250,000 $BASEFM on Base',
+    requirement: '2,500,000 $BASEFM on Base',
     chain: 'Base',
     status: 'Live',
   },
