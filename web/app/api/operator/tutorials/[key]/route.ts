@@ -61,8 +61,29 @@ export async function POST(
   }
 
   try {
-    const { stepIndex, status } = await req.json()
-    const isComplete = status === 'completed' || stepIndex >= tutorial.steps.length
+    const body = await req.json()
+    const { status } = body
+    const hasStepIndex = typeof body.stepIndex === 'number'
+    const stepIndex: number | undefined = hasStepIndex ? body.stepIndex : undefined
+
+    if (!hasStepIndex && typeof status !== 'string') {
+      return NextResponse.json(
+        { error: 'At least one of stepIndex (number) or status (string) is required' },
+        { status: 400 },
+      )
+    }
+
+    const isComplete =
+      status === 'completed' ||
+      (hasStepIndex && stepIndex! >= tutorial.steps.length)
+
+    const updateData: Record<string, unknown> = {
+      status: isComplete ? 'completed' : 'in_progress',
+      completedAt: isComplete ? new Date() : null,
+    }
+    if (hasStepIndex) {
+      updateData.stepIndex = stepIndex
+    }
 
     const progress = await prisma.tutorialProgress.upsert({
       where: { userId_tutorialKey: { userId: session.user.id, tutorialKey: key } },
@@ -73,11 +94,7 @@ export async function POST(
         stepIndex: stepIndex ?? 0,
         completedAt: isComplete ? new Date() : null,
       },
-      update: {
-        status: isComplete ? 'completed' : 'in_progress',
-        stepIndex: stepIndex ?? 0,
-        completedAt: isComplete ? new Date() : null,
-      },
+      update: updateData,
     })
 
     return NextResponse.json({ success: true, progress })

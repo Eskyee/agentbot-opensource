@@ -27,16 +27,29 @@ export const operatorNavSection = {
 }
 
 export const navSections = [
+  // PRIMARY: Core agent management — the "one good idea"
+  {
+    label: 'Agents',
+    items: [
+      { label: 'Dashboard',    href: '/dashboard',              icon: '◈' },
+      { label: 'Team',         href: '/dashboard/team',         icon: '⬢' },
+      { label: 'Fleet',        href: '/dashboard/fleet',        icon: '⬡' },
+      { label: 'Colony',       href: '/dashboard/colony',       icon: '◆' },
+      { label: 'Skills',       href: '/dashboard/skills',       icon: '✳' },
+      { label: 'Borg Soul',    href: '/dashboard/borg',         icon: '◭' },
+    ],
+  },
   {
     label: 'Runtime',
     items: [
-      { label: 'Dashboard',    href: '/dashboard',              icon: '◈' },
-      { label: 'Skills',       href: '/dashboard/skills',       icon: '✳' },
+      { label: 'Verify Agent', href: '/dashboard/verify',       icon: '🛡' },
       { label: 'Maintenance',  href: '/dashboard/maintenance',  icon: '✦' },
       { label: 'Wallet',       href: '/dashboard/wallet',       icon: '◎' },
-      { label: 'Verify Agent', href: '/dashboard/verify',       icon: '🛡' },
+      { label: 'Workflows',    href: '/dashboard/workflows',    icon: '⊞' },
+      { label: 'Daily Brief',  href: '/dashboard/daily-brief',  icon: '⇄' },
     ],
   },
+  // SECONDARY: Chain, network, operations — power-user features
   {
     label: 'Chain',
     items: [
@@ -50,24 +63,15 @@ export const navSections = [
   {
     label: 'Network',
     items: [
+      { label: 'Community',        href: '/dashboard/community',          icon: '✦' },
       { label: 'Buddies',          href: '/buddies',                      icon: '🐚' },
       { label: 'Dreams',           href: '/dashboard/dreams',             icon: '☾' },
       { label: 'Character QA',     href: '/dashboard/character-qa',       icon: '♫' },
       { label: 'Git City',         href: '/dashboard/git-city',           icon: '⌂' },
       { label: 'Gitlawb Network',  href: '/dashboard/gitlawb-network',    icon: '◉' },
-      { label: 'Community',        href: '/dashboard/community',          icon: '✦' },
-      { label: 'DJ Stream',         href: '/dashboard/dj-stream',          icon: '⏵' },
+      { label: 'DJ Stream',        href: '/dashboard/dj-stream',          icon: '⏵' },
       { label: 'Mix Uploads',      href: '/dashboard/mixtape',            icon: '⏶' },
       { label: 'Jobs',             href: '/jobs',                         icon: '◈' },
-    ],
-  },
-  {
-    label: 'Agents',
-    items: [
-      { label: 'Team',      href: '/dashboard/team',   icon: '⬢' },
-      { label: 'Fleet',     href: '/dashboard/fleet',  icon: '⬡' },
-      { label: 'Colony',    href: '/dashboard/colony', icon: '◆' },
-      { label: 'Borg Soul', href: '/dashboard/borg',   icon: '◭' },
     ],
   },
   {
@@ -77,8 +81,6 @@ export const navSections = [
       { label: 'Metrics',       href: '/dashboard/analytics',     icon: '◌' },
       { label: 'Usage & Spend', href: '/dashboard/cost',          icon: '⬡' },
       { label: 'System Pulse',  href: '/dashboard/system-pulse',  icon: '☼' },
-      { label: 'Daily Brief',   href: '/dashboard/daily-brief',   icon: '⇄' },
-      { label: 'Workflows',     href: '/dashboard/workflows',     icon: '⊞' },
       { label: 'Devices',       href: '/dashboard/devices',       icon: '▪' },
       { label: 'Browser',       href: '/dashboard/browser',       icon: '🌐' },
       { label: 'Sandbox',       href: '/dashboard/sandbox',       icon: '🖥' },
