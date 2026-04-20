@@ -1,15 +1,21 @@
 /**
  * POST /api/operator/templates/:key/launch
  *
- * Launches a template by creating a Workflow + Agent using existing primitives.
- * Reuses existing workflow creation and agent provisioning — no parallel system.
+ * DISABLED (501) — this endpoint currently creates Agent + Workflow records
+ * but does NOT trigger actual runtime provisioning (Railway / OpenClaw Gateway).
+ * Users would see "launched!" but get a dead pending agent.
+ *
+ * Follow-up PR will extract a provisionManagedAgent() helper from
+ * /api/agents/provision/route.ts and wire it in here so launched agents
+ * actually deploy. Until then, return 501 to prevent dead-row creation.
+ *
+ * The rest of the Operator Mode UI (onboarding, templates gallery, tutorials,
+ * activity feed) still works — users just can't launch yet.
  */
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import { prisma } from '@/app/lib/prisma'
 import { getTemplateByKey } from '@/app/lib/operator-templates'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
-import { assertUserCanProvisionAgent } from '@/app/lib/agent-provision-guards'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,82 +38,15 @@ export async function POST(
     return NextResponse.json({ error: `Template "${key}" not found` }, { status: 404 })
   }
 
-  // Enforce the same subscription + plan limits as /api/agents/provision.
-  // Without this, users could bypass plan caps by launching templates (Codex P1).
-  const guard = await assertUserCanProvisionAgent(session.user.id, session.user.email)
-  if (!guard.ok) {
-    return NextResponse.json(
-      { error: guard.error, current: guard.current, limit: guard.limit },
-      { status: guard.status },
-    )
-  }
-
-  try {
-    const body = await req.json().catch(() => ({}))
-    const agentName = (body.agentName as string) || `${template.name} Agent`
-
-    // All three records created atomically — no orphan Workflows or Agents on partial failure
-    const { workflow, agent } = await prisma.$transaction(async (tx) => {
-      // Create workflow using existing Workflow model
-      const workflow = await tx.workflow.create({
-        data: {
-          userId: session.user.id,
-          name: `${template.name} Workflow`,
-          description: template.description,
-          enabled: true,
-          nodes: {
-            create: template.nodes.map((node) => ({
-              type: node.type,
-              config: JSON.stringify(node.config),
-              position: node.position,
-            })),
-          },
-        },
-      })
-
-      // Create agent using existing Agent model
-      const agent = await tx.agent.create({
-        data: {
-          userId: session.user.id,
-          name: agentName,
-          model: template.agentDefaults.model,
-          status: 'pending',
-          config: {
-            templateKey: template.key,
-            skills: template.agentDefaults.skills,
-            agentType: template.agentDefaults.agentType,
-          },
-        },
-      })
-
-      // Record the template launch
-      await tx.templateLaunch.create({
-        data: {
-          userId: session.user.id,
-          templateKey: template.key,
-          workflowId: workflow.id,
-          agentId: agent.id,
-          status: 'pending',
-          config: {
-            agentName,
-            model: template.agentDefaults.model,
-            skills: template.agentDefaults.skills,
-          },
-        },
-      })
-
-      return { workflow, agent }
-    })
-
-    return NextResponse.json({
-      success: true,
-      workflowId: workflow.id,
-      agentId: agent.id,
-      message: template.successMessage,
-      nextStep: '/dashboard', // User goes to advanced dashboard to finish setup
-    })
-  } catch (error) {
-    console.error('[operator/templates/launch] Error:', error)
-    return NextResponse.json({ error: 'Failed to launch template' }, { status: 500 })
-  }
+  // Template launch is disabled until runtime provisioning is wired in.
+  // See: /api/agents/provision/route.ts for the full provisioning flow
+  // that needs to be extracted into a shared helper.
+  return NextResponse.json(
+    {
+      error: 'Template launch is not yet available — provisioning integration coming soon.',
+      template: template.key,
+      hint: 'Use /dashboard to create and provision agents via the advanced flow.',
+    },
+    { status: 501 },
+  )
 }

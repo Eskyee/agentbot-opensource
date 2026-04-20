@@ -7,8 +7,8 @@
  * All flags default to OFF so production is unaffected until
  * explicitly enabled per Vercel environment.
  *
- * Admin bypass: specific admin emails (configured via OPERATOR_ADMIN_EMAILS,
- * with a built-in fallback list) can test Operator Mode even when the global
+ * Admin bypass: specific admin emails (configured via OPERATOR_ADMIN_EMAILS
+ * env var, comma-separated) can test Operator Mode even when the global
  * flag is off. This lets the product owner preview the feature in production
  * without exposing it to real users.
  */
@@ -37,24 +37,19 @@ export function isOperatorModeEnabled(): boolean {
 }
 
 /**
- * Built-in admin fallback — used when OPERATOR_ADMIN_EMAILS env var is unset.
- * Keeps admin-testing working even if the env var is not configured in Vercel yet.
+ * No hardcoded fallback — OPERATOR_ADMIN_EMAILS env var is required.
+ * Per PLATFORM_RULES.md: "do not hardcode emails in source."
+ * Set OPERATOR_ADMIN_EMAILS in Vercel env vars (comma-separated).
  */
-const DEFAULT_ADMIN_EMAILS = [
-  'djescaba@icloud.com',
-  'eskyjunglelab@gmail.com',
-]
 
 /**
- * Returns the normalised admin email list. Reads OPERATOR_ADMIN_EMAILS
- * (comma-separated) if set, otherwise falls back to DEFAULT_ADMIN_EMAILS.
+ * Returns the normalised admin email list from OPERATOR_ADMIN_EMAILS env var.
+ * Returns empty array if env var is not set (no admin bypass active).
  */
 function getAdminEmails(): string[] {
   const raw = process.env.OPERATOR_ADMIN_EMAILS
-  const list = raw
-    ? raw.split(',').map((s) => s.trim()).filter(Boolean)
-    : DEFAULT_ADMIN_EMAILS
-  return list.map((e) => e.toLowerCase())
+  if (!raw) return []
+  return raw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
 }
 
 /** Is this email an Operator Mode admin (test access even when flag is off)? */
