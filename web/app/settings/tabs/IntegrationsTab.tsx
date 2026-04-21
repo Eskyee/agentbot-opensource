@@ -2,161 +2,320 @@
 
 import { useEffect, useState } from 'react'
 
-interface XStatus {
-  app: {
-    bearerTokenConfigured: boolean
-    oauthClientConfigured: boolean
-    appKeyConfigured: boolean
-    callbackUrl: string | null
+type XStatus = {
+  app?: {
+    bearerTokenConfigured?: boolean
+    oauthClientConfigured?: boolean
+    appKeyConfigured?: boolean
+    callbackUrl?: string | null
   }
-  user: {
-    connected: boolean
-    account: {
-      username: string | null
-      accountId: string | null
-      scopes: string[] | null
+  user?: {
+    connected?: boolean
+    account?: {
+      username?: string | null
+      accountId?: string | null
+      scopes?: string[] | null
     } | null
   }
 }
 
-function Pill({ label, on }: { label: string; on: boolean }) {
-  return (
-    <span
-      className={`text-[10px] uppercase tracking-widest px-2 py-1 border ${
-        on ? 'border-emerald-500/30 text-emerald-400' : 'border-amber-500/30 text-amber-400'
-      }`}
-    >
-      {label}: {on ? 'ok' : 'missing'}
-    </span>
-  )
+type GitHubBotStatus = {
+  configured: boolean
+  account?: {
+    username?: string
+    email?: string
+    repoAllowlist?: string[] | null
+  } | null
 }
 
 export function IntegrationsTab() {
-  const [status, setStatus] = useState<XStatus | null>(null)
   const [loading, setLoading] = useState(true)
-  const [disconnecting, setDisconnecting] = useState(false)
-  const [flash, setFlash] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null)
+  const [xStatus, setXStatus] = useState<XStatus | null>(null)
+  const [githubStatus, setGitHubStatus] = useState<GitHubBotStatus | null>(null)
 
-  async function refresh() {
+  const [xForm, setXForm] = useState({
+    accessToken: '',
+    refreshToken: '',
+    username: '',
+    accountId: '',
+    scopes: '',
+  })
+  const [githubForm, setGitHubForm] = useState({
+    token: '',
+    username: '',
+    email: '',
+    repoAllowlist: '',
+  })
+
+  const [xSaving, setXSaving] = useState(false)
+  const [ghSaving, setGhSaving] = useState(false)
+  const [xError, setXError] = useState('')
+  const [ghError, setGhError] = useState('')
+  const [xSaved, setXSaved] = useState(false)
+  const [ghSaved, setGhSaved] = useState(false)
+
+  const load = async () => {
     try {
-      const res = await fetch('/api/x/status', { cache: 'no-store' })
-      if (res.ok) setStatus(await res.json())
+      const [xStatusRes, ghRes] = await Promise.all([
+        fetch('/api/x/status', { cache: 'no-store' }),
+        fetch('/api/user/github-bot', { cache: 'no-store' }),
+      ])
+
+      if (xStatusRes.ok) {
+        const x = await xStatusRes.json()
+        setXStatus(x)
+      }
+
+      if (ghRes.ok) {
+        const gh = await ghRes.json()
+        setGitHubStatus(gh)
+        if (gh?.account) {
+          setGitHubForm((prev) => ({
+            ...prev,
+            username: gh.account.username || '',
+            email: gh.account.email || '',
+            repoAllowlist: Array.isArray(gh.account.repoAllowlist) ? gh.account.repoAllowlist.join('\n') : '',
+          }))
+        }
+      }
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    refresh()
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('x_connected')) {
-      setFlash({ kind: 'ok', msg: 'X account connected.' })
-    } else if (params.get('x_error')) {
-      setFlash({ kind: 'err', msg: `X connection failed: ${params.get('x_error')}` })
-    }
+    load().catch(() => setLoading(false))
   }, [])
 
-  async function disconnect() {
-    if (!confirm('Disconnect this X account? You can reconnect anytime.')) return
-    setDisconnecting(true)
+  const saveX = async () => {
+    setXError('')
+    setXSaving(true)
     try {
-      const res = await fetch('/api/x/oauth/disconnect', { method: 'POST' })
-      if (res.ok) {
-        setFlash({ kind: 'ok', msg: 'X account disconnected.' })
-        await refresh()
-      } else {
-        setFlash({ kind: 'err', msg: 'Disconnect failed.' })
-      }
+      const res = await fetch('/api/user/x-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: xForm.accessToken,
+          refreshToken: xForm.refreshToken || null,
+          username: xForm.username || null,
+          accountId: xForm.accountId || null,
+          scopes: xForm.scopes
+            .split(/[\n, ]/)
+            .map((scope) => scope.trim())
+            .filter(Boolean),
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to save X account')
+      setXSaved(true)
+      setXForm((prev) => ({ ...prev, accessToken: '', refreshToken: '' }))
+      await load()
+      setTimeout(() => setXSaved(false), 2000)
+    } catch (error) {
+      setXError(error instanceof Error ? error.message : 'Failed to save X account')
     } finally {
-      setDisconnecting(false)
+      setXSaving(false)
     }
   }
 
-  const appReady = status?.app.oauthClientConfigured && Boolean(status?.app.callbackUrl)
-  const connected = status?.user.connected
+  const saveGitHub = async () => {
+    setGhError('')
+    setGhSaving(true)
+    try {
+      const res = await fetch('/api/user/github-bot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(githubForm),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Failed to save GitHub bot')
+      setGhSaved(true)
+      setGitHubForm((prev) => ({ ...prev, token: '' }))
+      await load()
+      setTimeout(() => setGhSaved(false), 2000)
+    } catch (error) {
+      setGhError(error instanceof Error ? error.message : 'Failed to save GitHub bot')
+    } finally {
+      setGhSaving(false)
+    }
+  }
+
+  const removeX = async () => {
+    await fetch('/api/user/x-account', { method: 'DELETE' })
+    await load()
+  }
+
+  const removeGitHub = async () => {
+    await fetch('/api/user/github-bot', { method: 'DELETE' })
+    setGitHubForm({ token: '', username: '', email: '', repoAllowlist: '' })
+    await load()
+  }
 
   return (
     <div className="space-y-6">
-      <div className="border border-zinc-800 bg-zinc-950 p-5">
+      <h2 className="text-base sm:text-xl font-semibold">Integrations</h2>
+
+      <div className="border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-tight mb-1">X (Twitter)</h2>
-            <p className="text-[11px] text-zinc-500">
-              Connect your X account so Signals can read mentions, draft posts, and publish on your behalf.
+            <h3 className="text-[10px] uppercase tracking-widest text-zinc-400 mb-2">X Publishing</h3>
+            <p className="text-sm text-zinc-500">
+              Store a user-level X access token so your agent can monitor mentions, draft replies, and publish approved posts.
             </p>
           </div>
-          {connected && (
-            <span className="text-[10px] uppercase tracking-widest px-2 py-1 border border-emerald-500/30 text-emerald-400">
-              Connected
-            </span>
-          )}
-        </div>
-
-        {flash && (
-          <div
-            className={`mb-4 text-[11px] px-3 py-2 border ${
-              flash.kind === 'ok'
-                ? 'border-emerald-500/30 text-emerald-400'
-                : 'border-red-500/30 text-red-400'
-            }`}
-          >
-            {flash.msg}
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Pill label="OAuth Client" on={Boolean(status?.app.oauthClientConfigured)} />
-          <Pill label="App Key" on={Boolean(status?.app.appKeyConfigured)} />
-          <Pill label="Bearer Token" on={Boolean(status?.app.bearerTokenConfigured)} />
-          <Pill label="Callback URL" on={Boolean(status?.app.callbackUrl)} />
-        </div>
-
-        {loading ? (
-          <div className="text-[11px] text-zinc-500">Loading…</div>
-        ) : connected ? (
-          <div className="space-y-3">
-            <div className="text-[11px] text-zinc-400">
-              Connected as{' '}
-              <span className="text-white font-mono">
-                @{status?.user.account?.username || 'unknown'}
-              </span>
+          <div className="text-right text-[10px] uppercase tracking-widest">
+            <div className={xStatus?.app?.appKeyConfigured ? 'text-emerald-400' : 'text-amber-400'}>
+              App Credentials: {xStatus?.app?.appKeyConfigured ? 'Ready' : 'Missing'}
             </div>
-            {status?.user.account?.scopes && status.user.account.scopes.length > 0 && (
-              <div className="text-[10px] text-zinc-500 font-mono">
-                scopes: {status.user.account.scopes.join(' ')}
-              </div>
-            )}
-            <button
-              onClick={disconnect}
-              disabled={disconnecting}
-              className="text-[10px] uppercase tracking-widest border border-red-500/40 text-red-400 hover:bg-red-500/10 px-4 py-2 disabled:opacity-50"
-            >
-              {disconnecting ? 'Disconnecting…' : 'Disconnect X'}
-            </button>
+            <div className={xStatus?.app?.oauthClientConfigured ? 'text-emerald-400 mt-1' : 'text-amber-400 mt-1'}>
+              OAuth: {xStatus?.app?.oauthClientConfigured ? 'Ready' : 'Missing'}
+            </div>
+            <div className={xStatus?.user?.connected ? 'text-emerald-400 mt-1' : 'text-zinc-500 mt-1'}>
+              Account: {xStatus?.user?.connected ? `@${xStatus.user?.account?.username || 'connected'}` : 'Not connected'}
+            </div>
           </div>
-        ) : appReady ? (
-          <a
-            href="/api/x/oauth/start"
-            className="inline-block text-[10px] uppercase tracking-widest bg-white text-black px-4 py-2 font-bold hover:bg-zinc-200"
+        </div>
+
+        {xStatus?.app?.callbackUrl ? (
+          <p className="mb-4 text-[10px] text-zinc-600 font-mono break-all">{xStatus.app.callbackUrl}</p>
+        ) : null}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <input
+            type="password"
+            value={xForm.accessToken}
+            onChange={(e) => setXForm({ ...xForm, accessToken: e.target.value })}
+            placeholder="X user access token"
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+          <input
+            type="password"
+            value={xForm.refreshToken}
+            onChange={(e) => setXForm({ ...xForm, refreshToken: e.target.value })}
+            placeholder="X refresh token (optional)"
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+          <input
+            type="text"
+            value={xForm.username}
+            onChange={(e) => setXForm({ ...xForm, username: e.target.value.replace(/^@/, '') })}
+            placeholder="Username"
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+          <input
+            type="text"
+            value={xForm.accountId}
+            onChange={(e) => setXForm({ ...xForm, accountId: e.target.value })}
+            placeholder="Account ID"
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+        </div>
+        <textarea
+          value={xForm.scopes}
+          onChange={(e) => setXForm({ ...xForm, scopes: e.target.value })}
+          placeholder="tweet.read users.read tweet.write offline.access"
+          rows={2}
+          className="w-full border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+        />
+
+        {xError ? <p className="mt-2 text-xs text-red-400">{xError}</p> : null}
+        {xSaved ? <p className="mt-2 text-xs text-emerald-400">X account saved.</p> : null}
+
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={saveX}
+            disabled={xSaving}
+            className="bg-white text-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-200 disabled:opacity-50 transition-colors"
           >
-            Connect X
-          </a>
-        ) : (
-          <div className="text-[11px] text-amber-400">
-            X OAuth is not fully configured on the server. Ask an admin to set
-            <span className="font-mono"> X_API_CLIENT_ID</span>,
-            <span className="font-mono"> X_API_CLIENT_SECRET</span>, and
-            <span className="font-mono"> X_API_CALLBACK_URL</span>.
-          </div>
-        )}
+            {xSaving ? 'Saving...' : 'Save X Account'}
+          </button>
+          {xStatus?.user?.connected ? (
+            <button
+              onClick={removeX}
+              className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-800 transition-colors"
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
       </div>
 
-      <div className="border border-zinc-800 bg-zinc-950 p-5">
-        <h2 className="text-sm font-bold uppercase tracking-tight mb-1">More integrations</h2>
-        <p className="text-[11px] text-zinc-500">
-          Bankr, Notion, Slack, and GitHub bot tokens are configured per-agent from each agent&apos;s OpenClaw
-          runtime. Visit an agent&apos;s page to manage those.
+      <div className="border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h3 className="text-[10px] uppercase tracking-widest text-zinc-400 mb-2">GitHub Bot Account</h3>
+            <p className="text-sm text-zinc-500">
+              Use a dedicated bot account with a fine-grained PAT. Agentbot will expose it through the managed vault so agents can use GitHub safely.
+            </p>
+          </div>
+          <div className="text-right text-[10px] uppercase tracking-widest">
+            <div className={githubStatus?.configured ? 'text-emerald-400' : 'text-zinc-500'}>
+              GitHub Bot: {githubStatus?.configured ? 'Configured' : 'Not configured'}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <input
+            type="password"
+            value={githubForm.token}
+            onChange={(e) => setGitHubForm({ ...githubForm, token: e.target.value })}
+            placeholder="github_pat_... or ghp_..."
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+          <input
+            type="text"
+            value={githubForm.username}
+            onChange={(e) => setGitHubForm({ ...githubForm, username: e.target.value })}
+            placeholder="Bot username"
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+          <input
+            type="email"
+            value={githubForm.email}
+            onChange={(e) => setGitHubForm({ ...githubForm, email: e.target.value })}
+            placeholder="bot@example.com"
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+          <textarea
+            value={githubForm.repoAllowlist}
+            onChange={(e) => setGitHubForm({ ...githubForm, repoAllowlist: e.target.value })}
+            placeholder="owner/repo-one&#10;owner/repo-two"
+            rows={3}
+            className="border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm text-white focus:border-white focus:outline-none"
+          />
+        </div>
+
+        {ghError ? <p className="mt-2 text-xs text-red-400">{ghError}</p> : null}
+        {ghSaved ? <p className="mt-2 text-xs text-emerald-400">GitHub bot saved.</p> : null}
+
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={saveGitHub}
+            disabled={ghSaving}
+            className="bg-white text-black px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+          >
+            {ghSaving ? 'Saving...' : 'Save GitHub Bot'}
+          </button>
+          {githubStatus?.configured ? (
+            <button
+              onClick={removeGitHub}
+              className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-800 transition-colors"
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="border border-zinc-800 bg-zinc-900/50 p-4 sm:p-6">
+        <h3 className="text-[10px] uppercase tracking-widest text-zinc-400 mb-2">GitLawb</h3>
+        <p className="text-sm text-zinc-500">
+          GitLawb identities are agent-level rather than user-level secrets. Use the GitLawb Network and agent controls after provisioning to attach decentralized repo identity alongside GitHub.
         </p>
+        <a href="/dashboard/gitlawb-network" className="inline-flex mt-4 border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest font-bold hover:bg-zinc-800 transition-colors">
+          Open GitLawb Network
+        </a>
       </div>
     </div>
   )

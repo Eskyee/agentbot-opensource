@@ -4,6 +4,7 @@ import { decryptToken } from '@/app/lib/token-encryption'
 
 const X_ACCOUNT_SETTING_KEY = 'x_api_account'
 const BANKR_API_KEY_SETTING_KEY = 'bankr_api_key'
+const GITHUB_BOT_SETTING_KEY = 'github_bot_account'
 
 export type ManagedVaultCredential = {
   id: string
@@ -56,12 +57,13 @@ export async function getOrCreateVaultForUser(userId: string): Promise<string> {
 }
 
 export async function listVaultCredentialsForUser(userId: string): Promise<ManagedVaultCredential[]> {
-  const [hasXAccount, hasBankrKey] = await Promise.all([
+  const [hasXAccount, hasBankrKey, hasGitHubBot] = await Promise.all([
     hasEncryptedUserSetting(userId, X_ACCOUNT_SETTING_KEY),
     hasEncryptedUserSetting(userId, BANKR_API_KEY_SETTING_KEY),
+    hasEncryptedUserSetting(userId, GITHUB_BOT_SETTING_KEY),
   ])
 
-  const creds: ManagedVaultCredential[] = [
+  return [
     {
       id: `x:${userId}`,
       provider: 'x',
@@ -71,6 +73,14 @@ export async function listVaultCredentialsForUser(userId: string): Promise<Manag
       displayName: 'X Account Token',
     },
     {
+      id: `github:${userId}`,
+      provider: 'github',
+      kind: 'static_bearer',
+      configured: hasGitHubBot,
+      mcpServerUrl: getConfiguredMcpUrl('github'),
+      displayName: 'GitHub Bot Token',
+    },
+    {
       id: `bankr:${userId}`,
       provider: 'bankr',
       kind: 'static_bearer',
@@ -78,8 +88,7 @@ export async function listVaultCredentialsForUser(userId: string): Promise<Manag
       mcpServerUrl: getConfiguredMcpUrl('bankr'),
       displayName: 'Bankr API Key',
     },
-  ]
-  return creds.filter((credential) => credential.configured)
+  ].filter((credential) => credential.configured)
 }
 
 export async function buildManagedVaultContextForUser(userId: string) {
