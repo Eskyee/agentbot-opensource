@@ -164,18 +164,85 @@ export async function deleteXAccount(userId: string) {
   })
 }
 
+async function refreshXAccessToken(userId: string): Promise<XAccountConfig | null> {
+  const account = await getStoredXAccountSecret(userId)
+  if (!account?.refreshToken) return null
+
+  const clientId = process.env.X_API_CLIENT_ID
+  const clientSecret = process.env.X_API_CLIENT_SECRET
+  if (!clientId || !clientSecret) return null
+
+  const basic = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+  const res = await fetch('https://api.x.com/2/oauth2/token', {
+    method: 'POST',
+    headers: {
+      Authorization: `Basic ${basic}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: account.refreshToken,
+      client_id: clientId,
+    }),
+  })
+
+  if (!res.ok) {
+    console.error('X refresh_token failed:', res.status, await res.text())
+    return null
+  }
+
+  const payload = await res.json()
+  const accessToken = payload?.access_token as string | undefined
+  if (!accessToken) return null
+
+  const refreshed: XAccountConfig = {
+    accessToken,
+    refreshToken: (payload?.refresh_token as string | undefined) || account.refreshToken,
+    username: account.username,
+    accountId: account.accountId,
+    scopes: typeof payload?.scope === 'string' ? payload.scope.split(' ') : account.scopes,
+  }
+  await saveXAccount(userId, refreshed)
+  return refreshed
+}
+
+async function xAuthFetch(
+  userId: string,
+  url: string,
+  init: RequestInit = {}
+): Promise<Response> {
+  const account = await getStoredXAccountSecret(userId)
+  if (!account?.accessToken) {
+    throw new Error('No connected X account found')
+  }
+
+  const withAuth = (token: string): RequestInit => ({
+    ...init,
+    headers: {
+      ...(init.headers || {}),
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  let response = await fetch(url, withAuth(account.accessToken))
+  if (response.status !== 401) return response
+
+  const refreshed = await refreshXAccessToken(userId)
+  if (!refreshed?.accessToken) return response
+
+  response = await fetch(url, withAuth(refreshed.accessToken))
+  return response
+}
+
 export async function publishPostToX(userId: string, text: string) {
   const account = await getStoredXAccountSecret(userId)
   if (!account?.accessToken) {
     throw new Error('No connected X account found')
   }
 
-  const response = await fetch('https://api.x.com/2/tweets', {
+  const response = await xAuthFetch(userId, 'https://api.x.com/2/tweets', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${account.accessToken}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
   })
 
@@ -208,13 +275,11 @@ export async function fetchUserMentionsFromX(userId: string): Promise<XMention[]
     'user.fields': 'username,name',
   })
 
-  const response = await fetch(`https://api.x.com/2/users/${account.accountId}/mentions?${params.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${account.accessToken}`,
-    },
-    signal: AbortSignal.timeout(8000),
-    cache: 'no-store',
-  })
+  const response = await xAuthFetch(
+    userId,
+    `https://api.x.com/2/users/${account.accountId}/mentions?${params.toString()}`,
+    { signal: AbortSignal.timeout(8000), cache: 'no-store' }
+  )
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -224,7 +289,7 @@ export async function fetchUserMentionsFromX(userId: string): Promise<XMention[]
   const payload = await response.json()
   const tweets = Array.isArray(payload?.data) ? payload.data : []
   const users = Array.isArray(payload?.includes?.users) ? payload.includes.users : []
-  const userMap = new Map(
+  const userMap = new Map<string, { username: string; name: string }>(
     users.map((user: { id: string; username?: string; name?: string }) => [
       user.id,
       {
@@ -266,13 +331,11 @@ export async function fetchUserPostsFromX(userId: string): Promise<XUserPost[]> 
     'tweet.fields': 'created_at,public_metrics',
   })
 
-  const response = await fetch(`https://api.x.com/2/users/${account.accountId}/tweets?${params.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${account.accessToken}`,
-    },
-    signal: AbortSignal.timeout(8000),
-    cache: 'no-store',
-  })
+  const response = await xAuthFetch(
+    userId,
+    `https://api.x.com/2/users/${account.accountId}/tweets?${params.toString()}`,
+    { signal: AbortSignal.timeout(8000), cache: 'no-store' }
+  )
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -330,14 +393,26 @@ export async function fetchCommunityPostsFromX(
     'user.fields': 'username,name',
   })
 
-  const response = await fetch(
+  let response = await xAuthFetch(
+    userId,
     `https://api.x.com/2/communities/${communityId}/tweets?${params.toString()}`,
-    {
-      headers: { Authorization: `Bearer ${account.accessToken}` },
-      signal: AbortSignal.timeout(8000),
-      cache: 'no-store',
-    }
+    { signal: AbortSignal.timeout(8000), cache: 'no-store' }
   )
+
+  if (response.status === 404 || response.status === 403) {
+    const searchParams = new URLSearchParams({
+      query: `context:131.${communityId}`,
+      max_results: '10',
+      expansions: 'author_id',
+      'tweet.fields': 'author_id,created_at,public_metrics',
+      'user.fields': 'username,name',
+    })
+    response = await xAuthFetch(
+      userId,
+      `https://api.x.com/2/tweets/search/recent?${searchParams.toString()}`,
+      { signal: AbortSignal.timeout(8000), cache: 'no-store' }
+    )
+  }
 
   if (!response.ok) {
     const errorText = await response.text()
