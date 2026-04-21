@@ -18,6 +18,11 @@ export interface AutoBlogPost {
 const INDEX_KEY = 'blog:auto:index'
 const POST_KEY_PREFIX = 'blog:auto:post:'
 const MAX_POSTS = 30
+const CACHE_TTL_MS = 15_000
+const REDIS_TIMEOUT_MS = 2_000
+
+let indexCache: { value: AutoBlogPost[]; expiresAt: number } | null = null
+const postCache = new Map<string, { value: AutoBlogPost | null; expiresAt: number }>()
 
 function trimSecret(value: string | undefined) {
   return value?.replace(/\s+/g, '').trim() || ''
@@ -37,36 +42,47 @@ function sortPosts<T extends { isoDate: string }>(posts: T[]) {
 }
 
 export async function listAutoBlogPosts(): Promise<AutoBlogPost[]> {
+  const now = Date.now()
+  if (indexCache && indexCache.expiresAt > now) return indexCache.value
+
   const redis = getRedis()
   if (!redis) return []
 
   try {
-    const timeoutMs = 800
     const posts = await Promise.race([
       redis.get<AutoBlogPost[]>(INDEX_KEY),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), timeoutMs)),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), REDIS_TIMEOUT_MS)),
     ])
-    if (!Array.isArray(posts)) return []
-    return sortPosts(posts)
+    const sorted = Array.isArray(posts) ? sortPosts(posts) : []
+    indexCache = { value: sorted, expiresAt: now + CACHE_TTL_MS }
+    return sorted
   } catch (error) {
-    console.error('[AutoBlog] list error:', error)
+    console.warn('[AutoBlog] list error:', error instanceof Error ? error.message : error)
+    if (indexCache) return indexCache.value
+    indexCache = { value: [], expiresAt: now + CACHE_TTL_MS }
     return []
   }
 }
 
 export async function getAutoBlogPost(slug: string): Promise<AutoBlogPost | null> {
+  const now = Date.now()
+  const cached = postCache.get(slug)
+  if (cached && cached.expiresAt > now) return cached.value
+
   const redis = getRedis()
   if (!redis) return null
 
   try {
-    const timeoutMs = 800
     const post = await Promise.race([
       redis.get<AutoBlogPost>(`${POST_KEY_PREFIX}${slug}`),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), timeoutMs)),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), REDIS_TIMEOUT_MS)),
     ])
-    return post || null
+    const value = post || null
+    postCache.set(slug, { value, expiresAt: now + CACHE_TTL_MS })
+    return value
   } catch (error) {
-    console.error('[AutoBlog] get error:', error)
+    console.warn('[AutoBlog] get error:', error instanceof Error ? error.message : error)
+    if (cached) return cached.value
     return null
   }
 }
@@ -83,6 +99,9 @@ export async function upsertAutoBlogPost(post: AutoBlogPost): Promise<void> {
     redis.set(`${POST_KEY_PREFIX}${post.slug}`, post),
     redis.set(INDEX_KEY, updated),
   ])
+
+  indexCache = null
+  postCache.delete(post.slug)
 }
 
 export function formatDateLabel(date: Date): string {
