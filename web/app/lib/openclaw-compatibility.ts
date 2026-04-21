@@ -1,5 +1,5 @@
 /**
- * openclaw-compatibility.ts - OpenClaw 2026.4.11 Compatibility Layer
+ * openclaw-compatibility.ts - OpenClaw 2026.4.15 Compatibility Layer
  *
  * Handles the current managed-runtime compatibility baseline:
  * - Plugin-owned config path migrations
@@ -58,7 +58,7 @@ export function isVersionCompatible(version: string): {
   compatible: boolean
   missingFeatures: string[]
 } {
-  const minVersion = '2026.4.11'
+  const minVersion = '2026.4.15'
   const versionParts = version.split('.').map(Number)
   const minParts = minVersion.split('.').map(Number)
   
@@ -213,7 +213,7 @@ export function buildOpenClawControlUrl(options: {
 }
 
 /**
- * Handle Task Flow integration (2026.4.11 baseline)
+ * Handle Task Flow integration (2026.4.15 baseline)
  */
 export interface TaskFlowConfig {
   mode: 'managed' | 'mirrored'
@@ -280,7 +280,7 @@ export async function fixAgentPairingScope(agentId: string): Promise<{
     
     return {
       fixed: true,
-      message: 'Agent pairing scope updated for OpenClaw 2026.4.11 compatibility'
+      message: 'Agent pairing scope updated for OpenClaw 2026.4.15 compatibility'
     }
   } catch (error) {
     return {
@@ -321,7 +321,7 @@ export async function ensureCompatibility(userId: string): Promise<{
   const { getOrCreateUserGatewayToken } = await import('./token-manager')
   const tokenResult = await getOrCreateUserGatewayToken(userId)
   if (tokenResult?.isNew) {
-    fixes.push('Generated new gateway token for OpenClaw 2026.4.11 compatibility')
+    fixes.push('Generated new gateway token for OpenClaw 2026.4.15 compatibility')
   }
   
   return {
