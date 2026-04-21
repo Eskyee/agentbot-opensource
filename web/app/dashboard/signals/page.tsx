@@ -48,14 +48,57 @@ interface XStatusResponse {
 
 interface XDraft {
   id: string;
+  mentionId?: string | null;
   sourceText: string;
   draftText: string;
   tone: string;
   status: 'draft' | 'approved' | 'rejected' | 'published';
   createdAt: string;
   updatedAt: string;
+  scheduledFor?: string | null;
   publishedPostId?: string | null;
   publishedUrl?: string | null;
+}
+
+interface XMention {
+  id: string;
+  author: string;
+  authorUsername: string;
+  text: string;
+  createdAt: string;
+  conversationId: string | null;
+  inReplyToUserId: string | null;
+  publicMetrics: {
+    likeCount: number;
+    replyCount: number;
+    repostCount: number;
+  };
+  url: string;
+  state?: 'open' | 'resolved';
+  assignedTo?: string | null;
+}
+
+interface XAnalyticsPost {
+  id: string;
+  text: string;
+  createdAt: string;
+  publicMetrics: {
+    likeCount: number;
+    replyCount: number;
+    repostCount: number;
+    quoteCount: number;
+  };
+  url: string;
+}
+
+interface XAnalyticsResponse {
+  posts: XAnalyticsPost[];
+  summary: {
+    likes: number;
+    replies: number;
+    reposts: number;
+    quotes: number;
+  };
 }
 
 interface ManagedAgentEvent {
@@ -90,8 +133,13 @@ export default function SignalsPage() {
   const [loading, setLoading] = useState(true);
   const [xStatus, setXStatus] = useState<XStatusResponse | null>(null);
   const [drafts, setDrafts] = useState<XDraft[]>([]);
+  const [mentions, setMentions] = useState<XMention[]>([]);
+  const [mentionsError, setMentionsError] = useState('');
+  const [analytics, setAnalytics] = useState<XAnalyticsResponse | null>(null);
+  const [analyticsError, setAnalyticsError] = useState('');
   const [draftSourceText, setDraftSourceText] = useState('');
   const [draftTone, setDraftTone] = useState('direct');
+  const [draftScheduleFor, setDraftScheduleFor] = useState('');
   const [draftLoading, setDraftLoading] = useState(false);
   const [draftError, setDraftError] = useState('');
   const [publishingDraftId, setPublishingDraftId] = useState<string | null>(null);
@@ -154,6 +202,46 @@ export default function SignalsPage() {
     loadDrafts();
   }, []);
 
+  useEffect(() => {
+    const loadMentions = async () => {
+      try {
+        const res = await fetch('/api/x/mentions', { cache: 'no-store' });
+        const json = await res.json();
+        if (!res.ok) {
+          setMentionsError(typeof json?.error === 'string' ? json.error : 'Failed to load X mentions');
+          return;
+        }
+        setMentions(Array.isArray(json?.mentions) ? json.mentions : []);
+        setMentionsError('');
+      } catch (e) {
+        console.error('X mentions fetch failed:', e);
+        setMentionsError('Failed to load X mentions');
+      }
+    };
+
+    loadMentions();
+  }, []);
+
+  useEffect(() => {
+    const loadAnalytics = async () => {
+      try {
+        const res = await fetch('/api/x/analytics', { cache: 'no-store' });
+        const json = await res.json();
+        if (!res.ok) {
+          setAnalyticsError(typeof json?.error === 'string' ? json.error : 'Failed to load X analytics');
+          return;
+        }
+        setAnalytics(json);
+        setAnalyticsError('');
+      } catch (e) {
+        console.error('X analytics fetch failed:', e);
+        setAnalyticsError('Failed to load X analytics');
+      }
+    };
+
+    loadAnalytics();
+  }, []);
+
   const loadDrafts = useCallback(async () => {
     try {
       const res = await fetch('/api/x/drafts', { cache: 'no-store' });
@@ -162,6 +250,38 @@ export default function SignalsPage() {
       setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
     } catch (e) {
       console.error('X drafts fetch failed:', e);
+    }
+  }, []);
+
+  const loadMentions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/x/mentions', { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok) {
+        setMentionsError(typeof json?.error === 'string' ? json.error : 'Failed to load X mentions');
+        return;
+      }
+      setMentions(Array.isArray(json?.mentions) ? json.mentions : []);
+      setMentionsError('');
+    } catch (e) {
+      console.error('X mentions fetch failed:', e);
+      setMentionsError('Failed to load X mentions');
+    }
+  }, []);
+
+  const loadAnalytics = useCallback(async () => {
+    try {
+      const res = await fetch('/api/x/analytics', { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok) {
+        setAnalyticsError(typeof json?.error === 'string' ? json.error : 'Failed to load X analytics');
+        return;
+      }
+      setAnalytics(json);
+      setAnalyticsError('');
+    } catch (e) {
+      console.error('X analytics fetch failed:', e);
+      setAnalyticsError('Failed to load X analytics');
     }
   }, []);
 
@@ -232,7 +352,7 @@ export default function SignalsPage() {
           }))
         : [];
       setManagedEvents(events);
-      seenIdsRef.current = new Set(events.map((event: { id: string }) => event.id));
+      seenIdsRef.current = new Set(events.map((event) => event.id));
 
       if (json.workflowRunId) {
         connectToStream(json.workflowRunId);
@@ -279,7 +399,7 @@ export default function SignalsPage() {
         const res = await fetch('/api/managed-agents/session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: draftSourceText, tone: draftTone }),
+          body: JSON.stringify({ text: draftSourceText, tone: draftTone, scheduledFor: draftScheduleFor || null }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error || 'Failed to create managed session');
@@ -293,7 +413,7 @@ export default function SignalsPage() {
         const res = await fetch('/api/managed-agents/message', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId: managedSessionId, text: draftSourceText, tone: draftTone }),
+          body: JSON.stringify({ sessionId: managedSessionId, text: draftSourceText, tone: draftTone, scheduledFor: draftScheduleFor || null }),
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json?.error || 'Failed to resume managed session');
@@ -301,11 +421,37 @@ export default function SignalsPage() {
       }
 
       setDraftSourceText('');
+      setDraftScheduleFor('');
       void loadDrafts();
     } catch (e) {
       setDraftError(e instanceof Error ? e.message : 'Failed to generate draft');
     } finally {
       setDraftLoading(false);
+    }
+  };
+
+  const useMentionForReply = (mention: XMention) => {
+    const replySeed = [
+      `Reply to @${mention.authorUsername}:`,
+      mention.text,
+      '',
+      'Write a concise reply in the selected tone. Keep it native to X and grounded in the mention context.',
+    ].join('\n');
+    setDraftSourceText(replySeed);
+  };
+
+  const updateMentionState = async (mentionId: string, status: 'open' | 'resolved', assignedTo?: string | null) => {
+    try {
+      const res = await fetch('/api/x/mentions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mentionId, status, assignedTo }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to update mention state');
+      await loadMentions();
+    } catch (e) {
+      setMentionsError(e instanceof Error ? e.message : 'Failed to update mention state');
     }
   };
 
@@ -321,6 +467,21 @@ export default function SignalsPage() {
       setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
     } catch (e) {
       setDraftError(e instanceof Error ? e.message : 'Failed to update draft');
+    }
+  };
+
+  const scheduleDraft = async (draftId: string, scheduledFor: string | null) => {
+    try {
+      const res = await fetch(`/api/x/drafts/${draftId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scheduledFor }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || 'Failed to schedule draft');
+      setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+    } catch (e) {
+      setDraftError(e instanceof Error ? e.message : 'Failed to schedule draft');
     }
   };
 
@@ -417,6 +578,25 @@ export default function SignalsPage() {
           </div>
         </div>
 
+        <div className="grid gap-px bg-zinc-800 grid-cols-2 lg:grid-cols-4 mb-8">
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Likes</div>
+            <div className="text-xl font-bold text-white">{analytics?.summary.likes ?? '—'}</div>
+          </div>
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Replies</div>
+            <div className="text-xl font-bold text-white">{analytics?.summary.replies ?? '—'}</div>
+          </div>
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Reposts</div>
+            <div className="text-xl font-bold text-white">{analytics?.summary.reposts ?? '—'}</div>
+          </div>
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Recent Quotes</div>
+            <div className="text-xl font-bold text-white">{analytics?.summary.quotes ?? '—'}</div>
+          </div>
+        </div>
+
         <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] mb-8">
           <div className="bg-zinc-950 border border-zinc-800 p-5">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">X Draft Generator</div>
@@ -470,6 +650,12 @@ export default function SignalsPage() {
                 <option value="founder">Founder</option>
                 <option value="protocol">Protocol</option>
               </select>
+              <input
+                type="datetime-local"
+                value={draftScheduleFor}
+                onChange={(e) => setDraftScheduleFor(e.target.value)}
+                className="bg-black border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-white focus:outline-none focus:border-zinc-600 font-mono"
+              />
               <button
                 onClick={generateDraft}
                 disabled={draftLoading || !draftSourceText.trim()}
@@ -555,6 +741,24 @@ export default function SignalsPage() {
                   <p className="text-xs text-zinc-500 leading-relaxed mb-4">{draft.sourceText}</p>
                   <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Draft</p>
                   <p className="text-sm text-zinc-300 leading-relaxed">{draft.draftText}</p>
+                  {draft.scheduledFor ? (
+                    <div className="mt-3 text-[10px] uppercase tracking-widest text-blue-400">
+                      Scheduled: {new Date(draft.scheduledFor).toLocaleString()}
+                    </div>
+                  ) : null}
+                  {draft.status !== 'published' ? (
+                    <div className="mt-3">
+                      <input
+                        type="datetime-local"
+                        defaultValue={draft.scheduledFor ? draft.scheduledFor.slice(0, 16) : ''}
+                        onBlur={(e) => {
+                          const value = e.currentTarget.value ? new Date(e.currentTarget.value).toISOString() : null;
+                          void scheduleDraft(draft.id, value);
+                        }}
+                        className="bg-zinc-950 border border-zinc-800 px-3 py-2 text-[10px] uppercase tracking-widest text-white focus:outline-none focus:border-zinc-600 font-mono"
+                      />
+                    </div>
+                  ) : null}
                   {draft.status === 'draft' ? (
                     <div className="mt-4 flex gap-2">
                       <button
@@ -595,6 +799,135 @@ export default function SignalsPage() {
                 </div>
               ) : null}
             </div>
+          </div>
+        </div>
+
+        <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] mb-8">
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Mentions Queue</div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-700">{mentions.length} mentions</div>
+            </div>
+            {mentionsError ? (
+              <div className="border border-red-500/30 p-3 text-red-400 text-xs mb-3">
+                {mentionsError}
+              </div>
+            ) : null}
+            <div className="space-y-3 max-h-[420px] overflow-y-auto">
+              {mentions.map((mention) => (
+                <div key={mention.id} className="border border-zinc-800 bg-black p-4">
+                  <div className="flex items-center justify-between gap-3 mb-3">
+                    <div>
+                      <div className="text-[10px] uppercase tracking-widest text-sky-400">Mention</div>
+                      <div className="mt-1 text-xs text-zinc-400 font-mono">@{mention.authorUsername}</div>
+                    </div>
+                    <span className="text-[10px] text-zinc-700 font-mono">{new Date(mention.createdAt).toLocaleString()}</span>
+                  </div>
+                  <a href={mention.url} target="_blank" rel="noopener noreferrer" className="block">
+                    <p className="text-sm text-zinc-300 leading-relaxed hover:text-white transition-colors">
+                      {mention.text}
+                    </p>
+                  </a>
+                  <div className="mt-3 flex items-center gap-4 text-[10px] uppercase tracking-widest text-zinc-600">
+                    <span>{mention.publicMetrics.likeCount} likes</span>
+                    <span>{mention.publicMetrics.replyCount} replies</span>
+                    <span>{mention.publicMetrics.repostCount} reposts</span>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      onClick={() => useMentionForReply(mention)}
+                      className="border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
+                    >
+                      Generate Reply Draft
+                    </button>
+                    <a
+                      href={mention.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
+                    >
+                      Open on X
+                    </a>
+                    <button
+                      onClick={() => updateMentionState(mention.id, mention.state === 'resolved' ? 'open' : 'resolved', mention.assignedTo || null)}
+                      className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
+                    >
+                      {mention.state === 'resolved' ? 'Reopen' : 'Resolve'}
+                    </button>
+                    <button
+                      onClick={() => updateMentionState(mention.id, mention.state || 'open', mention.assignedTo ? null : 'me')}
+                      className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
+                    >
+                      {mention.assignedTo ? 'Unassign' : 'Assign Me'}
+                    </button>
+                  </div>
+                  <div className="mt-3 flex gap-2 text-[10px] uppercase tracking-widest">
+                    <StatusPill status={mention.state === 'resolved' ? 'active' : 'idle'} label={mention.state || 'open'} size="sm" />
+                    {mention.assignedTo ? <StatusPill status="idle" label={`assigned:${mention.assignedTo}`} size="sm" /> : null}
+                  </div>
+                </div>
+              ))}
+              {mentions.length === 0 ? (
+                <div className="border border-zinc-800 bg-black p-4 text-xs text-zinc-500">
+                  No recent mentions found for the connected X account.
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="bg-zinc-950 border border-zinc-800 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">How To Use This</div>
+              <button
+                onClick={() => void loadMentions()}
+                className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
+              >
+                Reload Mentions
+              </button>
+            </div>
+            <div className="space-y-3 text-xs text-zinc-400 leading-relaxed">
+              <p>1. Connect an X account in your current X workflow.</p>
+              <p>2. This queue pulls recent mentions for that account using the stored user access token.</p>
+              <p>3. Click <span className="text-white">Generate Reply Draft</span> to turn a mention into an approval-gated reply seed.</p>
+              <p>4. The draft still goes through the existing approval and publish flow. Nothing auto-posts.</p>
+              <p>5. Use the existing draft statuses to approve, reject, and publish safely.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-zinc-950 border border-zinc-800 p-5 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Recent Published Posts</div>
+            <button
+              onClick={() => void loadAnalytics()}
+              className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
+            >
+              Reload Analytics
+            </button>
+          </div>
+          {analyticsError ? (
+            <div className="border border-red-500/30 p-3 text-red-400 text-xs mb-3">{analyticsError}</div>
+          ) : null}
+          <div className="space-y-3">
+            {(analytics?.posts || []).map((post) => (
+              <div key={post.id} className="border border-zinc-800 bg-black p-4">
+                <a href={post.url} target="_blank" rel="noopener noreferrer" className="block">
+                  <p className="text-sm text-zinc-300 hover:text-white transition-colors">{post.text}</p>
+                </a>
+                <div className="mt-3 flex flex-wrap gap-4 text-[10px] uppercase tracking-widest text-zinc-600">
+                  <span>{new Date(post.createdAt).toLocaleString()}</span>
+                  <span>{post.publicMetrics.likeCount} likes</span>
+                  <span>{post.publicMetrics.replyCount} replies</span>
+                  <span>{post.publicMetrics.repostCount} reposts</span>
+                  <span>{post.publicMetrics.quoteCount} quotes</span>
+                </div>
+              </div>
+            ))}
+            {!analytics?.posts?.length ? (
+              <div className="border border-zinc-800 bg-black p-4 text-xs text-zinc-500">
+                No recent published posts found for the connected X account.
+              </div>
+            ) : null}
           </div>
         </div>
 

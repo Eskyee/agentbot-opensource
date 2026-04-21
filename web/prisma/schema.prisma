@@ -50,9 +50,7 @@ model User {
   passkeyChallenges     PasskeyChallenge[]
   notifications         Notification[]
   buddies               Buddy[]
-  userPreferences       UserPreference[]
-  templateLaunches      TemplateLaunch[]
-  tutorialProgress      TutorialProgress[]
+  greenlightRequests    GreenlightAccessRequest[]
 }
 
 model Account {
@@ -248,6 +246,23 @@ model AgentSwarm {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model GreenlightAccessRequest {
+  id                   String   @id @default(cuid())
+  userId               String
+  accessType           String
+  network              String
+  status               String   @default("pending")
+  notes                String?
+  planSnapshot         String?
+  subscriptionSnapshot String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model WorkflowNode {
@@ -805,6 +820,23 @@ model usage_logs {
   @@index([agent_id, created_at], map: "idx_usage_logs_agent_created")
 }
 
+model execution_logs {
+  id             Int       @id @default(autoincrement())
+  user_id        String
+  agent_id       String?
+  workflow_id    String?
+  execution_type String
+  success        Boolean   @default(true)
+  error_message  String?
+  duration_ms    Int?
+  created_at     DateTime? @default(now())
+
+  @@index([user_id], map: "idx_execution_logs_user_id")
+  @@index([agent_id], map: "idx_execution_logs_agent_id")
+  @@index([created_at], map: "idx_execution_logs_created_at")
+  @@index([user_id, created_at], map: "idx_execution_logs_user_created_at")
+}
+
 model credit_claims {
   id             String   @id
   user_id        String
@@ -876,7 +908,7 @@ model dj_sessions {
   playback_id   String?
   started_at    DateTime  @default(now())
   ended_at      DateTime?
-  max_duration  Int       @default(7200) // 2 hours in seconds
+  max_duration  Int       @default(3600) // 1 hour in seconds
   status        String    @default("active") // active, ended, auto-ended
 
   @@index([user_id], map: "idx_dj_sessions_user")
@@ -1305,50 +1337,4 @@ model M2MJob {
   @@index([requesterAgentId])
   @@index([claimerAgentId])
   @@map("m2m_jobs")
-}
-
-// ── Operator Mode (additive tables only) ─────────────────────────────────────
-
-model UserPreference {
-  id        String   @id @default(cuid())
-  userId    String
-  key       String   // preferred_mode | onboarding_complete | operator_theme
-  value     String   // "operator" | "advanced" | "true" | "false"
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, key])
-  @@index([userId])
-}
-
-model TemplateLaunch {
-  id           String   @id @default(cuid())
-  userId       String
-  templateKey  String   // e.g. "music-promoter", "community-manager"
-  workflowId   String?  // links to the Workflow created from this template
-  agentId      String?  // links to the Agent created from this template
-  status       String   @default("pending") // pending | provisioning | running | failed
-  config       Json?    // snapshot of launch config
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([templateKey])
-}
-
-model TutorialProgress {
-  id          String    @id @default(cuid())
-  userId      String
-  tutorialKey String    // e.g. "deploy-first-agent", "connect-telegram"
-  status      String    @default("not_started") // not_started | in_progress | completed
-  stepIndex   Int       @default(0)
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, tutorialKey])
-  @@index([userId])
 }
