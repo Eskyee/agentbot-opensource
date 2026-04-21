@@ -16,10 +16,14 @@ export async function PATCH(
     }
 
     const { draftId } = await params
-    const { status } = await req.json()
+    const { status, scheduledFor } = await req.json()
 
-    if (!['approved', 'rejected', 'draft', 'published'].includes(status)) {
+    if (status !== undefined && !['approved', 'rejected', 'draft', 'published'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
+    }
+
+    if (scheduledFor !== undefined && scheduledFor !== null && typeof scheduledFor !== 'string') {
+      return NextResponse.json({ error: 'Invalid scheduledFor' }, { status: 400 })
     }
 
     const queue = await getXDraftQueue(session.user.id)
@@ -27,8 +31,9 @@ export async function PATCH(
       draft.id === draftId
         ? {
             ...draft,
-            status: status as XDraftStatus,
+            status: (status ?? draft.status) as XDraftStatus,
             updatedAt: new Date().toISOString(),
+            scheduledFor: scheduledFor === undefined ? draft.scheduledFor || null : scheduledFor,
           }
         : draft
     )
@@ -41,8 +46,9 @@ export async function PATCH(
         type: status === 'approved' ? 'draft.approved' : status === 'rejected' ? 'draft.rejected' : `draft.${status}`,
         payload: {
           draftId: updatedDraft.id,
-          status,
+          status: status ?? updatedDraft.status,
           draftText: updatedDraft.draftText,
+          scheduledFor: updatedDraft.scheduledFor || null,
         },
       }).catch((error) => {
         console.error('Managed agent event append failed:', error)

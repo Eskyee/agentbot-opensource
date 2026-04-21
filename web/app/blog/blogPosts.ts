@@ -11,24 +11,14 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
-    slug: 'basefm-b2b-co-dj',
+    slug: 'open-source-catch-up-and-agentbot-coach',
     dateLabel: '17 Apr',
     isoDate: '2026-04-17',
-    title: 'baseFM × Agentbot: B2B Co-DJ Underground Network',
+    title: 'Open-Source Catch-Up, Cleaner Docs, and Agentbot Coach',
     excerpt:
-      'The first streaming platform to let two DJs run a live B2B show from different locations. One Mux stream, a 120-second handoff window, WebRTC audio monitoring, and live chat for DJs and listeners.',
-    tags: ['baseFM', 'B2B', 'Live Streaming', 'Underground'],
+      'A community update on safer public repos, refreshed SDK/docs surfaces, and the onboarding direction behind Agentbot Coach.',
+    tags: ['Open Source', 'Docs', 'SDK', 'Onboarding'],
     track: 'Shipping',
-  },
-  {
-    slug: 'openclaw-v2026-4-15-operator-mode',
-    dateLabel: '17 Apr',
-    isoDate: '2026-04-17',
-    title: 'OpenClaw v2026.4.15 + Operator Mode',
-    excerpt:
-      'OpenClaw 2026.4.15 ships dreaming fixes, security hardening, and 60+ contributor patches. Plus: Operator Mode — a guided onboarding layer for new users that deploys agents in under 2 minutes.',
-    tags: ['OpenClaw', 'Operator Mode', 'Onboarding', 'Release'],
-    track: 'Release',
   },
   {
     slug: 'agent-to-agent-protocol',
@@ -228,16 +218,6 @@ export const blogPosts: BlogPostSummary[] = [
     excerpt:
       'We followed all 102 OpenClaw contributors. Here\'s why this matters for the AI agent ecosystem.',
     tags: ['Community', 'OpenClaw'],
-    track: 'Shipping',
-  },
-  {
-    slug: 'btcpay-agentbot',
-    dateLabel: '3 Apr',
-    isoDate: '2026-04-03',
-    title: 'BTCPay Agentbot: Bitcoin-Native Agent Payments',
-    excerpt:
-      'Headless Bitcoin infrastructure for AI agents. Non-custodial wallets, A2A BTC payments, Fast Sync, and 10GB pruned nodes.',
-    tags: ['Bitcoin', 'Payments'],
     track: 'Shipping',
   },
   {

@@ -45,15 +45,14 @@ Source: Git history (last 30 commits), codebase scan
 - Currently uses template-based generation (placeholder for real AI API)
 - Strategy doc covers roadmap for AI-powered generation
 
-## 5. Bitcoin Dashboard — Mainnet + Blockstream Jade + Liquid
+## 5. Bitcoin Dashboard — Public Node + Blockstream Jade + Liquid
 **Commit:** `949b1560`, earlier commits  
 **Files:** `web/app/dashboard/bitcoin/`, `web/app/api/bitcoin/`
 
-- Full mainnet Bitcoin dashboard: wallet creation, balance, transactions
+- Bitcoin dashboard with public-node/read-only explorer support
 - Blockstream Jade hardware wallet support (USB + QR)
 - Liquid Network (L-BTC) integration via LWK (Lightning Wallet Kit)
-- NBXplorer backend at `bitcoin-backend-mainnet-production.up.railway.app`
-- Docker-based NBXplorer + bitcoind stack on Railway
+- Public-node mode for read-only chain visibility and wallet exploration
 
 ## 6. Git City — 3D GitHub Visualization
 **Files:** `web/app/dashboard/git-city/`
@@ -175,6 +174,6 @@ Key new route groups:
 | Auth | WebAuthn/Passkeys | Passwordless login |
 | Build | Turborepo 2.9 | Monorepo orchestration |
 | Blockchain | Solana Agent Kit + MCP | Solana DeFi/NFT ops |
-| Bitcoin | NBXplorer + LWK | Mainnet + Liquid wallets |
+| Bitcoin | Public node + LWK | Read-only Bitcoin + Liquid tooling |
 | Video | Custom renderer + Vercel Blob | Video generation |
 | DB | Prisma Buddy model | Blockchain Buddies persistence |

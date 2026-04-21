@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { Bitcoin, Copy, RefreshCw, Plus, ArrowDownLeft, Activity, QrCode, Camera, ArrowRight, Shield, CheckCircle2, Upload, Download } from 'lucide-react'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
@@ -31,6 +32,14 @@ type BackendInfo = {
   networkType?: string
   cryptoCode?: string
   version?: string
+  backendMode?: 'nbxplorer' | 'public'
+  provider?: string
+  capabilities?: {
+    watchOnlyRegistration?: boolean
+    addressDerivation?: boolean
+    balanceLookup?: boolean
+    transactionHistory?: boolean
+  }
   [key: string]: unknown
 }
 
@@ -47,6 +56,59 @@ type TransactionItem = {
   seenAt: string | null
   confirmations: number | null
   amount: string | null
+}
+
+type LiquidInfo = {
+  status: 'synced' | 'syncing' | 'connected' | 'unreachable'
+  chain?: string
+  blocks: number
+  headers?: number
+  pruned: boolean
+  sizeOnDisk?: number
+  verificationProgress: number
+  isSynched?: boolean
+  provider?: string
+  mode?: 'rpc' | 'public'
+  error?: string | null
+}
+
+type GreenlightRequest = {
+  id: string
+  accessType: 'free_testnet' | 'paid_mainnet'
+  network: 'testnet' | 'bitcoin'
+  status: string
+  notes?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+type GreenlightSummary = {
+  implementationStatus: 'request_only'
+  greenlightReady: boolean
+  docs: Record<string, string>
+  facts: {
+    custody: string
+    auth: string
+    libs: string[]
+    networks: string[]
+    scheduler: string
+  }
+  eligibility: {
+    freeTestnet: boolean
+    paidMainnet: boolean
+    billingRequiredForPaid: boolean
+    activeTrial: boolean
+  }
+  trial: {
+    expired: boolean
+    daysLeft: number
+    endsAt: string
+  } | null
+  user: {
+    plan: string
+    subscriptionStatus: string
+  }
+  latestRequest: GreenlightRequest | null
 }
 
 function extractTransactions(data: unknown): TransactionItem[] {
@@ -120,6 +182,30 @@ function getBitcoinExplorerBase(info: BackendInfo | null): string {
   return 'https://mempool.space'
 }
 
+function getLiquidStatusPill(info: LiquidInfo | null): { tone: 'active' | 'idle' | 'error' | 'offline'; label: string } {
+  if (!info) return { tone: 'offline', label: 'Unknown' }
+  if (info.status === 'synced') return { tone: 'active', label: 'Synced' }
+  if (info.status === 'syncing') return { tone: 'idle', label: 'Syncing' }
+  if (info.status === 'connected') return { tone: 'idle', label: 'Connected' }
+  return { tone: 'error', label: 'Unreachable' }
+}
+
+function formatSyncProgress(value: number | undefined): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '—'
+  return `${(value * 100).toFixed(1)}%`
+}
+
+function formatLiquidStorage(bytes: number | undefined, pruned: boolean): string {
+  if (!pruned) return 'Full'
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes) || bytes <= 0) return 'Pruned'
+
+  const gib = bytes / (1024 ** 3)
+  if (gib >= 1) return `${gib.toFixed(gib >= 10 ? 0 : 1)} GB`
+
+  const mib = bytes / (1024 ** 2)
+  return `${mib.toFixed(mib >= 10 ? 0 : 1)} MB`
+}
+
 export default function BitcoinPage() {
   const [agents, setAgents] = useState<Agent[]>([])
   const [wallets, setWallets] = useState<BitcoinWallet[]>([])
@@ -147,17 +233,45 @@ export default function BitcoinPage() {
   const [signingTx, setSigningTx] = useState(false)
 
   // Liquid node status
-  const [liquidInfo, setLiquidInfo] = useState<{ status: string; blocks: number; pruned: boolean; verificationProgress: number } | null>(null)
+  const [liquidInfo, setLiquidInfo] = useState<LiquidInfo | null>(null)
   const [loadingLiquid, setLoadingLiquid] = useState(false)
+  const [greenlight, setGreenlight] = useState<GreenlightSummary | null>(null)
+  const [greenlightNotes, setGreenlightNotes] = useState('')
+  const [greenlightSubmitting, setGreenlightSubmitting] = useState<'free_testnet' | 'paid_mainnet' | ''>('')
 
   const loadLiquidInfo = async () => {
     setLoadingLiquid(true)
     try {
       const res = await fetch('/api/bitcoin/liquid')
       const data = await res.json()
-      setLiquidInfo(data)
-    } catch {
-      setLiquidInfo({ status: 'unreachable', blocks: 0, pruned: true, verificationProgress: 0 })
+      if (!res.ok) {
+        throw new Error(typeof data?.error === 'string' ? data.error : 'Failed to load Liquid node status')
+      }
+
+      setLiquidInfo({
+        status: data?.status || 'unreachable',
+        chain: data?.chain || 'liquidv1',
+        blocks: typeof data?.blocks === 'number' ? data.blocks : 0,
+        headers: typeof data?.headers === 'number' ? data.headers : 0,
+        pruned: Boolean(data?.pruned),
+        sizeOnDisk: typeof data?.sizeOnDisk === 'number' ? data.sizeOnDisk : 0,
+        verificationProgress: typeof data?.verificationProgress === 'number' ? data.verificationProgress : 0,
+        isSynched: Boolean(data?.isSynched),
+        error: typeof data?.error === 'string' ? data.error : null,
+      })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Liquid node unavailable'
+      setLiquidInfo({
+        status: 'unreachable',
+        chain: 'liquidv1',
+        blocks: 0,
+        headers: 0,
+        pruned: true,
+        sizeOnDisk: 0,
+        verificationProgress: 0,
+        isSynched: false,
+        error: message,
+      })
     } finally {
       setLoadingLiquid(false)
     }
@@ -170,21 +284,24 @@ export default function BitcoinPage() {
     setError(null)
 
     try {
-      const [agentsRes, walletsRes, backendRes] = await Promise.all([
+      const [agentsRes, walletsRes, backendRes, greenlightRes] = await Promise.all([
         fetch('/api/agents'),
         fetch('/api/bitcoin/wallets'),
         fetch('/api/bitcoin/backend/info'),
+        fetch('/api/bitcoin/greenlight'),
       ])
 
-      const [agentsData, walletsData, backendData] = await Promise.all([
+      const [agentsData, walletsData, backendData, greenlightData] = await Promise.all([
         agentsRes.json(),
         walletsRes.json(),
         backendRes.json(),
+        greenlightRes.json().catch(() => null),
       ])
 
       setAgents(Array.isArray(agentsData?.agents) ? agentsData.agents : [])
       setWallets(Array.isArray(walletsData) ? walletsData : [])
       setBackendInfo(backendData && typeof backendData === 'object' ? backendData : null)
+      setGreenlight(greenlightData && typeof greenlightData === 'object' ? greenlightData as GreenlightSummary : null)
 
       if (!walletsRes.ok) {
         setError(typeof walletsData?.error === 'string' ? walletsData.error : 'Failed to load Bitcoin wallets')
@@ -295,10 +412,40 @@ export default function BitcoinPage() {
     }
   }
 
+  const submitGreenlightRequest = async (accessType: 'free_testnet' | 'paid_mainnet') => {
+    setGreenlightSubmitting(accessType)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/bitcoin/greenlight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessType,
+          notes: greenlightNotes.trim() || undefined,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit Greenlight request')
+      }
+
+      setGreenlightNotes('')
+      await loadData({ quiet: true })
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit Greenlight request')
+    } finally {
+      setGreenlightSubmitting('')
+    }
+  }
+
   const syncPill = backendInfo?.isFullySynched
     ? <StatusPill status="active" label="Synced" size="sm" />
     : <StatusPill status="idle" label="Syncing" size="sm" />
   const explorerBase = getBitcoinExplorerBase(backendInfo)
+  const liquidStatusPill = getLiquidStatusPill(liquidInfo)
+  const isPublicBitcoinMode = backendInfo?.backendMode === 'public'
 
   return (
     <DashboardShell>
@@ -321,7 +468,7 @@ export default function BitcoinPage() {
           <div className="border border-zinc-800 bg-zinc-950 p-4">
             <div className="text-[10px] text-zinc-500 uppercase mb-1">Bitcoin</div>
             <div className="text-lg font-bold text-orange-400">Mainnet</div>
-            <div className="text-[10px] text-zinc-600">Watch-only wallets</div>
+            <div className="text-[10px] text-zinc-600">{isPublicBitcoinMode ? 'Public explorer mode' : 'Watch-only wallets'}</div>
           </div>
           <div className="border border-zinc-800 bg-zinc-950 p-4">
             <div className="text-[10px] text-zinc-500 uppercase mb-1">Liquid</div>
@@ -335,19 +482,156 @@ export default function BitcoinPage() {
           </div>
           <div className="border border-zinc-800 bg-zinc-950 p-4">
             <div className="text-[10px] text-zinc-500 uppercase mb-1">Node</div>
-            <div className="text-lg font-bold text-blue-400">Elements</div>
-            <div className="text-[10px] text-zinc-600">Pruned 1GB, syncing</div>
+            <div className="text-lg font-bold text-blue-400">{liquidInfo?.mode === 'public' ? 'Explorer' : 'Elements'}</div>
+            <div className="text-[10px] text-zinc-600">
+              {liquidInfo
+                ? `${liquidInfo.mode === 'public' ? 'Public API' : formatLiquidStorage(liquidInfo.sizeOnDisk, liquidInfo.pruned)}, ${liquidStatusPill.label.toLowerCase()}`
+                : 'Checking node health'}
+            </div>
           </div>
         </div>
+
+        <section className="mb-6 bg-zinc-950 border border-zinc-800 p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="max-w-3xl">
+              <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">Blockstream Greenlight</div>
+              <h2 className="text-2xl font-bold tracking-tighter uppercase mt-1">Self-Custodial Lightning Wallet Add-On</h2>
+              <p className="text-sm text-zinc-400 mt-2">
+                Greenlight hosts Core Lightning nodes while keeping seed-derived signing secrets on the user device.
+                We are shipping this as a docs-accurate onboarding path first: free testnet requests and paid mainnet setup requests.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <StatusPill
+                status={greenlight?.greenlightReady ? 'active' : 'idle'}
+                label={greenlight?.greenlightReady ? 'Partner cert ready' : 'Partner cert pending'}
+                size="sm"
+              />
+              <StatusPill
+                status={greenlight?.latestRequest ? 'idle' : 'offline'}
+                label={greenlight?.latestRequest ? `Latest: ${greenlight.latestRequest.status}` : 'No request yet'}
+                size="sm"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 mt-6">
+            <div className="space-y-4">
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">Why this is request-based today</div>
+                <ul className="space-y-2 text-xs text-zinc-400">
+                  <li>• {greenlight?.facts.custody || 'Greenlight is non-custodial; node seed secrets must stay on the user device.'}</li>
+                  <li>• {greenlight?.facts.auth || 'Greenlight uses mTLS with developer and device identities.'}</li>
+                  <li>• Official client libraries currently documented: {(greenlight?.facts.libs || ['Rust gl-client', 'Python gl-client']).join(', ')}.</li>
+                  <li>• Supported networks in the docs: {(greenlight?.facts.networks || ['testnet', 'bitcoin']).join(', ')}.</li>
+                  <li>• {greenlight?.facts.scheduler || 'Nodes are scheduled on-demand and return a GRPC URI when started.'}</li>
+                </ul>
+              </div>
+
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Your request</div>
+                {greenlight?.latestRequest ? (
+                  <div className="space-y-2 text-xs text-zinc-300">
+                    <div className="flex flex-wrap gap-2">
+                      <StatusPill status="idle" label={greenlight.latestRequest.accessType === 'free_testnet' ? 'Free testnet' : 'Paid mainnet'} size="sm" />
+                      <StatusPill status="idle" label={greenlight.latestRequest.network} size="sm" />
+                      <StatusPill status="idle" label={greenlight.latestRequest.status} size="sm" />
+                    </div>
+                    <div className="text-zinc-500">
+                      Requested {new Date(greenlight.latestRequest.createdAt).toLocaleString()}
+                    </div>
+                    {greenlight.latestRequest.notes ? (
+                      <div className="border border-zinc-800 bg-zinc-950 p-3 text-zinc-400">{greenlight.latestRequest.notes}</div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-500">No Greenlight request submitted yet.</p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Notes for setup</label>
+                <textarea
+                  value={greenlightNotes}
+                  onChange={(e) => setGreenlightNotes(e.target.value)}
+                  rows={4}
+                  placeholder="Tell us whether you want agent payments, customer checkout, testnet-only experimentation, or a managed production rollout."
+                  className="w-full bg-black border border-zinc-800 px-3 py-2 text-xs text-white placeholder:text-zinc-700 outline-none focus:border-zinc-700"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Free try path</div>
+                <div className="text-sm font-bold text-white">Testnet sandbox</div>
+                <p className="text-xs text-zinc-500 mt-2">
+                  Request a free testnet Greenlight sandbox first. This is the safe path for trying Lightning wallet UX without putting mainnet funds at risk.
+                </p>
+                {greenlight?.trial && !greenlight.trial.expired ? (
+                  <p className="mt-2 text-[10px] uppercase tracking-widest text-emerald-400">
+                    {greenlight.trial.daysLeft} day trial window remaining
+                  </p>
+                ) : null}
+                <button
+                  onClick={() => void submitGreenlightRequest('free_testnet')}
+                  disabled={greenlightSubmitting !== ''}
+                  className="mt-4 w-full inline-flex items-center justify-center gap-2 border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-40 transition-colors"
+                >
+                  {greenlightSubmitting === 'free_testnet' ? 'Submitting...' : 'Request free testnet trial'}
+                </button>
+              </div>
+
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Paid path</div>
+                <div className="text-sm font-bold text-white">Managed mainnet setup</div>
+                <p className="text-xs text-zinc-500 mt-2">
+                  Mainnet Greenlight rollout is treated as a paid add-on because it requires developer certificates, device identity handling, signer-safe UX, and production support.
+                </p>
+                <div className="mt-3 text-[10px] uppercase tracking-widest text-zinc-600">
+                  Current plan: {greenlight?.user.plan || 'free'} · {greenlight?.user.subscriptionStatus || 'inactive'}
+                </div>
+                {greenlight?.eligibility.paidMainnet ? (
+                  <button
+                    onClick={() => void submitGreenlightRequest('paid_mainnet')}
+                    disabled={greenlightSubmitting !== ''}
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:bg-blue-500/20 disabled:opacity-40 transition-colors"
+                  >
+                    {greenlightSubmitting === 'paid_mainnet' ? 'Submitting...' : 'Request paid mainnet setup'}
+                  </button>
+                ) : (
+                  <a
+                    href="/billing"
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:bg-blue-500/20 transition-colors"
+                  >
+                    Upgrade to unlock paid setup
+                  </a>
+                )}
+              </div>
+
+              <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Official docs</div>
+                <div className="flex flex-wrap gap-3 text-[10px] uppercase tracking-widest">
+                  <a href={greenlight?.docs.overview || 'https://blockstream.github.io/greenlight/getting-started/'} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-white">Overview →</a>
+                  <a href={greenlight?.docs.certificates || 'https://blockstream.github.io/greenlight/getting-started/certs/'} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-white">Certificates →</a>
+                  <a href={greenlight?.docs.registerNode || 'https://blockstream.github.io/greenlight/getting-started/register/'} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-white">Register node →</a>
+                  <a href={greenlight?.docs.github || 'https://github.com/Blockstream/greenlight'} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-white">GitHub →</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <div className="grid gap-px bg-zinc-800 grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)]">
           <section className="bg-zinc-950 border border-zinc-800 p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600">Headless Backend</div>
-                <h2 className="text-sm font-bold tracking-tight uppercase mt-1">Watch-Only Wallets</h2>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600">{isPublicBitcoinMode ? 'Public Explorer' : 'Headless Backend'}</div>
+                <h2 className="text-sm font-bold tracking-tight uppercase mt-1">{isPublicBitcoinMode ? 'Bitcoin Read-Only Mode' : 'Watch-Only Wallets'}</h2>
                 <p className="text-[10px] text-zinc-500 mt-1">
-                  🔐 Secure: Your keys, your bitcoin. Blockstream Green xpub supported.
+                  {isPublicBitcoinMode
+                    ? 'Read-only mode via public Bitcoin explorer endpoints.'
+                    : '🔐 Secure: Your keys, your bitcoin. Blockstream Green xpub supported.'}
                 </p>
               </div>
               {syncPill}
@@ -367,10 +651,16 @@ export default function BitcoinPage() {
                   <span className="font-mono text-zinc-300">{getSyncProgress(backendInfo)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span>NBXplorer</span>
-                  <span className="font-mono text-zinc-300">{String(backendInfo?.version || '...')}</span>
+                  <span>{isPublicBitcoinMode ? 'Provider' : 'NBXplorer'}</span>
+                  <span className="font-mono text-zinc-300">{String(backendInfo?.provider || backendInfo?.version || '...')}</span>
                 </div>
               </div>
+
+            {isPublicBitcoinMode ? (
+              <div className="mb-6 border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-200">
+                Watch-only wallet registration and xpub-backed balance/address lookups are disabled in public node mode. Use public explorers for read-only chain data, or re-enable an NBXplorer backend later if you want managed wallet features back.
+              </div>
+            ) : null}
 
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
@@ -415,11 +705,11 @@ export default function BitcoinPage() {
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || isPublicBitcoinMode}
                 className="w-full inline-flex items-center justify-center gap-2 bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
               >
                 <Plus className="h-4 w-4" />
-                {submitting ? 'Registering...' : 'Register Watch-Only Wallet'}
+                {isPublicBitcoinMode ? 'Watch-Only Disabled In Public Mode' : submitting ? 'Registering...' : 'Register Watch-Only Wallet'}
               </button>
             </form>
 
@@ -576,7 +866,9 @@ export default function BitcoinPage() {
               <h2 className="text-2xl font-bold tracking-tighter uppercase mt-1">Bitcoin Layer 2</h2>
               <p className="text-sm text-zinc-400 mt-2 max-w-xl">
                 Confidential transactions. 1-minute blocks. Lower fees. Issued assets. 
-                Our own Elements node powers it all — no third-party dependency.
+                {liquidInfo?.mode === 'public'
+                  ? 'Using public Liquid explorer data instead of a self-hosted Elements node.'
+                  : 'Using a self-hosted Elements node for Liquid data.'}
               </p>
             </div>
             <button
@@ -596,38 +888,47 @@ export default function BitcoinPage() {
               <div className="border border-zinc-800 bg-black/40 p-4">
                 <div className="text-[10px] text-zinc-500 uppercase mb-1">Status</div>
                 <div className="text-sm font-bold font-mono">
-                  {liquidInfo?.status === 'connected' ? (
-                    <span className="text-emerald-400">● Connected</span>
-                  ) : liquidInfo?.status === 'unreachable' ? (
-                    <span className="text-red-400">● Unreachable</span>
-                  ) : (
-                    <span className="text-zinc-500">—</span>
-                  )}
+                  <span
+                    className={
+                      liquidStatusPill.tone === 'active'
+                        ? 'text-emerald-400'
+                        : liquidStatusPill.tone === 'error'
+                          ? 'text-red-400'
+                          : liquidStatusPill.tone === 'idle'
+                            ? 'text-amber-400'
+                            : 'text-zinc-500'
+                    }
+                  >
+                    ● {liquidStatusPill.label}
+                  </span>
                 </div>
               </div>
               <div className="border border-zinc-800 bg-black/40 p-4">
                 <div className="text-[10px] text-zinc-500 uppercase mb-1">Blocks</div>
                 <div className="text-sm font-bold font-mono">
-                  {liquidInfo?.blocks ? liquidInfo.blocks.toLocaleString() : '—'}
+                  {liquidInfo ? liquidInfo.blocks.toLocaleString() : '—'}
                 </div>
               </div>
               <div className="border border-zinc-800 bg-black/40 p-4">
                 <div className="text-[10px] text-zinc-500 uppercase mb-1">Sync</div>
                 <div className="text-sm font-bold font-mono">
-                  {liquidInfo?.verificationProgress ? `${(liquidInfo.verificationProgress * 100).toFixed(1)}%` : '—'}
+                  {liquidInfo ? formatSyncProgress(liquidInfo.verificationProgress) : '—'}
                 </div>
               </div>
               <div className="border border-zinc-800 bg-black/40 p-4">
                 <div className="text-[10px] text-zinc-500 uppercase mb-1">Pruned</div>
                 <div className="text-sm font-bold font-mono">
-                  {liquidInfo?.pruned ? (
-                    <span className="text-blue-400">1 GB</span>
-                  ) : (
-                    <span className="text-zinc-500">Full</span>
-                  )}
+                  <span className={liquidInfo?.pruned ? 'text-blue-400' : 'text-zinc-500'}>
+                    {liquidInfo ? formatLiquidStorage(liquidInfo.sizeOnDisk, liquidInfo.pruned) : '—'}
+                  </span>
                 </div>
               </div>
             </div>
+            {liquidInfo?.error ? (
+              <div className="mt-4 border border-red-500/20 bg-red-500/5 px-4 py-3 text-xs text-red-300">
+                {liquidInfo.mode === 'public' ? 'Public Liquid API check failed' : 'Elements node check failed'}: {liquidInfo.error}
+              </div>
+            ) : null}
           </div>
 
           {/* Features Grid */}
@@ -824,11 +1125,12 @@ export default function BitcoinPage() {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-shrink-0">
                   <div className="bg-white p-4 inline-block rounded">
-                    <img
+                    <Image
                       src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(unsignedPsbt)}`}
                       alt="Unsigned PSBT QR Code"
                       width={250}
                       height={250}
+                      unoptimized
                     />
                   </div>
                   <p className="text-[10px] text-zinc-500 mt-2 text-center font-mono">
