@@ -171,7 +171,6 @@ export default function Navbar() {
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/basefm/live" current={pathname}>baseFM</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
-              <NavLink href="/dashboard/signals" current={pathname}>Signals</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <NavLink href="/colony" current={pathname}>Colony</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
@@ -253,11 +252,17 @@ export default function Navbar() {
           <div className="flex flex-col p-6 gap-1 pb-12">
             {isLoggedIn ? (
               <>
-                <MobileSection label="Your Platform">
+                <MobileSection label="Primary" defaultOpen>
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                  <MobileLink href="/dashboard/signals" onClick={closeMenu}>Signals</MobileLink>
+                  <MobileLink href="/dashboard/skills" onClick={closeMenu}>Skills</MobileLink>
+                  <MobileLink href="/dashboard/wallet" onClick={closeMenu}>Wallet</MobileLink>
+                  <MobileLink href="/dashboard/workflows" onClick={closeMenu}>Workflows</MobileLink>
+                  <MobileLink href="/dashboard/verify" onClick={closeMenu}>Verify</MobileLink>
+                </MobileSection>
+                <MobileSection label="Explore">
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                   <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
-                  <MobileLink href="/dashboard/signals" onClick={closeMenu}>Signals</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/colony" onClick={closeMenu}>Colony</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
@@ -265,17 +270,15 @@ export default function Navbar() {
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
                   <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
                 </MobileSection>
-                <MobileSection label="Music & Broadcasting">
+                <MobileSection label="Advanced">
                   <MobileLink href="/basefm" onClick={closeMenu}>DJ Streaming</MobileLink>
                   <MobileLink href="/dashboard/mixtape" onClick={closeMenu}>Mix Uploads</MobileLink>
-                  <MobileLink href="/advertise" onClick={closeMenu}>Advertise</MobileLink>
-                </MobileSection>
-                <MobileSection label="Network">
                   <MobileLink href="/dashboard/gitlawb-network" onClick={closeMenu}>Gitlawb Network</MobileLink>
                   <MobileLink href="/dashboard/git-city" onClick={closeMenu}>Git City</MobileLink>
                   <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu} external>Borg</MobileLink>
+                  <MobileLink href="/advertise" onClick={closeMenu}>Advertise</MobileLink>
                 </MobileSection>
-                <MobileSection label="Account">
+                <MobileSection label="Account" defaultOpen>
                   <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
@@ -291,7 +294,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <MobileSection label="Explore">
+                <MobileSection label="Explore" defaultOpen>
                   <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
                   <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
@@ -349,11 +352,18 @@ function NavLink({ href, current, children }: { href: string; current: string; c
   );
 }
 
-function MobileSection({ label, children }: { label: string; children: React.ReactNode }) {
+function MobileSection({ label, children, defaultOpen = false }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="border-t border-zinc-900 first:border-0 mt-3 first:mt-0 pt-4 first:pt-0">
-      <p className="text-[10px] text-zinc-700 px-3 pb-2 uppercase tracking-widest">{label}</p>
-      {children}
+      <button
+        onClick={() => setOpen((value) => !value)}
+        className="w-full flex items-center justify-between px-3 pb-2"
+      >
+        <p className="text-[10px] text-zinc-700 uppercase tracking-widest">{label}</p>
+        <span className={`text-[10px] text-zinc-600 transition-transform ${open ? 'rotate-180' : ''}`}>⌄</span>
+      </button>
+      {open ? children : null}
     </div>
   );
 }
