@@ -137,6 +137,17 @@ export default function SignalsPage() {
   const [mentionsError, setMentionsError] = useState('');
   const [analytics, setAnalytics] = useState<XAnalyticsResponse | null>(null);
   const [analyticsError, setAnalyticsError] = useState('');
+  const [communityPosts, setCommunityPosts] = useState<Array<{
+    id: string;
+    author: string;
+    authorUsername: string;
+    text: string;
+    createdAt: string;
+    publicMetrics: { likeCount: number; replyCount: number; repostCount: number };
+    url: string;
+  }>>([]);
+  const [communityId, setCommunityId] = useState('2031495203002134740');
+  const [communityError, setCommunityError] = useState('');
   const [draftSourceText, setDraftSourceText] = useState('');
   const [draftTone, setDraftTone] = useState('direct');
   const [draftScheduleFor, setDraftScheduleFor] = useState('');
@@ -242,6 +253,25 @@ export default function SignalsPage() {
     loadAnalytics();
   }, []);
 
+  useEffect(() => {
+    const loadCommunityOnMount = async () => {
+      try {
+        const res = await fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, { cache: 'no-store' });
+        const json = await res.json();
+        if (!res.ok) {
+          setCommunityError(typeof json?.error === 'string' ? json.error : 'Failed to load community feed');
+          return;
+        }
+        setCommunityPosts(Array.isArray(json?.posts) ? json.posts : []);
+        setCommunityError('');
+      } catch (e) {
+        console.error('X community fetch failed:', e);
+        setCommunityError('Failed to load community feed');
+      }
+    };
+    loadCommunityOnMount();
+  }, [communityId]);
+
   const loadDrafts = useCallback(async () => {
     try {
       const res = await fetch('/api/x/drafts', { cache: 'no-store' });
@@ -284,6 +314,22 @@ export default function SignalsPage() {
       setAnalyticsError('Failed to load X analytics');
     }
   }, []);
+
+  const loadCommunity = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, { cache: 'no-store' });
+      const json = await res.json();
+      if (!res.ok) {
+        setCommunityError(typeof json?.error === 'string' ? json.error : 'Failed to load community feed');
+        return;
+      }
+      setCommunityPosts(Array.isArray(json?.posts) ? json.posts : []);
+      setCommunityError('');
+    } catch (e) {
+      console.error('X community fetch failed:', e);
+      setCommunityError('Failed to load community feed');
+    }
+  }, [communityId]);
 
   const loadManagedSessions = useCallback(async () => {
     try {
@@ -926,6 +972,64 @@ export default function SignalsPage() {
             {!analytics?.posts?.length ? (
               <div className="border border-zinc-800 bg-black p-4 text-xs text-zinc-500">
                 No recent published posts found for the connected X account.
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="bg-zinc-950 border border-zinc-800 p-5 mb-8">
+          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+            <div>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600">Community Feed</div>
+              <a
+                href={`https://x.com/i/communities/${communityId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-sky-400 hover:text-sky-300 font-mono"
+              >
+                x.com/i/communities/{communityId}
+              </a>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={communityId}
+                onChange={(e) => setCommunityId(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="Community ID"
+                className="border border-zinc-800 bg-black px-3 py-2 text-xs text-white font-mono focus:border-zinc-600 focus:outline-none w-48"
+              />
+              <button
+                onClick={() => void loadCommunity()}
+                className="border border-zinc-800 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:border-zinc-600 hover:text-white transition-colors"
+              >
+                Reload
+              </button>
+            </div>
+          </div>
+          {communityError ? (
+            <div className="border border-red-500/30 p-3 text-red-400 text-xs mb-3">{communityError}</div>
+          ) : null}
+          <div className="space-y-3">
+            {communityPosts.map((post) => (
+              <div key={post.id} className="border border-zinc-800 bg-black p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-bold text-white">{post.author}</span>
+                  <span className="text-xs text-zinc-500">@{post.authorUsername}</span>
+                </div>
+                <a href={post.url} target="_blank" rel="noopener noreferrer" className="block">
+                  <p className="text-sm text-zinc-300 hover:text-white transition-colors">{post.text}</p>
+                </a>
+                <div className="mt-3 flex flex-wrap gap-4 text-[10px] uppercase tracking-widest text-zinc-600">
+                  <span>{new Date(post.createdAt).toLocaleString()}</span>
+                  <span>{post.publicMetrics.likeCount} likes</span>
+                  <span>{post.publicMetrics.replyCount} replies</span>
+                  <span>{post.publicMetrics.repostCount} reposts</span>
+                </div>
+              </div>
+            ))}
+            {!communityPosts.length && !communityError ? (
+              <div className="border border-zinc-800 bg-black p-4 text-xs text-zinc-500">
+                No recent community posts. Make sure your X account is a member of the community and the ID is correct.
               </div>
             ) : null}
           </div>

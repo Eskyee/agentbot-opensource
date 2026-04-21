@@ -296,3 +296,79 @@ export async function fetchUserPostsFromX(userId: string): Promise<XUserPost[]> 
     url: `https://x.com/${username}/status/${tweet.id}`,
   }))
 }
+
+export interface XCommunityPost {
+  id: string
+  author: string
+  authorUsername: string
+  text: string
+  createdAt: string
+  publicMetrics: {
+    likeCount: number
+    replyCount: number
+    repostCount: number
+  }
+  url: string
+}
+
+export async function fetchCommunityPostsFromX(
+  userId: string,
+  communityId: string
+): Promise<XCommunityPost[]> {
+  const account = await getStoredXAccountSecret(userId)
+  if (!account?.accessToken) {
+    throw new Error('No connected X account found')
+  }
+  if (!/^\d+$/.test(communityId)) {
+    throw new Error('Invalid community id')
+  }
+
+  const params = new URLSearchParams({
+    max_results: '10',
+    expansions: 'author_id',
+    'tweet.fields': 'author_id,created_at,public_metrics',
+    'user.fields': 'username,name',
+  })
+
+  const response = await fetch(
+    `https://api.x.com/2/communities/${communityId}/tweets?${params.toString()}`,
+    {
+      headers: { Authorization: `Bearer ${account.accessToken}` },
+      signal: AbortSignal.timeout(8000),
+      cache: 'no-store',
+    }
+  )
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`X community failed: ${response.status} ${errorText}`)
+  }
+
+  const payload = await response.json()
+  const tweets = Array.isArray(payload?.data) ? payload.data : []
+  const users = Array.isArray(payload?.includes?.users) ? payload.includes.users : []
+  const userMap = new Map<string, { username: string; name: string }>(
+    users.map((user: { id: string; username?: string; name?: string }) => [
+      user.id,
+      { username: user.username || 'unknown', name: user.name || user.username || 'unknown' },
+    ])
+  )
+
+  return tweets.map((tweet: any) => {
+    const author = userMap.get(String(tweet.author_id))
+    const authorUsername = author?.username || 'unknown'
+    return {
+      id: String(tweet.id),
+      author: author?.name || authorUsername,
+      authorUsername,
+      text: String(tweet.text || ''),
+      createdAt: String(tweet.created_at || new Date().toISOString()),
+      publicMetrics: {
+        likeCount: Number(tweet.public_metrics?.like_count || 0),
+        replyCount: Number(tweet.public_metrics?.reply_count || 0),
+        repostCount: Number(tweet.public_metrics?.retweet_count || tweet.public_metrics?.repost_count || 0),
+      },
+      url: `https://x.com/${authorUsername}/status/${tweet.id}`,
+    }
+  })
+}
