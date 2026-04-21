@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'surviving-250-doc-backdoor',
+    dateLabel: '21 Apr',
+    isoDate: '2026-04-21',
+    title: 'Surviving the 250-Document Backdoor',
+    excerpt:
+      'A joint Anthropic / UK AISI / Alan Turing study proved 250 poisoned documents can permanently backdoor any frontier LLM. Here is the practical playbook humans and agentic systems can deploy this quarter — model diversity, canary probes, signed RAG, sovereign fallback.',
+    tags: ['Security', 'Data Poisoning', 'Provenance', 'Sovereign AI'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'open-source-catch-up-and-agentbot-coach',
     dateLabel: '17 Apr',
     isoDate: '2026-04-17',
