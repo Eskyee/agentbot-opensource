@@ -164,10 +164,7 @@ export function IntegrationsTab() {
             </p>
           </div>
           <div className="text-right text-[10px] uppercase tracking-widest">
-            <div className={xStatus?.app?.appKeyConfigured ? 'text-emerald-400' : 'text-amber-400'}>
-              App Credentials: {xStatus?.app?.appKeyConfigured ? 'Ready' : 'Missing'}
-            </div>
-            <div className={xStatus?.app?.oauthClientConfigured ? 'text-emerald-400 mt-1' : 'text-amber-400 mt-1'}>
+            <div className={xStatus?.app?.oauthClientConfigured ? 'text-emerald-400' : 'text-amber-400'}>
               OAuth: {xStatus?.app?.oauthClientConfigured ? 'Ready' : 'Missing'}
             </div>
             <div className={xStatus?.user?.connected ? 'text-emerald-400 mt-1' : 'text-zinc-500 mt-1'}>
