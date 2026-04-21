@@ -243,7 +243,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
 
       <aside className={`
         fixed md:static inset-y-0 left-0 z-50
-        w-64 bg-zinc-950 border-r border-zinc-900 flex flex-col font-mono
+        w-64 bg-[linear-gradient(180deg,rgba(24,24,27,0.98),rgba(17,24,39,0.96)_22%,rgba(12,10,9,0.98))] border-r border-orange-950/40 flex flex-col font-mono shadow-[inset_-1px_0_0_rgba(120,53,15,0.24)]
         transform transition-transform duration-200 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
@@ -259,10 +259,10 @@ export const DashboardSidebar = memo(function DashboardSidebar({
 
         <nav className="flex-1 overflow-y-auto pt-16 md:pt-4 pb-4">
           {/* Runtime status card */}
-          <div className="mx-4 mb-5 border border-zinc-800 bg-zinc-950 p-4">
+          <div className="mx-4 mb-5 border border-orange-900/30 bg-[linear-gradient(180deg,rgba(39,39,42,0.72),rgba(24,24,27,0.4))] p-4 shadow-[0_0_0_1px_rgba(120,53,15,0.12)]">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600">OpenClaw Runtime</div>
+                <div className="text-[10px] uppercase tracking-widest text-orange-300/60">OpenClaw Runtime</div>
                 <div className={`mt-1 text-xs font-bold uppercase tracking-widest ${runtimeTone}`}>
                   {runtimeStatus}
                 </div>
@@ -270,9 +270,9 @@ export const DashboardSidebar = memo(function DashboardSidebar({
               <span className={`h-2.5 w-2.5 rounded-full ${runtimeDot}`} />
             </div>
             <div className="mt-3 space-y-2">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-700">Plan</div>
+              <div className="text-[10px] uppercase tracking-widest text-orange-300/45">Plan</div>
               <div className="text-sm font-bold capitalize text-white">{plan || 'Solo'}</div>
-              <div className="text-[10px] font-mono text-zinc-500 break-all">
+              <div className="text-[10px] font-mono text-zinc-500/90 break-all">
                 {runtimeHost || 'No agent deployed yet'}
               </div>
             </div>
@@ -292,10 +292,10 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                     href={item.href || openclawUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between border border-blue-500/20 bg-blue-500/5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:border-blue-500/50 hover:text-white transition-colors"
+                    className="flex items-center justify-between border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-orange-200 hover:border-orange-400/50 hover:text-white transition-colors"
                   >
                     <span>{item.label}</span>
-                    <span className="text-[10px] text-blue-400/70">↗</span>
+                    <span className="text-[10px] text-orange-300/70">↗</span>
                   </a>
                 ))}
               </div>
@@ -324,10 +324,10 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                 className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
                 aria-expanded={!isOperatorCollapsed}
               >
-                <span className="text-[9px] uppercase tracking-[0.15em] text-purple-500 group-hover:text-purple-400 transition-colors">
+                <span className="text-[9px] uppercase tracking-[0.15em] text-orange-400/80 group-hover:text-orange-300 transition-colors">
                   {operatorNavSection.label}
                 </span>
-                <span className={`text-[8px] text-purple-500 group-hover:text-purple-400 transition-all duration-200 ${isOperatorCollapsed ? '' : 'rotate-180'}`}>
+                <span className={`text-[8px] text-orange-400/80 group-hover:text-orange-300 transition-all duration-200 ${isOperatorCollapsed ? '' : 'rotate-180'}`}>
                   ▲
                 </span>
               </button>
@@ -343,11 +343,11 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                         onClick={onToggle}
                         className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
                           isActive
-                            ? 'bg-purple-900/20 text-purple-300'
-                            : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                            ? 'bg-orange-500/12 text-orange-200'
+                            : 'text-zinc-500 hover:bg-orange-500/5 hover:text-zinc-200'
                         }`}
                       >
-                        <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                        <span className={`text-[10px] w-4 text-center ${isActive ? 'text-orange-300 opacity-100' : 'opacity-60'}`}>{item.icon}</span>
                         <span>{item.label}</span>
                       </Link>
                     )
@@ -373,10 +373,10 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                   className="w-full flex items-center justify-between pl-4 pr-4 py-1 group"
                   aria-expanded={!isCollapsed}
                 >
-                  <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-700 group-hover:text-zinc-500 transition-colors">
+                  <span className="text-[9px] uppercase tracking-[0.15em] text-zinc-600 group-hover:text-orange-200/65 transition-colors">
                     {section.label}
                   </span>
-                  <span className={`text-[8px] text-zinc-700 group-hover:text-zinc-500 transition-all duration-200 ${isCollapsed ? '' : 'rotate-180'}`}>
+                  <span className={`text-[8px] text-zinc-700 group-hover:text-orange-200/65 transition-all duration-200 ${isCollapsed ? '' : 'rotate-180'}`}>
                     ▲
                   </span>
                 </button>
@@ -388,13 +388,13 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                       const isActive = !isExternal && (pathname === item.href || pathname.startsWith(item.href + '/'))
                       const cls = `flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
                         isActive
-                          ? 'bg-zinc-900 text-white'
-                          : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+                          ? 'bg-[linear-gradient(90deg,rgba(249,115,22,0.16),rgba(234,88,12,0.06))] text-orange-100'
+                          : 'text-zinc-500 hover:bg-orange-500/5 hover:text-zinc-200'
                       }`
                       if (isExternal) {
                         return (
                           <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={cls}>
-                            <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                            <span className={`text-[10px] w-4 text-center ${isActive ? 'text-orange-300 opacity-100' : 'opacity-60'}`}>{item.icon}</span>
                             <span>{item.label}</span>
                             <span className="text-[8px] text-zinc-700 ml-auto">↗</span>
                           </a>
@@ -408,7 +408,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                           onClick={onToggle}
                           className={cls}
                         >
-                          <span className="text-[10px] w-4 text-center opacity-60">{item.icon}</span>
+                          <span className={`text-[10px] w-4 text-center ${isActive ? 'text-orange-300 opacity-100' : 'opacity-60'}`}>{item.icon}</span>
                           <span>{item.label}</span>
                         </Link>
                       )
@@ -421,21 +421,21 @@ export const DashboardSidebar = memo(function DashboardSidebar({
         </nav>
 
         {/* User footer */}
-        <div className="p-4 border-t border-zinc-900">
+        <div className="p-4 border-t border-orange-950/30 bg-[linear-gradient(180deg,rgba(24,24,27,0),rgba(17,24,39,0.2))]">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 bg-zinc-800 border border-zinc-700 flex items-center justify-center font-bold text-white">
+            <div className="w-10 h-10 bg-[linear-gradient(180deg,rgba(251,146,60,0.22),rgba(120,53,15,0.2))] border border-orange-900/30 flex items-center justify-center font-bold text-orange-100">
               {(userName || 'U').charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-medium truncate text-sm">{userName || 'User'}</div>
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">
+              <div className="font-medium truncate text-sm text-orange-100/90">{userName || 'User'}</div>
+              <div className="text-[10px] uppercase tracking-widest text-orange-300/45">
                 {credits > 0 ? `${credits} credits` : 'Agent'}
               </div>
             </div>
           </div>
           <button
             onClick={() => customSignOut()}
-            className="w-full flex items-center justify-center gap-2 border border-zinc-800 px-4 py-2 text-sm text-zinc-500 hover:text-white hover:border-zinc-600 transition-colors"
+            className="w-full flex items-center justify-center gap-2 border border-orange-900/25 px-4 py-2 text-sm text-zinc-500 hover:text-orange-100 hover:border-orange-700/40 transition-colors"
           >
             Sign Out
           </button>
