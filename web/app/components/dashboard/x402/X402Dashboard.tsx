@@ -284,18 +284,40 @@ export default function X402Dashboard() {
           </a>
         </div>
 
-        <div className="border border-zinc-800 bg-black/40 overflow-hidden">
-          <iframe
-            src="https://agentic.market/?chart=buyers-sellers"
-            title="Agentic Market Buyers and Sellers"
-            className="w-full min-h-[720px] bg-black"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
-        </div>
+        <a
+          href="https://agentic.market/?chart=buyers-sellers"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block border border-zinc-800 bg-gradient-to-br from-emerald-950/40 via-black to-zinc-950 hover:border-emerald-500/60 transition-colors p-8 sm:p-12"
+        >
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">Live on agentic.market</div>
+            <div className="text-3xl sm:text-5xl font-bold uppercase tracking-tighter text-white">Buyers vs Sellers</div>
+            <p className="text-sm text-zinc-400 max-w-xl">
+              Real-time x402 marketplace activity — endpoint listings, per-request USDC pricing, and live settlement volume across agent buyers and sellers.
+            </p>
+            <div className="grid grid-cols-3 gap-6 mt-4">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500">Buyers</div>
+                <div className="text-xl font-mono text-emerald-400 mt-1">Live</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500">Sellers</div>
+                <div className="text-xl font-mono text-emerald-400 mt-1">Live</div>
+              </div>
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-500">Settlement</div>
+                <div className="text-xl font-mono text-emerald-400 mt-1">USDC</div>
+              </div>
+            </div>
+            <span className="inline-flex items-center justify-center mt-4 bg-emerald-500 hover:bg-emerald-400 text-black px-6 py-3 text-[10px] font-bold uppercase tracking-widest">
+              Open agentic.market →
+            </span>
+          </div>
+        </a>
 
         <p className="mt-3 text-[10px] uppercase tracking-widest text-zinc-600">
-          If the external site blocks embedding in some environments, use the button above to open the live dashboard directly.
+          Agentic Market blocks iframe embedding (X-Frame-Options: DENY). Click above to open the live dashboard in a new tab.
         </p>
       </div>
 
