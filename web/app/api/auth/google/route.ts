@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+function getBaseUrl(req: NextRequest): string {
+  return (process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '');
+}
+
 export async function GET(req: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = `${req.nextUrl.origin}/api/auth/google/callback`;
+  const baseUrl = getBaseUrl(req);
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
   
   if (!clientId) {
     return NextResponse.redirect(new URL('/login?error=GoogleNotConfigured', req.url));
