@@ -78,6 +78,7 @@ export const navSections = [
     label: 'Operations',
     items: [
       { label: 'Signals',       href: '/dashboard/signals',       icon: '⌁' },
+      { label: 'Paid Tools',    href: '/dashboard/tools',         icon: '◫' },
       { label: 'ClawMerchants', href: '/dashboard/market-intel',  icon: '▣' },
       { label: 'Metrics',       href: '/dashboard/analytics',     icon: '◌' },
       { label: 'Usage & Spend', href: '/dashboard/cost',          icon: '⬡' },
