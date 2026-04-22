@@ -11,7 +11,13 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /build
 
 # Clone tempo-x402 workspace
-RUN git clone https://github.com/compusophy/tempo-x402.git .
+# Pinned to v9.2.0 — last known-good tag before the v9.3.0 "Composable
+# Cartridge Intelligence" refactor (2026-04-11) that changed the soul
+# routing surface and introduced llama-server runtime deps not present
+# in debian:trixie-slim. Bump this tag intentionally after verifying a
+# newer upstream version builds + boots on Railway.
+ARG TEMPO_X402_REF=v9.2.0
+RUN git clone --branch "${TEMPO_X402_REF}" --depth 1 https://github.com/compusophy/tempo-x402.git .
 
 # Build release binary (all features including soul, agent, erc8004)
 RUN cargo build --release --package tempo-x402-node
