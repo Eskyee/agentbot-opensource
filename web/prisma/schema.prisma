@@ -846,3 +846,20 @@ model dj_sessions {
   @@index([status], map: "idx_dj_sessions_status")
   @@index([started_at], map: "idx_dj_sessions_started")
 }
+
+model execution_logs {
+  id             Int       @id @default(autoincrement())
+  user_id        String
+  agent_id       String?
+  workflow_id    String?
+  execution_type String
+  success        Boolean   @default(true)
+  error_message  String?
+  duration_ms    Int?
+  created_at     DateTime? @default(now())
+
+  @@index([user_id], map: "idx_execution_logs_user_id")
+  @@index([agent_id], map: "idx_execution_logs_agent_id")
+  @@index([created_at], map: "idx_execution_logs_created_at")
+  @@index([user_id, created_at], map: "idx_execution_logs_user_created_at")
+}
