@@ -1,51 +1,78 @@
-import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from './platform-urls'
+import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from './platform-urls';
 
 export interface ServiceHealth {
-  name: string
-  url: string
+  name: string;
+  url: string;
 }
 
 export interface ServiceStatus {
-  name: string
-  status: 'ok' | 'degraded' | 'down'
-  detail?: string
+  name: string;
+  status: 'ok' | 'degraded' | 'down';
+  detail?: string;
 }
 
 export const HEALTH_SERVICES: ServiceHealth[] = [
   { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health` },
   { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/soul/status` },
   { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health` },
-]
+];
 
-export async function checkServices(services: ServiceHealth[] = HEALTH_SERVICES): Promise<ServiceStatus[]> {
+const HEALTH_CHECK_TIMEOUT_MS = 8000;
+
+function describeFetchError(error: unknown): string {
+  if (error && typeof error === 'object') {
+    const err = error as { name?: string; message?: string; cause?: { code?: string } };
+    // AbortSignal.timeout throws a DOMException with name="TimeoutError" (Node 20+)
+    // or name="AbortError". Surface a clean label instead of the platform's raw
+    // "The operation was aborted due to timeout" so the status card stays readable.
+    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+      return `timeout (${Math.round(HEALTH_CHECK_TIMEOUT_MS / 1000)}s)`;
+    }
+    const causeCode = err.cause?.code;
+    if (causeCode === 'ENOTFOUND' || causeCode === 'EAI_AGAIN') return 'dns error';
+    if (causeCode === 'ECONNREFUSED') return 'connection refused';
+    if (causeCode === 'ECONNRESET') return 'connection reset';
+    if (causeCode === 'UND_ERR_SOCKET') return 'socket error';
+    if (err.message) return err.message;
+  }
+  return 'unreachable';
+}
+
+export async function checkServices(
+  services: ServiceHealth[] = HEALTH_SERVICES
+): Promise<ServiceStatus[]> {
   return Promise.all(
     services.map(async (service) => {
       try {
-        const res = await fetch(service.url, { signal: AbortSignal.timeout(4000) })
+        const res = await fetch(service.url, {
+          signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
+        });
         if (!res.ok) {
-          return { name: service.name, status: 'degraded', detail: `HTTP ${res.status}` }
+          return { name: service.name, status: 'degraded', detail: `HTTP ${res.status}` };
         }
-        const body = await res.json().catch(() => null)
+        const body = await res.json().catch(() => null);
         const detail =
           typeof body === 'object' && body !== null
-            ? ('status' in body && typeof body.status === 'string'
-                ? body.status
-                : 'active' in body
-                  ? ((body as { active?: boolean; dormant?: boolean }).active
-                      ? ((body as { dormant?: boolean }).dormant ? 'dormant' : 'active')
-                      : 'inactive')
-                  : 'build' in body && typeof body.build === 'string'
-                    ? body.build
-                    : 'ok')
-            : 'ok'
+            ? 'status' in body && typeof body.status === 'string'
+              ? body.status
+              : 'active' in body
+                ? (body as { active?: boolean; dormant?: boolean }).active
+                  ? (body as { dormant?: boolean }).dormant
+                    ? 'dormant'
+                    : 'active'
+                  : 'inactive'
+                : 'build' in body && typeof body.build === 'string'
+                  ? body.build
+                  : 'ok'
+            : 'ok';
         return {
           name: service.name,
           status: 'ok',
           detail,
-        }
-      } catch (error: any) {
-        return { name: service.name, status: 'down', detail: error?.message || 'unreachable' }
+        };
+      } catch (error: unknown) {
+        return { name: service.name, status: 'down', detail: describeFetchError(error) };
       }
     })
-  )
+  );
 }
