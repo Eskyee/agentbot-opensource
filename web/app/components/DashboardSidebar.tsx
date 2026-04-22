@@ -78,6 +78,7 @@ export const navSections = [
     label: 'Operations',
     items: [
       { label: 'Signals',       href: '/dashboard/signals',       icon: '⌁' },
+      { label: 'Paid Tools',    href: '/dashboard/tools',         icon: '◫' },
       { label: 'ClawMerchants', href: '/dashboard/market-intel',  icon: '▣' },
       { label: 'Metrics',       href: '/dashboard/analytics',     icon: '◌' },
       { label: 'Usage & Spend', href: '/dashboard/cost',          icon: '⬡' },
@@ -145,9 +146,23 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   useEffect(() => {
     try {
       const stored = localStorage.getItem(COLLAPSED_KEY)
-      if (stored) setCollapsed(JSON.parse(stored))
+      if (stored) {
+        setCollapsed(JSON.parse(stored))
+        return
+      }
+
+      if (window.innerWidth < 768) {
+        const next = Object.fromEntries(
+          navSections.map((section) => [
+            section.label,
+            !section.items.some((item) => pathname === item.href || pathname.startsWith(item.href + '/')),
+          ])
+        )
+        try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next)) } catch {}
+        setCollapsed(next)
+      }
     } catch {}
-  }, [])
+  }, [pathname])
 
   useEffect(() => {
     if (runtimeUrl) {
