@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "blacksmith": {
+      "command": "npx",
+      "args": ["-y", "blacksmith-mcp"],
+      "env": {
+        "BLACKSMITH_ORG": "Eskyee"
+      }
+    }
+  }
+}
