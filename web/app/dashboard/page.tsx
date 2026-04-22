@@ -288,15 +288,12 @@ function DashboardContent() {
         const gatewayToken = bootstrap?.gatewayToken || undefined
         // Control UI auto-connects via hash fragment — token + gateway URL
         // Hash is never sent to server, so it's safe to embed the token
-        const controlUiUrl =
-          data.status === 'running'
-            ? buildOpenClawControlUrl({
-                view: 'chat',
-                gatewayUrl: url,
-                gatewayToken,
-                session: 'main',
-              })
-            : url
+        const controlUiUrl = buildOpenClawControlUrl({
+          view: 'chat',
+          gatewayUrl: url,
+          gatewayToken,
+          session: 'main',
+        })
         const resolvedUserId = bootstrap?.openclawInstanceId || data.userId || userId
         localStorage.setItem('agentbot_instance', JSON.stringify({
           userId: resolvedUserId,
