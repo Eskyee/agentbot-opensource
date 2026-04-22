@@ -6,6 +6,10 @@
       "env": {
         "BLACKSMITH_ORG": "Eskyee"
       }
+    },
+    "railway": {
+      "command": "npx",
+      "args": ["-y", "@railway/mcp-server"]
     }
   }
 }
