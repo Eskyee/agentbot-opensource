@@ -1,5 +1,5 @@
 # Agentbot - OpenClaw Agent Container (Official Image)
-FROM ghcr.io/openclaw/openclaw:2026.4.15
+FROM ghcr.io/openclaw/openclaw:2026.4.21
 
 # Performance tuning (from OpenClaw docs)
 ENV NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache

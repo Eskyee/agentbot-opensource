@@ -46,13 +46,37 @@ export async function GET() {
   // Use user's specific token, fallback to shared token only if needed
   const userToken = registration[0]?.gateway_token
 
+  let effectiveOpenclawUrl = openclawUser?.openclawUrl ?? null
+  let effectiveOpenclawInstanceId = openclawUser?.openclawInstanceId ?? null
+
+  if (!effectiveOpenclawInstanceId) {
+    const latestAgent = await prisma.agent.findFirst({
+      where: { userId },
+      select: {
+        id: true,
+        websocketUrl: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    }).catch(() => null)
+
+    const looksLikeManagedRuntime = latestAgent?.id && (
+      /^[a-f0-9]{16}$/i.test(latestAgent.id) ||
+      String(latestAgent.websocketUrl || '').includes('agentbot-agent-')
+    )
+
+    if (looksLikeManagedRuntime) {
+      effectiveOpenclawInstanceId = latestAgent.id
+      effectiveOpenclawUrl = latestAgent.websocketUrl || null
+    }
+  }
+
   return NextResponse.json({
     credits: user?.referralCredits ?? 0,
     referralCode: user?.referralCode ?? null,
     referralCount: user?._count.referrals ?? 0,
     plan: user?.plan ?? null,
-    openclawUrl: openclawUser?.openclawUrl ?? null,
-    openclawInstanceId: openclawUser?.openclawInstanceId ?? null,
+    openclawUrl: effectiveOpenclawUrl,
+    openclawInstanceId: effectiveOpenclawInstanceId,
     gatewayToken: userToken || null,
     communityRewards,
   })
