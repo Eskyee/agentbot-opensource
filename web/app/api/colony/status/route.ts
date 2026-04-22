@@ -16,7 +16,7 @@ const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
 const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
 
 // Known borg-0 public URL — always included as fallback even if env var is stale
-const BORG_0_URL = 'https://borg-0-production.up.railway.app'
+const BORG_0_URL = 'https://borg-0-production.up.railway.app';
 
 function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
   const value = String(raw ?? '').toLowerCase();
@@ -28,9 +28,9 @@ function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
 function getSoulCandidates() {
   const candidates = [SOUL_URL, BORG_0_URL]
     .map((value) => value?.trim())
-    .filter(Boolean) as string[]
+    .filter(Boolean) as string[];
 
-  return [...new Set(candidates)]
+  return [...new Set(candidates)];
 }
 
 async function isUsableSoulHost(baseUrl: string) {
@@ -39,17 +39,17 @@ async function isUsableSoulHost(baseUrl: string) {
       headers: { Accept: 'application/json' },
       signal: AbortSignal.timeout(4000),
       cache: 'no-store',
-    })
+    });
 
-    if (!res.ok) return false
+    if (!res.ok) return false;
 
-    const contentType = res.headers.get('content-type') || ''
-    if (!contentType.includes('application/json')) return false
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) return false;
 
-    const payload = await res.json().catch(() => null)
-    return Boolean(payload && typeof payload === 'object' && 'active' in payload)
+    const payload = await res.json().catch(() => null);
+    return Boolean(payload && typeof payload === 'object' && 'active' in payload);
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -59,32 +59,32 @@ async function getWorkingSoulClient() {
       return {
         soul: new SoulClient(candidate),
         serviceUrl: candidate,
-      }
+      };
     }
   }
 
-  throw new Error(`No healthy soul host found from: ${getSoulCandidates().join(', ')}`)
+  throw new Error(`No healthy soul host found from: ${getSoulCandidates().join(', ')}`);
 }
 
 // Tempo RPC for real wallet balances
 const tempoClient = createPublicClient({
   chain: tempo,
   transport: http('https://rpc.tempo.xyz'),
-})
+});
 
 // ERC20 ABI
 const ERC20_ABI = parseAbi([
   'function balanceOf(address) view returns (uint256)',
   'function symbol() view returns (string)',
   'function decimals() view returns (uint8)',
-])
+]);
 
 // Known tokens to check
 const TOKENS = [
   { address: '0x20c000000000000000000000b9537d11c60e8b50' as Address, symbol: 'USDC.e' },
   { address: '0x20c0000000000000000000000000000000000000' as Address, symbol: 'pathUSD' },
   { address: '0x20c00000000000000000000014f22ca97301eb73' as Address, symbol: 'USDT0' },
-]
+];
 
 /**
  * Fetch real Tempo balance for a wallet address
@@ -97,18 +97,18 @@ async function getTempoBalance(address: Address): Promise<{ formatted: string; t
         abi: ERC20_ABI,
         functionName: 'balanceOf',
         args: [address],
-      })
+      });
       if (balance > 0n) {
         return {
           formatted: formatUnits(balance, 6),
           token: token.symbol,
-        }
+        };
       }
     } catch {
-      continue
+      continue;
     }
   }
-  return { formatted: '0.00', token: 'USDC.e' }
+  return { formatted: '0.00', token: 'USDC.e' };
 }
 
 export async function GET(request: Request) {
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
   const action = searchParams.get('action') || 'tree';
 
   try {
-    const { soul, serviceUrl } = await getWorkingSoulClient()
+    const { soul, serviceUrl } = await getWorkingSoulClient();
 
     switch (action) {
       case 'tree': {
@@ -173,7 +173,7 @@ export async function GET(request: Request) {
             version: 'unknown',
           })),
           ...siblingNodes
-            .filter((s) => identity ? s.instance_id !== identity.instance_id : true)
+            .filter((s) => (identity ? s.instance_id !== identity.instance_id : true))
             .map((sibling) => ({
               id: sibling.instance_id,
               name: `Peer-${sibling.instance_id.slice(0, 8)}`,
@@ -197,9 +197,10 @@ export async function GET(request: Request) {
           avg_fitness: Math.round(
             agents.reduce((sum, a) => sum + a.fitness, 0) / Math.max(agents.length, 1)
           ),
-          fittest: agents.length > 0
-            ? agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0])
-            : null,
+          fittest:
+            agents.length > 0
+              ? agents.reduce((best, a) => (a.fitness > best.fitness ? a : best), agents[0])
+              : null,
           cull_queue: agents.filter((a) => a.fitness < 40).length,
           agents,
           root: {
@@ -242,6 +243,21 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
   } catch (error: any) {
+    // For soul/diagnostics actions the caller expects a specific payload shape
+    // (SoulStatus / diagnostics). Returning the colony-tree fallback here
+    // crashes the Borg dashboard when it dereferences `data.fitness.total`.
+    // Surface a 503 so the client renders its "Soul offline" state instead.
+    if (action === 'soul' || action === 'diagnostics') {
+      return NextResponse.json(
+        {
+          error: 'Soul service unavailable',
+          detail: error.message,
+          degraded: true,
+        },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
       {
         colony_size: 0,
