@@ -74,12 +74,33 @@ export function getAgentEnvVars(
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
         allowedOrigins,
-        dangerouslyDisableDeviceAuth: true,
-        dangerouslyAllowHostHeaderOriginFallback: true,
+        dangerouslyDisableDeviceAuth: false,
+        dangerouslyAllowHostHeaderOriginFallback: false,
       },
       http: { endpoints: { chatCompletions: { enabled: true } } },
     },
-    agents: { defaults: {} },
+    agents: {
+      defaults: {
+        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
+      },
+    },
+    channels: {
+      telegram: { enabled: false, dmPolicy: 'pairing' },
+      discord: { enabled: false, dmPolicy: 'pairing' },
+      whatsapp: { enabled: false, dmPolicy: 'pairing' },
+    },
+    cron: { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    session: {
+      scope: 'per-sender',
+      reset: { mode: 'daily', atHour: 4 },
+      maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
+    },
+    tools: {
+      profile: 'coding',
+      exec: { backgroundMs: 10000, timeoutSec: 1800 },
+      web: { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
+    },
   })
 
   return {
