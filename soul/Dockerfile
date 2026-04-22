@@ -33,10 +33,19 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user and writable data dirs (must be root at this point)
+# Create non-root user and writable data dirs (must be root at this point).
+# /data is the persistent volume mount point. Everything that must survive
+# a restart lives under /data — sqlite DB, memory, brain checkpoints,
+# benchmarks, cartridges, workspace. soul/entrypoint.sh refuses to start
+# if /data is not a mount, as a backstop for railway.json's
+# requiredMountPath guard.
 RUN useradd -m -u 1000 agent \
-    && mkdir -p /data /home/agent/data /home/agent/data/workspace \
-    && chown -R agent:agent /data /home/agent/data
+    && mkdir -p /data \
+    && chown -R agent:agent /data
+
+# Copy fail-hard entrypoint that verifies /data is a volume mount.
+COPY --chown=agent:agent entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER agent
 WORKDIR /home/agent
@@ -44,10 +53,13 @@ WORKDIR /home/agent
 # Copy binary
 COPY --from=builder /build/target/release/x402-node /usr/local/bin/x402-node
 
-# Environment defaults
+# Environment defaults. All state paths point inside /data (the persistent
+# volume) so nothing is written to ephemeral disk.
 ENV PORT=4023
 ENV RUST_LOG=info
-ENV SOUL_WORKSPACE_ROOT=/home/agent/data/workspace
+ENV SOUL_DB_PATH=/data/soul.db
+ENV SOUL_MEMORY_FILE=/data/soul_memory.md
+ENV SOUL_WORKSPACE_ROOT=/data/workspace
 ENV SOUL_CODING_ENABLED=false
 ENV SOUL_TOOLS_ENABLED=true
 
@@ -56,4 +68,4 @@ EXPOSE 4023
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
     CMD curl -f http://localhost:4023/health || exit 1
 
-ENTRYPOINT ["x402-node"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
