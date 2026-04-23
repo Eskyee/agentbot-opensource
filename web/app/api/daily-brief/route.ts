@@ -166,7 +166,7 @@ export async function GET() {
     {
       id: 'focus',
       title: "Today's Focus",
-      color: 'text-yellow-400',
+      color: 'text-orange-400',
       items: focusItems,
     },
     {

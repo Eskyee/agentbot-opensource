@@ -202,7 +202,7 @@ export default function Navbar() {
                 Claim
               </Link>
               {isAdmin && (
-                <Link href="/admin" className="text-[11px] text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider">
+                <Link href="/admin" className="text-[11px] text-orange-500 hover:text-orange-400 transition-colors uppercase tracking-wider">
                   Admin
                 </Link>
               )}
@@ -217,15 +217,15 @@ export default function Navbar() {
           ) : (
             <>
               <Link href="/guide" className="text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider">
-                {isAdmin && (
-                  <Link href="/admin" className="text-[11px] text-orange-500 hover:text-orange-400 transition-colors uppercase tracking-wider">
-                    Admin
-                  </Link>
-                )}
-                ...
-                <Link href="/signup" className="text-[11px] bg-orange-500 text-white px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors">
-                  Get Started
-                </Link>
+                Guide
+              </Link>
+              <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
+                Sign in
+              </Link>
+              <Link href="/signup" className="text-[11px] bg-orange-500 text-white px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors">
+                Get Started
+              </Link>
+            </>
           )}
         </div>
 

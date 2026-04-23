@@ -4,6 +4,7 @@ import { stripe } from '@/app/lib/stripe'
 import { prisma } from '@/app/lib/prisma'
 import { alertStripeFailure, sendAlert } from '@/app/lib/alerts'
 import { sendPaymentReceiptEmail } from '@/app/lib/email'
+import { signedFetch } from '@/app/lib/backend-client'
 
 // Fail closed: guard at module load
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -154,6 +155,21 @@ export async function POST(request: Request) {
             console.log(`[Webhook] Storage upgrade +${storageGB}GB for ${user.email}`)
           }
         }
+
+        // Trigger managed agent deployment if this was a new subscription
+        if (userId && mappedPlan !== 'free') {
+          console.log(`[Webhook] Triggering auto-provision for user ${userId}`);
+          signedFetch('/api/provision', {
+            method: 'POST',
+            body: JSON.stringify({
+              userId,
+              plan: mappedPlan,
+              autoProvision: true,
+              stripeSubscriptionId,
+            }),
+          }).catch(err => console.error('[Webhook] Auto-provision trigger failed:', err));
+        }
+
         break
       }
 

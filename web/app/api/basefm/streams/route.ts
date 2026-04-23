@@ -274,6 +274,59 @@ export async function POST(request: NextRequest) {
 
       if (blockingSession) {
         const remaining = getSessionRemainingSeconds(blockingSession)
+        
+        // If the same user is requesting and already has a live session, 
+        // return it as a success so they can manage it (e.g. view stream key).
+        if (session?.user?.id === blockingSession.user_id) {
+          console.info(`[basefm-streams] Returning existing session for user ${session.user.id}`)
+          
+          // Fetch the Mux stream details for the existing session
+          const auth = Buffer.from(`${muxTokenId}:${muxTokenSecret}`).toString('base64')
+          const muxRes = await fetch(`https://api.mux.com/video/v1/live-streams/${blockingSession.mux_stream_id}`, {
+            headers: { 'Authorization': `Basic ${auth}` }
+          })
+          
+          if (muxRes.ok) {
+            const muxData = await muxRes.json()
+            const stream = muxData.data
+            
+            const sessionAccessToken = createBasefmSessionToken({
+              sessionId: blockingSession.id,
+              wallet: streamWallet,
+              userId: session.user.id,
+              ttlSeconds: remaining + 3600,
+            })
+
+            return NextResponse.json({
+              success: true,
+              reconnected: true,
+              stream: {
+                id: stream.id,
+                name: stream.metadata?.dj_name || blockingSession.dj_name || 'Anonymous DJ',
+                wallet: streamWallet,
+                streamKey: stream.stream_key,
+                rtmpUrl: MUX_RTMP_URL,
+                fullRtmpUrl: `${MUX_RTMP_URL}/${stream.stream_key}`,
+                playbackId: stream.playback_ids?.[0]?.id || null,
+                status: stream.status,
+                accessGrantedBy: hasBasefmAccess ? 'basefm' : 'community-pass',
+              },
+              session: {
+                id: blockingSession.id,
+                wallet: streamWallet,
+                maxDuration: MAX_SESSION_SECONDS,
+                remaining,
+                expiresAt: new Date(blockingSession.started_at.getTime() + MAX_SESSION_SECONDS * 1000).toISOString(),
+                accessToken: sessionAccessToken,
+              },
+              playback: {
+                hls: stream.playback_ids?.[0]?.id ? `https://stream.mux.com/${stream.playback_ids[0].id}.m3u8` : null,
+                web: stream.playback_ids?.[0]?.id ? `https://stream.mux.com/${stream.playback_ids[0].id}.html` : null,
+              },
+            })
+          }
+        }
+
         return NextResponse.json(
           {
             error: 'active_session_exists',

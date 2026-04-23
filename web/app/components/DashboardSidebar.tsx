@@ -385,13 +385,13 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                             onClick={onToggle}
                             className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
                               isActive
-                                ? 'bg-white/10 text-white'
+                                ? 'bg-orange-500/10 text-orange-400'
                                 : 'text-zinc-500 hover:bg-white/5 hover:text-white'
                             }`}
                           >
                             <span
                               className={`text-[10px] w-4 text-center ${
-                                isActive ? 'text-white opacity-100' : 'opacity-60'
+                                isActive ? 'text-orange-400 opacity-100' : 'opacity-60'
                               }`}
                             >
                               {item.icon}
@@ -442,7 +442,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                         (pathname === item.href || pathname.startsWith(item.href + '/'));
                       const cls = `flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
                         isActive
-                          ? 'bg-white/10 text-white'
+                          ? 'bg-orange-500/10 text-orange-400'
                           : 'text-zinc-500 hover:bg-white/5 hover:text-white'
                       }`;
                       if (isExternal) {
@@ -456,7 +456,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                           >
                             <span
                               className={`text-[10px] w-4 text-center ${
-                                isActive ? 'text-white opacity-100' : 'opacity-60'
+                                isActive ? 'text-orange-400 opacity-100' : 'opacity-60'
                               }`}
                             >
                               {item.icon}
@@ -476,7 +476,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                         >
                           <span
                             className={`text-[10px] w-4 text-center ${
-                              isActive ? 'text-white opacity-100' : 'opacity-60'
+                              isActive ? 'text-orange-400 opacity-100' : 'opacity-60'
                             }`}
                           >
                             {item.icon}
