@@ -54,3 +54,8 @@
     - Optimized `InstanceControlPanel` grid and text-breaking for small screens
     - Enhanced `PostCard` responsiveness and touch targets
     - Added mobile-first padding and overflow management to core layouts
+- [x] Proactive Self-Healing & Vercel Monitoring:
+    - Accelerated cleanup cron to 15-minute intervals
+    - Added automated repair for stuck M2M jobs, stale DJ sessions, and disconnected agents
+    - Integrated `@vercel/otel` OpenTelemetry tracing in `instrumentation.ts`
+    - Created `logGlobalError` Server Action to automatically pipe React boundary crashes to support webhook

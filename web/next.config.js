@@ -10,6 +10,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
+    instrumentationHook: true,
     webpackMemoryOptimizations: true,
     optimizePackageImports: [
       '@base-org/account',

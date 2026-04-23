@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
+import { logGlobalError } from '@/app/actions/error';
 
 export default function GlobalError({
   error,
@@ -9,6 +11,13 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    // Only fire the alert in production to prevent noisy dev warnings
+    if (process.env.NODE_ENV === 'production') {
+      logGlobalError(error.message, error.digest).catch(() => {});
+    }
+  }, [error]);
+
   return (
     <html>
       <body className="bg-black text-white font-mono">

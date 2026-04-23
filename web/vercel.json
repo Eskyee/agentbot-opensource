@@ -21,7 +21,7 @@
   "crons": [
     {
       "path": "/api/cron/cleanup",
-      "schedule": "0 2 * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/blog-daily",
