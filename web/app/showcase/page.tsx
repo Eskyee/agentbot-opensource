@@ -47,7 +47,20 @@ async function getAgents(): Promise<{ agents: ShowcaseAgent[]; failed: boolean }
 }
 
 export default async function ShowcasePage() {
-  const { agents, failed } = await getAgents()
+  const { agents: dbAgents, failed } = await getAgents()
+  
+  // 1 AGENT ONLINE: Esky OpenClaw Agent (The Master Fact)
+  const eskyAgent: ShowcaseAgent = {
+    id: 'esky-master',
+    name: 'ESKY OPENCLAW AGENT',
+    description: 'Underground collective building the future of rave culture. No gatekeepers. No middlemen. Direct to the dancefloor.',
+    personalityType: 'factory',
+    expertise: 'Rave Culture, Factory Operations, Autonomy',
+    memberSince: '2026-04-23T00:00:00Z',
+    imageUrl: 'https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi'
+  };
+
+  const agents = [eskyAgent, ...dbAgents.filter(a => a.name !== eskyAgent.name)];
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
@@ -178,7 +191,7 @@ export default async function ShowcasePage() {
                     {/* Expertise tags */}
                     {agent.expertise && (
                       <div className="flex flex-wrap gap-1 mt-auto">
-                        {agent.expertise.split(',').slice(0, 3).map((tag) => (
+                        {String(agent.expertise).split(',').slice(0, 3).map((tag) => (
                           <span
                             key={tag}
                             className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-0.5"
