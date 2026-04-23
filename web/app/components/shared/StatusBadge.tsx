@@ -20,13 +20,13 @@ const STATUS_CONFIG: Record<AgentStatus, { label: string; color: string; icon: t
   running:        { label: 'Running',        color: 'bg-green-600/20 text-green-400 border-green-600/30',   icon: CheckCircle },
   ready:          { label: 'Ready',          color: 'bg-green-600/20 text-green-400 border-green-600/30',   icon: CheckCircle },
   setup:          { label: 'Setup',          color: 'bg-blue-600/20 text-blue-400 border-blue-600/30',      icon: AlertTriangle },
-  deploying:      { label: 'Deploying',      color: 'bg-orange-600/20 text-orange-400 border-orange-600/30', icon: Loader2 },
-  provisioning:   { label: 'Provisioning',   color: 'bg-orange-600/20 text-orange-400 border-orange-600/30', icon: Loader2 },
-  starting:       { label: 'Starting',       color: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30', icon: Clock },
-  bootstrapping:  { label: 'Bootstrapping',  color: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30', icon: Clock },
-  stopping:       { label: 'Stopping',       color: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30', icon: Clock },
+  deploying:      { label: 'Deploying',      color: 'bg-blue-600/20 text-blue-400 border-blue-600/30',      icon: Loader2 },
+  provisioning:   { label: 'Provisioning',   color: 'bg-blue-600/20 text-blue-400 border-blue-600/30',      icon: Loader2 },
+  starting:       { label: 'Starting',       color: 'bg-cyan-600/20 text-cyan-400 border-cyan-600/30',      icon: Clock },
+  bootstrapping:  { label: 'Bootstrapping',  color: 'bg-cyan-600/20 text-cyan-400 border-cyan-600/30',      icon: Clock },
+  stopping:       { label: 'Stopping',       color: 'bg-cyan-600/20 text-cyan-400 border-cyan-600/30',      icon: Clock },
   stopped:        { label: 'Stopped',        color: 'bg-zinc-600/20 text-zinc-400 border-zinc-600/30',       icon: Ban },
-  degraded:       { label: 'Degraded',       color: 'bg-yellow-600/20 text-yellow-400 border-yellow-600/30', icon: AlertTriangle },
+  degraded:       { label: 'Degraded',       color: 'bg-blue-800/20 text-blue-500 border-blue-800/30',      icon: AlertTriangle },
   error:          { label: 'Error',          color: 'bg-red-600/20 text-red-400 border-red-600/30',         icon: XCircle },
   crashed:        { label: 'Crashed',        color: 'bg-red-600/20 text-red-400 border-red-600/30',         icon: Zap },
   unknown:        { label: 'Unknown',        color: 'bg-zinc-600/20 text-zinc-400 border-zinc-600/30',       icon: Clock },
@@ -60,8 +60,8 @@ export function StatusBadge({ status, size = 'sm', className, showIcon = true }:
 export function StatusDot({ status, className }: { status: string; className?: string }) {
   const config = STATUS_CONFIG[status as AgentStatus] || STATUS_CONFIG.unknown
   const dotColor = config.color.includes('green') ? 'bg-green-400'
-    : config.color.includes('orange') ? 'bg-orange-400'
-    : config.color.includes('yellow') ? 'bg-yellow-400'
+    : config.color.includes('blue') ? 'bg-blue-400'
+    : config.color.includes('cyan') ? 'bg-cyan-400'
     : config.color.includes('red') ? 'bg-red-400'
     : 'bg-zinc-500'
   const isAnimated = ['deploying', 'provisioning', 'starting', 'bootstrapping'].includes(status)

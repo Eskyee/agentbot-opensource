@@ -330,11 +330,11 @@ export default async function Home() {
       <CapabilitiesTicker />
 
       {/* Co-DJ B2B — baseFM feature */}
-      <section className="border-t border-amber-900/40 bg-gradient-to-b from-amber-950/20 to-black">
+      <section className="border-t border-blue-900/40 bg-gradient-to-b from-blue-950/20 to-black">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 text-amber-400 text-[10px] uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/40 text-blue-400 text-[10px] uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
               baseFM × Agentbot
             </span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-3 py-1">Underground Network</span>
@@ -343,7 +343,7 @@ export default async function Home() {
             <div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-[0.95] mb-6">
                 Co-DJ B2B.<br />
-                <span className="text-amber-500">Two DJs.</span><br />
+                <span className="text-blue-500">Two DJs.</span><br />
                 <span className="text-zinc-700">One Live Stream.</span>
               </h2>
               <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-lg">
@@ -357,13 +357,13 @@ export default async function Home() {
                   href="https://basefm.space"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-amber-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors"
+                  className="inline-flex items-center justify-center bg-blue-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-blue-400 transition-colors"
                 >
                   Launch baseFM
                 </a>
                 <Link
                   href="/onboard?plan=collective"
-                  className="inline-flex items-center justify-center border border-amber-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-amber-400 hover:border-amber-400 hover:text-amber-300 transition-colors"
+                  className="inline-flex items-center justify-center border border-blue-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-blue-400 hover:border-blue-400 hover:text-blue-300 transition-colors"
                 >
                   Get Access →
                 </Link>
@@ -393,7 +393,7 @@ export default async function Home() {
                 },
               ].map((step) => (
                 <div key={step.num} className="flex gap-4 border border-zinc-800 hover:border-amber-900/60 transition-colors p-4 sm:p-5 bg-black">
-                  <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
+                  <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
                   <div>
                     <div className="text-xs font-bold text-white uppercase tracking-wider mb-1">{step.title}</div>
                     <p className="text-zinc-500 text-xs leading-relaxed">{step.body}</p>
