@@ -1,19 +1,20 @@
-import { DEFAULT_OPENCLAW_GATEWAY_URL } from './openclaw-config'
+import { DEFAULT_OPENCLAW_GATEWAY_URL } from './openclaw-config';
 
-export const DEFAULT_OPENCLAW_CONTROL_UI_BASE = DEFAULT_OPENCLAW_GATEWAY_URL
-  .replace(/\/(chat|skills|config)\/?$/, '')
-  .replace(/\/$/, '')
+export const DEFAULT_OPENCLAW_CONTROL_UI_BASE = DEFAULT_OPENCLAW_GATEWAY_URL.replace(
+  /\/(chat|skills|config)\/?$/,
+  ''
+).replace(/\/$/, '');
 
-export const OPENCLAW_CONTROLS_ENABLED = true
+export const OPENCLAW_CONTROLS_ENABLED = true;
 
-type ControlView = 'chat' | 'skills' | 'config'
+type ControlView = 'chat' | 'skills' | 'config';
 
 function getGatewayWsUrl(gatewayUrl: string | null | undefined): string | null {
-  if (!gatewayUrl) return null
+  if (!gatewayUrl) return null;
   try {
-    return `wss://${new URL(gatewayUrl).host}`
+    return `wss://${new URL(gatewayUrl).host}`;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -23,37 +24,40 @@ export function buildOpenClawControlUrl({
   gatewayToken,
   session = 'main',
 }: {
-  view: ControlView
-  gatewayUrl?: string | null
-  gatewayToken?: string | null
-  session?: string
+  view: ControlView;
+  gatewayUrl?: string | null;
+  gatewayToken?: string | null;
+  session?: string;
 }): string {
-  // Keep the UI on the shared control origin. Sending users to their raw
-  // Railway runtime origin strands them on a different auth domain, and
-  // runtime-local routes like /dreaming can break session/login flows.
-  const browserOrigin = typeof window !== 'undefined' ? window.location.origin : ''
-  const controlUiBase = DEFAULT_OPENCLAW_CONTROL_UI_BASE || (() => {
-    if (browserOrigin) return browserOrigin
+  // Prefer the user's own provisioned agent URL so dashboard links route into
+  // the container the user was provisioned on (each user's own agentbot-agent
+  // Railway host). Only fall back to the shared control origin when the caller
+  // has no agent URL yet (e.g. pre-provision or legacy bootstrap).
+  const gatewayOrigin = (() => {
+    if (!gatewayUrl) return '';
     try {
-      return gatewayUrl ? new URL(gatewayUrl).origin : ''
+      return new URL(gatewayUrl).origin;
     } catch {
-      return ''
+      return '';
     }
-  })()
+  })();
+
+  const browserOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const controlUiBase = (gatewayOrigin || DEFAULT_OPENCLAW_CONTROL_UI_BASE || browserOrigin).replace(/\/$/, '');
 
   if (!controlUiBase) {
-    return '#'
+    return '#';
   }
 
-  const base = `${controlUiBase}/${view}`
-  const href = view === 'chat'
-    ? `${base}?session=${encodeURIComponent(session)}`
-    : base
+  const base = `${controlUiBase}/${view}`;
+  const href = view === 'chat' ? `${base}?session=${encodeURIComponent(session)}` : base;
 
-  const gatewayWsUrl = getGatewayWsUrl(gatewayUrl)
+  const gatewayWsUrl = getGatewayWsUrl(gatewayUrl);
   if (!gatewayToken || !gatewayWsUrl) {
-    return href
+    return href;
   }
 
-  return `${href}#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(gatewayWsUrl)}`
+  return `${href}#token=${encodeURIComponent(gatewayToken)}&gatewayUrl=${encodeURIComponent(
+    gatewayWsUrl
+  )}`;
 }
