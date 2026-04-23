@@ -52,6 +52,14 @@ interface DBHealth {
   recommendation: string;
 }
 
+interface AdminStats {
+  userBase: number;
+  totalAgents: number;
+  instances: any[];
+  count: number;
+  backendStatus: string;
+}
+
 type AdminTab = 'agents' | 'users' | 'integrity';
 
 export default function AdminPage() {
@@ -60,6 +68,7 @@ export default function AdminPage() {
   
   const [users, setUsers] = useState<User[]>([]);
   const [agents, setAgents] = useState<AgentInstance[]>([]);
+  const [stats, setStats] = useState<AdminStats | null>(null);
   const [dbHealth, setDbHealth] = useState<DBHealth | null>(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -94,10 +103,11 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersRes, agentsRes, healthRes] = await Promise.all([
+      const [usersRes, agentsRes, healthRes, statsRes] = await Promise.all([
         fetch('/api/admin/users'),
-        fetch('/api/agents/showcase'), // Using showcase as a proxy to list all agents
-        fetch('/api/admin/db-health')
+        fetch('/api/agents/showcase'), 
+        fetch('/api/admin/db-health'),
+        fetch('/api/admin/stats')
       ]);
       
       if (usersRes.ok) {
@@ -113,6 +123,11 @@ export default function AdminPage() {
       if (healthRes.ok) {
         const healthData = await healthRes.json();
         setDbHealth(healthData);
+      }
+
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
@@ -191,14 +206,14 @@ export default function AdminPage() {
             onClick={() => setActiveTab('agents')} 
             icon={<Activity className="w-4 h-4" />}
             label="Fleet_Control"
-            count={agents.length}
+            count={stats?.totalAgents ?? agents.length}
           />
           <TabButton 
             active={activeTab === 'users'} 
             onClick={() => setActiveTab('users')} 
             icon={<Users className="w-4 h-4" />}
             label="User_Base"
-            count={users.length}
+            count={stats?.userBase ?? users.length}
           />
           <TabButton 
             active={activeTab === 'integrity'} 
@@ -212,16 +227,16 @@ export default function AdminPage() {
             <div className="px-4 py-2 border border-dashed border-zinc-800 rounded-sm">
               <div className="text-[10px] text-zinc-600 uppercase mb-2">Platform_Health</div>
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] uppercase font-bold text-zinc-400">Railway_API: OK</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${stats?.backendStatus === 'OK' ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                <span className="text-[10px] uppercase font-bold text-zinc-400">Railway_API: {stats?.backendStatus || '...'}</span>
               </div>
               <div className="flex items-center gap-2 mb-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 <span className="text-[10px] uppercase font-bold text-zinc-400">Gitlawb_Node: OK</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                <span className="text-[10px] uppercase font-bold text-zinc-400">DB_Status: Drift</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${dbHealth?.summary.status === 'healthy' ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
+                <span className="text-[10px] uppercase font-bold text-zinc-400">DB_Status: {dbHealth?.summary.status === 'healthy' ? 'Synced' : 'Drift'}</span>
               </div>
             </div>
 
@@ -239,10 +254,10 @@ export default function AdminPage() {
           {activeTab === 'agents' && (
             <div className="space-y-6">
               <div className="grid grid-cols-4 gap-4">
-                <StatCard label="Total_Agents" value={agents.length} />
-                <StatCard label="Active_Runtimes" value={agents.filter(a => a.status === 'active').length} color="text-green-400" />
-                <StatCard label="Railway_Instances" value={agents.filter(a => a.websocketUrl?.includes('railway.app')).length} color="text-blue-400" />
-                <StatCard label="Pending_Sync" value={0} color="text-orange-400" />
+                <StatCard label="Total_Agents" value={stats?.totalAgents ?? agents.length} />
+                <StatCard label="Active_Runtimes" value={agents.filter(a => a.status === 'active' || a.status === 'running').length} color="text-green-400" />
+                <StatCard label="Railway_Instances" value={stats?.count ?? 0} color="text-blue-400" />
+                <StatCard label="Backend_Health" value={stats?.backendStatus || '...'} color={stats?.backendStatus === 'OK' ? 'text-green-400' : 'text-red-400'} isString />
               </div>
 
               <div className="bg-zinc-950 border border-zinc-800 rounded-sm">
@@ -430,11 +445,13 @@ function TabButton({ active, onClick, icon, label, count, status }: {
   );
 }
 
-function StatCard({ label, value, color = "text-white" }: { label: string, value: string | number, color?: string }) {
+function StatCard({ label, value, color = "text-white", isString = false }: { label: string, value: string | number, color?: string, isString?: boolean }) {
   return (
     <div className="bg-zinc-950 border border-zinc-800 p-5 rounded-sm shadow-sm hover:border-zinc-700 transition-colors">
       <div className="text-[9px] text-zinc-600 uppercase font-bold tracking-[0.2em] mb-1">{label}</div>
-      <div className={`text-2xl font-bold ${color}`}>{value}</div>
+      <div className={`text-2xl font-bold ${color}`}>
+        {isString ? value : (typeof value === 'number' ? value.toLocaleString() : value)}
+      </div>
     </div>
   );
 }

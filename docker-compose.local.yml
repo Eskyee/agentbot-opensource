@@ -4,8 +4,8 @@ services:
   # Web service (Next.js)
   web:
     build:
-      context: .
-      dockerfile: Dockerfile.web
+      context: ./web
+      dockerfile: Dockerfile
       target: development
     container_name: agentbot-web-local
     ports:
@@ -34,8 +34,8 @@ services:
   # Backend service (Express + TypeScript)
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./agentbot-backend
+      dockerfile: Dockerfile
     container_name: agentbot-backend-local
     ports:
       - "3001:3001"
