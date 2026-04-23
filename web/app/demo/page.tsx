@@ -8,7 +8,6 @@ export const metadata: Metadata = {
   description: 'Watch Agentbot deploy a fully autonomous agent in 60 seconds. Connected to Telegram, powered by your API key, running 24/7.',
 }
 
-export const dynamic = 'force-dynamic'
 
 const demoTemplateCount = 4
 

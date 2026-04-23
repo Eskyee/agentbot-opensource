@@ -7,7 +7,6 @@ export const metadata = {
   description: 'Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.',
 }
 
-export const dynamic = 'force-dynamic'
 
 const templates = [
   {

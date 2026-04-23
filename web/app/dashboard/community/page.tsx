@@ -8,7 +8,6 @@ import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 function DetailCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (

@@ -1,6 +1,5 @@
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'M2M Jobs — Agentbot Colony',

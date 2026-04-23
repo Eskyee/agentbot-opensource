@@ -4,13 +4,7 @@ import { sendSupportAlert } from '@/app/lib/support-alert'
 
 /**
  * CRON cleanup endpoint for scheduled maintenance tasks and self-healing
- *
  * Triggered by Vercel CRON every 15 minutes.
- * Configure in vercel.json:
- *   "crons": [{ "path": "/api/cron/cleanup", "schedule": "*/15 * * * *" }]
- *
- * CRON_SECRET env var is required — set it in Vercel and use the same value
- * in your Vercel cron Authorization header config.
  */
 export async function GET(req: NextRequest) {
   const cronSecret = process.env.CRON_SECRET

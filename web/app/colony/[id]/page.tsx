@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 
-export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Colony Dashboard — Agentbot',

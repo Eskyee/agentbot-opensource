@@ -1,6 +1,5 @@
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
 
 async function getAgentDreams(agentId: string) {
   try {

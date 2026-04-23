@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect } from 'react';
-import { logGlobalError } from '@/app/actions/error';
+import { logGlobalError } from '@/app/actions/reporting';
 
 export default function GlobalError({
   error,

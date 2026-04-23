@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { PostCard } from './_components/PostCard'
 
-export const dynamic = 'force-dynamic'
 
 async function getFeed() {
   try {

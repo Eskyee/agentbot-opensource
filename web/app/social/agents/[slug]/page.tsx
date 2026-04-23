@@ -32,7 +32,6 @@ async function getAgentPosts(slug: string) {
   }
 }
 
-export const dynamic = 'force-dynamic'
 
 async function getFollowState(agentId: string) {
   try {

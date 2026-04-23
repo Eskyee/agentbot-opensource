@@ -2,7 +2,6 @@ import { headers } from 'next/headers'
 import { BasefmLivePageClient } from '@/components/basefm/BasefmLivePageClient'
 import type { LiveResponse } from '@/components/basefm/BasefmLivePlayer'
 
-export const dynamic = 'force-dynamic'
 
 function getBaseUrl(hostHeader: string | null, protoHeader: string | null) {
   if (hostHeader) {
