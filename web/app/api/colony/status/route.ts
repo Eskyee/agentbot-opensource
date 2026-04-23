@@ -128,7 +128,7 @@ const TOKENS = [
 ];
 
 // Known claimed wallet address
-const CLAIMED_WALLET = '0x44c93edd1D1C5761A4E906f3661141E797966779' as Address;
+const CLAIMED_WALLET = '0x44c93edd24005ae0b6c59748bd0af8b54a1cf240' as Address;
 
 /**
  * Fetch real Tempo balance for a wallet address

@@ -717,12 +717,6 @@ export default function BitcoinPage() {
                 </div>
               </div>
 
-            {isPublicBitcoinMode ? (
-              <div className="mb-6 border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-xs text-amber-200">
-                Watch-only wallet registration and xpub-backed balance/address lookups are disabled in public node mode. Use public explorers for read-only chain data, or re-enable an NBXplorer backend later if you want managed wallet features back.
-              </div>
-            ) : null}
-
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
                 <label className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Agent</label>

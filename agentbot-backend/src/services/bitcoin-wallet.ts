@@ -178,10 +178,14 @@ export class BitcoinWalletService {
     }
 
     // Make the backend validate and start tracking the scheme before persisting locally.
-    await this.requestExplorer('/v1/cryptos/btc/derivations', {
-      method: 'POST',
-      body: JSON.stringify({ derivationScheme: trimmed }),
-    });
+    try {
+      await this.requestExplorer('/v1/cryptos/btc/derivations', {
+        method: 'POST',
+        body: JSON.stringify({ derivationScheme: trimmed }),
+      });
+    } catch (e) {
+      console.warn('[Bitcoin] Failed to register derivation with NBXplorer (offline/public mode), persisting locally only.');
+    }
 
     const encryptedScheme = this.encrypt(trimmed);
     const result = await pool.query(
