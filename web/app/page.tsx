@@ -401,8 +401,8 @@ export default async function Home() {
                 </div>
               ))}
               <div className="border border-zinc-800 p-4 sm:p-5 bg-zinc-950">
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Underground Network</div>
-                <p className="text-zinc-500 text-xs leading-relaxed">For DJs, artists, sound systems, live rigs, podcasters, and agents from the underground music and rave culture scene. baseFM × Agentbot — built by the community, for the community.</p>
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Factory Network</div>
+                <p className="text-zinc-500 text-xs leading-relaxed">For operators, developers, and founders building the future of autonomous work. Factory AI × Agentbot — built for scale, designed for facts.</p>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState, Suspense, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 
 type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
 
@@ -458,11 +459,22 @@ function OnboardContent() {
         <p className="text-sm text-zinc-400 mt-2">
           {mode === 'link' && 'Connect your existing OpenClaw instance'}
           {mode === 'create' && 'Build your custom AI agent from scratch'}
-          {mode === 'deploy' && 'Launch a pre-configured OpenClaw agent instantly'}
+          {mode === 'deploy' && 'Provision your first Factory AI agent instantly'}
         </p>
         <p className="text-xs text-zinc-500 mt-1">
           {plan === 'free' ? 'Starter plan' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
         </p>
+
+        {/* Brand Image / Gap Fix */}
+        <div className="aspect-video w-full bg-zinc-900 border border-zinc-800 rounded mt-8 flex items-center justify-center overflow-hidden">
+          <Image 
+            src="/images/agent-factory-blueprint.webp" 
+            alt="Agent Factory" 
+            width={600} 
+            height={337} 
+            className="opacity-40 grayscale hover:grayscale-0 transition-all duration-700" 
+          />
+        </div>
       </div>
       
       {/* Progress */}
