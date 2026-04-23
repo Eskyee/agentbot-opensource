@@ -5,6 +5,14 @@ import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sy
 import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 
+function getRuntimeHost(url: string, fallback: string) {
+  try {
+    return new URL(url).host || fallback
+  } catch {
+    return fallback
+  }
+}
+
 async function clearMissingRuntime(userId: string, instanceId: string) {
   await prisma.$transaction([
     prisma.user.update({
@@ -55,6 +63,7 @@ export async function GET(
     },
   })
   const persistedUrl = ownedUser?.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
+  const runtimeHost = getRuntimeHost(persistedUrl, `agentbot-agent-${userId}-production.up.railway.app`)
   const [registration, latestAgent] = ownedUser?.id
     ? await Promise.all([
         prisma.$queryRaw<
@@ -86,7 +95,7 @@ export async function GET(
     statusReason: runtime.reason || null,
     probeChecks: runtime.checks || [],
     startedAt: registration[0]?.registered_at?.toISOString() || latestAgent?.createdAt?.toISOString() || null,
-    subdomain: new URL(persistedUrl).host,
+    subdomain: runtimeHost,
     url: persistedUrl,
     plan: ownedUser?.plan || 'free',
     openclawVersion: runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION,
@@ -164,5 +173,4 @@ export async function POST(
     url: persistedUrl,
   })
 }
-
 

@@ -16,6 +16,13 @@ import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 import { resolveUserMode } from '@/app/lib/operator-routing'
 import { getTrialCountdown } from '@/app/lib/trial-utils'
 
+function getRuntimeHost(url: string, fallback: string) {
+  try {
+    return new URL(url).host || fallback
+  } catch {
+    return fallback
+  }
+}
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now()
@@ -86,7 +93,8 @@ export async function GET(req: NextRequest) {
     // Resolve instance data
     const instanceId = userData?.openclawInstanceId || agentData?.id || userId
     const persistedUrl = userData?.openclawUrl || agentData?.websocketUrl || `https://agentbot-agent-${instanceId}-production.up.railway.app`
-
+    const runtimeHost = getRuntimeHost(persistedUrl, `agentbot-agent-${instanceId}-production.up.railway.app`)
+    
     // Probe runtime status
     const runtime = await probeOpenClawRuntime(persistedUrl)
 
@@ -124,6 +132,7 @@ export async function GET(req: NextRequest) {
         status: runtime.status,
         statusReason: runtime.reason || null,
         probeChecks: runtime.checks || [],
+        subdomain: runtimeHost,
         url: persistedUrl,
         plan: userData?.plan || 'free',
         openclawVersion: runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION,
