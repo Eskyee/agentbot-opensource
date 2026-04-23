@@ -5,7 +5,7 @@
 `tempo_session_id` and `tempo_wallet_address` live in localStorage at
 [web/lib/mpp/session-fetch.ts](../../../web/lib/mpp/session-fetch.ts). The client
 reads them to attach `X-Session-Id` and `X-Wallet-Address` headers on every
-`sessionFetch()` call. Any XSS on agentbot.raveculture.xyz can read these values
+`sessionFetch()` call. Any XSS on agentbot.sh can read these values
 and replay paid-gateway calls against the user's balance.
 
 Scope of current coupling:

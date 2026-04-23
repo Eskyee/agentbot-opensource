@@ -91,6 +91,16 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Shipping',
   },
   {
+    slug: 'security-patch-apr-9-2026',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'Security Patch: Zero Vulnerabilities',
+    excerpt:
+      'We patched three dependency CVEs (hono, @hono/node-server, defu) and brought the platform to zero known vulnerabilities across both web and backend.',
+    tags: ['Security', 'Patch', 'Vulnerabilities', 'Audit'],
+    track: 'Build Log',
+  },
+  {
     slug: '9-hours-25-commits',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
@@ -131,7 +141,7 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Build Log',
   },
   {
-    slug: 'mimo-v2-pro-powers-agentbot',
+    slug: 'mimo-v2-pro-production-case-study',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
     title: 'How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study',

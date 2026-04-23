@@ -15,7 +15,7 @@ import { sendAlert } from '@/app/lib/alerts'
 
 const ADMIN_EMAILS = (
   process.env.ADMIN_EMAILS ||
-  'eskyjunglelab@gmail.com,admin@agentbot.raveculture.xyz,rbasefm@icloud.com'
+  'eskyjunglelab@gmail.com,admin@agentbot.sh,rbasefm@icloud.com'
 ).split(',').map((e) => e.trim())
 
 // Slot types — prices in GBP pence.

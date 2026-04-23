@@ -115,7 +115,7 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string 
   );
 }
 
-function Bar({ value, max = 1, color = 'bg-blue-500' }: { value: number; max?: number; color?: string }) {
+function Bar({ value, max = 1, color = 'bg-orange-500' }: { value: number; max?: number; color?: string }) {
   const pct = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-1.5 bg-zinc-800 overflow-hidden">
@@ -157,7 +157,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
               <span className="text-zinc-500">{d.label}</span>
               <span className="text-zinc-300">{(d.val * 100).toFixed(1)}%</span>
             </div>
-            <Bar value={d.val} color="bg-blue-500" />
+            <Bar value={d.val} color="bg-orange-500" />
           </div>
         ))}
       </div>

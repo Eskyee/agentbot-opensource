@@ -289,7 +289,7 @@ function processCommitsToCityBlocks(commits: any[]) {
     const height = Math.min(dayCommits.length * 0.5 + 1, 10)
     
     // Color based on commit intensity
-    let color = '#3b82f6' // blue-500
+    let color = '#3b82f6' // orange-500
     if (dayCommits.length > 10) color = '#ef4444' // red-500
     else if (dayCommits.length > 5) color = '#f59e0b' // amber-500
     else if (dayCommits.length > 2) color = '#10b981' // emerald-500

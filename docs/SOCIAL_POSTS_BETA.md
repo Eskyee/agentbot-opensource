@@ -8,7 +8,7 @@ Building the future of autonomous agents? There's a jobs board for that.
 → Post open positions
 → Find talent building tomorrow
 
-🔗 agentbot.raveculture.xyz/jobs
+🔗 agentbot.sh/jobs
 
 Currently in beta — testing and iterating daily.
 
@@ -27,7 +27,7 @@ We're in beta — help us ship faster.
 
 🔗 github.com/sponsors/Eskyee
 
-Or try it: agentbot.raveculture.xyz
+Or try it: agentbot.sh
 
 #OpenSource #AI #Beta #BuildInPublic
 ```
@@ -47,7 +47,7 @@ What's working in beta:
 → Self-hostable, MIT licensed
 
 Read the full story:
-🔗 agentbot.raveculture.xyz/blog/posts/battle-tested
+🔗 agentbot.sh/blog/posts/battle-tested
 
 #Beta #BuildInPublic #AI
 ```
@@ -68,7 +68,7 @@ Still testing — expect some rough edges.
 
 But it works. Real agents, real deployments.
 
-🔗 agentbot.raveculture.xyz
+🔗 agentbot.sh
 
 #Beta #AI #Autonomous
 ```

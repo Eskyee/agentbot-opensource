@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Mix title is required' }, { status: 400 })
   }
 
-  const origin = request.headers.get('origin') || 'https://agentbot.raveculture.xyz'
+  const origin = request.headers.get('origin') || 'https://agentbot.sh'
 
   // Create Mux direct upload — client uploads the audio file directly to the returned URL
   const muxRes = await fetch('https://api.mux.com/video/v1/uploads', {

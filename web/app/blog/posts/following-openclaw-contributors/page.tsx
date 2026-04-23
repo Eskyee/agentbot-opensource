@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Following the OpenClaw Contributors',
     description: 'We followed all 102 OpenClaw contributors. Here\'s why.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/following-openclaw-contributors',
+    url: 'https://agentbot.sh/blog/posts/following-openclaw-contributors',
   },
 }
 

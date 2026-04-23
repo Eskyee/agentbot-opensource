@@ -185,7 +185,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     // Generate cryptographically secure unique IDs (Math.random is NOT secure)
     const userId = randomBytes(6).toString('hex');
     const muxCreds = await generateMuxCredentials();
-    const subdomain = `dj-${userId}.agentbot.raveculture.xyz`;
+    const subdomain = `dj-${userId}.agentbot.sh`;
 
     // In production, you would:
     // 1. Store agent config in database

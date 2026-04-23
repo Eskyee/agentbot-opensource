@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma';
 import { getTrialCountdown } from '@/app/lib/trial-utils'
+import { redis } from '@/app/lib/redis';
 
 export const dynamic = 'force-dynamic';
+
+const CACHE_TTL = 30; // 30 seconds
 
 const PLANS = {
   starter: {
@@ -131,7 +134,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const cacheKey = `billing:${session.user.id}`;
+
   try {
+    // Try cache
+    if (redis) {
+      try {
+        const cached = await redis.get(cacheKey);
+        if (cached) return NextResponse.json(cached);
+      } catch (cacheError) {
+        console.warn('[Billing] Cache read failed:', cacheError);
+      }
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { plan: true, subscriptionStatus: true, referralCredits: true, trialEndsAt: true }
@@ -139,7 +154,7 @@ export async function GET(request: NextRequest) {
 
     const countdown = getTrialCountdown(user?.trialEndsAt)
 
-    return NextResponse.json({
+    const responseData = {
       plans: PLANS,
       currentPlan: user?.plan || 'free',
       subscriptionStatus: user?.subscriptionStatus || 'inactive',
@@ -156,7 +171,18 @@ export async function GET(request: NextRequest) {
         used: 245,
         remaining: 355
       }
-    });
+    };
+
+    // Save to cache
+    if (redis) {
+      try {
+        void redis.set(cacheKey, responseData, { ex: CACHE_TTL });
+      } catch (cacheWriteError) {
+        console.warn('[Billing] Cache write failed:', cacheWriteError);
+      }
+    }
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error('Billing fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch billing info' }, { status: 500 });

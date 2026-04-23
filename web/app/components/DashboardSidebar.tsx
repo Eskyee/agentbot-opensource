@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control';
 import { customSignOut } from '@/app/lib/useCustomSession';
+import { useDashboardData } from '@/app/dashboard/DashboardDataProvider';
 
 // Operator Mode nav — additive only, shown when feature flag is on
 export const operatorNavSection = {
@@ -117,10 +118,6 @@ const COLLAPSED_KEY = 'agentbot_sidebar_collapsed';
 interface DashboardSidebarProps {
   userName?: string;
   credits?: number;
-  plan?: string;
-  runtimeUrl?: string | null;
-  runtimeGatewayToken?: string | null;
-  runtimeInstanceId?: string | null;
   isOpen: boolean;
   onToggle: () => void;
 }
@@ -128,29 +125,22 @@ interface DashboardSidebarProps {
 export const DashboardSidebar = memo(function DashboardSidebar({
   userName,
   credits = 0,
-  plan,
-  runtimeUrl,
-  runtimeGatewayToken,
-  runtimeInstanceId,
   isOpen,
   onToggle,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const [openclawUrl, setOpenclawUrl] = useState<string | null>(null);
-  const [gatewayToken, setGatewayToken] = useState<string | null>(null);
+  const { data: dashboardData } = useDashboardData();
+  const [isPendingTransition, startTransition] = useTransition();
+  
+  const { 
+    plan, 
+    openclawUrl, 
+    gatewayToken, 
+    operatorEnabled 
+  } = dashboardData;
+
   // Start fully expanded (safe for SSR), hydrate from localStorage in effect
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  // Operator mode flag — fetched client-side so SSR doesn't break
-  const [operatorEnabled, setOperatorEnabled] = useState(false);
-
-  useEffect(() => {
-    fetch('/api/operator/mode')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.operatorEnabled) setOperatorEnabled(true);
-      })
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     try {
@@ -177,56 +167,15 @@ export const DashboardSidebar = memo(function DashboardSidebar({
     } catch {}
   }, [pathname]);
 
-  useEffect(() => {
-    if (runtimeUrl) {
-      const normalizedUrl = String(runtimeUrl).replace(/\/$/, '');
-      setOpenclawUrl(normalizedUrl);
-      setGatewayToken(runtimeGatewayToken || null);
-      localStorage.setItem(
-        'agentbot_instance',
-        JSON.stringify({
-          userId: runtimeInstanceId,
-          url: normalizedUrl,
-        })
-      );
-      return;
-    }
-
-    try {
-      const stored = localStorage.getItem('agentbot_instance');
-      if (stored) {
-        const data = JSON.parse(stored);
-        if (data.url) setOpenclawUrl(String(data.url).replace(/\/$/, ''));
-      }
-    } catch {}
-
-    fetch('/api/user/openclaw')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.openclawUrl) {
-          const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '');
-          const nextGatewayToken = data.gatewayToken ? String(data.gatewayToken) : '';
-          setOpenclawUrl(normalizedUrl);
-          setGatewayToken(nextGatewayToken || null);
-          localStorage.setItem(
-            'agentbot_instance',
-            JSON.stringify({
-              userId: data.openclawInstanceId,
-              url: normalizedUrl,
-            })
-          );
-        }
-      })
-      .catch(() => {});
-  }, [runtimeGatewayToken, runtimeInstanceId, runtimeUrl]);
-
   const toggleSection = useCallback((label: string) => {
-    setCollapsed((prev: Record<string, boolean>) => {
-      const next = { ...prev, [label]: !prev[label] };
-      try {
-        localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next));
-      } catch {}
-      return next;
+    startTransition(() => {
+      setCollapsed((prev: Record<string, boolean>) => {
+        const next = { ...prev, [label]: !prev[label] };
+        try {
+          localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next));
+        } catch {}
+        return next;
+      });
     });
   }, []);
 

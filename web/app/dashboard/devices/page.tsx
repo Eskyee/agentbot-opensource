@@ -176,7 +176,7 @@ export default function DevicesPage() {
               <button
                 onClick={pairDevice}
                 disabled={pairing}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600/10 border border-blue-500/30 text-orange-400 text-sm font-bold hover:bg-blue-600/20 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-orange-600/10 border border-orange-500/30 text-orange-400 text-sm font-bold hover:bg-orange-600/20 disabled:opacity-50 transition-colors"
               >
                 {pairing ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />

@@ -128,7 +128,7 @@ export default function AgentTeamPage() {
               <div className="text-lg font-bold text-white">$250-350</div>
               <div className="text-[10px] text-zinc-600">/month</div>
             </div>
-            <div className="border border-blue-500/30 bg-blue-500/5 p-4 text-center">
+            <div className="border border-orange-500/30 bg-orange-500/5 p-4 text-center">
               <div className="text-[10px] text-orange-400 uppercase mb-1">Network</div>
               <div className="text-lg font-bold text-orange-400">$700-1000</div>
               <div className="text-[10px] text-zinc-600">/month</div>

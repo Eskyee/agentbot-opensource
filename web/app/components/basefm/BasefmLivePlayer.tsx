@@ -56,7 +56,7 @@ function statusColor(status: BasefmRelayStatus) {
   if (status === 'healthy') return 'bg-green-400'
   if (status === 'degraded') return 'bg-yellow-400'
   if (status === 'failed') return 'bg-red-400'
-  if (status === 'pending') return 'bg-blue-500'
+  if (status === 'pending') return 'bg-orange-500'
   return 'bg-zinc-600'
 }
 
@@ -142,7 +142,7 @@ export function BasefmLivePlayer({
 
   return (
     <section className={`border border-zinc-800 bg-zinc-950/80 ${compact ? 'p-4 sm:p-5' : 'p-6 sm:p-8'}`}>
-      <Script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" strategy="afterInteractive" />
+      <Script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" strategy="lazyOnload" />
       <div className={`flex flex-wrap gap-3 ${minimal ? 'flex-col items-center text-center' : 'items-center justify-between'}`}>
         <div className={minimal ? 'flex flex-col items-center' : ''}>
           <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-zinc-500">

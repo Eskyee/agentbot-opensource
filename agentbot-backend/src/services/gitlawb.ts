@@ -35,7 +35,7 @@ export async function snapshotAgentState(agentId: string, state: any) {
       await runCommand('git', ['init'], { cwd: GITLAWB_REPO_PATH });
       // Configure local git identity if not set
       await runCommand('git', ['config', 'user.name', 'Agentbot Fact-Builder'], { cwd: GITLAWB_REPO_PATH });
-      await runCommand('git', ['config', 'user.email', 'facts@agentbot.raveculture.xyz'], { cwd: GITLAWB_REPO_PATH });
+      await runCommand('git', ['config', 'user.email', 'facts@agentbot.sh'], { cwd: GITLAWB_REPO_PATH });
     }
 
     // 3. Write the state to a content-addressed file

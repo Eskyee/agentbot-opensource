@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'gitlawb: Decentralized Git for AI Agents',
     description: 'What happens when AI agents can own their own code?',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/gitlawb-decentralized-git-for-agents',
+    url: 'https://agentbot.sh/blog/posts/gitlawb-decentralized-git-for-agents',
   },
 }
 

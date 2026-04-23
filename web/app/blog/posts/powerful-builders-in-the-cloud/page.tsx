@@ -180,7 +180,7 @@ export default function PowerfulBuildersInTheCloudPost() {
  <Link href="/signup" className="inline-block border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors">
  Get Started Free
  </Link>
- <Link href="https://docs.agentbot.raveculture.xyz" className="inline-block border border-zinc-500 text-zinc-300 px-6 py-2.5 font-medium hover:border-zinc-300 transition-colors">
+ <Link href="https://agentbot.sh/documentation" className="inline-block border border-zinc-500 text-zinc-300 px-6 py-2.5 font-medium hover:border-zinc-300 transition-colors">
  View Docs
  </Link>
  </div>

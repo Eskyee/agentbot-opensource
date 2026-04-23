@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { Clock, ExternalLink, Mic, Shield, Users, Video, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { BasefmLivePlayer, type LiveResponse } from '@/components/basefm/BasefmLivePlayer'
@@ -84,6 +84,13 @@ export function BasefmLivePageClient({
   initialError: string | null
 }) {
   const [showOBS, setShowOBS] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  const toggleOBS = () => {
+    startTransition(() => {
+      setShowOBS(!showOBS)
+    })
+  }
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -152,11 +159,11 @@ export function BasefmLivePageClient({
 
         <section className="border border-zinc-800 p-6">
           <button
-            onClick={() => setShowOBS(!showOBS)}
+            onClick={toggleOBS}
             className="w-full flex items-center justify-between text-left"
           >
             <h2 className="text-xl font-bold uppercase tracking-tighter font-mono">Encoder / OBS Settings</h2>
-            <span className="text-zinc-500 text-xs">{showOBS ? '▲ Hide' : '▼ Show'}</span>
+            <span className="text-zinc-500 text-xs">{isPending ? '...' : showOBS ? '▲ Hide' : '▼ Show'}</span>
           </button>
           {showOBS ? (
             <div className="mt-6 space-y-6">

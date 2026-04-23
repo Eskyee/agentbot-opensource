@@ -33,7 +33,7 @@ jobs:
           Project: agentbot
           Date: ${{ steps.date.outputs.date }}
           
-          🔗 Live Site: https://agentbot.raveculture.xyz
+          🔗 Live Site: https://agentbot.sh
           
           Recent Activity:
           - Frontend: Deployed ✓

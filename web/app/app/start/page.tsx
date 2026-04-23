@@ -61,7 +61,7 @@ export default function StartPage() {
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-zinc-900 z-50">
         <div
-          className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
+          className="h-full bg-gradient-to-r from-purple-500 to-orange-500 transition-all duration-500"
           style={{ width: `${((STEPS.indexOf(step) + 1) / STEPS.length) * 100}%` }}
         />
       </div>
@@ -236,7 +236,7 @@ export default function StartPage() {
               <button
                 onClick={handleLaunch}
                 disabled={launching}
-                className="px-10 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-blue-500 transition-all disabled:opacity-50"
+                className="px-10 py-3 bg-gradient-to-r from-purple-600 to-orange-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-orange-500 transition-all disabled:opacity-50"
               >
                 {launching ? 'Launching...' : 'Launch Agent'}
               </button>

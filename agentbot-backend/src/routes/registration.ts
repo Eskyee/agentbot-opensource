@@ -98,7 +98,7 @@ router.post('/register-home', authenticate, async (req: Request, res: Response) 
   res.json({
     success: true,
     message: 'Home installation registered',
-    dashboardUrl: `https://agentbot.raveculture.xyz/dashboard`,
+    dashboardUrl: `https://agentbot.sh/dashboard`,
   });
 });
 
@@ -133,7 +133,7 @@ router.post('/register-link', authenticate, async (req: Request, res: Response) 
   res.json({
     success: true,
     message: 'OpenClaw instance linked',
-    dashboardUrl: `https://agentbot.raveculture.xyz/dashboard`,
+    dashboardUrl: `https://agentbot.sh/dashboard`,
   });
 });
 

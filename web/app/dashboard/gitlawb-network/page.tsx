@@ -435,7 +435,7 @@ export default function GitlawbNetworkPage() {
                   {idx < nodes.length - 1 && (
                     <div className="flex items-center mx-4">
                       <div className="h-0.5 w-8 bg-zinc-700"></div>
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
                       <div className="h-0.5 w-8 bg-zinc-700"></div>
                     </div>
                   )}
@@ -631,7 +631,7 @@ export default function GitlawbNetworkPage() {
             href="https://gitlawb.com/node/peers"
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-blue-600 transition-colors"
+            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-orange-600 transition-colors"
           >
             <Users className="h-6 w-6 text-orange-400 mb-2" />
             <h4 className="text-white font-bold text-sm">Peer Connectivity</h4>

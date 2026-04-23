@@ -66,7 +66,7 @@ export const authOptions = {
 
 ### 5. Test login flow after ANY auth change
 After modifying `auth.ts`, `proxy.ts`, or `login/page.tsx`:
-1. Clear browser cookies for `agentbot.raveculture.xyz`
+1. Clear browser cookies for `agentbot.sh`
 2. Navigate to `/dashboard` — should redirect to `/login`
 3. Sign in — should land on `/dashboard`
 4. Navigate to `/login` — should show "Go to Dashboard" link (NOT auto-redirect)

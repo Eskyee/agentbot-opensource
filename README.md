@@ -1,76 +1,61 @@
-# Agentbot
+# Factory AI // Agentbot
 
-**Private production repository for Agentbot.**
+**Private production repository for the Factory AI platform.**
 
 <div align="center">
 
-<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeibstpvk6pqo23ks3vork3yzr6ns5mdeltkv5snrkpgxn3j6pkgoau" alt="Agentbot" width="900" />
+<img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi" alt="Factory AI" width="900" />
 
-[![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.7-blue)](https://github.com/OpenClaw/openclaw)
+[![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.21-EF6F2E)](https://github.com/OpenClaw/openclaw)
 [![Website](https://img.shields.io/badge/site-agentbot.sh-black)](https://agentbot.sh)
-[![Docs](https://img.shields.io/badge/docs-live-0ea5e9)](https://docs.agentbot.raveculture.xyz)
+[![Docs](https://img.shields.io/badge/docs-live-EF6F2E)](https://agentbot.sh/documentation)
 [![Discord](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/vTPG4vdV6D)
 
-[**Website**](https://agentbot.sh) · [**Docs**](https://docs.agentbot.raveculture.xyz) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
+[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
 
 </div>
 
 ---
 
-This repository contains the live product code for Agentbot: the managed private-cloud dashboard, billing, provisioning, support, analytics, and operations surfaces around the OpenClaw runtime.
+This repository contains the live product code for **Factory AI**: a high-performance private-cloud platform for autonomous agents. It manages identity (DIDs), execution (Durable Workflows), and state (Gitlawb mirroring) across a unified Railway-native infrastructure.
 
-Current product direction:
+## Platform Direction
 
-- `Production Private Cloud`
-- `Open Source Starter`
-
-The private repository is where the managed product ships. The public repository is where the contributor-facing, self-host, and starter story lives.
-
-If you want the public architecture and contributor-facing codebase, use:
-
-- [Eskyee/agentbot-opensource](https://github.com/Eskyee/agentbot-opensource)
-
-This repo is the internal production layer.
+- **Factory AI Unified:** High-energy "Factory Orange" aesthetic (#EF6F2E).
+- **Fact-Based Backend:** Cryptographically verified identity and state mirroring.
+- **Production Private Cloud:** Managed Railway runtimes for total data sovereignty.
+- **AI Gateway Mastery:** Ultra-performance inference via Vercel AI Gateway + MiMo V2 Pro.
 
 ## What Lives Here
 
 - `web/`
-  Next.js app powering `agentbot.sh`
+  Next.js 16 app powering the Factory dashboard and APIs.
 - `agentbot-backend/`
-  legacy and support backend services
+  High-performance Node/Hono services for identity and state management.
 - `gateway/`
-  gateway-related deployment/runtime code
+  Managed multi-platform communication bridge (x402 protocol).
 - `mintlify-docs/`
-  docs site source for `docs.agentbot.raveculture.xyz`
+  Docs source for the Factory protocol.
 - `skills/`
-  bundled and managed skill definitions
-- `scripts/`
-  operational scripts, deployment helpers, and maintenance utilities
-- `docs/`
-  internal runbooks, audits, and platform notes
+  Managed skill library including Bitcoin, Liquid, and Social integrations.
+- `soul/`
+  Borg-7139 soul host and cognitive architecture logic.
 
 ## Production Surfaces
 
-- Site: `https://agentbot.sh`
-- Docs: `https://docs.agentbot.raveculture.xyz`
-- Dashboard: `https://agentbot.sh/dashboard`
-- Support: `https://agentbot.sh/dashboard/support`
-- Maintenance: `https://agentbot.sh/dashboard/maintenance`
-- Showcase: `https://agentbot.sh/showcase`
+- **Main Site:** `https://agentbot.sh`
+- **Ops Command Center:** `https://agentbot.sh/admin` (Live Data)
+- **Agentbot Coach:** `https://agentbot.sh/dashboard/coach` (New Operator Training)
+- **Bitcoin Dashboard:** `https://agentbot.sh/dashboard/bitcoin` (Mainnet Active)
+- **Fleet Control:** `https://agentbot.sh/dashboard/fleet`
 
-## Product Scope
+## Technical Standards
 
-Agentbot provisions and manages OpenClaw agents with:
-
-- managed Railway runtimes
-- Vercel-hosted dashboard and APIs
-- private-cloud operations around X-native social agent workflows
-- Stripe billing and trials
-- Coinbase/Base wallet flows
-- channel integrations
-- Bankr trading and profile flows
-- fleet, colony, and support diagnostics
-- showcase and community features
+- **Identity:** `SignatureGuard` enforced across all backend routes. `signedFetch` (DID-native) on frontend.
+- **Infrastructure:** 100% Railway-native. Render references purged.
+- **Model:** `xiaomi/mimo-v2-pro` (Factory Master) via Vercel AI Gateway.
+- **Persistence:** SQL State + Gitlawb Fact Mirroring.
+- **Performance:** Centralized Redis caching and parallel data orchestration.
 
 ## Local Development
 
@@ -83,77 +68,22 @@ npm run build
 npm run start
 ```
 
-The production runtime path is:
-
-```bash
-node .next/standalone/server.js
-```
-
 ### Useful commands
 
 ```bash
-cd web
-npm run dev
-npm run build
-npm test
-npm audit --json
+npm run build   # Turbo-orchestrated full build
+npm run dev     # Parallel dev environment
+npm run test    # Identity and Logic verification
 ```
 
-## Deployment Notes
+## Key Documentation
 
-- Vercel hosts the main web product
-- Railway hosts managed OpenClaw runtimes and gateway surfaces
-- Mintlify hosts the developer docs site
-- Canonical public domain is `agentbot.sh`
-
-## Key Internal Docs
-
-- [docs/CURRENT_PLATFORM_STATE.md](./docs/CURRENT_PLATFORM_STATE.md)
-- [docs/INCIDENT_RESPONSE.md](./docs/INCIDENT_RESPONSE.md)
-- [SECURITY.md](./SECURITY.md)
-- [PLATFORM_RULES.md](./PLATFORM_RULES.md)
-- [AGENTS.md](./AGENTS.md)
-
-## Vercel Agent
-
-This repository is configured for Vercel Agent review with a root [AGENTS.md](./AGENTS.md).
-
-Recommended setup:
-
-- enable Vercel Agent
-- enable Code Review for this repository
-- include private repositories
-- enable draft reviews only if you want early feedback during WIP
-
-Useful PR comments:
-
-- `@vercel run a review`
-- `@vercel fix the type errors`
-- `@vercel why is this failing?`
-
-Current review priorities:
-
-- provisioning and Prisma state consistency
-- dashboard data integrity
-- runtime and version drift
-- auth, session, webhook, and token security
-- Vercel build/runtime regressions
-
-## Open Source Repo
-
-The open-source version is the right place for:
-
-- self-host setup
-- architecture overviews
-- public CI signals
-- contributor onboarding
-- community issues and feature requests
-- the narrow starter workflow for X-native social agents
-
-Go to:
-
-- [github.com/Eskyee/agentbot-opensource](https://github.com/Eskyee/agentbot-opensource)
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) — The Fact-Based Backend
+- [docs/NEW_FEATURES_APRIL_2026.md](./docs/NEW_FEATURES_APRIL_2026.md) — Launch log
+- [SECURITY.md](./SECURITY.md) — SignatureGuard and DID Protocol
+- [PLATFORM_RULES.md](./PLATFORM_RULES.md) — Operational guidelines
 
 ## License
 
 MIT
+

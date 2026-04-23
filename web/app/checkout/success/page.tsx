@@ -222,7 +222,7 @@ function CheckoutSuccessContent() {
         </div>
 
         <p className="text-left text-zinc-700 text-[10px] uppercase tracking-widest">
-          Need help? support@agentbot.raveculture.xyz
+          Need help? support@agentbot.sh
         </p>
       </div>
     </main>

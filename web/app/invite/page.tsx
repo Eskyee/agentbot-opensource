@@ -89,7 +89,7 @@ function InvitePageContent() {
           </>
         )}
 
-        <p className="text-zinc-600 text-xs mt-12">agentbot.raveculture.xyz</p>
+        <p className="text-zinc-600 text-xs mt-12">agentbot.sh</p>
       </div>
     </div>
   )

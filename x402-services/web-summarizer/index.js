@@ -146,7 +146,7 @@ app.post("/api/extract", async (req, res) => {
 async function fetchUrl(url) {
   const res = await fetch(url, {
     headers: {
-      "User-Agent": "Agentbot-WebSummarizer/1.0 (+https://agentbot.raveculture.xyz)",
+      "User-Agent": "Agentbot-WebSummarizer/1.0 (+https://agentbot.sh)",
       Accept: "text/html,application/xhtml+xml",
     },
     redirect: "follow",

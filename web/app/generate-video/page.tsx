@@ -6,7 +6,7 @@ export default function VideoGenerator() {
   const [message] = useState<string>('Video generation coming soon! OpenClaw v2026.4.5 supports video_generate tool — agents can create videos via xAI Grokin, Runway, or Wan. API integration pending.');
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-32">
+    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono px-6 py-32">
       <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase mb-6">AI Video Generator</h1>
       <p className="text-zinc-400 mb-8">Create videos with AI. Powered by OpenClaw v2026.4.5</p>

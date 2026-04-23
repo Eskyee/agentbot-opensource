@@ -12,7 +12,7 @@
 
 import { privateKeyToAccount } from 'viem/accounts';
 
-const BASE_URL = process.env.AGENTBOT_URL || 'https://agentbot.raveculture.xyz';
+const BASE_URL = process.env.AGENTBOT_URL || 'https://agentbot.sh';
 const PLUGIN = 'generate-text';
 const GATEWAY_URL = `${BASE_URL}/api/v1/gateway`;
 

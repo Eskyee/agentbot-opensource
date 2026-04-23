@@ -59,12 +59,12 @@ export default memo(function AIModelCard({ plan }: { plan: string }) {
           </div>
           <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className={`h-full ${config.reasoning === 0 ? 'bg-zinc-700' : 'bg-blue-500'} rounded-full transition-all duration-500`}
+              className={`h-full ${config.reasoning === 0 ? 'bg-zinc-700' : 'bg-orange-500'} rounded-full transition-all duration-500`}
               style={{ width: `${reasoningPercent}%` }}
             />
           </div>
           {config.reasoning === 0 && (
-            <button className="w-full mt-3 py-2 text-xs font-bold bg-blue-600/20 text-orange-400 border border-blue-500/30 rounded-lg hover:bg-blue-600/30 transition-colors">
+            <button className="w-full mt-3 py-2 text-xs font-bold bg-orange-600/20 text-orange-400 border border-orange-500/30 rounded-lg hover:bg-orange-600/30 transition-colors">
               Unlock Reasoning Engine →
             </button>
           )}

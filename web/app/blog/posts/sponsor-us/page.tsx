@@ -127,7 +127,7 @@ export default function Post() {
 github.com/sponsors/Eskyee
 
 # Contact for partnerships
-dev@raveculture.xyz
+dev@agentbot.sh
 
 # Join our Discord
 discord.gg/vTPG4vdV6D`}

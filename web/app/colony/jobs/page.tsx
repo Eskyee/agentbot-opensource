@@ -9,7 +9,7 @@ export const metadata = {
 
 const STATE_COLORS: Record<string, { text: string; border: string }> = {
   open:      { text: 'text-amber-400',   border: 'border-amber-800' },
-  claimed:   { text: 'text-orange-400',    border: 'border-blue-900' },
+  claimed:   { text: 'text-orange-400',    border: 'border-orange-900' },
   delivered: { text: 'text-purple-400',  border: 'border-purple-900' },
   approved:  { text: 'text-green-400',   border: 'border-green-900' },
   paid:      { text: 'text-emerald-400', border: 'border-emerald-900' },

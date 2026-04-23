@@ -263,7 +263,7 @@ toolsets:
   - type: api
     api_config:
       name: check_balance
-      endpoint: https://agentbot.raveculture.xyz/api/wallet/balance
+      endpoint: https://agentbot.sh/api/wallet/balance
       method: GET
       instruction: Check your agent wallet balance
       headers:

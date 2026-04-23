@@ -46,7 +46,7 @@ export default function DigitalWristband() {
     return (
       <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
         <div className="flex items-center gap-3">
-          <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
+          <div className="w-3 h-3 rounded-full bg-orange-500 animate-pulse" />
           <span className="text-xs font-mono text-orange-400 uppercase tracking-wider">
             Checking...
           </span>
@@ -57,10 +57,10 @@ export default function DigitalWristband() {
 
   if (hasWristband) {
     return (
-      <div className="p-6 bg-zinc-900 rounded-xl border-2 border-blue-500/50 text-white">
+      <div className="p-6 bg-zinc-900 rounded-xl border-2 border-orange-500/50 text-white">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
+            <div className="w-3 h-3 rounded-full bg-orange-500" />
             <span className="text-xs font-mono text-orange-400 uppercase tracking-wider">
               WRISTBAND ACTIVE
             </span>
@@ -110,7 +110,7 @@ export default function DigitalWristband() {
 
       <button 
         onClick={() => window.open('https://opensea.io/collection/wristband', '_blank')}
-        className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-mono text-sm transition-colors"
+        className="w-full py-3 bg-orange-600 hover:bg-orange-500 text-white rounded-lg font-mono text-sm transition-colors"
       >
         Mint Wristband — 0.001 ETH
       </button>

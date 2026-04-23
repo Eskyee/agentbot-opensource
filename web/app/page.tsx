@@ -23,7 +23,7 @@ export default async function Home() {
   } catch {}
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono overflow-x-hidden">
       {/* Hero */}
       <section className="relative max-w-7xl mx-auto px-5 sm:px-6 py-20 sm:py-32 md:py-44 overflow-hidden">
         <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
@@ -280,7 +280,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <span className="text-[8px] uppercase tracking-widest text-orange-400 border border-blue-500/30 px-1.5 py-0.5">Popular</span>
+                    <span className="text-[8px] uppercase tracking-widest text-orange-400 border border-orange-500/30 px-1.5 py-0.5">Popular</span>
                   )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">

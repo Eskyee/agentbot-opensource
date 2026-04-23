@@ -115,7 +115,7 @@ export default function TempoDexPage() {
           <button
             onClick={handleSwap}
             disabled={swapping || !fromAmount}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-bold py-4 rounded-lg transition-colors text-sm uppercase tracking-widest"
+            className="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-bold py-4 rounded-lg transition-colors text-sm uppercase tracking-widest"
           >
             {swapping ? (
               <span className="flex items-center justify-center gap-2">

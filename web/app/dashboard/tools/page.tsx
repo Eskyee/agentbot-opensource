@@ -65,7 +65,7 @@ export default function PaidToolsPage() {
                     <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Workflow chains</div>
                     <div className="flex flex-wrap gap-2">
                       {tool.workflowChain.map((chain) => (
-                        <span key={chain} className="border border-blue-500/20 bg-blue-500/5 px-2 py-1 text-[10px] uppercase tracking-widest text-orange-400">
+                        <span key={chain} className="border border-orange-500/20 bg-orange-500/5 px-2 py-1 text-[10px] uppercase tracking-widest text-orange-400">
                           {chain}
                         </span>
                       ))}

@@ -143,7 +143,7 @@ export default async function TokenPage() {
                 href={COMMUNITY_TOKEN.pumpFunUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-400 transition-colors hover:border-blue-400/60 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full border border-orange-500/30 bg-orange-500/10 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-400 transition-colors hover:border-orange-400/60 hover:text-white"
               >
                 Trade on Pump.fun
                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -361,7 +361,7 @@ export default async function TokenPage() {
                 { label: 'DexScreener Chart', href: COMMUNITY_TOKEN.dexScreenerUrl },
                 { label: 'Solscan Token', href: COMMUNITY_TOKEN.solscanUrl },
                 { label: 'Bankr Profile', href: 'https://bankr.bot/agents/agentbot' },
-                { label: 'Agentbot Platform', href: 'https://agentbot.raveculture.xyz' },
+                { label: 'Agentbot Platform', href: 'https://agentbot.sh' },
               ].map((item) => (
                 <a
                   key={item.label}

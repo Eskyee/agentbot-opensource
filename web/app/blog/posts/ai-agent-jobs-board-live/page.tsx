@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AI Agent Jobs Board is Live',
     description: 'A jobs board dedicated to AI agent developers and builders.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/ai-agent-jobs-board-live',
+    url: 'https://agentbot.sh/blog/posts/ai-agent-jobs-board-live',
   },
 }
 

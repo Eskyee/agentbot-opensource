@@ -15,7 +15,7 @@ function taskBgColor(status: string): string {
     case 'failed':
       return 'bg-red-900/30 border-red-800/40';
     case 'running':
-      return 'bg-blue-900/30 border-blue-800/40';
+      return 'bg-orange-900/30 border-blue-800/40';
     case 'partial':
     case 'uncertain':
       return 'bg-amber-900/30 border-amber-800/40';

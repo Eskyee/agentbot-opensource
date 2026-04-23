@@ -1,7 +1,46 @@
 # Agentbot Session Notes
 
-## April 17, 2026 — B2B Blog Post, OG Image, URL Fixes, Footer, Borg Fix
+## April 23, 2026 — Factory AI Transformation & Domain Migration
 
+### What Was Done
+
+#### 1. Factory AI Brand & Visual Transition
+- Pivoted platform identity to **Factory AI** with high-energy "Factory Orange" aesthetic (#EF6F2E).
+- Replaced primary blue/cyan accents with orange across all dashboard surfaces and landing pages.
+- Updated `README.md` with new branding, technical standards, and vision.
+
+#### 2. Project-Wide Domain Migration
+- Completed migration from `agentbot.raveculture.xyz` to `agentbot.sh`.
+- Fixed botched search-and-replace that created `agentbot.agentbot.sh` (normalized to `agentbot.sh`).
+- Redirected documentation links from `docs.agentbot.sh` to `agentbot.sh/documentation`.
+
+#### 3. Blog & Content Updates
+- Registered "Security Patch: Zero Vulnerabilities" blog post (April 9, 2026).
+- Fixed duplicate slug bug for MiMo V2 Pro production case study.
+- Updated `web/app/blog/blogPosts.ts` with correct metadata and chronological order.
+
+#### 4. Robust Skill Seeding
+- Improved `ensureSkillsSeeded` in `web/app/api/skills/route.ts` to use `upsert` logic.
+- Added `@unique` constraint to `Skill.name` in `prisma/schema.prisma`.
+- This ensures new default skills (v2026.4.9) are added to existing databases on redeploy.
+
+#### 5. Housekeeping
+- Removed 18 stale `claude/*` worktrees and deleted corresponding local branches.
+- Cleared all stale git stashes.
+- Added missing `DashboardDataProvider.tsx` to the repository.
+
+### Build Status
+- `web` (Next.js): `npx prisma generate` verified.
+- Site ready for Vercel redeploy to seed new skills.
+
+### Git State
+- Branch: `fix/agentic-market-embed-clean`
+- All transformation changes staged for commit.
+
+---
+
+## April 17, 2026 — B2B Blog Post, OG Image, URL Fixes, Footer, Borg Fix
+...
 ### What Was Done
 
 #### 1. Blog Post — baseFM × Agentbot B2B Co-DJ Underground Network
@@ -81,7 +120,7 @@ All 6 registered in skill marketplace catalog (`web/app/api/skills/route.ts`). W
 - `web/app/blog/posts/security-patch-apr-9-2026/page.tsx` — Documents the CVE patches with links to advisories
 
 #### 4. Smoke Test — Site Verified Clean
-Full production smoke test of agentbot.raveculture.xyz:
+Full production smoke test of agentbot.sh:
 
 | Category | Result |
 |----------|--------|

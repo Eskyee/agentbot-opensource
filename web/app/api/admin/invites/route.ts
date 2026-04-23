@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         success: true,
         code: token,
         email,
-        inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'}/invite?token=${token}`,
+        inviteUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh'}/invite?token=${token}`,
       },
       { status: 201 }
     )

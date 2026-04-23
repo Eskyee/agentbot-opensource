@@ -95,7 +95,7 @@ export default function KimiDropPost() {
  <li>Visual workflow builder: drag-drop automation</li>
  </ul>
 
- <div className="bg-blue-900/20 border border-blue-800 p-6 mb-8">
+ <div className="bg-orange-900/20 border border-blue-800 p-6 mb-8">
  <h4 className="text-lg font-bold mb-3">Innovation: Natural Language Scheduling</h4>
  <p className="text-zinc-300 mb-3">
  Instead of forcing users to learn cron syntax, we built a parser that converts natural 

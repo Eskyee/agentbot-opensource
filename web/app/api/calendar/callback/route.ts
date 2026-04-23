@@ -11,7 +11,7 @@ import { encryptToken } from '@/app/lib/token-encryption'
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://agentbot.raveculture.xyz/api/calendar/callback'
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://agentbot.sh/api/calendar/callback'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -21,22 +21,22 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error('[Calendar Callback] OAuth error:', error)
-    return NextResponse.redirect(`https://agentbot.raveculture.xyz/dashboard/calendar?error=${error}`)
+    return NextResponse.redirect(`https://agentbot.sh/dashboard/calendar?error=${error}`)
   }
 
   if (!code) {
-    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=no_code')
+    return NextResponse.redirect('https://agentbot.sh/dashboard/calendar?error=no_code')
   }
 
   if (!state) {
     console.error('[Calendar Callback] Missing state parameter')
-    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=missing_state')
+    return NextResponse.redirect('https://agentbot.sh/dashboard/calendar?error=missing_state')
   }
 
   const stateData = verifyOAuthState(state)
   if (!stateData) {
     console.error('[Calendar Callback] Invalid or expired state — rejecting')
-    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=invalid_state')
+    return NextResponse.redirect('https://agentbot.sh/dashboard/calendar?error=invalid_state')
   }
 
   const userId = stateData.userId
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
 
     if (tokens.error) {
       console.error('[Calendar Callback] Token exchange error:', tokens.error)
-      return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=token_failed')
+      return NextResponse.redirect('https://agentbot.sh/dashboard/calendar?error=token_failed')
     }
 
     const calendarResponse = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList/primary', {
@@ -91,9 +91,9 @@ export async function GET(request: NextRequest) {
     })
 
     console.log(`[Calendar] Connected for user ${userId}: ${calendarData.summary} (${timezoneData.value})`)
-    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?connected=true')
+    return NextResponse.redirect('https://agentbot.sh/dashboard/calendar?connected=true')
   } catch (err) {
     console.error('[Calendar Callback] Error:', err)
-    return NextResponse.redirect('https://agentbot.raveculture.xyz/dashboard/calendar?error=unknown')
+    return NextResponse.redirect('https://agentbot.sh/dashboard/calendar?error=unknown')
   }
 }

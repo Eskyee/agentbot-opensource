@@ -257,7 +257,7 @@ export default function ClaimPage() {
             </div>
 
             {mobile && providerMissing && (
-              <div className="mt-6 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-4">
+              <div className="mt-6 rounded-2xl border border-orange-500/30 bg-orange-500/5 p-4">
                 <div className="text-[10px] uppercase tracking-[0.18em] text-orange-400 mb-2">iPhone / Android</div>
                 <p className="text-sm leading-6 text-zinc-300 mb-3">
                   Solana wallets don&apos;t inject into mobile Safari. Open this

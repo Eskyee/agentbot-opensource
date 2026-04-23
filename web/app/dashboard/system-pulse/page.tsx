@@ -402,7 +402,7 @@ export default function SystemPulsePage() {
                   <span className="text-xs font-mono text-zinc-500 w-24 sm:w-40 truncate">{model.model}</span>
                   <div className="flex-1 bg-zinc-800 h-2 overflow-hidden">
                     <div
-                      className="h-full bg-blue-500 transition-all duration-500"
+                      className="h-full bg-orange-500 transition-all duration-500"
                       style={{ width: `${model.percent}%` }}
                     />
                   </div>

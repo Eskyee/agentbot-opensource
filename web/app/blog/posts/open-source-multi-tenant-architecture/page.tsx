@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Open Source Multi-Tenant AI Agent Platform',
     description: 'How we built Agentbot — Docker isolation, BYOK, USDC on Base, skills.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/open-source-multi-tenant-architecture',
+    url: 'https://agentbot.sh/blog/posts/open-source-multi-tenant-architecture',
   },
 }
 

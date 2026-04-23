@@ -22,7 +22,7 @@
 ### Vercel Deployments
 - **Project ID: `prj_QiczofbfSBhjq5bbcFtcPprLdB8w`** — always verify against this before any Vercel CLI operation. The `web` project is a ghost — ignore it.
 - **Auto-deploy on push to main** — every `git push origin main` (or merged PR) triggers production deploy automatically. No manual step needed.
-- **Preview URLs are password-protected** — `curl -sI preview-url` returns 401. Test against `agentbot.raveculture.xyz` (200) to confirm production is live.
+- **Preview URLs are password-protected** — `curl -sI preview-url` returns 401. Test against `agentbot.sh` (200) to confirm production is live.
 - **`vercel env add` via stdin pipe** — correct pattern: `echo "VALUE" | vercel env add VAR_NAME production`. The `--force` flag is not needed.
 - **Env vars need adding to all environments** — production, preview, and development are separate. Add to all three for consistency unless the var is intentionally environment-specific.
 
@@ -86,7 +86,7 @@
 ## Integration Map (Current)
 
 ```
-agentbot.raveculture.xyz (Next.js on Vercel)
+agentbot.sh (Next.js on Vercel)
   ├── Neon PostgreSQL         — all persistent state
   ├── Stripe                  — subscriptions + ad campaign payments
   ├── Mux                     — audio/video upload, transcoding, live streams

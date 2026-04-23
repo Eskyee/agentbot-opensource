@@ -20,7 +20,7 @@ const TEMPLATES = [
     description: 'Triage, respond, escalate. Handles inbound queries autonomously.',
     agents: ['Triager', 'Responder', 'Escalator'],
     color: 'text-orange-400',
-    border: 'border-blue-900',
+    border: 'border-orange-900',
   },
   {
     id: 'content-studio',

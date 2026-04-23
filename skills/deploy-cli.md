@@ -11,21 +11,21 @@ Manage agent deployments, secrets, logs, and configuration from the terminal.
 
 ```bash
 # Deploy a new agent
-curl -X POST https://api.agentbot.raveculture.xyz/api/provision \
+curl -X POST https://api.agentbot.sh/api/provision \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name": "my-agent", "plan": "solo"}'
 
 # Check agent status
-curl https://api.agentbot.raveculture.xyz/api/agent/status \
+curl https://api.agentbot.sh/api/agent/status \
   -H "Authorization: Bearer $API_KEY"
 
 # Stop agent
-curl -X POST https://api.agentbot.raveculture.xyz/api/agent/stop \
+curl -X POST https://api.agentbot.sh/api/agent/stop \
   -H "Authorization: Bearer $API_KEY"
 
 # Restart agent
-curl -X POST https://api.agentbot.raveculture.xyz/api/agent/restart \
+curl -X POST https://api.agentbot.sh/api/agent/restart \
   -H "Authorization: Bearer $API_KEY"
 ```
 
@@ -35,17 +35,17 @@ Never hardcode secrets. Use the agent config API:
 
 ```bash
 # Set a secret
-curl -X POST https://api.agentbot.raveculture.xyz/api/agent/config \
+curl -X POST https://api.agentbot.sh/api/agent/config \
   -H "Authorization: Bearer $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"key": "OPENROUTER_API_KEY", "value": "sk-..."}'
 
 # List configured keys (values are masked)
-curl https://api.agentbot.raveculture.xyz/api/agent/config \
+curl https://api.agentbot.sh/api/agent/config \
   -H "Authorization: Bearer $API_KEY"
 
 # Delete a secret
-curl -X DELETE https://api.agentbot.raveculture.xyz/api/agent/config/OPENROUTER_API_KEY \
+curl -X DELETE https://api.agentbot.sh/api/agent/config/OPENROUTER_API_KEY \
   -H "Authorization: Bearer $API_KEY"
 ```
 
@@ -53,15 +53,15 @@ curl -X DELETE https://api.agentbot.raveculture.xyz/api/agent/config/OPENROUTER_
 
 ```bash
 # Stream agent logs
-curl -N https://api.agentbot.raveculture.xyz/api/agent/logs \
+curl -N https://api.agentbot.sh/api/agent/logs \
   -H "Authorization: Bearer $API_KEY"
 
 # Last 100 lines
-curl "https://api.agentbot.raveculture.xyz/api/agent/logs?tail=100" \
+curl "https://api.agentbot.sh/api/agent/logs?tail=100" \
   -H "Authorization: Bearer $API_KEY"
 
 # Filter by level
-curl "https://api.agentbot.raveculture.xyz/api/agent/logs?level=error" \
+curl "https://api.agentbot.sh/api/agent/logs?level=error" \
   -H "Authorization: Bearer $API_KEY"
 ```
 

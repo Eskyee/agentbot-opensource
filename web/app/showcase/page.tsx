@@ -19,7 +19,7 @@ const PERSONALITY_LABELS: Record<string, { label: string; color: string }> = {
   selector: { label: 'Selector',     color: 'text-green-400 border-green-900' },
   ar:       { label: 'A&R',          color: 'text-purple-400 border-purple-900' },
   road:     { label: 'Road',         color: 'text-yellow-400 border-yellow-900' },
-  enterprise: { label: 'Enterprise', color: 'text-orange-400 border-blue-900' },
+  enterprise: { label: 'Enterprise', color: 'text-orange-400 border-orange-900' },
 }
 
 interface ShowcaseAgent {

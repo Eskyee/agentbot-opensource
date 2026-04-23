@@ -8,7 +8,7 @@ export const metadata: Metadata = {
  openGraph: {
  title: 'MiMo-V2-Pro: Xiaomi\'s Flagship AI Model Now on Agentbot',
  description: 'Over 1T parameters. 1M context. #1 in programming. The brain your agent deserves.',
- url: 'https://agentbot.raveculture.xyz/blog/posts/mimo-v2-pro',
+ url: 'https://agentbot.sh/blog/posts/mimo-v2-pro',
  },
 }
 

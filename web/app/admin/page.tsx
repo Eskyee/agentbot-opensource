@@ -65,6 +65,7 @@ type AdminTab = 'agents' | 'users' | 'integrity';
 export default function AdminPage() {
   const { data: session, status } = useCustomSession();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   
   const [users, setUsers] = useState<User[]>([]);
   const [agents, setAgents] = useState<AgentInstance[]>([]);
@@ -73,6 +74,12 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>('agents');
+
+  const handleTabChange = (tab: AdminTab) => {
+    startTransition(() => {
+      setActiveTab(tab);
+    });
+  };
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -89,7 +96,9 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok) {
         alert(`Sync Complete!\nUsers: ${data.results.usersSynced}\nAgents: ${data.results.agentsSynced}`);
-        await fetchData();
+        startTransition(() => {
+          fetchData();
+        });
       } else {
         alert(`Sync Failed: ${data.error}`);
       }
@@ -203,26 +212,26 @@ export default function AdminPage() {
         <div className="w-64 shrink-0 space-y-1">
           <TabButton 
             active={activeTab === 'agents'} 
-            onClick={() => setActiveTab('agents')} 
+            onClick={() => handleTabChange('agents')} 
             icon={<Activity className="w-4 h-4" />}
             label="Fleet_Control"
             count={stats?.totalAgents ?? agents.length}
           />
           <TabButton 
             active={activeTab === 'users'} 
-            onClick={() => setActiveTab('users')} 
+            onClick={() => handleTabChange('users')} 
             icon={<Users className="w-4 h-4" />}
             label="User_Base"
             count={stats?.userBase ?? users.length}
           />
           <TabButton 
             active={activeTab === 'integrity'} 
-            onClick={() => setActiveTab('integrity')} 
+            onClick={() => handleTabChange('integrity')} 
             icon={<Database className="w-4 h-4" />}
             label="DB_Integrity"
             status={dbHealth?.summary.status === 'healthy' ? 'ok' : 'drift'}
           />
-
+        </div>
           <div className="pt-8 space-y-4">
             <div className="px-4 py-2 border border-dashed border-zinc-800 rounded-sm">
               <div className="text-[10px] text-zinc-600 uppercase mb-2">Platform_Health</div>

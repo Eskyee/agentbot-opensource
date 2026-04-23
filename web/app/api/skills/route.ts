@@ -68,17 +68,23 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Ensure skills are seeded in the database.
- * Runs once on first request; subsequent calls are a no-op.
+ * Uses upsert-like logic to ensure new default skills are added even to existing databases.
  */
 async function ensureSkillsSeeded() {
-  const count = await prisma.skill.count()
-  if (count === 0) {
-    await prisma.skill.createMany({
-      data: DEFAULT_SKILLS.map((s) => ({
-        ...s,
-        code: s.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '',
-      })),
-      skipDuplicates: true,
+  for (const skill of DEFAULT_SKILLS) {
+    await prisma.skill.upsert({
+      where: { name: skill.name },
+      update: {
+        description: skill.description,
+        category: skill.category,
+        author: skill.author,
+        featured: skill.featured,
+        // Don't overwrite dynamic stats
+      },
+      create: {
+        ...skill,
+        code: skill.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '',
+      },
     })
   }
 

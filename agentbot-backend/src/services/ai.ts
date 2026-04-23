@@ -119,7 +119,7 @@ export class AIService {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.OPENROUTER_API_KEY}`,
-            'HTTP-Referer': 'https://agentbot.raveculture.xyz',
+            'HTTP-Referer': 'https://agentbot.sh',
             'X-Title': 'Agentbot',
           },
           body: JSON.stringify({

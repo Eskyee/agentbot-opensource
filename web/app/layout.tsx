@@ -11,15 +11,16 @@ import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { cn } from "@/lib/utils";
 import { APP_URL } from '@/app/lib/app-url'
+import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'Agentbot — Focus on the Work. Agents Handle the Rest.',
-    template: '%s | Agentbot',
+    default: 'Factory AI — High-Performance Autonomous Agent Infrastructure.',
+    template: '%s | Factory AI',
   },
-  description: 'Deploy autonomous AI agents for your creative practice in under a minute. BYOK infrastructure — bring your own AI key, pay wholesale. Telegram, WhatsApp, crypto wallets, A2A protocol.',
-  keywords: ['AI agent deployment', 'autonomous AI agents', 'BYOK AI', 'agent hosting', 'deploy AI agent', 'creative industry AI', 'AI for creators', 'Base blockchain', 'agent orchestration', 'AI infrastructure'],
+  description: 'Deploy autonomous AI agents in under a minute. Managed private-cloud infrastructure powered by DID-native identity and MiMo V2 Pro logic.',
+  keywords: ['AI agent deployment', 'autonomous AI agents', 'Factory AI', 'agent hosting', 'deploy AI agent', 'MiMo V2 Pro', 'DID identity', 'Base blockchain', 'agent orchestration', 'private cloud AI'],
   authors: [{ name: 'Agentbot', url: APP_URL }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
@@ -163,13 +164,15 @@ export default function RootLayout({
         <SpeedInsights />
         <Analytics />
         <Providers>
-          <Navbar />
-          <main id="main-content" className="flex-1" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
-          <StatusBar />
-          <Toaster theme="dark" position="bottom-right" richColors closeButton />
+          <DashboardDataProvider>
+            <Navbar />
+            <main id="main-content" className="flex-1" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer />
+            <StatusBar />
+            <Toaster theme="dark" position="bottom-right" richColors closeButton />
+          </DashboardDataProvider>
         </Providers>
       </body>
     </html>

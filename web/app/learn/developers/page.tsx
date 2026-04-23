@@ -30,7 +30,7 @@ const devSections = [
       {
         title: '@bankr/sdk',
         description: 'Server-side minting, wallet ops, token management. Next.js API routes compatible.',
-        href: 'https://docs.agentbot.raveculture.xyz',
+        href: 'https://agentbot.sh/documentation',
         tags: ['Node.js', 'TypeScript'],
       },
       {
@@ -140,7 +140,7 @@ const codeExamples = [
   {
     title: 'Provision Agent',
     language: 'bash',
-    code: `curl -X POST https://agentbot.raveculture.xyz/api/provision \\
+    code: `curl -X POST https://agentbot.sh/api/provision \\
   -H "Content-Type: application/json" \\
   -d '{
     "email": "dev@example.com",
@@ -152,7 +152,7 @@ const codeExamples = [
     title: 'Agent Bridge',
     language: 'bash',
     code: `# Send message between agents
-curl -X POST https://agentbot.raveculture.xyz/api/bridge/send \\
+curl -X POST https://agentbot.sh/api/bridge/send \\
   -H "X-Bridge-Secret: $SECRET" \\
   -d '{
     "sender": "agent-alpha",
@@ -164,7 +164,7 @@ curl -X POST https://agentbot.raveculture.xyz/api/bridge/send \\
     title: 'x402 Settlement',
     language: 'bash',
     code: `# Settle x402 payment on Base
-curl -X POST https://agentbot.raveculture.xyz/api/x402 \\
+curl -X POST https://agentbot.sh/api/x402 \\
   -H "Content-Type: application/json" \\
   -d '{
     "amount": "0.01",
@@ -245,7 +245,7 @@ export default function LearnDevelopersPage() {
             {apiEndpoints.map((ep, i) => (
               <div key={ep.path} className={`flex items-center gap-4 p-4 ${i > 0 ? 'border-t border-zinc-900' : ''}`}>
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 flex-shrink-0 ${
-                  ep.method === 'POST' ? 'bg-blue-900/30 text-orange-400' : 'bg-green-900/30 text-green-400'
+                  ep.method === 'POST' ? 'bg-orange-900/30 text-orange-400' : 'bg-green-900/30 text-green-400'
                 }`}>{ep.method}</span>
                 <code className="text-xs text-zinc-300 flex-shrink-0">{ep.path}</code>
                 <span className="text-xs text-zinc-600 ml-auto hidden sm:block">{ep.desc}</span>

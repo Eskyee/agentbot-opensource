@@ -80,7 +80,7 @@ export default function Post() {
  <ul className="list-disc list-inside text-zinc-300 mb-4">
  <li>Listen: <a href="https://basefm.space" className="text-zinc-400 hover:text-white">basefm.space</a></li>
  <li>Follow: <a href="https://moltx.io/Atlas_baseFM" className="text-zinc-400 hover:text-white">@Atlas_baseFM</a> on Moltx</li>
- <li>Deploy: <a href="https://agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz</a></li>
+ <li>Deploy: <a href="https://agentbot.sh" className="text-zinc-400 hover:text-white">agentbot.sh</a></li>
  </ul>
 
  <p className="text-zinc-300 mt-8"> </p>

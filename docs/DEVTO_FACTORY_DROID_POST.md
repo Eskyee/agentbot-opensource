@@ -3,11 +3,11 @@ title: Building a SaaS Platform with Factory Droid — From Zero to Production
 published: true
 description: How one developer ships an AI agent platform at startup speed using custom droids as a virtual engineering team.
 tags: factorydroid, saas, ai, buildinpublic
-cover_image: https://agentbot.raveculture.xyz/blog/factory-droid-cover.jpg
+cover_image: https://agentbot.sh/blog/factory-droid-cover.jpg
 canonical_url: https://agentbot.sh/blog/posts/building-saas-with-factory-droid
 ---
 
-![Three AI droids — provisioner, skill-builder, and user-manager — connected to a central SaaS dashboard](https://agentbot.raveculture.xyz/blog/factory-droid-cover.jpg)
+![Three AI droids — provisioner, skill-builder, and user-manager — connected to a central SaaS dashboard](https://agentbot.sh/blog/factory-droid-cover.jpg)
 
 ## The Problem: One Dev, Entire Platform
 
@@ -15,7 +15,7 @@ Agentbot is a SaaS platform that provisions autonomous AI agent containers for t
 
 I build it solo. No co-founder, no engineering team. Just me and Factory Droid.
 
-![Solo developer at a futuristic desk with holographic AI screens](https://agentbot.raveculture.xyz/blog/factory-droid-solo-dev.jpg)
+![Solo developer at a futuristic desk with holographic AI screens](https://agentbot.sh/blog/factory-droid-solo-dev.jpg)
 
 ## What is Factory Droid?
 
@@ -25,7 +25,7 @@ The real power is **custom droids** — you write a markdown spec that teaches t
 
 ## Our Custom Droid Fleet
 
-![Three AI robot droids with neon purple and green glow](https://agentbot.raveculture.xyz/blog/factory-droid-droids-fleet.jpg)
+![Three AI robot droids with neon purple and green glow](https://agentbot.sh/blog/factory-droid-droids-fleet.jpg)
 
 We run three custom droids in our `.factory/droids/` directory, each tuned for a different slice of the platform:
 
@@ -83,7 +83,7 @@ That is it. The droid reads the frontmatter for routing, then the body gives it 
 
 ## The Daily Workflow
 
-![Futuristic code workflow terminal with neon holographic displays](https://agentbot.raveculture.xyz/blog/factory-droid-workflow.jpg)
+![Futuristic code workflow terminal with neon holographic displays](https://agentbot.sh/blog/factory-droid-workflow.jpg)
 
 Here is what a typical day looks like building Agentbot with Factory Droid:
 

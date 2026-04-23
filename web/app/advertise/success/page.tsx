@@ -124,7 +124,7 @@ function SuccessContent() {
 
         <div className="rounded-[20px] border border-zinc-800/60 bg-zinc-900/40 px-5 py-4 text-xs text-zinc-500 space-y-1.5">
           <p>Campaign ID: <span className="font-mono text-zinc-400">{campaignId}</span></p>
-          <p>Keep this for your records. Email us at <span className="text-zinc-400">hello@agentbot.raveculture.xyz</span> if you have questions.</p>
+          <p>Keep this for your records. Email us at <span className="text-zinc-400">hello@agentbot.sh</span> if you have questions.</p>
         </div>
 
         <div className="flex justify-center">

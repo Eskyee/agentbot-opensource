@@ -40,7 +40,7 @@ const SKILLS = [
 
 const CATEGORY_COLORS: Record<string, string> = {
   streaming:    'text-amber-400 border-amber-400/30 bg-amber-400/5',
-  development:  'text-orange-400 border-blue-400/30 bg-blue-400/5',
+  development:  'text-orange-400 border-orange-400/30 bg-orange-400/5',
   channels:     'text-purple-400 border-purple-400/30 bg-purple-400/5',
   payments:     'text-green-400 border-green-400/30 bg-green-400/5',
   events:       'text-pink-400 border-pink-400/30 bg-pink-400/5',

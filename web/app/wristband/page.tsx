@@ -10,7 +10,7 @@ const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'))
  */
 export default function WristbandPage() {
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono">
       <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
         {/* Hero Section */}
         <div className="flex flex-col md:flex-row gap-16 items-center">

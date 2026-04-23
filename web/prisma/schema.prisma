@@ -177,7 +177,7 @@ model AgentFile {
 
 model Skill {
   id              String           @id @default(cuid())
-  name            String
+  name            String           @unique
   description     String
   category        String
   code            String

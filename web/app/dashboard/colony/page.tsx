@@ -213,7 +213,7 @@ export default function ColonyPage() {
         href={dashboardUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="border border-zinc-700 hover:border-blue-500 text-orange-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors"
+        className="border border-zinc-700 hover:border-orange-500 text-orange-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors"
       >
         <ExternalLink className="w-3 h-3" />
         Borg Dashboard
@@ -281,7 +281,7 @@ export default function ColonyPage() {
                 href={dashboardUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-zinc-700 hover:border-blue-500 text-orange-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2"
+                className="border border-zinc-700 hover:border-orange-500 text-orange-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2"
               >
                 <ExternalLink className="w-3 h-3" />
                 Borg Dashboard

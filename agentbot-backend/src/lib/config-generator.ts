@@ -50,7 +50,7 @@ export function generateConfig(config: AgentConfig): { config: object; authToken
       // SECURITY: CORS must never be wildcard — restrict to the known dashboard origin.
       // Wildcard would allow any website to communicate with this agent's gateway.
       cors: {
-        origin: process.env.GATEWAY_ALLOWED_ORIGIN || 'https://agentbot.raveculture.xyz',
+        origin: process.env.GATEWAY_ALLOWED_ORIGIN || 'https://agentbot.sh',
         credentials: true,
       },
       controlUi: true,

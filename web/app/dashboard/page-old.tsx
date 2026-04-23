@@ -819,7 +819,7 @@ function DashboardContent() {
                   Documentation
                 </a>
                 <a
-                  href="https://docs.agentbot.raveculture.xyz"
+                  href="https://agentbot.sh/documentation"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"

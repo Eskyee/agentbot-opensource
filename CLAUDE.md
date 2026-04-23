@@ -8,7 +8,7 @@ Primary contact details are managed outside source control.
 | Name | What |
 |------|------|
 | **agentbot** | SaaS platform that provisions & manages AI agent containers (OpenClaw runtime) for music/culture industry users |
-| **web** | Next.js frontend — agentbot.raveculture.xyz |
+| **web** | Next.js frontend — agentbot.sh |
 | **agentbot-backend** | Express/TypeScript API server — manages Docker containers, webhooks, payments |
 | **OpenClaw** | The AI agent runtime that runs inside each Docker container |
 

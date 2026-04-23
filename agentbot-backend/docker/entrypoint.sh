@@ -112,7 +112,7 @@ if [ ! -f "${WORKSPACE}/AGENTS.md" ]; then
 # IDENTITY.md
 - Name: Agentbot-${USER_ID}
 - Plan: ${PLAN}
-- Platform: Agentbot (agentbot.raveculture.xyz)
+- Platform: Agentbot (agentbot.sh)
 EOF
 
   cat > "${WORKSPACE}/USER.md" << EOF

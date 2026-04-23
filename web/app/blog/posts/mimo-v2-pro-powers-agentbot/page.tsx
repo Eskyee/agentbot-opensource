@@ -89,7 +89,7 @@ export default function MiMoBlogPost() {
               </div>
               <div className="text-sm font-bold text-white">$50/mo</div>
             </div>
-            <div className="border border-blue-500/30 bg-blue-500/5 p-4 flex justify-between items-center">
+            <div className="border border-orange-500/30 bg-orange-500/5 p-4 flex justify-between items-center">
               <div>
                 <div className="text-sm font-bold text-orange-400">Max ⭐</div>
                 <div className="text-[10px] text-zinc-500">1.6B credits · Around-the-clock usage</div>

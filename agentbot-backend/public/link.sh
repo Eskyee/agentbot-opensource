@@ -1,6 +1,6 @@
 #!/bin/bash
 # Agentbot Link — Connect your existing OpenClaw instance
-# Usage: curl -fsSL agentbot.raveculture.xyz/link | bash
+# Usage: curl -fsSL agentbot.sh/link | bash
 set -euo pipefail
 
 # Colors
@@ -10,7 +10,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-API_URL="https://agentbot.raveculture.xyz"
+API_URL="https://agentbot.sh"
 
 log() { echo -e "${GREEN}[✓]${NC} $*"; }
 warn() { echo -e "${YELLOW}[!]${NC} $*"; }

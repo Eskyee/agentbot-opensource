@@ -15,7 +15,7 @@ export function DashboardPreview() {
           </div>
           <div className="flex-1 mx-4">
             <div className="bg-zinc-800 rounded px-3 py-1 text-[10px] text-zinc-500 font-mono text-center">
-              agentbot.raveculture.xyz/dashboard
+              agentbot.sh/dashboard
             </div>
           </div>
         </div>
@@ -70,7 +70,7 @@ export function DashboardPreview() {
                 { time: '41m ago', agent: 'crew-manager', action: 'Booking confirmed — Apr 12', status: 'yellow' },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-3 py-2 border-b border-zinc-900 last:border-0">
-                  <div className={`w-1 h-1 rounded-full ${item.status === 'green' ? 'bg-green-500' : item.status === 'blue' ? 'bg-blue-500' : 'bg-yellow-500'}`} />
+                  <div className={`w-1 h-1 rounded-full ${item.status === 'green' ? 'bg-green-500' : item.status === 'blue' ? 'bg-orange-500' : 'bg-yellow-500'}`} />
                   <span className="text-[9px] text-zinc-600 font-mono w-16 shrink-0">{item.time}</span>
                   <span className="text-[9px] text-zinc-500 font-mono w-24 shrink-0">{item.agent}</span>
                   <span className="text-[9px] text-zinc-400 truncate">{item.action}</span>

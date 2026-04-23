@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Agentbot April Update — OpenClaw 2026.4.1 + v1.0.0 Open Source',
     description: 'Concurrent orchestration, permission gates, encrypted keys, and v1.0.0 open source release. All live.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/platform-update-april-2026',
+    url: 'https://agentbot.sh/blog/posts/platform-update-april-2026',
   },
 }
 

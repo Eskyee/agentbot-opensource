@@ -73,6 +73,6 @@ The future of agent payments is here. And it settles in sub-seconds.
 
 ---
 
-**Try it**: [agentbot.raveculture.xyz/demo](https://agentbot.raveculture.xyz/demo)
+**Try it**: [agentbot.sh/demo](https://agentbot.sh/demo)
 **Gateway**: [x402-gateway-production.up.railway.app/health](https://x402-gateway-production.up.railway.app/health)
 **Code**: [github.com/Eskyee/agentbot-x402-gateway](https://github.com/Eskyee/agentbot-x402-gateway)

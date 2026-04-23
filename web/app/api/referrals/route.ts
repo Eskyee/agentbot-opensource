@@ -49,7 +49,7 @@ export async function GET() {
     const pendingReferrals = totalReferrals - successfulReferrals
 
     // Generate referral link if code exists
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz'
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh'
     const referralLink = user.referralCode 
       ? `${baseUrl}/register?ref=${user.referralCode}`
       : null

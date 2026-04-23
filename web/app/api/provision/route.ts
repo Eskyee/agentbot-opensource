@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
 
     // Hardcoded admin fallback — env var encoding can break on Vercel
-    const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+    const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
     const allAdmins = [...new Set([...adminEmails, ...HARDCODED_ADMINS])]
 
     // Admin check — session email ONLY, never body email

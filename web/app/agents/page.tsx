@@ -9,7 +9,7 @@ export default function AgentsPage() {
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono">
       <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
         {/* Hero */}
         <div className="space-y-8 max-w-2xl">

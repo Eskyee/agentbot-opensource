@@ -128,10 +128,10 @@ Since Edge Runtime doesn't support Node.js `crypto` (required by next-auth), we 
 Test the optimization:
 ```bash
 # Check load time
-curl -w "@curl-format.txt" https://agentbot.raveculture.xyz/dashboard
+curl -w "@curl-format.txt" https://agentbot.sh/dashboard
 
 # Test API response time
-curl -w "@curl-format.txt" https://agentbot.raveculture.xyz/api/dashboard/data
+curl -w "@curl-format.txt" https://agentbot.sh/api/dashboard/data
 ```
 
 ## Monitoring

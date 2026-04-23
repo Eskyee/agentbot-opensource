@@ -276,4 +276,4 @@ Full self-hosting guide: [DEPLOYMENT.md](DEPLOYMENT.md)
 
 MIT — see [LICENSE](LICENSE).
 
-Built with ❤️ by [raveculture](https://agentbot.raveculture.xyz).
+Built with ❤️ by [raveculture](https://agentbot.sh).

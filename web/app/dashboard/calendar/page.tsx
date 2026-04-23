@@ -179,7 +179,7 @@ function CalendarPageContent() {
                   >
                     <div className={`text-xs ${isToday ? 'text-white font-bold' : 'text-zinc-500'}`}>{day}</div>
                     {dayEvents.slice(0, 2).map((event: any, idx: number) => (
-                      <div key={idx} className="text-[10px] bg-blue-500/10 text-orange-400 truncate border border-blue-500/20 px-1 mt-1 py-0.5">
+                      <div key={idx} className="text-[10px] bg-orange-500/10 text-orange-400 truncate border border-orange-500/20 px-1 mt-1 py-0.5">
                         {event.summary}
                       </div>
                     ))}

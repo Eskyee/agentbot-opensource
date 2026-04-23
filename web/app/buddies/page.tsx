@@ -18,7 +18,7 @@ interface Buddy {
 }
 
 const BUDDY_TYPES: Record<BuddyType, { emoji: string; name: string; rarity: string; color: string; border: string; desc: string }> = {
-  crab: { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'from-blue-500 to-cyan-500', border: 'border-cyan-500/30', desc: 'Your basic AI companion. Reliable and eager to learn.' },
+  crab: { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'from-orange-500 to-orange-500', border: 'border-orange-500/30', desc: 'Your basic AI companion. Reliable and eager to learn.' },
   robot: { emoji: '⚡', name: 'Spark Agent', rarity: 'Uncommon', color: 'from-yellow-500 to-orange-500', border: 'border-yellow-500/30', desc: 'Charged with energy. Gains XP faster from play.' },
   ghost: { emoji: '👻', name: 'Ghost Agent', rarity: 'Rare', color: 'from-purple-500 to-pink-500', border: 'border-purple-500/30', desc: 'Mysterious and elusive. Hard to find in eggs.' },
   dragon: { emoji: '🐉', name: 'Dragon Agent', rarity: 'Epic', color: 'from-green-500 to-emerald-500', border: 'border-green-500/30', desc: 'Powerful and wise. A prized companion.' },
@@ -703,7 +703,7 @@ export default function BuddiesPage() {
                   <div className="text-[10px] opacity-60">+20 energy, +10 XP</div>
                 </button>
                 <button onClick={() => doAction(selectedBuddy, 'play')} disabled={actionCooldown}
-                  className="bg-blue-500/10 border border-blue-500/30 text-orange-400 py-3 rounded-xl font-bold hover:bg-blue-500/20 transition-all active:scale-95 disabled:opacity-50">
+                  className="bg-orange-500/10 border border-orange-500/30 text-orange-400 py-3 rounded-xl font-bold hover:bg-orange-500/20 transition-all active:scale-95 disabled:opacity-50">
                   <div className="text-lg mb-0.5">🎮</div>
                   <div className="text-sm">Play</div>
                   <div className="text-[10px] opacity-60">+15 happy, +25 XP</div>

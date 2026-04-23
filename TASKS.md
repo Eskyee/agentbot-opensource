@@ -1,12 +1,9 @@
 # Tasks
 
 ## In Progress
+- [ ] Vercel redeploy to seed 6 new skills into DB and publish blog post (Triggered by push)
 
 ## Up Next
-- [ ] Vercel redeploy to seed 6 new skills into DB and publish blog post
-- [ ] Register blog post in `web/app/blog/blogPosts.ts` (security-patch-apr-9-2026)
-- [ ] Prune stale claude/* branches (9 local, many remote)
-- [ ] Clear stale git stashes (4 accumulated)
 - [ ] Update Talent Protocol stats (1,713 commits, 85 PRs) — requires wallet login
 
 ## Done
@@ -29,4 +26,8 @@
 - [x] Fact-Based Architecture: Identity (DID-signatures), Execution (Workflows), State (Gitlawb)
 - [x] Railway-only migration: Removed Render references, updated GQL provisioning
 - [x] SignatureGuard verification: 4/4 passing in dedicated test suite
-- [x] Prune stale branches (12 deleted) and clear git stashes (7 cleared)
+- [x] Prune stale branches (18 deleted) and clear git stashes (All cleared)
+- [x] Register blog post in `web/app/blog/blogPosts.ts` (security-patch-apr-9-2026)
+- [x] Project-wide domain migration: raveculture.xyz -> agentbot.sh
+- [x] Robust skill seeding: switched to upsert logic in ensureSkillsSeeded
+- [x] Fixed duplicate MiMo case study slug in blogPosts.ts

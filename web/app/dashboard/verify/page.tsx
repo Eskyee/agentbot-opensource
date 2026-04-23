@@ -337,7 +337,7 @@ function VerifyContent() {
         {isMobile && selfDeeplink && (
           <a
             href={selfDeeplink}
-            className="mt-3 inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+            className="mt-3 inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
           >
             Open in Self app
             <ExternalLink className="w-3 h-3" />
@@ -412,7 +412,7 @@ export default function VerifyPage() {
             href="https://selfclaw.ai"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:text-orange-400 border border-zinc-700 hover:border-blue-500 px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:text-orange-400 border border-zinc-700 hover:border-orange-500 px-3 py-1.5 transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
             selfclaw.ai
@@ -437,7 +437,7 @@ export default function VerifyPage() {
               { label: 'Stand out', desc: 'Verified agents get a special badge in chats' },
             ].map((item) => (
               <div key={item.label} className="bg-zinc-950 p-3 sm:p-4 flex items-start gap-3">
-                <div className="w-1 h-1 bg-blue-400 mt-1.5 flex-shrink-0" />
+                <div className="w-1 h-1 bg-orange-400 mt-1.5 flex-shrink-0" />
                 <div className="min-w-0">
                   <span className="text-xs font-bold uppercase tracking-wider">{item.label}</span>
                   <span className="text-xs text-zinc-500 ml-2">— {item.desc}</span>

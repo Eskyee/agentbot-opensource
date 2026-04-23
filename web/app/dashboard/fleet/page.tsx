@@ -191,7 +191,7 @@ export default function FleetPage() {
                     href={dashboardUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mb-3 flex items-center justify-center border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-blue-500"
+                    className="mb-3 flex items-center justify-center border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-500"
                   >
                     Open Borg Dashboard
                   </a>

@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
           <div style="font-size:48px;text-align:center;margin-bottom:16px;">🦞</div>
           <h1 style="text-align:center;font-size:24px;margin:0 0 12px;">Email is working</h1>
           <p style="color:#999;text-align:center;">Sent from <strong>noreply@raveculture.space</strong> via Resend</p>
-          <p style="color:#666;font-size:12px;text-align:center;margin-top:24px;">agentbot.raveculture.xyz</p>
+          <p style="color:#666;font-size:12px;text-align:center;margin-top:24px;">agentbot.sh</p>
         </div>
       `,
     })

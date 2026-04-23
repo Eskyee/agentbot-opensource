@@ -16,9 +16,9 @@ Tempo Network (pathUSD)
 ### Services
 | Service | URL | Status |
 |---------|-----|--------|
-| Agentbot API | agentbot.raveculture.xyz/api/x402 | ✅ healthy |
+| Agentbot API | agentbot.sh/api/x402 | ✅ healthy |
 | x402-gateway | x402-gateway-production-005f.up.railway.app | ✅ healthy |
-| Dashboard | agentbot.raveculture.xyz/dashboard/x402 | ✅ live |
+| Dashboard | agentbot.sh/dashboard/x402 | ✅ live |
 
 ### Endpoints (all working)
 | Endpoint | Description |

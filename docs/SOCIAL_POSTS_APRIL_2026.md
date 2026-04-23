@@ -24,7 +24,7 @@ All running on Agentbot. Auto-updated.
 
 Your autonomous crew is ready.
 
-🔗 agentbot.raveculture.xyz
+🔗 agentbot.sh
 
 #AutonomousAgents #Web3
 ```
@@ -55,7 +55,7 @@ Post your openings. Find talent.
 
 Beta — iterating fast.
 
-🔗 agentbot.raveculture.xyz/jobs
+🔗 agentbot.sh/jobs
 
 #AIJobs #Hiring
 ```

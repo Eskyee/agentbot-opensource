@@ -190,16 +190,16 @@ export default function ViewDocsPage() {
             <p className="text-xs text-zinc-400 max-w-2xl">
               Need the full documentation experience? Open the dedicated docs site for guides, reference pages, and developer docs at{' '}
               <a
-                href="https://docs.agentbot.raveculture.xyz"
+                href="https://agentbot.sh/documentation"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white underline hover:text-zinc-300"
               >
-                docs.agentbot.raveculture.xyz
+                agentbot.sh/documentation
               </a>.
             </p>
             <a
-              href="https://docs.agentbot.raveculture.xyz"
+              href="https://agentbot.sh/documentation"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 transition-colors"
@@ -217,7 +217,7 @@ export default function ViewDocsPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-sm uppercase tracking-tight">{feature.title}</h3>
                   {feature.badge && (
-                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-blue-500/30 px-2 py-0.5">
+                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-orange-500/30 px-2 py-0.5">
                       {feature.badge}
                     </span>
                   )}
@@ -305,7 +305,7 @@ export default function ViewDocsPage() {
             <Link href="/blog" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500">
               Blog
             </Link>
-            <a href="https://docs.agentbot.raveculture.xyz" target="_blank" rel="noopener noreferrer" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:text-white hover:border-zinc-500">
+            <a href="https://agentbot.sh/documentation" target="_blank" rel="noopener noreferrer" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:text-white hover:border-zinc-500">
               Dev Docs
             </a>
             <Link href="/token" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-orange-400 hover:text-white hover:border-zinc-500">

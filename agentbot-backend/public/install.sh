@@ -1,6 +1,6 @@
 #!/bin/bash
 # Agentbot Installer — One command to get started
-# Usage: curl -fsSL agentbot.raveculture.xyz/install | bash
+# Usage: curl -fsSL agentbot.sh/install | bash
 set -euo pipefail
 
 # Colors
@@ -10,7 +10,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-API_URL="https://agentbot.raveculture.xyz"
+API_URL="https://agentbot.sh"
 IMAGE="ghcr.io/openclaw/openclaw:2026.3.13-1"
 
 log() { echo -e "${GREEN}[✓]${NC} $*"; }

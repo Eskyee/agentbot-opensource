@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Our Code is Now on IPFS',
     description: 'Our open source repo now lives on a decentralized git network.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/agentbot-on-ipfs-via-gitlawb',
+    url: 'https://agentbot.sh/blog/posts/agentbot-on-ipfs-via-gitlawb',
   },
 }
 

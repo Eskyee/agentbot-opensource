@@ -197,7 +197,7 @@ export default function BrowserAutomationPage() {
               <button
                 onClick={runAutomation}
                 disabled={running}
-                className="flex items-center gap-2 w-full justify-center px-5 py-3 bg-blue-600/10 border border-blue-500/30 text-orange-400 text-sm font-bold hover:bg-blue-600/20 disabled:opacity-30 transition-colors"
+                className="flex items-center gap-2 w-full justify-center px-5 py-3 bg-orange-600/10 border border-orange-500/30 text-orange-400 text-sm font-bold hover:bg-orange-600/20 disabled:opacity-30 transition-colors"
               >
                 {running ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

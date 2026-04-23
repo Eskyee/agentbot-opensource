@@ -179,7 +179,7 @@ export default function BasefmTokenPage() {
             </p>
           </div>
 
-          <div className="mt-4 p-4 border border-blue-500/20 bg-blue-500/10">
+          <div className="mt-4 p-4 border border-orange-500/20 bg-orange-500/10">
             <p className="text-orange-400 text-sm">
               <strong>Agentbot community holders:</strong> Claimed Builder and Whale wallets now unlock a baseFM guest pass inside the Agentbot dashboard, even without the full BASEFM gate.{' '}
               <a href="/claim" className="underline hover:text-white">Claim your community rewards</a> or open the{' '}
@@ -237,8 +237,8 @@ export default function BasefmTokenPage() {
           <p className="text-zinc-400 text-sm">
             baseFM is deployed on <span className="text-green-400 font-semibold">Agentbot</span> — the AI agent 
             deployment platform. Deploy your own AI agent in seconds at{' '}
-            <a href="https://agentbot.raveculture.xyz" className="text-orange-400 hover:text-white underline">
-              agentbot.raveculture.xyz
+            <a href="https://agentbot.sh" className="text-orange-400 hover:text-white underline">
+              agentbot.sh
             </a>
           </p>
         </div>

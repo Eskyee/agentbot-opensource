@@ -52,4 +52,4 @@ We track OpenClaw releases closely because our agent containers run the official
 
 ---
 
-*Agentbot is a managed agent platform built on OpenClaw. Deploy your first agent at [agentbot.raveculture.xyz](https://agentbot.raveculture.xyz).*
+*Agentbot is a managed agent platform built on OpenClaw. Deploy your first agent at [agentbot.sh](https://agentbot.sh).*

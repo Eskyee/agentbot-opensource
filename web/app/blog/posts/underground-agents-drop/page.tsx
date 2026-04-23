@@ -177,8 +177,8 @@ export default function Post() {
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Try It Now</h2>
  <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
- <li><strong>Marketplace:</strong> Browse new agent templates at <Link href="/marketplace" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz/marketplace</Link></li>
- <li><strong>Dashboard:</strong> Create a wallet for your agent at <Link href="/dashboard" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz/dashboard</Link></li>
+ <li><strong>Marketplace:</strong> Browse new agent templates at <Link href="/marketplace" className="text-zinc-400 hover:text-white">agentbot.sh/marketplace</Link></li>
+ <li><strong>Dashboard:</strong> Create a wallet for your agent at <Link href="/dashboard" className="text-zinc-400 hover:text-white">agentbot.sh/dashboard</Link></li>
  <li><strong>Docs:</strong> Read the full guide at <a href="https://github.com/Eskyee/agentbot-opensource" className="text-zinc-400 hover:text-white" target="_blank" rel="noopener noreferrer">github.com/Eskyee/agentbot</a></li>
  </ul>
 
