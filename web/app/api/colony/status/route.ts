@@ -36,21 +36,19 @@ function getSoulCandidates(userUrl?: string | null) {
 
 async function isUsableSoulHost(baseUrl: string) {
   try {
-    // Increase timeout to 5s to allow for Railway cold starts
     const paths = [`${baseUrl}/soul/status`, `${baseUrl}/`]
     
     for (const path of paths) {
       try {
         const res = await fetch(path, {
           headers: { Accept: 'application/json' },
-          signal: AbortSignal.timeout(5000),
+          signal: AbortSignal.timeout(8000), // 8s is reasonable for a cloud-to-cloud probe
           cache: 'no-store',
         });
 
-        // 502 is a sign the host EXISTS but is booting/overloaded. 
-        // We consider this a "weak" candidate rather than non-existent.
-        if (res.status === 502) {
-          console.warn(`[SoulProbe] Host ${baseUrl} returned 502 (booting/sleeping)`);
+        // 502/503/504 are all signs the host is booting or overloaded
+        if (res.status >= 502 && res.status <= 504) {
+          console.warn(`[SoulProbe] Host ${baseUrl} returned ${res.status} (booting)`);
           return 'maybe';
         }
 
@@ -63,7 +61,12 @@ async function isUsableSoulHost(baseUrl: string) {
         if (payload && typeof payload === 'object' && ('active' in payload || 'fitness' in payload)) {
           return 'healthy';
         }
-      } catch {
+      } catch (err: any) {
+        // Fix: Treat AbortError (timeout) as 'maybe' instead of 'down'
+        if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+          console.warn(`[SoulProbe] Host ${baseUrl} timed out — treating as booting`);
+          return 'maybe';
+        }
         continue;
       }
     }
@@ -297,21 +300,35 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
   } catch (error: any) {
-    // For soul/diagnostics actions the caller expects a specific payload shape
-    // (SoulStatus / diagnostics). Returning the colony-tree fallback here
-    // crashes the Borg dashboard when it dereferences `data.fitness.total`.
-    // Surface a 503 so the client renders its "Soul offline" state instead.
-    if (action === 'soul' || action === 'diagnostics') {
-      return NextResponse.json(
-        {
-          error: 'Soul service unavailable',
-          detail: error.message,
-          degraded: true,
-        },
-        { status: 503 }
-      );
+    // GHOST MODE: Ultimate fallback resilience.
+    // If all hosts are unreachable, we return a simulated offline state 
+    // instead of a terminal 503 error. This prevents UI crashes.
+    console.warn(`[ColonyAPI] All hosts unreachable, entering Ghost Mode for action: ${action}`);
+
+    if (action === 'soul') {
+      return NextResponse.json({
+        active: false,
+        dormant: true,
+        total_cycles: 0,
+        mode: 'unavailable',
+        fitness: { total: 0, delta: 0 },
+        soulUrl: SOUL_URL,
+        degraded: true,
+        error: error.message
+      });
     }
 
+    if (action === 'diagnostics') {
+      return NextResponse.json({
+        ok: false,
+        status: 'unavailable',
+        checks: [],
+        timestamp: new Date().toISOString(),
+        error: error.message
+      });
+    }
+
+    // Default 'tree' fallback (already returns 200)
     return NextResponse.json(
       {
         colony_size: 0,
