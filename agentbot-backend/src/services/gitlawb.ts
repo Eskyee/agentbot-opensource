@@ -10,7 +10,8 @@ import { runCommand } from '../utils';
  * a signed commit, providing an immutable audit trail.
  */
 
-const GITLAWB_REPO_PATH = process.env.GITLAWB_REPO_PATH || '/opt/agentbot/state-facts';
+const GITLAWB_REPO_PATH = process.env.GITLAWB_REPO_PATH || 
+  (process.env.NODE_ENV === 'production' ? '/opt/agentbot/state-facts' : path.join(process.cwd(), 'state-facts'));
 const GITLAWB_REMOTE = process.env.GITLAWB_REMOTE;
 
 /**
