@@ -63,7 +63,7 @@ function statusColor(status: BasefmRelayStatus) {
 export function BasefmLivePlayer({
   compact = false,
   title = 'baseFM Live',
-  subtitle = 'Strictly Underground. 24/7 Autonomous Curation.',
+  subtitle = 'Strictly Factory. 24/7 Autonomous Curation.',
   minimal = false,
   initialData = null,
   initialError = null,

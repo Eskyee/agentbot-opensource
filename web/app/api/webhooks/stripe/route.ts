@@ -14,7 +14,7 @@ if (!webhookSecret) {
 }
 
 const planMap: Record<string, string> = {
-  underground: 'solo',  // legacy name → map to solo
+  autonomous: 'solo',  // legacy name → map to solo
   solo:        'solo',
   collective:  'collective',
   label:       'label',

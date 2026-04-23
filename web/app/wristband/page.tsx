@@ -25,7 +25,7 @@ export default function WristbandPage() {
             </h1>
             
             <p className="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed">
-              Unlock the future of underground radio. Your Digital Wristband is a permanent onchain 
+              Unlock the future of autonomous radio. Your Digital Wristband is a permanent onchain 
               proof of affiliation with baseFM. It grants lifetime access to high-definition 
               live streams, token-gated community channels, and exclusive artist drops.
             </p>

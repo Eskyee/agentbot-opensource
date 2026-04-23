@@ -7,5 +7,5 @@ export async function GET(
   { params }: { params: Promise<{ walletId: string }> }
 ) {
   const { walletId } = await params
-  return proxyBitcoinRequest(`/api/underground/bitcoin/wallets/${walletId}/address/unused`)
+  return proxyBitcoinRequest(`/api/autonomous/bitcoin/wallets/${walletId}/address/unused`)
 }

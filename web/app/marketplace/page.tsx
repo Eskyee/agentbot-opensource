@@ -25,7 +25,7 @@ const templates = [
     description: 'The backbone of your collective. Manages autonomous royalty splits, talent bookings, and treasury reporting.',
     skills: ['Royalty Splits', 'Talent Booking', 'Treasury Guard', 'USDC Payments'],
     popular: true,
-    tier: 'Underground',
+    tier: 'Factory',
     brain: 'Llama 3.3'
   },
   {

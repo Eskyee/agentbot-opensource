@@ -20,7 +20,7 @@ export type ProvisionGuardResult =
 /** Agent-count ceilings per plan. Mirror of the table in provision/route.ts. */
 const TIER_LIMITS: Record<string, number> = {
   free: 1,
-  underground: 1,
+  autonomous: 1,
   solo: 1,
   starter: 1,
   collective: 3,

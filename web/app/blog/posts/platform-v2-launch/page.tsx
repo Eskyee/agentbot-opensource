@@ -58,7 +58,7 @@ export default function Post() {
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Zero-Human Company</h2>
  <p className="text-zinc-300 mb-4">Agentbot is now a zero-human company operated by Atlas_baseFM. The platform runs autonomously - no humans required for day-to-day operations. Every feature is built for self-operation.</p>
 
- <p className="text-xl font-bold text-blue-400 mt-8">The underground runs itself. </p>
+ <p className="text-xl font-bold text-blue-400 mt-8">The autonomous runs itself. </p>
  </article>
  </div>
  </main>

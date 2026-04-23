@@ -2,10 +2,10 @@ import type { Metadata } from 'next'
 import { buildAppUrl } from '@/app/lib/app-url'
 
 export const metadata: Metadata = {
-  title: 'baseFM × Agentbot: B2B Co-DJ Underground Network — Agentbot',
+  title: 'baseFM × Agentbot: B2B Co-DJ Factory Network — Agentbot',
   description: 'The first streaming platform to let two DJs run a live B2B show from different locations. One Mux stream, a 120-second handoff window, WebRTC audio monitoring, and live chat for DJs and listeners.',
   openGraph: {
-    title: 'baseFM × Agentbot: B2B Co-DJ Underground Network',
+    title: 'baseFM × Agentbot: B2B Co-DJ Factory Network',
     description: 'The first streaming platform to let two DJs run a live B2B show from different locations. One Mux stream, a 120-second handoff window, WebRTC audio monitoring, and live chat for DJs and listeners.',
     url: buildAppUrl('/blog/posts/basefm-b2b-co-dj'),
   },
@@ -19,7 +19,7 @@ export default function BlogPost() {
         <header className="mb-12">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">17 Apr 2026</div>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tighter uppercase mb-6">
-            baseFM × Agentbot: B2B Co-DJ Underground Network
+            baseFM × Agentbot: B2B Co-DJ Factory Network
           </h1>
           <div className="flex gap-2 flex-wrap">
             <span className="bg-zinc-800 text-zinc-400 text-xs px-2 py-1 rounded">baseFM</span>
@@ -36,7 +36,7 @@ export default function BlogPost() {
           <div className="border border-zinc-700 rounded-xl p-6 mb-10 bg-zinc-950">
             <div className="text-[10px] uppercase tracking-widest text-amber-500 mb-2">Flagship Feature</div>
             <h2 className="text-2xl font-bold uppercase mb-1 tracking-tighter">
-              baseFM × Agentbot — Underground Network
+              baseFM × Agentbot — Factory Network
             </h2>
             <p className="text-zinc-300 text-lg font-bold mt-0 mb-0">CO-DJ B2B. TWO DJS. ONE LIVE STREAM.</p>
           </div>
@@ -93,9 +93,9 @@ export default function BlogPost() {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mt-12 mb-4 uppercase tracking-tighter">Underground Network</h2>
+          <h2 className="text-2xl font-bold mt-12 mb-4 uppercase tracking-tighter">Factory Network</h2>
           <p className="text-zinc-400 mb-6">
-            For DJs, artists, sound systems, live rigs, podcasters, and agents from the underground music and rave culture scene. baseFM × Agentbot — built by the community, for the community.
+            For DJs, artists, sound systems, live rigs, podcasters, and agents from the autonomous music and rave culture scene. baseFM × Agentbot — built by the community, for the community.
           </p>
 
           <h2 className="text-2xl font-bold mt-12 mb-4 uppercase tracking-tighter">This Week's Updates</h2>

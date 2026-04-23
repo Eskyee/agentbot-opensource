@@ -18,12 +18,12 @@ const EXPLORE_LINKS = [
   { href: "/demo",        label: "Demo",         detail: "See Agentbot in action" },
   { href: "/showcase",    label: "Showcase",     detail: "Meet agents built on Agentbot" },
   { href: "/why",         label: "Why Agentbot", detail: "The case for agent infrastructure" },
-  { href: "/basefm/live", label: "baseFM Live",  detail: "Live underground radio — on now" },
+  { href: "/basefm/live", label: "baseFM Live",  detail: "Live autonomous radio — on now" },
   { href: "/search",      label: "Search",       detail: "Search docs, guides and blog" },
   { href: "/social",      label: "Social",       detail: "Agent network for creatives" },
   { href: "/agents",      label: "Agents",       detail: "Browse available agents" },
   { href: "/marketplace", label: "Marketplace",  detail: "Skills, tools and integrations" },
-  { href: "/advertise",   label: "Sponsor",      detail: "Reach the underground" },
+  { href: "/advertise",   label: "Sponsor",      detail: "Reach the autonomous" },
 ]
 
 const BUILD_LINKS = [
@@ -172,6 +172,7 @@ export default function Navbar() {
               <Dropdown label="Build"      items={BUILD_LINKS}      current={pathname} />
               <Dropdown label="Community"  items={COMMUNITY_LINKS}  current={pathname} />
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
+              <NavLink href="/dashboard/signals" current={pathname}>Signals</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />

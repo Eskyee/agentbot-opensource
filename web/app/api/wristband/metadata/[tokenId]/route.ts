@@ -13,7 +13,7 @@ export async function GET(
 
   const metadata = {
     name: `Digital Wristband #${id}`,
-    description: 'Onchain access to baseFM underground radio. Grants lifetime access to HD live streams, token-gated channels, and exclusive artist drops.',
+    description: 'Onchain access to baseFM autonomous radio. Grants lifetime access to HD live streams, token-gated channels, and exclusive artist drops.',
     image: 'https://agentbot.raveculture.xyz/wristband-nft.png',
     external_url: 'https://agentbot.raveculture.xyz/wristband',
     attributes: [

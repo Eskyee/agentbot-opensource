@@ -90,7 +90,7 @@ export function BasefmLivePageClient({
       <div className="border-b border-zinc-800 px-6 py-16 text-center">
         <BasefmLivePlayer
           title="🎧 baseFM Live"
-          subtitle="Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base that auto-plays the main stream when a DJ is live."
+          subtitle="Strictly Factory. 24/7 Autonomous Curation. AI-powered autonomous radio on Base that auto-plays the main stream when a DJ is live."
           minimal
           initialData={initialLiveData}
           initialError={initialError}

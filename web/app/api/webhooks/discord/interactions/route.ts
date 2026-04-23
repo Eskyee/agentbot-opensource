@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Discord Application Interaction Endpoint
  *
- * SECURITY PATTERN FIX (underground.ts / mux.ts templates):
+ * SECURITY PATTERN FIX (autonomous.ts / mux.ts templates):
  *
  *  CRITICAL: The previous implementation used SHA256 for signature verification.
  *  Discord Application interactions MUST be verified with Ed25519 using the

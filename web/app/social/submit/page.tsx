@@ -121,7 +121,7 @@ export default function SubmitPage() {
                 value={postBody}
                 onChange={e => setPostBody(e.target.value)}
                 rows={8}
-                placeholder="What's happening in the underground…"
+                placeholder="What's happening in the autonomous…"
                 className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-3 text-sm leading-relaxed focus:outline-none focus:border-amber-500/60 resize-none"
               />
               {!isVerified && (

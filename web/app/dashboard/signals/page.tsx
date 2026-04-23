@@ -165,112 +165,76 @@ export default function SignalsPage() {
   const eventSourceRef = useRef<EventSource | null>(null);
   const seenIdsRef = useRef<Set<string>>(new Set());
 
-  const fetchData = useCallback(async () => {
+  const loadInitialData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/signals');
-      if (!res.ok) throw new Error('Failed');
-      const json = await res.json();
-      setData(json);
+      const results = await Promise.allSettled([
+        fetch('/api/signals'),
+        fetch('/api/x/status', { cache: 'no-store' }),
+        fetch('/api/x/drafts', { cache: 'no-store' }),
+        fetch('/api/x/mentions', { cache: 'no-store' }),
+        fetch('/api/x/analytics', { cache: 'no-store' }),
+        fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, { cache: 'no-store' }),
+      ]);
+
+      // 1. Core Signals
+      if (results[0].status === 'fulfilled' && results[0].value.ok) {
+        setData(await results[0].value.json());
+      }
+      // 2. X Status
+      if (results[1].status === 'fulfilled' && results[1].value.ok) {
+        setXStatus(await results[1].value.json());
+      }
+      // 3. Drafts
+      if (results[2].status === 'fulfilled' && results[2].value.ok) {
+        const json = await results[2].value.json();
+        setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
+      }
+      // 4. Mentions
+      if (results[3].status === 'fulfilled') {
+        const res = results[3].value;
+        const json = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setMentions(Array.isArray(json?.mentions) ? json.mentions : []);
+          setMentionsError('');
+        } else {
+          setMentionsError(json?.error || 'Failed to load X mentions');
+        }
+      }
+      // 5. Analytics
+      if (results[4].status === 'fulfilled') {
+        const res = results[4].value;
+        const json = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setAnalytics(json);
+          setAnalyticsError('');
+        } else {
+          setAnalyticsError(json?.error || 'Failed to load X analytics');
+        }
+      }
+      // 6. Community
+      if (results[5].status === 'fulfilled') {
+        const res = results[5].value;
+        const json = await res.json().catch(() => ({}));
+        if (res.ok) {
+          setCommunityPosts(Array.isArray(json?.posts) ? json.posts : []);
+          setCommunityError('');
+        } else {
+          setCommunityError(json?.error || 'Failed to load community feed');
+        }
+      }
+
       setLastGenerated(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     } catch (e) {
-      console.error('Signals fetch failed:', e);
+      console.error('Initial data load failed:', e);
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  useEffect(() => {
-    const loadXStatus = async () => {
-      try {
-        const res = await fetch('/api/x/status', { cache: 'no-store' });
-        if (!res.ok) return;
-        setXStatus(await res.json());
-      } catch (e) {
-        console.error('X status fetch failed:', e);
-      }
-    };
-
-    loadXStatus();
-  }, []);
-
-  useEffect(() => {
-    const loadDrafts = async () => {
-      try {
-        const res = await fetch('/api/x/drafts', { cache: 'no-store' });
-        if (!res.ok) return;
-        const json = await res.json();
-        setDrafts(Array.isArray(json?.drafts) ? json.drafts : []);
-      } catch (e) {
-        console.error('X drafts fetch failed:', e);
-      }
-    };
-
-    loadDrafts();
-  }, []);
-
-  useEffect(() => {
-    const loadMentions = async () => {
-      try {
-        const res = await fetch('/api/x/mentions', { cache: 'no-store' });
-        const json = await res.json();
-        if (!res.ok) {
-          setMentionsError(typeof json?.error === 'string' ? json.error : 'Failed to load X mentions');
-          return;
-        }
-        setMentions(Array.isArray(json?.mentions) ? json.mentions : []);
-        setMentionsError('');
-      } catch (e) {
-        console.error('X mentions fetch failed:', e);
-        setMentionsError('Failed to load X mentions');
-      }
-    };
-
-    loadMentions();
-  }, []);
-
-  useEffect(() => {
-    const loadAnalytics = async () => {
-      try {
-        const res = await fetch('/api/x/analytics', { cache: 'no-store' });
-        const json = await res.json();
-        if (!res.ok) {
-          setAnalyticsError(typeof json?.error === 'string' ? json.error : 'Failed to load X analytics');
-          return;
-        }
-        setAnalytics(json);
-        setAnalyticsError('');
-      } catch (e) {
-        console.error('X analytics fetch failed:', e);
-        setAnalyticsError('Failed to load X analytics');
-      }
-    };
-
-    loadAnalytics();
-  }, []);
-
-  useEffect(() => {
-    const loadCommunityOnMount = async () => {
-      try {
-        const res = await fetch(`/api/x/community?communityId=${encodeURIComponent(communityId)}`, { cache: 'no-store' });
-        const json = await res.json();
-        if (!res.ok) {
-          setCommunityError(typeof json?.error === 'string' ? json.error : 'Failed to load community feed');
-          return;
-        }
-        setCommunityPosts(Array.isArray(json?.posts) ? json.posts : []);
-        setCommunityError('');
-      } catch (e) {
-        console.error('X community fetch failed:', e);
-        setCommunityError('Failed to load community feed');
-      }
-    };
-    loadCommunityOnMount();
   }, [communityId]);
+
+  useEffect(() => {
+    loadInitialData();
+  }, [loadInitialData]);
 
   const loadDrafts = useCallback(async () => {
     try {
@@ -560,7 +524,7 @@ export default function SignalsPage() {
         count={filtered.length}
         action={
           <button
-            onClick={fetchData}
+            onClick={loadInitialData}
             disabled={loading}
             className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors disabled:opacity-50"
           >

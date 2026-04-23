@@ -236,7 +236,7 @@ export default function SettingsPage() {
                           onChange={(e) => setShowcaseDescription(e.target.value)}
                           maxLength={280}
                           rows={2}
-                          placeholder="e.g., Underground techno agent. Curates sets, scouts tracks, runs my Telegram channel."
+                          placeholder="e.g., Factory techno agent. Curates sets, scouts tracks, runs my Telegram channel."
                           className="w-full bg-zinc-900 border border-zinc-700 text-white text-xs px-3 py-2 focus:outline-none focus:border-zinc-500 resize-none font-mono"
                         />
                         <p className="text-[10px] text-zinc-600 mt-1">{showcaseDescription.length}/280</p>

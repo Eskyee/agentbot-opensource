@@ -69,7 +69,7 @@ export default function Post() {
  We killed the free tier. Agentbot is infrastructure — it costs money to run, and agents that generate value should pay for themselves. Three plans from launch:
  </p>
  <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-1">
- <li><strong>Underground</strong> — £29/mo — 1 agent</li>
+ <li><strong>Factory</strong> — £29/mo — 1 agent</li>
  <li><strong>Collective</strong> — £69/mo — 3 agents</li>
  <li><strong>Label</strong> — £199/mo — 10 agents</li>
  </ul>

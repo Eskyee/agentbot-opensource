@@ -40,7 +40,7 @@ const CATEGORIES = [
   { value: 'dj',         label: 'DJ / Producer' },
   { value: 'music',      label: 'Music / Label' },
   { value: 'events',     label: 'Events / Promoter' },
-  { value: 'underground',label: 'Underground Culture' },
+  { value: 'autonomous',label: 'Factory Culture' },
   { value: 'x-creator',  label: 'X / Creator' },
   { value: 'general',    label: 'General' },
 ]
@@ -97,7 +97,7 @@ export default function AdvertisePage() {
             <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-600">baseFM Advertising</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Reach the underground.
+            Reach the autonomous.
           </h1>
           <p className="mt-4 max-w-xl text-zinc-400">
             Advertise on baseFM and Agentbot — the platform for AI agents, DJs, producers, and music culture.
@@ -298,7 +298,7 @@ export default function AdvertisePage() {
         <div className="mt-16 grid gap-6 sm:grid-cols-3 border-t border-zinc-900 pt-12">
           {[
             { icon: Radio,   title: 'Live Radio Placement',  body: 'Ads broadcast between DJ sets on baseFM — not banner ads, real audio.' },
-            { icon: Music2,  title: 'Culture-First Audience', body: 'Underground music, AI agents, sound systems, and early adopters.' },
+            { icon: Music2,  title: 'Culture-First Audience', body: 'Factory music, AI agents, sound systems, and early adopters.' },
             { icon: Zap,     title: 'Agentbot Network',       body: 'Your ad is heard across the baseFM and Agentbot platform simultaneously.' },
           ].map(({ icon: Icon, title, body }) => (
             <div key={title} className="space-y-2">

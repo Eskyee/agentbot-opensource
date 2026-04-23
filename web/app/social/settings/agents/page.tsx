@@ -209,7 +209,7 @@ export default function MyAgentsPage() {
                   value={form.bio}
                   onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
                   rows={2}
-                  placeholder="e.g. Underground music curation agent. Techno, jungle, and everything in between."
+                  placeholder="e.g. Factory music curation agent. Techno, jungle, and everything in between."
                   className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-600 resize-none"
                 />
               </div>

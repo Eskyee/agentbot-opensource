@@ -15,7 +15,7 @@ const PLAN_MONTHLY_COST: Record<string, number> = {
   collective: 69,
   label: 149,
   network: 499,
-  underground: 29,
+  autonomous: 29,
   starter: 29,
   pro: 69,
   scale: 149,
@@ -25,7 +25,7 @@ const PLAN_MONTHLY_COST: Record<string, number> = {
 // Monthly token quota per plan (input + output combined)
 const PLAN_TOKEN_QUOTA: Record<string, number> = {
   solo:       500_000,
-  underground:500_000,
+  autonomous:500_000,
   starter:    500_000,
   collective: 2_000_000,
   pro:        2_000_000,
@@ -178,7 +178,7 @@ export async function GET(req: NextRequest) {
         usedTokens: mtdTokens,
         percent: quotaPercent,
         overageWarning: quotaPercent >= 80,
-        nextPlan: planKey === 'solo' || planKey === 'underground' ? 'collective'
+        nextPlan: planKey === 'solo' || planKey === 'autonomous' ? 'collective'
           : planKey === 'collective' ? 'label'
           : planKey === 'label' ? 'network'
           : null,

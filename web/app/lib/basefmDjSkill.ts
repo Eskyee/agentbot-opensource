@@ -82,7 +82,7 @@ function formatLiveAnnouncement(djName, playbackId) {
   const urls = playbackId ? getStreamUrl(playbackId) : null;
   return {
     title: "🔴 " + djName + " is LIVE on baseFM",
-    message: "Strictly underground. 24/7 autonomous curation. Tune in now." +
+    message: "Strictly autonomous. 24/7 autonomous curation. Tune in now." +
       (urls ? "\\n🎧 Listen: " + urls.embed : ""),
     actions: urls
       ? [

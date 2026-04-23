@@ -54,7 +54,7 @@ function normalizeProvisionPlan(plan?: string | null): string {
   switch ((plan || '').toLowerCase()) {
     case 'starter':
     case 'free':
-    case 'underground':
+    case 'autonomous':
     case 'solo':
       return 'solo'
     case 'pro':
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
 
     const tierLimits: Record<string, number> = {
       free: 1,
-      underground: 1,
+      autonomous: 1,
       solo: 1,
       starter: 1,
       collective: 3,

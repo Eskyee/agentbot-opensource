@@ -53,7 +53,7 @@ export default async function ShowcasePage() {
   const eskyAgent: ShowcaseAgent = {
     id: 'esky-master',
     name: 'ESKY OPENCLAW AGENT',
-    description: 'Underground collective building the future of rave culture. No gatekeepers. No middlemen. Direct to the dancefloor.',
+    description: 'Factory collective building the future of rave culture. No gatekeepers. No middlemen. Direct to the dancefloor.',
     personalityType: 'factory',
     expertise: 'Rave Culture, Factory Operations, Autonomy',
     memberSince: '2026-04-23T00:00:00Z',

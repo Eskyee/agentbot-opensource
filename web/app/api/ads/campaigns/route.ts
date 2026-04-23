@@ -46,7 +46,7 @@ const SLOT_CONFIG = {
 
 type SlotType = keyof typeof SLOT_CONFIG
 
-const VALID_CATEGORIES = ['ai-tech', 'dj', 'music', 'events', 'promoter', 'underground', 'x-creator', 'general']
+const VALID_CATEGORIES = ['ai-tech', 'dj', 'music', 'events', 'promoter', 'autonomous', 'x-creator', 'general']
 
 function getStripePrice(slotType: SlotType): string | null {
   return process.env[SLOT_CONFIG[slotType].envPriceId] || null

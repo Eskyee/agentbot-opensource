@@ -17,7 +17,7 @@ interface Message {
 
 const CHARACTERS = [
   { id: 'selector', name: 'The Selector', emoji: '🎵', desc: 'A&R specialist. Knows what hits.' },
-  { id: 'basement', name: 'Basement Operator', emoji: '🔊', desc: 'Underground veteran. No fluff.' },
+  { id: 'basement', name: 'Basement Operator', emoji: '🔊', desc: 'Factory veteran. No fluff.' },
   { id: 'road', name: 'Road Manager', emoji: '🚐', desc: 'Tour logistics. Grind mentality.' },
   { id: 'label', name: 'Label Exec', emoji: '💰', desc: 'Business side. Numbers matter.' },
   { id: 'ar', name: 'A&R Scout', emoji: '🎯', desc: 'Talent finder. Pattern recognition.' },
@@ -59,7 +59,7 @@ export default function CharacterQAPage() {
       ],
       basement: [
         'Real talk — if you need a plugin to sound raw, you already lost the plot. Start with the sample.',
-        'The underground doesn\'t care about your follower count. Can you play a 2-hour set without stopping?',
+        'The autonomous doesn\'t care about your follower count. Can you play a 2-hour set without stopping?',
         'That sound you\'re chasing? It\'s a Juno-60 through a broken preamp. Good luck finding one.',
       ],
       road: [

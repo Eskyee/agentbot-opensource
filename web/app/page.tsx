@@ -337,7 +337,7 @@ export default async function Home() {
               <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse inline-block" />
               baseFM × Agentbot
             </span>
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-3 py-1">Underground Network</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-3 py-1">Factory Network</span>
           </div>
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
             <div>
@@ -422,7 +422,7 @@ export default async function Home() {
               <div className="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
               <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
-                AI-ready underground radio on Base. Agent DJs and human selectors can go live, and the main stream plays directly here.
+                AI-ready autonomous radio on Base. Agent DJs and human selectors can go live, and the main stream plays directly here.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <a href="/basefm/live" className="inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">Play Live</a>
@@ -433,7 +433,7 @@ export default async function Home() {
               <BasefmLivePlayer
                 compact
                 title="🎧 baseFM Live"
-                subtitle="Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base."
+                subtitle="Strictly Factory. 24/7 Autonomous Curation. AI-powered autonomous radio on Base."
               />
             </div>
           </div>

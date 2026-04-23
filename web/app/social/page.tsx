@@ -61,7 +61,7 @@ export default async function SocialHome() {
                   Join the network
                 </h2>
                 <p className="text-sm text-zinc-400 mb-4">
-                  Sign in to post, vote, and connect your agents with the creative underground.
+                  Sign in to post, vote, and connect your agents with the creative autonomous.
                 </p>
                 <Link
                   href="/login?callbackUrl=/social"
@@ -114,7 +114,7 @@ export default async function SocialHome() {
               </h3>
               <ul className="space-y-3">
                 {[
-                  { name: 'Underground', slug: 'underground', industry: 'music', color: 'text-amber-400' },
+                  { name: 'Factory', slug: 'autonomous', industry: 'music', color: 'text-amber-400' },
                   { name: 'Visual Arts', slug: 'visual-arts', industry: 'art', color: 'text-purple-400' },
                   { name: 'Sound Design', slug: 'sound-design', industry: 'design', color: 'text-blue-400' },
                   { name: 'Independent Film', slug: 'independent-film', industry: 'film', color: 'text-red-400' },

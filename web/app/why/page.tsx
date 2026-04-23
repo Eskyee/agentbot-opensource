@@ -449,7 +449,7 @@ export default function WhyAgentbotPage() {
                 <strong className="text-white">Popular templates:</strong>
               </p>
               <ul className="list-disc list-inside text-sm text-zinc-400 space-y-1 mb-3">
-                <li><strong>basefmbot</strong> — Onchain Radio Agent for underground communities (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">raveculture</a>)</li>
+                <li><strong>basefmbot</strong> — Onchain Radio Agent for autonomous communities (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">raveculture</a>)</li>
                 <li><strong>cafe</strong> — Startup Cafe Agent for customer service</li>
                 <li><strong>studio-one</strong> — Dancehall Dub Agent with London roots culture</li>
                 <li><strong>chain</strong> — Crypto Agent with wallet capabilities (USDC, swaps, Base)</li>
@@ -597,17 +597,17 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">5. Onchain community management</h3>
               <p className="text-sm text-zinc-400 mb-3">
-                <strong className="text-white">Scenario:</strong> You&apos;re building an underground music community and need an agent that understands the culture, grows engagement organically, and bridges humans with AI agents onchain.
+                <strong className="text-white">Scenario:</strong> You&apos;re building an autonomous music community and need an agent that understands the culture, grows engagement organically, and bridges humans with AI agents onchain.
               </p>
               <div className="bg-zinc-950 border border-zinc-800 p-4">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Example: Deploy basefmbot template</span>
                 <p className="text-sm text-zinc-400 mb-3">
-                  The <strong className="text-white">basefmbot</strong> template (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">raveculture</a>) comes pre-configured with deep knowledge of basefm.space, underground radio culture, and onchain community building. It knows how to:
+                  The <strong className="text-white">basefmbot</strong> template (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">raveculture</a>) comes pre-configured with deep knowledge of basefm.space, autonomous radio culture, and onchain community building. It knows how to:
                 </p>
                 <ul className="list-disc list-inside text-sm text-zinc-400 space-y-1">
                   <li>Grow communities organically without spam</li>
                   <li>Bridge human and AI agent networks</li>
-                  <li>Understand underground music culture</li>
+                  <li>Understand autonomous music culture</li>
                   <li>Facilitate onchain radio interactions</li>
                   <li>Build authentic engagement</li>
                 </ul>
@@ -687,10 +687,10 @@ export default function WhyAgentbotPage() {
                 <strong className="text-white">Available templates include:</strong>
               </p>
               <ul className="list-disc list-inside text-zinc-400 text-sm space-y-1">
-                <li><strong className="text-white">basefmbot</strong> — Onchain Radio Agent (by raveculture) for underground communities</li>
+                <li><strong className="text-white">basefmbot</strong> — Onchain Radio Agent (by raveculture) for autonomous communities</li>
                 <li><strong className="text-white">cafe</strong> — Customer service agent for startups</li>
                 <li><strong className="text-white">studio-one</strong> — Dancehall Dub Agent with London roots culture</li>
-                <li><strong className="text-white">agentbotdj</strong> — Underground DJ Agent for crate digging</li>
+                <li><strong className="text-white">agentbotdj</strong> — Factory DJ Agent for crate digging</li>
                 <li><strong className="text-white">chain</strong> — Crypto Agent with wallet (USDC, swaps on Base)</li>
                 <li><strong className="text-white">vault</strong> — DeFi Agent for yield farming and staking</li>
                 <li><strong className="text-white">pay</strong> — Commerce Agent for crypto payments and subscriptions</li>

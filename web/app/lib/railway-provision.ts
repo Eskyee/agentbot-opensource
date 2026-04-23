@@ -188,7 +188,7 @@ export async function provisionOnRailway(
 
   // 1b. Set resource limits + health check (no start command — image has CMD)
   const planLimits: Record<string, { memoryLimitMb: number; cpuLimit: number }> = {
-    underground: { memoryLimitMb: 2048,  cpuLimit: 1 },
+    autonomous: { memoryLimitMb: 2048,  cpuLimit: 1 },
     solo:        { memoryLimitMb: 2048,  cpuLimit: 1 },
     collective:  { memoryLimitMb: 4096,  cpuLimit: 2 },
     label:       { memoryLimitMb: 8192,  cpuLimit: 4 },
