@@ -228,13 +228,13 @@ export const DashboardSidebar = memo(function DashboardSidebar({
     runtimeStatus === 'paired'
       ? 'text-green-400'
       : runtimeStatus === 'live'
-        ? 'text-blue-400'
+        ? 'text-orange-400'
         : 'text-zinc-500';
   const runtimeDot =
     runtimeStatus === 'paired'
       ? 'bg-green-400'
       : runtimeStatus === 'live'
-        ? 'bg-blue-400'
+        ? 'bg-orange-400'
         : 'bg-zinc-700';
   let runtimeHost: string | null = null;
   try {
