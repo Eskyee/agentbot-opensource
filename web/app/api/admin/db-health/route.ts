@@ -36,7 +36,7 @@ export async function GET() {
     const tableNames = rawTables.map(t => t.table_name);
     
     // Detect "Ghost Tables" (tables in DB but not in current Prisma model)
-    const knownModels = ['User', 'Account', 'Session', 'Agent', 'Buddy', 'M2MJob']; // abbreviated
+    const knownModels = ['User', 'Account', 'Session', 'Agent', 'Buddy', 'M2MJob']; 
     const ghostTables = tableNames.filter(t => !knownModels.some(m => m.toLowerCase() === t.replace(/_/g, '').toLowerCase()));
 
     // 3. Check for specific dangerous drifts
@@ -66,6 +66,78 @@ export async function GET() {
     });
   } catch (error: any) {
     console.error('[Admin/DB-Health] Audit failed:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+/**
+ * POST /api/admin/db-health
+ * Performs "FORCE_GLOBAL_SYNC"
+ * 
+ * Strategy:
+ * 1. Find users in "User" (singular) and UPSERT into "users" (plural).
+ * 2. Find agents in "Agent" (singular) and UPSERT into "agents" (plural).
+ * 3. This allows the backend to see data created by the frontend.
+ */
+export async function POST() {
+  const session = await getAuthSession();
+  if (!session?.user?.isAdmin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  console.log('[Admin/Sync] Starting Global Infrastructure Reconciliation...');
+
+  try {
+    // 1. Fetch all users from Prisma
+    const prismaUsers = await prisma.user.findMany();
+    let usersSynced = 0;
+
+    for (const u of prismaUsers) {
+      // Upsert into plural 'users' table
+      await prisma.$executeRaw`
+        INSERT INTO users (email, plan, stripe_subscription_id, created_at, updated_at)
+        VALUES (${u.email}, ${u.plan || 'solo'}, ${u.stripeSubscriptionId || null}, ${u.createdAt}, ${u.updatedAt})
+        ON CONFLICT (email) DO UPDATE SET
+          plan = EXCLUDED.plan,
+          stripe_subscription_id = EXCLUDED.stripe_subscription_id,
+          updated_at = NOW()
+      `;
+      usersSynced++;
+    }
+
+    // 2. Fetch all agents from Prisma
+    const prismaAgents = await prisma.agent.findMany();
+    let agentsSynced = 0;
+
+    for (const a of prismaAgents) {
+      // Find the user ID in the plural table to maintain relations
+      const uResult = await prisma.$queryRaw<any[]>`SELECT id FROM users WHERE email = ${a.userEmail || ''} LIMIT 1`;
+      const backendUserId = uResult[0]?.id;
+
+      if (backendUserId) {
+        await prisma.$executeRaw`
+          INSERT INTO agents (user_id, name, status, config, created_at, updated_at)
+          VALUES (${backendUserId}, ${a.name}, ${a.status}, ${JSON.stringify(a.config || {})}, ${a.createdAt}, ${a.updatedAt})
+          ON CONFLICT (id) DO UPDATE SET
+            status = EXCLUDED.status,
+            config = EXCLUDED.config,
+            updated_at = NOW()
+        `;
+        agentsSynced++;
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      results: {
+        usersSynced,
+        agentsSynced
+      },
+      message: "Reconciliation complete. Backend and Frontend are now synchronized."
+    });
+
+  } catch (error: any) {
+    console.error('[Admin/Sync] Reconciliation failed:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -1,7 +1,7 @@
 # soul/ — Tempo-x402 soul service (Rust)
 
 This directory builds the Borg cognition runtime that powers
-`borg-0-production.up.railway.app` and the `/dashboard/borg` live telemetry
+`borg-0-production-7139.up.railway.app` and the `/dashboard/borg` live telemetry
 page. The binary itself lives in
 [compusophy/tempo-x402](https://github.com/compusophy/tempo-x402); this
 directory only contains the Railway-specific build + deploy glue.

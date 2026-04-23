@@ -16,7 +16,7 @@ export const X402_GATEWAY_URL = trimUrl(
 
 export const SOUL_SERVICE_URL = trimUrl(
   process.env.NEXT_PUBLIC_SOUL_SERVICE_URL || process.env.SOUL_SERVICE_URL,
-  'https://borg-0-production.up.railway.app'
+  'https://borg-0-production-7139.up.railway.app'
 )
 
 export const SOUL_DASHBOARD_URL = '/dashboard/borg'

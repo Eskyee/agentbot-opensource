@@ -13,8 +13,8 @@ const REDIS_KEY = 'railway:status:latest'
 const REDIS_TTL = 60 * 60 * 24 * 7 // 7 days
 
 function getRedis(): Redis | null {
-  const url = process.env.KV_REST_API_URL
-  const token = process.env.KV_REST_API_TOKEN
+  const url = process.env.KV_REST_API_URL?.trim()
+  const token = process.env.KV_REST_API_TOKEN?.trim()
   if (!url || !token) return null
   try {
     return new Redis({ url, token })

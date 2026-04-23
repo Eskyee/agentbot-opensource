@@ -21,9 +21,9 @@ This file is the current operational reference for platform ownership, deploymen
   - Platform: Railway
   - Project: `x402-gw-v2`
   - Service: `tempo-x402+Borg`
-  - App URL: `https://borg-0-production.up.railway.app`
-  - Dashboard URL: `https://borg-0-production.up.railway.app/dashboard`
-  - Health URL: `https://borg-0-production.up.railway.app/health`
+  - App URL: `https://borg-0-production-7139.up.railway.app`
+  - Dashboard URL: `https://borg-0-production-7139.up.railway.app/dashboard`
+  - Health URL: `https://borg-0-production-7139.up.railway.app/health`
 - x402 gateway:
   - Platform: Railway
   - Service URL: `https://x402-gateway-production.up.railway.app`
@@ -62,7 +62,7 @@ This file is the current operational reference for platform ownership, deploymen
 
 - Fleet dashboard data is sourced from `/api/mission-control/fleet/graph`.
 - Colony dashboard data is sourced from `/api/colony/status?action=tree`.
-- The displayed Borg dashboard link should be `https://borg-0-production.up.railway.app/dashboard`.
+- The displayed Borg dashboard link should be `https://borg-0-production-7139.up.railway.app/dashboard`.
 - The soul service feed URL may differ from the displayed Borg dashboard URL; do not infer the dashboard link by appending `/dashboard` to the service feed.
 - Managed runtime provisioning now queues backend jobs instead of doing all Railway work inline in the web request path.
 - Local production build for `web/` was verified with `npm run build` on 2026-04-04 after queue, onboarding, MCP, and runtime-status changes.

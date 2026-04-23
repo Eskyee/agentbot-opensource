@@ -60,8 +60,8 @@ const LANE_CONFIG: Record<WorkloadLane, LaneConfig> = {
 
 let redis: Redis | null = null
 try {
-  const restUrl = process.env.KV_REST_API_URL
-  const restToken = process.env.KV_REST_API_TOKEN
+  const restUrl = process.env.KV_REST_API_URL?.trim()
+  const restToken = process.env.KV_REST_API_TOKEN?.trim()
   if (restUrl && restToken && !restUrl.includes('localhost')) {
     redis = new Redis({ url: restUrl, token: restToken })
   }

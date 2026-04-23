@@ -36,7 +36,7 @@ Tempo Network (pathUSD)
 - Survives restarts
 
 ### Borg-0 Integration
-- Connected to https://borg-0-production.up.railway.app
+- Connected to https://borg-0-production-7139.up.railway.app
 - Designation: borg-0
 - Fitness: 32.6%
 - Wallet: 999,998 pathUSD

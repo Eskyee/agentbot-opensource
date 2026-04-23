@@ -17,7 +17,7 @@ const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
 const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
 
 // Known borg-0 public URL — always included as fallback even if env var is stale
-const BORG_0_URL = 'https://borg-0-production.up.railway.app';
+const BORG_0_URL = 'https://borg-0-production-7139.up.railway.app';
 
 function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
   const value = String(raw ?? '').toLowerCase();
@@ -179,21 +179,20 @@ export async function GET(request: Request) {
 
     switch (action) {
       case 'tree': {
-        // Get root node info + siblings
-        const [instanceInfo, siblings, soulStatus, colony] = await Promise.all([
+        // REAL DATA BRIDGE: Fetch from both singular and plural tables
+        const [instanceInfo, siblings, soulStatus, colony, prismaAgents, backendAgents] = await Promise.all([
           soul.getInstanceInfo(),
           soul.getSiblings(),
           soul.getStatus(),
           soul.getColonyStatus().catch(() => null),
+          prisma.agent.findMany({ select: { id: true, name: true, websocketUrl: true, status: true } }),
+          prisma.$queryRaw<any[]>`SELECT id, name, status, config FROM agents`.catch(() => [])
         ]);
 
-        // Build lineage tree from instance info + children
-        // identity may be null if the node hasn't registered yet — use safe fallbacks
         const identity = instanceInfo.identity ?? null;
-        const childNodes = instanceInfo.children ?? [];
-        const siblingNodes = siblings.siblings ?? [];
-
-        const agents = [
+        
+        // Merge strategy: Start with active soul nodes, then add database agents not seen in the soul network
+        const agents: any[] = [
           {
             id: identity?.instance_id ?? 'borg-root',
             name: instanceInfo.designation || 'Atlas Prime',
@@ -209,12 +208,16 @@ export async function GET(request: Request) {
             endpoints: instanceInfo.endpoints ?? [],
             uptime: instanceInfo.uptime_seconds,
             version: instanceInfo.version,
-          },
-          ...childNodes.map((child) => ({
+          }
+        ];
+
+        // Add child nodes
+        instanceInfo.children?.forEach((child: any) => {
+          agents.push({
             id: child.instance_id,
             name: `Clone-${child.instance_id.slice(0, 8)}`,
             generation: 2,
-            fitness: 50, // Unknown until we fetch child status
+            fitness: 50,
             specialization: 'general',
             children: 0,
             parent: identity?.address ?? null,
@@ -225,26 +228,33 @@ export async function GET(request: Request) {
             endpoints: [],
             uptime: 0,
             version: 'unknown',
-          })),
-          ...siblingNodes
-            .filter((s) => (identity ? s.instance_id !== identity.instance_id : true))
-            .map((sibling) => ({
-              id: sibling.instance_id,
-              name: `Peer-${sibling.instance_id.slice(0, 8)}`,
-              generation: 1,
-              fitness: 50,
-              specialization: 'general',
-              children: 0,
-              parent: null,
-              walletAddress: sibling.address,
-              status: normalizeColonyStatus(sibling.status),
-              createdAt: '',
-              url: sibling.url,
-              endpoints: sibling.endpoints ?? [],
-              uptime: 0,
-              version: 'unknown',
-            })),
-        ];
+          });
+        });
+
+        // Bridge in missing agents from database (the "Real Data" request)
+        const allDbAgents = [...prismaAgents, ...backendAgents];
+        allDbAgents.forEach((dbA: any) => {
+           // Skip if already in the list via soul discovery
+           if (agents.some(a => a.id === dbA.id || a.name === dbA.name)) return;
+
+           const url = dbA.websocketUrl || dbA.config?.runtimeUrl || null;
+           agents.push({
+             id: dbA.id.toString(),
+             name: dbA.name,
+             generation: 1,
+             fitness: dbA.status === 'active' ? 100 : 0,
+             specialization: 'factory',
+             children: 0,
+             parent: null,
+             walletAddress: dbA.config?.walletAddress || '0x...',
+             status: dbA.status === 'active' ? 'active' : 'stale',
+             createdAt: dbA.createdAt || new Date().toISOString(),
+             url,
+             endpoints: [],
+             uptime: 0,
+             version: '2026.4.23',
+           });
+        });
 
         return NextResponse.json({
           colony_size: agents.length,

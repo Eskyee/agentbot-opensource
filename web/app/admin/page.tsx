@@ -62,14 +62,34 @@ export default function AdminPage() {
   const [agents, setAgents] = useState<AgentInstance[]>([]);
   const [dbHealth, setDbHealth] = useState<DBHealth | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState<AdminTab>('agents');
-  const [searchTerm, setSearcherTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
+
+  const performSync = async () => {
+    if (!confirm('CAUTION: This will reconcile plural backend tables with singular Prisma tables. Proceed?')) return;
+    setSyncing(true);
+    try {
+      const res = await fetch('/api/admin/db-health', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`Sync Complete!\nUsers: ${data.results.usersSynced}\nAgents: ${data.results.agentsSynced}`);
+        await fetchData();
+      } else {
+        alert(`Sync Failed: ${data.error}`);
+      }
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -148,7 +168,7 @@ export default function AdminPage() {
                 type="text" 
                 placeholder="SEARCH_THE_MATRIX..."
                 value={searchTerm}
-                onChange={(e) => setSearcherTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="bg-zinc-900 border border-zinc-800 py-1.5 pl-9 pr-4 text-[10px] w-64 focus:outline-none focus:border-orange-500/50 focus:bg-zinc-900/50 transition-all uppercase tracking-widest placeholder:text-zinc-700"
               />
             </div>
@@ -363,8 +383,12 @@ export default function AdminPage() {
                   <h4 className="text-xs font-bold text-white uppercase mb-1">Infrastructure Reconciliation</h4>
                   <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Sync the hot-tier (Postgres) with the warm-tier (Gitlawb facts).</p>
                 </div>
-                <button className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-orange-500 transition-colors">
-                  Force_Global_Sync
+                <button 
+                  onClick={performSync}
+                  disabled={syncing}
+                  className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-orange-500 transition-colors disabled:opacity-50"
+                >
+                  {syncing ? 'SYNCING...' : 'Force_Global_Sync'}
                 </button>
               </div>
             </div>

@@ -14,7 +14,8 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
-    "turbo": "^2.9.0"
+    "turbo": "^2.9.0",
+    "bs58": "^6.0.0"
   },
   "packageManager": "npm@10.8.2",
   "overrides": {
@@ -33,6 +34,7 @@
     "@openzeppelin/contracts": "4.9.6",
     "undici": "^7.24.5",
     "devalue": "^5.6.4",
+    "bs58": "^6.0.0",
     "rpc-websockets": {
       "uuid": "11.0.1"
     },
