@@ -31,12 +31,11 @@ if ! awk -v p="${DATA_DIR}" '$2 == p { found=1; exit } END { exit !found }' /pro
   exit 1
 fi
 
-if ! PROBE=$(mktemp "${DATA_DIR}/.soul-mount-probe.XXXXXX" 2>/dev/null); then
-  echo "FATAL: ${DATA_DIR} is mounted but not writable by uid=$(id -u)." >&2
-  exit 1
-fi
-rm -f "${PROBE}"
+# Fix volume ownership — Railway mounts volumes as root. Running as root
+# here allows us to chown before dropping privileges.
+chown -R agent:agent "${DATA_DIR}"
 
 mkdir -p "${DATA_DIR}/workspace" "${DATA_DIR}/brain_checkpoints" "${DATA_DIR}/benchmark_history" "${DATA_DIR}/cartridges"
 
-exec x402-node "$@"
+# Drop privileges to the agent user for the actual application.
+exec gosu agent x402-node "$@"
