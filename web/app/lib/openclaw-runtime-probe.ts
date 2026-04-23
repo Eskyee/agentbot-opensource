@@ -1,4 +1,5 @@
 import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
+import { redis } from '@/app/lib/redis'
 
 export type OpenClawProbeCheck = {
   path: string
@@ -30,8 +31,23 @@ export type OpenClawRuntimeProbeResult = {
   uptime: string | null
 }
 
+/**
+ * Probe an OpenClaw runtime URL for health and status.
+ * Results are cached in Redis for 15 seconds to minimize external network latency.
+ */
 export async function probeOpenClawRuntime(url: string): Promise<OpenClawRuntimeProbeResult> {
   const normalized = String(url).replace(/\/$/, '')
+  const cacheKey = `probe:${normalized}`
+
+  // 1. Try Cache
+  if (redis) {
+    try {
+      const cached = await redis.get<OpenClawRuntimeProbeResult>(cacheKey)
+      if (cached) return cached
+    } catch (err) {
+      console.warn('[Probe] Cache read failed:', err)
+    }
+  }
 
   try {
     const [healthRes, readyRes, statusRes] = await Promise.allSettled([
@@ -139,43 +155,35 @@ export async function probeOpenClawRuntime(url: string): Promise<OpenClawRuntime
       if (configured === false) {
         result.status = 'setup'
         result.reason = 'Runtime reachable but setup is not complete'
-        return result
-      }
-
-      if (running || state === 'running') {
+      } else if (running || state === 'running') {
         result.status = 'running'
         result.reason = !healthOk && !readyOk
           ? 'Legacy health probes unavailable; using /api/status'
           : null
-        return result
-      }
-
-      if (state === 'stopped' || running === false) {
+      } else if (state === 'stopped' || running === false) {
         result.status = 'stopped'
         result.reason = 'Runtime reachable but process is stopped'
-        return result
+      } else {
+        result.status = healthOk && readyOk ? 'healthy' : healthOk ? 'starting' : 'unknown'
+        result.reason = 'Runtime reachable but returned a non-standard state'
       }
-
-      result.status = healthOk && readyOk ? 'healthy' : healthOk ? 'starting' : 'unknown'
-      result.reason = 'Runtime reachable but returned a non-standard state'
-      return result
-    }
-
-    if (healthOk && readyOk) {
+    } else if (healthOk && readyOk) {
       result.status = 'healthy'
       result.reason = 'Legacy /api/status unavailable; using /healthz and /readyz'
-      return result
-    }
-
-    if (healthOk) {
+    } else if (healthOk) {
       result.status = 'starting'
       result.reason = 'Health probe is up but readiness is not complete'
-      return result
+    } else {
+      result.status = 'unreachable'
+      result.reason = checks.find((check) => check.path === '/api/status')?.reason
+        || 'Runtime did not answer /api/status and the legacy probes were not healthy'
     }
 
-    result.status = 'unreachable'
-    result.reason = checks.find((check) => check.path === '/api/status')?.reason
-      || 'Runtime did not answer /api/status and the legacy probes were not healthy'
+    // 2. Save to Cache
+    if (redis && result.status !== 'unreachable') {
+      void redis.set(cacheKey, result, { ex: 15 }).catch(() => {})
+    }
+
     return result
   } catch (error) {
     return {

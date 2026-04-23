@@ -39,3 +39,5 @@
 - [x] Optimized HeroImage using next/image with high-priority loading
 - [x] Added high-impact database indexes to Post, Comment, SocialVote, and Activity models
 - [x] Optimized package imports (lucide, framer-motion, sonner) in next.config.js
+- [x] Implemented Redis caching for OpenClaw runtime probes (15s TTL) to reduce network overhead
+- [x] Enabled intelligent Link prefetching in DashboardSidebar for instant navigation

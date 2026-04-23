@@ -337,7 +337,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                           <Link
                             key={item.label}
                             href={item.href}
-                            prefetch={false}
+                            prefetch={true}
                             onClick={onToggle}
                             className={`flex items-center gap-2 px-4 py-2 text-xs transition-colors ${
                               isActive
@@ -426,7 +426,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
                         <Link
                           key={item.label}
                           href={item.href}
-                          prefetch={false}
+                          prefetch={true}
                           onClick={onToggle}
                           className={cls}
                         >
