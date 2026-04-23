@@ -374,12 +374,12 @@ export async function GET(request: Request) {
         error: 'Soul service unavailable',
         detail: error.message,
         root: {
-          address: '0x0000000000000000000000000000000000000000',
-          designation: null,
+          address: CLAIMED_WALLET,
+          designation: 'Ghost Mode',
           dashboardUrl: SOUL_DASHBOARD_URL,
           serviceUrl: SOUL_URL,
-          fitness: null,
-          wallet_balance: null,
+          fitness: { total: 0, delta: 0 },
+          wallet_balance: await getTempoBalance(CLAIMED_WALLET),
           clone_available: false,
           clone_price: '0',
           soul: {

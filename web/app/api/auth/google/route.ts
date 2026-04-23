@@ -6,8 +6,10 @@ function getBaseUrl(req: NextRequest): string {
 
 export async function GET(req: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const baseUrl = getBaseUrl(req);
-  const redirectUri = `${baseUrl}/api/auth/google/callback`;
+  
+  // Use request origin for production consistency
+  const origin = req.nextUrl.origin;
+  const redirectUri = `${origin}/api/auth/google/callback`;
   
   if (!clientId) {
     return NextResponse.redirect(new URL('/login?error=GoogleNotConfigured', req.url));

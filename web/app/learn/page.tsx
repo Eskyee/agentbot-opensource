@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 const beginnerGuides = [
   {
@@ -135,6 +136,30 @@ export default function LearnPage() {
             This is the main “how to use Agentbot” hub. Start here if you want guided paths, platform walkthroughs, and the cleanest route from zero to a working agent.
           </p>
         </div>
+
+        <section className="mb-16">
+          <div className="mb-8">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 block">New Operators</span>
+            <h2 className="text-2xl font-bold tracking-tighter uppercase">Interactive Coaching</h2>
+          </div>
+          <div className="border border-orange-500/20 bg-orange-500/5 p-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <h3 className="text-xl font-bold uppercase tracking-tight text-orange-500 mb-2">Agentbot Coach</h3>
+                <p className="text-sm text-zinc-400 max-w-lg">
+                  Follow the interactive factory protocol. Step-by-step coaching modules to master agent deployment, verification, and Bitcoin integration.
+                </p>
+              </div>
+              <Link 
+                href="/dashboard/coach"
+                className="inline-flex items-center gap-2 bg-orange-500 text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors whitespace-nowrap"
+              >
+                Start Coaching Module
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
 
         <section className="mb-16">
           <div className="mb-8">

@@ -279,10 +279,11 @@ export const authOptions: AuthOptions = {
               // Override the user id so JWT gets the existing user, not a new one
               user.id = existingUser.id;
               user.name = existingUser.name || user.name;
+              user.email = existingUser.email; // Ensure email is from DB
             }
           } catch (error) {
             console.error(`[Auth] Account linking error for ${account.provider}:`, error);
-            // Still allow sign-in even if linking fails
+            // DO NOT throw error, let NextAuth continue
           }
         }
         return true;

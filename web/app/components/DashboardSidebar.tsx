@@ -40,6 +40,14 @@ export const navSections = [
     ],
   },
   {
+    label: 'Education',
+    items: [
+      { label: 'Coach', href: '/dashboard/coach', icon: '🎓' },
+      { label: 'Learn', href: '/learn', icon: '📖' },
+      { label: 'Guide', href: '/guide', icon: '?' },
+    ],
+  },
+  {
     label: 'Runtime',
     items: [
       { label: 'Verify Agent', href: '/dashboard/verify', icon: '🛡' },
@@ -94,7 +102,6 @@ export const navSections = [
     items: [
       { label: 'Billing', href: '/billing', icon: '☆' },
       { label: 'Domains', href: '/dashboard/domains', icon: '🌍' },
-      { label: 'Guide', href: '/guide', icon: '?' },
       { label: 'Feedback', href: '/dashboard/feedback', icon: '💬' },
       { label: 'Settings', href: '/settings', icon: '⚙' },
       { label: 'Showcase', href: '/showcase', icon: '✧' },

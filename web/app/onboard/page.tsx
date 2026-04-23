@@ -1348,6 +1348,12 @@ function OnboardContent() {
                   >
                     Go to Mission Control
                   </a>
+                  <Link
+                    href="/dashboard/coach"
+                    className="block w-full border border-orange-500/50 text-orange-500 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
+                  >
+                    🎓 Enter Operator Training
+                  </Link>
                 </div>
               </>
             ) : (
@@ -1391,6 +1397,12 @@ function OnboardContent() {
                   >
                     Go to Dashboard
                   </a>
+                  <Link
+                    href="/dashboard/coach"
+                    className="block w-full border border-orange-500/50 text-orange-500 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
+                  >
+                    🎓 Start Operator Coaching
+                  </Link>
                 </div>
               </>
             )}
