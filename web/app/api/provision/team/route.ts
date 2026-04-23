@@ -88,6 +88,8 @@ export async function POST(req: NextRequest) {
           headers: {
             'X-User-Email': session.user?.email ?? '',
             'X-User-Id': session.user?.id ?? '',
+            'X-User-Plan': plan || 'collective',
+            'X-Stripe-Subscription-Id': stripeSubscriptionId || '',
           },
           body: JSON.stringify({
             userId: `${teamId}-agent-${i + 1}`,

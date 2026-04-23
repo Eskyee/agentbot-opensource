@@ -166,13 +166,14 @@ export default function Navbar() {
               {[1,2,3,4].map(i => <div key={i} className="w-16 h-3 bg-zinc-900 animate-pulse rounded" />)}
             </div>
           ) : isLoggedIn ? (
-            // Logged-in: task-focused
+            // Logged-in: Unified navigation
             <>
+              <Dropdown label="Explore"    items={EXPLORE_LINKS}    current={pathname} />
+              <Dropdown label="Build"      items={BUILD_LINKS}      current={pathname} />
+              <Dropdown label="Community"  items={COMMUNITY_LINKS}  current={pathname} />
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="/basefm/live" current={pathname}>baseFM</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
-              <NavLink href="/colony" current={pathname}>Colony</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
               <NotificationBell />
             </>

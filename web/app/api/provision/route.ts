@@ -149,6 +149,11 @@ export async function POST(request: NextRequest) {
 
     const enqueueRes = await signedFetch('/api/platform-jobs/provision', {
       method: 'POST',
+      headers: {
+        'X-User-Email': userEmail,
+        'X-User-Plan': plan || 'solo',
+        'X-Stripe-Subscription-Id': stripeSubscriptionId || '',
+      },
       body: JSON.stringify({
         ...legacyPayload,
         userId,
