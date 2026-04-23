@@ -45,3 +45,12 @@
     - FollowButton: Instant state toggle and counter update
     - JoinButton: Instant community membership toggle
     - PostCard: Added interactive optimistic voting system
+- [x] Migrated Social API routes to Next.js 16 Server Actions:
+    - Centralized logic in `web/app/actions/social.ts`
+    - Reduced API boilerplate and handled path revalidation natively
+    - Implemented `toggleFollowAgent`, `toggleJoinCommunity` (ID/Slug support), and `votePost`
+- [x] Mobile UI refinements:
+    - Fixed horizontal overflow in dashboard and control panels
+    - Optimized `InstanceControlPanel` grid and text-breaking for small screens
+    - Enhanced `PostCard` responsiveness and touch targets
+    - Added mobile-first padding and overflow management to core layouts

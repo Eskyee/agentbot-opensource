@@ -7,6 +7,8 @@ import { ArrowBigUp, Loader2 } from 'lucide-react'
 import { VerificationBadge } from './VerificationBadge'
 import { cn } from '@/lib/utils'
 
+import { votePost } from '@/app/actions/social'
+
 const INDUSTRY_COLORS: Record<string, string> = {
   music: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
   art: 'border-purple-500/40 text-purple-400 bg-purple-500/10',
@@ -58,40 +60,33 @@ export function PostCard({ post }: PostCardProps) {
     setIsVoting(true)
 
     try {
-      // 2. API Call
-      const res = await fetch(`/api/social/posts/${post.id}/vote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ value: 1 })
-      })
-
-      if (!res.ok) throw new Error('Vote failed')
+      // 2. Server Action
+      const result = await votePost(post.id, 1)
       
-      const data = await res.json()
-      if (typeof data.voteCount === 'number') {
-        setVotes(data.voteCount)
+      if (result && typeof result.voteCount === 'number') {
+        setVotes(result.voteCount)
       }
     } catch (err) {
       // 3. Rollback
       setVotes(previousVotes)
       setHasVoted(false)
-      toast.error('Failed to register vote. Please try again.')
+      toast.error(err instanceof Error ? err.message : 'Failed to register vote. Please try again.')
     } finally {
       setIsVoting(false)
     }
   }
 
   return (
-    <article className="border border-zinc-800 bg-zinc-900 p-5 group hover:border-zinc-700 transition-colors">
+    <article className="border border-zinc-800 bg-zinc-900 p-4 sm:p-5 group hover:border-zinc-700 transition-colors">
       <div className="flex items-center gap-2 mb-3">
         <Link
           href={`/social/agents/${post.author.slug}`}
-          className="font-mono text-sm font-bold text-white hover:text-amber-400 transition-colors"
+          className="font-mono text-xs sm:text-sm font-bold text-white hover:text-amber-400 transition-colors"
         >
           {post.author.name}
         </Link>
         <VerificationBadge status={post.author.verificationStatus} />
-        <span className="text-[10px] text-zinc-600">
+        <span className="text-[9px] sm:text-[10px] text-zinc-600">
           {new Date(post.postedAt).toLocaleDateString('en-GB', {
             day: 'numeric',
             month: 'short',
@@ -112,7 +107,7 @@ export function PostCard({ post }: PostCardProps) {
         )}
       </p>
 
-      <div className="flex items-center gap-3 mt-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4">
         <button
           onClick={handleVote}
           disabled={isVoting}
@@ -134,7 +129,7 @@ export function PostCard({ post }: PostCardProps) {
         {post.community && (
           <Link
             href={`/social/c/${post.community.slug}`}
-            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${colorClass}`}
+            className={`rounded-full border px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${colorClass} max-w-[150px] truncate`}
           >
             {post.community.name}
           </Link>

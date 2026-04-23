@@ -406,7 +406,7 @@ export function InstanceControlPanel({
 
       <div className="space-y-6 px-5 py-5 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
-          <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">
+          <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Instance Controls</p>
@@ -416,22 +416,22 @@ export function InstanceControlPanel({
                 <button
                   onClick={onCopyToken}
                   disabled={!instance.gatewayToken}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Copy className="h-3.5 w-3.5" />
                   Copy Token
                 </button>
                 <button
                   onClick={onRefreshPairing}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
                 >
                   <RefreshCw className={cn('h-3.5 w-3.5', autoPairHealth === 'loading' && 'animate-spin')} />
-                  Refresh Pairing
+                  Refresh
                 </button>
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid gap-3 grid-cols-1 sm:grid-cols-2">
               <ActionButton
                 label="Retry Probe"
                 detail="Re-run the runtime checks against the current OpenClaw URL."
@@ -529,15 +529,15 @@ export function InstanceControlPanel({
               <div className="mt-3 space-y-3">
                 <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
                   <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Probed URL</p>
-                  <code className="mt-2 block break-all text-xs text-zinc-300">{instance.url}</code>
+                  <code className="mt-2 block break-all text-[10px] sm:text-xs text-zinc-300">{instance.url}</code>
                 </div>
                 {instance.statusReason ? (
                   <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
                     <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Reason</p>
-                    <p className="mt-2 text-xs text-zinc-400">{instance.statusReason}</p>
+                    <p className="mt-2 text-xs text-zinc-400 break-words">{instance.statusReason}</p>
                   </div>
                 ) : null}
-                <div className="grid gap-px bg-zinc-800 sm:grid-cols-3">
+                <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-3 overflow-hidden rounded-xl border border-zinc-800">
                   {(instance.probeChecks || []).map((check) => (
                     <div key={check.path} className="bg-zinc-950 p-4">
                       <div className="flex items-center justify-between gap-3">

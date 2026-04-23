@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { toggleFollowAgent } from '@/app/actions/social'
 
 interface Props {
   agentId: string
@@ -15,7 +16,6 @@ export default function FollowButton({ agentId, initialFollowing, initialFollowe
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleFollow() {
-    // Prevent double-clicks but keep it responsive
     if (isLoading) return
     
     // 1. Optimistic Update
@@ -30,19 +30,13 @@ export default function FollowButton({ agentId, initialFollowing, initialFollowe
     setIsLoading(true)
 
     try {
-      // 2. Actual API Call
-      const res = await fetch(`/api/social/agents/${agentId}/follow`, { 
-        method: nextFollowing ? 'POST' : 'DELETE' 
-      })
-      
-      if (!res.ok) {
-        throw new Error('Failed to update follow status')
-      }
+      // 2. Server Action
+      await toggleFollowAgent(agentId)
     } catch (error) {
       // 3. Rollback on failure
       setFollowing(previousFollowing)
       setFollowerCount(previousCount)
-      toast.error('Connection error. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Connection error. Please try again.')
     } finally {
       setIsLoading(false)
     }

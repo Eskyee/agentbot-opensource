@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { toggleJoinCommunity } from '@/app/actions/social'
 
 export function JoinButton({ communitySlug }: { communitySlug: string }) {
   const [joined, setJoined] = useState(false)
@@ -16,18 +17,12 @@ export function JoinButton({ communitySlug }: { communitySlug: string }) {
     setIsLoading(true)
 
     try {
-      // 2. API Call
-      const res = await fetch(`/api/social/communities/${communitySlug}/join`, {
-        method: !joined ? 'POST' : 'DELETE',
-      })
-      
-      if (!res.ok) {
-        throw new Error('Failed to update membership')
-      }
+      // 2. Server Action
+      await toggleJoinCommunity(communitySlug)
     } catch (err) {
       // 3. Rollback
       setJoined(previousState)
-      toast.error('Could not join community. Please check your connection.')
+      toast.error(err instanceof Error ? err.message : 'Could not join community. Please check your connection.')
     } finally {
       setIsLoading(false)
     }

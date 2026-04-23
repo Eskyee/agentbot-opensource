@@ -441,8 +441,8 @@ function DashboardContent() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
 
