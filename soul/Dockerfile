@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y \
     git \
     sqlite3 \
     curl \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user and writable data dirs (must be root at this point).
@@ -44,10 +45,13 @@ RUN useradd -m -u 1000 agent \
     && chown -R agent:agent /data
 
 # Copy fail-hard entrypoint that verifies /data is a volume mount.
-COPY --chown=agent:agent entrypoint.sh /usr/local/bin/entrypoint.sh
+# Do NOT use --chown=agent:agent here — the entrypoint must run as root
+# to fix volume permissions, then drops to uid=1000 via gosu.
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-USER agent
+# Do NOT switch to USER agent here — the entrypoint runs as root to fix
+# volume ownership, then drops privileges via gosu before exec-ing x402-node.
 WORKDIR /home/agent
 
 # Copy binary
