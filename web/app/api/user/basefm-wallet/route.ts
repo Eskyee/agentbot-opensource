@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { getLegacyUserIdByEmail, ensureLegacyUserIdByEmail } from '@/app/lib/legacyUserId'
 
 const BASE_WALLET_RE = /^0x[0-9a-fA-F]{40}$/
 
@@ -12,8 +13,11 @@ export async function GET() {
   const session = await getAuthSession()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const legacyId = await getLegacyUserIdByEmail(session.user.email)
+  if (!legacyId) return NextResponse.json({ wallet: null })
+
   const user = await prisma.users.findUnique({
-    where:  { id: session.user.id },
+    where:  { id: legacyId },
     select: { basefm_wallet: true },
   })
 
@@ -31,8 +35,11 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid Base wallet address' }, { status: 400 })
   }
 
+  const legacyId = await ensureLegacyUserIdByEmail(session.user.email)
+  if (!legacyId) return NextResponse.json({ error: 'Session missing email' }, { status: 400 })
+
   await prisma.users.update({
-    where: { id: session.user.id },
+    where: { id: legacyId },
     data:  { basefm_wallet: wallet || null },
   })
 

@@ -1,4 +1,5 @@
 import { prisma } from '@/app/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 export async function appendManagedAgentEvent(input: {
   sessionId: string
@@ -13,7 +14,7 @@ export async function appendManagedAgentEvent(input: {
       sessionId: input.sessionId,
       eventId,
       type: input.type,
-      payload: input.payload,
+      payload: input.payload as Prisma.InputJsonValue,
       occurredAt,
     },
   })

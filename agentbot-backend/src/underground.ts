@@ -133,6 +133,7 @@ router.post('/wallets', authenticate, async (req: Request, res: Response) => {
     const wallet = await WalletService.createAgentWallet(userId, agentId);
     res.status(201).json(wallet);
   } catch (error: any) {
+    console.error('[Wallets] Create error:', { userId, agentId, message: error?.message });
     res.status(500).json({ error: 'Failed to create wallet' });
   }
 });
@@ -147,6 +148,7 @@ router.get('/wallets/:address/balance', authenticate, async (req: Request, res: 
     const balance = await WalletService.getBalance(Number(userId), address);
     res.json({ address, balance_usdc: balance });
   } catch (error: any) {
+    console.error('[Wallets] Balance error:', { userId, address, message: error?.message });
     res.status(500).json({ error: 'Failed to fetch balance' });
   }
 });
@@ -214,6 +216,7 @@ router.get('/bitcoin/wallets/:walletId/address/unused', authenticate, async (req
     res.json(address);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    if (status !== 404) console.error('[Bitcoin] Unused address error:', { userId, walletId, message: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to derive Bitcoin address' });
   }
 });
@@ -231,6 +234,7 @@ router.get('/bitcoin/wallets/:walletId/balance', authenticate, async (req: Reque
     res.json(balance);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    if (status !== 404) console.error('[Bitcoin] Balance error:', { userId, walletId, message: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin balance' });
   }
 });
@@ -248,6 +252,7 @@ router.get('/bitcoin/wallets/:walletId/transactions', authenticate, async (req: 
     res.json(transactions);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    if (status !== 404) console.error('[Bitcoin] Transactions error:', { userId, walletId, message: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin transactions' });
   }
 });
@@ -331,6 +336,7 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
 
     res.json({ success: true, splitId, status: 'completed' });
   } catch (error: any) {
+    console.error('[Splits] Create error:', { userId, message: error?.message });
     res.status(500).json({ error: 'Failed to create split' });
   }
 });

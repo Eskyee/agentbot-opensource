@@ -85,148 +85,45 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Co-DJ B2B — Flagship Feature */}
-      <section className="border-t border-amber-900/40 bg-gradient-to-b from-amber-950/20 to-black">
+      {/* PRIMARY: What it does — the one idea */}
+      <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 text-amber-400 text-[10px] uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
-              Flagship Feature — baseFM × Agentbot
-            </span>
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-3 py-1">Underground Network</span>
-          </div>
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+          <div className="max-w-2xl space-y-8 sm:space-y-10">
             <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-[0.95] mb-6">
-                Co-DJ B2B.<br />
-                <span className="text-amber-500">Two DJs.</span><br />
-                <span className="text-zinc-700">One Live Stream.</span>
+              <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">What Your Agents Do</div>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+                Monitor.<br />
+                <span className="text-zinc-700">Draft. Detect. Monetize.</span>
               </h2>
-              <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-lg">
-                The first streaming platform to let two DJs run a live B2B show from different locations and time zones — fully autonomous, pirate radio style. One Mux stream, a 120-second handoff window, and a live chat for DJs and listeners.
-              </p>
-              <p className="text-zinc-600 text-sm leading-relaxed mb-8 max-w-lg">
-                No extra software. No complex setup. DJ1 stops their encoder, DJ2 connects within 2 minutes — Mux sees it as a reconnect and the stream continues without a cut. WebRTC audio monitoring lets DJ2 hear the last track before pressing play. Pioneer style.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href="https://basefm.io"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-amber-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors"
-                >
-                  Launch baseFM
-                </a>
-                <Link
-                  href="/onboard?plan=collective"
-                  className="inline-flex items-center justify-center border border-amber-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-amber-400 hover:border-amber-400 hover:text-amber-300 transition-colors"
-                >
-                  Get Access →
-                </Link>
+            </div>
+            <div className="space-y-6 sm:space-y-8 pt-2 sm:pt-4">
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Watch the signal.</h3>
+                <p className="text-zinc-500 text-sm">Monitor mentions, keywords, and high-signal posts without running a custom ops stack.</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Draft with approvals.</h3>
+                <p className="text-zinc-500 text-sm">Generate reply and thread drafts fast, but keep a clear human approval step for public actions.</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Turn attention into action.</h3>
+                <p className="text-zinc-500 text-sm">Route the right conversations into bookings, payments, or paid API actions with x402.</p>
               </div>
             </div>
-            <div className="space-y-4">
-              {[
-                {
-                  num: '01',
-                  title: 'Invite Your Co-DJ',
-                  body: 'Generate a unique B2B invite link from your stream dashboard. Share it anywhere — no accounts needed on their end.',
-                },
-                {
-                  num: '02',
-                  title: 'Coordinated Handoff',
-                  body: 'When you finish your set, stop your encoder. Your co-DJ connects within 2 minutes. Mux reconnects seamlessly — the stream never drops.',
-                },
-                {
-                  num: '03',
-                  title: 'WebRTC Audio Monitoring',
-                  body: 'Your co-DJ hears your last track live via WebRTC so they know exactly when to drop their first record.',
-                },
-                {
-                  num: '04',
-                  title: 'Live Chat — DJs + Crowd',
-                  body: 'Real-time chat for both DJs to coordinate and for listeners to interact. DJ messages highlighted — the crowd sees the handoff coming.',
-                },
-              ].map((step) => (
-                <div key={step.num} className="flex gap-4 border border-zinc-800 hover:border-amber-900/60 transition-colors p-4 sm:p-5 bg-black">
-                  <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
-                  <div>
-                    <div className="text-xs font-bold text-white uppercase tracking-wider mb-1">{step.title}</div>
-                    <p className="text-zinc-500 text-xs leading-relaxed">{step.body}</p>
-                  </div>
-                </div>
-              ))}
-              <div className="border border-zinc-800 p-4 sm:p-5 bg-zinc-950">
-                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Underground Network</div>
-                <p className="text-zinc-500 text-xs leading-relaxed">For DJs, artists, sound systems, live rigs, podcasters, and agents from the underground music and rave culture scene. baseFM × Agentbot — built by the community, for the community.</p>
-              </div>
-            </div>
+            <Link
+              href="/documentation"
+              className="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
+            >
+              Read docs →
+            </Link>
           </div>
         </div>
       </section>
-
-      {/* Hero Image */}
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
-        <HeroImage />
-      </div>
 
       {/* Dashboard Preview */}
       <div className="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
         <DashboardPreview />
       </div>
-
-      {/* Social Proof */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
-          <div className="text-center space-y-6">
-            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Private cloud + open source</div>
-            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">Vercel</div>
-                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Managed web control plane</div>
-              </div>
-              <div className="w-px h-8 bg-zinc-800" />
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">Railway</div>
-                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Private runtime ops</div>
-              </div>
-              <div className="w-px h-8 bg-zinc-800" />
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">34</div>
-                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">AI Models</div>
-              </div>
-              <div className="w-px h-8 bg-zinc-800" />
-              <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-white">MIT</div>
-                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Open Source</div>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-              <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
-                GitHub ↗
-              </a>
-              <a href="https://raveculture.mintlify.app" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
-                Docs ↗
-              </a>
-              <a href="https://dev.to/agentbot" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
-                Dev.to ↗
-              </a>
-              <span className="text-[10px] uppercase tracking-widest text-zinc-700 border border-zinc-800 px-3 py-1.5">
-                Base-native
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-6 opacity-50">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-700">Built with</span>
-              <span className="text-xs text-zinc-600 font-bold">Base</span>
-              <span className="text-xs text-zinc-600 font-bold">OpenClaw</span>
-              <span className="text-xs text-zinc-600 font-bold">Next.js</span>
-              <span className="text-xs text-zinc-600 font-bold">Vercel</span>
-              <span className="text-xs text-zinc-600 font-bold">Railway</span>
-              <span className="text-xs text-zinc-600 font-bold">Neon</span>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Audience */}
       <section className="border-t border-zinc-900">
@@ -301,59 +198,55 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* X Workflow */}
+      {/* Social Proof */}
       <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
-          <div className="max-w-2xl space-y-8 sm:space-y-10">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
-              Monitor.<br />
-              <span className="text-zinc-700">Draft. Detect. Monetize.</span>
-            </h2>
-            <div className="space-y-6 sm:space-y-8 pt-2 sm:pt-4">
-              <div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Watch the signal.</h3>
-                <p className="text-zinc-500 text-sm">Monitor mentions, keywords, and high-signal posts without running a custom ops stack.</p>
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
+          <div className="text-center space-y-6">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Private cloud + open source</div>
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">Vercel</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Managed web control plane</div>
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Draft with approvals.</h3>
-                <p className="text-zinc-500 text-sm">Generate reply and thread drafts fast, but keep a clear human approval step for public actions.</p>
+              <div className="w-px h-8 bg-zinc-800" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">Railway</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Private runtime ops</div>
               </div>
-              <div>
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-1">Turn attention into action.</h3>
-                <p className="text-zinc-500 text-sm">Route the right conversations into bookings, payments, or paid API actions with x402.</p>
+              <div className="w-px h-8 bg-zinc-800" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">34</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">AI Models</div>
+              </div>
+              <div className="w-px h-8 bg-zinc-800" />
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-bold text-white">MIT</div>
+                <div className="text-[10px] text-zinc-600 uppercase tracking-widest">Open Source</div>
               </div>
             </div>
-            <Link
-              href="/documentation"
-              className="inline-flex items-center text-xs uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
-            >
-              Read docs →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Capabilities */}
-      <CapabilitiesTicker />
-
-      {/* Free Trial CTA */}
-      <section className="border-t border-zinc-900 bg-zinc-950">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20 text-center space-y-6">
-          <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Managed product + open source starter</div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase">
-            Launch On X.<br />
-            <span className="text-zinc-700">Then Scale The Team.</span>
-          </h2>
-          <p className="text-zinc-400 text-sm max-w-md mx-auto leading-relaxed">
-            Start with one narrow workflow, validate the signal, then scale into a full private-cloud social agent team with Agentbot + OpenClaw.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-            <Link href="/signup" className="inline-flex items-center justify-center bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors w-full sm:w-auto">
-              Start Private Cloud →
-            </Link>
-            <Link href="https://github.com/Eskyee/agentbot-opensource" className="inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors w-full sm:w-auto">
-              Fork Starter
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+              <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
+                GitHub ↗
+              </a>
+              <a href="https://raveculture.mintlify.app" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
+                Docs ↗
+              </a>
+              <a href="https://dev.to/agentbot" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 px-3 py-1.5">
+                Dev.to ↗
+              </a>
+              <span className="text-[10px] uppercase tracking-widest text-zinc-700 border border-zinc-800 px-3 py-1.5">
+                Base-native
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-6 opacity-50">
+              <span className="text-[10px] uppercase tracking-widest text-zinc-700">Built with</span>
+              <span className="text-xs text-zinc-600 font-bold">Base</span>
+              <span className="text-xs text-zinc-600 font-bold">OpenClaw</span>
+              <span className="text-xs text-zinc-600 font-bold">Next.js</span>
+              <span className="text-xs text-zinc-600 font-bold">Vercel</span>
+              <span className="text-xs text-zinc-600 font-bold">Railway</span>
+              <span className="text-xs text-zinc-600 font-bold">Neon</span>
+            </div>
           </div>
         </div>
       </section>
@@ -409,22 +302,117 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Token strip */}
-      <section className="border-t border-zinc-900">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-6 sm:py-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-700">$AGENTBOT</div>
-              <div className="text-[10px] text-zinc-700 font-mono">Pump.fun · Solana</div>
+      {/* Free Trial CTA */}
+      <section className="border-t border-zinc-900 bg-zinc-950">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20 text-center space-y-6">
+          <div className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Managed product + open source starter</div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase">
+            Launch On X.<br />
+            <span className="text-zinc-700">Then Scale The Team.</span>
+          </h2>
+          <p className="text-zinc-400 text-sm max-w-md mx-auto leading-relaxed">
+            Start with one narrow workflow, validate the signal, then scale into a full private-cloud social agent team with Agentbot + OpenClaw.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link href="/signup" className="inline-flex items-center justify-center bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors w-full sm:w-auto">
+              Start Private Cloud →
+            </Link>
+            <Link href="https://github.com/Eskyee/agentbot-opensource" className="inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors w-full sm:w-auto">
+              Fork Starter
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ SECONDARY: Features for existing users ═══ */}
+
+      {/* Capabilities */}
+      <CapabilitiesTicker />
+
+      {/* Co-DJ B2B — baseFM feature */}
+      <section className="border-t border-amber-900/40 bg-gradient-to-b from-amber-950/20 to-black">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/40 text-amber-400 text-[10px] uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse inline-block" />
+              baseFM × Agentbot
+            </span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-3 py-1">Underground Network</span>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+            <div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-[0.95] mb-6">
+                Co-DJ B2B.<br />
+                <span className="text-amber-500">Two DJs.</span><br />
+                <span className="text-zinc-700">One Live Stream.</span>
+              </h2>
+              <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-lg">
+                The first streaming platform to let two DJs run a live B2B show from different locations and time zones — fully autonomous, pirate radio style. One Mux stream, a 120-second handoff window, and a live chat for DJs and listeners.
+              </p>
+              <p className="text-zinc-600 text-sm leading-relaxed mb-8 max-w-lg">
+                No extra software. No complex setup. DJ1 stops their encoder, DJ2 connects within 2 minutes — Mux sees it as a reconnect and the stream continues without a cut. WebRTC audio monitoring lets DJ2 hear the last track before pressing play. Pioneer style.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href="https://basefm.space"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center bg-amber-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-amber-400 transition-colors"
+                >
+                  Launch baseFM
+                </a>
+                <Link
+                  href="/onboard?plan=collective"
+                  className="inline-flex items-center justify-center border border-amber-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-amber-400 hover:border-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  Get Access →
+                </Link>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <a href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Scanner</a>
-              <span className="text-zinc-800">·</span>
-              <a href="https://dexscreener.com/solana/l3lctrhv2geqzkrgccqqczqmuutgt6hklnpqv4fmhcp" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">View Market</a>
+            <div className="space-y-4">
+              {[
+                {
+                  num: '01',
+                  title: 'Invite Your Co-DJ',
+                  body: 'Generate a unique B2B invite link from your stream dashboard. Share it anywhere — no accounts needed on their end.',
+                },
+                {
+                  num: '02',
+                  title: 'Coordinated Handoff',
+                  body: 'When you finish your set, stop your encoder. Your co-DJ connects within 2 minutes. Mux reconnects seamlessly — the stream never drops.',
+                },
+                {
+                  num: '03',
+                  title: 'WebRTC Audio Monitoring',
+                  body: 'Your co-DJ hears your last track live via WebRTC so they know exactly when to drop their first record.',
+                },
+                {
+                  num: '04',
+                  title: 'Live Chat — DJs + Crowd',
+                  body: 'Real-time chat for both DJs to coordinate and for listeners to interact. DJ messages highlighted — the crowd sees the handoff coming.',
+                },
+              ].map((step) => (
+                <div key={step.num} className="flex gap-4 border border-zinc-800 hover:border-amber-900/60 transition-colors p-4 sm:p-5 bg-black">
+                  <div className="text-[10px] font-bold text-amber-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
+                  <div>
+                    <div className="text-xs font-bold text-white uppercase tracking-wider mb-1">{step.title}</div>
+                    <p className="text-zinc-500 text-xs leading-relaxed">{step.body}</p>
+                  </div>
+                </div>
+              ))}
+              <div className="border border-zinc-800 p-4 sm:p-5 bg-zinc-950">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Underground Network</div>
+                <p className="text-zinc-500 text-xs leading-relaxed">For DJs, artists, sound systems, live rigs, podcasters, and agents from the underground music and rave culture scene. baseFM × Agentbot — built by the community, for the community.</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Hero Image */}
+      <div className="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
+        <HeroImage />
+      </div>
 
       {/* baseFM */}
       <section className="border-t border-zinc-900">
@@ -447,6 +435,23 @@ export default async function Home() {
                 title="🎧 baseFM Live"
                 subtitle="Strictly Underground. 24/7 Autonomous Curation. AI-powered underground radio on Base."
               />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Token strip */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-6 sm:py-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-6 flex-wrap">
+              <div className="text-[10px] uppercase tracking-widest text-zinc-700">$AGENTBOT</div>
+              <div className="text-[10px] text-zinc-700 font-mono">Pump.fun · Solana</div>
+            </div>
+            <div className="flex items-center gap-3">
+              <a href="https://solscan.io/token/9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">Scanner</a>
+              <span className="text-zinc-800">·</span>
+              <a href="https://dexscreener.com/solana/l3lctrhv2geqzkrgccqqczqmuutgt6hklnpqv4fmhcp" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-white transition-colors">View Market</a>
             </div>
           </div>
         </div>

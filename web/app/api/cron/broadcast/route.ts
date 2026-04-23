@@ -18,6 +18,13 @@ import { sendAlert } from '@/app/lib/alerts'
 const MUX_RTMP_URL = 'rtmps://global-live.mux.com:443/app'
 const BROADCAST_LOOK_AHEAD_MS = 5 * 60 * 1000
 
+async function resolveLegacyUserId(cuid: string): Promise<number | null> {
+  const user = await prisma.user.findUnique({ where: { id: cuid }, select: { email: true } })
+  if (!user?.email) return null
+  const legacy = await prisma.users.findUnique({ where: { email: user.email }, select: { id: true } })
+  return legacy?.id ?? null
+}
+
 function getMuxAuth() {
   const id  = process.env.MUX_TOKEN_ID
   const sec = process.env.MUX_TOKEN_SECRET
@@ -80,7 +87,7 @@ interface BroadcastJob {
   title:        string
   sourceHlsUrl: string
   durationSecs: number
-  userId?:      number | null
+  userId?:      string | null
 }
 
 export async function GET(req: NextRequest) {
@@ -177,7 +184,7 @@ export async function GET(req: NextRequest) {
         // Record outcome for spend dashboard "Value Delivered" feed
         await prisma.platform_outcomes.create({
           data: {
-            user_id:      job.userId ?? null,
+            user_id:      job.userId ? await resolveLegacyUserId(job.userId) : null,
             outcome_type: 'broadcast_complete',
             title:        `Broadcast: ${job.title}`,
             description:  `${job.kind === 'mixtape' ? 'Mix' : 'Ad'} aired on baseFM`,

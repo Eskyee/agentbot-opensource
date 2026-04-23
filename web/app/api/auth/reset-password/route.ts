@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { isRateLimited, getClientIP } from '@/app/lib/security-middleware'
+import { checkPasswordPolicy, isPasswordPwned } from '@/lib/password-policy'
 
 export async function POST(request: NextRequest) {
   const ip = getClientIP(request)
@@ -16,8 +17,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Token and password are required' }, { status: 400 })
     }
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
+    const policy = checkPasswordPolicy(password)
+    if (!policy.ok) {
+      return NextResponse.json({ error: policy.error }, { status: 400 })
+    }
+    if (await isPasswordPwned(password)) {
+      return NextResponse.json(
+        { error: 'This password has appeared in a known data breach. Please choose another.' },
+        { status: 400 },
+      )
     }
 
     const verificationToken = await prisma.verificationToken.findUnique({

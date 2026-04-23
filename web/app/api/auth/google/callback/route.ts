@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${req.nextUrl.origin}/api/auth/google/callback`;
+    const redirectUri = `${(process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '')}/api/auth/google/callback`;
 
     if (!clientId || !clientSecret) {
       console.error('[Google Auth] Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET');
@@ -116,7 +116,8 @@ export async function GET(req: NextRequest) {
     });
 
     // Set cookie and redirect
-    const response = NextResponse.redirect(new URL('/dashboard', req.url));
+    const baseUrl = (process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || req.nextUrl.origin).replace(/\/$/, '');
+    const response = NextResponse.redirect(new URL('/dashboard', baseUrl));
     attachSessionCookie(response, sessionToken);
 
     return response;

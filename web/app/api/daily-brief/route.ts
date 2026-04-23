@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { APP_URL } from '@/app/lib/app-url'
 import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from '@/app/lib/platform-urls'
+import { prisma } from '@/app/lib/prisma'
+import { blogPosts } from '@/app/blog/blogPosts'
 
 interface HealthCheck {
   name: string
@@ -35,12 +37,41 @@ async function checkHealth(check: HealthCheck): Promise<{ name: string; status: 
   }
 }
 
+function formatDaysAgo(date: Date, now: Date): string {
+  const diffMs = now.getTime() - date.getTime()
+  const days = Math.floor(diffMs / (24 * 60 * 60 * 1000))
+  if (days <= 0) return 'today'
+  if (days === 1) return 'yesterday'
+  if (days < 7) return `${days}d ago`
+  if (days < 30) return `${Math.floor(days / 7)}w ago`
+  return `${Math.floor(days / 30)}mo ago`
+}
+
 export async function GET() {
   const now = new Date()
   const today = now.toISOString().split('T')[0]
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-  // Run health checks in parallel
-  const healthResults = await Promise.all(HEALTH_CHECKS.map(checkHealth))
+  // Run health checks + platform counts in parallel
+  const [healthResults, agentStats, recentAgents, recentAgentsCount, activeTasks] = await Promise.all([
+    Promise.all(HEALTH_CHECKS.map(checkHealth)),
+    prisma.agent.groupBy({ by: ['status'], _count: { _all: true } }).catch(() => []),
+    // Only surface individual agent names/tiers in the public brief if the
+    // agent has opted in to the showcase — matches /api/showcase. The
+    // aggregate count below intentionally includes all agents (it's already
+    // exposed publicly as a platform total on /marketplace).
+    prisma.agent
+      .findMany({
+        where: { createdAt: { gte: weekAgo }, showcaseOptIn: true },
+        select: { id: true, name: true, status: true, tier: true, createdAt: true },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      })
+      .catch(() => []),
+    // Aggregate weekly count (not capped by `take: 5`, no agent-level PII).
+    prisma.agent.count({ where: { createdAt: { gte: weekAgo } } }).catch(() => 0),
+    prisma.scheduledTask.count({ where: { enabled: true } }).catch(() => 0),
+  ])
 
   // Build system status items
   const systemItems: string[] = []
@@ -54,26 +85,70 @@ export async function GET() {
     }
   }
 
+  // Build real recent-activity items from Prisma
+  const totalAgents = agentStats.reduce((sum, s) => sum + s._count._all, 0)
+  const liveAgents = agentStats
+    .filter((s) => s.status === 'active' || s.status === 'running')
+    .reduce((sum, s) => sum + s._count._all, 0)
+
+  const activityItems: string[] = []
+  activityItems.push(`${liveAgents} live agents, ${totalAgents} deployed on the platform`)
+  if (recentAgentsCount > 0) {
+    activityItems.push(`${recentAgentsCount} new agents provisioned in the last 7 days`)
+    if (recentAgents.length > 0) {
+      const last = recentAgents[0]
+      activityItems.push(`Latest: ${last.name} (${last.tier}) — ${formatDaysAgo(last.createdAt, now)}`)
+    }
+  } else {
+    activityItems.push('No new agents provisioned this week')
+  }
+  if (activeTasks > 0) {
+    activityItems.push(`${activeTasks} scheduled tasks currently enabled`)
+  }
+
   // Build security items from health results
-  const downServices = healthResults.filter(r => r.status === 'down')
-  const degradedServices = healthResults.filter(r => r.status === 'degraded')
+  const downServices = healthResults.filter((r) => r.status === 'down')
+  const degradedServices = healthResults.filter((r) => r.status === 'degraded')
   const securityItems: string[] = []
   if (downServices.length > 0) {
-    securityItems.push(`${downServices.length} service(s) DOWN: ${downServices.map(s => s.name).join(', ')}`)
+    securityItems.push(`${downServices.length} service(s) DOWN: ${downServices.map((s) => s.name).join(', ')}`)
   }
   if (degradedServices.length > 0) {
-    securityItems.push(`${degradedServices.length} service(s) degraded: ${degradedServices.map(s => s.name).join(', ')}`)
+    securityItems.push(
+      `${degradedServices.length} service(s) degraded: ${degradedServices.map((s) => s.name).join(', ')}`
+    )
   }
   if (downServices.length === 0 && degradedServices.length === 0) {
     securityItems.push('All infrastructure healthy — no anomalies detected in last check')
   }
 
-  // Upcoming items
-  const upcomingItems: string[] = [
-    'Beta launch: March 31, 2026 (v0.1.0-beta.1)',
-    'Vercel serves the web app from the web root',
-    'Railway services active for backend, Borg soul, x402 gateway, and shared OpenClaw UI',
-  ]
+  // Today's focus — derived from current state
+  const focusItems: string[] = []
+  if (downServices.length > 0 || degradedServices.length > 0) {
+    focusItems.push(`Investigate ${downServices.length + degradedServices.length} unhealthy service(s)`)
+  } else {
+    focusItems.push('All systems green — continue scheduled work')
+  }
+  if (liveAgents > 0) {
+    focusItems.push(`Monitor ${liveAgents} live agent(s) for runtime issues`)
+  }
+  focusItems.push('Review Daily Brief, System Pulse and Usage & Spend for anomalies')
+
+  // Market pulse — from recent blog posts (most recent 3)
+  const marketItems: string[] = blogPosts
+    .slice(0, 3)
+    .map((p) => `${p.dateLabel} — ${p.title}`)
+
+  // Upcoming — derived from blog posts dated in the future, otherwise next recurring milestone
+  const upcomingItems: string[] = []
+  const futurePosts = blogPosts.filter((p) => new Date(p.isoDate).getTime() > now.getTime())
+  for (const post of futurePosts.slice(0, 3)) {
+    upcomingItems.push(`${post.dateLabel} — ${post.title}`)
+  }
+  if (upcomingItems.length === 0) {
+    upcomingItems.push(`Next billing cycle closes ${new Date(now.getFullYear(), now.getMonth() + 1, 1).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}`)
+    upcomingItems.push('Continuous delivery on Vercel (web) and Railway (backend, soul, x402, OpenClaw)')
+  }
 
   const brief = [
     {
@@ -86,31 +161,19 @@ export async function GET() {
       id: 'tasks',
       title: 'Recent Activity',
       color: 'text-blue-400',
-      items: [
-        'See git log for latest commits and deployments',
-        'Dashboard pages are live with real data',
-        'Infrastructure monitoring active',
-      ],
+      items: activityItems,
     },
     {
       id: 'focus',
-      title: 'Today\'s Focus',
+      title: "Today's Focus",
       color: 'text-yellow-400',
-      items: [
-        'Monitor all services for stability',
-        'Continue feature development',
-        'Beta launch preparation',
-      ],
+      items: focusItems,
     },
     {
       id: 'intel',
       title: 'Market Pulse',
       color: 'text-emerald-400',
-      items: [
-        'Agentbot active on Vercel + Railway infrastructure',
-        'x402 protocol integration live',
-        'Onchain payment settlement operational',
-      ],
+      items: marketItems,
     },
     {
       id: 'security',
@@ -132,3 +195,5 @@ export async function GET() {
     brief,
   })
 }
+
+export const dynamic = 'force-dynamic'

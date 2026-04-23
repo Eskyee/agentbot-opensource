@@ -50,6 +50,7 @@ model User {
   passkeyChallenges     PasskeyChallenge[]
   notifications         Notification[]
   buddies               Buddy[]
+  greenlightRequests    GreenlightAccessRequest[]
 }
 
 model Account {
@@ -245,6 +246,23 @@ model AgentSwarm {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model GreenlightAccessRequest {
+  id                   String   @id @default(cuid())
+  userId               String
+  accessType           String
+  network              String
+  status               String   @default("pending")
+  notes                String?
+  planSnapshot         String?
+  subscriptionSnapshot String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model WorkflowNode {
@@ -802,6 +820,23 @@ model usage_logs {
   @@index([agent_id, created_at], map: "idx_usage_logs_agent_created")
 }
 
+model execution_logs {
+  id             Int       @id @default(autoincrement())
+  user_id        String
+  agent_id       String?
+  workflow_id    String?
+  execution_type String
+  success        Boolean   @default(true)
+  error_message  String?
+  duration_ms    Int?
+  created_at     DateTime? @default(now())
+
+  @@index([user_id], map: "idx_execution_logs_user_id")
+  @@index([agent_id], map: "idx_execution_logs_agent_id")
+  @@index([created_at], map: "idx_execution_logs_created_at")
+  @@index([user_id, created_at], map: "idx_execution_logs_user_created_at")
+}
+
 model credit_claims {
   id             String   @id
   user_id        String
@@ -873,7 +908,7 @@ model dj_sessions {
   playback_id   String?
   started_at    DateTime  @default(now())
   ended_at      DateTime?
-  max_duration  Int       @default(7200) // 2 hours in seconds
+  max_duration  Int       @default(3600) // 1 hour in seconds
   status        String    @default("active") // active, ended, auto-ended
 
   @@index([user_id], map: "idx_dj_sessions_user")

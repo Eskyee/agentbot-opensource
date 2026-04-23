@@ -1,4 +1,4 @@
-FROM node:22-alpine
+FROM node:22.13.0-alpine
 WORKDIR /app
 
 # Production mode - override with docker-compose for development
@@ -9,8 +9,7 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY prisma ./prisma
 
-# Install ALL dependencies (including devDependencies for build)
-RUN npm install --legacy-peer-deps --force
+RUN npm ci --legacy-peer-deps
 
 # Now copy the full app and generate Prisma client
 COPY . .

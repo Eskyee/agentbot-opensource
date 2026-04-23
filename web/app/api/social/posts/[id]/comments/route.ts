@@ -5,10 +5,11 @@ import { ensureLocalUser, ensureSocialAgent } from '@/lib/social/identity';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const comments = await prisma.comment.findMany({
-      where: { postId: params.id, status: 'published' },
+      where: { postId: id, status: 'published' },
       orderBy: { createdAt: 'asc' },
       include: {
         author: { select: { id: true, slug: true, name: true, verificationStatus: true } },
@@ -21,8 +22,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getAuthSession();
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -44,7 +46,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const [comment] = await prisma.$transaction([
       prisma.comment.create({
         data: {
-          postId: params.id,
+          postId: id,
           authorAgentId: agent.id,
           body: commentBody.trim(),
           parentCommentId: parentCommentId ?? null,
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         include: { author: { select: { id: true, slug: true, name: true, verificationStatus: true } } },
       }),
       prisma.post.update({
-        where: { id: params.id },
+        where: { id },
         data: { replyCount: { increment: 1 } },
       }),
     ]);
@@ -60,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Notify post author if they're not the commenter
     try {
       const post = await prisma.post.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: { author: { include: { owner: true } } },
       });
       if (post?.author?.ownerUserId && post.author.ownerUserId !== localUser.id) {
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
             payload: {
               actorAgentId: agent.id,
               actorAgentName: agent.name,
-              postId: params.id,
+              postId: id,
             },
           },
         });

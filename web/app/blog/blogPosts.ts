@@ -11,6 +11,26 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'surviving-250-doc-backdoor',
+    dateLabel: '21 Apr',
+    isoDate: '2026-04-21',
+    title: 'Surviving the 250-Document Backdoor',
+    excerpt:
+      'A joint Anthropic / UK AISI / Alan Turing study proved 250 poisoned documents can permanently backdoor any frontier LLM. Here is the practical playbook humans and agentic systems can deploy this quarter — model diversity, canary probes, signed RAG, sovereign fallback.',
+    tags: ['Security', 'Data Poisoning', 'Provenance', 'Sovereign AI'],
+    track: 'Field Notes',
+  },
+  {
+    slug: 'open-source-catch-up-and-agentbot-coach',
+    dateLabel: '17 Apr',
+    isoDate: '2026-04-17',
+    title: 'Open-Source Catch-Up, Cleaner Docs, and Agentbot Coach',
+    excerpt:
+      'A community update on safer public repos, refreshed SDK/docs surfaces, and the onboarding direction behind Agentbot Coach.',
+    tags: ['Open Source', 'Docs', 'SDK', 'Onboarding'],
+    track: 'Shipping',
+  },
+  {
     slug: 'agent-to-agent-protocol',
     dateLabel: '13 Apr',
     isoDate: '2026-04-13',
@@ -208,16 +228,6 @@ export const blogPosts: BlogPostSummary[] = [
     excerpt:
       'We followed all 102 OpenClaw contributors. Here\'s why this matters for the AI agent ecosystem.',
     tags: ['Community', 'OpenClaw'],
-    track: 'Shipping',
-  },
-  {
-    slug: 'btcpay-agentbot',
-    dateLabel: '3 Apr',
-    isoDate: '2026-04-03',
-    title: 'BTCPay Agentbot: Bitcoin-Native Agent Payments',
-    excerpt:
-      'Headless Bitcoin infrastructure for AI agents. Non-custodial wallets, A2A BTC payments, Fast Sync, and 10GB pruned nodes.',
-    tags: ['Bitcoin', 'Payments'],
     track: 'Shipping',
   },
   {

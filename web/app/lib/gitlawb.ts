@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { prisma } from '@/app/lib/prisma'
+import type { Prisma } from '@prisma/client'
 import { decryptToken, encryptToken } from '@/app/lib/token-encryption'
 
 const GITLAWB_NETWORK_TOPIC = 'gitlawb/ref-updates/v1'
@@ -176,7 +177,7 @@ export async function connectAgentToGitlawb(userId: string, agentId: string) {
       config: {
         ...existingConfig,
         gitlawb: gitlawbState,
-      },
+      } as unknown as Prisma.InputJsonValue,
     },
   })
 
@@ -205,7 +206,7 @@ export async function disconnectAgentFromGitlawb(userId: string, agentId: string
       config: {
         ...existingConfig,
         gitlawb: nextState,
-      },
+      } as unknown as Prisma.InputJsonValue,
     },
   })
 

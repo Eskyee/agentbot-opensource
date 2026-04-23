@@ -3,6 +3,30 @@ import { verifyInstanceOwnership } from '../_auth'
 import { prisma } from '@/app/lib/prisma'
 import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
 import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
+import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
+
+async function clearMissingRuntime(userId: string, instanceId: string) {
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: {
+        openclawInstanceId: null,
+        openclawUrl: null,
+      },
+    }),
+    prisma.agent.updateMany({
+      where: { id: instanceId, userId },
+      data: {
+        status: 'error',
+        websocketUrl: null,
+        config: {
+          runtimeError: `Railway application missing for stale runtime id ${instanceId}`,
+          runtimeMissingAt: new Date().toISOString(),
+        },
+      },
+    }),
+  ])
+}
 
 export async function GET(
   request: NextRequest,
@@ -50,6 +74,12 @@ export async function GET(
     : [[], null]
 
   const runtime = await probeOpenClawRuntime(persistedUrl)
+
+  if (runtime.reason?.includes('Application not found') && ownedUser?.id) {
+    await clearMissingRuntime(ownedUser.id, userId)
+    return NextResponse.json({ error: 'No instance found. Please deploy first.' }, { status: 404 })
+  }
+
   return NextResponse.json({
     userId,
     status: runtime.status,
@@ -115,6 +145,15 @@ export async function POST(
 
   const persistedUrl = ownedUser.openclawUrl || `https://agentbot-agent-${userId}-production.up.railway.app`
   const runtime = await probeOpenClawRuntime(persistedUrl)
+
+  if (runtime.reason?.includes('Application not found')) {
+    await clearMissingRuntime(ownedUser.id, userId)
+    return NextResponse.json({
+      success: false,
+      action: 'probe',
+      error: 'No instance found. Please deploy first.',
+    }, { status: 404 })
+  }
 
   return NextResponse.json({
     success: true,

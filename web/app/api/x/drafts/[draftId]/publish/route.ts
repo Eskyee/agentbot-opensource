@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { appendManagedAgentEvent } from '@/app/lib/managedAgentEvents'
 import { publishPostToX } from '@/app/lib/xApi'
-import { getXDraftQueue, saveXDraftQueue } from '@/app/lib/xDrafts'
+import { getXDraftQueue, normalizeDraftText, saveXDraftQueue } from '@/app/lib/xDrafts'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +26,16 @@ export async function POST(
 
     if (draft.status !== 'approved') {
       return NextResponse.json({ error: 'Draft must be approved before publishing' }, { status: 400 })
+    }
+
+    const normalized = normalizeDraftText(draft.draftText)
+    const duplicate = queue.find((item) =>
+      item.id !== draft.id &&
+      item.status === 'published' &&
+      normalizeDraftText(item.draftText) === normalized
+    )
+    if (duplicate) {
+      return NextResponse.json({ error: 'Duplicate published post detected' }, { status: 409 })
     }
 
     let published

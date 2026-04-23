@@ -151,7 +151,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-black border-b border-zinc-900 font-mono">
+      <nav className="w-full flex items-center justify-between px-6 h-14 fixed top-0 z-50 bg-[linear-gradient(180deg,rgba(24,24,27,0.96),rgba(12,10,9,0.94))] border-b border-orange-950/35 font-mono backdrop-blur-sm shadow-[inset_0_-1px_0_rgba(120,53,15,0.22)]">
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0" onClick={closeMenu}>
@@ -236,7 +236,7 @@ export default function Navbar() {
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
         >
-          <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-orange-200/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {menuOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             ) : (
@@ -248,12 +248,19 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 bg-black z-[60] overflow-y-auto font-mono" style={{ top: 56 }}>
+        <div className="lg:hidden fixed inset-x-0 bottom-0 bg-[linear-gradient(180deg,rgba(24,24,27,0.98),rgba(12,10,9,1))] z-[60] overflow-y-auto font-mono" style={{ top: 56 }}>
           <div className="flex flex-col p-6 gap-1 pb-12">
             {isLoggedIn ? (
               <>
-                <MobileSection label="Your Platform">
+                <MobileSection label="Primary" defaultOpen>
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                  <MobileLink href="/dashboard/signals" onClick={closeMenu}>Signals</MobileLink>
+                  <MobileLink href="/dashboard/skills" onClick={closeMenu}>Skills</MobileLink>
+                  <MobileLink href="/dashboard/wallet" onClick={closeMenu}>Wallet</MobileLink>
+                  <MobileLink href="/dashboard/workflows" onClick={closeMenu}>Workflows</MobileLink>
+                  <MobileLink href="/dashboard/verify" onClick={closeMenu}>Verify</MobileLink>
+                </MobileSection>
+                <MobileSection label="Explore">
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                   <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
@@ -263,17 +270,15 @@ export default function Navbar() {
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
                   <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
                 </MobileSection>
-                <MobileSection label="Music & Broadcasting">
+                <MobileSection label="Advanced">
                   <MobileLink href="/basefm" onClick={closeMenu}>DJ Streaming</MobileLink>
                   <MobileLink href="/dashboard/mixtape" onClick={closeMenu}>Mix Uploads</MobileLink>
-                  <MobileLink href="/advertise" onClick={closeMenu}>Advertise</MobileLink>
-                </MobileSection>
-                <MobileSection label="Network">
                   <MobileLink href="/dashboard/gitlawb-network" onClick={closeMenu}>Gitlawb Network</MobileLink>
                   <MobileLink href="/dashboard/git-city" onClick={closeMenu}>Git City</MobileLink>
                   <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu} external>Borg</MobileLink>
+                  <MobileLink href="/advertise" onClick={closeMenu}>Advertise</MobileLink>
                 </MobileSection>
-                <MobileSection label="Account">
+                <MobileSection label="Account" defaultOpen>
                   <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
@@ -289,7 +294,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <MobileSection label="Explore">
+                <MobileSection label="Explore" defaultOpen>
                   <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
                   <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
@@ -347,11 +352,18 @@ function NavLink({ href, current, children }: { href: string; current: string; c
   );
 }
 
-function MobileSection({ label, children }: { label: string; children: React.ReactNode }) {
+function MobileSection({ label, children, defaultOpen = false }: { label: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
     <div className="border-t border-zinc-900 first:border-0 mt-3 first:mt-0 pt-4 first:pt-0">
-      <p className="text-[10px] text-zinc-700 px-3 pb-2 uppercase tracking-widest">{label}</p>
-      {children}
+      <button
+        onClick={() => setOpen((value) => !value)}
+        className="w-full flex items-center justify-between px-3 pb-2"
+      >
+        <p className="text-[10px] text-zinc-700 uppercase tracking-widest">{label}</p>
+        <span className={`text-[10px] text-zinc-600 transition-transform ${open ? 'rotate-180' : ''}`}>⌄</span>
+      </button>
+      {open ? children : null}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import type { Prisma } from '@prisma/client'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 // Supported verification types
@@ -75,7 +76,7 @@ async function writeLocalVerification(agentId: string, existingConfig: unknown, 
           ...(config.verification as Record<string, unknown> | undefined),
           ...update,
         },
-      },
+      } as Prisma.InputJsonValue,
     },
   })
 }

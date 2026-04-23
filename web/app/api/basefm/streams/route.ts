@@ -7,11 +7,13 @@ import { getMuxCredentials, retireMuxLiveStream } from '@/app/lib/basefmMux'
 import { prisma } from '@/app/lib/prisma'
 
 const MAX_SESSION_SECONDS = 7200 // 2 hours
+const COOLDOWN_HOURS = 24
+const COOLDOWN_MS = COOLDOWN_HOURS * 60 * 60 * 1000
 
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
 
 const BASEFM_TOKEN_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
-const BASEFM_TOKEN_THRESHOLD = BigInt('1250000000000000000000000') // 1,250,000 BASEFM in wei
+const BASEFM_TOKEN_THRESHOLD = BigInt('2500000000000000000000000') // 2,500,000 BASEFM in wei — covers Mux USDC costs + profit
 
 type ActiveDjSession = {
   id: number
@@ -36,7 +38,7 @@ function getSessionRemainingSeconds(activeSession: Pick<ActiveDjSession, 'starte
 async function getCurrentSessionsForWallet(wallet: string) {
   return prisma.dj_sessions.findMany({
     where: {
-      wallet,
+      wallet: { equals: wallet, mode: 'insensitive' },
       status: { in: [...CURRENT_SESSION_STATUSES] },
     },
     orderBy: { started_at: 'desc' },
@@ -158,6 +160,21 @@ async function verifyBASEFMBalance(walletAddress: string): Promise<boolean> {
   }
 }
 
+/**
+ * 24-hour cooldown between DJ streams — applies to ALL users, no admin bypass.
+ * Returns the most recent ended session if still within cooldown window.
+ */
+async function getLastEndedSessionForWallet(wallet: string) {
+  return prisma.dj_sessions.findFirst({
+    where: {
+      wallet: { equals: wallet, mode: 'insensitive' },
+      status: { in: ['ended', 'auto-ended', 'archived'] },
+      ended_at: { not: null },
+    },
+    orderBy: { ended_at: 'desc' },
+  })
+}
+
 function getArchiveCreditCost() {
   const raw = process.env.BASEFM_ARCHIVE_CREDIT_COST
   if (!raw) return null
@@ -219,7 +236,7 @@ export async function POST(request: NextRequest) {
 
     if (!hasBasefmAccess && !hasCommunityPass) {
       return NextResponse.json(
-        { error: 'Insufficient BASEFM tokens or community guest pass. Need 1,250,000 BASEFM or a Builder/Whale Agentbot claim.' },
+        { error: 'Insufficient BASEFM tokens or community guest pass. Need 2,500,000 BASEFM or a Builder/Whale Agentbot claim.' },
         { status: 403 }
       )
     }
@@ -234,7 +251,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const streamWallet = hasBasefmAccess ? wallet : claimedWallet!
+    const streamWallet = (hasBasefmAccess ? wallet : claimedWallet!).toLowerCase()
 
     const existingSessions = await getCurrentSessionsForWallet(streamWallet)
     const activeExistingSession = existingSessions[0] || null
@@ -265,6 +282,30 @@ export async function POST(request: NextRequest) {
             sessionId: blockingSession.id,
           },
           { status: 409 }
+        )
+      }
+    }
+
+    // 24-hour cooldown between streams — applies to ALL users, no admin bypass
+    // For auto-ended sessions, ended_at may be set to detection time (not actual expiry).
+    // Use the earlier of ended_at and (started_at + MAX_SESSION_SECONDS) as the effective end.
+    const lastEnded = await getLastEndedSessionForWallet(streamWallet)
+    if (lastEnded?.ended_at) {
+      const actualExpiry = new Date(lastEnded.started_at.getTime() + MAX_SESSION_SECONDS * 1000)
+      const effectiveEnd = lastEnded.ended_at < actualExpiry ? lastEnded.ended_at : actualExpiry
+      const elapsed = Date.now() - effectiveEnd.getTime()
+      if (elapsed < COOLDOWN_MS) {
+        const remainingMs = COOLDOWN_MS - elapsed
+        const remainingHours = Math.ceil(remainingMs / (60 * 60 * 1000))
+        const availableAt = new Date(effectiveEnd.getTime() + COOLDOWN_MS).toISOString()
+        return NextResponse.json(
+          {
+            error: 'cooldown_active',
+            message: `${COOLDOWN_HOURS}-hour cooldown between streams. Available in ~${remainingHours}h.`,
+            cooldownRemaining: Math.ceil(remainingMs / 1000),
+            availableAt,
+          },
+          { status: 429 }
         )
       }
     }

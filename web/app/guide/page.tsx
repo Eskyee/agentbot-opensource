@@ -111,6 +111,30 @@ export default function GuidePage() {
           </Q>
         </Section>
 
+        <Section title="Signals and X Integration">
+          <Q q="What is the Signals page?">
+            <Link href="/dashboard/signals" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">Signals</Link> is your real-time monitoring feed for X (Twitter). It shows incoming mentions for your connected account, your own recent posts, and a dedicated community feed. Use it to spot conversations to reply to without leaving Agentbot.
+          </Q>
+          <Q q="How do I connect my X account?">
+            Go to <Link href="/settings" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">Settings → Integrations</Link>. Paste your OAuth 2.0 user access token, refresh token, username, account ID, and scopes (typically <code className="text-zinc-300">tweet.read users.read tweet.write offline.access</code>). Saving <strong className="text-zinc-300">offline.access</strong> in scopes is required for the refresh token to keep working past 2 hours.
+          </Q>
+          <Q q="Why did Signals start 401ing?">
+            OAuth 2.0 access tokens expire roughly every 2 hours. Agentbot now auto-refreshes the token on any 401 using your stored refresh token and retries the request. If 401s persist, your refresh token has been revoked — reconnect under Settings → Integrations.
+          </Q>
+          <Q q="Community feed — how do I change which community I see?">
+            The Signals page defaults to community <code className="text-zinc-300">2031495203002134740</code>. Edit the Community ID input on the page and click reload. If X&apos;s community endpoint returns 404 or 403 on your tier, Agentbot automatically falls back to a recent-search query using context domain 131 (Communities) so posts still populate.
+          </Q>
+          <Q q="Does Signals poll automatically?">
+            No — Signals loads on demand. X API is pay-as-you-go, so we keep it frugal: each section has a manual reload button. Use it sparingly.
+          </Q>
+        </Section>
+
+        <Section title="Agentic Market (x402)">
+          <Q q="Where did the embedded market go?">
+            X (the browser security layer) blocks agentic.market from being iframed via <code className="text-zinc-300">X-Frame-Options: DENY</code>. The x402 dashboard now shows a preview card with a CTA to open <a href="https://agentic.market" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">agentic.market</a> in a new tab instead of a broken embed.
+          </Q>
+        </Section>
+
         <Section title="baseFM and DJ Streaming">
           <Q q="What is baseFM?">
             baseFM is Agentbot&apos;s live radio layer. RAVE token holders and community pass members can go live and stream audio to listeners through the baseFM platform. Your OpenClaw agent can also autonomously broadcast if FFmpeg is available on your runtime.

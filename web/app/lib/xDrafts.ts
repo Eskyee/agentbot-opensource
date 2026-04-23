@@ -7,12 +7,14 @@ export type XDraftStatus = 'draft' | 'approved' | 'rejected' | 'published'
 export interface XDraft {
   id: string
   sessionId?: string | null
+  mentionId?: string | null
   sourceText: string
   draftText: string
   tone: string
   status: XDraftStatus
   createdAt: string
   updatedAt: string
+  scheduledFor?: string | null
   publishedPostId?: string | null
   publishedUrl?: string | null
 }
@@ -46,24 +48,32 @@ export async function saveXDraftQueue(userId: string, drafts: XDraft[]) {
 
 export async function appendXDraft(userId: string, input: {
   sessionId?: string | null
+  mentionId?: string | null
   sourceText: string
   draftText: string
   tone: string
+  scheduledFor?: string | null
 }) {
   const queue = await getXDraftQueue(userId)
   const now = new Date().toISOString()
   const draft: XDraft = {
     id: makeDraftId(),
     sessionId: input.sessionId || null,
+    mentionId: input.mentionId || null,
     sourceText: input.sourceText,
     draftText: input.draftText,
     tone: input.tone,
     status: 'draft',
     createdAt: now,
     updatedAt: now,
+    scheduledFor: input.scheduledFor || null,
   }
 
   const nextQueue = [draft, ...queue]
   await saveXDraftQueue(userId, nextQueue)
   return draft
+}
+
+export function normalizeDraftText(text: string) {
+  return text.replace(/\s+/g, ' ').trim().toLowerCase()
 }

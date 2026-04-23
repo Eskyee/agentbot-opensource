@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { sourceText, tone = 'direct' } = await req.json()
+    const { sourceText, tone = 'direct', mentionId = null, scheduledFor = null } = await req.json()
     if (!sourceText || typeof sourceText !== 'string' || !sourceText.trim()) {
       return NextResponse.json({ error: 'sourceText required' }, { status: 400 })
     }
@@ -39,12 +39,14 @@ export async function POST(req: NextRequest) {
 
     const draft: XDraft = {
       id: randomUUID(),
+      mentionId: typeof mentionId === 'string' ? mentionId : null,
       sourceText: sourceText.trim(),
       draftText,
       tone: String(tone),
       status: 'draft',
       createdAt: now,
       updatedAt: now,
+      scheduledFor: typeof scheduledFor === 'string' ? scheduledFor : null,
     }
 
     const nextQueue = [draft, ...queue]

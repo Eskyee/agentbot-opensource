@@ -15,6 +15,21 @@ interface AgentInfo {
   openclawUrl: string | null
 }
 
+// Shape actually returned by https://selfclaw.ai/embed/verify.js on success.
+// (Earlier code assumed agentPublicKey / agentKeyHash, which the embed never
+// produces — it returns publicKey / humanId / sessionId.) Kept optional so a
+// partial success payload can never throw on .slice etc.
+interface SelfClawVerifiedResult {
+  publicKey?: string
+  humanId?: string
+  sessionId?: string
+  agentName?: string
+  privateKey?: string
+  keyGenerated?: boolean
+}
+
+// Legacy-compatible shape used for display, mapped from either SelfClaw's
+// embed response or our own /api/agents/[id]/verify GET response.
 interface VerifiedResult {
   agentPublicKey: string
   agentKeyHash: string
@@ -30,7 +45,7 @@ declare global {
         agentDescription?: string
         category?: string
         theme?: 'dark' | 'light'
-        onVerified: (result: VerifiedResult) => void
+        onVerified: (result: SelfClawVerifiedResult) => void
         onError?: (err: Error) => void
       }) => void
     }
@@ -49,6 +64,11 @@ function VerifyContent() {
   const containerRef = useRef<HTMLDivElement>(null)
   const widgetMounted = useRef(false)
   const urlAgentId = searchParams.get('id')
+  const [scriptFailed, setScriptFailed] = useState(false)
+  const [selfDeeplink, setSelfDeeplink] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  // Bump to trigger re-mount of the SelfClaw widget after an error.
+  const [retryAttempt, setRetryAttempt] = useState(0)
 
   // Load agent from session
   useEffect(() => {
@@ -75,6 +95,13 @@ function VerifyContent() {
     fetchAgent()
   }, [urlAgentId])
 
+  // Detect mobile once so we can surface the same-device Self app deeplink
+  // (scanning the QR on the same phone you're viewing it on doesn't work).
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return
+    setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
+  }, [])
+
   // Load SelfClaw embed widget once agent is known
   useEffect(() => {
     if (!agent?.agentId) return
@@ -86,9 +113,34 @@ function VerifyContent() {
     script.id = 'selfclaw-embed'
     script.src = 'https://selfclaw.ai/embed/verify.js'
     script.onload = () => setWidgetReady(true)
-    script.onerror = () => console.error('Failed to load SelfClaw embed')
+    script.onerror = () => {
+      console.error('Failed to load SelfClaw embed')
+      setScriptFailed(true)
+    }
     document.head.appendChild(script)
   }, [agent?.agentId])
+
+  // Observe the SelfClaw embed's QR fallback text and surface a tappable
+  // deeplink if the session URL is a Self.xyz / self:// link. This lets
+  // iPhone users tap through to the Self app instead of trying to scan a
+  // QR on the same phone.
+  useEffect(() => {
+    if (!widgetReady || !containerRef.current) return
+    const node = containerRef.current
+    const extract = () => {
+      const fallback = node.querySelector('.sc-verify-qr-fallback')
+      if (!fallback) return
+      const text = (fallback.textContent || '').trim()
+      if (!text) return
+      if (/^(self:\/\/|https:\/\/[\w.-]*self\.xyz|https:\/\/redirect\.self\.xyz)/i.test(text)) {
+        setSelfDeeplink(text)
+      }
+    }
+    extract()
+    const observer = new MutationObserver(extract)
+    observer.observe(node, { childList: true, subtree: true, characterData: true })
+    return () => observer.disconnect()
+  }, [widgetReady])
 
   useEffect(() => {
     if (!agent?.agentId) return
@@ -138,46 +190,73 @@ function VerifyContent() {
     }
   }, [agent?.agentId])
 
-  // Mount the widget once script is ready + container exists
+  // Mount the widget once script is ready + container exists. Any synchronous
+  // throw from the external embed is contained here — it is NEVER allowed to
+  // bubble to React and trigger the /dashboard error boundary (which surfaced
+  // as the "Something went wrong — undefined is not an object (evaluating
+  // 'e.slice')" page users were hitting on iOS Safari before Ed25519 support).
   useEffect(() => {
     if (!widgetReady || !containerRef.current || !agent?.agentId || widgetMounted.current || verified) return
     if (!window.SelfClaw) return
     widgetMounted.current = true
 
-    window.SelfClaw.verify({
-      container: containerRef.current,
-      agentName: `agentbot-${agent.agentId}`,
-      agentDescription: 'Agentbot AI agent verified via SelfClaw',
-      category: 'assistant',
-      theme: 'dark',
-      onVerified: async (result) => {
-        setVerified(true)
-        setVerifiedResult(result)
-        // Record verification on our backend
-        try {
-          const response = await fetch(`/api/agents/${agent.agentId}/verify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              verificationType: 'eas',
-              attestationUid: result.agentKeyHash,
-              walletAddress: result.agentPublicKey,
-            }),
-          })
-          const data = await response.json().catch(() => ({}))
-          if (!response.ok) {
-            throw new Error(data?.error || 'Failed to record verification')
+    try {
+      window.SelfClaw.verify({
+        container: containerRef.current,
+        agentName: `agentbot-${agent.agentId}`,
+        agentDescription: 'Agentbot AI agent verified via SelfClaw',
+        category: 'assistant',
+        theme: 'dark',
+        onVerified: async (result) => {
+          const safeResult = result || {}
+          const mapped: VerifiedResult = {
+            agentPublicKey: safeResult.publicKey ?? '',
+            agentKeyHash: safeResult.sessionId ?? '',
+            humanId: safeResult.humanId,
           }
-        } catch (e) {
-          console.error('Failed to record verification:', e)
-          setVerificationError(e instanceof Error ? e.message : 'Failed to record verification')
-        }
-      },
-      onError: (err) => {
-        console.error('SelfClaw verification error:', err)
-      },
-    })
-  }, [widgetReady, agent?.agentId, verified])
+          setVerified(true)
+          setVerifiedResult(mapped)
+          // Record verification on our backend
+          try {
+            const response = await fetch(`/api/agents/${agent.agentId}/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                verificationType: 'eas',
+                attestationUid: mapped.agentKeyHash || undefined,
+                walletAddress: mapped.agentPublicKey || undefined,
+              }),
+            })
+            const data = await response.json().catch(() => ({}))
+            if (!response.ok) {
+              throw new Error(data?.error || 'Failed to record verification')
+            }
+          } catch (e) {
+            console.error('Failed to record verification:', e)
+            setVerificationError(e instanceof Error ? e.message : 'Failed to record verification')
+          }
+        },
+        onError: (err) => {
+          console.error('SelfClaw verification error:', err)
+          setVerificationError(err?.message || 'Verification widget error')
+          // Let the user try again by resetting the mount guard.
+          widgetMounted.current = false
+        },
+      })
+    } catch (err) {
+      console.error('SelfClaw.verify threw synchronously:', err)
+      const msg = err instanceof Error ? err.message : 'Failed to initialise verification widget'
+      setVerificationError(msg)
+      widgetMounted.current = false
+    }
+  }, [widgetReady, agent?.agentId, verified, retryAttempt])
+
+  const retryWidget = () => {
+    setVerificationError(null)
+    widgetMounted.current = false
+    if (containerRef.current) containerRef.current.innerHTML = ''
+    setRetryAttempt((n) => n + 1)
+  }
 
   if (loading) {
     return (
@@ -255,10 +334,35 @@ function VerifyContent() {
         {/* Widget mounts here */}
         <div ref={containerRef} />
 
-        {!widgetReady && (
+        {isMobile && selfDeeplink && (
+          <a
+            href={selfDeeplink}
+            className="mt-3 inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-blue-500 hover:bg-blue-400 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+          >
+            Open in Self app
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
+
+        {!widgetReady && !scriptFailed && (
           <div className="flex items-center gap-2 text-zinc-500 text-xs">
             <span className="w-2 h-2 rounded-full bg-zinc-600 animate-pulse" />
             Loading verification widget…
+          </div>
+        )}
+
+        {scriptFailed && (
+          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            Couldn&apos;t load the SelfClaw embed. Check your connection or any
+            script blockers and{' '}
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="underline hover:text-red-200"
+            >
+              try again
+            </button>
+            .
           </div>
         )}
 
@@ -270,8 +374,15 @@ function VerifyContent() {
         ) : null}
 
         {verificationError ? (
-          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-            {verificationError}
+          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300 flex items-start justify-between gap-3">
+            <span className="flex-1">{verificationError}</span>
+            <button
+              type="button"
+              onClick={retryWidget}
+              className="shrink-0 border border-red-500/40 hover:border-red-400 text-red-200 hover:text-white text-[10px] font-bold uppercase tracking-widest py-1 px-2"
+            >
+              Retry
+            </button>
           </div>
         ) : null}
 

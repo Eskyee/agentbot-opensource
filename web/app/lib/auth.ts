@@ -9,6 +9,7 @@ import { SiweMessage } from "siwe";
 import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 import { consumeWalletNonce } from "@/app/lib/wallet-nonce";
+import { isAdminEmail } from "@/app/lib/admin";
 
 function getNextAuthSecret(): string {
   const secret = process.env.NEXTAUTH_SECRET
@@ -291,10 +292,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.sub = user.id;
         token.email = user.email;
-        // Set admin flag from ADMIN_EMAILS env var - re-evaluated on every sign-in
-        const adminEmails = (process.env.ADMIN_EMAILS || '')
-          .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-        token.isAdmin = adminEmails.includes((user.email || '').toLowerCase());
+        token.isAdmin = isAdminEmail(user.email);
       }
       return token;
     },

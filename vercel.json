@@ -50,6 +50,10 @@
       "schedule": "0 2 * * *"
     },
     {
+      "path": "/api/cron/x-publish",
+      "schedule": "*/15 * * * *"
+    },
+    {
       "path": "/api/cron/blog-daily",
       "schedule": "0 * * * *"
     },

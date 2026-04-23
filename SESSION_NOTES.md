@@ -1,5 +1,49 @@
 # Agentbot Session Notes
 
+## April 17, 2026 — B2B Blog Post, OG Image, URL Fixes, Footer, Borg Fix
+
+### What Was Done
+
+#### 1. Blog Post — baseFM × Agentbot B2B Co-DJ Underground Network
+- Created `web/app/blog/posts/basefm-b2b-co-dj/page.tsx`
+- Full marketing copy: two DJs, one Mux stream, 120s handoff window, WebRTC audio monitoring, live chat
+- Added entry to `web/app/blog/blogPosts.ts` at top (newest first), dated 17 Apr 2026
+- Tags: baseFM, B2B, Live Streaming, Underground — track: Shipping
+
+#### 2. OG / Twitter Card Image Updated
+- Replaced dynamically generated OG card with static illustration
+- `web/app/opengraph-image.tsx` now reads `web/public/og-image.jpeg` as base64
+- Image: OpenClaw HQ illustration (Creative Crew + Business Mind agents)
+- contentType changed from `image/png` → `image/jpeg`
+
+#### 3. basefm.io → basefm.space URL Fix
+- `web/app/page.tsx:113` — homepage Launch baseFM button was pointing to wrong domain
+- Fixed to `https://basefm.space` (all other files in repo already correct)
+
+#### 4. Footer — Blog Link Added
+- `web/app/components/Footer.tsx` — Blog link added to Community column
+- Visible to all users (signed in or not)
+
+#### 5. Borg Dashboard Crash Fix
+- `web/app/dashboard/borg/page.tsx` — `data.acceleration` null guard added
+- Error: `undefined is not an object (evaluating 'e.acceleration.alpha')`
+- API returns `acceleration` as undefined when field not present — now renders nothing instead of crashing
+
+### Commits (branch: claude/reverent-chebyshev → main)
+- `a71f3d45` feat(blog): B2B Co-DJ post, OG image update, basefm.space fix
+- `6489d03f` fix(borg): guard against undefined acceleration field
+- `641adff3` feat(footer): add Blog link to Community column
+
+### Agent Reference: agentbot-agent-1336825a8917885f
+- This is our own Railway debug test agent from April 6, 2026 provision fix session
+- **Keep it** — useful standing smoke test target for future Railway debugging
+- Health endpoint: `https://agentbot-agent-1336825a8917885f-production.up.railway.app/health`
+
+### Status
+All changes pushed to main. Vercel auto-deploying.
+
+---
+
 ## April 9, 2026 (Evening) — Security Patch, Skills Expansion, Smoke Test
 
 ### Checkpoint: `checkpoint-2026-04-09`

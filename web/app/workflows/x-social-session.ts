@@ -4,6 +4,7 @@ import { defineHook, getWritable } from "workflow";
 import { generateXDraft } from "@/app/lib/xDraftGenerator";
 import { appendXDraft } from "@/app/lib/xDrafts";
 import { prisma } from "@/app/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export type ManagedAgentEvent = {
   id: string;
@@ -35,14 +36,14 @@ async function persistEventStep(input: {
     where: { eventId: input.eventId },
     update: {
       type: input.type,
-      payload: input.payload,
+      payload: input.payload as Prisma.InputJsonValue,
       occurredAt: new Date(input.occurredAt),
     },
     create: {
       sessionId: input.sessionId,
       eventId: input.eventId,
       type: input.type,
-      payload: input.payload,
+      payload: input.payload as Prisma.InputJsonValue,
       occurredAt: new Date(input.occurredAt),
     },
   });

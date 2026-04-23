@@ -41,6 +41,7 @@ const COLUMNS = [
   {
     heading: 'Community',
     links: [
+      { href: '/blog',                                               label: 'Blog' },
       { href: '/claim',                                              label: 'Claim Credits' },
       { href: '/buddies',                                            label: 'Buddies' },
       { href: 'https://talent.app/raveculture.base.eth',            label: 'Talent', external: true },

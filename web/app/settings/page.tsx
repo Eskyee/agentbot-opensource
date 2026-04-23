@@ -12,6 +12,7 @@ import {
   ReferralsTab,
   AgentsTab,
   BasefmTab,
+  IntegrationsTab,
 } from './tabs'
 import { buildAppUrl } from '@/app/lib/app-url'
 
@@ -23,6 +24,7 @@ const TABS = [
   { id: 'security', label: 'Security', icon: '🔒' },
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
   { id: 'basefm', label: 'baseFM', icon: '📻' },
+  { id: 'integrations', label: 'Integrations', icon: '🔌' },
 ]
 
 export default function SettingsPage() {
@@ -341,6 +343,8 @@ export default function SettingsPage() {
             {activeTab === 'notifications' && <NotificationsTab initialNotifications={notifications} />}
 
             {activeTab === 'basefm' && <BasefmTab />}
+
+            {activeTab === 'integrations' && <IntegrationsTab />}
           </div>
         </main>
       </div>

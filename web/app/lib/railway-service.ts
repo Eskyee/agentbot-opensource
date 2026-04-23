@@ -17,7 +17,7 @@ function getRailwayTokenType(): RailwayTokenType {
   return 'account'
 }
 
-function getRailwayAuthHeaders() {
+function getRailwayAuthHeaders(): Record<string, string> {
   const key = getRailwayApiKey()
   const tokenType = getRailwayTokenType()
 

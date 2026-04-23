@@ -411,7 +411,7 @@ function DashboardContent() {
     const isInstanceError = !isAuthError && !isNoInstance // backend returned error for existing instance
 
     let title = 'Deploy your first agent'
-    let cta = { label: 'Deploy Now', href: '/onboard' }
+    let cta = { label: 'Create New Runtime', href: '/onboard?mode=deploy' }
 
     if (isAuthError) {
       title = 'Sign in required'

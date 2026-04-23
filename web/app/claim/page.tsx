@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Coins, Wallet, CheckCircle2, ArrowRight } from 'lucide-react'
 
 type EligibilityResponse = {
@@ -42,6 +42,31 @@ function getSolanaProvider() {
   return window.phantom?.solana || window.solana || window.solflare
 }
 
+// On iOS Safari and Chrome for Android, Phantom / Solflare browser extensions
+// don't exist, so window.phantom / window.solana / window.solflare are never
+// injected. Users have to open this page inside the Phantom (or Solflare)
+// app's in-app browser, which does inject window.solana. These universal
+// links hand off from mobile Safari to the wallet app's browser with this
+// page pre-loaded.
+function isMobileUserAgent() {
+  if (typeof navigator === 'undefined') return false
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+}
+
+function phantomBrowseUrl() {
+  if (typeof window === 'undefined') return '#'
+  const target = window.location.href
+  const ref = window.location.host
+  return `https://phantom.app/ul/browse/${encodeURIComponent(target)}?ref=${encodeURIComponent(ref)}`
+}
+
+function solflareBrowseUrl() {
+  if (typeof window === 'undefined') return '#'
+  const target = window.location.href
+  const ref = window.location.host
+  return `https://solflare.com/ul/v1/browse/${encodeURIComponent(target)}?ref=${encodeURIComponent(ref)}`
+}
+
 function encodeBase64(bytes: Uint8Array) {
   let binary = ''
   bytes.forEach((byte) => {
@@ -57,6 +82,18 @@ export default function ClaimPage() {
   const [claiming, setClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [mobile, setMobile] = useState(false)
+  const [providerMissing, setProviderMissing] = useState(false)
+
+  useEffect(() => {
+    setMobile(isMobileUserAgent())
+    // Give extensions a tick to inject, then check. If still missing we'll
+    // surface the in-app-browser deeplinks.
+    const check = () => setProviderMissing(!getSolanaProvider())
+    check()
+    const t = window.setTimeout(check, 400)
+    return () => window.clearTimeout(t)
+  }, [])
 
   const tierCopy = useMemo(
     () => [
@@ -87,30 +124,50 @@ export default function ClaimPage() {
   async function connectAndCheck() {
     const provider = getSolanaProvider()
     if (!provider) {
+      if (mobile) {
+        // Hand off to Phantom's in-app browser, which injects window.solana.
+        window.location.href = phantomBrowseUrl()
+        return
+      }
       setError('Install Phantom or another Solana wallet to claim rewards.')
       return
     }
 
-    const result = await provider.connect()
-    const nextAddress = result.publicKey.toString()
-    setAddress(nextAddress)
-    await checkEligibility(nextAddress)
+    try {
+      const result = await provider.connect()
+      const nextAddress = result.publicKey.toString()
+      setAddress(nextAddress)
+      await checkEligibility(nextAddress)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Wallet connect rejected')
+    }
   }
 
   async function claim() {
     const provider = getSolanaProvider()
     if (!provider) {
+      if (mobile) {
+        window.location.href = phantomBrowseUrl()
+        return
+      }
       setError('Install Phantom or another Solana wallet to claim rewards.')
       return
     }
 
-    const result = await provider.connect()
-    const nextAddress = result.publicKey.toString()
-    setAddress(nextAddress)
-
     setClaiming(true)
     setError(null)
     setSuccess(null)
+
+    let nextAddress: string
+    try {
+      const result = await provider.connect()
+      nextAddress = result.publicKey.toString()
+      setAddress(nextAddress)
+    } catch (err) {
+      setClaiming(false)
+      setError(err instanceof Error ? err.message : 'Wallet connect rejected')
+      return
+    }
 
     try {
       const eligibilityRes = await fetch(`/api/claim?address=${encodeURIComponent(nextAddress)}&nonce=1`)
@@ -198,6 +255,32 @@ export default function ClaimPage() {
               <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Connected Address</div>
               <div className="mt-2 break-all text-sm text-blue-300">{address || 'Connect your wallet to begin'}</div>
             </div>
+
+            {mobile && providerMissing && (
+              <div className="mt-6 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-4">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-blue-300 mb-2">iPhone / Android</div>
+                <p className="text-sm leading-6 text-zinc-300 mb-3">
+                  Solana wallets don&apos;t inject into mobile Safari. Open this
+                  page inside your wallet app&apos;s in-app browser to connect.
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <a
+                    href={phantomBrowseUrl()}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#ab9ff2] px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-black hover:bg-[#9d8fe8]"
+                  >
+                    Open in Phantom
+                    <ArrowRight className="h-3 w-3" />
+                  </a>
+                  <a
+                    href={solflareBrowseUrl()}
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-5 py-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 hover:border-zinc-500 hover:text-white"
+                  >
+                    Open in Solflare
+                    <ArrowRight className="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+            )}
 
             {eligibility && (
               <div className="mt-6 grid gap-4 sm:grid-cols-3">

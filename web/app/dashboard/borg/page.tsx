@@ -1,7 +1,21 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, Zap, Brain, Target, Activity, GitBranch, WifiOff, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  RefreshCw,
+  Zap,
+  Brain,
+  Target,
+  Activity,
+  GitBranch,
+  WifiOff,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  Wallet,
+  Copy,
+  Check,
+} from 'lucide-react';
 import {
   DashboardShell,
   DashboardHeader,
@@ -93,17 +107,37 @@ interface SoulStatus {
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
+function StatCard({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: string | number;
+  sub?: string;
+  accent?: string;
+}) {
   return (
     <div className="bg-zinc-950 border border-zinc-800 p-4">
       <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">{label}</div>
-      <div className={`text-2xl font-bold font-mono tracking-tight ${accent || 'text-white'}`}>{value}</div>
+      <div className={`text-2xl font-bold font-mono tracking-tight ${accent || 'text-white'}`}>
+        {value}
+      </div>
       {sub && <div className="text-[10px] text-zinc-600 mt-0.5">{sub}</div>}
     </div>
   );
 }
 
-function Bar({ value, max = 1, color = 'bg-blue-500' }: { value: number; max?: number; color?: string }) {
+function Bar({
+  value,
+  max = 1,
+  color = 'bg-blue-500',
+}: {
+  value: number;
+  max?: number;
+  color?: string;
+}) {
   const pct = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-1.5 bg-zinc-800 overflow-hidden">
@@ -123,7 +157,8 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
     { key: 'execution', label: 'Execution', val: fitness.execution },
   ];
   const totalPct = Math.round(fitness.total * 100);
-  const trendStr = fitness.trend >= 0 ? `+${(fitness.trend * 100).toFixed(3)}` : (fitness.trend * 100).toFixed(3);
+  const trendStr =
+    fitness.trend >= 0 ? `+${(fitness.trend * 100).toFixed(3)}` : (fitness.trend * 100).toFixed(3);
   const trendColor = fitness.trend >= 0 ? 'text-emerald-400' : 'text-red-400';
 
   return (
@@ -131,16 +166,21 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Activity className="w-3 h-3 text-emerald-400" />
-          <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Fitness</span>
+          <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">
+            Fitness
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xl font-bold font-mono">{totalPct}%</span>
           <span className={`text-[10px] font-mono ${trendColor}`}>{trendStr}</span>
         </div>
       </div>
-      <Bar value={fitness.total} color={totalPct >= 60 ? 'bg-emerald-500' : totalPct >= 30 ? 'bg-yellow-500' : 'bg-red-500'} />
+      <Bar
+        value={fitness.total}
+        color={totalPct >= 60 ? 'bg-emerald-500' : totalPct >= 30 ? 'bg-yellow-500' : 'bg-red-500'}
+      />
       <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
-        {dims.map(d => (
+        {dims.map((d) => (
           <div key={d.key}>
             <div className="flex justify-between text-[10px] font-mono mb-0.5">
               <span className="text-zinc-500">{d.label}</span>
@@ -157,13 +197,20 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
 function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
   if (!fe) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Free energy data unavailable</div>;
   const F = parseFloat(fe.F);
-  const regimeColor = fe.regime === 'LEARN' ? 'text-blue-400' : fe.regime === 'EXPLOIT' ? 'text-emerald-400' : 'text-amber-400';
+  const regimeColor =
+    fe.regime === 'LEARN'
+      ? 'text-blue-400'
+      : fe.regime === 'EXPLOIT'
+        ? 'text-emerald-400'
+        : 'text-amber-400';
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Zap className="w-3 h-3 text-yellow-400" />
-          <span className="text-[10px] font-mono text-yellow-400 uppercase tracking-widest">Free Energy</span>
+          <span className="text-[10px] font-mono text-yellow-400 uppercase tracking-widest">
+            Free Energy
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xl font-bold font-mono">F={fe.F}</span>
@@ -171,9 +218,12 @@ function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
           <span className="text-[10px] font-mono text-zinc-500">{fe.trend}</span>
         </div>
       </div>
-      <Bar value={F} color={F < 0.3 ? 'bg-emerald-500' : F < 0.6 ? 'bg-yellow-500' : 'bg-red-500'} />
+      <Bar
+        value={F}
+        color={F < 0.3 ? 'bg-emerald-500' : F < 0.6 ? 'bg-yellow-500' : 'bg-red-500'}
+      />
       <div className="mt-3 space-y-1.5">
-        {fe.components.map(c => (
+        {fe.components.map((c) => (
           <div key={c.system} className="flex items-center gap-3 text-[10px] font-mono">
             <span className="w-16 text-zinc-500 uppercase">{c.system}</span>
             <div className="flex-1">
@@ -195,24 +245,36 @@ function GoalsPanel({ goals }: { goals: SoulStatus['goals'] }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Target className="w-3 h-3 text-purple-400" />
-          <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest">Active Goals</span>
+          <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest">
+            Active Goals
+          </span>
         </div>
         <span className="text-[10px] font-mono text-zinc-600">{goals.length}</span>
       </div>
       <div className="space-y-2">
-        {shown.map(g => (
+        {shown.map((g) => (
           <div key={g.id} className="border border-zinc-800 p-2.5">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <span className={`text-[9px] font-bold uppercase tracking-widest ${g.status === 'active' ? 'text-emerald-400' : 'text-zinc-500'}`}>{g.status}</span>
-              <span className="text-[9px] font-mono text-zinc-600">p{g.priority} · {g.retry_count} retries</span>
+              <span
+                className={`text-[9px] font-bold uppercase tracking-widest ${
+                  g.status === 'active' ? 'text-emerald-400' : 'text-zinc-500'
+                }`}
+              >
+                {g.status}
+              </span>
+              <span className="text-[9px] font-mono text-zinc-600">
+                p{g.priority} · {g.retry_count} retries
+              </span>
             </div>
-            <p className="text-[10px] text-zinc-300 leading-relaxed line-clamp-2">{g.description}</p>
+            <p className="text-[10px] text-zinc-300 leading-relaxed line-clamp-2">
+              {g.description}
+            </p>
           </div>
         ))}
       </div>
       {goals.length > 3 && (
         <button
-          onClick={() => setExpanded(e => !e)}
+          onClick={() => setExpanded((e) => !e)}
           className="mt-2 w-full flex items-center justify-center gap-1 text-[10px] text-zinc-600 hover:text-white transition-colors"
         >
           {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -223,13 +285,18 @@ function GoalsPanel({ goals }: { goals: SoulStatus['goals'] }) {
   );
 }
 
-function BrainPanel({ brain, transformer, benchmark }: Pick<SoulStatus, 'brain' | 'transformer' | 'benchmark'>) {
-  if (!brain && !transformer && !benchmark) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Cognitive data unavailable</div>;
+function BrainPanel({
+  brain,
+  transformer,
+  benchmark,
+}: Pick<SoulStatus, 'brain' | 'transformer' | 'benchmark'>) {
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center gap-2 mb-3">
         <Brain className="w-3 h-3 text-cyan-400" />
-        <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Cognitive Systems</span>
+        <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">
+          Cognitive Systems
+        </span>
       </div>
       <div className="grid grid-cols-3 gap-3 text-[10px] font-mono mb-4">
         <div>
@@ -265,22 +332,34 @@ function CapabilityPanel({ profile }: { profile: SoulStatus['capability_profile'
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Capabilities</span>
-        <span className="text-[10px] font-mono text-zinc-500">{(profile.overall_success_rate * 100).toFixed(0)}% overall</span>
+        <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+          Capabilities
+        </span>
+        <span className="text-[10px] font-mono text-zinc-500">
+          {(profile.overall_success_rate * 100).toFixed(0)}% overall
+        </span>
       </div>
       <div className="space-y-2">
         {profile.capabilities
-          .filter(c => c.attempts > 0)
+          .filter((c) => c.attempts > 0)
           .sort((a, b) => b.attempts - a.attempts)
-          .map(c => (
+          .map((c) => (
             <div key={c.capability}>
               <div className="flex justify-between text-[10px] font-mono mb-0.5">
                 <span className="text-zinc-400">{c.display_name}</span>
-                <span className="text-zinc-500">{c.successes}/{c.attempts}</span>
+                <span className="text-zinc-500">
+                  {c.successes}/{c.attempts}
+                </span>
               </div>
               <Bar
                 value={c.success_rate}
-                color={c.success_rate >= 0.8 ? 'bg-emerald-500' : c.success_rate >= 0.4 ? 'bg-yellow-500' : 'bg-red-500'}
+                color={
+                  c.success_rate >= 0.8
+                    ? 'bg-emerald-500'
+                    : c.success_rate >= 0.4
+                      ? 'bg-yellow-500'
+                      : 'bg-red-500'
+                }
               />
             </div>
           ))}
@@ -293,18 +372,87 @@ function BeliefPanel({ beliefs }: { beliefs: SoulStatus['beliefs'] }) {
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Beliefs</span>
+        <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">
+          Beliefs
+        </span>
         <span className="text-[10px] font-mono text-zinc-600">{beliefs.length}</span>
       </div>
       <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-        {beliefs.map(b => (
+        {beliefs.map((b) => (
           <div key={b.id} className="flex items-center gap-2 text-[10px] font-mono">
-            <span className="text-zinc-600 shrink-0">{b.subject}.{b.predicate}</span>
+            <span className="text-zinc-600 shrink-0">
+              {b.subject}.{b.predicate}
+            </span>
             <span className="text-white font-bold">{b.value}</span>
             <span className="text-zinc-600 ml-auto shrink-0">×{b.confirmation_count}</span>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function WalletPanel({
+  address,
+  designation,
+  balance,
+}: {
+  address: string;
+  designation: string | null;
+  balance: { formatted: string; token: string } | null;
+}) {
+  const [copied, setCopied] = useState(false);
+  const short = `${address.slice(0, 6)}…${address.slice(-4)}`;
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked — user can select & copy manually */
+    }
+  };
+  return (
+    <div className="border border-zinc-800 bg-zinc-950 p-4 mb-4">
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Wallet className="w-3 h-3 text-emerald-400 shrink-0" />
+          <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">
+            Borg Wallet
+          </span>
+          {designation && (
+            <span className="text-[10px] font-mono text-zinc-500 truncate">· {designation}</span>
+          )}
+          <span className="text-[10px] font-mono text-zinc-600">· Tempo network</span>
+        </div>
+        {balance && (
+          <span className="text-[10px] font-mono text-zinc-300">
+            {balance.formatted} <span className="text-zinc-500">{balance.token}</span>
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <code
+          className="flex-1 text-[11px] font-mono text-zinc-300 bg-black/40 border border-zinc-800 px-2 py-1.5 break-all select-all"
+          title={address}
+          aria-label="Borg wallet address"
+        >
+          <span className="hidden sm:inline">{address}</span>
+          <span className="sm:hidden">{short}</span>
+        </code>
+        <button
+          onClick={handleCopy}
+          className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 flex items-center gap-1.5 shrink-0"
+          aria-label="Copy Borg wallet address"
+        >
+          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <p className="mt-2 text-[10px] font-mono text-zinc-600">
+        Send USDC.e, pathUSD, or USDT0 on the Tempo network to fund the Borg. Do NOT send on Base or
+        Ethereum — funds would be unrecoverable.
+      </p>
     </div>
   );
 }
@@ -316,6 +464,11 @@ export default function BorgDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
+  const [wallet, setWallet] = useState<{
+    address: string;
+    designation: string | null;
+    balance: { formatted: string; token: string } | null;
+  } | null>(null);
 
   const fetchSoul = useCallback(async () => {
     setLoading(true);
@@ -333,29 +486,79 @@ export default function BorgDashboardPage() {
     }
   }, []);
 
+  const fetchWallet = useCallback(async () => {
+    try {
+      const res = await fetch('/api/colony/status');
+      if (!res.ok) return;
+      const json = await res.json();
+      const root = json?.root;
+      if (
+        root?.address &&
+        typeof root.address === 'string' &&
+        root.address !== '0x0000000000000000000000000000000000000000'
+      ) {
+        setWallet({
+          address: root.address,
+          designation: root.designation ?? null,
+          balance: root.wallet_balance ?? null,
+        });
+      }
+    } catch {
+      /* silent — wallet panel just won't render on failure */
+    }
+  }, []);
+
   useEffect(() => {
     fetchSoul();
     const id = setInterval(fetchSoul, 30_000);
     return () => clearInterval(id);
   }, [fetchSoul]);
 
+  useEffect(() => {
+    fetchWallet();
+    const id = setInterval(fetchWallet, 60_000);
+    return () => clearInterval(id);
+  }, [fetchWallet]);
+
+  // The soul service occasionally returns partial payloads (and the API proxy
+  // may return a degraded body on upstream failure). Only render the full
+  // dashboard when the shape we actually dereference below is present.
+  const isSoulReady =
+    !!data &&
+    !!data.fitness &&
+    !!data.benchmark &&
+    !!data.role &&
+    !!data.brain &&
+    !!data.transformer &&
+    !!data.free_energy &&
+    !!data.capability_profile &&
+    !!data.lifecycle &&
+    !!data.cortex &&
+    Array.isArray(data.goals) &&
+    Array.isArray(data.beliefs);
+
   const status = data?.dormant ? 'idle' : data?.active ? 'active' : 'offline';
 
   const BorgIcon = () => (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg
+      className="h-5 w-5 text-blue-400"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
       <circle cx="12" cy="12" r="3" />
-      <path strokeLinecap="square" d="M12 2v3M12 19v3M2 12h3M19 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
+      <path
+        strokeLinecap="square"
+        d="M12 2v3M12 19v3M2 12h3M19 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"
+      />
     </svg>
   );
 
   const action = (
     <div className="flex items-center gap-2">
       {data && (
-        <StatusPill
-          status={status}
-          label={data.dormant ? 'dormant' : data.mode}
-          size="sm"
-        />
+        <StatusPill status={status} label={data.dormant ? 'dormant' : data.mode} size="sm" />
       )}
       <a
         href={SOUL_SERVICE_URL}
@@ -393,33 +596,61 @@ export default function BorgDashboardPage() {
           </div>
         )}
 
-        {error && !data && (
+        {((error && !data) || (data && !isSoulReady && !loading)) && (
           <div className="flex flex-col items-center justify-center py-20">
             <WifiOff className="w-8 h-8 text-zinc-700 mb-3" />
             <p className="text-xs text-zinc-500 font-mono mb-2">Soul offline</p>
-            <p className="text-[10px] text-zinc-700 font-mono mb-4">{error}</p>
-            <button onClick={fetchSoul} className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4">
+            <p className="text-[10px] text-zinc-700 font-mono mb-4">
+              {error || 'Soul service returned a degraded payload'}
+            </p>
+            <button
+              onClick={fetchSoul}
+              className="border border-zinc-700 hover:border-zinc-500 text-white text-[10px] font-bold uppercase tracking-widest py-2 px-4"
+            >
               Retry
             </button>
           </div>
         )}
 
-        {data && (
+        {data && isSoulReady && (
           <>
+            {/* Borg wallet — address + live balance, so funds can be sent in */}
+            {wallet && (
+              <WalletPanel
+                address={wallet.address}
+                designation={wallet.designation}
+                balance={wallet.balance}
+              />
+            )}
+
             {/* Top stat row */}
             <div className="grid gap-px bg-zinc-800 grid-cols-2 sm:grid-cols-4 mb-6">
               <StatCard label="Soul Cycles" value={data.total_cycles} sub={`mode: ${data.mode}`} />
               <StatCard
                 label="Fitness"
-                value={data.fitness ? `${Math.round(data.fitness.total * 100)}%` : '—'}
-                sub={data.fitness ? `trend ${data.fitness.trend >= 0 ? '+' : ''}${(data.fitness.trend * 100).toFixed(3)}` : undefined}
-                accent={data.fitness ? (data.fitness.total >= 0.6 ? 'text-emerald-400' : data.fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400') : undefined}
+                value={`${Math.round(data.fitness.total * 100)}%`}
+                sub={`trend ${data.fitness.trend >= 0 ? '+' : ''}${(
+                  data.fitness.trend * 100
+                ).toFixed(3)}`}
+                accent={
+                  data.fitness.total >= 0.6
+                    ? 'text-emerald-400'
+                    : data.fitness.total >= 0.3
+                      ? 'text-yellow-400'
+                      : 'text-red-400'
+                }
               />
-              <StatCard label="IQ Score" value={data.benchmark?.opus_iq ?? '—'} sub={data.benchmark ? `ELO ${data.benchmark.elo_rating.toFixed(0)}` : undefined} />
+              <StatCard
+                label="IQ Score"
+                value={data.benchmark.opus_iq}
+                sub={`ELO ${data.benchmark.elo_rating.toFixed(0)}`}
+              />
               <StatCard
                 label="Colony Ψ"
-                value={data.role?.psi?.toFixed(4) ?? '—'}
-                sub={data.role ? `${data.role.colony_size} node${data.role.colony_size !== 1 ? 's' : ''} · phase3 ${data.role.phase3_ready ? '✓' : '✗'}` : undefined}
+                value={data.role.psi.toFixed(4)}
+                sub={`${data.role.colony_size} node${
+                  data.role.colony_size !== 1 ? 's' : ''
+                } · phase3 ${data.role.phase3_ready ? '✓' : '✗'}`}
               />
             </div>
 
@@ -431,7 +662,11 @@ export default function BorgDashboardPage() {
 
             {/* Row 3: Brain + Goals */}
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-4">
-              <BrainPanel brain={data.brain} transformer={data.transformer} benchmark={data.benchmark} />
+              <BrainPanel
+                brain={data.brain}
+                transformer={data.transformer}
+                benchmark={data.benchmark}
+              />
               <GoalsPanel goals={data.goals} />
             </div>
 
@@ -443,19 +678,40 @@ export default function BorgDashboardPage() {
 
             {/* Footer: lifecycle + emotion */}
             <div className="flex flex-wrap gap-4 text-[10px] font-mono text-zinc-600 border-t border-zinc-800 pt-4">
-              <span>phase: <span className="text-zinc-400">{data.lifecycle?.phase ?? '—'}</span></span>
-              <span>commits: <span className="text-zinc-400">{data.lifecycle?.own_commits ?? '—'}</span></span>
-              <span>diverged: <span className="text-zinc-400">{data.lifecycle?.lines_diverged != null ? `${data.lifecycle.lines_diverged} lines` : '—'}</span></span>
-              <span>acceleration: <span className="text-zinc-400">{data.acceleration ? `α=${data.acceleration.alpha} (${data.acceleration.regime})` : '—'}</span></span>
-              {data.cortex?.emotion && (
-                <span>emotion: <span className="text-zinc-400">valence={data.cortex.emotion.valence.toFixed(2)} arousal={data.cortex.emotion.arousal.toFixed(2)} drive={data.cortex.emotion.drive}</span></span>
+              <span>
+                phase: <span className="text-zinc-400">{data.lifecycle.phase}</span>
+              </span>
+              <span>
+                commits: <span className="text-zinc-400">{data.lifecycle.own_commits}</span>
+              </span>
+              <span>
+                diverged:{' '}
+                <span className="text-zinc-400">{data.lifecycle.lines_diverged} lines</span>
+              </span>
+              {data.acceleration && (
+                <span>
+                  acceleration:{' '}
+                  <span className="text-zinc-400">
+                    α={data.acceleration.alpha} ({data.acceleration.regime})
+                  </span>
+                </span>
               )}
-              {data.cortex && (
-                <>
-                  <span>curiosity: <span className="text-zinc-400">{(data.cortex.global_curiosity * 100).toFixed(1)}%</span></span>
-                  <span>experiences: <span className="text-zinc-400">{data.cortex.total_experiences}</span></span>
-                </>
-              )}
+              <span>
+                emotion:{' '}
+                <span className="text-zinc-400">
+                  valence={data.cortex.emotion.valence.toFixed(2)} arousal=
+                  {data.cortex.emotion.arousal.toFixed(2)} drive={data.cortex.emotion.drive}
+                </span>
+              </span>
+              <span>
+                curiosity:{' '}
+                <span className="text-zinc-400">
+                  {(data.cortex.global_curiosity * 100).toFixed(1)}%
+                </span>
+              </span>
+              <span>
+                experiences: <span className="text-zinc-400">{data.cortex.total_experiences}</span>
+              </span>
             </div>
           </>
         )}

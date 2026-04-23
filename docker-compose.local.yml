@@ -1,0 +1,134 @@
+version: '3.9'
+
+services:
+  # Web service (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      target: development
+    container_name: agentbot-web-local
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web:/app/web
+      - ./agentbot-backend:/app/agentbot-backend
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - NEXT_PUBLIC_GATEWAY_URL=http://localhost:8080
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@postgres:5432/agentbot}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-dev-secret-change-in-prod}
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      - postgres
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend service (Express + TypeScript)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: agentbot-backend-local
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./agentbot-backend:/app/agentbot-backend
+      - ./agentbot-backend/node_modules:/app/agentbot-backend/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@postgres:5432/agentbot}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - COINBASE_API_KEY=${COINBASE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-prod}
+      - WALLET_ENCRYPTION_KEY=${WALLET_ENCRYPTION_KEY}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Gateway service (OpenClaw)
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: agentbot-gateway-local
+    ports:
+      - "8080:8080"
+    volumes:
+      - gateway-config:/home/node/.openclaw
+      - gateway-workspace:/home/node/.openclaw/workspace
+      - ./gateway:/app/gateway
+      - ./gateway/node_modules:/app/gateway/node_modules
+    environment:
+      - NODE_ENV=development
+      - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    container_name: agentbot-postgres-local
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-agentbot}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis (optional, for caching/sessions)
+  redis:
+    image: redis:7-alpine
+    container_name: agentbot-redis-local
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+    name: agentbot-postgres-local
+  redis-data:
+    name: agentbot-redis-local
+  gateway-config:
+    name: agentbot-gateway-local-config
+  gateway-workspace:
+    name: agentbot-gateway-local-workspace
+
+networks:
+  default:
+    name: agentbot-local
+    driver: bridge
