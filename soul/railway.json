@@ -9,6 +9,6 @@
     "restartPolicyMaxRetries": 5,
     "requiredMountPath": "/data",
     "healthcheckPath": "/health",
-    "healthcheckTimeout": 30
+    "healthcheckTimeout": 300
   }
 }
