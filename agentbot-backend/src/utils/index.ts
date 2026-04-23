@@ -22,6 +22,7 @@ export interface RunCommandOptions {
   timeout?: number;
   retries?: number;
   retryDelay?: number;
+  cwd?: string;
 }
 
 /**
@@ -38,6 +39,7 @@ export const runCommand = (
     timeout = 60000,
     retries = 0,
     retryDelay = 1000,
+    cwd,
   } = options;
 
   return new Promise((resolve, reject) => {
@@ -48,7 +50,7 @@ export const runCommand = (
       let stderrBytes = 0;
       let timedOut = false;
 
-      const child = spawn(cmd, args, { shell: false });
+      const child = spawn(cmd, args, { shell: false, cwd });
 
       const timer = timeout
         ? setTimeout(() => {

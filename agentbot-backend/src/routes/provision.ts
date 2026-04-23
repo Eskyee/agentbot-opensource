@@ -249,7 +249,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
         name: containerInfo.container,
         status: containerInfo.status,
         serviceId: containerInfo.serviceId,
-        renderUrl: containerInfo.url,
+        railwayUrl: containerInfo.url,
         // Control UI auto-connect URL (token in #fragment, never sent to server)
         controlUiUrl: containerInfo.controlUiUrl,
       };

@@ -4,7 +4,6 @@ import inviteRouter from './invite';
 import undergroundRouter from './underground';
 import missionControlRouter from './mission-control';
 import aiRouter from './routes/ai';
-import renderMcpRouter from './routes/render-mcp';
 import metricsRouter from './routes/metrics';
 import provisionRouter from './routes/provision';
 import teamProvisionRouter from './routes/team-provision';
@@ -28,6 +27,8 @@ import rateLimit from 'express-rate-limit';
 import { Pool } from 'pg';
 import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw-version';
 import { buildHealthSummary } from './lib/health-summary';
+import { signatureGuard } from './middleware/signature';
+import { snapshotAgentState } from './services/gitlawb';
 
 dotenv.config();
 
@@ -72,6 +73,9 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json({ limit: '1mb' }));
+
+// Identity is a Fact: Use cryptographic signatures when provided
+app.use(signatureGuard);
 
 // Structured request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -144,15 +148,12 @@ app.use('/api/', generalLimiter);
 const PORT = process.env.PORT || 3001;
 const RUN_MODE = (process.env.AGENTBOT_RUN_MODE || 'all').toLowerCase();
 
-// API key — refuse to start in production without it
+// API key — refuse to start without it
 if (!process.env.INTERNAL_API_KEY) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('FATAL: INTERNAL_API_KEY must be set in production. Refusing to start.');
-    process.exit(1);
-  }
-  console.warn('WARNING: INTERNAL_API_KEY not set — using dev fallback. Do NOT deploy to production.');
+  console.error('FATAL: INTERNAL_API_KEY must be set. Refusing to start.');
+  process.exit(1);
 }
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only';
+const API_KEY = process.env.INTERNAL_API_KEY;
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
@@ -498,6 +499,8 @@ const readAgentMetadata = async (agentId: string): Promise<AgentMetadata | null>
 
 const writeAgentMetadata = async (agent: AgentMetadata): Promise<void> => {
   await fs.writeFile(agentFilePath(agent.agentId), JSON.stringify(agent, null, 2));
+  // Identity is a Fact: Snapshot the new state to gitlawb
+  await snapshotAgentState(agent.agentId, agent);
 };
 
 const containerStatus = async (containerName: string): Promise<{ status: string; startedAt?: string } | null> => {
@@ -706,6 +709,12 @@ const createOpenClawConfig = (
 
 // Auth middleware — timing-safe to prevent key-enumeration attacks
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  // Identity is a Fact: If signatureGuard already verified the request, 
+  // we proceed directly.
+  if (req.userId && req.userRole === 'agent') {
+    return next();
+  }
+
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -724,7 +733,6 @@ app.use('/api/invite', inviteRouter);
 app.use('/api/underground', undergroundRouter);
 app.use('/api/mission-control', missionControlRouter);
 app.use('/api/ai', authenticate, aiChatLimiter, aiRouter);
-app.use('/api/render-mcp', authenticate, renderMcpRouter);
 app.use('/api/provision', authenticate, provisionRouter);
 app.use('/api/provision/team', authenticate, teamProvisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
@@ -1194,27 +1202,20 @@ initDatabase().then(() => {
   }
 });
 
-// Check Docker availability at startup (non-fatal — container provisioning degrades gracefully)
+// Check Railway availability at startup (non-fatal — container provisioning degrades gracefully)
 const checkProvisioning = async () => {
-  // Check Render API availability (replaces Docker check)
-  const apiKey = process.env.RENDER_API_KEY;
-  if (!apiKey) {
-    console.warn('[Provisioning] RENDER_API_KEY not set — provisioning disabled');
-    return false;
-  }
+  // Use container manager's readiness check (Railway GraphQL)
+  const { isDockerReady } = require('./lib/container-manager').default;
   try {
-    const res = await fetch('https://api.render.com/v1/services?limit=1', {
-      headers: { 'Authorization': `Bearer ${apiKey}` },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (res.ok) {
-      console.log('[Provisioning] Render API available — container provisioning enabled');
+    const ready = await isDockerReady();
+    if (ready) {
+      console.log('[Provisioning] Railway API available — agent provisioning enabled');
       return true;
     }
-    console.warn(`[Provisioning] Render API returned ${res.status} — provisioning disabled`);
+    console.warn('[Provisioning] Railway API unreachable — provisioning disabled');
     return false;
   } catch (err: any) {
-    console.warn('[Provisioning] Render API unreachable — provisioning disabled. Error:', err.code || err.message);
+    console.warn('[Provisioning] Railway check failed:', err.message);
     return false;
   }
 };
@@ -1266,7 +1267,7 @@ export function startServer() {
   server.listen(PORT, () => {
     console.log(`🦞 Agentbot API server running on port ${PORT} (mode=${RUN_MODE})`);
     console.log(`Health check: http://localhost:${PORT}/health`);
-    console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
+    console.log('Routes: /health, /api/metrics/*, /api/ai/*, /api/agents/*, /api/deployments');
     console.log('OpenClaw proxy: /api/openclaw/proxy/:agentId/*');
 
     if (process.env.NODE_ENV === 'production' && RUN_MODE !== 'worker') {

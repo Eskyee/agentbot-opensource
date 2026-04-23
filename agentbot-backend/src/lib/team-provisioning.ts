@@ -2,7 +2,7 @@
  * Team Provisioning — Multi-Agent Docker Sandbox
  * 
  * Creates coordinated agent teams for Collective/Label tiers.
- * Each agent in the team gets its own Render service.
+ * Each agent in the team gets its own Railway service.
  * 
  * Collective: 3 agents (PM + Engineer + QA)
  * Label: 5+ agents with custom YAML config
