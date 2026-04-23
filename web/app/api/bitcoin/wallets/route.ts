@@ -6,7 +6,7 @@ import { prisma } from '@/app/lib/prisma'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  return proxyBitcoinRequest('/api/autonomous/bitcoin/wallets')
+  return proxyBitcoinRequest('/api/underground/bitcoin/wallets')
 }
 
 export async function POST(req: NextRequest) {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Agent not found or not owned by you' }, { status: 403 })
   }
 
-  return proxyBitcoinRequest('/api/autonomous/bitcoin/wallets', {
+  return proxyBitcoinRequest('/api/underground/bitcoin/wallets', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

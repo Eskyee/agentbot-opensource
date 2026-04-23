@@ -167,6 +167,16 @@ router.get('/bitcoin/backend/info', authenticate, async (_req: Request, res: Res
   }
 });
 
+router.get('/bitcoin/liquid/info', authenticate, async (_req: Request, res: Response) => {
+  try {
+    const info = await BitcoinWalletService.getLiquidInfo();
+    res.json(info);
+  } catch (error: any) {
+    console.error('[Liquid] Info error:', error.message);
+    res.status(502).json({ error: 'Failed to fetch Liquid info' });
+  }
+});
+
 router.get('/bitcoin/wallets', authenticate, async (req: Request, res: Response) => {
   const userId = String((req as any).userId || '');
   if (!userId) return res.status(401).json({ error: 'User context required' });

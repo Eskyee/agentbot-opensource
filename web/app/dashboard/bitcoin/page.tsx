@@ -357,7 +357,7 @@ export default function BitcoinPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agentId,
+          agentId: agentId,
           label: label.trim() || undefined,
           derivationScheme: derivationScheme.trim(),
         }),
@@ -705,11 +705,11 @@ export default function BitcoinPage() {
 
               <button
                 type="submit"
-                disabled={submitting || isPublicBitcoinMode}
-                className="w-full inline-flex items-center justify-center gap-2 bg-white text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                disabled={submitting}
+                className="w-full inline-flex items-center justify-center gap-2 bg-orange-500 text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-orange-400 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
               >
                 <Plus className="h-4 w-4" />
-                {isPublicBitcoinMode ? 'Watch-Only Disabled In Public Mode' : submitting ? 'Registering...' : 'Register Watch-Only Wallet'}
+                {submitting ? 'Registering...' : 'Register Watch-Only Wallet'}
               </button>
             </form>
 

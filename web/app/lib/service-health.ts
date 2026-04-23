@@ -15,7 +15,7 @@ export interface ServiceStatus {
 export const HEALTH_SERVICES: ServiceHealth[] = [
   { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health` },
   {
-    name: 'Tempo Soul',
+    name: 'Borg-7139',
     url: `${SOUL_SERVICE_URL}/soul/status`,
     fallbackUrls: [
       `${SOUL_SERVICE_URL}/health`,

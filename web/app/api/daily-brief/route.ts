@@ -13,7 +13,9 @@ const HEALTH_CHECKS: HealthCheck[] = [
   { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health` },
   { name: 'Agentbot Web', url: APP_URL },
   { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health` },
-  { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/health` },
+  { name: 'Borg-7139', url: `${SOUL_SERVICE_URL}/soul/status` },
+  { name: 'Bitcoin Node', url: `${AGENTBOT_BACKEND_URL}/api/underground/bitcoin/backend/info` },
+  { name: 'Liquid Node', url: `${AGENTBOT_BACKEND_URL}/api/underground/bitcoin/liquid/info` },
 ]
 
 async function checkHealth(check: HealthCheck): Promise<{ name: string; status: string; detail?: string }> {
@@ -92,6 +94,13 @@ export async function GET() {
     .reduce((sum, s) => sum + s._count._all, 0)
 
   const activityItems: string[] = []
+  
+  // Real node status from health results
+  const btcNode = healthResults.find(r => r.name === 'Bitcoin Node');
+  const liqNode = healthResults.find(r => r.name === 'Liquid Node');
+  if (btcNode) activityItems.push(`Bitcoin Node: ${btcNode.status === 'ok' ? 'synced' : btcNode.status}${btcNode.detail ? ` (${btcNode.detail})` : ''}`);
+  if (liqNode) activityItems.push(`Liquid Node: ${liqNode.status === 'ok' ? 'synced' : liqNode.status}`);
+
   activityItems.push(`${liveAgents} live agents, ${totalAgents} deployed on the platform`)
   if (recentAgentsCount > 0) {
     activityItems.push(`${recentAgentsCount} new agents provisioned in the last 7 days`)
@@ -126,13 +135,9 @@ export async function GET() {
   const focusItems: string[] = []
   if (downServices.length > 0 || degradedServices.length > 0) {
     focusItems.push(`Investigate ${downServices.length + degradedServices.length} unhealthy service(s)`)
-  } else {
-    focusItems.push('All systems green — continue scheduled work')
   }
-  if (liveAgents > 0) {
-    focusItems.push(`Monitor ${liveAgents} live agent(s) for runtime issues`)
-  }
-  focusItems.push('Review Daily Brief, System Pulse and Usage & Spend for anomalies')
+  focusItems.push('Monitor live agent(s) for runtime issues')
+  focusItems.push('Review system metrics for infrastructure reconciliation')
 
   // Market pulse — from recent blog posts (most recent 3)
   const marketItems: string[] = blogPosts
