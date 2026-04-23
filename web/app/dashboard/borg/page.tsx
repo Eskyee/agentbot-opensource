@@ -13,6 +13,7 @@ import { SOUL_SERVICE_URL } from '@/app/lib/platform-urls';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SoulStatus {
+  soulUrl?: string;
   active: boolean;
   dormant: boolean;
   total_cycles: number;
@@ -459,7 +460,7 @@ export default function BorgDashboardPage() {
         />
       )}
       <a
-        href={SOUL_SERVICE_URL}
+        href={data?.soulUrl || SOUL_SERVICE_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="border border-zinc-700 hover:border-zinc-500 text-zinc-400 text-[10px] font-bold uppercase tracking-widest py-2 px-3 flex items-center gap-1.5 transition-colors"

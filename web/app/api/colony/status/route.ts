@@ -7,6 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession';
+import { prisma } from '@/app/lib/prisma';
 import { SoulClient } from '@/lib/soul';
 import { DEFAULT_SOUL_DASHBOARD_URL, DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config';
 import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem';
@@ -25,8 +26,8 @@ function normalizeColonyStatus(raw: unknown): 'active' | 'stale' | 'culling' {
   return 'stale';
 }
 
-function getSoulCandidates() {
-  const candidates = [SOUL_URL, BORG_0_URL]
+function getSoulCandidates(userUrl?: string | null) {
+  const candidates = [userUrl, SOUL_URL, BORG_0_URL]
     .map((value) => value?.trim())
     .filter(Boolean) as string[];
 
@@ -35,26 +36,40 @@ function getSoulCandidates() {
 
 async function isUsableSoulHost(baseUrl: string) {
   try {
-    const res = await fetch(`${baseUrl}/soul/status`, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(4000),
-      cache: 'no-store',
-    });
+    // Some agents might serve soul status at root / or /soul/status
+    const paths = [`${baseUrl}/soul/status`, `${baseUrl}/`]
+    
+    for (const path of paths) {
+      try {
+        const res = await fetch(path, {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(3000),
+          cache: 'no-store',
+        });
 
-    if (!res.ok) return false;
+        if (!res.ok) continue;
 
-    const contentType = res.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) return false;
+        const contentType = res.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) continue;
 
-    const payload = await res.json().catch(() => null);
-    return Boolean(payload && typeof payload === 'object' && 'active' in payload);
+        const payload = await res.json().catch(() => null);
+        // If it has 'active' or 'fitness', it's a soul host
+        if (payload && typeof payload === 'object' && ('active' in payload || 'fitness' in payload)) {
+          return true;
+        }
+      } catch {
+        continue;
+      }
+    }
+    return false;
   } catch {
     return false;
   }
 }
 
-async function getWorkingSoulClient() {
-  for (const candidate of getSoulCandidates()) {
+async function getWorkingSoulClient(userUrl?: string | null) {
+  const candidates = getSoulCandidates(userUrl);
+  for (const candidate of candidates) {
     if (await isUsableSoulHost(candidate)) {
       return {
         soul: new SoulClient(candidate),
@@ -63,7 +78,7 @@ async function getWorkingSoulClient() {
     }
   }
 
-  throw new Error(`No healthy soul host found from: ${getSoulCandidates().join(', ')}`);
+  throw new Error(`No healthy soul host found from: ${candidates.join(', ')}`);
 }
 
 // Tempo RPC for real wallet balances
@@ -121,7 +136,20 @@ export async function GET(request: Request) {
   const action = searchParams.get('action') || 'tree';
 
   try {
-    const { soul, serviceUrl } = await getWorkingSoulClient();
+    // 1. Resolve user's provisioned agent URL
+    let userUrl: string | null = null;
+    try {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { openclawUrl: true },
+      });
+      userUrl = dbUser?.openclawUrl ?? null;
+    } catch (err) {
+      console.warn('[Colony/Status] Failed to look up user openclawUrl:', err);
+    }
+
+    // 2. Connect to the best available soul host (prioritizing user's agent)
+    const { soul, serviceUrl } = await getWorkingSoulClient(userUrl);
 
     switch (action) {
       case 'tree': {
@@ -231,7 +259,10 @@ export async function GET(request: Request) {
 
       case 'soul': {
         const status = await soul.getStatus();
-        return NextResponse.json(status);
+        return NextResponse.json({
+          ...status,
+          soulUrl: serviceUrl,
+        });
       }
 
       case 'diagnostics': {
