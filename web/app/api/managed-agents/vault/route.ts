@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { buildManagedVaultContextForUser } from '@/app/lib/vault'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {

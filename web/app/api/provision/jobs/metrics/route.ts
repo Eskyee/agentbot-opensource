@@ -25,4 +25,3 @@ export async function GET() {
   return NextResponse.json(body, { status: response.status })
 }
 
-export const dynamic = 'force-dynamic'

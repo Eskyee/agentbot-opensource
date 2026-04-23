@@ -4,7 +4,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { saveXAccount } from '@/app/lib/xApi'
 import { buildAppUrl } from '@/app/lib/app-url'
 
-export const dynamic = 'force-dynamic'
 
 const STATE_COOKIE = 'x_oauth_state'
 const VERIFIER_COOKIE = 'x_oauth_verifier'

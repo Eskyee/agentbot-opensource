@@ -5,7 +5,6 @@ import { createWalletClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from 'viem/accounts';
 
-export const dynamic = 'force-dynamic';
 
 export async function GET() {
   return NextResponse.json({

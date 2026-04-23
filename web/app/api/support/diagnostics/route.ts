@@ -8,7 +8,6 @@ import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 
 const GATEWAY_URL = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()

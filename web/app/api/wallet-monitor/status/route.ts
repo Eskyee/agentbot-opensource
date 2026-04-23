@@ -4,7 +4,6 @@ import { isAdminEmail } from '@/app/lib/admin'
 import { fetchWalletStatuses, getWalletAlertCommand, getWalletMonitorConfig } from '@/app/lib/node-wallet-monitor'
 import { sendSupportAlert } from '@/app/lib/support-alert'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()

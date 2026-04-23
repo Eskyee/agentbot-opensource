@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthOrApiKeySession } from '@/app/lib/getAuthOrApiKeySession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST(
   req: NextRequest,

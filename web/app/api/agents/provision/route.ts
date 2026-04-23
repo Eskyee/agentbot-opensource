@@ -27,7 +27,6 @@ import {
 } from '@/app/lib/agent-deploy'
 import { ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
 
-export const dynamic = 'force-dynamic';
 
 // Types
 interface ProvisionAgentRequest {

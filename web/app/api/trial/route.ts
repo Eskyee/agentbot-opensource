@@ -3,7 +3,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getTrialCountdown } from '@/app/lib/trial-utils'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()

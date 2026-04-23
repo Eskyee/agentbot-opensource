@@ -230,4 +230,3 @@ export async function DELETE(req: NextRequest) {
 }
 
 
-export const dynamic = 'force-dynamic';

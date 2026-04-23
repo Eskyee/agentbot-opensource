@@ -5,7 +5,6 @@ import { isAdminEmail } from '@/app/lib/admin'
 import { checkServices } from '@/app/lib/service-health'
 import { getTrialCountdown } from '@/app/lib/trial-utils'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()

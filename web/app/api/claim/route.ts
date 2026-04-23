@@ -241,4 +241,3 @@ export async function POST(request: NextRequest) {
   return response
 }
 
-export const dynamic = 'force-dynamic'

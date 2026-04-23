@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'https://openclaw-production-a09d.up.railway.app'
 const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || ''

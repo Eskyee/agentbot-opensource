@@ -7,7 +7,6 @@ import { prisma } from '@/app/lib/prisma'
 import { buildAppUrl } from '@/app/lib/app-url'
 import { checkUserRateLimit } from '@/lib/rate-limit-user'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   const session = await getAuthSession()

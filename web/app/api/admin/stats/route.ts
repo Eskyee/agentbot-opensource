@@ -3,7 +3,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys';
 import { prisma } from '@/app/lib/prisma';
 
-export const dynamic = 'force-dynamic';
 
 function getAdminEmails(): string[] {
   const adminEmails = process.env.ADMIN_EMAILS;

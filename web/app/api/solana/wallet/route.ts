@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 const SETTING_KEY = 'solana_rpc_url'
 const DEFAULT_RPC = process.env.SOLANA_RPC_URL_DEFAULT?.trim() || 'https://api.mainnet-beta.solana.com'

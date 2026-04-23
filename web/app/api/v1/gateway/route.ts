@@ -14,7 +14,6 @@ import {
   type Voucher,
 } from '@/lib/mpp/sessions';
 
-export const dynamic = 'force-dynamic';
 
 // Helper to get CORS headers
 function getCorsHeaders(): Record<string, string> {

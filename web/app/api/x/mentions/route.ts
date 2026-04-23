@@ -3,7 +3,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { fetchUserMentionsFromX } from '@/app/lib/xApi'
 import { getXMentionStates, saveXMentionStates, type XMentionStateStatus } from '@/app/lib/xMentions'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {

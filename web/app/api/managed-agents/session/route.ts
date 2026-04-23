@@ -7,7 +7,6 @@ import { prisma } from "@/app/lib/prisma";
 import { buildManagedVaultContextForUser } from "@/app/lib/vault";
 import { xSocialSessionWorkflow } from "@/app/workflows/x-social-session";
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {

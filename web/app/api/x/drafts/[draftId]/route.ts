@@ -3,7 +3,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { appendManagedAgentEvent } from '@/app/lib/managedAgentEvents'
 import { getXDraftQueue, saveXDraftQueue, type XDraftStatus } from '@/app/lib/xDrafts'
 
-export const dynamic = 'force-dynamic'
 
 export async function PATCH(
   req: NextRequest,

@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 const SETTING_KEY = 'openclaw_config'
 const BACKUP_KEY  = 'openclaw_config_backups'

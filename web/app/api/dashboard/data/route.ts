@@ -16,7 +16,6 @@ import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 import { resolveUserMode } from '@/app/lib/operator-routing'
 import { getTrialCountdown } from '@/app/lib/trial-utils'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   const startTime = Date.now()

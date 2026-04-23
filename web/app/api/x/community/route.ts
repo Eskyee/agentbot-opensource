@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { fetchCommunityPostsFromX } from '@/app/lib/xApi'
 
-export const dynamic = 'force-dynamic'
 
 const DEFAULT_COMMUNITY_ID = process.env.X_COMMUNITY_ID || '2031495203002134740'
 

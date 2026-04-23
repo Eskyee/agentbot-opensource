@@ -4,7 +4,6 @@ import { prisma } from '@/app/lib/prisma';
 import { ensureLocalUser, generateChallengeCode } from '@/lib/social/identity';
 import crypto from 'crypto';
 
-export const dynamic = 'force-dynamic';
 
 export async function POST(
   _request: NextRequest,

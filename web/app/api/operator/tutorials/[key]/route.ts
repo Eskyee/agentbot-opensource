@@ -10,7 +10,6 @@ import { prisma } from '@/app/lib/prisma'
 import { getTutorialByKey } from '@/app/lib/operator-tutorials'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET(
   _req: NextRequest,

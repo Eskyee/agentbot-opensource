@@ -4,7 +4,6 @@ import { prisma } from '@/app/lib/prisma';
 import { getTrialCountdown } from '@/app/lib/trial-utils'
 import { redis } from '@/app/lib/redis';
 
-export const dynamic = 'force-dynamic';
 
 const CACHE_TTL = 30; // 30 seconds
 

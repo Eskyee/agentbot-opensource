@@ -11,7 +11,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { ensureLocalUser } from '@/lib/social/identity'
 
-export const dynamic = 'force-dynamic'
 
 async function searchXForCode(code: string, bearerToken: string): Promise<boolean> {
   const params = new URLSearchParams({

@@ -6,7 +6,6 @@ import { getUserSession, processVoucher, type Voucher } from '@/lib/mpp/sessions
 import type { Address } from 'viem'
 import crypto from 'crypto'
 
-export const dynamic = 'force-dynamic'
 
 type StoredResponse = {
   requestHash: string

@@ -3,7 +3,6 @@ import { prisma } from '@/app/lib/prisma'
 import { publishPostToX } from '@/app/lib/xApi'
 import { normalizeDraftText, type XDraft } from '@/app/lib/xDrafts'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization')

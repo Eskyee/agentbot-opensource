@@ -3,7 +3,6 @@ import { ensureLocalUser } from '@/lib/social/identity'
 import { prisma } from '@/app/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET(_req: NextRequest) {
   const session = await getAuthSession()

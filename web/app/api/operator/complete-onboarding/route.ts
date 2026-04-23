@@ -9,7 +9,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { completeOnboarding } from '@/app/lib/operator-routing'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST() {
   const session = await getAuthSession()

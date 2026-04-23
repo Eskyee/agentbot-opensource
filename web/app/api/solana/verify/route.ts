@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 const SOLANA_TOKEN = '9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump'
 const SOLANA_RPC = 'https://api.mainnet-beta.solana.com'
 
-export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/solana/verify?address=SOLANA_WALLET

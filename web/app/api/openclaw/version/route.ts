@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 import { DEFAULT_OPENCLAW_IMAGE, DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 function normalizeOpenClawVersion(value: unknown) {
   if (typeof value !== 'string' || !value.trim()) return DEFAULT_OPENCLAW_VERSION

@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { deleteXAccount } from '@/app/lib/xApi'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST() {
   const session = await getAuthSession()

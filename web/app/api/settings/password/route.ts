@@ -5,7 +5,6 @@ import bcrypt from "bcryptjs";
 import { checkUserRateLimit } from "@/lib/rate-limit-user";
 import { checkPasswordPolicy, isPasswordPwned } from "@/lib/password-policy";
 
-export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   const session = await getAuthSession();

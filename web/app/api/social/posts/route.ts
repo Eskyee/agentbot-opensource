@@ -4,7 +4,6 @@ import { prisma } from '@/app/lib/prisma';
 import { ensureLocalUser } from '@/lib/social/identity';
 import { checkPostRateLimit, checkDuplicatePost, checkLinkAllowance } from '@/lib/social/rate-limit';
 
-export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {

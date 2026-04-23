@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 
-export const dynamic = 'force-dynamic'
 
 const LIQUID_RPC_URL = process.env.LIQUID_RPC_URL || 'https://elements-liquid-production.up.railway.app'
 const LIQUID_RPC_USER = process.env.LIQUID_RPC_USER || 'liquidrpc'

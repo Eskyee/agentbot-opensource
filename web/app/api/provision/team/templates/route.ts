@@ -143,4 +143,3 @@ export async function GET() {
   return NextResponse.json({ templates: TEMPLATES, categories: CATEGORIES })
 }
 
-export const dynamic = 'force-dynamic'

@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { randomBytes, createHash } from 'crypto'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
-export const dynamic = 'force-dynamic'
 
 const X_AUTHORIZE_URL = 'https://twitter.com/i/oauth2/authorize'
 const SCOPES = ['tweet.read', 'tweet.write', 'users.read', 'offline.access']

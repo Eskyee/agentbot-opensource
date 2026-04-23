@@ -14,7 +14,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
-export const dynamic = 'force-dynamic'
 
 interface ActivityItem {
   id: string

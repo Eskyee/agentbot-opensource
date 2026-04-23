@@ -4,7 +4,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { generateXDraft } from '@/app/lib/xDraftGenerator'
 import { getXDraftQueue, saveXDraftQueue, type XDraft } from '@/app/lib/xDrafts'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { deleteGitHubBot, getStoredGitHubBot, saveGitHubBot } from '@/app/lib/githubBot'
 
-export const dynamic = 'force-dynamic'
 
 function normalizeRepoAllowlist(value: unknown) {
   if (typeof value !== 'string') return []

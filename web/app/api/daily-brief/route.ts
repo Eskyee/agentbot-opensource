@@ -232,4 +232,3 @@ export async function GET() {
   return NextResponse.json(response)
 }
 
-export const dynamic = 'force-dynamic'

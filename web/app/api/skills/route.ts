@@ -64,7 +64,6 @@ const DEFAULT_SKILLS = [
   { name: 'Code Review', description: 'Review agent code against production best practices. Security, state management, and anti-pattern detection.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
 ]
 
-export const dynamic = 'force-dynamic'
 
 /**
  * Ensure skills are seeded in the database.

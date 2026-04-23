@@ -6,7 +6,6 @@ import {
   listGitlawbAgentsForUser,
 } from '@/app/lib/gitlawb'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()

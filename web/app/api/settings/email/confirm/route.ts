@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 
-export const dynamic = 'force-dynamic'
 
 async function confirm(token: string | null) {
   if (!token || typeof token !== 'string') {

@@ -59,3 +59,7 @@
     - Added automated repair for stuck M2M jobs, stale DJ sessions, and disconnected agents
     - Integrated `@vercel/otel` OpenTelemetry tracing in `instrumentation.ts`
     - Created `logGlobalError` Server Action to automatically pipe React boundary crashes to support webhook
+- [x] Next.js 16 & React 19 Build Fixes:
+    - Repaired mangled JSX layout and missing imports in `app/admin/page.tsx`
+    - Removed incompatible segment-level `dynamic` and `revalidate` exports project-wide
+    - Verified `cacheComponents` configuration in `next.config.js`

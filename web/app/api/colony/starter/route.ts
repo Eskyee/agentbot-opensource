@@ -3,7 +3,6 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/app/lib/auth'
 import { provisionOnRailway, isRailwayConfigured } from '@/app/lib/railway-provision'
 
-export const dynamic = 'force-dynamic'
 
 const TEMPLATE_PLAN: Record<string, string> = {
   'alpha-terminal': 'solo',

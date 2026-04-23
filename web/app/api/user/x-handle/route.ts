@@ -47,4 +47,3 @@ export async function PATCH(req: NextRequest) {
   return NextResponse.json({ ok: true, handle: clean || null })
 }
 
-export const dynamic = 'force-dynamic'

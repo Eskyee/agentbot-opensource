@@ -4,7 +4,6 @@ import { appendManagedAgentEvent } from "@/app/lib/managedAgentEvents";
 import { prisma } from "@/app/lib/prisma";
 import { xSocialMessageHook } from "@/app/workflows/x-social-session";
 
-export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {

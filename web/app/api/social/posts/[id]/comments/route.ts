@@ -3,7 +3,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession';
 import { prisma } from '@/app/lib/prisma';
 import { ensureLocalUser, ensureSocialAgent } from '@/lib/social/identity';
 
-export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

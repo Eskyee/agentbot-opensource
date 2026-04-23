@@ -2,7 +2,7 @@
 
 import { useCustomSession } from '@/app/lib/useCustomSession';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import Link from 'next/link';
 import { 
   Activity, 
@@ -254,7 +254,6 @@ export default function AdminPage() {
               <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400 group-hover:text-white">Issue_Invites</span>
             </Link>
           </div>
-        </div>
 
         {/* ─── Main Content Area ─────────────────────────────────────────────── */}
         <div className="flex-1 min-w-0">

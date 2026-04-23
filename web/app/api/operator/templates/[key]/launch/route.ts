@@ -17,7 +17,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getTemplateByKey } from '@/app/lib/operator-templates'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST(
   req: NextRequest,

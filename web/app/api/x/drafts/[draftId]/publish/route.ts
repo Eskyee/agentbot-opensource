@@ -4,7 +4,6 @@ import { appendManagedAgentEvent } from '@/app/lib/managedAgentEvents'
 import { publishPostToX } from '@/app/lib/xApi'
 import { getXDraftQueue, normalizeDraftText, saveXDraftQueue } from '@/app/lib/xDrafts'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST(
   _request: Request,

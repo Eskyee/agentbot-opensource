@@ -7,7 +7,6 @@ import { DEFAULT_OPENCLAW_IMAGE } from '@/app/lib/openclaw-version'
 import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 import { OPENCLAW_CONTROLS_ENABLED, controlsDisabledResponse } from '@/app/api/instance/_runtime'
 
-export const dynamic = 'force-dynamic'
 
 const KNOWN_GOOD_IMAGE = DEFAULT_OPENCLAW_IMAGE
 

@@ -10,7 +10,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { syncAgentToGateway } from '@/app/lib/agent-deploy'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: NextRequest,

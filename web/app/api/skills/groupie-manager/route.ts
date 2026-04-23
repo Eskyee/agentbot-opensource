@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { rejectDemoRouteInProduction } from '../_demoGuard';
 
-export const dynamic = 'force-dynamic';
 
 interface Fan {
   id: string;

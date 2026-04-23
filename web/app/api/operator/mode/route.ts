@@ -9,7 +9,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { resolveUserMode, setUserMode, UserMode } from '@/app/lib/operator-routing'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()
