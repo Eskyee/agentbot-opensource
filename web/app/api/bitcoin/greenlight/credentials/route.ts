@@ -19,16 +19,22 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Update Prisma User model
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
-        greenlightCertPem: cert,
-        greenlightKeyPem: key,
-      }
-    })
+    try {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+          greenlightCertPem: cert,
+          greenlightKeyPem: key,
+        }
+      })
+    } catch (prismaError: any) {
+      console.error('[Admin/Greenlight] Prisma update failed:', prismaError.message);
+      return NextResponse.json({ error: `Prisma update failed: ${prismaError.message}` }, { status: 500 });
+    }
 
     // 2. Mirror to backend 'users' plural table
     try {
+      // Use column names matching db-init.ts (greenlight_cert_pem, greenlight_key_pem)
       await prisma.$executeRaw`
         UPDATE users 
         SET greenlight_cert_pem = ${cert}, 
@@ -36,8 +42,8 @@ export async function POST(req: NextRequest) {
             updated_at = NOW()
         WHERE email = ${session.user.email || ''}
       `
-    } catch (mirrorError) {
-      console.warn('[Admin/Greenlight] Failed to mirror credentials to backend table:', mirrorError)
+    } catch (mirrorError: any) {
+      console.warn('[Admin/Greenlight] Mirroring failed but singular table updated:', mirrorError.message)
     }
 
     return NextResponse.json({ success: true, message: 'Greenlight credentials saved successfully' })

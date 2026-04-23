@@ -558,13 +558,13 @@ export default function BitcoinPage() {
                   <li>• {greenlight?.facts.custody || 'Greenlight is non-custodial; node seed secrets must stay on the user device.'}</li>
                   <li>• {greenlight?.facts.auth || 'Greenlight uses mTLS with developer and device identities.'}</li>
                   <li>• Official client libraries currently documented: {(greenlight?.facts.libs || ['Rust gl-client', 'Python gl-client']).join(', ')}.</li>
-                  <li>• Supported networks in the docs: {(greenlight?.facts.networks || ['testnet', 'bitcoin']).join(', ')}.</li>
+                  <li>• Supported networks: {(greenlight?.facts.networks || ['bitcoin (mainnet)', 'testnet']).join(', ')}.</li>
                   <li>• {greenlight?.facts.scheduler || 'Nodes are scheduled on-demand and return a GRPC URI when started.'}</li>
                 </ul>
               </div>
 
               <div className="border border-zinc-800 bg-black/40 p-4">
-                <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3 font-bold">Developer Credentials</div>
+                <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3 font-bold">Mainnet Credentials</div>
                 <div className="space-y-4">
                   <div>
                     <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">

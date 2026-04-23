@@ -110,7 +110,7 @@ async function getWorkingSoulClient(userUrl?: string | null) {
 // Tempo RPC for real wallet balances
 const tempoClient = createPublicClient({
   chain: tempo,
-  transport: http('https://rpc.tempo.xyz'),
+  transport: http('https://rpc.tempo.build'),
 });
 
 // ERC20 ABI
