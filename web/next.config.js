@@ -12,7 +12,15 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
+    ppr: 'incremental',
     webpackMemoryOptimizations: true,
+    optimizePackageImports: [
+      '@base-org/account',
+      '@base-org/account-ui',
+      'lucide-react',
+      'framer-motion',
+      'sonner'
+    ],
   },
   images: {
     remotePatterns: [

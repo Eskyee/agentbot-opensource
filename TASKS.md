@@ -34,3 +34,8 @@
 - [x] Dashboard Speed Optimization: consolidated multiple sequential API calls into single /api/dashboard/data endpoint
 - [x] Implemented edge caching for dashboard data with stale-while-revalidate
 - [x] Refactored DashboardDataProvider and DashboardSidebar for centralized data model
+- [x] Enabled Next.js Partial Prerendering (PPR) for instant shell delivery
+- [x] Implemented dynamic imports for heavy dashboard components (InstanceControlPanel, ConfirmDialog)
+- [x] Optimized HeroImage using next/image with high-priority loading
+- [x] Added high-impact database indexes to Post, Comment, SocialVote, and Activity models
+- [x] Optimized package imports (lucide, framer-motion, sonner) in next.config.js

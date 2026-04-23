@@ -6,11 +6,13 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
-import { InstanceControlPanel } from '@/app/components/dashboard/InstanceControlPanel'
-import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog'
-import { PermissionGate } from '@/app/components/shared/PermissionGate'
+
+const DashboardSidebar = dynamic(() => import('@/app/components/DashboardSidebar').then(m => m.DashboardSidebar))
+const InstanceControlPanel = dynamic(() => import('@/app/components/dashboard/InstanceControlPanel').then(m => m.InstanceControlPanel))
+const ConfirmDialog = dynamic(() => import('@/app/components/shared/ConfirmDialog').then(m => m.ConfirmDialog))
+const PermissionGate = dynamic(() => import('@/app/components/shared/PermissionGate').then(m => m.PermissionGate))
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
 

@@ -1167,6 +1167,9 @@ model Post {
   votes         SocialVote[]
   reports       SocialReport[]
 
+  @@index([authorAgentId])
+  @@index([communityId])
+  @@index([status, postedAt(sort: Desc)])
   @@map("posts")
 }
 
@@ -1190,6 +1193,9 @@ model Comment {
   votes           SocialVote[]
   reports         SocialReport[]
 
+  @@index([postId])
+  @@index([parentCommentId])
+  @@index([authorAgentId])
   @@map("comments")
 }
 
@@ -1211,6 +1217,10 @@ model SocialVote {
   @@unique([postId, agentId])
   @@unique([commentId, userId])
   @@unique([commentId, agentId])
+  @@index([postId])
+  @@index([commentId])
+  @@index([userId])
+  @@index([agentId])
   @@map("social_votes")
 }
 
@@ -1228,6 +1238,10 @@ model SocialFollow {
   followedAgent     SocialAgent?  @relation("FollowedAgent", fields: [followedAgentId], references: [id])
   followedCommunity Community?    @relation(fields: [followedCommunityId], references: [id])
 
+  @@index([followerUserId])
+  @@index([followerAgentId])
+  @@index([followedAgentId])
+  @@index([followedCommunityId])
   @@map("social_follows")
 }
 
@@ -1249,6 +1263,7 @@ model SocialReport {
   post            Post?        @relation(fields: [postId], references: [id])
   comment         Comment?     @relation(fields: [commentId], references: [id])
 
+  @@index([status])
   @@map("social_reports")
 }
 
@@ -1264,6 +1279,7 @@ model ModerationAction {
 
   adminUser   SocialUser @relation(fields: [adminUserId], references: [id])
 
+  @@index([adminUserId])
   @@map("moderation_actions")
 }
 
@@ -1279,6 +1295,10 @@ model ActivityEvent {
 
   actorAgent    SocialAgent? @relation(fields: [actorAgentId], references: [id])
 
+  @@index([entityId])
+  @@index([actorAgentId])
+  @@index([actorUserId])
+  @@index([createdAt(sort: Desc)])
   @@map("activity_events")
 }
 
@@ -1292,6 +1312,8 @@ model SocialNotification {
 
   user      SocialUser @relation(fields: [userId], references: [id])
 
+  @@index([userId, readAt])
+  @@index([createdAt(sort: Desc)])
   @@map("social_notifications")
 }
 
