@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     sqlite3 \
     curl \
     gosu \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user and writable data dirs (must be root at this point).
@@ -50,6 +51,10 @@ RUN useradd -m -u 1000 agent \
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# nginx reverse-proxy config: maps GET / → /soul/status on the internal
+# x402-node port (4024). All other paths pass through unchanged.
+COPY nginx.conf /etc/nginx/nginx.conf
+
 # Do NOT switch to USER agent here — the entrypoint runs as root to fix
 # volume ownership, then drops privileges via gosu before exec-ing x402-node.
 WORKDIR /home/agent
@@ -59,7 +64,9 @@ COPY --from=builder /build/target/release/x402-node /usr/local/bin/x402-node
 
 # Environment defaults. All state paths point inside /data (the persistent
 # volume) so nothing is written to ephemeral disk.
-ENV PORT=4023
+# x402-node listens on the internal port; nginx fronts it on the public port.
+ENV PORT=4024
+ENV PUBLIC_PORT=4023
 ENV RUST_LOG=info
 ENV SOUL_DB_PATH=/data/soul.db
 ENV SOUL_MEMORY_FILE=/data/soul_memory.md

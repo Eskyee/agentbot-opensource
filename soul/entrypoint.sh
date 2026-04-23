@@ -19,6 +19,13 @@
 # Backstop for the platform-level `requiredMountPath: /data` in
 # railway.json — if someone changes the mount path or disables the
 # check, this script still fails fast.
+#
+# Routing
+# -------
+# x402-node (Rust) listens on PORT (default 4024, internal).
+# nginx listens on PUBLIC_PORT (default 4023, external) and maps:
+#   GET /  → /soul/status   (soul cognitive state for Borg Dashboard)
+#   *      → x402-node as-is
 
 set -eu
 
@@ -37,5 +44,26 @@ chown -R agent:agent "${DATA_DIR}"
 
 mkdir -p "${DATA_DIR}/workspace" "${DATA_DIR}/brain_checkpoints" "${DATA_DIR}/benchmark_history" "${DATA_DIR}/cartridges"
 
-# Drop privileges to the agent user for the actual application.
+# Resolve ports — honour env overrides, fall back to defaults.
+INTERNAL_PORT="${PORT:-4024}"
+EXTERNAL_PORT="${PUBLIC_PORT:-4023}"
+
+# Write a runtime nginx config that substitutes the actual port values.
+# This avoids hard-coding ports in the static nginx.conf while keeping
+# the config file simple (no Lua / envsubst dependency).
+NGINX_RUNTIME_CONF=/tmp/nginx-runtime.conf
+sed \
+  -e "s/127\.0\.0\.1:4024/127.0.0.1:${INTERNAL_PORT}/g" \
+  -e "s/listen 4023/listen ${EXTERNAL_PORT}/g" \
+  /etc/nginx/nginx.conf > "${NGINX_RUNTIME_CONF}"
+
+# Start nginx in the background (runs as root — it only needs to bind the
+# port and proxy; no privileged operations after that).
+nginx -c "${NGINX_RUNTIME_CONF}" -g "daemon off;" &
+NGINX_PID=$!
+
+echo "nginx started (pid ${NGINX_PID}) on port ${EXTERNAL_PORT}, proxying to x402-node on port ${INTERNAL_PORT}"
+
+# Drop privileges and start x402-node on the internal port.
+# gosu exec-replaces the shell so signals propagate correctly.
 exec gosu agent x402-node "$@"
