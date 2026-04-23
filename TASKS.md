@@ -26,3 +26,7 @@
 - [x] container-manager.ts: hardcoded path removed, exec → spawn, curl → fetch
 - [x] bus.ts: IPv6 bracket stripping fix (Node.js 18+ URL.hostname behavior)
 - [x] End-to-end security tests: 107/107 passing
+- [x] Fact-Based Architecture: Identity (DID-signatures), Execution (Workflows), State (Gitlawb)
+- [x] Railway-only migration: Removed Render references, updated GQL provisioning
+- [x] SignatureGuard verification: 4/4 passing in dedicated test suite
+- [x] Prune stale branches (12 deleted) and clear git stashes (7 cleared)
