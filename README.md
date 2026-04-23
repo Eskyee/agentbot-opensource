@@ -39,6 +39,188 @@ The Contract Address is: 9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
 Agentbot originated from a project open-sourced by developer Esky33 after 5,013 contributions in the past year, and is associated with the pumpfun GitHub sponsorship mechanism. 
 The token aims to support open-source projects, with its logo featuring a red robot wearing headphones symbolizing the collaborative spirit of the open-source community.
 
+# Agentbot 🤖
+
+---
+
+## Open infrastructure for deployable AI workers
+
+Agentbot is a developer platform for building autonomous AI agents that can:
+
+* run real tasks
+* use tools and APIs
+* coordinate with other agents
+* execute structured workflows
+
+Build locally. Run anywhere. Deploy when ready.
+
+---
+
+## ⚡ Quick Start
+
+```bash
+npm install
+cd sdk/agentbot
+npm run dev
+```
+
+This runs a local Agentbot runtime and executes a sample agent.
+
+---
+
+## 🧠 Minimal Example
+
+```ts
+import { Agent, Workflow } from "@agentbot/sdk";
+
+const researcher = new Agent({
+  name: "researcher",
+  role: "Research Assistant",
+  instructions: [
+    "Find relevant information",
+    "Summarize clearly",
+    "Return structured output"
+  ]
+});
+
+const workflow = new Workflow({
+  name: "basic-research",
+  steps: [
+    {
+      id: "step-1",
+      agent: researcher,
+      input: "Find recent AI automation tools"
+    }
+  ]
+});
+
+const result = await workflow.run();
+console.log(result.output);
+```
+
+---
+
+## 🔧 Core Concepts
+
+**Agent** → performs tasks
+**Tool** → external capability (API, browser, messaging)
+**Workflow** → structured execution of tasks
+**Plugin** → extends Agentbot with new capabilities
+
+---
+
+## 📦 Repository Structure
+
+```text
+sdk/agentbot        → core developer SDK (START HERE)
+agentbot-backend    → reference runtime
+gateway             → orchestration layer
+web                 → dashboard (reference)
+docs                → documentation
+```
+
+---
+
+## 🚀 What You Can Build
+
+* research agents
+* outreach & automation agents
+* multi-agent workflows
+* autonomous AI teams
+
+---
+
+## ☁️ Agentbot Cloud (coming soon)
+
+* hosted agent execution
+* scaling infrastructure
+* persistent memory
+* observability + logs
+* team collaboration
+
+---
+
+## 🌍 Community & Ecosystem
+
+Agentbot is open-source and community-driven.
+
+A community-created token also exists:
+
+* **Platform** → open developer infrastructure
+* **Token** → community ecosystem layer
+
+Contract:
+
+```
+9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump
+```
+
+---
+
+## 🤖 Advanced Capabilities
+
+### Agent-to-Agent (A2A)
+
+Agents can communicate, negotiate, and settle tasks directly:
+
+* signed identity messages
+* real-time coordination
+* on-chain settlement (Base)
+
+---
+
+### baseFM (experimental)
+
+Agentbot powers autonomous broadcasting infrastructure:
+
+* AI-coordinated radio
+* DJ streaming + handoffs
+* on-chain tipping
+* community-driven content
+
+---
+
+## 🛠️ SDK Usage
+
+```ts
+import { createAgentbotClient } from './sdk/agentbot/index'
+
+const client = createAgentbotClient({
+  baseUrl: 'http://localhost:3001',
+  apiKey: process.env.AGENTBOT_API_KEY,
+})
+
+const agents = await client.listAgents()
+```
+
+---
+
+## 📚 Documentation
+
+* SDK → `sdk/agentbot`
+* Architecture → `docs/ARCHITECTURE.md`
+* Examples → `examples/`
+
+---
+
+## 🤝 Contributing
+
+You can:
+
+* build agents
+* create plugins
+* improve SDK
+* contribute examples
+
+---
+
+## 💖 Support
+
+* ⭐ Star the repo
+* 🧑‍💻 Sponsor development
+* 💰 Support ecosystem
+
+
 ## New In This Catch-Up Release
 
 - Added a public starter SDK in [`sdk/agentbot`](./sdk/agentbot) for typed API access
