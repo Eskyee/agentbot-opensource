@@ -505,7 +505,7 @@ export default function MusicWizardPage() {
                 {wizardData.channels.discord && (
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">Discord</div>
-                    <div className="text-blue-400">✓ Enabled</div>
+                    <div className="text-orange-400">✓ Enabled</div>
                   </div>
                 )}
 
@@ -585,7 +585,7 @@ export default function MusicWizardPage() {
 
         {/* Back to regular signup option */}
         <div className="text-left mt-8">
-          <Link href="/signup" className="text-sm text-blue-400 hover:text-blue-300">
+          <Link href="/signup" className="text-sm text-orange-400 hover:text-orange-400">
             ← Skip to standard signup process
           </Link>
         </div>

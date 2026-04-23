@@ -27,7 +27,7 @@ async function getColonyTree() {
 
 const MOOD_COLORS: Record<string, string> = {
   excited: 'text-amber-400',
-  curious: 'text-blue-400',
+  curious: 'text-orange-400',
   calm: 'text-green-400',
   anxious: 'text-red-400',
   sleeping: 'text-zinc-600',

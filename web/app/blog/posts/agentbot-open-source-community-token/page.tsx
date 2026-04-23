@@ -74,7 +74,7 @@ export default function Post() {
           </ul>
           <p className="text-zinc-300 mb-4">
             The open-source repo is at{' '}
-            <a href="https://github.com/Eskyee/agentbot-opensource" className="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-400 hover:text-orange-400" target="_blank" rel="noopener noreferrer">
               github.com/Eskyee/agentbot-opensource
             </a>
             . It shows the full architecture: Docker isolation, BYOK AI, USDC payments on Base, and the skill marketplace backbone.

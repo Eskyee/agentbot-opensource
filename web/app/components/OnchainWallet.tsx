@@ -61,7 +61,7 @@ export default function OnchainWallet() {
               <div className="p-4 border-b border-zinc-800">
                 <div className="text-xs text-zinc-500 mb-1">Wallet</div>
                 <div 
-                  className="font-mono text-sm text-white cursor-pointer hover:text-blue-400"
+                  className="font-mono text-sm text-white cursor-pointer hover:text-orange-400"
                   onClick={copyAddress}
                 >
                   {address}

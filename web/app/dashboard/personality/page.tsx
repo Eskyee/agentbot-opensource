@@ -106,7 +106,7 @@ export default function PersonalityPage() {
       <DashboardShell>
         <DashboardHeader
           title="Agent Personality"
-          icon={<User className="h-5 w-5 text-blue-400" />}
+          icon={<User className="h-5 w-5 text-orange-400" />}
         />
         <DashboardContent className="space-y-6">
           <div className="text-zinc-500 text-sm">Loading agents...</div>
@@ -120,7 +120,7 @@ export default function PersonalityPage() {
       <DashboardShell>
         <DashboardHeader
           title="Agent Personality"
-          icon={<User className="h-5 w-5 text-blue-400" />}
+          icon={<User className="h-5 w-5 text-orange-400" />}
         />
         <DashboardContent className="space-y-6">
           <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
@@ -141,7 +141,7 @@ export default function PersonalityPage() {
     <DashboardShell>
       <DashboardHeader
         title="Agent Personality"
-        icon={<User className="h-5 w-5 text-blue-400" />}
+        icon={<User className="h-5 w-5 text-orange-400" />}
       />
 
       <DashboardContent className="space-y-6">

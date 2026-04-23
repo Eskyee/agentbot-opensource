@@ -246,7 +246,7 @@ function DashboardContent() {
       <div className="flex min-h-screen bg-black items-center justify-center">
         <div className="text-center">
           <p className="text-zinc-400 mb-4">Please sign in to view your dashboard</p>
-          <Link href="/login" className="text-blue-400 hover:underline">
+          <Link href="/login" className="text-orange-400 hover:underline">
             Sign In
           </Link>
         </div>

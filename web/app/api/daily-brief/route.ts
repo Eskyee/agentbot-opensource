@@ -187,7 +187,7 @@ export async function GET() {
     {
       id: 'tasks',
       title: 'Recent Activity',
-      color: 'text-blue-400',
+      color: 'text-orange-400',
       items: activityItems,
     },
     {
@@ -211,7 +211,7 @@ export async function GET() {
     {
       id: 'calendar',
       title: 'Upcoming',
-      color: 'text-blue-400',
+      color: 'text-orange-400',
       items: upcomingItems,
     },
   ]

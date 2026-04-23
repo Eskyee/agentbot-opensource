@@ -47,7 +47,7 @@ export default function DigitalWristband() {
       <div className="p-6 bg-zinc-900 rounded-xl border border-zinc-800 text-white">
         <div className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
-          <span className="text-xs font-mono text-blue-400 uppercase tracking-wider">
+          <span className="text-xs font-mono text-orange-400 uppercase tracking-wider">
             Checking...
           </span>
         </div>
@@ -61,7 +61,7 @@ export default function DigitalWristband() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span className="text-xs font-mono text-blue-400 uppercase tracking-wider">
+            <span className="text-xs font-mono text-orange-400 uppercase tracking-wider">
               WRISTBAND ACTIVE
             </span>
           </div>
@@ -86,7 +86,7 @@ export default function DigitalWristband() {
             href="https://opensea.io/collection/wristband"
             target="_blank"
             rel="noopener noreferrer"
-            className="block text-center text-xs text-zinc-500 hover:text-blue-400 transition-colors"
+            className="block text-center text-xs text-zinc-500 hover:text-orange-400 transition-colors"
           >
             View on OpenSea →
           </a>

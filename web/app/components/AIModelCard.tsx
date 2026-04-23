@@ -64,7 +64,7 @@ export default memo(function AIModelCard({ plan }: { plan: string }) {
             />
           </div>
           {config.reasoning === 0 && (
-            <button className="w-full mt-3 py-2 text-xs font-bold bg-blue-600/20 text-blue-400 border border-blue-500/30 rounded-lg hover:bg-blue-600/30 transition-colors">
+            <button className="w-full mt-3 py-2 text-xs font-bold bg-blue-600/20 text-orange-400 border border-blue-500/30 rounded-lg hover:bg-blue-600/30 transition-colors">
               Unlock Reasoning Engine →
             </button>
           )}

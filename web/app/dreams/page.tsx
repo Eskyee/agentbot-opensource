@@ -8,7 +8,7 @@ export const metadata = {
 }
 
 const MOOD_COLORS: Record<string, string> = {
-  calm: 'text-blue-400',
+  calm: 'text-orange-400',
   curious: 'text-amber-400',
   excited: 'text-green-400',
   anxious: 'text-red-400',

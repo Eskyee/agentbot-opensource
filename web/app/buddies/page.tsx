@@ -703,7 +703,7 @@ export default function BuddiesPage() {
                   <div className="text-[10px] opacity-60">+20 energy, +10 XP</div>
                 </button>
                 <button onClick={() => doAction(selectedBuddy, 'play')} disabled={actionCooldown}
-                  className="bg-blue-500/10 border border-blue-500/30 text-blue-400 py-3 rounded-xl font-bold hover:bg-blue-500/20 transition-all active:scale-95 disabled:opacity-50">
+                  className="bg-blue-500/10 border border-blue-500/30 text-orange-400 py-3 rounded-xl font-bold hover:bg-blue-500/20 transition-all active:scale-95 disabled:opacity-50">
                   <div className="text-lg mb-0.5">🎮</div>
                   <div className="text-sm">Play</div>
                   <div className="text-[10px] opacity-60">+15 happy, +25 XP</div>

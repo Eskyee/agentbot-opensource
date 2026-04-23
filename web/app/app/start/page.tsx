@@ -176,7 +176,7 @@ export default function StartPage() {
                     <span className="text-purple-400">◈</span> An AI agent powered by MiMo-V2-Pro
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-blue-400">⊞</span> An automated workflow with pre-configured triggers
+                    <span className="text-orange-400">⊞</span> An automated workflow with pre-configured triggers
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-green-400">✳</span> Skills: web search, social posting, and more

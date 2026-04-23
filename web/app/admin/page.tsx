@@ -178,7 +178,7 @@ export default function AdminPage() {
 
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-orange-500 transition-colors" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-orange-400 transition-colors" />
               <input 
                 type="text" 
                 placeholder="SEARCH_THE_MATRIX..."
@@ -256,7 +256,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-4 gap-4">
                 <StatCard label="Total_Agents" value={stats?.totalAgents ?? agents.length} />
                 <StatCard label="Active_Runtimes" value={agents.filter(a => a.status === 'active' || a.status === 'running').length} color="text-green-400" />
-                <StatCard label="Railway_Instances" value={stats?.count ?? 0} color="text-blue-400" />
+                <StatCard label="Railway_Instances" value={stats?.count ?? 0} color="text-orange-400" />
                 <StatCard label="Backend_Health" value={stats?.backendStatus || '...'} color={stats?.backendStatus === 'OK' ? 'text-green-400' : 'text-red-400'} isString />
               </div>
 
@@ -290,7 +290,7 @@ export default function AdminPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2 text-zinc-500">
                               {agent.websocketUrl?.includes('railway.app') ? (
-                                <span className="text-blue-400">RAILWAY</span>
+                                <span className="text-orange-400">RAILWAY</span>
                               ) : agent.websocketUrl ? (
                                 <span className="text-zinc-400 font-mono italic text-[9px] truncate max-w-[120px]">{agent.websocketUrl}</span>
                               ) : (
@@ -338,7 +338,7 @@ export default function AdminPage() {
                           <div className="text-[10px] text-zinc-500 mt-0.5">{user.email}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`font-bold uppercase ${user.plan !== 'free' ? 'text-orange-500' : 'text-zinc-600'}`}>
+                          <span className={`font-bold uppercase ${user.plan !== 'free' ? 'text-orange-400' : 'text-zinc-600'}`}>
                             {user.plan}
                           </span>
                         </td>
@@ -348,7 +348,7 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button className="text-[10px] font-bold uppercase tracking-widest text-orange-500 hover:text-orange-400 border border-orange-500/20 px-3 py-1 bg-orange-500/5 hover:bg-orange-500/10 transition-all">
+                          <button className="text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:text-orange-400 border border-orange-500/20 px-3 py-1 bg-orange-500/5 hover:bg-orange-500/10 transition-all">
                             IMPERSONATE
                           </button>
                         </td>

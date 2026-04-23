@@ -97,7 +97,7 @@ export default function CharacterQAPage() {
     <DashboardShell>
       <DashboardHeader
         title="Character Q&A"
-        icon={<MessageSquare className="h-5 w-5 text-blue-400" />}
+        icon={<MessageSquare className="h-5 w-5 text-orange-400" />}
         count={messages.length}
         action={
           <button
@@ -180,7 +180,7 @@ export default function CharacterQAPage() {
                         <div
                           className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed ${
                             msg.role === 'user'
-                              ? 'bg-blue-600/10 border border-blue-500/20 text-blue-100'
+                              ? 'bg-blue-600/10 border border-blue-500/20 text-orange-400'
                               : 'bg-zinc-900 border border-zinc-800 text-zinc-300'
                           }`}
                         >
@@ -213,7 +213,7 @@ export default function CharacterQAPage() {
                   <button
                     onClick={sendMessage}
                     disabled={!input.trim() || sending}
-                    className="px-4 py-2.5 bg-blue-600/10 border border-blue-500/30 text-blue-400 hover:bg-blue-600/20 disabled:opacity-30 transition-colors"
+                    className="px-4 py-2.5 bg-blue-600/10 border border-blue-500/30 text-orange-400 hover:bg-blue-600/20 disabled:opacity-30 transition-colors"
                   >
                     {sending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />

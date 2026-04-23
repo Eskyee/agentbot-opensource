@@ -108,7 +108,7 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
       {error && (
         <div className="text-red-400 text-sm text-center p-3 bg-red-900/20 rounded-lg border border-red-800">
           {error}
-          <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-blue-400 hover:text-blue-300">
+          <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-orange-400 hover:text-orange-400">
             Try again
           </button>
         </div>

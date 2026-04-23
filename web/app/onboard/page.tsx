@@ -752,7 +752,7 @@ function OnboardContent() {
                         </span>
                       )}
                       {'badge' in provider && provider.badge && (
-                        <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full">
+                        <span className="bg-blue-500/20 text-orange-400 text-xs px-2 py-1 rounded-full">
                           {provider.badge}
                         </span>
                       )}
@@ -764,7 +764,7 @@ function OnboardContent() {
               {/* Factory Master instructions */}
               {aiProvider === 'vercel-gateway' && (
                 <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6">
-                  <h3 className="font-semibold mb-2 text-orange-500">Factory Master Infrastructure</h3>
+                  <h3 className="font-semibold mb-2 text-orange-400">Factory Master Infrastructure</h3>
                   <p className="text-sm text-zinc-300">The MiMo V2 Pro model is pre-configured via your Vercel AI Gateway. No additional API key is required for the starter tier.</p>
                   <ul className="mt-4 space-y-2 text-xs text-zinc-400">
                     <li className="flex gap-2"><span>✓</span> <span>Ultra-low latency inference</span></li>
@@ -806,7 +806,7 @@ function OnboardContent() {
                   <ol className="space-y-3 text-zinc-300 text-sm">
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
-                      <span>OpenClaw will connect to Ollama at <code className="text-blue-300">http://ollama.railway.internal:11434</code> automatically</span>
+                      <span>OpenClaw will connect to Ollama at <code className="text-orange-400">http://ollama.railway.internal:11434</code> automatically</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
@@ -1350,7 +1350,7 @@ function OnboardContent() {
                   </a>
                   <Link
                     href="/dashboard/coach"
-                    className="block w-full border border-orange-500/50 text-orange-500 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
+                    className="block w-full border border-orange-500/50 text-orange-400 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
                   >
                     🎓 Enter Operator Training
                   </Link>
@@ -1399,7 +1399,7 @@ function OnboardContent() {
                   </a>
                   <Link
                     href="/dashboard/coach"
-                    className="block w-full border border-orange-500/50 text-orange-500 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
+                    className="block w-full border border-orange-500/50 text-orange-400 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
                   >
                     🎓 Start Operator Coaching
                   </Link>

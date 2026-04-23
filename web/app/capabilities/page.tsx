@@ -74,14 +74,14 @@ export default function CapabilitiesShowcase() {
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           <div className="bg-zinc-900 p-6 rounded-2xl">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <MessageCircle className="text-blue-400" />
+              <MessageCircle className="text-orange-400" />
               Multi-channel
             </h3>
             <p className="text-zinc-400 mb-4">
               One agent connects to Telegram, Discord, WhatsApp — manage all from single dashboard.
             </p>
             <div className="flex gap-2">
-              <span className="px-2 py-1 bg-blue-900/30 text-blue-400 text-xs rounded">Telegram</span>
+              <span className="px-2 py-1 bg-blue-900/30 text-orange-400 text-xs rounded">Telegram</span>
               <span className="px-2 py-1 bg-indigo-900/30 text-indigo-400 text-xs rounded">Discord</span>
               <span className="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded">WhatsApp</span>
             </div>
@@ -97,7 +97,7 @@ export default function CapabilitiesShowcase() {
             </p>
             <div className="flex gap-2">
               <span className="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded">USDC</span>
-              <span className="px-2 py-1 bg-blue-900/30 text-blue-400 text-xs rounded">Base</span>
+              <span className="px-2 py-1 bg-blue-900/30 text-orange-400 text-xs rounded">Base</span>
               <span className="px-2 py-1 bg-purple-900/30 text-purple-400 text-xs rounded">CDP</span>
             </div>
           </div>

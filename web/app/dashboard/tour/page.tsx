@@ -49,7 +49,7 @@ export default function TourManagementPage() {
     <DashboardShell>
       <DashboardHeader
         title="Tour Management"
-        icon={<Calendar className="h-5 w-5 text-blue-400" />}
+        icon={<Calendar className="h-5 w-5 text-orange-400" />}
         action={
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -86,7 +86,7 @@ export default function TourManagementPage() {
           </div>
           <div className="border border-zinc-800 bg-zinc-950 p-5">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Tickets Sold</div>
-            <div className="text-2xl font-mono font-bold text-blue-400">{totalTickets.toLocaleString()}</div>
+            <div className="text-2xl font-mono font-bold text-orange-400">{totalTickets.toLocaleString()}</div>
           </div>
         </div>
 

@@ -15,7 +15,7 @@ export default function WristbandPage() {
         {/* Hero Section */}
         <div className="flex flex-col md:flex-row gap-16 items-center">
           <div className="flex-1 space-y-8">
-            <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest animate-pulse">
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-400 text-[10px] uppercase tracking-widest animate-pulse">
               Onchain Access Protocol
             </div>
             
@@ -54,9 +54,9 @@ export default function WristbandPage() {
             &copy; 2026 baseFM x RaveCulture
           </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <a href="#" className="hover:text-blue-500 transition-colors">Smart Contract</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">OnchainKit Spec</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Docs</a>
+            <a href="#" className="hover:text-orange-400 transition-colors">Smart Contract</a>
+            <a href="#" className="hover:text-orange-400 transition-colors">OnchainKit Spec</a>
+            <a href="#" className="hover:text-orange-400 transition-colors">Docs</a>
           </div>
         </div>
       </div>

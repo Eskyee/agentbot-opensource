@@ -210,7 +210,7 @@ export default function GitCityPage() {
     <DashboardShell>
       <DashboardHeader
         title="Git City"
-        icon={<GitBranch className="h-5 w-5 text-blue-400" />}
+        icon={<GitBranch className="h-5 w-5 text-orange-400" />}
       />
 
       <DashboardContent>
@@ -230,7 +230,7 @@ export default function GitCityPage() {
             rel="noopener noreferrer"
             className="border border-blue-800 bg-blue-900/20 p-4 hover:border-blue-600 transition-colors"
           >
-            <GitBranch className="h-6 w-6 text-blue-400 mb-2" />
+            <GitBranch className="h-6 w-6 text-orange-400 mb-2" />
             <h3 className="text-white font-bold">3D City</h3>
             <p className="text-zinc-400 text-xs mt-1">Visit the virtual city</p>
             <ExternalLink className="h-3 w-3 text-zinc-500 mt-2" />
@@ -326,7 +326,7 @@ export default function GitCityPage() {
                 {data.stats.topics?.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {data.stats.topics.map((topic: string) => (
-                      <span key={topic} className="px-2 py-1 bg-blue-900/30 text-blue-400 text-xs">
+                      <span key={topic} className="px-2 py-1 bg-blue-900/30 text-orange-400 text-xs">
                         {topic}
                       </span>
                     ))}
@@ -433,7 +433,7 @@ export default function GitCityPage() {
                             ×
                           </button>
                         </div>
-                        <p className="text-blue-300 text-sm mb-3">
+                        <p className="text-orange-400 text-sm mb-3">
                           {block.commits} commits
                         </p>
                         <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -478,7 +478,7 @@ export default function GitCityPage() {
                           <div className="flex-1 min-w-0">
                             <p className="text-white text-sm truncate">{commit.message}</p>
                             <p className="text-zinc-500 text-xs mt-1">
-                              <span className="text-blue-400">{commit.sha}</span>
+                              <span className="text-orange-400">{commit.sha}</span>
                               {' • '}
                               {commit.author}
                               {' • '}

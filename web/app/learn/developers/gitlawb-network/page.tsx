@@ -51,7 +51,7 @@ export default function GitlawbNetworkGuidePage() {
             <p className="text-xs text-zinc-500 mb-2">DID</p>
             <code className="block text-xs text-zinc-300 break-all">{AGENTBOT_GITLAWB_DID}</code>
             <p className="text-xs text-zinc-500 mt-4 mb-2">Web</p>
-            <a href={AGENTBOT_GITLAWB_WEB_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-white break-all">
+            <a href={AGENTBOT_GITLAWB_WEB_URL} target="_blank" rel="noopener noreferrer" className="text-sm text-orange-400 hover:text-white break-all">
               {AGENTBOT_GITLAWB_WEB_URL}
             </a>
           </div>
@@ -75,7 +75,7 @@ export default function GitlawbNetworkGuidePage() {
             href={AGENTBOT_GITLAWB_REPO_CARD_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-blue-400 hover:text-white break-all"
+            className="text-sm text-orange-400 hover:text-white break-all"
           >
             {AGENTBOT_GITLAWB_REPO_CARD_URL}
           </a>

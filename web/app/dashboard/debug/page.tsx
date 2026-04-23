@@ -103,7 +103,7 @@ export default function DebugConsolePage() {
     <DashboardShell>
       <DashboardHeader
         title="Debug Console"
-        icon={<Terminal className="h-5 w-5 text-blue-400" />}
+        icon={<Terminal className="h-5 w-5 text-orange-400" />}
         action={
           <div className="flex items-center gap-2">
             <button

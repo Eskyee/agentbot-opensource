@@ -566,7 +566,7 @@ function DashboardContent() {
                         href={`https://t.me/${instance?.botUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
+                        className="text-orange-400 hover:underline"
                       >
                         @{instance?.botUsername}
                       </a>

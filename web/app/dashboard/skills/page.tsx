@@ -251,7 +251,7 @@ export default function SkillsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Skill Marketplace"
-        icon={<Wrench className="h-5 w-5 text-blue-400" />}
+        icon={<Wrench className="h-5 w-5 text-orange-400" />}
         action={
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger>
@@ -336,7 +336,7 @@ export default function SkillsPage() {
         {openclawSkillsUrl && (
           <div className="flex items-center justify-between gap-4 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Runtime Skills Manager</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400">Runtime Skills Manager</div>
               <p className="mt-1 text-sm text-zinc-300">
                 Open the real OpenClaw skills manager for this agent through the managed control UI, using your paired runtime session.
               </p>
@@ -345,7 +345,7 @@ export default function SkillsPage() {
               href={openclawSkillsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="shrink-0 border border-blue-500/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:border-blue-400 hover:text-white"
+              className="shrink-0 border border-blue-500/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-blue-400 hover:text-white"
             >
               Open Skills Manager
             </a>
@@ -434,7 +434,7 @@ export default function SkillsPage() {
                     {skill.featured && (
                       <Badge
                         variant="outline"
-                        className="border-blue-500/30 text-blue-400 text-[10px] uppercase tracking-widest"
+                        className="border-blue-500/30 text-orange-400 text-[10px] uppercase tracking-widest"
                       >
                         Featured
                       </Badge>

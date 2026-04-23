@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { getAuthSession } from '@/app/lib/getAuthSession';
+import { isAdminEmail } from '@/app/lib/admin';
 
 /**
  * Admin: Database Health & Sync Audit
@@ -10,7 +11,9 @@ import { getAuthSession } from '@/app/lib/getAuthSession';
  */
 export async function GET() {
   const session = await getAuthSession();
-  if (!session?.user?.isAdmin) {
+  const isAdmin = session?.user?.isAdmin || isAdminEmail(session?.user?.email);
+  
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -81,7 +84,9 @@ export async function GET() {
  */
 export async function POST() {
   const session = await getAuthSession();
-  if (!session?.user?.isAdmin) {
+  const isAdmin = session?.user?.isAdmin || isAdminEmail(session?.user?.email);
+
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -106,18 +111,26 @@ export async function POST() {
     }
 
     // 2. Fetch all agents from Prisma
-    const prismaAgents = await prisma.agent.findMany();
+    const prismaAgents = await prisma.agent.findMany({
+      include: { user: true }
+    });
     let agentsSynced = 0;
 
     for (const a of prismaAgents) {
+      // Use the email from the joined user object
+      const email = a.user?.email || '';
+      if (!email) continue;
+
       // Find the user ID in the plural table to maintain relations
-      const uResult = await prisma.$queryRaw<any[]>`SELECT id FROM users WHERE email = ${a.userEmail || ''} LIMIT 1`;
+      const uResult = await prisma.$queryRaw<any[]>`SELECT id FROM users WHERE email = ${email} LIMIT 1`;
       const backendUserId = uResult[0]?.id;
 
       if (backendUserId) {
+        // We use $executeRaw with manual mapping because the IDs might differ
+        // between the primary key styles.
         await prisma.$executeRaw`
           INSERT INTO agents (user_id, name, status, config, created_at, updated_at)
-          VALUES (${backendUserId}, ${a.name}, ${a.status}, ${JSON.stringify(a.config || {})}, ${a.createdAt}, ${a.updatedAt})
+          VALUES (${backendUserId}, ${a.name}, ${a.status}, ${a.config as any || {}}, ${a.createdAt}, ${a.updatedAt})
           ON CONFLICT (id) DO UPDATE SET
             status = EXCLUDED.status,
             config = EXCLUDED.config,

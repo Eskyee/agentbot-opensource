@@ -28,7 +28,7 @@ interface Campaign {
 const STATUS_COLORS: Record<string, string> = {
   pending_payment: 'text-zinc-500',
   paid:            'text-amber-400',
-  approved:        'text-blue-400',
+  approved:        'text-orange-400',
   live:            'text-green-400',
   complete:        'text-zinc-500',
   rejected:        'text-red-400',
@@ -95,9 +95,9 @@ function CampaignRow({ c, onAction }: { c: Campaign; onAction: () => void }) {
           )}
 
           <div className="grid gap-3 sm:grid-cols-2 text-xs text-zinc-500">
-            {c.advertiser_url  && <span>URL: <a href={c.advertiser_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{c.advertiser_url}</a></span>}
+            {c.advertiser_url  && <span>URL: <a href={c.advertiser_url} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">{c.advertiser_url}</a></span>}
             {c.contact_handle  && <span>Handle: {c.contact_handle}</span>}
-            {c.playback_id     && <span>Playback: <a href={`https://stream.mux.com/${c.playback_id}.m3u8`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Play</a></span>}
+            {c.playback_id     && <span>Playback: <a href={`https://stream.mux.com/${c.playback_id}.m3u8`} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">Play</a></span>}
             {c.mux_upload_id   && <span className="font-mono">Upload: {c.mux_upload_id}</span>}
             <span>Starts: {fmtDate(c.starts_at)}</span>
             <span>Ends: {fmtDate(c.ends_at)}</span>
@@ -209,7 +209,7 @@ export default function AdminAdsPage() {
         <div className="grid gap-4 sm:grid-cols-4">
           {[
             { label: 'Awaiting Review', value: stats.paid,     color: 'text-amber-400' },
-            { label: 'Approved',        value: stats.approved, color: 'text-blue-400'  },
+            { label: 'Approved',        value: stats.approved, color: 'text-orange-400'  },
             { label: 'Live Now',        value: stats.live,     color: 'text-green-400' },
             { label: 'Revenue',         value: fmt(stats.revenue), color: 'text-white' },
           ].map(({ label, value, color }) => (

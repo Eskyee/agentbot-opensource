@@ -245,7 +245,7 @@ export default function LearnDevelopersPage() {
             {apiEndpoints.map((ep, i) => (
               <div key={ep.path} className={`flex items-center gap-4 p-4 ${i > 0 ? 'border-t border-zinc-900' : ''}`}>
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 flex-shrink-0 ${
-                  ep.method === 'POST' ? 'bg-blue-900/30 text-blue-400' : 'bg-green-900/30 text-green-400'
+                  ep.method === 'POST' ? 'bg-blue-900/30 text-orange-400' : 'bg-green-900/30 text-green-400'
                 }`}>{ep.method}</span>
                 <code className="text-xs text-zinc-300 flex-shrink-0">{ep.path}</code>
                 <span className="text-xs text-zinc-600 ml-auto hidden sm:block">{ep.desc}</span>

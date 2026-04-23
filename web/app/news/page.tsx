@@ -244,11 +244,11 @@ const globalNews = [
 
 const TYPE_COLOR: Record<string, string> = {
   release: 'text-green-400 border-green-500/30',
-  community: 'text-blue-400 border-blue-500/30',
-  feature: 'text-blue-400 border-blue-500/30',
+  community: 'text-orange-400 border-blue-500/30',
+  feature: 'text-orange-400 border-blue-500/30',
   security: 'text-red-400 border-red-500/30',
   blog: 'text-orange-400 border-orange-500/30',
-  ecosystem: 'text-cyan-400 border-cyan-500/30',
+  ecosystem: 'text-orange-400 border-cyan-500/30',
   integration: 'text-purple-400 border-purple-500/30',
 };
 

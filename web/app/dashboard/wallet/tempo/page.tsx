@@ -172,7 +172,7 @@ export default function WalletPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-blue-400" />} />
+      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-orange-400" />} />
       <DashboardContent>
         <div className="max-w-2xl space-y-6">
           <WalletTabs />

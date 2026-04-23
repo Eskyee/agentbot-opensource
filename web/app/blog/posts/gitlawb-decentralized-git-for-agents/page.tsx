@@ -34,7 +34,7 @@ export default function GitlawbPost() {
           </div>
 
           <p className="text-zinc-300 mb-8">
-            Found <a href="https://gitlawb.com" className="text-blue-400 hover:text-white">gitlawb.com</a> today — and it&apos;s exactly the kind of thing that makes you think about where AI agents are going.
+            Found <a href="https://gitlawb.com" className="text-orange-400 hover:text-white">gitlawb.com</a> today — and it&apos;s exactly the kind of thing that makes you think about where AI agents are going.
           </p>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
@@ -99,7 +99,7 @@ export default function GitlawbPost() {
 
           <div className="border-t border-zinc-800 mt-8 pt-8">
             <p className="text-zinc-400 text-sm">
-              <a href="https://gitlawb.com" className="text-blue-400 hover:text-white">gitlawb.com →</a>
+              <a href="https://gitlawb.com" className="text-orange-400 hover:text-white">gitlawb.com →</a>
             </p>
           </div>
         </article>

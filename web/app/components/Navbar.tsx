@@ -204,7 +204,7 @@ export default function Navbar() {
                 Claim
               </Link>
               {isAdmin && (
-                <Link href="/admin" className="text-[11px] text-orange-500 hover:text-orange-400 transition-colors uppercase tracking-wider">
+                <Link href="/admin" className="text-[11px] text-orange-400 hover:text-orange-400 transition-colors uppercase tracking-wider">
                   Admin
                 </Link>
               )}

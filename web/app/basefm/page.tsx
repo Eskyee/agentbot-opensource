@@ -53,7 +53,7 @@ export default function BasefmTokenPage() {
                   href="https://basescan.org/token/0x9a4376bab717ac0a3901eeed8308a420c59c0ba3"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-white underline whitespace-nowrap text-xs uppercase tracking-widest"
+                  className="text-orange-400 hover:text-white underline whitespace-nowrap text-xs uppercase tracking-widest"
                 >
                   View on Basescan
                 </a>
@@ -66,7 +66,7 @@ export default function BasefmTokenPage() {
                 href="https://bankr.bot/agents/basefm"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 hover:text-white underline text-sm"
+                className="text-orange-400 hover:text-white underline text-sm"
               >
                 View on Bankr
               </a>
@@ -180,7 +180,7 @@ export default function BasefmTokenPage() {
           </div>
 
           <div className="mt-4 p-4 border border-blue-500/20 bg-blue-500/10">
-            <p className="text-blue-300 text-sm">
+            <p className="text-orange-400 text-sm">
               <strong>Agentbot community holders:</strong> Claimed Builder and Whale wallets now unlock a baseFM guest pass inside the Agentbot dashboard, even without the full BASEFM gate.{' '}
               <a href="/claim" className="underline hover:text-white">Claim your community rewards</a> or open the{' '}
               <a href="/dashboard/community" className="underline hover:text-white">community dashboard</a>.
@@ -237,7 +237,7 @@ export default function BasefmTokenPage() {
           <p className="text-zinc-400 text-sm">
             baseFM is deployed on <span className="text-green-400 font-semibold">Agentbot</span> — the AI agent 
             deployment platform. Deploy your own AI agent in seconds at{' '}
-            <a href="https://agentbot.raveculture.xyz" className="text-blue-400 hover:text-white underline">
+            <a href="https://agentbot.raveculture.xyz" className="text-orange-400 hover:text-white underline">
               agentbot.raveculture.xyz
             </a>
           </p>

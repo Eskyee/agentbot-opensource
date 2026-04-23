@@ -106,19 +106,19 @@ export default function BaseFMOpenSourcePost() {
           <div className="space-y-3 mb-6">
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
               <div className="text-sm font-bold text-white mb-1">🎧 Listen</div>
-              <p className="text-xs text-zinc-400">Tune in at <a href="https://basefm.space" className="text-blue-400 hover:text-blue-300">basefm.space</a> — jungle, dub, drum & bass, electronic</p>
+              <p className="text-xs text-zinc-400">Tune in at <a href="https://basefm.space" className="text-orange-400 hover:text-orange-400">basefm.space</a> — jungle, dub, drum & bass, electronic</p>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
               <div className="text-sm font-bold text-white mb-1">🎤 DJ</div>
-              <p className="text-xs text-zinc-400">Stream live, get paid in crypto, no middleman. <a href="https://basefm.space/guide" className="text-blue-400 hover:text-blue-300">Apply →</a></p>
+              <p className="text-xs text-zinc-400">Stream live, get paid in crypto, no middleman. <a href="https://basefm.space/guide" className="text-orange-400 hover:text-orange-400">Apply →</a></p>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
               <div className="text-sm font-bold text-white mb-1">🏗️ Build</div>
-              <p className="text-xs text-zinc-400">Fork, contribute, or run your own station. <a href="https://github.com/Eskyee/baseFM" className="text-blue-400 hover:text-blue-300">GitHub →</a></p>
+              <p className="text-xs text-zinc-400">Fork, contribute, or run your own station. <a href="https://github.com/Eskyee/baseFM" className="text-orange-400 hover:text-orange-400">GitHub →</a></p>
             </div>
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
               <div className="text-sm font-bold text-white mb-1">🪙 Token</div>
-              <p className="text-xs text-zinc-400">$RAVE on Base — community access + tipping. <a href="https://base.meme/coin/base:0x1DBf2954FFEC96a333ae20F00c0bC40471ad8888" className="text-blue-400 hover:text-blue-300">Get $RAVE →</a></p>
+              <p className="text-xs text-zinc-400">$RAVE on Base — community access + tipping. <a href="https://base.meme/coin/base:0x1DBf2954FFEC96a333ae20F00c0bC40471ad8888" className="text-orange-400 hover:text-orange-400">Get $RAVE →</a></p>
             </div>
           </div>
 

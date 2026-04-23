@@ -109,9 +109,9 @@ docker compose -f docker-compose.headless.yml up -d`}
           <div className="mt-8 p-4 border border-zinc-800">
             <p className="text-zinc-400 text-sm">
               <strong className="text-white">Links:</strong>{' '}
-              <a href="https://github.com/EskyLab/btcpayagentbot-docker" className="text-blue-400 hover:underline">GitHub</a> &middot;{' '}
-              <a href="https://raveculture.mintlify.app/payments/btcpay" className="text-blue-400 hover:underline">Docs</a> &middot;{' '}
-              <a href="https://docs.btcpayserver.org" className="text-blue-400 hover:underline">BTCPay Server</a>
+              <a href="https://github.com/EskyLab/btcpayagentbot-docker" className="text-orange-400 hover:underline">GitHub</a> &middot;{' '}
+              <a href="https://raveculture.mintlify.app/payments/btcpay" className="text-orange-400 hover:underline">Docs</a> &middot;{' '}
+              <a href="https://docs.btcpayserver.org" className="text-orange-400 hover:underline">BTCPay Server</a>
             </p>
           </div>
         </article>

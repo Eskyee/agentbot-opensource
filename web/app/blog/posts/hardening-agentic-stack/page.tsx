@@ -134,7 +134,7 @@ export default function HardeningAgenticStackPost() {
               <p className="text-[10px] text-zinc-400">Docker isolation per user. Firecracker microVM sandbox. Per-route auth. Payment verification via x402.</p>
             </div>
             <div className="border border-zinc-800 bg-zinc-950 p-4">
-              <div className="text-xs font-bold text-blue-400 mb-1">Tool Layer</div>
+              <div className="text-xs font-bold text-orange-400 mb-1">Tool Layer</div>
               <p className="text-[10px] text-zinc-400">MCP-compatible skill marketplace. Browser automation (Playwright). Sandbox execution. 500+ models via ClawRouter.</p>
             </div>
             <div className="border border-zinc-800 bg-zinc-950 p-4">

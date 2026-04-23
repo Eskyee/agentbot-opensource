@@ -32,7 +32,7 @@ export default async function Home() {
 
         <div className="relative z-10 max-w-3xl">
           <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
-            <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-400 text-[10px] uppercase tracking-widest">
               Production Private Cloud
             </div>
             <a
@@ -179,7 +179,7 @@ export default async function Home() {
           </div>
           <div className="grid lg:grid-cols-2 gap-px bg-zinc-900">
             <div className="bg-black p-6 sm:p-8">
-              <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-4">Production Private Cloud</div>
+              <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-4">Production Private Cloud</div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Managed runtime for teams that need speed and control.</h3>
               <div className="space-y-3 text-zinc-500 text-sm">
                 <p>Approval queues, dashboards, billing, and operator tooling around your X workflow.</p>
@@ -280,7 +280,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <span className="text-[8px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-1.5 py-0.5">Popular</span>
+                    <span className="text-[8px] uppercase tracking-widest text-orange-400 border border-blue-500/30 px-1.5 py-0.5">Popular</span>
                   )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">
@@ -343,7 +343,7 @@ export default async function Home() {
             <div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-[0.95] mb-6">
                 Co-DJ B2B.<br />
-                <span className="text-orange-500">Two DJs.</span><br />
+                <span className="text-orange-400">Two DJs.</span><br />
                 <span className="text-zinc-700">One Live Stream.</span>
               </h2>
               <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-lg">

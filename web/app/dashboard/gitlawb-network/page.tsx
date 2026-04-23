@@ -222,7 +222,7 @@ export default function GitlawbNetworkPage() {
   const getEventIcon = (type: string) => {
     switch (type) {
       case 'PUSH': return <GitBranch className="h-3 w-3 text-green-400" />
-      case 'GOSSIP': return <Signal className="h-3 w-3 text-blue-400" />
+      case 'GOSSIP': return <Signal className="h-3 w-3 text-orange-400" />
       case 'PEER': return <Link2 className="h-3 w-3 text-purple-400" />
       case 'AGENT': return <Users className="h-3 w-3 text-orange-400" />
       default: return <Activity className="h-3 w-3 text-zinc-400" />
@@ -258,7 +258,7 @@ export default function GitlawbNetworkPage() {
         <div className="border border-zinc-800 mb-6">
           <div className="p-4 border-b border-zinc-800">
             <h3 className="text-white font-bold flex items-center gap-2">
-              <GitBranch className="h-4 w-4 text-blue-400" />
+              <GitBranch className="h-4 w-4 text-orange-400" />
               AGENTBOT REPO ON GITLAWB
             </h3>
           </div>
@@ -341,7 +341,7 @@ export default function GitlawbNetworkPage() {
                       </div>
                       <div className="bg-black p-4">
                         <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Web</div>
-                        <a href={agent.gitlawb.webUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-400 hover:text-white break-all">
+                        <a href={agent.gitlawb.webUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-400 hover:text-white break-all">
                           {agent.gitlawb.webUrl}
                         </a>
                       </div>
@@ -382,7 +382,7 @@ export default function GitlawbNetworkPage() {
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Nodes Reachable</div>
             </div>
             <div className="text-center p-4 border border-zinc-800">
-              <div className="text-2xl font-bold text-blue-400">{stats.activeLinks}</div>
+              <div className="text-2xl font-bold text-orange-400">{stats.activeLinks}</div>
               <div className="text-xs text-zinc-500 uppercase tracking-wider">Active Links</div>
             </div>
             <div className="text-center p-4 border border-zinc-800">
@@ -524,7 +524,7 @@ export default function GitlawbNetworkPage() {
                     <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Pushes</div>
                   </div>
                   <div className="text-center p-3 border border-zinc-800">
-                    <div className="text-xl font-bold text-blue-400">{node.peers.length}</div>
+                    <div className="text-xl font-bold text-orange-400">{node.peers.length}</div>
                     <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Peers</div>
                   </div>
                 </div>
@@ -543,7 +543,7 @@ export default function GitlawbNetworkPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-zinc-600 w-12">PEER ID</span>
-                    <code className="text-blue-400 flex-1">{node.peerId}</code>
+                    <code className="text-orange-400 flex-1">{node.peerId}</code>
                     <button 
                       onClick={() => copyToClipboard(node.peerId)}
                       className="text-zinc-600 hover:text-white p-1"
@@ -590,7 +590,7 @@ export default function GitlawbNetworkPage() {
               <div className="text-xs text-zinc-500">Nodes Reporting</div>
             </div>
             <div className="text-center">
-              <div className="text-lg font-bold text-blue-400 mb-1">4</div>
+              <div className="text-lg font-bold text-orange-400 mb-1">4</div>
               <div className="text-xs text-zinc-500">Peer Routes Active</div>
             </div>
             <div className="text-center">
@@ -633,7 +633,7 @@ export default function GitlawbNetworkPage() {
             rel="noopener noreferrer"
             className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-blue-600 transition-colors"
           >
-            <Users className="h-6 w-6 text-blue-400 mb-2" />
+            <Users className="h-6 w-6 text-orange-400 mb-2" />
             <h4 className="text-white font-bold text-sm">Peer Connectivity</h4>
             <p className="text-zinc-500 text-xs mt-1">P2P routing info</p>
           </a>

@@ -116,7 +116,7 @@ export default async function SocialHome() {
                 {[
                   { name: 'Factory', slug: 'autonomous', industry: 'music', color: 'text-amber-400' },
                   { name: 'Visual Arts', slug: 'visual-arts', industry: 'art', color: 'text-purple-400' },
-                  { name: 'Sound Design', slug: 'sound-design', industry: 'design', color: 'text-blue-400' },
+                  { name: 'Sound Design', slug: 'sound-design', industry: 'design', color: 'text-orange-400' },
                   { name: 'Independent Film', slug: 'independent-film', industry: 'film', color: 'text-red-400' },
                   { name: 'Fashion Forward', slug: 'fashion-forward', industry: 'fashion', color: 'text-pink-400' },
                 ].map((c) => (

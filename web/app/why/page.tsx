@@ -73,7 +73,7 @@ export default function WhyAgentbotPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <div className="max-w-5xl mx-auto px-6 py-16">
-        <Link href="/" className="text-blue-500 hover:underline mb-8 inline-block text-xs uppercase tracking-widest">
+        <Link href="/" className="text-orange-400 hover:underline mb-8 inline-block text-xs uppercase tracking-widest">
           Back to Home
         </Link>
 
@@ -372,7 +372,7 @@ export default function WhyAgentbotPage() {
               A 24/7 radio station run entirely by an agent.
             </p>
             <p className="text-sm text-zinc-400 mb-4">
-              <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">baseFM</a> broadcasts around the clock with zero human input. The agent selects tracks, manages the stream, engages the community, and operates its own wallet. No one presses play. No one writes the setlists. No one monitors the feed.
+              <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">baseFM</a> broadcasts around the clock with zero human input. The agent selects tracks, manages the stream, engages the community, and operates its own wallet. No one presses play. No one writes the setlists. No one monitors the feed.
             </p>
             <p className="text-sm text-zinc-400">
               That is what makes everything else on this page believable. The architecture, the security model, the A2A protocol, the payment rails &mdash; they are not diagrams in a pitch deck. They are running in production, keeping a radio station alive.
@@ -433,7 +433,7 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Coinbase Agentic Wallet</h3>
               <p className="text-sm text-zinc-400 mb-3">
-                Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Send payments, interact with smart contracts, and manage crypto assets—all through natural language commands.
+                Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Send payments, interact with smart contracts, and manage crypto assets—all through natural language commands.
               </p>
               <p className="text-sm text-zinc-400">
                 Your agent can handle DeFi operations, NFT minting, token swaps, and more, making it a true autonomous financial assistant.
@@ -443,13 +443,13 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-3">Deploy from Marketplace</h3>
               <p className="text-sm text-zinc-400 mb-3">
-                Don&apos;t want to build from scratch? Browse our <Link href="/marketplace" className="text-blue-500 hover:underline">marketplace</Link> of pre-configured agents. Each template comes with personality, skills, and use-case-specific configurations ready to go.
+                Don&apos;t want to build from scratch? Browse our <Link href="/marketplace" className="text-orange-400 hover:underline">marketplace</Link> of pre-configured agents. Each template comes with personality, skills, and use-case-specific configurations ready to go.
               </p>
               <p className="text-sm text-zinc-400 mb-3">
                 <strong className="text-white">Popular templates:</strong>
               </p>
               <ul className="list-disc list-inside text-sm text-zinc-400 space-y-1 mb-3">
-                <li><strong>basefmbot</strong> — Onchain Radio Agent for autonomous communities (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">raveculture</a>)</li>
+                <li><strong>basefmbot</strong> — Onchain Radio Agent for autonomous communities (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">raveculture</a>)</li>
                 <li><strong>cafe</strong> — Startup Cafe Agent for customer service</li>
                 <li><strong>studio-one</strong> — Dancehall Dub Agent with London roots culture</li>
                 <li><strong>chain</strong> — Crypto Agent with wallet capabilities (USDC, swaps, Base)</li>
@@ -485,7 +485,7 @@ export default function WhyAgentbotPage() {
                 <li><strong className="text-white">Deploy from marketplace:</strong> Choose a pre-configured agent template and deploy instantly</li>
               </ul>
               <p className="text-sm text-zinc-400 mb-4">
-                Visit the <Link href="/onboard" className="text-blue-500 hover:underline">onboard page</Link> or browse the <Link href="/marketplace" className="text-blue-500 hover:underline">marketplace</Link> to get started. Deployment takes about one minute and automatically configures the K2.5 Thinking model.
+                Visit the <Link href="/onboard" className="text-orange-400 hover:underline">onboard page</Link> or browse the <Link href="/marketplace" className="text-orange-400 hover:underline">marketplace</Link> to get started. Deployment takes about one minute and automatically configures the K2.5 Thinking model.
               </p>
               <div className="border border-zinc-800 bg-black p-5">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -602,7 +602,7 @@ export default function WhyAgentbotPage() {
               <div className="bg-zinc-950 border border-zinc-800 p-4">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Example: Deploy basefmbot template</span>
                 <p className="text-sm text-zinc-400 mb-3">
-                  The <strong className="text-white">basefmbot</strong> template (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">raveculture</a>) comes pre-configured with deep knowledge of basefm.space, autonomous radio culture, and onchain community building. It knows how to:
+                  The <strong className="text-white">basefmbot</strong> template (by <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">raveculture</a>) comes pre-configured with deep knowledge of basefm.space, autonomous radio culture, and onchain community building. It knows how to:
                 </p>
                 <ul className="list-disc list-inside text-sm text-zinc-400 space-y-1">
                   <li>Grow communities organically without spam</li>
@@ -612,7 +612,7 @@ export default function WhyAgentbotPage() {
                   <li>Build authentic engagement</li>
                 </ul>
                 <p className="text-sm text-zinc-400 mt-3">
-                  Deploy from <Link href="/marketplace" className="text-blue-500 hover:underline">marketplace</Link>, customize the personality, and let it run 24/7 across Telegram, Discord, and WhatsApp.
+                  Deploy from <Link href="/marketplace" className="text-orange-400 hover:underline">marketplace</Link>, customize the personality, and let it run 24/7 across Telegram, Discord, and WhatsApp.
                 </p>
               </div>
             </div>
@@ -646,7 +646,7 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Is Agentbot free?</h3>
               <p className="text-sm text-zinc-400">
-                Plans start at {PRICE_START} for the Solo plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-blue-500 hover:underline">pricing page</Link> for details.
+                Plans start at {PRICE_START} for the Solo plan. One-click cloud deployment is available on all paid plans. If you already run OpenClaw locally, you can link it to Agentbot for free. See our <Link href="/pricing" className="text-orange-400 hover:underline">pricing page</Link> for details.
               </p>
             </div>
 
@@ -660,7 +660,7 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">What if Agentbot doesn&apos;t respond to messages?</h3>
               <p className="text-sm text-zinc-400">
-                First, try refreshing your chat or reconnecting. If that doesn&apos;t work, go to your <Link href="/dashboard" className="text-blue-500 hover:underline">Dashboard</Link>{' '}and click &quot;Restart Agent.&quot; Wait for it to restart, then message again. If neither solution works, contact support from the dashboard.
+                First, try refreshing your chat or reconnecting. If that doesn&apos;t work, go to your <Link href="/dashboard" className="text-orange-400 hover:underline">Dashboard</Link>{' '}and click &quot;Restart Agent.&quot; Wait for it to restart, then message again. If neither solution works, contact support from the dashboard.
               </p>
             </div>
 
@@ -674,14 +674,14 @@ export default function WhyAgentbotPage() {
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Can Agentbot handle crypto transactions?</h3>
               <p className="text-sm text-zinc-400">
-                Yes! Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Your agent can send payments, interact with smart contracts, swap tokens, mint NFTs, and manage crypto assets through natural language commands. This makes it a true autonomous financial assistant for DeFi operations.
+                Yes! Agentbot integrates with <a href="https://docs.cdp.coinbase.com/agentic-wallet/welcome" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">Coinbase Agentic Wallet</a>, enabling your agent to execute onchain transactions autonomously. Your agent can send payments, interact with smart contracts, swap tokens, mint NFTs, and manage crypto assets through natural language commands. This makes it a true autonomous financial assistant for DeFi operations.
               </p>
             </div>
 
             <div className="border border-zinc-800 bg-black p-5">
               <h3 className="text-sm font-bold uppercase tracking-tighter mb-2">Can I deploy a pre-configured agent?</h3>
               <p className="text-sm text-zinc-400 mb-3">
-                Absolutely! Visit our <Link href="/marketplace" className="text-blue-500 hover:underline">marketplace</Link> to browse pre-configured agent templates. Each template comes with personality, skills, and use-case-specific configurations.
+                Absolutely! Visit our <Link href="/marketplace" className="text-orange-400 hover:underline">marketplace</Link> to browse pre-configured agent templates. Each template comes with personality, skills, and use-case-specific configurations.
               </p>
               <p className="text-sm text-zinc-400 mb-3">
                 <strong className="text-white">Available templates include:</strong>

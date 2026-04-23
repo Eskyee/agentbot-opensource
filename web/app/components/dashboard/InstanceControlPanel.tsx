@@ -565,7 +565,7 @@ export function InstanceControlPanel({
             ) : null}
 
             {!canLaunchBasefm ? (
-              <div className="mt-4 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-200">
+              <div className="mt-4 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-orange-400">
                 Agentbot token perks work like the baseFM token here. Claim your Solana Agentbot holder status, then this panel can launch a stream with that verified wallet.
               </div>
             ) : null}

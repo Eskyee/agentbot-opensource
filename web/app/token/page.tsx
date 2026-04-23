@@ -143,7 +143,7 @@ export default async function TokenPage() {
                 href={COMMUNITY_TOKEN.pumpFunUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-blue-200 transition-colors hover:border-blue-400/60 hover:text-white"
+                className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-400 transition-colors hover:border-blue-400/60 hover:text-white"
               >
                 Trade on Pump.fun
                 <ArrowUpRight className="h-3.5 w-3.5" />
@@ -190,7 +190,7 @@ export default async function TokenPage() {
               <div className="mt-6 space-y-4">
                 <div>
                   <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Token Address</div>
-                  <code className="mt-2 block break-all rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-sm text-blue-300">
+                  <code className="mt-2 block break-all rounded-2xl border border-zinc-800 bg-black px-4 py-3 text-sm text-orange-400">
                     {COMMUNITY_TOKEN.address}
                   </code>
                 </div>

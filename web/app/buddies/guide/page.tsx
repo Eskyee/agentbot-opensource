@@ -78,7 +78,7 @@ export default function BuddiesGuidePage() {
                 <div>
                   <h3 className="text-lg font-bold mb-2">Step 3: Play Together</h3>
                   <p className="text-zinc-400 text-sm leading-relaxed mb-3">
-                    Press <span className="text-blue-400 font-bold">&quot;Play&quot;</span> to interact with your buddy.
+                    Press <span className="text-orange-400 font-bold">&quot;Play&quot;</span> to interact with your buddy.
                     Each play session gives <span className="text-pink-400">+15 happiness</span> and <span className="text-purple-400">+25 XP</span> -- 
                     the fastest way to level up.
                   </p>
@@ -123,7 +123,7 @@ export default function BuddiesGuidePage() {
               </thead>
               <tbody>
                 {[
-                  { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'text-cyan-400', desc: 'Your basic AI companion', rate: '37.5%' },
+                  { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'text-orange-400', desc: 'Your basic AI companion', rate: '37.5%' },
                   { emoji: '⚡', name: 'Spark Agent', rarity: 'Uncommon', color: 'text-yellow-400', desc: 'Charged with extra energy', rate: '25%' },
                   { emoji: '👻', name: 'Ghost Agent', rarity: 'Rare', color: 'text-purple-400', desc: 'Mysterious and elusive', rate: '12.5%' },
                   { emoji: '🐉', name: 'Dragon Agent', rarity: 'Epic', color: 'text-green-400', desc: 'Powerful and wise', rate: '12.5%' },

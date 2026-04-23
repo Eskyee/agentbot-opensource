@@ -56,7 +56,7 @@ export default function SignupPage() {
         </div>
         {showReferralBadge && (
           <div className="mb-6">
-            <span className="inline-block border border-blue-500/30 text-blue-500 px-3 py-1 text-[10px] uppercase tracking-widest">
+            <span className="inline-block border border-blue-500/30 text-orange-400 px-3 py-1 text-[10px] uppercase tracking-widest">
               Discount Applied
             </span>
           </div>

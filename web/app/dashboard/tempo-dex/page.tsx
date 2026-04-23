@@ -41,7 +41,7 @@ export default function TempoDexPage() {
     <DashboardShell>
       <DashboardHeader
         title="Tempo DEX"
-        icon={<ArrowDownUp className="h-5 w-5 text-blue-400" />}
+        icon={<ArrowDownUp className="h-5 w-5 text-orange-400" />}
         action={
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-zinc-600 font-mono">Chain 4217</span>

@@ -23,7 +23,7 @@ const COACH_MODULES = [
     key: 'identity-verification',
     name: 'Onchain Verification',
     description: 'Link your agent to your onchain identity to prove a real human is behind it.',
-    icon: <Shield className="h-5 w-5 text-blue-400" />,
+    icon: <Shield className="h-5 w-5 text-orange-400" />,
     steps: 3,
     href: '/dashboard/verify',
     tag: 'TRUST'
@@ -64,8 +64,8 @@ export default function CoachPage() {
         text="Teaching the next generation of autonomous operators. Follow the factory protocol."
       >
         <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full">
-          <GraduationCap className="h-3.5 w-3.5 text-orange-500" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500">OPERATOR TRAINING</span>
+          <GraduationCap className="h-3.5 w-3.5 text-orange-400" />
+          <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">OPERATOR TRAINING</span>
         </div>
       </DashboardHeader>
 
@@ -111,7 +111,7 @@ export default function CoachPage() {
                     {module.tag}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold uppercase tracking-tight mb-2 group-hover:text-orange-500 transition-colors">
+                <h3 className="text-sm font-bold uppercase tracking-tight mb-2 group-hover:text-orange-400 transition-colors">
                   {module.name}
                 </h3>
                 <p className="text-xs text-zinc-500 mb-6 leading-relaxed">

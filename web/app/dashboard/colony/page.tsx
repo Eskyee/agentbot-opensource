@@ -123,8 +123,8 @@ function SoulIndicators({ soul }: { soul: ColonyData['root']['soul'] }) {
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4 mb-8">
       <div className="flex items-center gap-2 mb-3">
-        <Zap className="w-3 h-3 text-blue-400" />
-        <span className="text-[10px] font-mono text-blue-400 uppercase">Soul State</span>
+        <Zap className="w-3 h-3 text-orange-400" />
+        <span className="text-[10px] font-mono text-orange-400 uppercase">Soul State</span>
         <StatusPill
           status={soul.dormant ? 'idle' : 'active'}
           label={soul.dormant ? 'dormant' : soul.mode}
@@ -213,7 +213,7 @@ export default function ColonyPage() {
         href={dashboardUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors"
+        className="border border-zinc-700 hover:border-blue-500 text-orange-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2 transition-colors"
       >
         <ExternalLink className="w-3 h-3" />
         Borg Dashboard
@@ -281,7 +281,7 @@ export default function ColonyPage() {
                 href={dashboardUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-zinc-700 hover:border-blue-500 text-blue-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2"
+                className="border border-zinc-700 hover:border-blue-500 text-orange-400 text-[10px] font-bold uppercase tracking-widest py-2 px-4 flex items-center gap-2"
               >
                 <ExternalLink className="w-3 h-3" />
                 Borg Dashboard
@@ -334,7 +334,7 @@ export default function ColonyPage() {
                   {data.degraded ? 'DEGRADED FEED' : 'LIVE FEED'}
                 </span>
                 <span className="text-zinc-500">
-                  Source: <a href={data.root.serviceUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{data.root.serviceUrl}</a>
+                  Source: <a href={data.root.serviceUrl} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">{data.root.serviceUrl}</a>
                 </span>
                 {data.detail ? <span className="text-zinc-600">{data.detail}</span> : null}
               </div>
