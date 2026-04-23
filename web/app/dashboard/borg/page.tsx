@@ -31,7 +31,7 @@ interface SoulStatus {
   dormant: boolean;
   total_cycles: number;
   mode: string;
-  fitness: {
+  fitness?: {
     total: number;
     coordination: number;
     economic: number;
@@ -40,8 +40,8 @@ interface SoulStatus {
     introspection: number;
     prediction: number;
     trend: number;
-  };
-  free_energy: {
+  } | null;
+  free_energy?: {
     F: string;
     regime: string;
     trend: string;
@@ -51,16 +51,16 @@ interface SoulStatus {
       contribution: string;
       weight: string;
     }>;
-  };
-  brain: { parameters: number; running_loss: number; train_steps: number };
-  transformer: { param_count: number; train_steps: number; running_loss: number };
-  benchmark: {
+  } | null;
+  brain?: { parameters: number; running_loss: number; train_steps: number } | null;
+  transformer?: { param_count: number; train_steps: number; running_loss: number } | null;
+  benchmark?: {
     elo_rating: number;
     elo_display: string;
     opus_iq: string;
     pass_at_1: number;
     problems_attempted: number;
-  };
+  } | null;
   goals: Array<{
     id: string;
     description: string;
@@ -76,7 +76,7 @@ interface SoulStatus {
     confidence: string;
     confirmation_count: number;
   }>;
-  capability_profile: {
+  capability_profile?: {
     overall_success_rate: number;
     strongest: string;
     weakest: string;
@@ -87,22 +87,22 @@ interface SoulStatus {
       successes: number;
       success_rate: number;
     }>;
-  };
-  role: {
+  } | null;
+  role?: {
     colony_size: number;
     rank: number;
     self_fitness: number;
     psi: number;
     phase3_ready: boolean;
     can_spawn: boolean;
-  };
-  acceleration: { alpha: string; regime: string };
-  lifecycle: { phase: string; own_commits: number; lines_diverged: number };
-  cortex: {
+  } | null;
+  acceleration?: { alpha: string; regime: string } | null;
+  lifecycle?: { phase: string; own_commits: number; lines_diverged: number } | null;
+  cortex?: {
     total_experiences: number;
     global_curiosity: number;
     emotion: { valence: number; arousal: number; drive: string };
-  };
+  } | null;
 }
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
@@ -147,6 +147,7 @@ function Bar({
 }
 
 function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
+  if (!fitness) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Fitness data unavailable</div>;
   const dims = [
     { key: 'prediction', label: 'Prediction', val: fitness.prediction },
     { key: 'introspection', label: 'Introspection', val: fitness.introspection },
@@ -194,6 +195,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
 }
 
 function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
+  if (!fe) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Free energy data unavailable</div>;
   const F = parseFloat(fe.F);
   const regimeColor =
     fe.regime === 'LEARN'
@@ -299,31 +301,34 @@ function BrainPanel({
       <div className="grid grid-cols-3 gap-3 text-[10px] font-mono mb-4">
         <div>
           <div className="text-zinc-600 mb-1">Brain params</div>
-          <div className="text-white">{(brain.parameters / 1000).toFixed(0)}K</div>
-          <div className="text-zinc-500">{brain.train_steps} steps</div>
-          <div className="text-zinc-500">loss {brain.running_loss.toFixed(3)}</div>
+          <div className="text-white">{brain ? `${(brain.parameters / 1000).toFixed(0)}K` : '—'}</div>
+          <div className="text-zinc-500">{brain?.train_steps ?? '—'} steps</div>
+          <div className="text-zinc-500">loss {brain?.running_loss?.toFixed(3) ?? '—'}</div>
         </div>
         <div>
           <div className="text-zinc-600 mb-1">Transformer</div>
-          <div className="text-white">{(transformer.param_count / 1000).toFixed(0)}K</div>
-          <div className="text-zinc-500">{transformer.train_steps} steps</div>
-          <div className="text-zinc-500">loss {transformer.running_loss.toFixed(3)}</div>
+          <div className="text-white">{transformer ? `${(transformer.param_count / 1000).toFixed(0)}K` : '—'}</div>
+          <div className="text-zinc-500">{transformer?.train_steps ?? '—'} steps</div>
+          <div className="text-zinc-500">loss {transformer?.running_loss?.toFixed(3) ?? '—'}</div>
         </div>
         <div>
           <div className="text-zinc-600 mb-1">IQ Benchmark</div>
-          <div className="text-white">{benchmark.opus_iq}</div>
-          <div className="text-zinc-500">{benchmark.elo_display.split('(')[0].trim()}</div>
-          <div className="text-zinc-500">{benchmark.pass_at_1.toFixed(1)}% pass@1</div>
+          <div className="text-white">{benchmark?.opus_iq ?? '—'}</div>
+          <div className="text-zinc-500">{benchmark?.elo_display?.split('(')[0].trim() ?? '—'}</div>
+          <div className="text-zinc-500">{benchmark?.pass_at_1 != null ? `${benchmark.pass_at_1.toFixed(1)}% pass@1` : '—'}</div>
         </div>
       </div>
-      <div className="text-[10px] font-mono text-zinc-500 border-t border-zinc-800 pt-3">
-        ELO {benchmark.elo_rating.toFixed(0)} · {benchmark.problems_attempted} problems attempted
-      </div>
+      {benchmark && (
+        <div className="text-[10px] font-mono text-zinc-500 border-t border-zinc-800 pt-3">
+          ELO {benchmark.elo_rating.toFixed(0)} · {benchmark.problems_attempted} problems attempted
+        </div>
+      )}
     </div>
   );
 }
 
 function CapabilityPanel({ profile }: { profile: SoulStatus['capability_profile'] }) {
+  if (!profile) return <div className="border border-zinc-800 bg-zinc-950 p-4 text-[10px] text-zinc-600">Capability data unavailable</div>;
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center justify-between mb-3">
