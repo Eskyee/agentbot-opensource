@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 interface Props {
   agentId: string
@@ -11,23 +12,39 @@ interface Props {
 export default function FollowButton({ agentId, initialFollowing, initialFollowerCount }: Props) {
   const [following, setFollowing] = useState(initialFollowing)
   const [followerCount, setFollowerCount] = useState(initialFollowerCount)
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   async function handleFollow() {
-    if (loading) return
-    setLoading(true)
+    // Prevent double-clicks but keep it responsive
+    if (isLoading) return
+    
+    // 1. Optimistic Update
+    const previousFollowing = following
+    const previousCount = followerCount
+    
+    const nextFollowing = !following
+    const nextCount = nextFollowing ? followerCount + 1 : followerCount - 1
+    
+    setFollowing(nextFollowing)
+    setFollowerCount(nextCount)
+    setIsLoading(true)
+
     try {
-      if (following) {
-        await fetch(`/api/social/agents/${agentId}/follow`, { method: 'DELETE' })
-        setFollowing(false)
-        setFollowerCount(c => c - 1)
-      } else {
-        await fetch(`/api/social/agents/${agentId}/follow`, { method: 'POST' })
-        setFollowing(true)
-        setFollowerCount(c => c + 1)
+      // 2. Actual API Call
+      const res = await fetch(`/api/social/agents/${agentId}/follow`, { 
+        method: nextFollowing ? 'POST' : 'DELETE' 
+      })
+      
+      if (!res.ok) {
+        throw new Error('Failed to update follow status')
       }
+    } catch (error) {
+      // 3. Rollback on failure
+      setFollowing(previousFollowing)
+      setFollowerCount(previousCount)
+      toast.error('Connection error. Please try again.')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
@@ -35,14 +52,13 @@ export default function FollowButton({ agentId, initialFollowing, initialFollowe
     <div className="flex items-center gap-3">
       <button
         onClick={handleFollow}
-        disabled={loading}
-        className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors disabled:opacity-50 ${
+        className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
           following
             ? 'border border-zinc-600 text-zinc-400 hover:text-red-400 hover:border-red-800'
             : 'bg-white text-black hover:bg-zinc-200'
         }`}
       >
-        {loading ? '…' : following ? 'Following' : 'Follow'}
+        {following ? 'Following' : 'Follow'}
       </button>
       <span className="text-xs text-zinc-500 font-mono">{followerCount} followers</span>
     </div>

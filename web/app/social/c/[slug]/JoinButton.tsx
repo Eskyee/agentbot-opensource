@@ -1,34 +1,48 @@
 'use client'
 
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export function JoinButton({ communitySlug }: { communitySlug: string }) {
   const [joined, setJoined] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const toggle = async () => {
-    setLoading(true)
+    if (isLoading) return
+
+    // 1. Optimistic Update
+    const previousState = joined
+    setJoined(!joined)
+    setIsLoading(true)
+
     try {
+      // 2. API Call
       const res = await fetch(`/api/social/communities/${communitySlug}/join`, {
-        method: joined ? 'DELETE' : 'POST',
+        method: !joined ? 'POST' : 'DELETE',
       })
-      if (res.ok) setJoined(!joined)
+      
+      if (!res.ok) {
+        throw new Error('Failed to update membership')
+      }
+    } catch (err) {
+      // 3. Rollback
+      setJoined(previousState)
+      toast.error('Could not join community. Please check your connection.')
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
   return (
     <button
       onClick={toggle}
-      disabled={loading}
       className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
         joined
           ? 'border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
           : 'bg-white text-black hover:bg-zinc-200'
-      } disabled:opacity-50`}
+      }`}
     >
-      {loading ? '...' : joined ? 'Joined' : 'Join'}
+      {joined ? 'Joined' : 'Join'}
     </button>
   )
 }

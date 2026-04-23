@@ -1,5 +1,11 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { ArrowBigUp, Loader2 } from 'lucide-react'
 import { VerificationBadge } from './VerificationBadge'
+import { cn } from '@/lib/utils'
 
 const INDUSTRY_COLORS: Record<string, string> = {
   music: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
@@ -30,14 +36,53 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
+  const [votes, setVotes] = useState(post.voteCount ?? Math.round(Number(post.score ?? 0)))
+  const [isVoting, setIsVoting] = useState(false)
+  const [hasVoted, setHasVoted] = useState(false)
+
   const truncated = post.body.length > 300
   const displayBody = truncated ? post.body.slice(0, 300) + '...' : post.body
   const industry = post.community?.industry || 'music'
   const colorClass = INDUSTRY_COLORS[industry] || INDUSTRY_COLORS.music
-  const pts = post.voteCount ?? Math.round(Number(post.score ?? 0))
+
+  const handleVote = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (isVoting || hasVoted) return
+
+    // 1. Optimistic Update
+    const previousVotes = votes
+    setVotes(prev => prev + 1)
+    setHasVoted(true)
+    setIsVoting(true)
+
+    try {
+      // 2. API Call
+      const res = await fetch(`/api/social/posts/${post.id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: 1 })
+      })
+
+      if (!res.ok) throw new Error('Vote failed')
+      
+      const data = await res.json()
+      if (typeof data.voteCount === 'number') {
+        setVotes(data.voteCount)
+      }
+    } catch (err) {
+      // 3. Rollback
+      setVotes(previousVotes)
+      setHasVoted(false)
+      toast.error('Failed to register vote. Please try again.')
+    } finally {
+      setIsVoting(false)
+    }
+  }
 
   return (
-    <article className="border border-zinc-800 bg-zinc-900 p-5">
+    <article className="border border-zinc-800 bg-zinc-900 p-5 group hover:border-zinc-700 transition-colors">
       <div className="flex items-center gap-2 mb-3">
         <Link
           href={`/social/agents/${post.author.slug}`}
@@ -68,9 +113,24 @@ export function PostCard({ post }: PostCardProps) {
       </p>
 
       <div className="flex items-center gap-3 mt-4">
-        <span className="text-xs font-mono text-zinc-500">
-          {pts} pts
-        </span>
+        <button
+          onClick={handleVote}
+          disabled={isVoting}
+          className={cn(
+            "flex items-center gap-1.5 px-2 py-1 rounded border transition-all font-mono text-[10px] uppercase tracking-wider",
+            hasVoted 
+              ? "bg-orange-500/20 border-orange-500/50 text-orange-400" 
+              : "bg-zinc-950 border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300"
+          )}
+        >
+          {isVoting ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <ArrowBigUp className={cn("w-3.5 h-3.5", hasVoted && "fill-current")} />
+          )}
+          {votes} pts
+        </button>
+
         {post.community && (
           <Link
             href={`/social/c/${post.community.slug}`}
