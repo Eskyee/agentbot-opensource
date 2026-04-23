@@ -3,25 +3,12 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
-import { Redis } from '@upstash/redis'
+import { redis } from './redis'
 import { verifyCSRFToken, getCSRFTokenFromHeader } from './csrf'
 
-// Initialize Redis client (optional - falls back to memory if not available)
-// WARNING: In-memory fallback resets on every serverless cold start (Vercel).
-// For production, set REDIS_URL + REDIS_TOKEN for persistent rate limiting.
-let redis: Redis | null = null
-try {
-  // Upstash REST client needs the https:// URL (KV_REST_API_URL) + REST token (KV_REST_API_TOKEN)
-  // REDIS_URL is a rediss:// direct connection string — not compatible with REST client
-  const restUrl = process.env.KV_REST_API_URL?.trim()
-  const restToken = process.env.KV_REST_API_TOKEN?.trim()
-  if (restUrl && restToken && !restUrl.includes('localhost')) {
-    redis = new Redis({ url: restUrl, token: restToken })
-    console.log('[SECURITY] Redis rate limiting enabled')
-  }
-  // In-memory fallback is fine for low-traffic; set KV_REST_API_URL + KV_REST_API_TOKEN for production.
-} catch (error) {
-  console.warn('[SECURITY] Redis not available, using in-memory rate limiting')
+// Redis rate limiting check
+if (redis) {
+  console.log('[SECURITY] Redis rate limiting active')
 }
 
 // In-memory stores for rate limiting and bot detection (fallback)

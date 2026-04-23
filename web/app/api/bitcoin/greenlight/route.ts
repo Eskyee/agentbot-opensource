@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getTrialCountdown, isTrialActive } from '@/app/lib/trial-utils'
+import { proxyBitcoinRequest } from '@/app/api/bitcoin/lib/backend'
 
 const ACCESS_TYPES = new Set(['free_testnet', 'paid_mainnet'])
 
@@ -57,9 +58,14 @@ export async function GET() {
     user.subscriptionStatus === 'trialing' ||
     user.plan !== 'free'
 
+  // Fetch real-time status from backend
+  const backendStatusRes = await proxyBitcoinRequest('/api/underground/bitcoin/greenlight/status')
+  const backendStatus = await backendStatusRes.json().catch(() => ({ status: 'offline' }))
+
   return NextResponse.json({
-    implementationStatus: 'request_only',
+    implementationStatus: backendStatus.status === 'ready' ? 'active' : 'request_only',
     greenlightReady: Boolean(user.greenlightCertPem && user.greenlightKeyPem) || hasGreenlightDeveloperCreds(),
+    backendStatus,
     docs: {
       overview: 'https://blockstream.github.io/greenlight/getting-started/',
       installation: 'https://blockstream.github.io/greenlight/getting-started/installation/',

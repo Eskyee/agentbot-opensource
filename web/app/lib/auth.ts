@@ -12,7 +12,7 @@ import { consumeWalletNonce } from "@/app/lib/wallet-nonce";
 import { isAdminEmail } from "@/app/lib/admin";
 
 function getNextAuthSecret(): string {
-  const secret = process.env.NEXTAUTH_SECRET
+  const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
   if (secret) return secret
 
   const isPreviewLikeBuild =
@@ -54,6 +54,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }) as unknown as ReturnType<typeof CredentialsProvider>
   );
 }

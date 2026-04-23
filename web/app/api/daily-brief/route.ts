@@ -3,6 +3,10 @@ import { APP_URL } from '@/app/lib/app-url'
 import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from '@/app/lib/platform-urls'
 import { prisma } from '@/app/lib/prisma'
 import { blogPosts } from '@/app/blog/blogPosts'
+import { redis } from '@/app/lib/redis'
+
+const CACHE_KEY = 'daily-brief:global'
+const CACHE_TTL = 30 // 30 seconds
 
 interface HealthCheck {
   name: string
@@ -51,7 +55,25 @@ function formatDaysAgo(date: Date, now: Date): string {
 
 export async function GET() {
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
+
+  // 1. Try Cache First
+  if (redis) {
+    try {
+      const cached = await redis.get(CACHE_KEY)
+      if (cached) {
+        return NextResponse.json(cached)
+      }
+    } catch (e) {
+      console.warn('[DailyBrief] Cache read failed:', e)
+    }
+  }
+
+  const todayStr = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
   // Run health checks + platform counts in parallel
@@ -194,11 +216,20 @@ export async function GET() {
     },
   ]
 
-  return NextResponse.json({
-    date: today,
+  const response = {
+    date: todayStr,
     generatedAt: now.toISOString(),
     brief,
-  })
+  }
+
+  // 2. Save to Cache (Async)
+  if (redis) {
+    void redis.set(CACHE_KEY, response, { ex: CACHE_TTL }).catch((e) => {
+      console.warn('[DailyBrief] Cache write failed:', e)
+    })
+  }
+
+  return NextResponse.json(response)
 }
 
 export const dynamic = 'force-dynamic'

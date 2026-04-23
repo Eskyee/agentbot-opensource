@@ -25,7 +25,7 @@
     "axios": "^1.14.0",
     "fast-xml-parser": "^5.7.0",
     "follow-redirects": "^1.15.12",
-    "uuid": "11.0.1",
+    "uuid": "^9.0.2",
     "elliptic": "6.6.1",
     "ws": "8.18.0",
     "picomatch": "^4.0.2",
@@ -36,19 +36,16 @@
     "devalue": "^5.6.4",
     "bs58": "^6.0.0",
     "rpc-websockets": {
-      "uuid": "11.0.1"
+      "uuid": "^9.0.2"
     },
     "jayson": {
-      "uuid": "11.0.1"
-    },
-    "next-auth": {
-      "uuid": "11.0.1"
+      "uuid": "^9.0.2"
     },
     "svix": {
-      "uuid": "11.0.1"
+      "uuid": "^9.0.2"
     },
     "@metamask/utils": {
-      "uuid": "11.0.1"
+      "uuid": "^9.0.2"
     },
     "@aws-sdk/xml-builder": {
       "fast-xml-parser": "^5.7.0"

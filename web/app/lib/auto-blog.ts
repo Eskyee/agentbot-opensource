@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { redis } from './redis'
 
 export type AutoBlogTrack = 'Shipping' | 'Release' | 'Field Notes' | 'Build Log'
 
@@ -28,15 +28,6 @@ function trimSecret(value: string | undefined) {
   return value?.replace(/\s+/g, '').trim() || ''
 }
 
-function getRedis() {
-  const url = trimSecret(process.env.KV_REST_API_URL)
-  const token = trimSecret(process.env.KV_REST_API_TOKEN)
-
-  if (!url || !token) return null
-
-  return new Redis({ url, token })
-}
-
 function sortPosts<T extends { isoDate: string }>(posts: T[]) {
   return [...posts].sort((a, b) => new Date(b.isoDate).getTime() - new Date(a.isoDate).getTime())
 }
@@ -45,7 +36,6 @@ export async function listAutoBlogPosts(): Promise<AutoBlogPost[]> {
   const now = Date.now()
   if (indexCache && indexCache.expiresAt > now) return indexCache.value
 
-  const redis = getRedis()
   if (!redis) return []
 
   try {
@@ -69,7 +59,6 @@ export async function getAutoBlogPost(slug: string): Promise<AutoBlogPost | null
   const cached = postCache.get(slug)
   if (cached && cached.expiresAt > now) return cached.value
 
-  const redis = getRedis()
   if (!redis) return null
 
   try {

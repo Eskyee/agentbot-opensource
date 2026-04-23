@@ -177,6 +177,17 @@ router.get('/bitcoin/liquid/info', authenticate, async (_req: Request, res: Resp
   }
 });
 
+router.get('/bitcoin/greenlight/status', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = String((req as any).userId || '');
+    const info = await BitcoinWalletService.getGreenlightStatus(userId);
+    res.json(info);
+  } catch (error: any) {
+    console.error('[Greenlight] Status error:', error.message);
+    res.status(502).json({ error: 'Failed to fetch Greenlight status' });
+  }
+});
+
 router.get('/bitcoin/wallets', authenticate, async (req: Request, res: Response) => {
   const userId = String((req as any).userId || '');
   if (!userId) return res.status(401).json({ error: 'User context required' });

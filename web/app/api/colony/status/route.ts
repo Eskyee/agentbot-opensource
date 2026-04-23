@@ -127,29 +127,53 @@ const TOKENS = [
   { address: '0x20c00000000000000000000014f22ca97301eb73' as Address, symbol: 'USDT0' },
 ];
 
+// Known claimed wallet address
+const CLAIMED_WALLET = '0x44c93edd1D1C5761A4E906f3661141E797966779' as Address;
+
 /**
  * Fetch real Tempo balance for a wallet address
  */
-async function getTempoBalance(address: Address): Promise<{ formatted: string; token: string }> {
-  for (const token of TOKENS) {
-    try {
-      const balance = await tempoClient.readContract({
-        address: token.address,
-        abi: ERC20_ABI,
-        functionName: 'balanceOf',
-        args: [address],
-      });
-      if (balance > 0n) {
-        return {
-          formatted: formatUnits(balance, 6),
-          token: token.symbol,
-        };
+async function getTempoBalance(address: Address): Promise<{ formatted: string; token: string; extra_wallets?: any[] }> {
+  const walletsToCheck = [address];
+  if (address.toLowerCase() !== CLAIMED_WALLET.toLowerCase()) {
+    walletsToCheck.push(CLAIMED_WALLET);
+  }
+
+  let primaryBalance = '0.00';
+  let primaryToken = 'USDC.e';
+  const extraWallets = [];
+
+  for (const walletAddr of walletsToCheck) {
+    for (const token of TOKENS) {
+      try {
+        const balance = await tempoClient.readContract({
+          address: token.address,
+          abi: ERC20_ABI,
+          functionName: 'balanceOf',
+          args: [walletAddr],
+        });
+        
+        const formatted = formatUnits(balance, 6);
+        
+        if (walletAddr === address) {
+          if (balance > 0n || primaryBalance === '0.00') {
+            primaryBalance = formatted;
+            primaryToken = token.symbol;
+          }
+        } else {
+          extraWallets.push({ address: walletAddr, formatted, token: token.symbol });
+        }
+      } catch {
+        continue;
       }
-    } catch {
-      continue;
     }
   }
-  return { formatted: '0.00', token: 'USDC.e' };
+
+  return { 
+    formatted: primaryBalance, 
+    token: primaryToken,
+    extra_wallets: extraWallets
+  };
 }
 
 export async function GET(request: Request) {
