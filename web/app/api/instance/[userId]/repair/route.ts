@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { controlsDisabledResponse, getOwnedOpenClawUser, OPENCLAW_CONTROLS_ENABLED } from '@/app/api/instance/_runtime'
-import { getRailwayEnvironmentId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { getRailwayEnvironmentId, railwayGql, resolveRailwayService, restartRailwayService } from '@/app/lib/railway-service'
 import { getAgentEnvVars } from '@/app/lib/railway-provision'
 import { prisma } from '@/app/lib/prisma'
 
@@ -61,15 +61,7 @@ export async function POST(
     )
 
     // Restart after env update
-    await railwayGql(
-      `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
-        serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
-      }`,
-      {
-        serviceId: railwayService.id,
-        environmentId,
-      }
-    )
+    await restartRailwayService(railwayService.id, environmentId)
 
     return NextResponse.json({ success: true, status: 'repaired' })
   } catch (err: any) {

@@ -176,6 +176,45 @@ export async function resolveRailwayService(params: {
   return match
 }
 
+export async function restartRailwayService(
+  serviceId: string,
+  environmentId: string
+): Promise<void> {
+  const projectId = getRailwayProjectId()
+
+  const data = await railwayGql<{
+    deployments?: {
+      edges?: Array<{ node?: { id: string } | null } | null>
+    }
+  }>(
+    `query LatestDeployment($input: DeploymentListInput!) {
+      deployments(input: $input, first: 1) {
+        edges { node { id } }
+      }
+    }`,
+    {
+      input: {
+        projectId,
+        serviceId,
+        environmentId,
+        status: { successfulOnly: true },
+      },
+    }
+  )
+
+  const deploymentId = data.deployments?.edges?.[0]?.node?.id
+  if (!deploymentId) {
+    throw new Error('No successful deployment found to restart')
+  }
+
+  await railwayGql(
+    `mutation DeploymentRestart($id: String!) {
+      deploymentRestart(id: $id)
+    }`,
+    { id: deploymentId }
+  )
+}
+
 export async function deleteRailwayService(serviceId: string): Promise<void> {
   await railwayGql(
     `mutation ServiceDelete($serviceId: String!) {
