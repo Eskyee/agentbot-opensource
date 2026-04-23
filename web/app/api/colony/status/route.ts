@@ -36,16 +36,23 @@ function getSoulCandidates(userUrl?: string | null) {
 
 async function isUsableSoulHost(baseUrl: string) {
   try {
-    // Some agents might serve soul status at root / or /soul/status
+    // Increase timeout to 5s to allow for Railway cold starts
     const paths = [`${baseUrl}/soul/status`, `${baseUrl}/`]
     
     for (const path of paths) {
       try {
         const res = await fetch(path, {
           headers: { Accept: 'application/json' },
-          signal: AbortSignal.timeout(3000),
+          signal: AbortSignal.timeout(5000),
           cache: 'no-store',
         });
+
+        // 502 is a sign the host EXISTS but is booting/overloaded. 
+        // We consider this a "weak" candidate rather than non-existent.
+        if (res.status === 502) {
+          console.warn(`[SoulProbe] Host ${baseUrl} returned 502 (booting/sleeping)`);
+          return 'maybe';
+        }
 
         if (!res.ok) continue;
 
@@ -53,32 +60,48 @@ async function isUsableSoulHost(baseUrl: string) {
         if (!contentType.includes('application/json')) continue;
 
         const payload = await res.json().catch(() => null);
-        // If it has 'active' or 'fitness', it's a soul host
         if (payload && typeof payload === 'object' && ('active' in payload || 'fitness' in payload)) {
-          return true;
+          return 'healthy';
         }
       } catch {
         continue;
       }
     }
-    return false;
+    return 'down';
   } catch {
-    return false;
+    return 'down';
   }
 }
 
 async function getWorkingSoulClient(userUrl?: string | null) {
   const candidates = getSoulCandidates(userUrl);
+  let fallback: { soul: SoulClient; serviceUrl: string } | null = null;
+
   for (const candidate of candidates) {
-    if (await isUsableSoulHost(candidate)) {
+    const status = await isUsableSoulHost(candidate);
+    
+    if (status === 'healthy') {
       return {
+        soul: new SoulClient(candidate),
+        serviceUrl: candidate,
+      };
+    }
+    
+    // Remember the first 'maybe' (502) candidate as our best fallback
+    if (status === 'maybe' && !fallback) {
+      fallback = {
         soul: new SoulClient(candidate),
         serviceUrl: candidate,
       };
     }
   }
 
-  throw new Error(`No healthy soul host found from: ${candidates.join(', ')}`);
+  if (fallback) {
+    console.info(`[SoulProbe] No healthy hosts, falling back to booting host: ${fallback.serviceUrl}`);
+    return fallback;
+  }
+
+  throw new Error(`No reachable soul host found from: ${candidates.join(', ')}`);
 }
 
 // Tempo RPC for real wallet balances
