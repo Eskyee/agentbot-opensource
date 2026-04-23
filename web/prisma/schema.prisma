@@ -919,6 +919,7 @@ model dj_sessions {
   ended_at      DateTime?
   max_duration  Int       @default(3600) // 1 hour in seconds
   status        String    @default("active") // active, ended, auto-ended
+  metadata      Json?     @default("{}") // Store accessType, txHash etc
 
   @@index([user_id], map: "idx_dj_sessions_user")
   @@index([wallet], map: "idx_dj_sessions_wallet")

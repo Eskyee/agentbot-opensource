@@ -60,14 +60,15 @@ export default function CoachPage() {
   return (
     <DashboardShell>
       <DashboardHeader
-        heading="Agentbot Coach"
-        text="Teaching the next generation of autonomous operators. Follow the factory protocol."
-      >
-        <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full">
-          <GraduationCap className="h-3.5 w-3.5 text-orange-400" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">OPERATOR TRAINING</span>
-        </div>
-      </DashboardHeader>
+        title="Agentbot Coach"
+        subtitle="Teaching the next generation of autonomous operators. Follow the factory protocol."
+        action={
+          <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full">
+            <GraduationCap className="h-3.5 w-3.5 text-orange-400" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-400">OPERATOR TRAINING</span>
+          </div>
+        }
+      />
 
       <DashboardContent>
         <div className="grid gap-6">

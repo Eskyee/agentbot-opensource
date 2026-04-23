@@ -43,6 +43,11 @@ interface DBHealth {
     databaseEngine: string;
     totalTables: number;
   };
+  counts: {
+    users: number;
+    agents: number;
+    activeDeployments: number;
+  };
   drift: {
     hasLegacyUsers: boolean;
     hasLegacyAgents: boolean;

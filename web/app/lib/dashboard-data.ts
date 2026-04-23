@@ -5,7 +5,7 @@
  * for maximum performance and edge caching.
  */
 
-import { cache } from 'react'
+import { unstable_cache as cache } from 'next/cache'
 
 export interface DashboardData {
   userId: string

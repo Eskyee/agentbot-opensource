@@ -101,7 +101,7 @@ export async function POST() {
       // Upsert into plural 'users' table
       await prisma.$executeRaw`
         INSERT INTO users (email, plan, stripe_subscription_id, created_at, updated_at)
-        VALUES (${u.email}, ${u.plan || 'solo'}, ${u.stripeSubscriptionId || null}, ${u.createdAt}, ${u.updatedAt})
+        VALUES (${u.email}, ${u.plan || 'solo'}, ${u.stripeSubscriptionId || null}, ${(u as any).createdAt || new Date()}, ${(u as any).updatedAt || new Date()})
         ON CONFLICT (email) DO UPDATE SET
           plan = EXCLUDED.plan,
           stripe_subscription_id = EXCLUDED.stripe_subscription_id,

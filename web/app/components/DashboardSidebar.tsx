@@ -118,6 +118,7 @@ const COLLAPSED_KEY = 'agentbot_sidebar_collapsed';
 interface DashboardSidebarProps {
   userName?: string;
   credits?: number;
+  plan?: string | null;
   isOpen: boolean;
   onToggle: () => void;
 }
@@ -125,6 +126,7 @@ interface DashboardSidebarProps {
 export const DashboardSidebar = memo(function DashboardSidebar({
   userName,
   credits = 0,
+  plan,
   isOpen,
   onToggle,
 }: DashboardSidebarProps) {
@@ -457,7 +459,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate text-sm text-white">{userName || 'User'}</div>
               <div className="text-[10px] uppercase tracking-widest text-zinc-500">
-                {credits > 0 ? `${credits} credits` : 'Agent'}
+                {plan || dashboardData?.plan || 'Solo'} Plan {credits > 0 ? `| ${credits} cr` : ''}
               </div>
             </div>
           </div>
