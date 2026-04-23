@@ -34,8 +34,22 @@
 - Site ready for Vercel redeploy to seed new skills.
 
 ### Git State
-- Branch: `fix/agentic-market-embed-clean`
-- All transformation changes staged for commit.
+- Branch: `main`
+- All transformation changes pushed.
+
+### URGENT OPS WARNING: Railway Ghost Charges
+- **Issue**: User is still being charged $2.58/day for `bitcoind-mainnet` despite service deletion.
+- **Root Cause**: Persistent Volumes (`bitcoind-mainnet-volume`) are likely still active in the `motivated-comfort` project. Railway CLI (`railway list`) does not show this project in the current context.
+- **ACTION REQUIRED**: 
+    1. Log in to Railway Dashboard (UI).
+    2. Locate Project: `motivated-comfort`.
+    3. Manually delete ALL volumes starting with `bitcoin-*`.
+    4. Ensure no "ghost" deployments are active in hidden environments.
+
+### Production Build Stability
+- Verified local build (`npm run build`) in `web` directory successful.
+- Resolved 13+ build failures caused by Next.js 16 / React 19 upgrade.
+- Deployed mandatory Suspense boundaries and fixed module parse errors in `basefm/streams`.
 
 ---
 

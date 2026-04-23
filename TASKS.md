@@ -68,4 +68,11 @@
         - Integrated USDC payment verification for non-token holders in Agentbot DJ streams
         - Synchronized pricing with basefm.space native billing ($5 USDC per 2h session)
         - Added on-chain transaction verification for all paid broadcast sessions
+- [x] High-Cost Infrastructure Cleanup (Railway):
+    - Decommissioned `bitcoind-mainnet` and `bitcoin-backend-mainnet` services ($2.58/day saving)
+    - Verified backend fallback to public Blockstream explorer for watch-only wallets
+    - Switched Bitcoin Dashboard to public-node/read-only mode by default
+- [x] Cross-Platform Self-Healing Sync:
+    - Linked Agentbot cleanup cron to `basefm.space/api/admin/cleanup-all`
+    - Implemented secure cross-repo state reconciliation for live broadcast sessions
 
