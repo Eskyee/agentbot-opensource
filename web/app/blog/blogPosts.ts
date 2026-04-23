@@ -11,6 +11,26 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'factory-ai-unification',
+    dateLabel: '23 Apr',
+    isoDate: '2026-04-23',
+    title: 'The Factory AI Unification: Identity, Execution, and State',
+    excerpt:
+      'Platform update: 100% Railway migration, DID-native cryptographic signatures, durable workflow execution, and state mirroring to Gitlawb. The "Fact-Based Backend" is now live.',
+    tags: ['Architecture', 'Identity', 'Security', 'Railway'],
+    track: 'Build Log',
+  },
+  {
+    slug: 'mimo-v2-pro-factory-master',
+    dateLabel: '23 Apr',
+    isoDate: '2026-04-23',
+    title: 'MiMo V2 Pro: The New Factory Master Model',
+    excerpt:
+      'We are deploying Xiaomi MiMo V2 Pro as the default model for all new agents. High-performance logic via Vercel AI Gateway with unified rate limiting.',
+    tags: ['AI', 'Models', 'MiMo', 'Vercel'],
+    track: 'Shipping',
+  },
+  {
     slug: 'surviving-250-doc-backdoor',
     dateLabel: '21 Apr',
     isoDate: '2026-04-21',

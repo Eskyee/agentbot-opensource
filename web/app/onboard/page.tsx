@@ -24,9 +24,9 @@ function OnboardContent() {
   const [step, setStep] = useState<Step>('telegram')
   const [telegramToken, setTelegramToken] = useState('')
   const [telegramUserId, setTelegramUserId] = useState('')
-  const [aiProvider, setAiProvider] = useState('openrouter')
+  const [aiProvider, setAiProvider] = useState('vercel-gateway')
   const [apiKey, setApiKey] = useState('')
-  const [selectedModel, setSelectedModel] = useState('openrouter/xiaomi/mimo-v2-pro')
+  const [selectedModel, setSelectedModel] = useState('xiaomi/mimo-v2-pro')
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['web-search', 'file-handler'])
   const [agentType, setAgentType] = useState('general')
   const [isValidating, setIsValidating] = useState(false)
@@ -67,12 +67,12 @@ function OnboardContent() {
 
   // Available models
   const AVAILABLE_MODELS = [
-    { id: 'openrouter/xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (Recommended)', provider: 'openrouter', description: 'Xiaomi latest model. Fast, capable, great value.', recommended: true, tier: 'free' },
+    { id: 'xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (Factory Master)', provider: 'vercel-gateway', description: 'Ultra high-performance factory-grade model. Default for all new agents.', recommended: true, tier: 'free' },
+    { id: 'openrouter/xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (OpenRouter)', provider: 'openrouter', description: 'Xiaomi latest model via OpenRouter. Fast and capable.', tier: 'free' },
     { id: 'openrouter/mistralai/mistral-7b-instruct', name: 'Mistral 7B (Free Tier)', provider: 'openrouter', description: 'Lightweight & fast. Free for all users.', tier: 'free' },
     { id: 'openrouter/meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 (Advanced)', provider: 'openrouter', description: 'Advanced general assistant. Requires Solo plan.', tier: 'solo' },
     { id: 'openrouter/qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 (Coding)', provider: 'openrouter', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
     { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1 (Reasoning)', provider: 'openrouter', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
-    { id: 'openrouter/solana/solana-agent-kit', name: 'Solana Agent Kit', provider: 'openrouter', description: 'DeFi, NFTs, token ops. 60+ Solana actions via MCP. Requires Label plan.', tier: 'label' },
   ]
 
   // Available ready-to-use skills
@@ -724,7 +724,8 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'MiMo V2 Pro, Kimi K2.5, Llama, GPT, DeepSeek — Fast and reliable', recommended: true },
+                  { id: 'vercel-gateway', name: 'Factory Master (AI Gateway)', desc: 'Ultra-high performance MiMo V2 Pro — Recommended for all agents', recommended: true },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'Llama, GPT, DeepSeek, and more — Fast and reliable' },
                   { id: 'ollama', name: 'Ollama (Local)', desc: 'Run models locally on your own hardware — private & free', badge: 'PRIVATE' },
                   { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier' },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
@@ -759,6 +760,19 @@ function OnboardContent() {
                   </button>
                 ))}
               </div>
+              
+              {/* Factory Master instructions */}
+              {aiProvider === 'vercel-gateway' && (
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6">
+                  <h3 className="font-semibold mb-2 text-orange-500">Factory Master Infrastructure</h3>
+                  <p className="text-sm text-zinc-300">The MiMo V2 Pro model is pre-configured via your Vercel AI Gateway. No additional API key is required for the starter tier.</p>
+                  <ul className="mt-4 space-y-2 text-xs text-zinc-400">
+                    <li className="flex gap-2"><span>✓</span> <span>Ultra-low latency inference</span></li>
+                    <li className="flex gap-2"><span>✓</span> <span>Optimized for agent reasoning</span></li>
+                    <li className="flex gap-2"><span>✓</span> <span>Managed rate limiting</span></li>
+                  </ul>
+                </div>
+              )}
               
               {/* OpenRouter instructions */}
               {aiProvider === 'openrouter' && (
@@ -861,11 +875,11 @@ function OnboardContent() {
                   </button>
                 )}
                 <button
-                  onClick={() => mode === 'deploy' ? setStep('deploy') : setStep(aiProvider === 'openrouter' ? 'model' : 'skills')}
-                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq' && aiProvider !== 'ollama') && !apiKey}
+                  onClick={() => mode === 'deploy' ? setStep('deploy') : setStep(aiProvider === 'openrouter' || aiProvider === 'vercel-gateway' ? 'model' : 'skills')}
+                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq' && aiProvider !== 'ollama' && aiProvider !== 'vercel-gateway') && !apiKey}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
-                  {mode === 'deploy' ? 'Deploy OpenClaw →' : aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
+                  {mode === 'deploy' ? 'Deploy OpenClaw →' : (aiProvider === 'openrouter' || aiProvider === 'vercel-gateway') ? 'Select Model →' : 'Continue →'}
                 </button>
               </div>
             </div>
