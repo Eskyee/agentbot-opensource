@@ -81,7 +81,10 @@ export async function GET(req: NextRequest) {
           detail: 'Community reward status is temporarily unavailable.',
         })
       ),
-      resolveUserMode(userId, userEmail)
+      resolveUserMode(userId, userEmail).catch((err) => {
+        console.warn('[Dashboard Data] resolveUserMode failed:', err)
+        return 'advanced' as const
+      })
     ])
 
     const operatorEnabled = isOperatorModeEnabledForUser(userEmail)
@@ -95,13 +98,24 @@ export async function GET(req: NextRequest) {
     // Probe runtime status
     const runtime = await probeOpenClawRuntime(persistedUrl)
 
+    // Safe ISO coercion — $queryRaw may return Dates as strings on serverless drivers
+    const toIso = (v: unknown): string | null => {
+      if (!v) return null
+      if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v.toISOString()
+      if (typeof v === 'string') {
+        const t = Date.parse(v)
+        return Number.isNaN(t) ? null : new Date(t).toISOString()
+      }
+      return null
+    }
+
     // Build consolidated response
     const response = {
       userId,
       credits: userData?.referralCredits || 0,
       plan: userData?.plan || 'free',
       referralCode: userData?.referralCode || null,
-      referralCount: userData?._count.referrals || 0,
+      referralCount: userData?._count?.referrals || 0,
       openclawUrl: userData?.openclawUrl || persistedUrl,
       openclawInstanceId: instanceId,
       gatewayToken: registration[0]?.gateway_token,
@@ -123,8 +137,8 @@ export async function GET(req: NextRequest) {
         plan: userData?.plan || 'free',
         openclawVersion: runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION,
         ffmpegAvailable: runtime.ffmpeg?.available || false,
-        provisionedAt: registration[0]?.registered_at?.toISOString() || agentData?.createdAt?.toISOString() || null,
-        lastSeenAt: registration[0]?.last_seen?.toISOString() || null,
+        provisionedAt: toIso(registration[0]?.registered_at) || toIso(agentData?.createdAt),
+        lastSeenAt: toIso(registration[0]?.last_seen),
         gatewayProcessStatus: registration[0]?.status || null,
         subscriptionStatus: userData?.subscriptionStatus || null,
       },

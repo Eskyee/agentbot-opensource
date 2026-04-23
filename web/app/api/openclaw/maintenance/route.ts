@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getAgentEnvVars } from '@/app/lib/railway-provision'
-import { getRailwayEnvironmentId, getRailwayProjectId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { getRailwayEnvironmentId, getRailwayProjectId, railwayGql, resolveRailwayService, restartRailwayService } from '@/app/lib/railway-service'
 import { DEFAULT_OPENCLAW_IMAGE } from '@/app/lib/openclaw-version'
 import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 import { OPENCLAW_CONTROLS_ENABLED, controlsDisabledResponse } from '@/app/api/instance/_runtime'
@@ -151,15 +151,7 @@ export async function POST(request: Request) {
       })
     }
 
-    await railwayGql(
-      `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
-        serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
-      }`,
-      {
-        serviceId: railwayService.id,
-        environmentId,
-      }
-    )
+    await restartRailwayService(railwayService.id, environmentId)
 
     return NextResponse.json({
       success: true,

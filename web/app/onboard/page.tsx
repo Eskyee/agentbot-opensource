@@ -469,7 +469,7 @@ function OnboardContent() {
         {/* Brand Image / Gap Fix */}
         <div className="aspect-video w-full bg-zinc-900 border border-zinc-800 rounded mt-8 flex items-center justify-center overflow-hidden">
           <Image 
-            src="/images/agent-factory-blueprint.webp" 
+            src="/hero-image.webp"
             alt="Agent Factory" 
             width={600} 
             height={337} 
