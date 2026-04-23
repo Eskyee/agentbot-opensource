@@ -9,37 +9,33 @@ const pool = new Pool({
 });
 
 async function audit() {
-  console.log('--- DATABASE AUDIT ---');
+  console.log('--- DEEP DATABASE AUDIT (Borg Recovery) ---');
   
   try {
-    // 1. Check plural tables (Backend)
-    console.log('\nChecking backend tables ("agents", "users")...');
-    const backendAgents = await pool.query('SELECT * FROM agents LIMIT 10');
-    console.log(`Found ${backendAgents.rowCount} agents in plural table.`);
-    backendAgents.rows.forEach(a => {
+    // 1. Search for the $3 wallet
+    console.log('\nScanning "wallets" for old funds (~$3)...');
+    const fundsResult = await pool.query('SELECT * FROM wallets WHERE balance_usdc > 2.0 AND balance_usdc < 5.0');
+    console.log(`Found ${fundsResult.rowCount} candidate wallets.`);
+    fundsResult.rows.forEach(w => {
+      console.log(`- Address: ${w.address}, Balance: ${w.balance_usdc}, Network: ${w.network}`);
+      console.log(`  User ID: ${w.user_id}, Type: ${w.wallet_type}`);
+    });
+
+    // 2. Check all wallets with ANY balance
+    console.log('\nListing ALL wallets with balance > 0...');
+    const allFunds = await pool.query('SELECT * FROM wallets WHERE balance_usdc > 0');
+    allFunds.rows.forEach(w => {
+      console.log(`- ${w.address}: ${w.balance_usdc} USDC (${w.network})`);
+    });
+
+    // 3. Search for "borg" or "master" agents
+    console.log('\nSearching for Borg-related agents...');
+    const borgAgents = await pool.query("SELECT * FROM agents WHERE name ILIKE '%borg%' OR config->>'designation' ILIKE '%borg%'");
+    console.log(`Found ${borgAgents.rowCount} Borg agents in plural table.`);
+    borgAgents.rows.forEach(a => {
       console.log(`- ID: ${a.id}, Name: ${a.name}, Status: ${a.status}`);
       console.log(`  Config: ${JSON.stringify(a.config)}`);
     });
-
-    // 2. Check singular tables (Prisma/Frontend)
-    console.log('\nChecking frontend tables ("Agent", "User")...');
-    const frontendAgents = await pool.query('SELECT * FROM "Agent" LIMIT 10');
-    console.log(`Found ${frontendAgents.rowCount} agents in singular table.`);
-    frontendAgents.rows.forEach(a => {
-      console.log(`- ID: ${a.id}, Name: ${a.name}, Status: ${a.status}`);
-      console.log(`  URL: ${a.websocketUrl}`);
-      console.log(`  Config: ${JSON.stringify(a.config)}`);
-    });
-
-    // 3. Find specifically the problematic agent
-    console.log('\nSearching for agent 8711c7cdf8242b25...');
-    const target = await pool.query('SELECT * FROM "Agent" WHERE id = $1', ['8711c7cdf8242b25']);
-    if (target.rowCount && target.rowCount > 0) {
-       console.log('Found it in "Agent" table!');
-       console.log(JSON.stringify(target.rows[0], null, 2));
-    } else {
-       console.log('NOT found in "Agent" table.');
-    }
 
   } catch (error: any) {
     console.error('Audit failed:', error.message);

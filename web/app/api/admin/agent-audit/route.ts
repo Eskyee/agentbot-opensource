@@ -9,7 +9,8 @@ export async function GET() {
   }
 
   try {
-    const agents = await prisma.agent.findMany({
+    // 1. Fetch from Prisma singular table
+    const prismaAgents = await prisma.agent.findMany({
       select: {
         id: true,
         name: true,
@@ -17,10 +18,20 @@ export async function GET() {
         websocketUrl: true,
         config: true,
       },
-      take: 20,
     });
 
-    return NextResponse.json({ agents });
+    // 2. Fetch from Backend plural table (raw SQL)
+    const backendAgents = await prisma.$queryRaw<any[]>`SELECT * FROM agents`.catch(() => []);
+    
+    // 3. Fetch from Wallets table (to find the $3)
+    const wallets = await prisma.$queryRaw<any[]>`SELECT * FROM wallets WHERE balance_usdc > 0 OR balance_usdc IS NOT NULL`.catch(() => []);
+
+    return NextResponse.json({ 
+      prismaAgents, 
+      backendAgents, 
+      wallets,
+      message: "Deep audit complete. Check 'wallets' for the missing $3."
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
