@@ -238,6 +238,11 @@ export default function BitcoinPage() {
   const [greenlight, setGreenlight] = useState<GreenlightSummary | null>(null)
   const [greenlightNotes, setGreenlightNotes] = useState('')
   const [greenlightSubmitting, setGreenlightSubmitting] = useState<'free_testnet' | 'paid_mainnet' | ''>('')
+  
+  // Greenlight credentials state
+  const [glCert, setGlCert] = useState('')
+  const [glKey, setGlKey] = useState('')
+  const [savingCredentials, setSavingCredentials] = useState(false)
 
   const loadLiquidInfo = async () => {
     setLoadingLiquid(true)
@@ -440,6 +445,36 @@ export default function BitcoinPage() {
     }
   }
 
+  const saveGreenlightCredentials = async () => {
+    if (!glCert.trim() || !glKey.trim()) {
+      setError('Both certificate and key are required')
+      return
+    }
+
+    setSavingCredentials(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/bitcoin/greenlight/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cert: glCert.trim(), key: glKey.trim() }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to save credentials')
+
+      alert('Greenlight credentials saved successfully')
+      setGlCert('')
+      setGlKey('')
+      await loadData({ quiet: true })
+    } catch (err: any) {
+      setError(err.message || 'Failed to save Greenlight credentials')
+    } finally {
+      setSavingCredentials(false)
+    }
+  }
+
   const syncPill = backendInfo?.isFullySynched
     ? <StatusPill status="active" label="Synced" size="sm" />
     : <StatusPill status="idle" label="Syncing" size="sm" />
@@ -529,6 +564,43 @@ export default function BitcoinPage() {
               </div>
 
               <div className="border border-zinc-800 bg-black/40 p-4">
+                <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3 font-bold">Developer Credentials</div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">
+                      Certificate (device.crt)
+                    </label>
+                    <textarea
+                      value={glCert}
+                      onChange={e => setGlCert(e.target.value)}
+                      placeholder="-----BEGIN CERTIFICATE----- ..."
+                      rows={3}
+                      className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-[10px] text-white font-mono focus:outline-none focus:border-orange-500/50 resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">
+                      Private Key (device-key.pem)
+                    </label>
+                    <textarea
+                      value={glKey}
+                      onChange={e => setGlKey(e.target.value)}
+                      placeholder="-----BEGIN RSA PRIVATE KEY----- ..."
+                      rows={3}
+                      className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-[10px] text-white font-mono focus:outline-none focus:border-orange-500/50 resize-none"
+                    />
+                  </div>
+                  <button
+                    onClick={saveGreenlightCredentials}
+                    disabled={savingCredentials || !glCert || !glKey}
+                    className="w-full py-2 bg-zinc-800 text-white text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-700 disabled:opacity-30 transition-colors"
+                  >
+                    {savingCredentials ? 'Saving...' : 'Save Credentials'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="border border-zinc-800 bg-black/40 p-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Your request</div>
                 {greenlight?.latestRequest ? (
                   <div className="space-y-2 text-xs text-zinc-300">
@@ -547,17 +619,6 @@ export default function BitcoinPage() {
                 ) : (
                   <p className="text-xs text-zinc-500">No Greenlight request submitted yet.</p>
                 )}
-              </div>
-
-              <div>
-                <label className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Notes for setup</label>
-                <textarea
-                  value={greenlightNotes}
-                  onChange={(e) => setGreenlightNotes(e.target.value)}
-                  rows={4}
-                  placeholder="Tell us whether you want agent payments, customer checkout, testnet-only experimentation, or a managed production rollout."
-                  className="w-full bg-black border border-zinc-800 px-3 py-2 text-xs text-white placeholder:text-zinc-700 outline-none focus:border-zinc-700"
-                />
               </div>
             </div>
 
@@ -690,16 +751,16 @@ export default function BitcoinPage() {
               </div>
 
               <div>
-                <label className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Xpub / Descriptor</label>
+                <label className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Xpub / Zpub / Descriptor</label>
                 <textarea
                   value={derivationScheme}
                   onChange={(e) => setDerivationScheme(e.target.value)}
-                  placeholder="xpub... or wpkh([fingerprint/path]xpub...)"
+                  placeholder="zpub... or xpub... or wpkh([fingerprint/path]xpub...)"
                   rows={5}
                   className="w-full bg-black border border-zinc-800 px-3 py-2 text-xs text-white placeholder:text-zinc-700 outline-none focus:border-zinc-700 font-mono"
                 />
                 <p className="text-[10px] text-zinc-500 mt-2">
-                  📱 Blockstream Green: Get xpub from Wallet → Settings → Export Xpub
+                  📱 Blockstream Green: Get zpub/xpub from Wallet → Settings → Export Xpub
                 </p>
               </div>
 

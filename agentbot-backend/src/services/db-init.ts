@@ -16,25 +16,35 @@ pool.on('error', (err) => {
 });
 
 const SCHEMA = `
--- Core tables
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   plan TEXT DEFAULT 'solo',
   stripe_subscription_id TEXT,
+  greenlight_cert_pem TEXT,                -- Blockstream Greenlight developer certificate
+  greenlight_key_pem TEXT,                 -- Blockstream Greenlight developer key
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Migration: add greenlight columns (safe on existing DBs)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS greenlight_cert_pem TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS greenlight_key_pem TEXT;
+-- Agents table
 CREATE TABLE IF NOT EXISTS agents (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   config JSONB DEFAULT '{}',
+  bitcoin_xpub TEXT,                       -- xpub/zpub/descriptor for agent's own wallet
   status TEXT DEFAULT 'active',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add bitcoin_xpub (safe on existing DBs)
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS bitcoin_xpub TEXT;
 
 CREATE TABLE IF NOT EXISTS wallets (
   id SERIAL PRIMARY KEY,

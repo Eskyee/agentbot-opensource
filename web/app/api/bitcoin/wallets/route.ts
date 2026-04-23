@@ -34,6 +34,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Agent not found or not owned by you' }, { status: 403 })
   }
 
+  // Persist xpub to Agent model for metadata tracking
+  await prisma.agent.update({
+    where: { id: agentId },
+    data: { bitcoinXpub: payload.derivationScheme }
+  }).catch(err => console.warn('[Bitcoin/Wallets] Failed to persist xpub to Agent model:', err))
+
   return proxyBitcoinRequest('/api/underground/bitcoin/wallets', {
     method: 'POST',
     headers: {

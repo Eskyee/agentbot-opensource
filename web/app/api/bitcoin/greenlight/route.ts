@@ -28,6 +28,8 @@ export async function GET() {
         plan: true,
         subscriptionStatus: true,
         trialEndsAt: true,
+        greenlightCertPem: true,
+        greenlightKeyPem: true,
       },
     }),
     prisma.greenlightAccessRequest.findFirst({
@@ -57,7 +59,7 @@ export async function GET() {
 
   return NextResponse.json({
     implementationStatus: 'request_only',
-    greenlightReady: hasGreenlightDeveloperCreds(),
+    greenlightReady: Boolean(user.greenlightCertPem && user.greenlightKeyPem) || hasGreenlightDeveloperCreds(),
     docs: {
       overview: 'https://blockstream.github.io/greenlight/getting-started/',
       installation: 'https://blockstream.github.io/greenlight/getting-started/installation/',
