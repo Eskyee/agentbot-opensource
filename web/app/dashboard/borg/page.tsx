@@ -91,6 +91,17 @@ interface SoulStatus {
   };
 }
 
+const EMPTY_FITNESS: SoulStatus['fitness'] = {
+  total: 0,
+  coordination: 0,
+  economic: 0,
+  evolution: 0,
+  execution: 0,
+  introspection: 0,
+  prediction: 0,
+  trend: 0,
+};
+
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 function StatCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
@@ -429,6 +440,7 @@ export default function BorgDashboardPage() {
   }, [fetchWallet]);
 
   const status = data?.dormant ? 'idle' : data?.active ? 'active' : 'offline';
+  const fitness = data?.fitness ?? EMPTY_FITNESS;
 
   const BorgIcon = () => (
     <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -509,9 +521,9 @@ export default function BorgDashboardPage() {
               <StatCard label="Soul Cycles" value={data.total_cycles} sub={`mode: ${data.mode}`} />
               <StatCard
                 label="Fitness"
-                value={`${Math.round(data.fitness.total * 100)}%`}
-                sub={`trend ${data.fitness.trend >= 0 ? '+' : ''}${(data.fitness.trend * 100).toFixed(3)}`}
-                accent={data.fitness.total >= 0.6 ? 'text-emerald-400' : data.fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400'}
+                value={`${Math.round(fitness.total * 100)}%`}
+                sub={`trend ${fitness.trend >= 0 ? '+' : ''}${(fitness.trend * 100).toFixed(3)}`}
+                accent={fitness.total >= 0.6 ? 'text-emerald-400' : fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400'}
               />
               <StatCard label="IQ Score" value={data.benchmark.opus_iq} sub={`ELO ${data.benchmark.elo_rating.toFixed(0)}`} />
               <StatCard
@@ -523,7 +535,7 @@ export default function BorgDashboardPage() {
 
             {/* Row 2: Fitness + Free Energy */}
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-4">
-              <FitnessPanel fitness={data.fitness} />
+              <FitnessPanel fitness={fitness} />
               <FreeEnergyPanel fe={data.free_energy} />
             </div>
 

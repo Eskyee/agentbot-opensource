@@ -93,38 +93,41 @@ async function fetchSystemMemories(): Promise<MemoryEntry[]> {
   const checks = [
     { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health`, icon: Server },
     { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health`, icon: Zap },
-    { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/health`, icon: Cpu },
-    { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/health`, icon: Shield },
+    { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/soul/status`, fallbackUrls: [`${SOUL_SERVICE_URL}/health`, `${SOUL_SERVICE_URL}/readyz`], icon: Cpu },
+    { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/soul/status`, fallbackUrls: [`${SOUL_SERVICE_URL}/health`, `${SOUL_SERVICE_URL}/readyz`], icon: Shield },
   ]
 
   for (const check of checks) {
-    try {
-      const res = await fetch(check.url, { signal: AbortSignal.timeout(5000) })
-      if (res.ok) {
-        const body = await res.json()
-        entries.push({
-          id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
-          kind: 'fact',
-          content: `${check.name} healthy — ${body.version ? `v${body.version}` : body.status || 'ok'}${body.soul_status ? `, soul: ${body.soul_status}` : ''}${body.provisioning ? `, provisioning: ${body.provisioning}` : ''}`,
-          tags: ['infra', check.name.toLowerCase().split(' ')[0]],
-          createdAt: now,
-          source: 'system',
-        })
-      } else {
-        entries.push({
-          id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
-          kind: 'alert',
-          content: `${check.name} degraded — HTTP ${res.status}`,
-          tags: ['infra', 'alert'],
-          createdAt: now,
-          source: 'system',
-        })
+    let successBody: any = null
+    let success = false
+
+    for (const candidate of [check.url, ...(check.fallbackUrls || [])]) {
+      try {
+        const res = await fetch(candidate, { signal: AbortSignal.timeout(6000) })
+        if (!res.ok) continue
+        successBody = await res.json().catch(() => ({}))
+        success = true
+        break
+      } catch {
+        // try next endpoint
       }
-    } catch {
+    }
+
+    if (success) {
+      const body = successBody || {}
+      entries.push({
+        id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
+        kind: 'fact',
+        content: `${check.name} healthy — ${body.version ? `v${body.version}` : body.status || (body.active ? 'active' : body.ready ? 'ready' : 'ok')}${body.soul_status ? `, soul: ${body.soul_status}` : ''}${body.provisioning ? `, provisioning: ${body.provisioning}` : ''}`,
+        tags: ['infra', check.name.toLowerCase().split(' ')[0]],
+        createdAt: now,
+        source: 'system',
+      })
+    } else {
       entries.push({
         id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
         kind: 'alert',
-        content: `${check.name} unreachable — connection timeout`,
+        content: `${check.name} unreachable — fallback probes exhausted`,
         tags: ['infra', 'alert'],
         createdAt: now,
         source: 'system',

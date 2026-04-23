@@ -31,7 +31,9 @@ export function buildOpenClawControlUrl({
   // Keep the UI on the shared control origin. Sending users to their raw
   // Railway runtime origin strands them on a different auth domain, and
   // runtime-local routes like /dreaming can break session/login flows.
+  const browserOrigin = typeof window !== 'undefined' ? window.location.origin : ''
   const controlUiBase = DEFAULT_OPENCLAW_CONTROL_UI_BASE || (() => {
+    if (browserOrigin) return browserOrigin
     try {
       return gatewayUrl ? new URL(gatewayUrl).origin : ''
     } catch {

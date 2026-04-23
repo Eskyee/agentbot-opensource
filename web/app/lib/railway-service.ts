@@ -89,6 +89,23 @@ function getServiceNameCandidates(agentId?: string | null, openclawUrl?: string 
   return [...candidates]
 }
 
+function normalizeServiceName(name: string): string {
+  return name.trim().toLowerCase()
+}
+
+function getServiceNameVariants(name: string): string[] {
+  const variants = new Set<string>()
+  const normalized = normalizeServiceName(name)
+  variants.add(normalized)
+
+  // Railway domains often include "-production" while service names do not.
+  if (normalized.endsWith('-production')) {
+    variants.add(normalized.replace(/-production$/, ''))
+  }
+
+  return [...variants]
+}
+
 export async function resolveRailwayService(params: {
   agentId?: string | null
   openclawUrl?: string | null
@@ -131,7 +148,27 @@ export async function resolveRailwayService(params: {
     .map((edge) => edge?.node)
     .filter((node): node is RailwayServiceNode => Boolean(node?.id && node?.name))
 
-  const match = services.find((service) => candidates.includes(service.name))
+  const normalizedCandidates = new Set(
+    candidates.flatMap((candidate) => getServiceNameVariants(candidate))
+  )
+
+  let match = services.find((service) =>
+    normalizedCandidates.has(normalizeServiceName(service.name))
+  )
+
+  // Fallback: if exact/variant name lookup fails, try contains matching on
+  // candidate fragments (useful for service names with extra suffixes).
+  if (!match) {
+    const fragmentCandidates = [...normalizedCandidates]
+      .filter((value) => value.length >= 8)
+      .sort((a, b) => b.length - a.length)
+
+    match = services.find((service) => {
+      const serviceName = normalizeServiceName(service.name)
+      return fragmentCandidates.some((candidate) => serviceName.includes(candidate))
+    })
+  }
+
   if (!match) {
     throw new Error(`Managed Railway service not found for ${candidates.join(', ')}`)
   }

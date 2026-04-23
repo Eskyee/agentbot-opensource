@@ -3,6 +3,7 @@ import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from './plat
 export interface ServiceHealth {
   name: string
   url: string
+  fallbackUrls?: string[]
 }
 
 export interface ServiceStatus {
@@ -13,13 +14,54 @@ export interface ServiceStatus {
 
 export const HEALTH_SERVICES: ServiceHealth[] = [
   { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health` },
-  { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/soul/status` },
+  {
+    name: 'Tempo Soul',
+    url: `${SOUL_SERVICE_URL}/soul/status`,
+    fallbackUrls: [
+      `${SOUL_SERVICE_URL}/health`,
+      `${SOUL_SERVICE_URL}/healthz`,
+      `${SOUL_SERVICE_URL}/readyz`,
+    ],
+  },
   { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health` },
 ]
 
 export async function checkServices(services: ServiceHealth[] = HEALTH_SERVICES): Promise<ServiceStatus[]> {
   return Promise.all(
     services.map(async (service) => {
+      const candidates = [service.url, ...(service.fallbackUrls || [])]
+
+      for (const candidate of candidates) {
+        try {
+          const res = await fetch(candidate, { signal: AbortSignal.timeout(6000) })
+          if (!res.ok) {
+            continue
+          }
+
+          const body = await res.json().catch(() => null)
+          const detail =
+            typeof body === 'object' && body !== null
+              ? ('status' in body && typeof body.status === 'string'
+                  ? body.status
+                  : 'active' in body
+                    ? ((body as { active?: boolean; dormant?: boolean }).active
+                        ? ((body as { dormant?: boolean }).dormant ? 'dormant' : 'active')
+                        : 'inactive')
+                    : 'ready' in body && typeof (body as { ready?: boolean }).ready === 'boolean'
+                      ? ((body as { ready?: boolean }).ready ? 'ready' : 'not-ready')
+                      : 'ok')
+              : 'ok'
+
+          return {
+            name: service.name,
+            status: 'ok',
+            detail,
+          }
+        } catch {
+          // try next candidate
+        }
+      }
+
       try {
         const res = await fetch(service.url, { signal: AbortSignal.timeout(4000) })
         if (!res.ok) {

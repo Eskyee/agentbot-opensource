@@ -225,7 +225,11 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        const runtime = await provisionOnRailway(agent.id, requestedPlan)
+        const registration = await prisma.$queryRaw<{ gateway_token: string }[]>`
+          SELECT gateway_token FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
+        `
+        const userGatewayToken = registration[0]?.gateway_token || crypto.randomUUID()
+        const runtime = await provisionOnRailway(agent.id, requestedPlan, userGatewayToken)
 
         await prisma.$transaction([
           prisma.user.update({

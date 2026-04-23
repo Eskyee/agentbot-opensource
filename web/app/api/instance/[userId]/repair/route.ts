@@ -43,10 +43,7 @@ export async function POST(
   const userGatewayToken = registration[0]?.gateway_token || crypto.randomUUID()
 
   try {
-    const variables = {
-      ...getAgentEnvVars(user.id, user.plan || 'solo'),
-      OPENCLAW_GATEWAY_TOKEN: userGatewayToken,
-    }
+    const variables = getAgentEnvVars(user.id, user.plan || 'solo', userGatewayToken)
 
     // Update env vars on Railway
     await railwayGql(
