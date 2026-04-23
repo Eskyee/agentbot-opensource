@@ -31,7 +31,7 @@ interface InstanceControlPanelProps {
       status: number | null
       reason: string | null
     }>
-    subdomain: string
+    subdomain?: string
     url: string
     plan: string
     botUsername?: string
@@ -125,12 +125,14 @@ function formatDate(value?: string | null) {
 function formatInstanceName(instance: InstanceControlPanelProps['instance']) {
   if (instance.botUsername) return `@${instance.botUsername}`
 
-  const label = instance.subdomain.split('.')[0] || 'Agentbot Runtime'
+  if (!instance.subdomain) return 'OpenClaw Runtime'
+
+  const label = instance.subdomain.split('.')[0] || 'OpenClaw Runtime'
   return label
     .split('-')
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+    .join(' ') || 'OpenClaw Runtime'
 }
 
 function formatPlanLabel(plan?: string | null) {

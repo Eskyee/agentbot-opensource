@@ -26,7 +26,7 @@ interface InstanceData {
     status: number | null
     reason: string | null
   }>
-  subdomain: string
+  subdomain?: string
   url: string
   plan: string
   openclawVersion?: string
