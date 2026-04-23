@@ -129,7 +129,29 @@ export async function GET(req: NextRequest) {
       healedCount += offlineAgents
     }
 
-    // 5. Send unified support alert if self-healing actions were taken
+    // 5. Cross-platform reconciliation (basefm.space)
+    const basefmOpsSecret = process.env.INTERNAL_OPS_SECRET
+    const basefmApiUrl = process.env.BASEFM_API_URL || 'https://basefm.space'
+    if (basefmOpsSecret) {
+      try {
+        const basefmRes = await fetch(`${basefmApiUrl}/api/admin/cleanup-all`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${basefmOpsSecret}` },
+          signal: AbortSignal.timeout(10000)
+        })
+        if (basefmRes.ok) {
+          const basefmData = await basefmRes.json()
+          if (basefmData.cleared > 0) {
+            results.push(`Triggered basefm.space cleanup: ${basefmData.cleared} ghost streams resolved`)
+            healedCount += basefmData.cleared
+          }
+        }
+      } catch (err) {
+        console.warn('[Self-Heal] basefm.space cross-reconciliation failed:', err)
+      }
+    }
+
+    // 6. Send unified support alert if self-healing actions were taken
     if (healedCount > 0) {
       await sendSupportAlert({
         title: '🤖 Vercel Auto-Heal Report',
