@@ -7,8 +7,6 @@
   "deploy": {
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 5,
-    "requiredMountPath": "/data",
-    "healthcheckPath": "/health",
-    "healthcheckTimeout": 300
+    "requiredMountPath": "/data"
   }
 }
