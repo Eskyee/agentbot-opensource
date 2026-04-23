@@ -5,7 +5,6 @@ const { withWorkflow } = require('workflow/next');
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  cacheComponents: true,
   typescript: {
     ignoreBuildErrors: true,
   },

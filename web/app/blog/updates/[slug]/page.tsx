@@ -8,6 +8,12 @@ type Params = Promise<{ slug: string }>
 
 export async function generateStaticParams() {
   const posts = await listAutoBlogPosts()
+  
+  if (posts.length === 0) {
+    // Next.js 16 requires at least one static param when PPR/cacheComponents is enabled
+    return [{ slug: 'welcome' }]
+  }
+
   return posts.map((post) => ({ slug: post.slug }))
 }
 

@@ -1,4 +1,3 @@
-import { cacheLife } from 'next/cache'
 import { redis } from './redis'
 
 export type AutoBlogTrack = 'Shipping' | 'Release' | 'Field Notes' | 'Build Log'
@@ -27,12 +26,8 @@ function sortPosts<T extends { isoDate: string }>(posts: T[]) {
 
 /**
  * Lists automatic blog posts from the store.
- * Uses 'use cache' for native Next.js 16 edge caching.
  */
 export async function listAutoBlogPosts(): Promise<AutoBlogPost[]> {
-  'use cache'
-  cacheLife('minutes') // Stale for 5m, revalidate 15m by default
-
   if (!redis) return []
 
   try {
@@ -49,12 +44,8 @@ export async function listAutoBlogPosts(): Promise<AutoBlogPost[]> {
 
 /**
  * Gets a specific automatic blog post by slug.
- * Uses 'use cache' for native Next.js 16 edge caching.
  */
 export async function getAutoBlogPost(slug: string): Promise<AutoBlogPost | null> {
-  'use cache'
-  cacheLife('hours') // Content doesn't change often
-
   if (!redis) return null
 
   try {

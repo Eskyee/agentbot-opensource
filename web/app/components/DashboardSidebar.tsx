@@ -134,12 +134,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   const { data: dashboardData } = useDashboardData();
   const [isPendingTransition, startTransition] = useTransition();
   
-  const { 
-    plan, 
-    openclawUrl, 
-    gatewayToken, 
-    operatorEnabled 
-  } = dashboardData;
+  const { plan: contextPlan, openclawUrl, gatewayToken, operatorEnabled } = dashboardData;
 
   // Start fully expanded (safe for SSR), hydrate from localStorage in effect
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -459,7 +454,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
             <div className="flex-1 min-w-0">
               <div className="font-medium truncate text-sm text-white">{userName || 'User'}</div>
               <div className="text-[10px] uppercase tracking-widest text-zinc-500">
-                {plan || dashboardData?.plan || 'Solo'} Plan {credits > 0 ? `| ${credits} cr` : ''}
+                {plan || contextPlan || 'Solo'} Plan {credits > 0 ? `| ${credits} cr` : ''}
               </div>
             </div>
           </div>
