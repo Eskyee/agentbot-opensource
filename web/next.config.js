@@ -5,14 +5,11 @@ const { withWorkflow } = require('workflow/next');
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  cacheComponents: true,
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   experimental: {
-    ppr: 'incremental',
     webpackMemoryOptimizations: true,
     optimizePackageImports: [
       '@base-org/account',
