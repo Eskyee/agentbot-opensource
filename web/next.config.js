@@ -11,6 +11,15 @@ const nextConfig = {
   experimental: {
     webpackMemoryOptimizations: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'indigo-decent-condor-546.mypinata.cloud',
+        pathname: '/ipfs/**',
+      },
+    ],
+  },
   output: 'standalone',
   outputFileTracingRoot: path.join(__dirname),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],

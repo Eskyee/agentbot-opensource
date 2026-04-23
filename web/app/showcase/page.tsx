@@ -60,7 +60,11 @@ export default async function ShowcasePage() {
     imageUrl: 'https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi'
   };
 
-  const agents = [eskyAgent, ...dbAgents.filter(a => a.name !== eskyAgent.name)];
+  // Deduplicate: remove any agents from DB that match the master name (case insensitive)
+  const agents = [
+    eskyAgent, 
+    ...dbAgents.filter(a => a.name.toLowerCase().trim() !== eskyAgent.name.toLowerCase().trim())
+  ];
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
