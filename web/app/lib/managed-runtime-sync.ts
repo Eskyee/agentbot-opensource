@@ -38,6 +38,19 @@ async function maybeAutoLinkManagedRuntimeForUser(userId: string): Promise<{
   }
 
   const latestAgent = await prisma.agent.findFirst({
+    where: { 
+      userId,
+      // Prioritize agents explicitly marked as managed or with a Railway URL
+      OR: [
+        { config: { path: ['managed'], equals: true } },
+        { websocketUrl: { contains: 'railway.app' } },
+        { config: { path: ['runtimeUrl'], contains: 'railway.app' } }
+      ]
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, websocketUrl: true, config: true },
+  }) || await prisma.agent.findFirst({
+    // Fallback to any latest agent if no managed one is found
     where: { userId },
     orderBy: { createdAt: 'desc' },
     select: { id: true, websocketUrl: true, config: true },
