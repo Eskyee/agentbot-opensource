@@ -5,7 +5,7 @@ import { prisma } from '@/app/lib/prisma'
 import { isTrialActive } from '@/app/lib/trial-utils'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 import { acquireWorkloadSlot, releaseWorkloadSlot, type WorkloadTicket } from '@/app/lib/workload-gate'
-import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
+import { signedFetch } from '@/app/lib/backend-client'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
@@ -147,15 +147,8 @@ export async function POST(request: NextRequest) {
       agentType: agentType || 'creative',
     }
 
-    const backendUrl = getBackendApiUrl()
-    const internalKey = getInternalApiKey()
-
-    const enqueueRes = await fetch(`${backendUrl}/api/platform-jobs/provision`, {
+    const enqueueRes = await signedFetch('/api/platform-jobs/provision', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${internalKey}`,
-      },
       body: JSON.stringify({
         ...legacyPayload,
         userId,

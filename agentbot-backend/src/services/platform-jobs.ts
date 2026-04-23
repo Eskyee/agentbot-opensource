@@ -1,6 +1,7 @@
 import { randomBytes } from 'crypto';
 import { Pool } from 'pg';
 import { provisionOnRailway } from '../routes/railway-provision';
+import { snapshotAgentState } from './gitlawb';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -109,6 +110,18 @@ async function persistProvisionCompletion(params: {
     );
 
     await client.query('COMMIT');
+
+    // State is a Fact: Snapshot the final agent state to gitlawb
+    await snapshotAgentState(params.agentId, {
+      id: params.agentId,
+      userId: params.userId,
+      name,
+      model: params.aiProvider,
+      status: params.status,
+      websocketUrl: managedAgentUrl,
+      config,
+      updatedAt: new Date().toISOString(),
+    });
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

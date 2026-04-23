@@ -126,11 +126,14 @@ CREATE TABLE IF NOT EXISTS deployments (
   user_id INTEGER REFERENCES users(id),
   agent_id INTEGER REFERENCES agents(id),
   status TEXT DEFAULT 'pending',
-  render_service_id TEXT,
+  railway_service_id TEXT,
   subdomain TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add railway_service_id (replaces render_service_id)
+ALTER TABLE deployments ADD COLUMN IF NOT EXISTS railway_service_id TEXT;
 
 -- Bookings (negotiation service)
 CREATE TABLE IF NOT EXISTS bookings (
