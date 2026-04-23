@@ -56,7 +56,8 @@
     - Added mobile-first padding and overflow management to core layouts
 - [x] Proactive Self-Healing & Vercel Monitoring:
     - Accelerated cleanup cron to 15-minute intervals
-    - Added automated repair for stuck M2M jobs, stale DJ sessions, and disconnected agents
+    - Added automated repair for stuck M2M jobs and disconnected agents
+    - Implemented active Mux API reconciliation for DJ sessions to eliminate ghost streams on `agentbot.sh` and `basefm.space`
     - Integrated `@vercel/otel` OpenTelemetry tracing in `instrumentation.ts`
     - Created `logGlobalError` Server Action to automatically pipe React boundary crashes to support webhook
 - [x] Next.js 16 & React 19 Build Fixes:

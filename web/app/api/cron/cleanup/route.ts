@@ -56,14 +56,15 @@ export async function GET(req: NextRequest) {
       healedCount += stuckJobs.count
     }
 
-    // 3. Auto-terminate stale DJ sessions
+    // 3. Auto-terminate stale DJ sessions & Reconcile with Mux
     const staleSessionThreshold = new Date(Date.now() - 4 * 60 * 60 * 1000) // 4 hours absolute max
     // @ts-ignore
     if (prisma.dj_sessions) {
+      // 3a. Hard cutoff for absolute max duration
       // @ts-ignore
       const staleDjs = await prisma.dj_sessions.updateMany({
         where: {
-          status: 'active',
+          status: { in: ['active', 'live'] },
           started_at: { lt: staleSessionThreshold },
         },
         data: {
@@ -72,8 +73,47 @@ export async function GET(req: NextRequest) {
         },
       })
       if (staleDjs.count > 0) {
-        results.push(`Auto-terminated ${staleDjs.count} stale DJ sessions`)
+        results.push(`Auto-terminated ${staleDjs.count} stale DJ sessions (max-duration)`)
         healedCount += staleDjs.count
+      }
+
+      // 3b. Active Mux reconciliation
+      const muxTokenId = process.env.MUX_TOKEN_ID
+      const muxTokenSecret = process.env.MUX_TOKEN_SECRET
+      if (muxTokenId && muxTokenSecret) {
+        try {
+          const auth = Buffer.from(`${muxTokenId}:${muxTokenSecret}`).toString('base64')
+          const muxRes = await fetch('https://api.mux.com/video/v1/live-streams?limit=100', {
+            headers: { 'Authorization': `Basic ${auth}` },
+            signal: AbortSignal.timeout(10000)
+          })
+          
+          if (muxRes.ok) {
+            const muxData = await muxRes.json()
+            const activeMuxStreamIds = new Set((muxData.data || [])
+              .filter((s: any) => s.status === 'active')
+              .map((s: any) => s.id))
+            
+            // @ts-ignore
+            const currentlyLive = await prisma.dj_sessions.findMany({
+              where: { status: { in: ['active', 'live'] } },
+              select: { id: true, mux_stream_id: true }
+            })
+
+            const ghostSessions = currentlyLive.filter(s => !activeMuxStreamIds.has(s.mux_stream_id))
+            if (ghostSessions.length > 0) {
+              // @ts-ignore
+              await prisma.dj_sessions.updateMany({
+                where: { id: { in: ghostSessions.map(s => s.id) } },
+                data: { status: 'auto-ended', ended_at: new Date() }
+              })
+              results.push(`Closed ${ghostSessions.length} ghost streams (Mux disconnected)`)
+              healedCount += ghostSessions.length
+            }
+          }
+        } catch (err) {
+          console.warn('[Self-Heal] Mux reconciliation failed:', err)
+        }
       }
     }
 
