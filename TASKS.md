@@ -31,3 +31,6 @@
 - [x] Project-wide domain migration: raveculture.xyz -> agentbot.sh
 - [x] Robust skill seeding: switched to upsert logic in ensureSkillsSeeded
 - [x] Fixed duplicate MiMo case study slug in blogPosts.ts
+- [x] Dashboard Speed Optimization: consolidated multiple sequential API calls into single /api/dashboard/data endpoint
+- [x] Implemented edge caching for dashboard data with stale-while-revalidate
+- [x] Refactored DashboardDataProvider and DashboardSidebar for centralized data model

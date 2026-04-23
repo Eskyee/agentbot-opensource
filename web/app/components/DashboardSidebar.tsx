@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, useCallback, memo, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control';

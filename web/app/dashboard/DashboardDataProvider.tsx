@@ -36,36 +36,21 @@ export function DashboardDataProvider({ children }: { children: React.ReactNode 
     if (!session?.user?.id) return
 
     try {
-      const results = await Promise.allSettled([
-        fetch('/api/billing', { cache: 'no-store' }),
-        fetch('/api/user/openclaw', { cache: 'no-store' }),
-        fetch('/api/operator/mode', { cache: 'no-store' })
-      ])
-
-      const nextData = { ...data, loading: false, lastUpdated: Date.now() }
-
-      // 1. Billing
-      if (results[0].status === 'fulfilled' && results[0].value.ok) {
-        const b = await results[0].value.json()
-        nextData.plan = b.currentPlan || 'solo'
-        nextData.subscriptionStatus = b.subscriptionStatus || 'inactive'
-      }
-
-      // 2. OpenClaw
-      if (results[1].status === 'fulfilled' && results[1].value.ok) {
-        const o = await results[1].value.json()
-        nextData.openclawUrl = o.openclawUrl || null
-        nextData.gatewayToken = o.gatewayToken || null
-        nextData.openclawInstanceId = o.openclawInstanceId || null
-      }
-
-      // 3. Operator Mode
-      if (results[2].status === 'fulfilled' && results[2].value.ok) {
-        const op = await results[2].value.json()
-        nextData.operatorEnabled = !!op.operatorEnabled
-      }
-
-      setData(nextData)
+      const res = await fetch('/api/dashboard/data', { cache: 'no-store' })
+      if (!res.ok) throw new Error('Failed to fetch dashboard data')
+      
+      const b = await res.json()
+      
+      setData({
+        plan: b.plan || 'solo',
+        subscriptionStatus: b.instance?.subscriptionStatus || 'inactive',
+        openclawUrl: b.openclawUrl || null,
+        gatewayToken: b.gatewayToken || null,
+        openclawInstanceId: b.openclawInstanceId || null,
+        operatorEnabled: !!b.operatorEnabled,
+        loading: false,
+        lastUpdated: Date.now()
+      })
     } catch (err) {
       console.error('[DashboardData] Fetch error:', err)
       setData(prev => ({ ...prev, loading: false }))

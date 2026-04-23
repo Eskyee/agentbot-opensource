@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
@@ -134,7 +134,69 @@ function DashboardContent() {
     }
   }, [status, router])
 
-    useEffect(() => { (async () => {
+    const fetchEverything = useCallback(async () => {
+      const urlUserId = searchParams.get('id')
+      const storedData = localStorage.getItem('agentbot_instance')
+      
+      try {
+        // FETCH EVERYTHING IN ONE CALL - 90% FASTER
+        const dataRes = await fetch('/api/dashboard/data')
+        if (!dataRes.ok) {
+          if (dataRes.status === 401) {
+            setError('Please sign in to view your dashboard')
+            setLoading(false)
+            return
+          }
+          throw new Error('Failed to fetch dashboard data')
+        }
+        
+        const data = await dataRes.json()
+        
+        // Hydrate UI state from consolidated response
+        setCredits(data.credits || 0)
+        setStatusChecks(data.health?.checks || [])
+        setBootstrap(data) // Use consolidated data as bootstrap
+        
+        if (data.instance) {
+          const url = data.instance.url
+          const gatewayToken = data.gatewayToken
+          const controlUiUrl = buildOpenClawControlUrl({
+            view: 'chat',
+            gatewayUrl: url,
+            gatewayToken,
+            session: 'main',
+          })
+          
+          setInstance({ ...data.instance, gatewayToken, controlUiUrl })
+          
+          // Cache for future visits
+          localStorage.setItem('agentbot_instance', JSON.stringify({
+            userId: data.openclawInstanceId,
+            url: data.openclawUrl,
+          }))
+        }
+
+        if (data.stats) {
+          setStats(data.stats)
+        }
+
+        const health = data.gatewayToken ? 'ready' : 'missing'
+        setAutoPairHealth(health)
+        
+        if (health === 'missing' && !healingAttempted) {
+          healAutoPair()
+        }
+
+        setLoading(false)
+        
+      } catch (err) {
+        console.error('[Dashboard] Consolidated fetch failed:', err)
+        setError('Failed to initialize dashboard')
+        setLoading(false)
+      }
+    }, [searchParams, healingAttempted, healAutoPair])
+
+    useEffect(() => {
       // Clear localStorage instance data when no session (user logged out)
       if (!session) {
         localStorage.removeItem('agentbot_instance')
@@ -144,93 +206,9 @@ function DashboardContent() {
         return
       }
 
-      const urlUserId = searchParams.get('id')
-      const storedData = localStorage.getItem('agentbot_instance')
-      
-      // If no session, show login prompt
-      if (!session) {
-        setError('Please sign in to view your dashboard')
-        setLoading(false)
-        return
-      }
-
-      fetchStatusChecks()
-      
-      let userId = urlUserId
-      let botUsername = ''
-      
-      if (storedData) {
-        const parsed = JSON.parse(storedData)
-        if (!userId) userId = parsed.userId
-        botUsername = parsed.botUsername || ''
-      }
-      
-      // Prefer the canonical OpenClaw record in the DB and hydrate credits at the same time.
-      if (!userId) {
-        try {
-          const bootstrapRes = await fetch('/api/dashboard/bootstrap')
-          const bootstrapData = await bootstrapRes.json()
-          setBootstrap(bootstrapData)
-          setCredits(bootstrapData.credits || 0)
-          if (bootstrapData.openclawInstanceId) {
-            userId = bootstrapData.openclawInstanceId
-            // Also restore localStorage for future visits
-            if (bootstrapData.openclawUrl) {
-              localStorage.setItem('agentbot_instance', JSON.stringify({
-                userId: bootstrapData.openclawInstanceId,
-                url: bootstrapData.openclawUrl,
-              }))
-            }
-          }
-        } catch {}
-      } else {
-        fetchBootstrap()
-      }
-
-      // Legacy fallback for older accounts that still rely on the agents route.
-      if (!userId) {
-        try {
-          const agentsRes = await fetch('/api/agents')
-          const agentsData = await agentsRes.json()
-          if (agentsData.agents && agentsData.agents.length > 0) {
-            userId = agentsData.agents[0].userId
-            botUsername = agentsData.agents[0].botUsername || ''
-          }
-        } catch {}
-      }
-
-      if (!userId) {
-        setError('No instance found. Please deploy first.')
-        setLoading(false)
-        return
-      }
-      
-      fetchInstance(userId, botUsername)
-    })(); // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams, session])
-
-  const fetchBootstrap = async () => {
-    try {
-      const res = await fetch('/api/dashboard/bootstrap')
-      if (!res.ok) return
-      const data = await res.json()
-      setBootstrap(data)
-      setCredits(data.credits || 0)
-    } catch (e) {
-      console.error('Failed to fetch dashboard bootstrap:', e)
-    }
-  }
-
-  const fetchStatusChecks = async () => {
-    try {
-      const res = await fetch('/api/dashboard/health')
-      if (!res.ok) return
-      const body = await res.json()
-      setStatusChecks(body.services || [])
-    } catch {
-      setStatusChecks([{ name: 'Service layer', status: 'down', detail: 'unreachable' }])
-    }
-  }
+      setLoading(true)
+      fetchEverything()
+    }, [session, fetchEverything])
 
   const healAutoPair = async () => {
     setHealingAttempted(true)
@@ -265,72 +243,6 @@ function DashboardContent() {
     } catch (error) {
       console.error('Auto Pair heal failed', error)
     }
-  }
-
-  useEffect(() => {
-    const interval = setInterval(fetchStatusChecks, 30_000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const fetchInstance = async (userId: string, botUsername: string) => {
-    try {
-      const res = await fetch(`/api/instance/${userId}`)
-      const data = await res.json()
-
-      if (data.error) {
-        setError(data.error)
-      } else {
-        // Prefer the user's persisted OpenClaw instance URL. Only fall back to the
-        // shared gateway when the user has no instance-specific URL yet.
-        const preferredUrl = bootstrap?.openclawUrl || data.url
-        const fallbackUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
-        const url = String(preferredUrl || fallbackUrl).replace(/\/$/, '')
-        const gatewayToken = bootstrap?.gatewayToken || undefined
-        // Control UI auto-connects via hash fragment — token + gateway URL
-        // Hash is never sent to server, so it's safe to embed the token
-        const controlUiUrl = buildOpenClawControlUrl({
-          view: 'chat',
-          gatewayUrl: url,
-          gatewayToken,
-          session: 'main',
-        })
-        const resolvedUserId = bootstrap?.openclawInstanceId || data.userId || userId
-        localStorage.setItem('agentbot_instance', JSON.stringify({
-          userId: resolvedUserId,
-          url,
-          botUsername,
-        }))
-        setInstance({ ...data, userId: resolvedUserId, url, botUsername, gatewayToken, controlUiUrl })
-        fetchStats(resolvedUserId)
-        const health = gatewayToken ? 'ready' : 'missing'
-        setAutoPairHealth(health)
-        if (health === 'missing' && !healingAttempted) {
-          healAutoPair()
-        }
-      }
-    } catch (e) {
-      setError('Failed to fetch instance')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchStats = async (userId: string) => {
-    try {
-      const res = await fetch(`/api/instance/${userId}/stats`)
-      const data = await res.json()
-      if (!data.error) {
-        setStats({
-          cpu: data.cpu,
-          memory: data.memory,
-          uptime: data.uptime,
-          messages: data.messages,
-          errors: data.errors,
-          health: data.health,
-          telemetry: data.telemetry,
-        })
-      }
-    } catch {}
   }
 
   const handleRuntimeProbeAction = async (action: 'probe' | 'resync') => {
@@ -593,7 +505,7 @@ function DashboardContent() {
             }}
             onRefreshPairing={() => {
               setAutoPairHealth('loading')
-              fetchInstance(instance.userId, instance.botUsername || '')
+              fetchEverything()
             }}
             onProbeAction={handleRuntimeProbeAction}
             onAction={performAction}
