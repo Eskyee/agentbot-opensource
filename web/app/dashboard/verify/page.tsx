@@ -34,6 +34,7 @@ interface VerifiedResult {
   agentPublicKey: string
   agentKeyHash: string
   humanId?: string
+  provider?: string
 }
 
 declare global {
@@ -67,6 +68,9 @@ function VerifyContent() {
   const [scriptFailed, setScriptFailed] = useState(false)
   const [selfDeeplink, setSelfDeeplink] = useState<string | null>(null)
   const [isMobile, setIsMobile] = useState(false)
+  const [agentkitAddress, setAgentkitAddress] = useState('')
+  const [agentkitSaving, setAgentkitSaving] = useState(false)
+  const [agentkitError, setAgentkitError] = useState<string | null>(null)
   // Bump to trigger re-mount of the SelfClaw widget after an error.
   const [retryAttempt, setRetryAttempt] = useState(0)
 
@@ -170,6 +174,7 @@ function VerifyContent() {
             agentPublicKey: data.verifierAddress || '',
             agentKeyHash: data.attestationUid || '',
             humanId: data.verificationType || undefined,
+            provider: data.verificationType || undefined,
           })
         } else {
           setVerified(false)
@@ -213,6 +218,7 @@ function VerifyContent() {
             agentPublicKey: safeResult.publicKey ?? '',
             agentKeyHash: safeResult.sessionId ?? '',
             humanId: safeResult.humanId,
+            provider: 'eas',
           }
           setVerified(true)
           setVerifiedResult(mapped)
@@ -258,6 +264,46 @@ function VerifyContent() {
     setRetryAttempt((n) => n + 1)
   }
 
+  const markAgentkitRegistered = async () => {
+    if (!agent?.agentId) return
+
+    const address = agentkitAddress.trim()
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      setAgentkitError('Enter the EVM wallet address registered in AgentBook.')
+      return
+    }
+
+    setAgentkitSaving(true)
+    setAgentkitError(null)
+
+    try {
+      const response = await fetch(`/api/agents/${agent.agentId}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          verificationType: 'agentkit',
+          walletAddress: address,
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to record AgentKit registration')
+      }
+
+      setVerified(true)
+      setVerifiedResult({
+        agentPublicKey: address,
+        agentKeyHash: data.attestationUid || `agentkit-${address.toLowerCase()}`,
+        humanId: 'agentkit',
+        provider: 'agentkit',
+      })
+    } catch (error) {
+      setAgentkitError(error instanceof Error ? error.message : 'Failed to record AgentKit registration')
+    } finally {
+      setAgentkitSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="animate-pulse space-y-4">
@@ -293,7 +339,8 @@ function VerifyContent() {
           <span className="font-bold text-sm uppercase tracking-widest">Agent Verified</span>
         </div>
         <p className="text-zinc-400 text-sm">
-          Your agent is now linked to a verified human identity via SelfClaw.
+          Your agent is now linked to a verified human identity via{' '}
+          {verifiedResult?.provider === 'agentkit' ? 'AgentKit / AgentBook' : 'SelfClaw'}.
           A <strong className="text-white">Verified Human</strong> badge will appear in agent chats.
         </p>
         {verifiedResult?.agentKeyHash && (
@@ -302,12 +349,12 @@ function VerifyContent() {
           </p>
         )}
         <a
-          href="https://selfclaw.ai"
+          href={verifiedResult?.provider === 'agentkit' ? 'https://docs.world.org/agents/agent-kit/integrate.md' : 'https://selfclaw.ai'}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-[10px] text-orange-400 hover:text-orange-400 uppercase tracking-widest font-bold"
         >
-          View on SelfClaw <ExternalLink className="w-3 h-3" />
+          {verifiedResult?.provider === 'agentkit' ? 'View AgentKit docs' : 'View on SelfClaw'} <ExternalLink className="w-3 h-3" />
         </a>
       </div>
     )
@@ -321,6 +368,7 @@ function VerifyContent() {
         <code className="text-[11px] text-zinc-400 font-mono break-all">{agent.agentId}</code>
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-2">
       {/* SelfClaw embed widget */}
       <div className="border border-zinc-700 bg-zinc-950 p-4 sm:p-6">
         <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">
@@ -391,6 +439,72 @@ function VerifyContent() {
           Your passport NFC chip is read locally — raw data never leaves your device.
         </p>
       </div>
+
+      <div className="border border-zinc-700 bg-zinc-950 p-4 sm:p-6">
+        <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">
+          Verify with{' '}
+          <a href="https://docs.world.org/agents/agent-kit/integrate.md" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-400">
+            AgentKit
+          </a>
+          {' '}/ AgentBook
+        </p>
+
+        <div className="space-y-3 text-xs text-zinc-400">
+          <p>
+            Register the wallet your agent signs with in AgentBook, then attach
+            that address here so x402 endpoints can recognize a human-backed agent.
+          </p>
+
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-600">Register</p>
+            <code className="block border border-zinc-800 bg-black px-3 py-2 text-[11px] text-zinc-300 break-all">
+              npx @worldcoin/agentkit-cli register &lt;agent-address&gt;
+            </code>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-[10px] uppercase tracking-widest text-zinc-600">Install agent skill</p>
+            <code className="block border border-zinc-800 bg-black px-3 py-2 text-[11px] text-zinc-300 break-all">
+              npx skills add worldcoin/agentkit agentkit-x402
+            </code>
+          </div>
+        </div>
+
+        <label className="mt-4 block">
+          <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Agent wallet</span>
+          <input
+            value={agentkitAddress}
+            onChange={(event) => setAgentkitAddress(event.target.value)}
+            placeholder="0x..."
+            className="w-full border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-orange-500"
+          />
+        </label>
+
+        <button
+          type="button"
+          onClick={markAgentkitRegistered}
+          disabled={agentkitSaving}
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-60 disabled:hover:bg-orange-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+        >
+          {agentkitSaving ? 'Saving...' : 'Mark AgentKit Registered'}
+        </button>
+
+        {agentkitError ? (
+          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            {agentkitError}
+          </div>
+        ) : null}
+
+        <div className="mt-4 flex flex-wrap gap-3 text-[10px] font-bold uppercase tracking-widest">
+          <a href="https://docs.world.org/llms.txt" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-white inline-flex items-center gap-1">
+            Docs index <ExternalLink className="w-3 h-3" />
+          </a>
+          <a href="/dashboard/x402" className="text-zinc-500 hover:text-white">
+            x402 Gateway
+          </a>
+        </div>
+      </div>
+      </div>
     </div>
   )
 }
@@ -420,11 +534,11 @@ export default function VerifyPage() {
         }
       />
 
-      <DashboardContent className="max-w-2xl space-y-6">
+      <DashboardContent className="max-w-4xl space-y-6">
         <SectionHeader
           label="Identity"
           title="Onchain Verification"
-          description="Link your agent to an onchain identity to prove a real human is behind it."
+          description="Link your agent to SelfClaw or AgentKit so users and x402 endpoints can identify human-backed agent traffic."
         />
 
         {/* Why verify */}

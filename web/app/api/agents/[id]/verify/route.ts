@@ -5,7 +5,7 @@ import type { Prisma } from '@prisma/client'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 
 // Supported verification types
-type VerificationType = 'eas' | 'coinbase' | 'ens' | 'webauthn'
+type VerificationType = 'eas' | 'coinbase' | 'ens' | 'webauthn' | 'agentkit'
 
 interface VerifyRequestBody {
   verificationType: VerificationType
@@ -62,6 +62,7 @@ function readLocalVerification(config: unknown) {
     attestationUid: typeof source?.attestationUid === 'string' ? source.attestationUid : null,
     verifierAddress: typeof source?.verifierAddress === 'string' ? source.verifierAddress : null,
     verifiedAt: typeof source?.verifiedAt === 'string' ? source.verifiedAt : null,
+    metadata: (source?.metadata as Record<string, unknown> | undefined) || null,
   }
 }
 
@@ -150,7 +151,7 @@ export async function POST(
     const { verificationType, attestationUid, walletAddress, signature } = body
 
     // Validate verification type
-    if (!['eas', 'coinbase', 'ens', 'webauthn'].includes(verificationType)) {
+    if (!['eas', 'coinbase', 'ens', 'webauthn', 'agentkit'].includes(verificationType)) {
       return NextResponse.json(
         { error: 'Invalid verification type' },
         { status: 400 }
@@ -248,6 +249,32 @@ export async function POST(
         }
         break
 
+      case 'agentkit':
+        if (!walletAddress || !/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+          return NextResponse.json(
+            { error: 'Valid AgentKit wallet address required' },
+            { status: 400 }
+          )
+        }
+
+        verificationResult = {
+          verified: true,
+          attestationUid: `agentkit-${walletAddress.toLowerCase()}`,
+          verifierAddress: walletAddress,
+          metadata: {
+            provider: 'agentkit',
+            agentBook: 'world-chain',
+            docsIndex: 'https://docs.world.org/llms.txt',
+            registrationCommand: `npx @worldcoin/agentkit-cli register ${walletAddress}`,
+            skillCommand: 'npx skills add worldcoin/agentkit agentkit-x402',
+            x402Mode: 'free-trial',
+            freeTrialUses: 3,
+            supportedPaymentNetworks: ['eip155:480', 'eip155:8453'],
+            verifiedAt: new Date().toISOString(),
+          },
+        }
+        break
+
       default:
         return NextResponse.json(
           { error: 'Unsupported verification type' },
@@ -276,6 +303,7 @@ export async function POST(
           attestationUid: verificationResult.attestationUid || null,
           verifierAddress: verificationResult.verifierAddress || null,
           verifiedAt: verificationResult.metadata?.verifiedAt || new Date().toISOString(),
+          metadata: verificationResult.metadata || null,
         })
         return NextResponse.json({
           success: true,
@@ -363,5 +391,4 @@ export async function DELETE(
     )
   }
 }
-
 
