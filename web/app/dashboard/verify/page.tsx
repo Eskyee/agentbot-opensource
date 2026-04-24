@@ -41,29 +41,26 @@ interface VerifiedResult {
   provider?: string
 }
 
-function LoadingDots({ size = 3 }: { size?: number }): JSX.Element {
+function Spinner({ size = 16 }: { size?: number }): JSX.Element {
   return (
-    <span className="inline-flex items-center gap-1 text-orange-400" aria-label="Loading">
-      {[0, 1, 2].map((index) => (
-        <span
-          key={index}
-          className="block rounded-full bg-current animate-pulse"
-          style={{
-            width: size,
-            height: size,
-            animationDelay: `${index * 120}ms`,
-          }}
-        />
-      ))}
-    </span>
+    <span
+      className="inline-block animate-spin rounded-full border-current border-r-transparent text-orange-400"
+      aria-label="Loading"
+      style={{
+        width: size,
+        height: size,
+        borderWidth: Math.max(2, Math.round(size / 10)),
+      }}
+    />
   )
 }
 
-function LoadingDotsPanel(): JSX.Element {
+function SpinnerPanel(): JSX.Element {
   return (
-    <div className="flex flex-col items-start justify-between gap-6 flex-initial border border-zinc-800 bg-zinc-950 p-6">
-      <LoadingDots />
-      <LoadingDots size={4} />
+    <div className="flex flex-row items-center justify-start gap-8 flex-initial border border-zinc-800 bg-zinc-950 p-6">
+      <Spinner size={12} />
+      <Spinner size={32} />
+      <Spinner size={40} />
     </div>
   )
 }
@@ -511,7 +508,7 @@ function VerifyContent() {
   }
 
   if (loading) {
-    return <LoadingDotsPanel />
+    return <SpinnerPanel />
   }
 
   if (!agent?.agentId) {
@@ -595,7 +592,7 @@ function VerifyContent() {
 
         {!widgetReady && !scriptFailed && (
           <div className="flex items-center gap-2 text-zinc-500 text-xs">
-            <LoadingDots size={4} />
+            <Spinner size={12} />
             Loading verification widget…
           </div>
         )}
@@ -617,7 +614,7 @@ function VerifyContent() {
 
         {statusLoading ? (
           <div className="flex items-center gap-2 text-zinc-500 text-xs mt-3">
-            <LoadingDots size={4} />
+            <Spinner size={12} />
             Loading current verification status…
           </div>
         ) : null}
@@ -819,7 +816,7 @@ export default function VerifyPage() {
           </div>
         </div>
 
-        <Suspense fallback={<LoadingDotsPanel />}>
+        <Suspense fallback={<SpinnerPanel />}>
           <VerifyContent />
         </Suspense>
 
