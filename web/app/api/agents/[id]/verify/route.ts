@@ -3,6 +3,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import type { Prisma } from '@prisma/client'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
+import { createAgentBookVerifier } from '@worldcoin/agentkit'
 
 // Supported verification types
 type VerificationType = 'eas' | 'coinbase' | 'ens' | 'webauthn' | 'agentkit'
@@ -257,6 +258,17 @@ export async function POST(
           )
         }
 
+        const humanId = await createAgentBookVerifier({
+          rpcUrl: process.env.WORLD_CHAIN_RPC_URL,
+        }).lookupHuman(walletAddress)
+
+        if (!humanId) {
+          return NextResponse.json(
+            { error: 'Wallet is not registered in AgentBook yet' },
+            { status: 400 }
+          )
+        }
+
         verificationResult = {
           verified: true,
           attestationUid: `agentkit-${walletAddress.toLowerCase()}`,
@@ -264,6 +276,7 @@ export async function POST(
           metadata: {
             provider: 'agentkit',
             agentBook: 'world-chain',
+            humanId,
             docsIndex: 'https://docs.world.org/llms.txt',
             registrationCommand: `npx @worldcoin/agentkit-cli register ${walletAddress}`,
             skillCommand: 'npx skills add worldcoin/agentkit agentkit-x402',
@@ -391,4 +404,3 @@ export async function DELETE(
     )
   }
 }
-

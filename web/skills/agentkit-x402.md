@@ -34,6 +34,12 @@ Register the wallet address the agent signs x402 requests with:
 npx @worldcoin/agentkit-cli register <agent-address>
 ```
 
+Agentbot can also show the World App registration QR from `/dashboard/verify`.
+Use `POST /api/agentkit/register` to prepare the nonce/config,
+browser-side `@worldcoin/idkit-core` polling to complete World App verification,
+`PUT /api/agentkit/register` to submit the proof, and
+`GET /api/agentkit/status?address=...` to confirm AgentBook registration.
+
 AgentBook lookup resolves against World Chain even when the paid route accepts
 payment on another chain such as Base.
 

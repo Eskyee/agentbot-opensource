@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { createWorldBridgeStore } from '@worldcoin/idkit-core'
+import { solidityEncode } from '@worldcoin/idkit-core/hashing'
+import * as QRCode from 'qrcode'
 import {
   DashboardShell,
   DashboardHeader,
@@ -70,7 +73,23 @@ function VerifyContent() {
   const [isMobile, setIsMobile] = useState(false)
   const [agentkitAddress, setAgentkitAddress] = useState('')
   const [agentkitSaving, setAgentkitSaving] = useState(false)
+  const [agentkitChecking, setAgentkitChecking] = useState(false)
   const [agentkitError, setAgentkitError] = useState<string | null>(null)
+  const [agentkitStatus, setAgentkitStatus] = useState<{
+    registered: boolean
+    humanId: string | null
+  } | null>(null)
+  const [agentkitRegistration, setAgentkitRegistration] = useState<{
+    connectorURI: string
+    qrDataUrl: string
+    state?: string
+    complete?: boolean
+    txHash?: string | null
+    nonce: string
+    proofSubmitted?: boolean
+  } | null>(null)
+  const [agentkitRegistering, setAgentkitRegistering] = useState(false)
+  const agentkitBridgeRef = useRef<ReturnType<typeof createWorldBridgeStore> | null>(null)
   // Bump to trigger re-mount of the SelfClaw widget after an error.
   const [retryAttempt, setRetryAttempt] = useState(0)
 
@@ -257,11 +276,130 @@ function VerifyContent() {
     }
   }, [widgetReady, agent?.agentId, verified, retryAttempt])
 
+  useEffect(() => {
+    if (!agentkitRegistration?.connectorURI || agentkitRegistration.complete) return
+
+    let active = true
+    const interval = window.setInterval(async () => {
+      try {
+        const bridge = agentkitBridgeRef.current
+        if (!bridge) return
+
+        await bridge.getState().pollForUpdates()
+        const { result, errorCode, verificationState } = bridge.getState()
+        if (!active) return
+
+        if (errorCode) {
+          setAgentkitError(String(errorCode))
+        }
+
+        setAgentkitRegistration(current => current ? {
+          ...current,
+          state: verificationState,
+        } : current)
+
+        if (result && !agentkitRegistration.proofSubmitted) {
+          setAgentkitRegistration(current => current ? { ...current, proofSubmitted: true } : current)
+          const response = await fetch('/api/agentkit/register', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: agentkitAddress.trim(),
+              root: result.merkle_root,
+              nonce: agentkitRegistration.nonce,
+              nullifierHash: result.nullifier_hash,
+              proof: result.proof,
+            }),
+          })
+          const data = await response.json().catch(() => ({}))
+          if (!response.ok) {
+            throw new Error(data?.error || 'Failed to submit AgentKit registration')
+          }
+
+          setAgentkitRegistration(current => current ? {
+            ...current,
+            complete: true,
+            txHash: typeof data.txHash === 'string' ? data.txHash : null,
+          } : current)
+          window.clearInterval(interval)
+
+          // AgentBook indexing can lag the relay transaction very briefly.
+          window.setTimeout(async () => {
+            const status = await checkAgentkitRegistration()
+            if (status?.registered) {
+              await markAgentkitRegistered()
+            }
+          }, 2500)
+        }
+      } catch (error) {
+        if (active) {
+          setAgentkitError(error instanceof Error ? error.message : 'Failed to poll AgentKit registration')
+        }
+      }
+    }, 2500)
+
+    return () => {
+      active = false
+      window.clearInterval(interval)
+    }
+  }, [agentkitAddress, agentkitRegistration?.connectorURI, agentkitRegistration?.complete, agentkitRegistration?.nonce, agentkitRegistration?.proofSubmitted])
+
   const retryWidget = () => {
     setVerificationError(null)
     widgetMounted.current = false
     if (containerRef.current) containerRef.current.innerHTML = ''
     setRetryAttempt((n) => n + 1)
+  }
+
+  const createAgentkitRegistration = async () => {
+    const address = agentkitAddress.trim()
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      setAgentkitError('Enter the EVM wallet address to register in AgentBook.')
+      return
+    }
+
+    setAgentkitRegistering(true)
+    setAgentkitError(null)
+    setAgentkitRegistration(null)
+
+    try {
+      const response = await fetch('/api/agentkit/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to create AgentKit registration QR')
+      }
+
+      const signal = solidityEncode(['address', 'uint256'], [address, BigInt(data.nonce)])
+      const bridge = createWorldBridgeStore()
+      await bridge.getState().createClient({
+        app_id: data.appId,
+        action: data.action,
+        signal,
+      })
+      const connectorURI = bridge.getState().connectorURI
+      if (!connectorURI) {
+        throw new Error('Failed to create World App registration link')
+      }
+      agentkitBridgeRef.current = bridge
+
+      setAgentkitRegistration({
+        connectorURI,
+        qrDataUrl: await QRCode.toDataURL(connectorURI, {
+          margin: 1,
+          width: 256,
+        }),
+        nonce: data.nonce,
+        state: 'awaiting_connection',
+      })
+    } catch (error) {
+      setAgentkitError(error instanceof Error ? error.message : 'Failed to create AgentKit registration QR')
+    } finally {
+      setAgentkitRegistering(false)
+    }
   }
 
   const markAgentkitRegistered = async () => {
@@ -277,6 +415,11 @@ function VerifyContent() {
     setAgentkitError(null)
 
     try {
+      const status = await checkAgentkitRegistration(address)
+      if (!status?.registered) {
+        throw new Error('That wallet is not registered in AgentBook yet. Complete World App registration first, then check again.')
+      }
+
       const response = await fetch(`/api/agents/${agent.agentId}/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -294,13 +437,48 @@ function VerifyContent() {
       setVerifiedResult({
         agentPublicKey: address,
         agentKeyHash: data.attestationUid || `agentkit-${address.toLowerCase()}`,
-        humanId: 'agentkit',
+        humanId: status.humanId || 'agentkit',
         provider: 'agentkit',
       })
     } catch (error) {
       setAgentkitError(error instanceof Error ? error.message : 'Failed to record AgentKit registration')
     } finally {
       setAgentkitSaving(false)
+    }
+  }
+
+  const checkAgentkitRegistration = async (addressOverride?: string) => {
+    const address = (addressOverride || agentkitAddress).trim()
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      setAgentkitStatus(null)
+      setAgentkitError('Enter the EVM wallet address registered in AgentBook.')
+      return null
+    }
+
+    setAgentkitChecking(true)
+    setAgentkitError(null)
+
+    try {
+      const response = await fetch(`/api/agentkit/status?address=${encodeURIComponent(address)}`, {
+        cache: 'no-store',
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.error || 'Failed to check AgentBook registration')
+      }
+
+      const status = {
+        registered: Boolean(data.registered),
+        humanId: typeof data.humanId === 'string' ? data.humanId : null,
+      }
+      setAgentkitStatus(status)
+      return status
+    } catch (error) {
+      setAgentkitStatus(null)
+      setAgentkitError(error instanceof Error ? error.message : 'Failed to check AgentBook registration')
+      return null
+    } finally {
+      setAgentkitChecking(false)
     }
   }
 
@@ -474,11 +652,68 @@ function VerifyContent() {
           <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Agent wallet</span>
           <input
             value={agentkitAddress}
-            onChange={(event) => setAgentkitAddress(event.target.value)}
+            onChange={(event) => {
+              setAgentkitAddress(event.target.value)
+              setAgentkitStatus(null)
+              setAgentkitRegistration(null)
+            }}
             placeholder="0x..."
             className="w-full border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-orange-500"
           />
         </label>
+
+        <button
+          type="button"
+          onClick={createAgentkitRegistration}
+          disabled={agentkitRegistering}
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-60 disabled:hover:bg-orange-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+        >
+          {agentkitRegistering ? 'Creating QR...' : 'Create World App QR'}
+        </button>
+
+        {agentkitRegistration ? (
+          <div className="mt-3 border border-zinc-800 bg-black p-3">
+            <img
+              src={agentkitRegistration.qrDataUrl}
+              alt="AgentKit registration QR code"
+              className="mx-auto h-48 w-48 bg-white p-2"
+            />
+            <a
+              href={agentkitRegistration.connectorURI}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-orange-500 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+            >
+              Open World App link
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <p className="mt-3 text-[10px] text-zinc-600">
+              Status: {agentkitRegistration.complete ? 'registered' : agentkitRegistration.state || 'waiting'}.
+            </p>
+            {agentkitRegistration.txHash ? (
+              <p className="mt-2 text-[10px] font-mono text-zinc-500 break-all">
+                Tx: {agentkitRegistration.txHash}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={() => checkAgentkitRegistration()}
+          disabled={agentkitChecking}
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-orange-500 disabled:opacity-60 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+        >
+          {agentkitChecking ? 'Checking...' : 'Check AgentBook Status'}
+        </button>
+
+        {agentkitStatus ? (
+          <div className={`mt-3 border px-3 py-2 text-xs ${agentkitStatus.registered ? 'border-green-500/20 bg-green-500/10 text-green-300' : 'border-yellow-500/20 bg-yellow-500/10 text-yellow-200'}`}>
+            {agentkitStatus.registered ? (
+              <span>Registered in AgentBook{agentkitStatus.humanId ? `: ${agentkitStatus.humanId}` : ''}</span>
+            ) : (
+              <span>Not registered in AgentBook yet. Run the CLI command and complete World App verification first.</span>
+            )}
+          </div>
+        ) : null}
 
         <button
           type="button"

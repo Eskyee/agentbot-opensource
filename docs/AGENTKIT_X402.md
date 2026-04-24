@@ -41,6 +41,23 @@ AgentKit registration is external to Agentbot:
 npx @worldcoin/agentkit-cli register <agent-address>
 ```
 
+Agentbot also exposes a browser registration helper on `/dashboard/verify`.
+It mirrors the CLI flow:
+
+1. read `getNextNonce(agent)` from AgentBook
+2. build the World ID signal with `solidityEncode(["address", "uint256"], [agent, nonce])`
+3. create a World App connector URI for app `app_a7c3e2b6b83927251a0db5345bd7146a` and action `agentbook-registration`
+4. show that URI as a QR code
+5. poll for the World ID proof
+6. submit the proof to the hosted relay at `https://x402-worldchain.vercel.app/register`
+
+The helper is backed by:
+
+- `POST /api/agentkit/register` to prepare the AgentBook nonce and registration config
+- browser-side World App polling via `@worldcoin/idkit-core`
+- `PUT /api/agentkit/register` to submit the returned proof to the relay
+- `GET /api/agentkit/status?address=...` to look up AgentBook registration status
+
 After registration, users can save the agent signing wallet on the verify page.
 Agentbot stores this as `verificationType: "agentkit"` with metadata for:
 
@@ -49,9 +66,9 @@ Agentbot stores this as `verificationType: "agentkit"` with metadata for:
 - World Chain and Base payment support
 - the skill install command for agent-side x402 access
 
-This page does not prove AgentBook membership by itself. It records the
-registered signing wallet so Agentbot can surface the chosen verification path.
-Protected x402 routes must still validate AgentKit headers at request time.
+Agentbot only saves AgentKit verification after AgentBook lookup returns a
+human identifier for the wallet. Protected x402 routes must still validate
+AgentKit headers at request time.
 
 ## Access Modes
 
@@ -130,8 +147,7 @@ Implement `AgentKitStorage` for production routes:
 
 ```ts
 interface AgentKitStorage {
-  getUsageCount(endpoint: string, humanId: string): Promise<number>
-  incrementUsage(endpoint: string, humanId: string): Promise<void>
+  tryIncrementUsage(endpoint: string, humanId: string, limit: number): Promise<boolean>
   hasUsedNonce?(nonce: string): Promise<boolean> | boolean
   recordNonce?(nonce: string): Promise<void> | void
 }
