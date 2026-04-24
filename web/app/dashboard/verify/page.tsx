@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { createWorldBridgeStore } from '@worldcoin/idkit-core'
 import { solidityEncode } from '@worldcoin/idkit-core/hashing'
 import * as QRCode from 'qrcode'
+import type { JSX } from 'react'
 import {
   DashboardShell,
   DashboardHeader,
@@ -38,6 +39,33 @@ interface VerifiedResult {
   agentKeyHash: string
   humanId?: string
   provider?: string
+}
+
+function LoadingDots({ size = 3 }: { size?: number }): JSX.Element {
+  return (
+    <span className="inline-flex items-center gap-1 text-orange-400" aria-label="Loading">
+      {[0, 1, 2].map((index) => (
+        <span
+          key={index}
+          className="block rounded-full bg-current animate-pulse"
+          style={{
+            width: size,
+            height: size,
+            animationDelay: `${index * 120}ms`,
+          }}
+        />
+      ))}
+    </span>
+  )
+}
+
+function LoadingDotsPanel(): JSX.Element {
+  return (
+    <div className="flex flex-col items-start justify-between gap-6 flex-initial border border-zinc-800 bg-zinc-950 p-6">
+      <LoadingDots />
+      <LoadingDots size={4} />
+    </div>
+  )
 }
 
 declare global {
@@ -483,12 +511,7 @@ function VerifyContent() {
   }
 
   if (loading) {
-    return (
-      <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-zinc-800 w-1/3" />
-        <div className="h-64 bg-zinc-900 border border-zinc-800" />
-      </div>
-    )
+    return <LoadingDotsPanel />
   }
 
   if (!agent?.agentId) {
@@ -572,7 +595,7 @@ function VerifyContent() {
 
         {!widgetReady && !scriptFailed && (
           <div className="flex items-center gap-2 text-zinc-500 text-xs">
-            <span className="w-2 h-2 rounded-full bg-zinc-600 animate-pulse" />
+            <LoadingDots size={4} />
             Loading verification widget…
           </div>
         )}
@@ -594,7 +617,7 @@ function VerifyContent() {
 
         {statusLoading ? (
           <div className="flex items-center gap-2 text-zinc-500 text-xs mt-3">
-            <span className="w-2 h-2 rounded-full bg-zinc-600 animate-pulse" />
+            <LoadingDots size={4} />
             Loading current verification status…
           </div>
         ) : null}
@@ -796,12 +819,7 @@ export default function VerifyPage() {
           </div>
         </div>
 
-        <Suspense fallback={
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-zinc-800 w-1/3" />
-            <div className="h-64 bg-zinc-900 border border-zinc-800" />
-          </div>
-        }>
+        <Suspense fallback={<LoadingDotsPanel />}>
           <VerifyContent />
         </Suspense>
 
