@@ -11,6 +11,48 @@ Key pages for this integration:
 - AgentKit quickstart: https://docs.world.org/agents/agent-kit/integrate.md
 - AgentKit SDK reference: https://docs.world.org/agents/agent-kit/sdk-reference.md
 - AgentKit ecosystem: https://docs.world.org/agents/agent-kit/ecosystem.md
+- World ID overview: https://docs.world.org/world-id/overview.md
+- Build with LLMs: https://docs.world.org/world-id/idkit/build-with-llms.md
+
+## World Docs MCP
+
+Codex can use the World docs MCP server for direct documentation search:
+
+```bash
+codex mcp add world --url https://docs.world.org/mcp
+```
+
+The server may require OAuth authorization in the browser before tools are
+available. Once authorized, use the `search_world_documentation` MCP tool for
+World docs and API lookup.
+
+## World ID Environment
+
+Generic World ID / IDKit flows use Developer Portal credentials:
+
+```bash
+WORLD_APP_ID=app_your_world_app_id
+WORLD_RP_ID=rp_your_relying_party_id
+RP_SIGNING_KEY=your_world_rp_signing_key
+```
+
+`RP_SIGNING_KEY` is backend-only. Never expose it to client components or
+browser bundles.
+
+For standard IDKit proof requests:
+
+1. Create a backend endpoint that calls `signRequest(action, RP_SIGNING_KEY)`.
+2. Return `{ sig, nonce, createdAt, expiresAt }` to the browser.
+3. On the client, create the IDKit request with `app_id`, `action`, and `rp_context`.
+4. Send the IDKit result to the backend.
+5. Verify by forwarding the payload as-is to `POST https://developer.world.org/api/v4/verify/{rp_id}`.
+
+Use `signal` to bind proof context such as a user ID or wallet address, and
+enforce that same value on the backend.
+
+AgentKit AgentBook registration is separate from generic app IDKit flows. The
+World AgentKit CLI uses the AgentBook app/action and the hosted relay; Agentbot's
+browser helper mirrors that AgentBook-specific path.
 
 ## Ecosystem
 
