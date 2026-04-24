@@ -1,7 +1,5 @@
 import './globals.css'
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -9,7 +7,6 @@ import { StatusBar } from "./components/StatusBar";
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
-import { cn } from "@/lib/utils";
 import { APP_URL } from '@/app/lib/app-url'
 import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
 
@@ -145,7 +142,7 @@ export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={cn(GeistSans.variable, GeistMono.variable, "font-sans")}>
+    <html lang="en" className="font-sans">
       <head>
         <link rel="manifest" href="/manifest.json" />
         <script
