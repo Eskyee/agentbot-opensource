@@ -2,15 +2,33 @@ import type { JSX } from 'react'
 
 export function Spinner({ size = 16 }: { size?: number }): JSX.Element {
   return (
-    <span
-      className="inline-block animate-spin rounded-full border-current border-r-transparent text-orange-400"
+    <svg
+      className="inline-block animate-spin text-orange-400"
+      role="status"
       aria-label="Loading"
+      viewBox="0 0 24 24"
       style={{
         width: size,
         height: size,
-        borderWidth: Math.max(2, Math.round(size / 10)),
       }}
-    />
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity="0.22"
+        strokeWidth="3"
+      />
+      <path
+        d="M22 12a10 10 0 0 1-10 10"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="3"
+      />
+    </svg>
   )
 }
 
