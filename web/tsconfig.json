@@ -54,6 +54,9 @@
       ],
       "@/lib/webauthx/*": [
         "./lib/webauthx/*"
+      ],
+      "geist/components": [
+        "./components/geist-components"
       ]
     },
     "target": "ES2020"

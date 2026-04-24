@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createWorldBridgeStore } from '@worldcoin/idkit-core'
 import { solidityEncode } from '@worldcoin/idkit-core/hashing'
+import { Spinner } from 'geist/components'
 import * as QRCode from 'qrcode'
 import type { JSX } from 'react'
 import {
@@ -39,20 +40,6 @@ interface VerifiedResult {
   agentKeyHash: string
   humanId?: string
   provider?: string
-}
-
-function Spinner({ size = 16 }: { size?: number }): JSX.Element {
-  return (
-    <span
-      className="inline-block animate-spin rounded-full border-current border-r-transparent text-orange-400"
-      aria-label="Loading"
-      style={{
-        width: size,
-        height: size,
-        borderWidth: Math.max(2, Math.round(size / 10)),
-      }}
-    />
-  )
 }
 
 function SpinnerPanel(): JSX.Element {
