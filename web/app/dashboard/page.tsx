@@ -8,6 +8,7 @@ import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
+import { Spinner } from 'geist/components'
 
 const DashboardSidebar = dynamic(() => import('@/app/components/DashboardSidebar').then(m => m.DashboardSidebar))
 const InstanceControlPanel = dynamic(() => import('@/app/components/dashboard/InstanceControlPanel').then(m => m.InstanceControlPanel))
@@ -77,6 +78,17 @@ type ConfirmAction = {
   confirmLabel: string
   pendingLabel: string
   variant: 'danger' | 'warning' | 'default'
+}
+
+function DashboardLoadingShell() {
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
+      <div className="mb-4">
+        <Spinner size={48} />
+      </div>
+      <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Dashboard...</p>
+    </div>
+  )
 }
 
 const CONFIRM_ACTIONS: Record<string, ConfirmAction> = {
@@ -322,21 +334,11 @@ function DashboardContent() {
   }
 
   if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
-        <div className="w-12 h-12 border-2 border-orange-500 border-t-transparent animate-spin mb-4" />
-        <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Dashboard...</p>
-      </div>
-    )
+    return <DashboardLoadingShell />
   }
 
   if (loading && status === 'authenticated') {
-    return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
-        <div className="w-12 h-12 border-2 border-orange-500 border-t-transparent animate-spin mb-4" />
-        <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Dashboard...</p>
-      </div>
-    )
+    return <DashboardLoadingShell />
   }
 
   if (error) {
@@ -547,12 +549,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
-        <div className="w-12 h-12 border-2 border-orange-500 border-t-transparent animate-spin mb-4" />
-        <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Dashboard...</p>
-      </div>
-    }>
+    <Suspense fallback={<DashboardLoadingShell />}>
       <DashboardContent />
     </Suspense>
   )
