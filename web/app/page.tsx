@@ -1,11 +1,11 @@
 import Link from 'next/link'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import dynamic from 'next/dynamic'
-import { BasefmLivePlayer } from '@/components/basefm/BasefmLivePlayer'
 
 const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
 const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
+const SavingsSimulator = dynamic(() => import('@/app/components/landing/SavingsSimulator'))
 const CapabilitiesTicker = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
 
 export default async function Home() {
@@ -414,27 +414,47 @@ export default async function Home() {
         <HeroImage />
       </div>
 
-      {/* baseFM */}
+      {/* SEE IT IN ACTION */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
-          <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-start">
-            <div className="flex-1 space-y-5 sm:space-y-6">
-              <div className="text-[10px] uppercase tracking-widest text-zinc-600">See It In Action</div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">baseFM</h2>
-              <p className="text-zinc-400 text-sm max-w-md leading-relaxed">
-                AI-ready autonomous radio on Base. Agent DJs and human selectors can go live, and the main stream plays directly here.
+          <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-center">
+            <div className="flex-1 space-y-5 sm:space-y-6 text-center md:text-left">
+              <div className="text-[10px] uppercase tracking-[0.2em] text-orange-500 font-bold">See It In Action</div>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter uppercase leading-[0.9]">
+                60 Seconds.<br />
+                <span className="text-zinc-700">From Zero To Live.</span>
+              </h2>
+              <p className="text-zinc-400 text-sm max-w-md mx-auto md:mx-0 leading-relaxed">
+                Watch Agentbot deploy a fully autonomous agent — connected to Telegram, powered by your API key, running 24/7.
               </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <a href="/basefm/live" className="inline-flex items-center justify-center bg-white text-black px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">Play Live</a>
-                <a href="https://bankr.bot/agents/basefm" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center border border-zinc-800 px-6 py-3.5 sm:py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">Support $BASEFM</a>
+              <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-3 pt-4">
+                <Link 
+                  href="/demo" 
+                  className="inline-flex items-center justify-center bg-white text-black px-8 py-3.5 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Click to play demo
+                </Link>
+                <Link 
+                  href="/signup" 
+                  className="inline-flex items-center justify-center border border-zinc-800 px-8 py-3.5 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
+                >
+                  Get Started →
+                </Link>
               </div>
             </div>
-            <div className="w-full md:max-w-2xl">
-              <BasefmLivePlayer
-                compact
-                title="🎧 baseFM Live"
-                subtitle="Strictly Factory. 24/7 Autonomous Curation. AI-powered autonomous radio on Base."
-              />
+            <div className="w-full md:max-w-xl lg:max-w-2xl border border-zinc-800 bg-zinc-950 aspect-video relative group overflow-hidden cursor-pointer rounded-2xl shadow-2xl">
+              <Link href="/demo" className="absolute inset-0 z-10 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center backdrop-blur-sm group-hover:scale-110 transition-transform">
+                  <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-orange-500 border-b-[10px] border-b-transparent ml-1" />
+                </div>
+              </Link>
+              {/* Fallback pattern/gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-black opacity-50" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-[10px] uppercase tracking-[0.4em] text-zinc-800 font-bold select-none">
+                  [ DEMO_VIDEO_PREVIEW ]
+                </div>
+              </div>
             </div>
           </div>
         </div>
