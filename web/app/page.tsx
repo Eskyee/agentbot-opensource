@@ -5,7 +5,6 @@ import dynamic from 'next/dynamic'
 const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
 const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
-const SavingsSimulator = dynamic(() => import('@/app/components/landing/SavingsSimulator'))
 const CapabilitiesTicker = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
 
 export default async function Home() {
