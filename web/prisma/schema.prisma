@@ -187,6 +187,8 @@ model Skill {
   featured        Boolean          @default(false)
   mcpConfig       Json? // MCP (Model Context Protocol) configuration
   mcpEnabled      Boolean          @default(false)
+  widgetUrl       String?          // Interactive widget URL
+  widgetConfig    Json?            // Widget configuration
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   installedSkills InstalledSkill[]
