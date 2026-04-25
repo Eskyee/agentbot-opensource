@@ -8,7 +8,6 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { APP_URL } from '@/app/lib/app-url'
-import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -161,15 +160,13 @@ export default function RootLayout({
         <SpeedInsights />
         <Analytics />
         <Providers>
-          <DashboardDataProvider>
-            <Navbar />
-            <main id="main-content" className="flex-1" tabIndex={-1}>
-              {children}
-            </main>
-            <Footer />
-            <StatusBar />
-            <Toaster theme="dark" position="bottom-right" richColors closeButton />
-          </DashboardDataProvider>
+          <Navbar />
+          <main id="main-content" className="flex-1" tabIndex={-1}>
+            {children}
+          </main>
+          <Footer />
+          <StatusBar />
+          <Toaster theme="dark" position="bottom-right" richColors closeButton />
         </Providers>
       </body>
     </html>
