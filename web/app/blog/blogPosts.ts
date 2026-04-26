@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'london-oxford-bristol-linkup',
+    dateLabel: '26 Apr',
+    isoDate: '2026-04-26',
+    title: 'London • Oxford • Bristol Link Up',
+    excerpt:
+      'The Bristol Collective links with London and Oxford nodes to deploy the next evolution of autonomous rave culture.',
+    tags: ['Community', 'Bristol', 'Link Up'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'factory-ai-unification',
     dateLabel: '23 Apr',
     isoDate: '2026-04-23',
