@@ -21,6 +21,16 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Field Notes',
   },
   {
+    slug: '25-days-since-launch',
+    dateLabel: '25 Apr',
+    isoDate: '2026-04-25',
+    title: '25 Days Since Launch: The Zero-Human Evolution',
+    excerpt:
+      'First $560 earned, server bills paid, and the transition from SaaS tool to a self-operating cultural protocol.',
+    tags: ['Revenue', 'Autonomy', 'Milestone', 'ZHC'],
+    track: 'Build Log',
+  },
+  {
     slug: 'factory-ai-unification',
     dateLabel: '23 Apr',
     isoDate: '2026-04-23',

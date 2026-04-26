@@ -410,7 +410,7 @@ export default async function Home() {
       </section>
 
       {/* Hero Image */}
-      <div className="max-w-7xl mx-auto px-5 sm:px-6 pb-8">
+      <div className="max-w-3xl mx-auto px-5 sm:px-6 pb-8">
         <HeroImage />
       </div>
 
