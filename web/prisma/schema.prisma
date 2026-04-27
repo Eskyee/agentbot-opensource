@@ -1372,3 +1372,18 @@ model M2MJob {
   @@index([claimerAgentId])
   @@map("m2m_jobs")
 }
+
+// ─── Stripe Webhook Idempotency ─────────────────────────────────────────────
+// Records every Stripe event ID we have processed so retried/duplicate
+// deliveries can be detected and short-circuited at the top of the handler.
+// Without this, retries cause duplicate receipts, duplicate auto-provisioning,
+// and (worst) repeated +50GB storage grants.
+
+model ProcessedStripeEvent {
+  eventId     String   @id @map("event_id")
+  type        String
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@index([processedAt])
+  @@map("processed_stripe_events")
+}
