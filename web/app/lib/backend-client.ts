@@ -34,21 +34,65 @@ export async function signedFetch(path: string, init?: RequestInit) {
   // signing. They must agree: if the caller passes a string, we sign that
   // exact string; otherwise we serialize once via canonicalJsonStringify and
   // send that same canonical form on the wire.
+  // The verifier (`signatureGuard`) parses the request body via express.json
+  // and then canonical-stringifies the parsed object. To stay byte-identical
+  // with the verifier we:
+  //   - For string / buffer bodies that are JSON: parse → canonicalize, and
+  //     ALSO replace the wire body with the canonical form so the verifier's
+  //     express.json() result feeds back into the same canonicalStringify.
+  //   - For string bodies that are NOT JSON (caller intent), sign and send
+  //     them verbatim — the verifier's hasBody check skips canonicalization.
+  //   - For plain objects, canonicalize once and use that for both sides.
   let bodyStr = ''
   let wireBody: BodyInit | null | undefined = init?.body as BodyInit | null | undefined
+
+  const tryCanonicalizeJsonString = (raw: string): string | null => {
+    const trimmed = raw.trim()
+    if (!trimmed) return null
+    const first = trimmed[0]
+    if (first !== '{' && first !== '[') return null
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (parsed === null || typeof parsed !== 'object') return null
+      return canonicalJsonStringify(parsed)
+    } catch {
+      return null
+    }
+  }
+
   if (init?.body !== undefined && init?.body !== null) {
     if (typeof init.body === 'string') {
-      bodyStr = init.body
+      const canonical = tryCanonicalizeJsonString(init.body)
+      if (canonical !== null) {
+        bodyStr = canonical
+        wireBody = canonical
+      } else {
+        bodyStr = init.body
+      }
     } else if (
       typeof Buffer !== 'undefined' &&
       Buffer.isBuffer?.(init.body as unknown)
     ) {
-      bodyStr = (init.body as Buffer).toString('utf8')
+      const utf = (init.body as Buffer).toString('utf8')
+      const canonical = tryCanonicalizeJsonString(utf)
+      if (canonical !== null) {
+        bodyStr = canonical
+        wireBody = canonical
+      } else {
+        bodyStr = utf
+      }
     } else if (
       init.body instanceof ArrayBuffer ||
       ArrayBuffer.isView(init.body as unknown)
     ) {
-      bodyStr = new TextDecoder().decode(init.body as ArrayBuffer)
+      const utf = new TextDecoder().decode(init.body as ArrayBuffer)
+      const canonical = tryCanonicalizeJsonString(utf)
+      if (canonical !== null) {
+        bodyStr = canonical
+        wireBody = canonical
+      } else {
+        bodyStr = utf
+      }
     } else if (typeof init.body === 'object') {
       // Convert plain object/array → canonical JSON for signing AND wire.
       bodyStr = canonicalJsonStringify(init.body)

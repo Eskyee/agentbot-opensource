@@ -218,9 +218,18 @@ export class AIProviderService {
   ): Promise<{ ok: boolean; used: number }> {
     const used = await this.getMonthlyTokenUsage(userId);
     try {
+      // The WHERE clause must gate BOTH the INSERT and the UPDATE branches.
+      // Without the guarded INSERT (`SELECT ... FROM gate`), a fresh
+      // user/month with `used` already over the limit would still slip
+      // through on the very first request because ON CONFLICT WHERE only
+      // applies to the UPDATE branch.
       const result = await pool.query<{ reserved: string }>(
-        `INSERT INTO ai_token_reservations (user_id, period_start, reserved, updated_at)
-         VALUES ($1, date_trunc('month', NOW()), $2, NOW())
+        `WITH gate AS (
+           SELECT 1 AS ok
+           WHERE $3::bigint + $2::bigint <= $4::bigint
+         )
+         INSERT INTO ai_token_reservations (user_id, period_start, reserved, updated_at)
+         SELECT $1, date_trunc('month', NOW()), $2, NOW() FROM gate
          ON CONFLICT (user_id, period_start) DO UPDATE
            SET reserved = ai_token_reservations.reserved + EXCLUDED.reserved,
                updated_at = NOW()
