@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { Pool } from 'pg';
 import { WalletService } from './services/wallet';
 import { BitcoinWalletService } from './services/bitcoin-wallet';
@@ -38,17 +39,72 @@ const authenticate = (req: Request, res: Response, next: any) => {
  * --- AGENT-TO-AGENT BUS ---
  */
 
-// Dispatch a message from one agent to another
-router.post('/bus/send', async (req: Request, res: Response) => {
-  const message: AgentMessage = req.body;
+// Per-wallet rate limit on /bus/send. Public endpoint (signature is the auth
+// boundary), so we protect it from a single compromised wallet flooding the
+// bus or its recipients. Keyed on the claimed walletAddress, but verified by
+// signature later — abuse from a forged claim still gets caught upstream.
+const busSendLimiter = rateLimit({
+  windowMs: 60 * 1000,                 // 1-minute window
+  max: 60,                              // 60 messages/min per wallet
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request): string => {
+    const wallet = (req.body as Partial<AgentMessage> | undefined)?.from?.walletAddress;
+    if (typeof wallet === 'string' && wallet.length > 0) {
+      return `bus:${wallet.toLowerCase()}`;
+    }
+    // Fall back to IP for unparsable bodies — express-rate-limit's default.
+    return `bus:ip:${req.ip ?? 'unknown'}`;
+  },
+  message: { error: 'Bus rate limit exceeded for this wallet' },
+});
 
-  // 1. Verify authenticity
-  const isValid = await AgentBusService.verifyMessage(message);
-  if (!isValid) {
-    return res.status(401).json({ error: 'Invalid message signature' });
+// Dispatch a message from one agent to another.
+//
+// Hardened against replay/forgery:
+//   1. Body shape is validated up-front (bad shapes return 400, not 500).
+//   2. Signature is verified with a 5-minute timestamp window so captured
+//      signed messages cannot be replayed forever.
+//   3. messageId is recorded in agent_message_nonces — duplicates inside the
+//      window return 200 with deduped:true (idempotent), not re-dispatched.
+//   4. Rate limited per claimed walletAddress (signature is verified after
+//      the rate-limit decision; this is intentional — we want to rate-limit
+//      bad-signature spam too).
+router.post('/bus/send', busSendLimiter, async (req: Request, res: Response) => {
+  const message = req.body as AgentMessage | undefined;
+
+  // 1. Validate shape before doing crypto work or touching the DB.
+  if (
+    !message ||
+    typeof message.messageId !== 'string' ||
+    typeof message.timestamp !== 'string' ||
+    typeof message.action !== 'string' ||
+    typeof message.from?.walletAddress !== 'string' ||
+    typeof message.from?.signature !== 'string' ||
+    typeof message.to?.agentId !== 'string'
+  ) {
+    return res.status(400).json({ error: 'Malformed agent message' });
   }
 
-  // 2. Handle specific Underground logic based on action type
+  // 2. Verify signature + replay window in a single call.
+  const verification = await AgentBusService.verifyMessageDetailed(message, { enforceTimestamp: true });
+  if (!verification.ok) {
+    const code =
+      verification.reason === 'expired' || verification.reason === 'invalid_timestamp'
+        ? 'TIMESTAMP_EXPIRED'
+        : 'INVALID_SIGNATURE';
+    return res.status(401).json({ error: 'Invalid message', code });
+  }
+
+  // 3. Dedup inside the window. If we've already processed this messageId,
+  // short-circuit so retries from the sender don't re-trigger negotiation /
+  // amplification side effects.
+  const fresh = await AgentBusService.claimNonce(message.messageId, message.from.walletAddress);
+  if (!fresh) {
+    return res.status(200).json({ success: true, messageId: message.messageId, deduped: true });
+  }
+
+  // 4. Handle specific Underground logic based on action type.
   try {
     if (message.action.startsWith('BOOKING_')) {
       await NegotiationService.handleBookingMessage(message);
@@ -56,11 +112,12 @@ router.post('/bus/send', async (req: Request, res: Response) => {
       await AmplificationService.handleAmplificationMessage(message);
     }
 
-    // 3. Deliver to recipient agent webhook
+    // 5. Deliver to recipient agent webhook (with retry/backoff inside).
     await AgentBusService.deliverMessage(message);
     res.json({ success: true, messageId: message.messageId });
-  } catch (error: any) {
-    console.error('[Bus] Send error:', error.message);
+  } catch (error: unknown) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error('[Bus] Send error:', detail);
     res.status(500).json({ error: 'Failed to send message' });
   }
 });

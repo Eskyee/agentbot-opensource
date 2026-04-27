@@ -317,6 +317,81 @@ CREATE INDEX IF NOT EXISTS idx_platform_jobs_user_status
 CREATE INDEX IF NOT EXISTS idx_platform_jobs_lane_status
   ON platform_jobs(lane, status);
 
+-- ───────────────────────────────────────────────────────────────────────────
+-- Reliability tables (added by reliability review fixes — see PR series)
+-- ───────────────────────────────────────────────────────────────────────────
+
+-- Agent message nonces — prevents replay of captured /bus/send messages within
+-- the timestamp window. The bus signature alone does not stop replays; an
+-- attacker could resubmit a captured signed message verbatim. We dedupe on
+-- messageId (the sender's UUID) and let rows expire after 1 hour.
+CREATE TABLE IF NOT EXISTS agent_message_nonces (
+  message_id   TEXT PRIMARY KEY,
+  from_address TEXT,
+  processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_agent_message_nonces_processed
+  ON agent_message_nonces(processed_at);
+
+-- Agent permission requests — replaces the in-memory Map<requestId, …> in
+-- middleware/permission-hook.ts. In-memory state diverges across replicas and
+-- vanishes on restart, leaving callers stuck waiting on requests that the
+-- new process knows nothing about.
+CREATE TABLE IF NOT EXISTS agent_permission_requests (
+  id            TEXT PRIMARY KEY,
+  agent_id      TEXT,
+  user_id       TEXT,
+  tool_name     TEXT NOT NULL,
+  tool_input    JSONB NOT NULL DEFAULT '{}',
+  reason        TEXT,
+  status        TEXT NOT NULL DEFAULT 'pending', -- pending | approved | denied | timed_out
+  decision_note TEXT,
+  decided_by    TEXT,
+  decided_at    TIMESTAMPTZ,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_agent_permission_requests_status_created
+  ON agent_permission_requests(status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_permission_requests_user
+  ON agent_permission_requests(user_id, created_at DESC);
+
+-- Wallet transfer outbox — durable record of an intended on-chain transfer.
+-- Used by WalletService.transferUSDC to make the on-chain → DB sequence
+-- recoverable: a row is inserted in 'pending' before the on-chain call, then
+-- transitioned to 'sent' (with tx_hash) on success. Crashes between submit
+-- and insert can be reconciled by querying CDP for the address+nonce.
+CREATE TABLE IF NOT EXISTS wallet_transfer_outbox (
+  id              BIGSERIAL PRIMARY KEY,
+  user_id         TEXT,
+  from_address    TEXT NOT NULL,
+  to_address      TEXT NOT NULL,
+  amount_usdc     NUMERIC NOT NULL,
+  amount_units    TEXT NOT NULL,                  -- base units (1e-6 USDC), stored as text for safety
+  status          TEXT NOT NULL DEFAULT 'pending', -- pending | sent | failed
+  tx_hash         TEXT,
+  error           TEXT,
+  idempotency_key TEXT UNIQUE,                    -- caller-provided dedup key
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_wallet_transfer_outbox_status
+  ON wallet_transfer_outbox(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_wallet_transfer_outbox_from
+  ON wallet_transfer_outbox(from_address, created_at DESC);
+
+-- Per-user monthly token reservation — tracked alongside model_metrics so
+-- AIProvider can do an atomic "reserve quota or reject" check instead of the
+-- old SELECT-then-decide pattern that lets concurrent requests sail past the
+-- monthly cap.
+CREATE TABLE IF NOT EXISTS ai_token_reservations (
+  user_id       TEXT NOT NULL,
+  period_start  TIMESTAMPTZ NOT NULL,             -- date_trunc('month', NOW())
+  reserved      BIGINT NOT NULL DEFAULT 0,
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, period_start)
+);
+
 -- Indexes for performance
 -- Core FK indexes (prevent full-table scans on joins)
 CREATE INDEX IF NOT EXISTS idx_agents_user_id ON agents(user_id);
