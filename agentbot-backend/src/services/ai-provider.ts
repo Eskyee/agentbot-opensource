@@ -251,24 +251,39 @@ export class AIProviderService {
   }
 
   /**
-   * Settle a reservation against actual usage. If actual < estimated we
-   * release the unused portion so it doesn't permanently block future quota.
+   * Settle a reservation against actual usage by fully releasing the
+   * estimate.
+   *
+   * Why we release the FULL estimate rather than `actual - estimated`:
+   *
+   *   - `reserveQuota`'s gating check is `existing_reserved + used + new
+   *     <= limit`, where `used` comes from `getMonthlyTokenUsage` (i.e.
+   *     `model_metrics`).
+   *   - `logUsage` writes `actual` into `model_metrics`, so the moment
+   *     that row lands, `used` already counts the actual tokens.
+   *   - If we left `actual` in `reserved` (delta = actual - estimated)
+   *     we would count those tokens TWICE on the next reservation —
+   *     once via `reserved`, once via `used`. The user's effective
+   *     quota would be roughly halved over time.
+   *
+   * The `actual` value is therefore unused here; it remains in the
+   * signature so callers don't have to special-case the failure path
+   * (where they pass `actual = 0` explicitly).
    */
   private static async settleQuota(
     userId: string,
     estimated: number,
-    actual: number
+    _actual: number
   ): Promise<void> {
-    const delta = actual - estimated;
-    if (delta === 0) return;
+    if (estimated <= 0) return;
     try {
       await pool.query(
         `UPDATE ai_token_reservations
-            SET reserved = GREATEST(0, reserved + $1),
+            SET reserved = GREATEST(0, reserved - $1),
                 updated_at = NOW()
           WHERE user_id = $2
             AND period_start = date_trunc('month', NOW())`,
-        [delta, userId]
+        [estimated, userId]
       );
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
