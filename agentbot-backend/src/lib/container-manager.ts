@@ -171,14 +171,25 @@ export async function createContainer(
   // Idempotency: if a service with this name already exists, return its
   // handle instead of creating a duplicate. Callers that want a clean slate
   // should call destroyContainer first.
+  //
+  // We query Railway for the service's actual assigned domain so the URL
+  // returned to the caller is the one Railway is serving, not a guess based
+  // on naming convention. We omit `controlUiUrl` here intentionally — the
+  // gateway token is generated fresh per createContainer call and we cannot
+  // recover the existing token from Railway, so emitting a "control UI URL"
+  // without a valid token would be misleading.
   const existingId = await getServiceIdByName(serviceName).catch(() => null);
   if (existingId) {
-    console.log(`[ContainerManager/Railway] Reusing existing service ${existingId} (${serviceName}) for ${userId}`);
+    const existingDomain = await getServiceDomain(existingId).catch(() => null);
+    const existingUrl = existingDomain
+      ? `https://${existingDomain}`
+      : `https://${serviceName}.up.railway.app`;
+    console.log(`[ContainerManager/Railway] Reusing existing service ${existingId} (${serviceName}) for ${userId} → ${existingUrl}`);
     return {
       container: serviceName,
       status: 'deploying',
       serviceId: existingId,
-      url: `https://${serviceName}.up.railway.app`,
+      url: existingUrl,
       startedAt: new Date().toISOString(),
     };
   }
@@ -582,6 +593,55 @@ async function getServiceIdByName(name: string): Promise<string | null> {
 
     const match = data.project.services.edges.find(e => e.node.name === name);
     return match?.node.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Look up the Railway-assigned domain for an existing service.
+ *
+ * Returns the first service domain the platform has provisioned (without
+ * the protocol prefix), or null if the service has no domain yet (e.g. the
+ * domain creation step previously failed and was never retried). Callers
+ * should fall back to the naming-convention guess only when this returns
+ * null.
+ */
+async function getServiceDomain(serviceId: string): Promise<string | null> {
+  try {
+    const data = await railwayGql<{
+      service: {
+        serviceInstances: {
+          edges: Array<{
+            node: {
+              domains: {
+                serviceDomains: Array<{ domain: string }>;
+              };
+            };
+          }>;
+        };
+      };
+    }>(`
+      query ServiceDomain($id: String!) {
+        service(id: $id) {
+          serviceInstances {
+            edges {
+              node {
+                domains { serviceDomains { domain } }
+              }
+            }
+          }
+        }
+      }
+    `, { id: serviceId });
+
+    for (const edge of data.service.serviceInstances.edges) {
+      const domains = edge.node.domains?.serviceDomains ?? [];
+      if (domains.length > 0 && domains[0].domain) {
+        return domains[0].domain;
+      }
+    }
+    return null;
   } catch {
     return null;
   }

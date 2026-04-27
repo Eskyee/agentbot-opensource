@@ -282,16 +282,15 @@ function acquireWithMemory(params: AcquireParams, config: LaneConfig): WorkloadA
   const userBudget = memoryBudget.get(keys.budgetUser)!
   const globalBudget = memoryBudget.get(keys.budgetGlobal)!
 
-  userBudget.count += cost
-  globalBudget.count += cost
-
-  if (userBudget.count > config.userBudgetPerMinute) {
-    return reject('User budget exceeded')
-  }
-  if (globalBudget.count > config.globalBudgetPerMinute) {
-    return reject('Global budget exceeded')
-  }
-
+  // The order and rollback semantics here MUST mirror ACQUIRE_LUA so the
+  // memory fallback (used when Redis EVAL is unavailable, e.g. on Upstash
+  // REST shims) doesn't reintroduce the budget-burn-on-denial bug.
+  //
+  // 1. Concurrency check FIRST — denied requests must not consume budget.
+  // 2. INCR user budget; if it now exceeds the cap, decrement back and
+  //    reject without touching the global counter.
+  // 3. INCR global budget; if it exceeds the cap, decrement BOTH back.
+  // 4. Reserve concurrency tokens.
   const userBucket = cleanupMemoryActive(keys.activeUser)
   const globalBucket = cleanupMemoryActive(keys.activeGlobal)
 
@@ -300,6 +299,19 @@ function acquireWithMemory(params: AcquireParams, config: LaneConfig): WorkloadA
   }
   if (globalBucket.size >= config.globalConcurrency) {
     return reject('Global concurrency exceeded')
+  }
+
+  userBudget.count += cost
+  if (userBudget.count > config.userBudgetPerMinute) {
+    userBudget.count -= cost
+    return reject('User budget exceeded')
+  }
+
+  globalBudget.count += cost
+  if (globalBudget.count > config.globalBudgetPerMinute) {
+    globalBudget.count -= cost
+    userBudget.count -= cost
+    return reject('Global budget exceeded')
   }
 
   const token = randomUUID()
