@@ -375,15 +375,18 @@ export class AIProviderService {
         ? await this.chatVercelGateway(messages, modelId, options, context)
         : await this.chatOpenRouter(messages, modelId, options, context);
 
-      // Settle reservation: replace estimate with actual usage if reported.
+      // Settle reservation. settleQuota releases the full reservedEstimate
+      // regardless of actualTokens (model_metrics is the source of truth for
+      // `used`); the `_actual` parameter exists only for logging. We MUST
+      // call it on every successful chat — even when the provider doesn't
+      // report usage — otherwise the reservation leaks into
+      // ai_token_reservations.reserved for the rest of the month and
+      // permanently shrinks the user's effective monthly quota (each new
+      // call is gated on `existing_reserved + used + new_estimate <= limit`).
       if (context.userId && reservedEstimate > 0) {
         const actualTokens = response.usage?.total_tokens
           ?? ((response.usage?.prompt_tokens ?? 0) + (response.usage?.completion_tokens ?? 0));
-        if (actualTokens > 0) {
-          // settleQuota expects the delta (actual - estimated). We pass both
-          // so it can correct over- or under-reservation in one call.
-          await this.settleQuota(context.userId, reservedEstimate, actualTokens);
-        }
+        await this.settleQuota(context.userId, reservedEstimate, actualTokens);
       }
 
       return response;
