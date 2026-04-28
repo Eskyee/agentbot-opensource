@@ -18,6 +18,8 @@ ARG TEMPO_X402_REF=v9.2.0
 `v9.2.0` is the last known-good tag before the v9.3.0 "Composable Cartridge
 Intelligence" refactor (2026-04-11), which changed the soul routing surface
 and added runtime deps (llama-server) not present in `debian:trixie-slim`.
+The runtime image intentionally carries the Rust/Cargo toolchain and native
+build packages because v9.2.0 can compile generated cartridges after boot.
 
 **Never let Railway pull `main` unpinned again.** The full platform outage
 on 2026-04-20 happened because the original Dockerfile cloned `main` and
@@ -29,7 +31,7 @@ To bump the pin:
 1. Run `cargo build --release --package tempo-x402-node` locally against
    the new ref.
 2. Inspect the new runtime deps — any new binaries, model weights, env
-   vars? Update the Dockerfile runtime stage if so.
+   vars, compiler/toolchain changes? Update the Dockerfile runtime stage if so.
 3. Deploy the new ref to a Railway preview environment (**not** prod) and
    verify `/soul/status` returns 200.
 4. Update `ARG TEMPO_X402_REF` here and add a Notion journal entry

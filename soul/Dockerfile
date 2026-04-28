@@ -25,9 +25,16 @@ RUN cargo build --release --package tempo-x402-node
 # Runtime stage
 FROM debian:trixie-slim
 
+ENV CARGO_HOME=/usr/local/cargo
+ENV RUSTUP_HOME=/usr/local/rustup
+ENV PATH=/usr/local/cargo/bin:${PATH}
+
 RUN apt-get update && apt-get install -y \
+    build-essential \
     ca-certificates \
+    libssl-dev \
     libssl3 \
+    pkg-config \
     git \
     sqlite3 \
     curl \
@@ -59,8 +66,11 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # volume ownership, then drops privileges via gosu before exec-ing x402-node.
 WORKDIR /home/agent
 
-# Copy binary
+# Copy binary and Rust toolchain. tempo-x402 v9.2.0 can compile generated
+# cartridges at runtime, so the running image needs cargo/gcc, not just x402-node.
 COPY --from=builder /build/target/release/x402-node /usr/local/bin/x402-node
+COPY --from=builder /usr/local/cargo /usr/local/cargo
+COPY --from=builder /usr/local/rustup /usr/local/rustup
 
 # Environment defaults. All state paths point inside /data (the persistent
 # volume) so nothing is written to ephemeral disk.
