@@ -18,9 +18,12 @@ WORKDIR /build
 # newer upstream version builds + boots on Railway.
 ARG TEMPO_X402_REF=v9.2.0
 RUN git clone --branch "${TEMPO_X402_REF}" --depth 1 https://github.com/compusophy/tempo-x402.git .
+RUN rustup target add wasm32-unknown-unknown
 
 # Build release binary (all features including soul, agent, erc8004)
 RUN cargo build --release --package tempo-x402-node
+RUN cp /build/target/release/x402-node /tmp/x402-node \
+    && rm -rf /build/target
 
 # Runtime stage
 FROM debian:trixie-slim
@@ -68,7 +71,8 @@ WORKDIR /home/agent
 
 # Copy binary and Rust toolchain. tempo-x402 v9.2.0 can compile generated
 # cartridges at runtime, so the running image needs cargo/gcc, not just x402-node.
-COPY --from=builder /build/target/release/x402-node /usr/local/bin/x402-node
+COPY --from=builder /tmp/x402-node /usr/local/bin/x402-node
+COPY --from=builder /build /opt/tempo-x402
 COPY --from=builder /usr/local/cargo /usr/local/cargo
 COPY --from=builder /usr/local/rustup /usr/local/rustup
 

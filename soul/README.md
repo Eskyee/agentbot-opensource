@@ -22,6 +22,12 @@ The runtime image intentionally carries the Rust/Cargo toolchain and native
 build packages because v9.2.0 can compile generated cartridges after boot.
 Cargo's writable home lives on the `/data` volume so the non-root `agent` user
 can fetch/build crates without mutating the read-only toolchain copy.
+The image also ships the pinned tempo-x402 source tree and seeds it into
+`/data/workspace` when the mounted workspace does not have a `Cargo.toml`;
+queen plans reference paths such as `crates/tempo-x402-soul/...`, so a
+binary-only runtime cannot execute read/edit/compile goals.
+The build-time Cargo registry cache is also seeded into `/data/cargo` on first
+boot to keep runtime `cargo check` and WASM cartridge builds warm and writable.
 
 **Never let Railway pull `main` unpinned again.** The full platform outage
 on 2026-04-20 happened because the original Dockerfile cloned `main` and

@@ -48,6 +48,16 @@ mkdir -p \
   "${DATA_DIR}/cartridges" \
   "${DATA_DIR}/cargo"
 
+if [ ! -f "${DATA_DIR}/workspace/Cargo.toml" ]; then
+  echo "Seeding tempo-x402 workspace into ${DATA_DIR}/workspace"
+  cp -a /opt/tempo-x402/. "${DATA_DIR}/workspace/"
+fi
+
+if [ ! -d "${DATA_DIR}/cargo/registry" ] && [ -d /usr/local/cargo/registry ]; then
+  echo "Seeding Cargo registry cache into ${DATA_DIR}/cargo"
+  cp -a /usr/local/cargo/. "${DATA_DIR}/cargo/"
+fi
+
 chown -R agent:agent "${DATA_DIR}"
 
 # Resolve ports — honour env overrides, fall back to defaults.
