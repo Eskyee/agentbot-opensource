@@ -3,23 +3,24 @@
 This directory builds the Borg cognition runtime that powers
 `borg-0-production-7139.up.railway.app` and the `/dashboard/borg` live telemetry
 page. The binary itself lives in
-[compusophy/tempo-x402](https://github.com/compusophy/tempo-x402); this
+[Eskyee/tempo-x402](https://github.com/Eskyee/tempo-x402/tree/x402); this
 directory only contains the Railway-specific build + deploy glue.
 
-## Upstream pin — never auto-bump
+## Upstream source — never auto-bump
 
-The Dockerfile clones `compusophy/tempo-x402` at a **pinned tag**, not
-`main`:
+The Dockerfile clones the project-owned `Eskyee/tempo-x402` repo at the
+explicit `x402` branch, not `main`:
 
 ```dockerfile
-ARG TEMPO_X402_REF=v9.2.0
+ARG TEMPO_X402_REPO=https://github.com/Eskyee/tempo-x402.git
+ARG TEMPO_X402_REF=x402
 ```
 
-`v9.2.0` is the last known-good tag before the v9.3.0 "Composable Cartridge
-Intelligence" refactor (2026-04-11), which changed the soul routing surface
-and added runtime deps (llama-server) not present in `debian:trixie-slim`.
+The `x402` branch currently carries the Agentbot-aligned v9.3.x queen/worker
+runtime. Keep it explicit so Railway never silently follows another upstream
+default branch.
 The runtime image intentionally carries the Rust/Cargo toolchain and native
-build packages because v9.2.0 can compile generated cartridges after boot.
+build packages because the queen can compile generated cartridges after boot.
 Cargo's writable home lives on the `/data` volume so the non-root `agent` user
 can fetch/build crates without mutating the read-only toolchain copy.
 The image also ships the pinned tempo-x402 source tree and seeds it into
@@ -29,9 +30,9 @@ binary-only runtime cannot execute read/edit/compile goals.
 The build-time Cargo registry cache is also seeded into `/data/cargo` on first
 boot to keep runtime `cargo check` and WASM cartridge builds warm and writable.
 
-**Never let Railway pull `main` unpinned again.** The full platform outage
-on 2026-04-20 happened because the original Dockerfile cloned `main` and
-one automated Railway redeploy picked up the breaking v9.3.0 refactor,
+**Never let Railway pull an implicit branch again.** The full platform outage
+on 2026-04-20 happened because an older Dockerfile cloned an upstream default
+branch and one automated Railway redeploy picked up a breaking refactor,
 crash-looping the container until it got restart-policy-killed.
 
 To bump the pin:
@@ -42,7 +43,7 @@ To bump the pin:
    vars, compiler/toolchain changes? Update the Dockerfile runtime stage if so.
 3. Deploy the new ref to a Railway preview environment (**not** prod) and
    verify `/soul/status` returns 200.
-4. Update `ARG TEMPO_X402_REF` here and add a Notion journal entry
+4. Update `ARG TEMPO_X402_REPO` / `ARG TEMPO_X402_REF` here and add a Notion journal entry
    explaining what's in the bump.
 
 ## Volume hygiene — `/data` must be mounted

@@ -10,14 +10,12 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /build
 
-# Clone tempo-x402 workspace
-# Pinned to v9.2.0 — last known-good tag before the v9.3.0 "Composable
-# Cartridge Intelligence" refactor (2026-04-11) that changed the soul
-# routing surface and introduced llama-server runtime deps not present
-# in debian:trixie-slim. Bump this tag intentionally after verifying a
-# newer upstream version builds + boots on Railway.
-ARG TEMPO_X402_REF=v9.2.0
-RUN git clone --branch "${TEMPO_X402_REF}" --depth 1 https://github.com/compusophy/tempo-x402.git .
+# Clone tempo-x402 workspace. The Agentbot queen follows the project-owned
+# x402 branch so runtime source paths, cartridges, and colony fixes stay aligned
+# with the deployed Borg/worker model.
+ARG TEMPO_X402_REPO=https://github.com/Eskyee/tempo-x402.git
+ARG TEMPO_X402_REF=x402
+RUN git clone --branch "${TEMPO_X402_REF}" --depth 1 "${TEMPO_X402_REPO}" .
 RUN rustup target add wasm32-unknown-unknown
 
 # Build release binary (all features including soul, agent, erc8004)
