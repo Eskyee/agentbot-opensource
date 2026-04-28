@@ -200,6 +200,15 @@ export async function createContainer(
       webchat:  { enabled: true },
     },
     cron:    { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     session: {
       scope: 'per-sender',
       reset: { mode: 'daily', atHour: 4 },
@@ -227,7 +236,7 @@ export async function createContainer(
 
   // 3. Set start command — reads config from env var (no heredoc quoting issues).
   //    Single-quoted sh -c body is safe because no single quotes appear inside it.
-  const startCmd = `sh -c 'mkdir -p ${OPENCLAW_HOME_DIR} && printf "%s" "$OPENCLAW_CONFIG_JSON" > ${OPENCLAW_CONFIG_PATH} && exec openclaw gateway'`;
+  const startCmd = `sh -c 'mkdir -p ${OPENCLAW_HOME_DIR} && printf "%s" "$OPENCLAW_CONFIG_JSON" > ${OPENCLAW_CONFIG_PATH} && (openclaw doctor || true) && exec openclaw gateway'`;
 
   const planResources = PLAN_RESOURCES[plan] ?? PLAN_RESOURCES.solo;
 

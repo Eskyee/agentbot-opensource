@@ -51,6 +51,9 @@ export function buildOpenclaWConfig(formData) {
   // ── Gateway ────────────────────────────────────────────────────
   cfg.gateway = buildGatewaySection(formData);
 
+  // ── Updates ────────────────────────────────────────────────────
+  cfg.update = buildUpdateSection();
+
   // ── Session ────────────────────────────────────────────────────
   if (formData.sessionScope) {
     cfg.session = buildSessionSection(formData);
@@ -157,6 +160,18 @@ function buildGatewaySection(formData) {
   };
 
   return section;
+}
+
+function buildUpdateSection() {
+  return {
+    channel: 'stable',
+    auto: {
+      enabled: true,
+      stableDelayHours: 6,
+      stableJitterHours: 12,
+      betaCheckIntervalHours: 1,
+    },
+  };
 }
 
 function buildTelegramSection(formData) {

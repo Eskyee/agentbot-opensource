@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 API_URL="https://agentbot.sh"
-IMAGE="ghcr.io/openclaw/openclaw:2026.3.13-1"
+IMAGE="ghcr.io/openclaw/openclaw:2026.4.26"
 
 log() { echo -e "${GREEN}[✓]${NC} $*"; }
 warn() { echo -e "${YELLOW}[!]${NC} $*"; }
@@ -138,6 +138,15 @@ cat > "$DATA_DIR/config/openclaw.json" << EOF
     "timeoutMinutes": 60,
     "persist": true
   },
+  "update": {
+    "channel": "stable",
+    "auto": {
+      "enabled": true,
+      "stableDelayHours": 6,
+      "stableJitterHours": 12,
+      "betaCheckIntervalHours": 1
+    }
+  },
   "timezone": "Europe/London"
 }
 EOF
@@ -146,7 +155,7 @@ log "Config written to $DATA_DIR/config/openclaw.json"
 
 # Pull the official OpenClaw image
 info "Pulling official OpenClaw image..."
-docker pull "ghcr.io/openclaw/openclaw:2026.3.13-1" || \
+docker pull "$IMAGE" || \
 warn "Could not pull image. Check your internet connection."
 
 # Create Docker network

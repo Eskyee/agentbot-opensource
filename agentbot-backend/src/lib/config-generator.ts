@@ -75,6 +75,15 @@ export function generateConfig(config: AgentConfig): { config: object; authToken
     heartbeat: {
       intervalMinutes: 15,
     },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     timezone: 'Europe/London',
   };
 
