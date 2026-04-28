@@ -20,6 +20,8 @@ Intelligence" refactor (2026-04-11), which changed the soul routing surface
 and added runtime deps (llama-server) not present in `debian:trixie-slim`.
 The runtime image intentionally carries the Rust/Cargo toolchain and native
 build packages because v9.2.0 can compile generated cartridges after boot.
+Cargo's writable home lives on the `/data` volume so the non-root `agent` user
+can fetch/build crates without mutating the read-only toolchain copy.
 
 **Never let Railway pull `main` unpinned again.** The full platform outage
 on 2026-04-20 happened because the original Dockerfile cloned `main` and

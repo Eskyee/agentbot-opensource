@@ -25,7 +25,7 @@ RUN cargo build --release --package tempo-x402-node
 # Runtime stage
 FROM debian:trixie-slim
 
-ENV CARGO_HOME=/usr/local/cargo
+ENV CARGO_HOME=/data/cargo
 ENV RUSTUP_HOME=/usr/local/rustup
 ENV PATH=/usr/local/cargo/bin:${PATH}
 
@@ -81,7 +81,7 @@ ENV RUST_LOG=info
 ENV SOUL_DB_PATH=/data/soul.db
 ENV SOUL_MEMORY_FILE=/data/soul_memory.md
 ENV SOUL_WORKSPACE_ROOT=/data/workspace
-ENV SOUL_CODING_ENABLED=false
+ENV SOUL_CODING_ENABLED=true
 ENV SOUL_TOOLS_ENABLED=true
 
 EXPOSE 4023
