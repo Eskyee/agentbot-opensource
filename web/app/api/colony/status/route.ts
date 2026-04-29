@@ -209,8 +209,8 @@ export async function GET(request: Request) {
           soul.getSiblings(),
           soul.getStatus(),
           soul.getColonyStatus().catch(() => null),
-          prisma.agent.findMany({ select: { id: true, name: true, websocketUrl: true, status: true } }),
-          prisma.$queryRaw<any[]>`SELECT id, name, status, config FROM agents`.catch(() => [])
+          prisma.agent.findMany({ where: { status: { not: 'template' } }, select: { id: true, name: true, websocketUrl: true, status: true } }),
+          prisma.$queryRaw<any[]>`SELECT id, name, status, config FROM agents WHERE status != 'template'`.catch(() => [])
         ]);
 
         const identity = instanceInfo.identity ?? null;
