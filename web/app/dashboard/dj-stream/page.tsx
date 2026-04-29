@@ -616,20 +616,26 @@ export default function DJStreamPage() {
         : muxStatus?.streamHealth === 'bad'
           ? { pill: 'error' as const, label: 'Needs Attention', helper: muxStatus.message || 'Mux is not reporting a healthy stream.' }
           : { pill: 'idle' as const, label: 'Stream Armed', helper: 'Your stream key is ready. Start OBS or ffmpeg to go live.' }
-  const originDisplay =
-    stream && (muxStatus?.streamHealth === 'waiting' || distribution?.origin.status === 'degraded')
-      ? { status: 'idle' as const, label: 'Waiting' }
-      : {
-          status: toStatusPillStatus(distribution?.origin.status || 'offline'),
-          label: distribution?.origin.status || 'offline',
-        }
-  const firstPartyDisplay =
-    stream && muxStatus?.streamHealth === 'waiting' && distribution?.firstParty.status === 'stopped'
+  const originStatus = distribution?.origin.status || 'idle'
+  const originDisplay = stream
+    ? originStatus === 'active'
+      ? { status: 'active' as const, label: 'Live' }
+      : { status: 'idle' as const, label: 'Waiting' }
+    : originStatus === 'active'
+      ? { status: 'active' as const, label: 'Live' }
+      : { status: 'idle' as const, label: 'Off Air' }
+  const firstPartyStatus = distribution?.firstParty.status || 'stopped'
+  const firstPartyDisplay = stream
+    ? muxStatus?.streamHealth === 'waiting' && firstPartyStatus === 'stopped'
       ? { status: 'idle' as const, label: 'Standby' }
-      : {
-          status: toStatusPillStatus(distribution?.firstParty.status || 'offline'),
-          label: distribution?.firstParty.status || 'offline',
-        }
+      : firstPartyStatus === 'healthy'
+        ? { status: 'active' as const, label: 'Live' }
+        : firstPartyStatus === 'degraded' || firstPartyStatus === 'failed'
+          ? { status: 'error' as const, label: 'Station Issue' }
+          : { status: 'idle' as const, label: 'Standby' }
+    : firstPartyStatus === 'healthy'
+      ? { status: 'active' as const, label: 'Live' }
+      : { status: 'idle' as const, label: 'Off Air' }
 
   return (
     <DashboardShell>
