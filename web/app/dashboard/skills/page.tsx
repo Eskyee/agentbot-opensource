@@ -39,6 +39,9 @@ interface Skill {
   description: string
   category: string
   rating: number
+  ratingCount: number
+  installs: number
+  userRating: number | null
   downloads: number
   author: string
   featured?: boolean
@@ -68,6 +71,7 @@ export default function SkillsPage() {
   const [creatingSkill, setCreatingSkill] = useState(false)
   const [syncingRuntime, setSyncingRuntime] = useState(false)
   const [runtimeSyncMessage, setRuntimeSyncMessage] = useState<string | null>(null)
+  const [ratingSkillId, setRatingSkillId] = useState<string | null>(null)
   const [openclawSkillsUrl, setOpenclawSkillsUrl] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -250,6 +254,41 @@ export default function SkillsPage() {
       setSyncingRuntime(false)
     }
   }, [selectedAgentId])
+
+  const rateSkill = useCallback(async (skillId: string, rating: number) => {
+    setRatingSkillId(skillId)
+    try {
+      const res = await fetch(`/api/skills/${skillId}/rating`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Rating failed. Sign in and try again.')
+      }
+
+      setSkills((prev) =>
+        prev.map((skill) =>
+          skill.id === skillId
+            ? {
+                ...skill,
+                rating: data.rating,
+                ratingCount: data.ratingCount,
+                userRating: data.userRating,
+              }
+            : skill
+        )
+      )
+      toast.success(`Rated ${rating} star${rating === 1 ? '' : 's'}`)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Rating failed. Sign in and try again.'
+      toast.error(message)
+    } finally {
+      setRatingSkillId(null)
+    }
+  }, [])
 
   const handleCreateSkill = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -522,12 +561,40 @@ export default function SkillsPage() {
                   </p>
                   <div className="flex items-center gap-4 text-xs text-zinc-500 mb-4">
                     <span className="flex items-center gap-1">
-                      <Star className="h-3 w-3" /> {skill.rating}
+                      <Star className="h-3 w-3" />
+                      {skill.ratingCount > 0 ? skill.rating.toFixed(1) : 'No ratings'}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Download className="h-3 w-3" /> {skill.downloads}
+                      <Download className="h-3 w-3" /> {skill.installs} installs
                     </span>
                     <span>by {skill.author}</span>
+                  </div>
+                  <div className="mb-4 flex items-center justify-between gap-3 border border-zinc-800 bg-black px-3 py-2">
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+                      {skill.ratingCount > 0
+                        ? `${skill.ratingCount} rating${skill.ratingCount === 1 ? '' : 's'}`
+                        : 'Be first to rate'}
+                    </span>
+                    <div className="flex items-center gap-1" aria-label={`Rate ${skill.name}`}>
+                      {[1, 2, 3, 4, 5].map((ratingValue) => {
+                        const activeRating = skill.userRating || Math.round(skill.rating)
+                        const isActive = ratingValue <= activeRating
+                        return (
+                          <button
+                            key={ratingValue}
+                            type="button"
+                            onClick={() => rateSkill(skill.id, ratingValue)}
+                            disabled={ratingSkillId === skill.id}
+                            className="p-1 text-zinc-600 transition-colors hover:text-orange-300 disabled:cursor-wait disabled:opacity-60"
+                            aria-label={`Rate ${skill.name} ${ratingValue} star${ratingValue === 1 ? '' : 's'}`}
+                          >
+                            <Star
+                              className={`h-4 w-4 ${isActive ? 'fill-orange-400 text-orange-400' : ''}`}
+                            />
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                   <Button
                     className="w-full bg-white text-black hover:bg-zinc-200 text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"

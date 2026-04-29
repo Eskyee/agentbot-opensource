@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { deploySkillToAgent, removeSkillFromAgent } from '@/app/lib/agent-deploy'
 import { BASEFM_DJ_SKILL_CODE, BASEFM_DJ_SKILL_NAME, ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
+import { ensureSkillRatingsTable } from '@/app/lib/skillRatings'
 import { scanSkillMarketplaceInput } from '@/app/lib/skillMarketplaceSafety'
 
 // Default skills catalog — used as seed data if Skill table is empty
@@ -88,6 +90,65 @@ async function ensureSkillsSeeded() {
   }
 
   await ensureBasefmDjSkill()
+}
+
+type SkillEngagementStats = {
+  rating: number
+  ratingCount: number
+  installs: number
+  userRating: number | null
+}
+
+async function getSkillEngagementStats(skillIds: string[], userId?: string): Promise<Map<string, SkillEngagementStats>> {
+  const stats = new Map<string, SkillEngagementStats>()
+  for (const skillId of skillIds) {
+    stats.set(skillId, { rating: 0, ratingCount: 0, installs: 0, userRating: null })
+  }
+  if (skillIds.length === 0) return stats
+
+  await ensureSkillRatingsTable()
+
+  const ratingRows = await prisma.$queryRaw<Array<{ skillId: string; rating: number | null; ratingCount: bigint | number }>>(
+    Prisma.sql`
+      SELECT "skillId", AVG("rating")::float AS "rating", COUNT(*) AS "ratingCount"
+      FROM "SkillRating"
+      WHERE "skillId" IN (${Prisma.join(skillIds)})
+      GROUP BY "skillId"
+    `
+  )
+  const installRows = await prisma.installedSkill.groupBy({
+    by: ['skillId'],
+    where: { skillId: { in: skillIds }, enabled: true },
+    _count: { skillId: true },
+  })
+  const userRatingRows = userId
+    ? await prisma.$queryRaw<Array<{ skillId: string; rating: number }>>(
+        Prisma.sql`
+          SELECT "skillId", "rating"
+          FROM "SkillRating"
+          WHERE "userId" = ${userId} AND "skillId" IN (${Prisma.join(skillIds)})
+        `
+      )
+    : []
+
+  for (const row of ratingRows) {
+    const existing = stats.get(row.skillId)
+    if (!existing) continue
+    existing.rating = row.rating ? Number(row.rating.toFixed(1)) : 0
+    existing.ratingCount = Number(row.ratingCount)
+  }
+  for (const row of installRows) {
+    const existing = stats.get(row.skillId)
+    if (!existing) continue
+    existing.installs = row._count.skillId
+  }
+  for (const row of userRatingRows) {
+    const existing = stats.get(row.skillId)
+    if (!existing) continue
+    existing.userRating = row.rating
+  }
+
+  return stats
 }
 
 async function getSkillTargetContext(agentId: string, session: NonNullable<Awaited<ReturnType<typeof getAuthSession>>>) {
@@ -200,6 +261,7 @@ export async function GET(request: Request) {
         select: { category: true },
       }),
     ])
+    const engagementStats = await getSkillEngagementStats(skills.map((skill) => skill.id), session?.user?.id)
 
     // Return which skills are already installed for this user+agent combo
     let installedSkillIds: string[] = []
@@ -218,6 +280,10 @@ export async function GET(request: Request) {
     return NextResponse.json({
       skills: skills.map((skill) => ({
         ...skill,
+        rating: engagementStats.get(skill.id)?.rating || 0,
+        ratingCount: engagementStats.get(skill.id)?.ratingCount || 0,
+        installs: engagementStats.get(skill.id)?.installs || 0,
+        userRating: engagementStats.get(skill.id)?.userRating || null,
         scan: scanSkillMarketplaceInput({
           name: skill.name,
           description: skill.description,
@@ -229,6 +295,10 @@ export async function GET(request: Request) {
       categories: categories.map(c => c.category),
       featured: skills.filter(s => s.featured).map((skill) => ({
         ...skill,
+        rating: engagementStats.get(skill.id)?.rating || 0,
+        ratingCount: engagementStats.get(skill.id)?.ratingCount || 0,
+        installs: engagementStats.get(skill.id)?.installs || 0,
+        userRating: engagementStats.get(skill.id)?.userRating || null,
         scan: scanSkillMarketplaceInput({
           name: skill.name,
           description: skill.description,
@@ -248,6 +318,10 @@ export async function GET(request: Request) {
     const categories = [...new Set(DEFAULT_SKILLS.map(s => s.category))]
     const withScan = skills.map((skill) => ({
       ...skill,
+      rating: 0,
+      ratingCount: 0,
+      installs: 0,
+      userRating: null,
       scan: scanSkillMarketplaceInput({
         name: skill.name,
         description: skill.description,
