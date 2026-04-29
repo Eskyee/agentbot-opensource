@@ -254,6 +254,10 @@ export async function GET(request: Request) {
           rating: true,
           featured: true,
           code: true,
+          mcpConfig: true,
+          mcpEnabled: true,
+          widgetUrl: true,
+          widgetConfig: true,
         },
       }),
       prisma.skill.findMany({
@@ -284,6 +288,7 @@ export async function GET(request: Request) {
         ratingCount: engagementStats.get(skill.id)?.ratingCount || 0,
         installs: engagementStats.get(skill.id)?.installs || 0,
         userRating: engagementStats.get(skill.id)?.userRating || null,
+        hasDownload: Boolean(skill.code?.trim() || skill.mcpEnabled || skill.widgetUrl || skill.widgetConfig),
         scan: scanSkillMarketplaceInput({
           name: skill.name,
           description: skill.description,
@@ -299,6 +304,7 @@ export async function GET(request: Request) {
         ratingCount: engagementStats.get(skill.id)?.ratingCount || 0,
         installs: engagementStats.get(skill.id)?.installs || 0,
         userRating: engagementStats.get(skill.id)?.userRating || null,
+        hasDownload: Boolean(skill.code?.trim() || skill.mcpEnabled || skill.widgetUrl || skill.widgetConfig),
         scan: scanSkillMarketplaceInput({
           name: skill.name,
           description: skill.description,
@@ -322,6 +328,7 @@ export async function GET(request: Request) {
       ratingCount: 0,
       installs: 0,
       userRating: null,
+      hasDownload: Boolean(skill.code?.trim()),
       scan: scanSkillMarketplaceInput({
         name: skill.name,
         description: skill.description,

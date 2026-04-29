@@ -43,6 +43,7 @@ interface Skill {
   installs: number
   userRating: number | null
   downloads: number
+  hasDownload: boolean
   author: string
   featured?: boolean
 }
@@ -288,6 +289,15 @@ export default function SkillsPage() {
     } finally {
       setRatingSkillId(null)
     }
+  }, [])
+
+  const downloadSkill = useCallback(async (skill: Skill) => {
+    if (!skill.hasDownload) {
+      toast.info('This skill syncs directly to your runtime and has no downloadable package yet.')
+      return
+    }
+
+    window.location.href = `/api/skills/${skill.id}/download`
   }, [])
 
   const handleCreateSkill = useCallback(
@@ -606,6 +616,16 @@ export default function SkillsPage() {
                       : isInstalled
                         ? 'Installed'
                         : 'Install'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-2 w-full border-zinc-800 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white disabled:opacity-50"
+                    disabled={!skill.hasDownload}
+                    onClick={() => downloadSkill(skill)}
+                  >
+                    <Download className="mr-2 h-3 w-3" />
+                    {skill.hasDownload ? 'Download Skill' : 'No Package Yet'}
                   </Button>
                   {openclawSkillsUrl && (
                     <a

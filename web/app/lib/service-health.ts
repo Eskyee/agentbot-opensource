@@ -1,5 +1,7 @@
 import { AGENTBOT_BACKEND_URL, SOUL_SERVICE_URL, X402_GATEWAY_URL } from './platform-urls';
 
+const CANONICAL_BORG_URL = 'https://borg-0-production-7139.up.railway.app';
+
 export interface ServiceHealth {
   name: string;
   url: string;
@@ -21,6 +23,8 @@ export const HEALTH_SERVICES: ServiceHealth[] = [
       `${SOUL_SERVICE_URL}/health`,
       `${SOUL_SERVICE_URL}/healthz`,
       `${SOUL_SERVICE_URL}/readyz`,
+      `${CANONICAL_BORG_URL}/soul/status`,
+      `${CANONICAL_BORG_URL}/health`,
     ],
   },
   { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health` },
