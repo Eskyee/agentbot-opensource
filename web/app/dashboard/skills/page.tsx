@@ -168,13 +168,23 @@ export default function SkillsPage() {
         const data = await res.json().catch(() => ({}))
 
         if (!res.ok) {
+          if (data.code === 'already_installed') {
+            setInstalledSkillIds((prev) => new Set(prev).add(skillId))
+            toast.info(data.error || 'This skill is already installed')
+            return
+          }
           if (data.deployWarning?.includes('Gateway unreachable')) {
             throw new Error('Agent offline. Install your agent first, then retry installing skills.')
           }
-          throw new Error(data.error || 'Failed to install skill')
+          throw new Error(data.error || 'Skill install failed. Refresh and try again.')
         }
 
         setInstalledSkillIds((prev) => new Set(prev).add(skillId))
+
+        if (data.alreadyInstalled) {
+          toast.info(data.message || 'This skill is already installed')
+          return
+        }
         
         if (data.deployed) {
           toast.success(
@@ -191,7 +201,7 @@ export default function SkillsPage() {
         }
       } catch (err: unknown) {
         const message =
-          err instanceof Error ? err.message : 'Failed to install skill'
+          err instanceof Error ? err.message : 'Skill install failed. Refresh and try again.'
         toast.error(message)
       } finally {
         setInstallingId(null)

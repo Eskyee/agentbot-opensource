@@ -135,6 +135,27 @@ async function getSkillTargetContext(agentId: string, session: NonNullable<Await
   return { agent: synthesizedAgent, targetUserId: targetUser.id, runtimeHydrated: true }
 }
 
+function getSkillInstallError(error: unknown) {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code?: string }).code === 'P2002'
+  ) {
+    return {
+      message: 'This skill is already installed for this agent.',
+      code: 'already_installed',
+      status: 409,
+    }
+  }
+
+  return {
+    message: 'Skill install failed. Refresh the page and try again, or open the OpenClaw skills manager for this agent.',
+    code: 'install_failed',
+    status: 500,
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const category = searchParams.get('category')
@@ -280,28 +301,46 @@ export async function POST(request: Request) {
       )
     }
 
-    // Install skill (upsert to handle duplicates)
-    const installed = await prisma.installedSkill.upsert({
+    const existingInstall = await prisma.installedSkill.findUnique({
       where: {
         userId_agentId_skillId: {
-          userId: target!.targetUserId,
+          userId: target.targetUserId,
           agentId: agent.id,
           skillId,
         },
       },
-      update: { enabled: true },
-      create: {
-        userId: target!.targetUserId,
-        agentId: agent.id,
-        skillId,
-      },
     })
 
-    // Increment download count
-    await prisma.skill.update({
-      where: { id: skillId },
-      data: { downloads: { increment: 1 } },
-    })
+    if (existingInstall?.enabled) {
+      return NextResponse.json({
+        success: true,
+        installed: existingInstall,
+        alreadyInstalled: true,
+        runtimeHydrated: target.runtimeHydrated,
+        deployed: false,
+        message: 'This skill is already installed for this agent.',
+      })
+    }
+
+    const installed = existingInstall
+      ? await prisma.installedSkill.update({
+          where: { id: existingInstall.id },
+          data: { enabled: true },
+        })
+      : await prisma.installedSkill.create({
+          data: {
+            userId: target.targetUserId,
+            agentId: agent.id,
+            skillId,
+          },
+        })
+
+    if (!existingInstall) {
+      await prisma.skill.update({
+        where: { id: skillId },
+        data: { downloads: { increment: 1 } },
+      })
+    }
 
     // Deploy skill to OpenClaw gateway (don't fail if gateway is down)
     try {
@@ -311,10 +350,10 @@ export async function POST(request: Request) {
         return NextResponse.json({ 
           success: true, 
           installed,
-          runtimeHydrated: target!.runtimeHydrated,
+          runtimeHydrated: target.runtimeHydrated,
           deployed: false,
           deployWarning: deployResult.error,
-          message: target!.runtimeHydrated
+          message: target.runtimeHydrated
             ? 'Skill saved and the managed runtime agent record was created. Gateway deploy still needs attention.'
             : 'Skill saved, but gateway deploy still needs attention.',
         })
@@ -322,28 +361,34 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: true,
         installed,
-        runtimeHydrated: target!.runtimeHydrated,
+        runtimeHydrated: target.runtimeHydrated,
         deployed: true,
-        message: target!.runtimeHydrated
-          ? 'Skill installed and the managed runtime agent record was created successfully.'
-          : 'Skill installed successfully.',
+        message: existingInstall
+          ? 'Skill re-enabled successfully.'
+          : target.runtimeHydrated
+            ? 'Skill installed and the managed runtime agent record was created successfully.'
+            : 'Skill installed successfully.',
       })
     } catch (gatewayError) {
       console.warn('[Skill Install] Gateway deploy failed (will retry on sync):', gatewayError)
       return NextResponse.json({ 
         success: true, 
         installed,
-        runtimeHydrated: target!.runtimeHydrated,
+        runtimeHydrated: target.runtimeHydrated,
         deployed: false,
         deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically',
-        message: target!.runtimeHydrated
+        message: target.runtimeHydrated
           ? 'Skill saved, the managed runtime agent record was created, and the runtime will pick it up when gateway sync recovers.'
           : 'Skill saved to the database and will sync to the runtime automatically.',
       })
     }
   } catch (error) {
     console.error('Skill install error:', error)
-    return NextResponse.json({ error: 'Failed to install skill' }, { status: 500 })
+    const installError = getSkillInstallError(error)
+    return NextResponse.json(
+      { error: installError.message, code: installError.code },
+      { status: installError.status }
+    )
   }
 }
 
