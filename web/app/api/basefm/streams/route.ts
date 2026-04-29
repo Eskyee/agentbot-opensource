@@ -4,6 +4,7 @@ import { createBasefmSessionToken, verifyBasefmSessionToken } from '@/app/lib/ba
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
 import { getMuxCredentials, retireMuxLiveStream } from '@/app/lib/basefmMux'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { verifyUsdcTransfer } from '@/lib/onchain/verify-transaction'
 import { type Address, type Hash } from 'viem'
@@ -202,6 +203,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const session = await getAuthSession()
+    const isAdmin = isAdminEmail(session?.user?.email)
     const body = await request.json()
     const wallet = typeof body?.wallet === 'string' ? body.wallet.trim() : ''
     const name = typeof body?.name === 'string' ? body.name.trim() : ''
@@ -260,7 +262,7 @@ export async function POST(request: NextRequest) {
     }
 
     const lastEnded = await getLastEndedSessionForWallet(streamWallet)
-    if (lastEnded?.ended_at) {
+    if (!isAdmin && lastEnded?.ended_at) {
       const actualExpiry = new Date(lastEnded.started_at.getTime() + MAX_SESSION_SECONDS * 1000)
       const effectiveEnd = lastEnded.ended_at < actualExpiry ? lastEnded.ended_at : actualExpiry
       if (Date.now() - effectiveEnd.getTime() < COOLDOWN_MS) return NextResponse.json({ error: 'cooldown_active', message: '24h cooldown in effect.' }, { status: 429 })

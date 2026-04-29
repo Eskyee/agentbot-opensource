@@ -14,6 +14,10 @@ jest.mock('@/app/lib/communityProgram', () => ({
   getCommunityProgramForUser: jest.fn(),
 }))
 
+jest.mock('@/app/lib/admin', () => ({
+  isAdminEmail: jest.fn(),
+}))
+
 jest.mock('@/app/lib/basefmMux', () => ({
   getMuxCredentials: jest.fn(() => ({
     tokenId: process.env.MUX_TOKEN_ID,
@@ -44,6 +48,7 @@ import { verifyBasefmSessionToken } from '@/app/lib/basefmSession'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { retireMuxLiveStream } from '@/app/lib/basefmMux'
 import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { DELETE, GET, POST } from '@/app/api/basefm/streams/route'
 
@@ -52,6 +57,7 @@ describe('/api/basefm/streams', () => {
   const mockedSession = getAuthSession as jest.Mock
   const mockedRetireMuxLiveStream = retireMuxLiveStream as jest.Mock
   const mockedCommunityProgram = getCommunityProgramForUser as jest.Mock
+  const mockedIsAdminEmail = isAdminEmail as jest.Mock
   const mockedDjSessions = prisma.dj_sessions as unknown as {
     findFirst: jest.Mock
     findMany: jest.Mock
@@ -77,6 +83,7 @@ describe('/api/basefm/streams', () => {
     mockedUsers.update.mockReset()
     mockedUsers.updateMany.mockReset()
     mockedSession.mockResolvedValue(null)
+    mockedIsAdminEmail.mockReturnValue(false)
     mockedCommunityProgram.mockResolvedValue(null)
     mockedDjSessions.findFirst.mockResolvedValue(null)
     mockedDjSessions.findMany.mockResolvedValue([])
@@ -224,6 +231,53 @@ describe('/api/basefm/streams', () => {
     expect(mockedRetireMuxLiveStream).toHaveBeenCalledWith('mux-stream-old', {
       preserveAssets: undefined,
     })
+  })
+
+  test('lets admins bypass the 24h cooldown for same-day stream testing', async () => {
+    mockedSession.mockResolvedValue({
+      user: { id: 'admin-user', email: 'admin@example.com' },
+    })
+    mockedIsAdminEmail.mockReturnValue(true)
+    mockedDjSessions.findFirst.mockResolvedValueOnce({
+      id: 30,
+      wallet: '0xrave',
+      user_id: 'admin-user',
+      dj_name: 'DJ Previous',
+      mux_stream_id: 'mux-stream-old',
+      playback_id: 'playback-old',
+      started_at: new Date(Date.now() - 60 * 60 * 1000),
+      ended_at: new Date(Date.now() - 10 * 60 * 1000),
+      max_duration: 7200,
+      status: 'ended',
+    })
+    ;(global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        json: jest.fn().mockResolvedValue({ result: '0x1000000000000000000000000' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          data: {
+            id: 'mux-stream-admin',
+            stream_key: 'admin-stream-key',
+            status: 'idle',
+            playback_ids: [{ id: 'playback-admin' }],
+            metadata: { dj_name: 'Admin Test' },
+          },
+        }),
+      })
+
+    const request = new NextRequest('http://localhost/api/basefm/streams', {
+      method: 'POST',
+      body: JSON.stringify({ wallet: '0xrave', name: 'Admin Test' }),
+    })
+
+    const response = await POST(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.success).toBe(true)
+    expect(body.stream.streamKey).toBe('admin-stream-key')
   })
 
   test('requires authenticated ownership or a valid session token to inspect a stream', async () => {
