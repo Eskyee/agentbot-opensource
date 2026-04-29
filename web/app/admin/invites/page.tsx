@@ -67,9 +67,10 @@ export default function AdminInvitesPage() {
     navigator.clipboard.writeText(text)
   }
 
-  const inviteUrl = (code: string) => {
+  const inviteUrl = (invite: Invite) => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-    return `${baseUrl}/invite?token=${code}`
+    const path = invite.audience === 'headliner' ? '/basefm/headliner' : '/invite'
+    return `${baseUrl}${path}?token=${invite.code}`
   }
 
   return (
@@ -182,7 +183,7 @@ export default function AdminInvitesPage() {
                   </div>
 
                   <button
-                    onClick={() => copyToClipboard(inviteUrl(invite.code))}
+                    onClick={() => copyToClipboard(inviteUrl(invite))}
                     className="ml-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm transition"
                   >
                     Copy Link

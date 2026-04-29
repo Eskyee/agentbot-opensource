@@ -102,6 +102,8 @@ export async function POST(request: Request) {
       status: 'active',
     }
 
+    const invitePath = audience === 'headliner' ? '/basefm/headliner' : '/invite'
+
     return NextResponse.json(
       {
         success: true,
@@ -109,7 +111,7 @@ export async function POST(request: Request) {
         code: responseInvite.code,
         email: responseInvite.email,
         audience: responseInvite.audience,
-        inviteUrl: `${buildAppUrl('/invite')}?token=${token}`,
+        inviteUrl: `${buildAppUrl(invitePath)}?token=${token}`,
       },
       { status: 201 }
     )
