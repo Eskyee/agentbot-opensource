@@ -156,7 +156,7 @@ describe('/api/basefm/streams', () => {
 
     const request = new NextRequest('http://localhost/api/basefm/streams', {
       method: 'POST',
-      body: JSON.stringify({ wallet: '0xrave', name: 'DJ Test' }),
+      body: JSON.stringify({ wallet: '0xrave', name: 'DJ Test', city: 'London' }),
     })
 
     const response = await POST(request)
@@ -200,7 +200,7 @@ describe('/api/basefm/streams', () => {
 
     const request = new NextRequest('http://localhost/api/basefm/streams', {
       method: 'POST',
-      body: JSON.stringify({ wallet: '0xrave', name: 'DJ Test' }),
+      body: JSON.stringify({ wallet: '0xrave', name: 'DJ Test', city: 'London' }),
     })
 
     const response = await POST(request)
@@ -208,6 +208,15 @@ describe('/api/basefm/streams', () => {
 
     expect(response.status).toBe(200)
     expect(body.success).toBe(true)
+    expect(body.ffmpeg.audioOnlyCommand).toContain('-i "/path/to/set.mp3"')
+    expect(body.ffmpeg.playlistCommand).toContain('-f concat -safe 0 -i "/tmp/basefm-playlist.txt"')
+    expect(body.ffmpeg.artworkCommand).toContain('bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje')
+    expect(JSON.parse((global.fetch as jest.Mock).mock.calls[1][1].body).metadata.dj_city).toBe('London')
+    expect(mockedDjSessions.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        metadata: expect.objectContaining({ city: 'London' }),
+      }),
+    })
     expect(mockedDjSessions.updateMany).toHaveBeenCalledWith({
       where: { id: { in: [12] } },
       data: { status: 'auto-ended', ended_at: expect.any(Date) },
@@ -223,6 +232,55 @@ describe('/api/basefm/streams', () => {
     const response = await GET(request)
 
     expect(response.status).toBe(401)
+  })
+
+  test('returns the active stream control payload for a signed session token', async () => {
+    mockedVerifySessionToken.mockReturnValue({
+      sessionId: 9,
+      wallet: '0xowner',
+      userId: null,
+      exp: Math.floor(Date.now() / 1000) + 600,
+    })
+    mockedDjSessions.findUnique.mockResolvedValue({
+      id: 9,
+      user_id: 'anonymous',
+      wallet: '0xowner',
+      dj_name: 'DJ Test',
+      mux_stream_id: 'mux-stream-a',
+      playback_id: 'playback',
+      started_at: new Date(Date.now() - 30_000),
+      ended_at: null,
+      max_duration: 7200,
+      status: 'active',
+      metadata: { accessType: 'community-pass' },
+    })
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: jest.fn().mockResolvedValue({
+        data: {
+          id: 'mux-stream-a',
+          stream_key: 'stream-key-a',
+          status: 'idle',
+          playback_ids: [{ id: 'playback-a' }],
+          metadata: { dj_name: 'DJ Test', access_type: 'community-pass' },
+        },
+      }),
+    })
+
+    const request = new NextRequest('http://localhost/api/basefm/streams?sessionToken=signed-session-token')
+    const response = await GET(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.active).toBe(true)
+    expect(body.stream).toMatchObject({
+      id: 'mux-stream-a',
+      streamKey: 'stream-key-a',
+      fullRtmpUrl: 'rtmp://global-live.mux.com:5222/app/stream-key-a',
+      playbackId: 'playback-a',
+      accessGrantedBy: 'community-pass',
+    })
+    expect(body.ffmpeg.audioOnlyCommand).toContain('stream-key-a')
   })
 
   test('allows session deletion only with a valid signed baseFM session token', async () => {

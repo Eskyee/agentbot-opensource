@@ -10,6 +10,7 @@ import type { BasefmDistributionState, BasefmRelayStatus } from '@/app/lib/basef
 export type LiveDj = {
   id: string
   name: string
+  city: string | null
   wallet: string | null
   playbackId: string | null
   status: string
@@ -199,6 +200,11 @@ export function BasefmLivePlayer({
             <div className="mt-2 text-lg font-bold text-white">
               {primaryDj?.name || (loading ? 'Loading stream' : 'Awaiting next selector')}
             </div>
+            {primaryDj?.city ? (
+              <div className="mt-2 text-xs uppercase tracking-[0.18em] text-green-300">
+                {primaryDj.city}
+              </div>
+            ) : null}
             <div className="mt-2 text-xs text-zinc-500">
               {primaryDj?.source === 'mux'
                 ? 'Live directly from Mux'
