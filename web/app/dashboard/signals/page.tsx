@@ -362,7 +362,7 @@ export default function SignalsPage() {
           }))
         : [];
       setManagedEvents(events);
-      seenIdsRef.current = new Set(events.map((event) => event.id));
+      seenIdsRef.current = new Set(events.map((event: { id: string }) => event.id));
 
       if (json.workflowRunId) {
         connectToStream(json.workflowRunId);
@@ -440,7 +440,7 @@ export default function SignalsPage() {
     }
   };
 
-  const useMentionForReply = (mention: XMention) => {
+  const handleMentionForReply = (mention: XMention) => {
     const replySeed = [
       `Reply to @${mention.authorUsername}:`,
       mention.text,
@@ -845,7 +845,7 @@ export default function SignalsPage() {
                   </div>
                   <div className="mt-4 flex gap-2">
                     <button
-                      onClick={() => useMentionForReply(mention)}
+                      onClick={() => handleMentionForReply(mention)}
                       className="border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors"
                     >
                       Generate Reply Draft

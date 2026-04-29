@@ -384,17 +384,6 @@ function DashboardContent() {
 
   if (!instance) return null
 
-  if (status === 'loading' || status === 'unauthenticated') {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black font-mono">
-        <div className="text-left">
-          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
-          <p className="text-zinc-400 text-sm">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
   const skillsManagerUrl = buildOpenClawControlUrl({
     view: 'skills',
     gatewayUrl: instance.url,
@@ -531,7 +520,7 @@ function DashboardContent() {
       {confirmDialog && (
         <ConfirmDialog
           open={!!confirmDialog}
-          onOpenChange={(open) => { if (!open) setConfirmDialog(null) }}
+          onOpenChange={(open: boolean) => { if (!open) setConfirmDialog(null) }}
           title={confirmDialog.title}
           description={confirmDialog.description}
           confirmLabel={confirmDialog.confirmLabel}

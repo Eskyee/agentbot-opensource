@@ -119,6 +119,9 @@ interface DashboardSidebarProps {
   userName?: string;
   credits?: number;
   plan?: string | null;
+  runtimeUrl?: string | null;
+  runtimeGatewayToken?: string | null;
+  runtimeInstanceId?: string | null;
   isOpen: boolean;
   onToggle: () => void;
 }
@@ -127,6 +130,8 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   userName,
   credits = 0,
   plan,
+  runtimeUrl,
+  runtimeGatewayToken,
   isOpen,
   onToggle,
 }: DashboardSidebarProps) {
@@ -135,6 +140,8 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   const [isPendingTransition, startTransition] = useTransition();
   
   const { plan: contextPlan, openclawUrl, gatewayToken, operatorEnabled } = dashboardData;
+  const effectiveOpenclawUrl = runtimeUrl || openclawUrl;
+  const effectiveGatewayToken = runtimeGatewayToken || gatewayToken;
 
   // Start fully expanded (safe for SSR), hydrate from localStorage in effect
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -176,7 +183,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
     });
   }, []);
 
-  const runtimeStatus = openclawUrl ? (gatewayToken ? 'paired' : 'live') : 'undeployed';
+  const runtimeStatus = effectiveOpenclawUrl ? (effectiveGatewayToken ? 'paired' : 'live') : 'undeployed';
   const runtimeTone =
     runtimeStatus === 'paired'
       ? 'text-green-400'
@@ -191,21 +198,21 @@ export const DashboardSidebar = memo(function DashboardSidebar({
         : 'bg-zinc-700';
   let runtimeHost: string | null = null;
   try {
-    if (openclawUrl) runtimeHost = new URL(openclawUrl).host;
+    if (effectiveOpenclawUrl) runtimeHost = new URL(effectiveOpenclawUrl).host;
   } catch {}
-  const openclawConfigUrl = openclawUrl
-    ? buildOpenClawControlUrl({ view: 'config', gatewayUrl: openclawUrl, gatewayToken })
+  const openclawConfigUrl = effectiveOpenclawUrl
+    ? buildOpenClawControlUrl({ view: 'config', gatewayUrl: effectiveOpenclawUrl, gatewayToken: effectiveGatewayToken })
     : null;
-  const openclawChatUrl = openclawUrl
+  const openclawChatUrl = effectiveOpenclawUrl
     ? buildOpenClawControlUrl({
         view: 'chat',
-        gatewayUrl: openclawUrl,
-        gatewayToken,
+        gatewayUrl: effectiveOpenclawUrl,
+        gatewayToken: effectiveGatewayToken,
         session: 'main',
       })
     : null;
-  const openclawSkillsUrl = openclawUrl
-    ? buildOpenClawControlUrl({ view: 'skills', gatewayUrl: openclawUrl, gatewayToken })
+  const openclawSkillsUrl = effectiveOpenclawUrl
+    ? buildOpenClawControlUrl({ view: 'skills', gatewayUrl: effectiveOpenclawUrl, gatewayToken: effectiveGatewayToken })
     : null;
 
   return (

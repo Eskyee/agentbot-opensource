@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { sendLiveSignal } from '@/lib/agentbot/signals'
 
@@ -165,7 +165,23 @@ export default function LiveRoomPage({
 }: {
   params: Promise<{ roomId: string }>
 }) {
-  const { roomId } = use(params)
+  const [roomId, setRoomId] = useState<string | null>(null)
+
+  useEffect(() => {
+    let active = true
+    params.then((resolved) => {
+      if (active) setRoomId(resolved.roomId)
+    })
+    return () => { active = false }
+  }, [params])
+
+  if (!roomId) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-black font-mono text-xs uppercase tracking-widest text-zinc-500">
+        Synchronizing Live Data...
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-black">

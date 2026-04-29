@@ -16,6 +16,7 @@ function getNextAuthSecret(): string {
   if (secret) return secret
 
   const isPreviewLikeBuild =
+    process.env.NEXT_PHASE === 'phase-production-build' ||
     process.env.VERCEL_ENV === 'preview' ||
     process.env.CI === 'true' ||
     process.env.GITHUB_ACTIONS === 'true'

@@ -144,7 +144,7 @@ export async function POST(request: Request) {
       openclawInstanceId: true,
       openclawUrl: true,
     },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { id: 'asc' },
   })
 
   const results: UpdateResult[] = []

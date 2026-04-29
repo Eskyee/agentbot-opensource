@@ -44,7 +44,6 @@ async function maybeAutoLinkManagedRuntimeForUser(userId: string): Promise<{
       OR: [
         { config: { path: ['managed'], equals: true } },
         { websocketUrl: { contains: 'railway.app' } },
-        { config: { path: ['runtimeUrl'], contains: 'railway.app' } }
       ]
     },
     orderBy: { createdAt: 'desc' },

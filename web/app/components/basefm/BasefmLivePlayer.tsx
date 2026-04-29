@@ -3,7 +3,6 @@
 import { createElement, memo, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ExternalLink, Radio } from 'lucide-react'
-import Script from 'next/script'
 import { BASEFM_DEFAULT_STREAM_IMAGE } from '@/app/lib/basefmDjSkill'
 import type { BasefmDistributionState, BasefmRelayStatus } from '@/app/lib/basefmDistribution'
 
@@ -82,6 +81,15 @@ export function BasefmLivePlayer({
   const livePlaybackRef = useRef<string | null>(initialData?.primaryDj?.playbackId || null)
 
   useEffect(() => {
+    if (document.querySelector('script[data-agentbot-mux-player]')) return
+    const script = document.createElement('script')
+    script.src = 'https://cdn.jsdelivr.net/npm/@mux/mux-player'
+    script.async = true
+    script.dataset.agentbotMuxPlayer = 'true'
+    document.head.appendChild(script)
+  }, [])
+
+  useEffect(() => {
     livePlaybackRef.current = liveData?.primaryDj?.playbackId || null
   }, [liveData?.primaryDj?.playbackId])
 
@@ -143,7 +151,6 @@ export function BasefmLivePlayer({
 
   return (
     <section className={`border border-zinc-800 bg-zinc-950/80 ${compact ? 'p-4 sm:p-5' : 'p-6 sm:p-8'}`}>
-      <Script src="https://cdn.jsdelivr.net/npm/@mux/mux-player" strategy="lazyOnload" />
       <div className={`flex flex-wrap gap-3 ${minimal ? 'flex-col items-center text-center' : 'items-center justify-between'}`}>
         <div className={minimal ? 'flex flex-col items-center' : ''}>
           <div className="inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-zinc-500">
