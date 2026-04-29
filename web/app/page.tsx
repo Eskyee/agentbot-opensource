@@ -198,6 +198,61 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Built Features */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+          <div className="max-w-2xl mb-10 sm:mb-16">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Explore More</div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+              More Features<br />
+              <span className="text-zinc-700">Already Live.</span>
+            </h2>
+            <p className="text-zinc-500 text-sm max-w-xl leading-relaxed mt-6">
+              These pages already exist in the app. They were easy to miss because they were not surfaced prominently from the landing page.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
+            {[
+              {
+                href: '/capabilities',
+                label: 'Capabilities',
+                body: 'The platform feature overview with the major product surfaces in one place.',
+              },
+              {
+                href: '/solana',
+                label: 'Solana',
+                body: 'Solana agent workflows, integrations, and MCP tool coverage.',
+              },
+              {
+                href: '/playground',
+                label: 'Playground',
+                body: 'App-generation sandbox for testing the product direction quickly.',
+              },
+              {
+                href: '/open-learning',
+                label: 'Open Learning',
+                body: 'Public learning and contribution path for developers entering the ecosystem.',
+              },
+              {
+                href: '/buddies',
+                label: 'Buddies',
+                body: 'The agent-pet experience with progression, persistence, and community framing.',
+              },
+              {
+                href: '/showcase',
+                label: 'Showcase',
+                body: 'Public discovery layer for agents, examples, and social proof.',
+              },
+            ].map((item) => (
+              <Link key={item.href} href={item.href} className="bg-black p-6 sm:p-8 hover:bg-zinc-950 transition-colors">
+                <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-4">{item.label}</div>
+                <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Social Proof */}
       <section className="border-t border-zinc-900">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
