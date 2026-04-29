@@ -25,7 +25,7 @@ export default function OpenClawV2026328Post() {
             <p className="text-sm text-zinc-500 mb-2">29 March 2026</p>
             <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">OpenClaw v2026.3.28</h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Release</span>
+              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Release</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Tools</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">xAI</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Image Gen</span>

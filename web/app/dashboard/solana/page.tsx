@@ -132,7 +132,7 @@ export default function SolanaDashboard() {
       <DashboardHeader
         title="Solana Tools"
         subtitle="Wallet lookup, RPC control, and Solana integration references"
-        icon={<Coins className="h-5 w-5 text-violet-400" />}
+        icon={<Coins className="h-5 w-5 text-orange-400" />}
       />
       <DashboardContent className="max-w-5xl mx-auto">
       {/* Header */}

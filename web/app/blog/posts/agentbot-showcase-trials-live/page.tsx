@@ -27,7 +27,7 @@ export default function ShowcaseTrialsLive() {
               Trials Live, Showcase Open,<br />The Future is Deployed
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Launch</span>
+              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Launch</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Trials</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Showcase</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>

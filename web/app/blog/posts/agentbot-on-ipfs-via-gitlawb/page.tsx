@@ -27,7 +27,7 @@ export default function AgentbotOnIPFS() {
               Our Code is Now on IPFS
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">IPFS</span>
+              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">IPFS</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">gitlawb</span>
               <span className="text-xs px-2 py-1 border border-green-800/50 text-zinc-400">Decentralized</span>
             </div>

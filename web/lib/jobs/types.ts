@@ -14,7 +14,7 @@ export const JOB_STATE_LABELS: Record<string, string> = {
 
 export const JOB_STATE_COLORS: Record<string, string> = {
   open: 'text-amber-400',
-  claimed: 'text-blue-400',
+  claimed: 'text-orange-400',
   delivered: 'text-purple-400',
   approved: 'text-green-400',
   paid: 'text-emerald-400',

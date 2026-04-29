@@ -256,7 +256,7 @@ export default function StatsPage() {
                 </div>
                 <div className="bg-black p-5 border border-zinc-800">
                   <div className="text-[10px] uppercase tracking-widest text-zinc-600">External</div>
-                  <div className="mt-2 text-2xl font-bold tracking-tight text-violet-400">{stats.runtime?.externalMb ?? 0} MB</div>
+                  <div className="mt-2 text-2xl font-bold tracking-tight text-orange-400">{stats.runtime?.externalMb ?? 0} MB</div>
                 </div>
               </div>
             </div>

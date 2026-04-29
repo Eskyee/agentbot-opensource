@@ -174,7 +174,7 @@ export default function SponsorPage() {
               </a>
               <a
                 href="/claim"
-                className="border border-blue-700 hover:border-orange-600 text-orange-400 font-bold text-sm px-6 py-3"
+                className="border border-orange-700 hover:border-orange-600 text-orange-400 font-bold text-sm px-6 py-3"
               >
                 Claim Holder Credits
               </a>

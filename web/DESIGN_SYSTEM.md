@@ -52,8 +52,8 @@
 
 | Token         | Value     | Tailwind Class  | Usage                       |
 | ------------- | --------- | --------------- | --------------------------- |
-| `--accent`    | `#3b82f6` | `text-blue-500` | Badge text, active states   |
-| `--accent-bg` | `#3b82f6/30` | `bg-blue-500/30` | Selection highlight      |
+| `--accent`    | `#3b82f6` | `text-orange-500` | Badge text, active states   |
+| `--accent-bg` | `#3b82f6/30` | `bg-orange-500/30` | Selection highlight      |
 
 ### 2.5 Semantic
 
@@ -97,7 +97,7 @@ Both fonts are loaded in `layout.tsx` via `geist/font/sans` and `geist/font/mono
 | **Body**                 | `text-zinc-400 text-sm md:text-base leading-relaxed`                |
 | **Small body**           | `text-zinc-500 text-xs leading-relaxed`                             |
 | **Label / Metadata**     | `text-zinc-600 text-[10px] uppercase tracking-widest`               |
-| **Badge text**           | `text-blue-500 text-[10px] uppercase tracking-widest`               |
+| **Badge text**           | `text-orange-500 text-[10px] uppercase tracking-widest`               |
 | **Nav link**             | `text-[11px] uppercase tracking-widest text-zinc-500 hover:text-white` |
 | **Monospace data**       | `font-mono text-sm text-zinc-300`                                   |
 
@@ -116,7 +116,7 @@ Both fonts are loaded in `layout.tsx` via `geist/font/sans` and `geist/font/mono
 ### 4.1 Page Wrapper
 
 ```tsx
-<main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+<main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono">
 ```
 
 ### 4.2 Section Container
@@ -134,7 +134,7 @@ Both fonts are loaded in `layout.tsx` via `geist/font/sans` and `geist/font/mono
 ```tsx
 <section className="max-w-7xl mx-auto px-6 py-32 md:py-44">
   <div className="max-w-3xl">
-    <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest mb-8">
+    <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest mb-8">
       Badge Label
     </div>
     <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter uppercase leading-[0.9]">
@@ -200,14 +200,14 @@ All sections are separated by `border-t border-zinc-900`. Never use margin-based
 
 **Rules:**
 - No `border-radius` on buttons (rectangular).
-- No colored backgrounds (no `bg-blue-600`, `bg-green-500`).
+- No colored backgrounds (no `bg-orange-600`, `bg-green-500`).
 - Primary action is always white on black.
 - All button text is `uppercase tracking-widest text-xs font-bold`.
 
 ### 5.2 Badges / Tags
 
 ```tsx
-<div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
+<div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
   Protocol Label
 </div>
 ```
@@ -450,12 +450,12 @@ For status/indicators, use colored dots:
 | `text-zinc-400`                             | `text-gray-400`                                |
 | `text-[10px] uppercase tracking-widest`     | `text-xs rounded-full bg-gray-800`             |
 | `font-bold tracking-tighter uppercase`      | `font-semibold`                                |
-| `bg-white text-black` (primary button)      | `bg-blue-600 text-white rounded-lg`            |
+| `bg-white text-black` (primary button)      | `bg-orange-600 text-white rounded-lg`            |
 | `border border-zinc-800` (secondary button) | `bg-gray-900 border border-white/10 rounded-xl`|
 | `border-t border-zinc-900` (section divider)| margin-only spacing between sections           |
 | Colored dot for status                      | Emoji for status                               |
 | `font-mono` on page wrapper                 | Default `font-sans` on marketing pages         |
-| `selection:bg-blue-500/30`                  | Default selection color                        |
+| `selection:bg-orange-500/30`                  | Default selection color                        |
 | Rectangular buttons (no radius)             | `rounded-lg`, `rounded-xl`, `rounded-2xl`      |
 | `hover:bg-zinc-200` (primary hover)         | `hover:bg-gray-200`                            |
 | `max-w-7xl mx-auto px-6`                    | Custom arbitrary widths                        |
@@ -490,7 +490,7 @@ Forbidden patterns in .tsx files:
 - /rounded-xl/       → remove or use no rounding
 - /bg-gradient-to-/  → no gradients
 - /font-semibold/    → use font-bold
-- /bg-blue-600/      → use bg-white text-black for primary
+- /bg-orange-600/      → use bg-white text-black for primary
 - /bg-green-5/       → no green button backgrounds
 - /bg-purple-/       → no purple backgrounds
 - /bg-orange-/       → no orange backgrounds

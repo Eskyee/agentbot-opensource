@@ -25,7 +25,7 @@ export default function MiMoV2ProPost() {
  <p className="text-sm text-zinc-500 mb-2">March 2026</p>
  <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">MiMo-V2-Pro: Xiaomi&apos;s Flagship AI Model</h1>
  <div className="flex gap-2 flex-wrap">
- <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400 border border-blue-800/50">New Model</span>
+ <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400 border border-orange-800/50">New Model</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Xiaomi</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Agent-Optimized</span>
  </div>

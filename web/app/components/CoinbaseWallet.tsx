@@ -42,7 +42,7 @@ export default function CoinbaseWalletButton() {
     <div className="relative">
       <button
         onClick={() => setShowWallet(!showWallet)}
-        className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 flex items-center gap-2"
+        className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700 flex items-center gap-2"
       >
           <svg className="w-4 h-4" viewBox="0 0 32 32" fill="none">
           <circle cx="16" cy="16" r="16" fill="#000000"/>
@@ -67,7 +67,7 @@ export default function CoinbaseWalletButton() {
             <div className="space-y-2">
               <button
                 onClick={handlePayWithUSDC}
-                className="w-full rounded-lg bg-orange-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 flex items-center justify-center gap-2"
+                className="w-full rounded-lg bg-orange-600 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-700 flex items-center justify-center gap-2"
               >
                 <span>💵</span>
                 Pay with USDC

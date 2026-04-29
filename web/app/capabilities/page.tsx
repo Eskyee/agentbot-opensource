@@ -14,12 +14,12 @@ const capabilities = [
   { icon: Zap, label: 'x402 Payments', desc: 'Autonomous micropayments', color: 'bg-yellow-500' },
   { icon: Link, label: 'A2A Bus', desc: 'Agents talk to agents', color: 'bg-pink-500' },
   { icon: Wrench, label: 'Skills', desc: 'Marketplace install', color: 'bg-orange-500' },
-  { icon: Music, label: 'Personalities', desc: 'Music industry pros', color: 'bg-indigo-500' },
+  { icon: Music, label: 'Personalities', desc: 'Music industry pros', color: 'bg-orange-500' },
   { icon: Mail, label: 'Email Triage', desc: 'Filter & reply', color: 'bg-orange-500' },
   { icon: Calendar, label: 'Calendar Guard', desc: 'Protect schedule', color: 'bg-red-500' },
   { icon: Shield, label: 'Permissions', desc: 'You approve all', color: 'bg-emerald-500' },
   { icon: Fast, label: 'Concurrent', desc: 'Parallel tools', color: 'bg-amber-500' },
-  { icon: Fingerprint, label: 'Passkeys', desc: 'No passwords', color: 'bg-violet-500' },
+  { icon: Fingerprint, label: 'Passkeys', desc: 'No passwords', color: 'bg-orange-500' },
   { icon: Sparkles, label: 'Free Trial', desc: '7 days', color: 'bg-teal-500' },
   { icon: Globe, label: 'Showcase', desc: 'Public discovery', color: 'bg-orange-500' },
   { icon: Code, label: 'Agent Bridge', desc: 'Private messaging', color: 'bg-rose-500' },
@@ -82,7 +82,7 @@ export default function CapabilitiesShowcase() {
             </p>
             <div className="flex gap-2">
               <span className="px-2 py-1 bg-orange-900/30 text-orange-400 text-xs rounded">Telegram</span>
-              <span className="px-2 py-1 bg-indigo-900/30 text-indigo-400 text-xs rounded">Discord</span>
+              <span className="px-2 py-1 bg-orange-900/30 text-orange-400 text-xs rounded">Discord</span>
               <span className="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded">WhatsApp</span>
             </div>
           </div>
