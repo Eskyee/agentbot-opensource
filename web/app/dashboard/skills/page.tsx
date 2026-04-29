@@ -7,6 +7,7 @@ import {
   Download,
   CheckCircle,
   AlertCircle,
+  RefreshCw,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -65,6 +66,8 @@ export default function SkillsPage() {
   const [newSkillDescription, setNewSkillDescription] = useState('')
   const [newSkillCategory, setNewSkillCategory] = useState('')
   const [creatingSkill, setCreatingSkill] = useState(false)
+  const [syncingRuntime, setSyncingRuntime] = useState(false)
+  const [runtimeSyncMessage, setRuntimeSyncMessage] = useState<string | null>(null)
   const [openclawSkillsUrl, setOpenclawSkillsUrl] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -187,16 +190,18 @@ export default function SkillsPage() {
         }
         
         if (data.deployed) {
+          setRuntimeSyncMessage('Runtime synced. This skill is active on the selected agent.')
           toast.success(
             data.message || (data.runtimeHydrated
               ? 'Skill installed and runtime agent prepared.'
               : 'Skill installed!')
           )
         } else {
-          toast.success(
+          setRuntimeSyncMessage('Skill saved. Runtime sync is pending; use Sync Runtime if it is not active yet.')
+          toast.warning(
             data.message || (data.runtimeHydrated
-              ? 'Skill saved and runtime agent prepared. It will sync automatically.'
-              : 'Skill saved! It will sync to your agent automatically.')
+              ? 'Skill saved, but runtime sync still needs attention.'
+              : 'Skill saved, but runtime sync still needs attention.')
           )
         }
       } catch (err: unknown) {
@@ -209,6 +214,42 @@ export default function SkillsPage() {
     },
     [selectedAgentId, installedSkillIds]
   )
+
+  const syncRuntime = useCallback(async () => {
+    if (!selectedAgentId) {
+      toast.error('Select an agent before syncing skills')
+      return
+    }
+
+    setSyncingRuntime(true)
+    try {
+      const res = await fetch(`/api/agents/${selectedAgentId}/sync`, {
+        method: 'POST',
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(data.details || data.error || 'Runtime sync failed. Check the agent is online and try again.')
+      }
+
+      const deployedCount = data.details?.skillsDeployed
+      const message =
+        typeof deployedCount === 'number'
+          ? `Runtime synced with ${deployedCount} installed skill${deployedCount === 1 ? '' : 's'}.`
+          : 'Runtime synced with installed skills.'
+      setRuntimeSyncMessage(message)
+      toast.success(message)
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Runtime sync failed. Check the agent is online and try again.'
+      setRuntimeSyncMessage(message)
+      toast.error(message)
+    } finally {
+      setSyncingRuntime(false)
+    }
+  }, [selectedAgentId])
 
   const handleCreateSkill = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -350,15 +391,31 @@ export default function SkillsPage() {
               <p className="mt-1 text-sm text-zinc-300">
                 Open the real OpenClaw skills manager for this agent through the managed control UI, using your paired runtime session.
               </p>
+              {runtimeSyncMessage && (
+                <p className="mt-2 text-xs text-zinc-400">{runtimeSyncMessage}</p>
+              )}
             </div>
-            <a
-              href={openclawSkillsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 border border-orange-500/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-white"
-            >
-              Open Skills Manager
-            </a>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={syncRuntime}
+                disabled={!selectedAgentId || syncingRuntime}
+                className="border-orange-500/40 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-white"
+              >
+                <RefreshCw className={`mr-2 h-3 w-3 ${syncingRuntime ? 'animate-spin' : ''}`} />
+                {syncingRuntime ? 'Syncing' : 'Sync Runtime'}
+              </Button>
+              <a
+                href={openclawSkillsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-orange-500/40 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-white"
+              >
+                Open Skills Manager
+              </a>
+            </div>
           </div>
         )}
 
