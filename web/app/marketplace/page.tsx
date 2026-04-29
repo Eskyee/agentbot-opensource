@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { MarketplaceClient } from '@/app/components/MarketplaceClient'
 import { formatPublicCount, getPublicPlatformStats } from '@/app/lib/public-platform-stats'
+import { prisma } from '@/app/lib/prisma'
 
 export const metadata = {
   title: 'Marketplace — Agentbot',
@@ -9,47 +10,30 @@ export const metadata = {
 
 export const dynamic = 'force-dynamic'
 
-const templates = [
-  {
-    name: 'the-strategist',
-    role: 'Mission Planning Agent',
-    description: 'Advanced reasoning for complex crew operations. Powered by DeepSeek R1. Plans tours, logistics, and resource allocation.',
-    skills: ['Mission Planning', 'Logistics', 'Resource Analysis', 'A2A Coordination'],
-    popular: true,
-    tier: 'Label',
-    brain: 'DeepSeek R1'
-  },
-  {
-    name: 'crew-manager',
-    role: 'Operations & Finance Agent',
-    description: 'The backbone of your collective. Manages autonomous royalty splits, talent bookings, and treasury reporting.',
-    skills: ['Royalty Splits', 'Talent Booking', 'Treasury Guard', 'USDC Payments'],
-    popular: true,
-    tier: 'Underground',
-    brain: 'Llama 3.3'
-  },
-  {
-    name: 'sound-system',
-    role: 'Automation & Feedback Agent',
-    description: 'Real-time automation for soundsystems. Monitors Mux streams, handles $RAVE gating, and fast community feedback.',
-    skills: ['Mux Monitor', 'RAVE Gating', 'Fast Feedback', 'Live Traces'],
-    popular: true,
-    tier: 'Free',
-    brain: 'Mistral 7B'
-  },
-  {
-    name: 'the-developer',
-    role: 'Logic & Scripting Agent',
-    description: 'Expert agent for building custom logic. Generates smart contracts, shell scripts, and OpenClaw skill extensions.',
-    skills: ['Code Gen', 'Scripting', 'Contract Audit', 'Skill Builder'],
-    popular: false,
-    tier: 'Collective',
-    brain: 'Qwen 2.5'
-  }
-]
+async function getTemplates() {
+  const agents = await prisma.agent.findMany({
+    where: { status: 'template' },
+    orderBy: { createdAt: 'asc' },
+  })
+  return agents.map((a) => {
+    const cfg = (a.config as Record<string, any>) || {}
+    return {
+      name: a.name,
+      role: cfg.role || a.name,
+      description: cfg.description || a.showcaseDescription || '',
+      skills: cfg.skills || [],
+      popular: true,
+      tier: cfg.tier || 'solo',
+      brain: cfg.brain || a.model || 'Unknown',
+    }
+  })
+}
 
 export default async function MarketplacePage() {
-  const stats = await getPublicPlatformStats(templates.length)
+  const [templates, stats] = await Promise.all([
+    getTemplates(),
+    getPublicPlatformStats(0),
+  ])
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">

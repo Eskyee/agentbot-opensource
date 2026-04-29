@@ -2,15 +2,16 @@ import { prisma } from '@/app/lib/prisma'
 
 export async function getPublicPlatformStats(templateCount: number) {
   try {
-    const [totalAgents, liveAgents, showcaseAgents, installedSkills] = await Promise.all([
-      prisma.agent.count(),
+    const [totalAgents, liveAgents, showcaseAgents, installedSkills, templateCount] = await Promise.all([
+      prisma.agent.count({ where: { status: { not: 'template' } } }),
       prisma.agent.count({
         where: { status: { in: ['active', 'running'] } },
       }),
       prisma.agent.count({
-        where: { showcaseOptIn: true },
+        where: { showcaseOptIn: true, status: { not: 'template' } },
       }),
       prisma.installedSkill.count(),
+      prisma.agent.count({ where: { status: 'template' } }),
     ])
 
     return {
