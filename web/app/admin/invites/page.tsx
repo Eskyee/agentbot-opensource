@@ -4,15 +4,19 @@ import { useEffect, useState } from 'react'
 
 interface Invite {
   code: string
-  email: string
+  email: string | null
+  audience: string
   createdAt: string
   usedAt?: string
+  expiresAt?: string
   status: 'active' | 'used' | 'expired'
 }
 
 export default function AdminInvitesPage() {
   const [invites, setInvites] = useState<Invite[]>([])
   const [email, setEmail] = useState('')
+  const [audience, setAudience] = useState('headliner')
+  const [expiresAt, setExpiresAt] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -41,7 +45,7 @@ export default function AdminInvitesPage() {
       const res = await fetch('/api/admin/invites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, audience, expiresAt: expiresAt || undefined }),
       })
 
       if (!res.ok) throw new Error('Failed to create invite')
@@ -49,6 +53,8 @@ export default function AdminInvitesPage() {
       const data = await res.json()
       setSuccess(`Invite created! Share this link: ${data.inviteUrl}`)
       setEmail('')
+      setAudience('headliner')
+      setExpiresAt('')
       fetchInvites()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create invite')
@@ -59,6 +65,11 @@ export default function AdminInvitesPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
+  }
+
+  const inviteUrl = (code: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+    return `${baseUrl}/invite?token=${code}`
   }
 
   return (
@@ -84,7 +95,7 @@ export default function AdminInvitesPage() {
 
           <form onSubmit={handleCreateInvite} className="space-y-4">
             <div>
-              <label className="block text-sm text-zinc-400 mb-2">Email Address</label>
+              <label className="block text-sm text-zinc-400 mb-2">Headliner Email</label>
               <input
                 type="email"
                 value={email}
@@ -96,12 +107,38 @@ export default function AdminInvitesPage() {
               />
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">Audience</label>
+                <select
+                  value={audience}
+                  onChange={(e) => setAudience(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-zinc-500"
+                  disabled={loading}
+                >
+                  <option value="headliner">Headliner</option>
+                  <option value="guest">Guest</option>
+                  <option value="partner">Partner</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-zinc-400 mb-2">Expiry Date</label>
+                <input
+                  type="date"
+                  value={expiresAt}
+                  onChange={(e) => setExpiresAt(e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-zinc-500"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
               className="bg-white text-black px-6 py-2 rounded-lg font-medium hover:bg-zinc-100 transition disabled:opacity-50"
             >
-              {loading ? 'Creating...' : 'Create Invite'}
+              {loading ? 'Creating...' : 'Create Headliner Invite'}
             </button>
           </form>
         </div>
@@ -120,11 +157,14 @@ export default function AdminInvitesPage() {
                   className="border border-zinc-700 rounded-lg p-4 flex items-center justify-between hover:bg-zinc-800 transition"
                 >
                   <div className="flex-1">
-                    <p className="text-white font-medium">{invite.email}</p>
+                    <p className="text-white font-medium">{invite.email || 'No email attached'}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="text-xs text-zinc-400 bg-zinc-800 px-2 py-1 rounded">
                         {invite.code}
                       </code>
+                      <span className="text-xs px-2 py-1 rounded bg-orange-500/10 text-orange-300 uppercase">
+                        {invite.audience}
+                      </span>
                       <span
                         className={`text-xs px-2 py-1 rounded ${
                           invite.status === 'active'
@@ -137,15 +177,12 @@ export default function AdminInvitesPage() {
                     </div>
                     <p className="text-xs text-zinc-500 mt-1">
                       Created: {new Date(invite.createdAt).toLocaleDateString()}
+                      {invite.expiresAt ? ` · Expires: ${new Date(invite.expiresAt).toLocaleDateString()}` : ''}
                     </p>
                   </div>
 
                   <button
-                    onClick={() =>
-                      copyToClipboard(
-                        `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/join?code=${invite.code}`
-                      )
-                    }
+                    onClick={() => copyToClipboard(inviteUrl(invite.code))}
                     className="ml-4 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded text-sm transition"
                   >
                     Copy Link
