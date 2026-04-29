@@ -7,6 +7,7 @@ const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
 const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 const CapabilitiesTicker = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
+const PartnerLogos = dynamic(() => import('@/app/components/PartnerLogos'))
 
 export default async function Home() {
   const session = await getAuthSession()
@@ -305,6 +306,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <PartnerLogos />
 
       {/* Pricing — compact */}
       <section id="pricing" className="border-t border-zinc-900 scroll-mt-20">
