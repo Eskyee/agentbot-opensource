@@ -61,7 +61,7 @@ export default function AgentTeamPage() {
 
         {/* Week 2 */}
         <section className="mb-12">
-          <div className="text-[10px] uppercase tracking-widest text-blue-400 font-bold mb-4">Week 2</div>
+          <div className="text-[10px] uppercase tracking-widest text-orange-400 font-bold mb-4">Week 2</div>
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4">Add Memory & Refine</h2>
           <ul className="text-sm text-zinc-400 space-y-2 list-disc pl-4">
             <li>Review daily memory files after each run</li>
@@ -128,9 +128,9 @@ export default function AgentTeamPage() {
               <div className="text-lg font-bold text-white">$250-350</div>
               <div className="text-[10px] text-zinc-600">/month</div>
             </div>
-            <div className="border border-blue-500/30 bg-blue-500/5 p-4 text-center">
-              <div className="text-[10px] text-blue-400 uppercase mb-1">Network</div>
-              <div className="text-lg font-bold text-blue-400">$700-1000</div>
+            <div className="border border-orange-500/30 bg-orange-500/5 p-4 text-center">
+              <div className="text-[10px] text-orange-400 uppercase mb-1">Network</div>
+              <div className="text-lg font-bold text-orange-400">$700-1000</div>
               <div className="text-[10px] text-zinc-600">/month</div>
             </div>
           </div>

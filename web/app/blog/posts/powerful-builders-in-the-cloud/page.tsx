@@ -118,28 +118,28 @@ export default function PowerfulBuildersInTheCloudPost() {
  <h3 className="text-lg font-semibold text-white mb-4">Your Stack Includes:</h3>
  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> Serverless compute (auto-scaling)
+ <span className="text-orange-400 font-bold">•</span> Serverless compute (auto-scaling)
  </div>
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> PostgreSQL database (managed)
+ <span className="text-orange-400 font-bold">•</span> PostgreSQL database (managed)
  </div>
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> Redis cache (high-speed)
+ <span className="text-orange-400 font-bold">•</span> Redis cache (high-speed)
  </div>
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> CDN distribution (global)
+ <span className="text-orange-400 font-bold">•</span> CDN distribution (global)
  </div>
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> Load balancing (automatic)
+ <span className="text-orange-400 font-bold">•</span> Load balancing (automatic)
  </div>
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> SSL/TLS certificates (free)
+ <span className="text-orange-400 font-bold">•</span> SSL/TLS certificates (free)
  </div>
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> Backup & disaster recovery
+ <span className="text-orange-400 font-bold">•</span> Backup & disaster recovery
  </div>
  <div className="text-zinc-300 text-sm">
- <span className="text-blue-400 font-bold">•</span> Monitoring & alerting
+ <span className="text-orange-400 font-bold">•</span> Monitoring & alerting
  </div>
  </div>
  </div>
@@ -180,7 +180,7 @@ export default function PowerfulBuildersInTheCloudPost() {
  <Link href="/signup" className="inline-block border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors">
  Get Started Free
  </Link>
- <Link href="https://docs.agentbot.raveculture.xyz" className="inline-block border border-zinc-500 text-zinc-300 px-6 py-2.5 font-medium hover:border-zinc-300 transition-colors">
+ <Link href="https://agentbot.sh/documentation" className="inline-block border border-zinc-500 text-zinc-300 px-6 py-2.5 font-medium hover:border-zinc-300 transition-colors">
  View Docs
  </Link>
  </div>
@@ -190,10 +190,10 @@ export default function PowerfulBuildersInTheCloudPost() {
  <h3 className="text-lg font-semibold text-white mb-3">Join Thousands of Builders</h3>
  <p className="text-zinc-300">Building the future of agentic software. Together.</p>
  <div className="flex gap-3 mt-4 flex-wrap">
- <a href="https://twitter.com" className="text-blue-400 hover:text-blue-300 text-sm font-medium">Twitter</a>
- <a href="https://discord.com" className="text-blue-400 hover:text-blue-300 text-sm font-medium">Discord</a>
- <a href="https://github.com" className="text-blue-400 hover:text-blue-300 text-sm font-medium">GitHub</a>
- <a href="/blog" className="text-blue-400 hover:text-blue-300 text-sm font-medium">Blog</a>
+ <a href="https://twitter.com" className="text-orange-400 hover:text-orange-400 text-sm font-medium">Twitter</a>
+ <a href="https://discord.com" className="text-orange-400 hover:text-orange-400 text-sm font-medium">Discord</a>
+ <a href="https://github.com" className="text-orange-400 hover:text-orange-400 text-sm font-medium">GitHub</a>
+ <a href="/blog" className="text-orange-400 hover:text-orange-400 text-sm font-medium">Blog</a>
  </div>
  </div>
  </div>

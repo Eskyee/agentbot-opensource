@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'OpenClaw v2026.3.28 — Tool Approval Gates, xAI Search, MiniMax Image Gen',
     description: 'The biggest OpenClaw release since 3.24. Live on Agentbot now.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/openclaw-v2026-3-28',
+    url: 'https://agentbot.sh/blog/posts/openclaw-v2026-3-28',
   },
 }
 

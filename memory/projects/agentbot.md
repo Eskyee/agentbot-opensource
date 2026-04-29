@@ -5,7 +5,7 @@ SaaS platform that provisions and manages AI agent containers for the music/cult
 Each user gets a Docker container running the OpenClaw runtime, routed via Caddy to a unique subdomain.
 
 ## URLs
-- Frontend: https://agentbot.raveculture.xyz
+- Frontend: https://agentbot.sh
 - Docs: https://raveculture.mintlify.app
 - Alt frontend: https://web-iota-hazel-25.vercel.app
 

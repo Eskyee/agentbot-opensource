@@ -1,0 +1,97 @@
+# soul/ — Tempo-x402 soul service (Rust)
+
+This directory builds the Borg cognition runtime that powers
+`borg-0-production-7139.up.railway.app` and the `/dashboard/borg` live telemetry
+page. The binary itself lives in
+[Eskyee/tempo-x402](https://github.com/Eskyee/tempo-x402/tree/x402); this
+directory only contains the Railway-specific build + deploy glue.
+
+## Upstream source — never auto-bump
+
+The Dockerfile clones the project-owned `Eskyee/tempo-x402` repo at the
+explicit `x402` branch, not `main`:
+
+```dockerfile
+ARG TEMPO_X402_REPO=https://github.com/Eskyee/tempo-x402.git
+ARG TEMPO_X402_REF=x402
+```
+
+The `x402` branch currently carries the Agentbot-aligned v9.3.x queen/worker
+runtime. Keep it explicit so Railway never silently follows another upstream
+default branch.
+The runtime image intentionally carries the Rust/Cargo toolchain and native
+build packages because the queen can compile generated cartridges after boot.
+Cargo's writable home lives on the `/data` volume so the non-root `agent` user
+can fetch/build crates without mutating the read-only toolchain copy.
+The image also ships the pinned tempo-x402 source tree and seeds it into
+`/data/workspace` when the mounted workspace does not have a `Cargo.toml`;
+queen plans reference paths such as `crates/tempo-x402-soul/...`, so a
+binary-only runtime cannot execute read/edit/compile goals.
+The build-time Cargo registry cache is also seeded into `/data/cargo` on first
+boot to keep runtime `cargo check` and WASM cartridge builds warm and writable.
+
+**Never let Railway pull an implicit branch again.** The full platform outage
+on 2026-04-20 happened because an older Dockerfile cloned an upstream default
+branch and one automated Railway redeploy picked up a breaking refactor,
+crash-looping the container until it got restart-policy-killed.
+
+To bump the pin:
+
+1. Run `cargo build --release --package tempo-x402-node` locally against
+   the new ref.
+2. Inspect the new runtime deps — any new binaries, model weights, env
+   vars, compiler/toolchain changes? Update the Dockerfile runtime stage if so.
+3. Deploy the new ref to a Railway preview environment (**not** prod) and
+   verify `/soul/status` returns 200.
+4. Update `ARG TEMPO_X402_REPO` / `ARG TEMPO_X402_REF` here and add a Notion journal entry
+   explaining what's in the bump.
+
+## Volume hygiene — `/data` must be mounted
+
+Soul writes all long-lived state to `/data`:
+
+| Path                       | What                                                          |
+| -------------------------- | ------------------------------------------------------------- |
+| `/data/soul.db`            | SQLite DB: weights, beliefs, goals, cycles, plans, benchmarks |
+| `/data/soul_memory.md`     | Persistent memory file                                        |
+| `/data/brain_checkpoints/` | Transformer + brain checkpoints                               |
+| `/data/benchmark_history/` | Past eval runs                                                |
+| `/data/cartridges/`        | Generated code cartridges                                     |
+| `/data/workspace/`         | Tools + codegen workspace                                     |
+
+If `/data` is not a persistent Railway volume, **every restart wipes
+everything** — fitness goes to zero, beliefs vanish, goals reset, plans
+are lost. This is what caused the 2026-04-20 Borg data-loss incident.
+
+Two guards make this impossible to ship:
+
+1. **Platform-level** — `soul/railway.json` declares
+   `"requiredMountPath": "/data"`. Railway refuses to deploy if no volume
+   is attached at that path.
+2. **Runtime-level** — `soul/entrypoint.sh` checks `/proc/mounts` and
+   exits with FATAL if `/data` isn't a real mount (backstop in case the
+   platform check is bypassed).
+
+### Attaching the volume
+
+In the Railway UI: `borg-0` service → **Settings** → **Volumes** →
+**+ New Volume** → Mount path: `/data` → Size: 5 GB (or as needed).
+
+### Why the previous Dockerfile was broken (fixed 2026-04-22)
+
+The Dockerfile used to set `SOUL_WORKSPACE_ROOT=/home/agent/data/workspace`,
+which pointed the workspace at ephemeral disk rather than the volume. Even
+if a volume had been mounted at `/data`, workspace state would still have
+been lost on restart. All state env vars now default to `/data/*`.
+
+## Health check
+
+The binary exposes `/health` on port 4023.
+`railway.json` wires that to Railway's healthcheck with a 30-second
+timeout so crash-looping containers are detected fast.
+
+## Related Linear issues
+
+- [AGE-5](https://linear.app/agentbot/issue/AGE-5) — Redeploy borg-0 (2026-04-20 outage recovery)
+- [AGE-12](https://linear.app/agentbot/issue/AGE-12) — Evaluate tempo-x402 > v9.2.0 and bump intentionally
+- [AGE-13](https://linear.app/agentbot/issue/AGE-13) — Volume hygiene policy

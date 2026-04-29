@@ -67,7 +67,7 @@ export default function Post() {
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Sponsorship Tiers</h2>
  
  <div className="bg-zinc-950 p-6 mb-6">
- <h3 className="text-lg font-bold text-blue-400 mb-2">Supporter - $5/month</h3>
+ <h3 className="text-lg font-bold text-orange-400 mb-2">Supporter - $5/month</h3>
  <ul className="list-disc list-inside text-zinc-300 text-sm">
  <li>GitHub Sponsors badge</li>
  <li>Priority on community Discord</li>
@@ -76,7 +76,7 @@ export default function Post() {
  </div>
 
  <div className="bg-zinc-950 p-6 mb-6">
- <h3 className="text-lg font-bold text-blue-400 mb-2">Builder - $25/month</h3>
+ <h3 className="text-lg font-bold text-orange-400 mb-2">Builder - $25/month</h3>
  <ul className="list-disc list-inside text-zinc-300 text-sm">
  <li>All Supporter benefits</li>
  <li>Early access to beta features</li>
@@ -97,7 +97,7 @@ export default function Post() {
  </div>
 
  <div className="bg-zinc-950 p-6 mb-6">
- <h3 className="text-lg font-bold text-blue-400 mb-2">Enterprise</h3>
+ <h3 className="text-lg font-bold text-orange-400 mb-2">Enterprise</h3>
  <ul className="list-disc list-inside text-zinc-300 text-sm">
  <li>Custom integrations</li>
  <li>Dedicated support channel</li>
@@ -127,7 +127,7 @@ export default function Post() {
 github.com/sponsors/Eskyee
 
 # Contact for partnerships
-dev@raveculture.xyz
+dev@agentbot.sh
 
 # Join our Discord
 discord.gg/vTPG4vdV6D`}

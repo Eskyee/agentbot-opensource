@@ -25,8 +25,8 @@ import {
   deployAgentToGateway, 
   fetchAgentDataForDeployment,
 } from '@/app/lib/agent-deploy'
+import { ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
 
-export const dynamic = 'force-dynamic';
 
 // Types
 interface ProvisionAgentRequest {
@@ -53,7 +53,7 @@ function normalizeProvisionPlan(plan?: string | null): string {
   switch ((plan || '').toLowerCase()) {
     case 'starter':
     case 'free':
-    case 'underground':
+    case 'autonomous':
     case 'solo':
       return 'solo'
     case 'pro':
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
 
     const tierLimits: Record<string, number> = {
       free: 1,
-      underground: 1,
+      autonomous: 1,
       solo: 1,
       starter: 1,
       collective: 3,
@@ -166,10 +166,41 @@ export async function POST(request: NextRequest) {
           ...(body.config || {}),
           managedRuntime: true,
           runtimePlan: requestedPlan,
+          basefm: {
+            enabled: true,
+            access: 'basefm-or-agentbot-token',
+            broadcaster: 'ffmpeg',
+            defaultDjName: body.name.trim(),
+          },
         },
         websocketUrl: existingRuntimeUrl,
       }
     });
+
+    const basefmSkill = await ensureBasefmDjSkill().catch((error) => {
+      console.error('[Agent Provision] Failed to ensure baseFM skill exists:', error)
+      return null
+    })
+
+    if (basefmSkill?.id) {
+      await prisma.installedSkill.upsert({
+        where: {
+          userId_agentId_skillId: {
+            userId,
+            agentId: agent.id,
+            skillId: basefmSkill.id,
+          },
+        },
+        update: { enabled: true },
+        create: {
+          userId,
+          agentId: agent.id,
+          skillId: basefmSkill.id,
+        },
+      }).catch((error) => {
+        console.error('[Agent Provision] Failed to auto-install baseFM skill:', error)
+      })
+    }
 
     // First deploy for a user: create the managed Railway runtime and persist it.
     // This is the path the frontend one-click deploy flow needs.
@@ -193,7 +224,11 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        const runtime = await provisionOnRailway(agent.id, requestedPlan)
+        const registration = await prisma.$queryRaw<{ gateway_token: string }[]>`
+          SELECT gateway_token FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
+        `
+        const userGatewayToken = registration[0]?.gateway_token || crypto.randomUUID()
+        const runtime = await provisionOnRailway(agent.id, requestedPlan, userGatewayToken)
 
         await prisma.$transaction([
           prisma.user.update({
@@ -384,79 +419,9 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Helper: Provision agent on OpenClaw backend via /api/deployments
- */
-async function provisionAgentOnGateway(
-  agentId: string,
-  config: {
-    userId: string;
-    name: string;
-    model: string;
-    config: Record<string, any>;
-  }
-): Promise<{ gatewayId: string; token: string; status: string }> {
-  const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://openclaw-gateway-lqma:10000';
-  const apiSecret = (process.env.BACKEND_API_SECRET || process.env.INTERNAL_API_KEY)?.trim();
-
-  const gatewayPayload = {
-    type: 'provision_agent',
-    agentId,
-    userId: config.userId,
-    name: config.name,
-    model: config.model,
-    config: {
-      ...config.config,
-      telegramToken: config.config.telegramToken,
-      aiProvider: config.model === 'claude-opus-4-6' ? 'anthropic' : (config.config.aiProvider || 'openrouter'),
-      apiKey: config.config.apiKey,
-      plan: config.config.tier || 'label',
-      ownerIds: config.config.ownerIds,
-    },
-    timestamp: new Date().toISOString(),
-  };
-
-  try {
-    const response = await fetch(`${GATEWAY_HTTP_URL}/api/provision`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
-      },
-      body: JSON.stringify(gatewayPayload),
-      signal: AbortSignal.timeout(15000),
-    });
-
-    if (!response.ok) {
-      const errorBody = await response.text().catch(() => 'Unknown error');
-      throw new Error(`Gateway responded ${response.status}: ${errorBody}`);
-    }
-
-    const data = await response.json() as { gatewayId?: string; id?: string; token?: string; status?: string };
-
-    return {
-      gatewayId: data.gatewayId || data.id || `gw-${agentId}`,
-      token: data.token || generateAuthToken(),
-      status: data.status || 'provisioned',
-    };
-  } catch (error) {
-    // If gateway is unreachable (e.g. local dev), provision with a local token
-    // so the agent record is still created — gateway sync happens on next heartbeat
-    console.warn(`[Provision] Gateway unreachable, provisioning locally: ${error instanceof Error ? error.message : error}`);
-
-    return {
-      gatewayId: `local-${agentId}`,
-      token: generateAuthToken(),
-      status: 'pending_gateway_sync',
-    };
-  }
-}
-
-/**
  * Helper: Generate auth token for agent
  */
 function generateAuthToken(): string {
   // Cryptographically secure token — never use Math.random() for auth
   return crypto.randomBytes(32).toString('base64url');
 }
-
-// metadata removed: not a valid Next.js Route export

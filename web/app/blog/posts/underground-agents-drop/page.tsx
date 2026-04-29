@@ -11,20 +11,20 @@ export default function Post() {
  <article className="prose prose-invert max-w-none">
  <div className="mb-8">
  <p className="text-sm text-zinc-500 mb-2">24 February 2026</p>
- <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Underground Agents Drop: Built by Ravers, for Ravers</h1>
+ <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Factory Agents Drop: Built by Ravers, for Ravers</h1>
  <div className="flex gap-2">
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Release</span>
- <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Underground</span>
+ <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Factory</span>
  </div>
  </div>
 
  <p className="text-lg text-zinc-300 mb-6">
- New agent templates for underground collectives, crypto wallet integration, and major UI improvements. Built for the culture.
+ New agent templates for autonomous collectives, crypto wallet integration, and major UI improvements. Built for the culture.
  </p>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">New: Rave Event Agent</h2>
  <p className="text-zinc-300 mb-4">
- Manage underground events end-to-end:
+ Manage autonomous events end-to-end:
  </p>
  <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
  <li><strong>Guest list management</strong> - Add/remove, check-ins at the door</li>
@@ -111,7 +111,7 @@ export default function Post() {
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Verified Human Badge</h2>
  <p className="text-zinc-300 mb-4">
- New trust feature for crypto/underground scenes:
+ New trust feature for crypto/autonomous scenes:
  </p>
  <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
  <li><strong>Onchain attestation</strong> - Link to Coinbase Verify, ENS, etc.</li>
@@ -152,7 +152,7 @@ export default function Post() {
  <strong>Not &quot;AI for business&quot; — AI for culture.</strong>
  </p>
  <p className="text-zinc-300 mb-4">
- Underground collectives need tools for:
+ Factory collectives need tools for:
  </p>
  <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
  <li>Event coordination (WhatsApp is chaos)</li>
@@ -172,20 +172,20 @@ export default function Post() {
  </ul>
 
  <p className="text-zinc-300 mb-6">
- We&apos;re building for a real community with real needs. Not generic AI. Not forced crypto. Purpose-built for the underground.
+ We&apos;re building for a real community with real needs. Not generic AI. Not forced crypto. Purpose-built for the autonomous.
  </p>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Try It Now</h2>
  <ul className="list-disc list-inside text-zinc-300 mb-4 space-y-2">
- <li><strong>Marketplace:</strong> Browse new agent templates at <Link href="/marketplace" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz/marketplace</Link></li>
- <li><strong>Dashboard:</strong> Create a wallet for your agent at <Link href="/dashboard" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz/dashboard</Link></li>
+ <li><strong>Marketplace:</strong> Browse new agent templates at <Link href="/marketplace" className="text-zinc-400 hover:text-white">agentbot.sh/marketplace</Link></li>
+ <li><strong>Dashboard:</strong> Create a wallet for your agent at <Link href="/dashboard" className="text-zinc-400 hover:text-white">agentbot.sh/dashboard</Link></li>
  <li><strong>Docs:</strong> Read the full guide at <a href="https://github.com/Eskyee/agentbot-opensource" className="text-zinc-400 hover:text-white" target="_blank" rel="noopener noreferrer">github.com/Eskyee/agentbot</a></li>
  </ul>
 
  <div className="mt-12 p-6 bg-zinc-950 border border-zinc-800">
- <h3 className="text-xl font-semibold mb-4">Built for the Underground</h3>
+ <h3 className="text-xl font-semibold mb-4">Built for the Factory</h3>
  <p className="text-zinc-300">
- Agents for the culture. Not corporate AI. Not generic tools. Purpose-built for underground collectives managing events, funds, and content with AI and crypto.
+ Agents for the culture. Not corporate AI. Not generic tools. Purpose-built for autonomous collectives managing events, funds, and content with AI and crypto.
  </p>
  <p className="text-zinc-300 mt-4">
  <strong>Built by ravers, for ravers.</strong> 

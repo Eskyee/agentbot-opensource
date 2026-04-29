@@ -215,6 +215,18 @@ console.log(c?.meta?.lastTouchedVersion||'');`;
   } catch { return OPENCLAW_RUNTIME_VERSION; }
 };
 
+const runOpenClawPostUpdateChecks = async (containerName: string): Promise<{ doctor: string; gatewayRestart: string; health: string }> => {
+  const runOpenClaw = async (args: string[]) => {
+    const { stdout, stderr } = await runCommand('docker', ['exec', containerName, 'openclaw', ...args]);
+    return stdout || stderr || 'ok';
+  };
+
+  const doctor = await runOpenClaw(['doctor']);
+  const gatewayRestart = await runOpenClaw(['gateway', 'restart']);
+  const health = await runOpenClaw(['health']);
+  return { doctor, gatewayRestart, health };
+};
+
 const healLegacyModelInContainer = async (containerName: string): Promise<{ healed: boolean; message: string }> => {
   try {
     const script = `
@@ -532,8 +544,10 @@ router.post('/:id/update', async (req: Request, res: Response) => {
     await runCommand('docker', ['pull', targetImage]);
     await runCommand('docker', ['stop', containerName]);
     await runCommand('docker', ['rm', containerName]);
+    let postUpdate: Awaited<ReturnType<typeof runOpenClawPostUpdateChecks>> | undefined;
     try {
       await recreateContainerWithImage(containerName, inspect, targetImage);
+      postUpdate = await runOpenClawPostUpdateChecks(containerName);
     } catch (e) {
       await runCommand('docker', ['rm', '-f', containerName]).catch(() => Promise.resolve());
       await recreateContainerWithImage(containerName, inspect, oldImage);
@@ -545,6 +559,7 @@ router.post('/:id/update', async (req: Request, res: Response) => {
       image: targetImage,
       previousImage: oldImage,
       backupPath,
+      postUpdate,
       openclawVersion: deriveOpenClawVersionFromImage(targetImage),
     });
   } catch (error: unknown) {

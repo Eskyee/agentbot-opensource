@@ -44,7 +44,7 @@ export default function AgentbotLaunchPost() {
  Agentbot puts the agent on <strong>your</strong> hardware.
  </p>
  <p className="text-zinc-300 mb-4 font-mono text-sm bg-zinc-950 p-4 border border-zinc-800">
- curl agentbot.raveculture.xyz/install | bash
+ curl agentbot.sh/install | bash
  </p>
  <p className="text-zinc-300 mb-4">
  That&apos;s it. One command. Your agent is running on your machine — connected to Telegram, Discord, or WhatsApp. Your API key talks directly to your LLM provider. We don&apos;t touch the costs.
@@ -116,13 +116,13 @@ export default function AgentbotLaunchPost() {
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Get Started</h2>
  <p className="text-zinc-300 mb-4">
- → <Link href="/onboard" className="text-blue-400 hover:text-blue-300">agentbot.raveculture.xyz</Link>
+ → <Link href="/onboard" className="text-orange-400 hover:text-orange-400">agentbot.sh</Link>
  </p>
  <p className="text-zinc-300 mb-4">
- → <a href="https://github.com/Eskyee/agentbot-opensource" className="text-blue-400 hover:text-blue-300">GitHub (MIT)</a>
+ → <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-400 hover:text-orange-400">GitHub (MIT)</a>
  </p>
  <p className="text-zinc-300 mb-4">
- → <a href="https://raveculture.mintlify.app" className="text-blue-400 hover:text-blue-300">Docs</a>
+ → <a href="https://raveculture.mintlify.app" className="text-orange-400 hover:text-orange-400">Docs</a>
  </p>
 
  <p className="text-xl text-zinc-300 mt-12 mb-4">

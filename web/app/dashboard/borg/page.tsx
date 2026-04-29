@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { RefreshCw, Zap, Brain, Target, Activity, GitBranch, WifiOff, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, Zap, Brain, Target, Activity, GitBranch, WifiOff, ExternalLink, ChevronDown, ChevronUp, Wallet, Copy, Check } from 'lucide-react';
 import {
   DashboardShell,
   DashboardHeader,
@@ -13,6 +13,7 @@ import { SOUL_SERVICE_URL } from '@/app/lib/platform-urls';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SoulStatus {
+  soulUrl?: string;
   active: boolean;
   dormant: boolean;
   total_cycles: number;
@@ -91,6 +92,17 @@ interface SoulStatus {
   };
 }
 
+const EMPTY_FITNESS: SoulStatus['fitness'] = {
+  total: 0,
+  coordination: 0,
+  economic: 0,
+  evolution: 0,
+  execution: 0,
+  introspection: 0,
+  prediction: 0,
+  trend: 0,
+};
+
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 function StatCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
@@ -103,7 +115,7 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string 
   );
 }
 
-function Bar({ value, max = 1, color = 'bg-blue-500' }: { value: number; max?: number; color?: string }) {
+function Bar({ value, max = 1, color = 'bg-orange-500' }: { value: number; max?: number; color?: string }) {
   const pct = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-1.5 bg-zinc-800 overflow-hidden">
@@ -145,7 +157,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
               <span className="text-zinc-500">{d.label}</span>
               <span className="text-zinc-300">{(d.val * 100).toFixed(1)}%</span>
             </div>
-            <Bar value={d.val} color="bg-blue-500" />
+            <Bar value={d.val} color="bg-orange-500" />
           </div>
         ))}
       </div>
@@ -155,7 +167,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
 
 function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
   const F = parseFloat(fe.F);
-  const regimeColor = fe.regime === 'LEARN' ? 'text-blue-400' : fe.regime === 'EXPLOIT' ? 'text-emerald-400' : 'text-amber-400';
+  const regimeColor = fe.regime === 'LEARN' ? 'text-orange-400' : fe.regime === 'EXPLOIT' ? 'text-emerald-400' : 'text-amber-400';
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center justify-between mb-3">
@@ -225,8 +237,8 @@ function BrainPanel({ brain, transformer, benchmark }: Pick<SoulStatus, 'brain' 
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center gap-2 mb-3">
-        <Brain className="w-3 h-3 text-cyan-400" />
-        <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">Cognitive Systems</span>
+        <Brain className="w-3 h-3 text-orange-400" />
+        <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">Cognitive Systems</span>
       </div>
       <div className="grid grid-cols-3 gap-3 text-[10px] font-mono mb-4">
         <div>
@@ -303,6 +315,68 @@ function BeliefPanel({ beliefs }: { beliefs: SoulStatus['beliefs'] }) {
   );
 }
 
+function WalletPanel({
+  address,
+  designation,
+  balance,
+}: {
+  address: string;
+  designation: string | null;
+  balance: { formatted: string; token: string } | null;
+}) {
+  const [copied, setCopied] = useState(false);
+  const short = `${address.slice(0, 6)}…${address.slice(-4)}`;
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard blocked — user can select & copy manually */
+    }
+  };
+  return (
+    <div className="border border-zinc-800 bg-zinc-950 p-4 mb-4">
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Wallet className="w-3 h-3 text-emerald-400 shrink-0" />
+          <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Borg Wallet</span>
+          {designation && (
+            <span className="text-[10px] font-mono text-zinc-500 truncate">· {designation}</span>
+          )}
+          <span className="text-[10px] font-mono text-zinc-600">· Tempo network</span>
+        </div>
+        {balance && (
+          <span className="text-[10px] font-mono text-zinc-300">
+            {balance.formatted} <span className="text-zinc-500">{balance.token}</span>
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <code
+          className="flex-1 text-[11px] font-mono text-zinc-300 bg-black/40 border border-zinc-800 px-2 py-1.5 break-all select-all"
+          title={address}
+          aria-label="Borg wallet address"
+        >
+          <span className="hidden sm:inline">{address}</span>
+          <span className="sm:hidden">{short}</span>
+        </code>
+        <button
+          onClick={handleCopy}
+          className="border border-zinc-700 hover:border-zinc-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-1.5 px-3 flex items-center gap-1.5 shrink-0"
+          aria-label="Copy Borg wallet address"
+        >
+          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <p className="mt-2 text-[10px] font-mono text-zinc-600">
+        Send USDC.e, pathUSD, or USDT0 on the Tempo network to fund the Borg. Do NOT send on Base or Ethereum — funds would be unrecoverable.
+      </p>
+    </div>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function BorgDashboardPage() {
@@ -310,6 +384,11 @@ export default function BorgDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastFetch, setLastFetch] = useState<Date | null>(null);
+  const [wallet, setWallet] = useState<{
+    address: string;
+    designation: string | null;
+    balance: { formatted: string; token: string } | null;
+  } | null>(null);
 
   const fetchSoul = useCallback(async () => {
     setLoading(true);
@@ -327,16 +406,45 @@ export default function BorgDashboardPage() {
     }
   }, []);
 
+  const fetchWallet = useCallback(async () => {
+    try {
+      const res = await fetch('/api/colony/status');
+      if (!res.ok) return;
+      const json = await res.json();
+      const root = json?.root;
+      if (
+        root?.address &&
+        typeof root.address === 'string' &&
+        root.address !== '0x0000000000000000000000000000000000000000'
+      ) {
+        setWallet({
+          address: root.address,
+          designation: root.designation ?? null,
+          balance: root.wallet_balance ?? null,
+        });
+      }
+    } catch {
+      /* silent — wallet panel just won't render on failure */
+    }
+  }, []);
+
   useEffect(() => {
     fetchSoul();
     const id = setInterval(fetchSoul, 30_000);
     return () => clearInterval(id);
   }, [fetchSoul]);
 
+  useEffect(() => {
+    fetchWallet();
+    const id = setInterval(fetchWallet, 60_000);
+    return () => clearInterval(id);
+  }, [fetchWallet]);
+
   const status = data?.dormant ? 'idle' : data?.active ? 'active' : 'offline';
+  const fitness = data?.fitness ?? EMPTY_FITNESS;
 
   const BorgIcon = () => (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
       <circle cx="12" cy="12" r="3" />
       <path strokeLinecap="square" d="M12 2v3M12 19v3M2 12h3M19 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
     </svg>
@@ -352,7 +460,7 @@ export default function BorgDashboardPage() {
         />
       )}
       <a
-        href={SOUL_SERVICE_URL}
+        href={data?.soulUrl || SOUL_SERVICE_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="border border-zinc-700 hover:border-zinc-500 text-zinc-400 text-[10px] font-bold uppercase tracking-widest py-2 px-3 flex items-center gap-1.5 transition-colors"
@@ -400,14 +508,23 @@ export default function BorgDashboardPage() {
 
         {data && (
           <>
+            {/* Borg wallet — address + live balance, so funds can be sent in */}
+            {wallet && (
+              <WalletPanel
+                address={wallet.address}
+                designation={wallet.designation}
+                balance={wallet.balance}
+              />
+            )}
+
             {/* Top stat row */}
             <div className="grid gap-px bg-zinc-800 grid-cols-2 sm:grid-cols-4 mb-6">
               <StatCard label="Soul Cycles" value={data.total_cycles} sub={`mode: ${data.mode}`} />
               <StatCard
                 label="Fitness"
-                value={`${Math.round(data.fitness.total * 100)}%`}
-                sub={`trend ${data.fitness.trend >= 0 ? '+' : ''}${(data.fitness.trend * 100).toFixed(3)}`}
-                accent={data.fitness.total >= 0.6 ? 'text-emerald-400' : data.fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400'}
+                value={`${Math.round(fitness.total * 100)}%`}
+                sub={`trend ${fitness.trend >= 0 ? '+' : ''}${(fitness.trend * 100).toFixed(3)}`}
+                accent={fitness.total >= 0.6 ? 'text-emerald-400' : fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400'}
               />
               <StatCard label="IQ Score" value={data.benchmark.opus_iq} sub={`ELO ${data.benchmark.elo_rating.toFixed(0)}`} />
               <StatCard
@@ -419,7 +536,7 @@ export default function BorgDashboardPage() {
 
             {/* Row 2: Fitness + Free Energy */}
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-4">
-              <FitnessPanel fitness={data.fitness} />
+              <FitnessPanel fitness={fitness} />
               <FreeEnergyPanel fe={data.free_energy} />
             </div>
 
@@ -440,7 +557,7 @@ export default function BorgDashboardPage() {
               <span>phase: <span className="text-zinc-400">{data.lifecycle.phase}</span></span>
               <span>commits: <span className="text-zinc-400">{data.lifecycle.own_commits}</span></span>
               <span>diverged: <span className="text-zinc-400">{data.lifecycle.lines_diverged} lines</span></span>
-              <span>acceleration: <span className="text-zinc-400">α={data.acceleration.alpha} ({data.acceleration.regime})</span></span>
+              {data.acceleration && <span>acceleration: <span className="text-zinc-400">α={data.acceleration.alpha} ({data.acceleration.regime})</span></span>}
               <span>emotion: <span className="text-zinc-400">valence={data.cortex.emotion.valence.toFixed(2)} arousal={data.cortex.emotion.arousal.toFixed(2)} drive={data.cortex.emotion.drive}</span></span>
               <span>curiosity: <span className="text-zinc-400">{(data.cortex.global_curiosity * 100).toFixed(1)}%</span></span>
               <span>experiences: <span className="text-zinc-400">{data.cortex.total_experiences}</span></span>

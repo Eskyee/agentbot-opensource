@@ -27,6 +27,7 @@ import { OPENCLAW_GATEWAY_TOKEN } from '../config/index.js';
 import { gatewayManager } from '../services/gatewayManager.js';
 import { pairingService } from '../services/pairingService.js';
 import { getActiveSessionCount } from '../services/terminalService.js';
+import { probeRuntimeCapabilities } from '../services/runtimeProbe.js';
 import { requireAdminAuth } from '../middleware/auth.js';
 import { log } from '../utils/log.js';
 
@@ -45,6 +46,7 @@ apiRoutes.get('/status', async (req, res) => {
       aiProvider = cfg.agents.defaults.model.primary;
     }
   } catch {}
+  const runtime = probeRuntimeCapabilities();
   res.json({
     state: gatewayManager.getState(),
     running: gatewayManager.isRunning(),
@@ -53,6 +55,7 @@ apiRoutes.get('/status', async (req, res) => {
     terminalSessions: getActiveSessionCount(),
     gatewayToken: OPENCLAW_GATEWAY_TOKEN || null,
     aiProvider,
+    runtime,
     ts: new Date().toISOString(),
   });
 });

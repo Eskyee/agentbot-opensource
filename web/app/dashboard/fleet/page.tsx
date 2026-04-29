@@ -58,7 +58,7 @@ export default function FleetPage() {
   const graphSourceLabel = graph?.degraded ? 'Fallback feed' : 'Live feed';
 
   const FleetIcon = () => (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
     </svg>
   )
@@ -134,7 +134,7 @@ export default function FleetPage() {
           {/* Trace Header */}
           <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Radio className="h-4 w-4 text-blue-500" />
+              <Radio className="h-4 w-4 text-orange-400" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Live Traces</span>
             </div>
             <span className="text-[10px] font-mono text-zinc-600">v2.1.0-alpha</span>
@@ -162,7 +162,7 @@ export default function FleetPage() {
                   href={selectedAgent.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mb-4 block text-[10px] font-mono text-blue-400 underline-offset-2 hover:underline truncate"
+                  className="mb-4 block text-[10px] font-mono text-orange-400 underline-offset-2 hover:underline truncate"
                 >
                   {selectedAgent.url}
                 </a>
@@ -191,7 +191,7 @@ export default function FleetPage() {
                     href={dashboardUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mb-3 flex items-center justify-center border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-400 hover:border-blue-500"
+                    className="mb-3 flex items-center justify-center border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-500"
                   >
                     Open Borg Dashboard
                   </a>

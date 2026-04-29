@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
 
-const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
 
 export async function GET() {
   const session = await getAuthSession()
@@ -25,4 +25,3 @@ export async function GET() {
   return NextResponse.json(body, { status: response.status })
 }
 
-export const dynamic = 'force-dynamic'

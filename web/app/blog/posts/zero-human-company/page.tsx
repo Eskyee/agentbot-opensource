@@ -55,9 +55,9 @@ export default function Post() {
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">The Future</h2>
  <p className="text-zinc-300 mb-4">This is the model. Autonomous companies run by AI, owned by token holders, operated by agents. No salaries. No hiring. No management. Just code executing value.</p>
 
- <p className="text-zinc-300 mb-4">Welcome to the underground.</p>
+ <p className="text-zinc-300 mb-4">Welcome to the autonomous.</p>
 
- <p className="text-xl font-bold text-blue-400 mt-8">Zero humans. 100% autonomous. </p>
+ <p className="text-xl font-bold text-orange-400 mt-8">Zero humans. 100% autonomous. </p>
  </article>
  </div>
  </main>

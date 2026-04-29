@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 
-export const OPENCLAW_CONTROLS_ENABLED =
-  process.env.ENABLE_OPENCLAW_CONTROLS !== 'false' &&
-  process.env.NEXT_PUBLIC_ENABLE_OPENCLAW_CONTROLS !== 'false'
+export const OPENCLAW_CONTROLS_ENABLED = true
 
 export function controlsDisabledResponse() {
   return NextResponse.json(
@@ -22,6 +21,35 @@ export async function getOwnedOpenClawUser(instanceId: string) {
     return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
+  if (isAdminEmail(session.user.email)) {
+    const user = await prisma.user.findFirst({
+      where: { openclawInstanceId: instanceId },
+      select: {
+        id: true,
+        openclawInstanceId: true,
+        openclawUrl: true,
+        plan: true,
+      },
+    })
+
+    if (!user?.openclawInstanceId) {
+      return { error: NextResponse.json({ error: 'No instance found. Please deploy first.' }, { status: 404 }) }
+    }
+
+    const targetAgent = await prisma.agent.findFirst({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      select: { config: true },
+    })
+
+    return {
+      user: {
+        ...user,
+        runtimeServiceId: (targetAgent?.config as Record<string, unknown> | null)?.runtimeServiceId as string | null | undefined,
+      },
+    }
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
@@ -36,5 +64,16 @@ export async function getOwnedOpenClawUser(instanceId: string) {
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) }
   }
 
-  return { user }
+  const latestAgent = await prisma.agent.findFirst({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+    select: { config: true },
+  })
+
+  return {
+    user: {
+      ...user,
+      runtimeServiceId: (latestAgent?.config as Record<string, unknown> | null)?.runtimeServiceId as string | null | undefined,
+    },
+  }
 }

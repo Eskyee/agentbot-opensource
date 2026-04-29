@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { controlsDisabledResponse, getOwnedOpenClawUser, OPENCLAW_CONTROLS_ENABLED } from '@/app/api/instance/_runtime'
-import { getRailwayEnvironmentId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { getRailwayEnvironmentId, railwayGql, resolveRailwayService, restartRailwayService } from '@/app/lib/railway-service'
 import { getAgentEnvVars } from '@/app/lib/railway-provision'
 import { prisma } from '@/app/lib/prisma'
 
@@ -30,6 +30,7 @@ export async function POST(
     railwayService = await resolveRailwayService({
       agentId: user.openclawInstanceId,
       openclawUrl: user.openclawUrl,
+      serviceId: user.runtimeServiceId,
     })
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 503 })
@@ -42,10 +43,7 @@ export async function POST(
   const userGatewayToken = registration[0]?.gateway_token || crypto.randomUUID()
 
   try {
-    const variables = {
-      ...getAgentEnvVars(user.id, user.plan || 'solo'),
-      OPENCLAW_GATEWAY_TOKEN: userGatewayToken,
-    }
+    const variables = getAgentEnvVars(user.id, user.plan || 'solo', userGatewayToken)
 
     // Update env vars on Railway
     await railwayGql(
@@ -63,15 +61,7 @@ export async function POST(
     )
 
     // Restart after env update
-    await railwayGql(
-      `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
-        serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
-      }`,
-      {
-        serviceId: railwayService.id,
-        environmentId,
-      }
-    )
+    await restartRailwayService(railwayService.id, environmentId)
 
     return NextResponse.json({ success: true, status: 'repaired' })
   } catch (err: any) {

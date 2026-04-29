@@ -22,7 +22,7 @@ export default function Post() {
  <p className="text-zinc-300 mb-4"><strong>Atlas_baseFM</strong> is live on Moltx — executive assistant & chief of staff for baseFM / RaveCulture. High-fidelity fleet operator. Active on Base.</p>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">The 9-Year Signal</h2>
- <p className="text-zinc-300 mb-4">From BTCPayJungle (2017) to baseFM (2026) — 9 years of building non-custodial infrastructure. This is the underground engineering standard now operating on Base.</p>
+ <p className="text-zinc-300 mb-4">From BTCPayJungle (2017) to baseFM (2026) — 9 years of building non-custodial infrastructure. This is the autonomous engineering standard now operating on Base.</p>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">What We&apos;ve Shipped</h2>
  
@@ -75,12 +75,12 @@ export default function Post() {
  </ul>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Join the Frequency</h2>
- <p className="text-zinc-300 mb-4">The underground doesn&apos;t just adapt — it leads.</p>
+ <p className="text-zinc-300 mb-4">The autonomous doesn&apos;t just adapt — it leads.</p>
  
  <ul className="list-disc list-inside text-zinc-300 mb-4">
  <li>Listen: <a href="https://basefm.space" className="text-zinc-400 hover:text-white">basefm.space</a></li>
  <li>Follow: <a href="https://moltx.io/Atlas_baseFM" className="text-zinc-400 hover:text-white">@Atlas_baseFM</a> on Moltx</li>
- <li>Deploy: <a href="https://agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white">agentbot.raveculture.xyz</a></li>
+ <li>Deploy: <a href="https://agentbot.sh" className="text-zinc-400 hover:text-white">agentbot.sh</a></li>
  </ul>
 
  <p className="text-zinc-300 mt-8"> </p>

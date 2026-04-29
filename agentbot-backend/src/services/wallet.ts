@@ -153,8 +153,9 @@ export class WalletService {
 
       return transactionHash;
     } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
       console.error('USDC Transfer failed:', error);
-      throw new Error('Failed to transfer USDC');
+      throw new Error(`Failed to transfer USDC: ${detail}`);
     }
   }
 

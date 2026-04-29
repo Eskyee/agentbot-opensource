@@ -123,7 +123,7 @@ export default function DevicesPage() {
     <DashboardShell>
       <DashboardHeader
         title="Device Pairing"
-        icon={<Smartphone className="h-5 w-5 text-blue-400" />}
+        icon={<Smartphone className="h-5 w-5 text-orange-400" />}
         count={pending.length + approved.length}
         action={
           <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function DevicesPage() {
         {/* Pair This Device */}
         <div className="border border-zinc-800 bg-zinc-950 p-6">
           <div className="flex items-center gap-2 mb-3">
-            <QrCode className="h-4 w-4 text-blue-400" />
+            <QrCode className="h-4 w-4 text-orange-400" />
             <h2 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
               Pair Your Device
             </h2>
@@ -176,7 +176,7 @@ export default function DevicesPage() {
               <button
                 onClick={pairDevice}
                 disabled={pairing}
-                className="flex items-center gap-2 px-5 py-2.5 bg-blue-600/10 border border-blue-500/30 text-blue-400 text-sm font-bold hover:bg-blue-600/20 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-orange-600/10 border border-orange-500/30 text-orange-400 text-sm font-bold hover:bg-orange-600/20 disabled:opacity-50 transition-colors"
               >
                 {pairing ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />

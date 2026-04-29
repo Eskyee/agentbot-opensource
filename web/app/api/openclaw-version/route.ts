@@ -2,8 +2,12 @@ import { NextResponse } from 'next/server'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys'
 import { DEFAULT_OPENCLAW_IMAGE, DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+
+function normalizeOpenClawVersion(value: unknown) {
+  if (typeof value !== 'string' || !value.trim()) return DEFAULT_OPENCLAW_VERSION
+  const normalized = value.trim()
+  return normalized === 'latest' ? DEFAULT_OPENCLAW_VERSION : normalized
+}
 
 
 export async function GET() {
@@ -23,7 +27,7 @@ export async function GET() {
 
     const data = await response.json()
     return NextResponse.json({
-      openclawVersion: data?.openclawVersion || DEFAULT_OPENCLAW_VERSION,
+      openclawVersion: normalizeOpenClawVersion(data?.openclawVersion),
       image: data?.image || DEFAULT_OPENCLAW_IMAGE,
       deployedAt: data?.deployedAt
     })

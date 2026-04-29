@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, Suspense, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
 
 type Step = 'telegram' | 'token' | 'userid' | 'agenttype' | 'ai' | 'model' | 'skills' | 'deploy' | 'done'
 
@@ -9,7 +11,7 @@ const FLOW_STEPS: Step[] = ['telegram', 'token', 'userid', 'agenttype', 'ai', 'm
 const DEPLOY_FLOW_STEPS: Step[] = ['ai', 'deploy', 'done']
 // Note: Payment is handled inline — deploy() redirects to Stripe if !isPaid
 
-const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
 
 function OnboardContent() {
   const searchParams = useSearchParams()
@@ -23,9 +25,9 @@ function OnboardContent() {
   const [step, setStep] = useState<Step>('telegram')
   const [telegramToken, setTelegramToken] = useState('')
   const [telegramUserId, setTelegramUserId] = useState('')
-  const [aiProvider, setAiProvider] = useState('openrouter')
+  const [aiProvider, setAiProvider] = useState('vercel-gateway')
   const [apiKey, setApiKey] = useState('')
-  const [selectedModel, setSelectedModel] = useState('openrouter/xiaomi/mimo-v2-pro')
+  const [selectedModel, setSelectedModel] = useState('xiaomi/mimo-v2-pro')
   const [selectedSkills, setSelectedSkills] = useState<string[]>(['web-search', 'file-handler'])
   const [agentType, setAgentType] = useState('general')
   const [isValidating, setIsValidating] = useState(false)
@@ -66,12 +68,12 @@ function OnboardContent() {
 
   // Available models
   const AVAILABLE_MODELS = [
-    { id: 'openrouter/xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (Recommended)', provider: 'openrouter', description: 'Xiaomi latest model. Fast, capable, great value.', recommended: true, tier: 'free' },
+    { id: 'xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (Factory Master)', provider: 'vercel-gateway', description: 'Ultra high-performance factory-grade model. Default for all new agents.', recommended: true, tier: 'free' },
+    { id: 'openrouter/xiaomi/mimo-v2-pro', name: 'MiMo V2 Pro (OpenRouter)', provider: 'openrouter', description: 'Xiaomi latest model via OpenRouter. Fast and capable.', tier: 'free' },
     { id: 'openrouter/mistralai/mistral-7b-instruct', name: 'Mistral 7B (Free Tier)', provider: 'openrouter', description: 'Lightweight & fast. Free for all users.', tier: 'free' },
     { id: 'openrouter/meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 (Advanced)', provider: 'openrouter', description: 'Advanced general assistant. Requires Solo plan.', tier: 'solo' },
     { id: 'openrouter/qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen 2.5 (Coding)', provider: 'openrouter', description: 'Smart contracts & coding logic. Requires Collective plan.', tier: 'collective' },
     { id: 'openrouter/deepseek/deepseek-r1', name: 'DeepSeek R1 (Reasoning)', provider: 'openrouter', description: 'Maximum intelligence. Requires Label plan.', tier: 'label' },
-    { id: 'openrouter/solana/solana-agent-kit', name: 'Solana Agent Kit', provider: 'openrouter', description: 'DeFi, NFTs, token ops. 60+ Solana actions via MCP. Requires Label plan.', tier: 'label' },
   ]
 
   // Available ready-to-use skills
@@ -458,11 +460,22 @@ function OnboardContent() {
         <p className="text-sm text-zinc-400 mt-2">
           {mode === 'link' && 'Connect your existing OpenClaw instance'}
           {mode === 'create' && 'Build your custom AI agent from scratch'}
-          {mode === 'deploy' && 'Launch a pre-configured OpenClaw agent instantly'}
+          {mode === 'deploy' && 'Provision your first Factory AI agent instantly'}
         </p>
         <p className="text-xs text-zinc-500 mt-1">
           {plan === 'free' ? 'Starter plan' : `${plan.charAt(0).toUpperCase() + plan.slice(1)} plan`}
         </p>
+
+        {/* Brand Image / Gap Fix */}
+        <div className="aspect-video w-full bg-zinc-900 border border-zinc-800 rounded mt-8 flex items-center justify-center overflow-hidden">
+          <Image 
+            src="/hero-image.webp"
+            alt="Agent Factory" 
+            width={600} 
+            height={337} 
+            className="opacity-40 grayscale hover:grayscale-0 transition-all duration-700" 
+          />
+        </div>
       </div>
       
       {/* Progress */}
@@ -525,7 +538,7 @@ function OnboardContent() {
                 href="https://t.me/BotFather" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-blue-400 transition-colors"
+                className="block w-full bg-orange-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-orange-400 transition-colors"
               >
                 Open @BotFather →
               </a>
@@ -618,7 +631,7 @@ function OnboardContent() {
                 href="https://t.me/userinfobot" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="block w-full bg-blue-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-blue-400 transition-colors"
+                className="block w-full bg-orange-500 text-white py-3 rounded-lg text-left font-semibold hover:bg-orange-400 transition-colors"
               >
                 Open @userinfobot →
               </a>
@@ -712,7 +725,8 @@ function OnboardContent() {
             <div className="space-y-6">
               <div className="space-y-3">
                 {[
-                  { id: 'openrouter', name: 'OpenRouter', desc: 'MiMo V2 Pro, Kimi K2.5, Llama, GPT, DeepSeek — Fast and reliable', recommended: true },
+                  { id: 'vercel-gateway', name: 'Factory Master (AI Gateway)', desc: 'Ultra-high performance MiMo V2 Pro — Recommended for all agents', recommended: true },
+                  { id: 'openrouter', name: 'OpenRouter', desc: 'Llama, GPT, DeepSeek, and more — Fast and reliable' },
                   { id: 'ollama', name: 'Ollama (Local)', desc: 'Run models locally on your own hardware — private & free', badge: 'PRIVATE' },
                   { id: 'groq', name: 'Groq', desc: 'Llama 3 — Ultra fast free tier' },
                   { id: 'gemini', name: 'Google Gemini', desc: 'Gemini 2.0 Flash — Direct from Google' },
@@ -739,7 +753,7 @@ function OnboardContent() {
                         </span>
                       )}
                       {'badge' in provider && provider.badge && (
-                        <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded-full">
+                        <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-1 rounded-full">
                           {provider.badge}
                         </span>
                       )}
@@ -747,6 +761,19 @@ function OnboardContent() {
                   </button>
                 ))}
               </div>
+              
+              {/* Factory Master instructions */}
+              {aiProvider === 'vercel-gateway' && (
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-6">
+                  <h3 className="font-semibold mb-2 text-orange-400">Factory Master Infrastructure</h3>
+                  <p className="text-sm text-zinc-300">The MiMo V2 Pro model is pre-configured via your Vercel AI Gateway. No additional API key is required for the starter tier.</p>
+                  <ul className="mt-4 space-y-2 text-xs text-zinc-400">
+                    <li className="flex gap-2"><span>✓</span> <span>Ultra-low latency inference</span></li>
+                    <li className="flex gap-2"><span>✓</span> <span>Optimized for agent reasoning</span></li>
+                    <li className="flex gap-2"><span>✓</span> <span>Managed rate limiting</span></li>
+                  </ul>
+                </div>
+              )}
               
               {/* OpenRouter instructions */}
               {aiProvider === 'openrouter' && (
@@ -780,7 +807,7 @@ function OnboardContent() {
                   <ol className="space-y-3 text-zinc-300 text-sm">
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">1</span>
-                      <span>OpenClaw will connect to Ollama at <code className="text-blue-300">http://ollama.railway.internal:11434</code> automatically</span>
+                      <span>OpenClaw will connect to Ollama at <code className="text-orange-400">http://ollama.railway.internal:11434</code> automatically</span>
                     </li>
                     <li className="flex gap-3">
                       <span className="bg-white text-black w-5 h-5 rounded-full flex items-center justify-center text-xs flex-shrink-0">2</span>
@@ -849,11 +876,11 @@ function OnboardContent() {
                   </button>
                 )}
                 <button
-                  onClick={() => mode === 'deploy' ? setStep('deploy') : setStep(aiProvider === 'openrouter' ? 'model' : 'skills')}
-                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq' && aiProvider !== 'ollama') && !apiKey}
+                  onClick={() => mode === 'deploy' ? setStep('deploy') : setStep(aiProvider === 'openrouter' || aiProvider === 'vercel-gateway' ? 'model' : 'skills')}
+                  disabled={(aiProvider !== 'openrouter' && aiProvider !== 'groq' && aiProvider !== 'ollama' && aiProvider !== 'vercel-gateway') && !apiKey}
                   className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1"
                 >
-                  {mode === 'deploy' ? 'Deploy OpenClaw →' : aiProvider === 'openrouter' ? 'Select Model →' : 'Continue →'}
+                  {mode === 'deploy' ? 'Deploy OpenClaw →' : (aiProvider === 'openrouter' || aiProvider === 'vercel-gateway') ? 'Select Model →' : 'Continue →'}
                 </button>
               </div>
             </div>
@@ -1322,6 +1349,12 @@ function OnboardContent() {
                   >
                     Go to Mission Control
                   </a>
+                  <Link
+                    href="/dashboard/coach"
+                    className="block w-full border border-orange-500/50 text-orange-400 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
+                  >
+                    🎓 Enter Operator Training
+                  </Link>
                 </div>
               </>
             ) : (
@@ -1355,7 +1388,7 @@ function OnboardContent() {
                     href={`https://t.me/${botInfo?.username}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full bg-blue-500 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-colors text-center"
+                    className="block w-full bg-orange-500 py-3 rounded-lg font-semibold hover:bg-orange-400 transition-colors text-center"
                   >
                     Open in Telegram →
                   </a>
@@ -1365,6 +1398,12 @@ function OnboardContent() {
                   >
                     Go to Dashboard
                   </a>
+                  <Link
+                    href="/dashboard/coach"
+                    className="block w-full border border-orange-500/50 text-orange-400 py-3 rounded-lg font-bold uppercase tracking-widest text-[10px] hover:bg-orange-500/10 transition-colors text-center"
+                  >
+                    🎓 Start Operator Coaching
+                  </Link>
                 </div>
               </>
             )}
@@ -1392,7 +1431,7 @@ if (typeof document !== 'undefined') {
 
 export default function Onboard() {
   return (
-    <main className="min-h-screen py-16 px-6 bg-black text-white selection:bg-blue-500/30 font-mono">
+    <main className="min-h-screen py-16 px-6 bg-black text-white selection:bg-orange-500/30 font-mono">
       <Suspense fallback={
         <div className="mx-auto max-w-2xl">
           <div className="text-5xl mb-4">🦞</div>

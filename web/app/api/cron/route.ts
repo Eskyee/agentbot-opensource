@@ -94,4 +94,3 @@ export async function DELETE(req: NextRequest) {
   return NextResponse.json({ success: true, source: 'gateway' })
 }
 
-export const dynamic = 'force-dynamic'

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
 import { persistManagedAgent } from '@/app/lib/managed-agent'
+import { signedFetch } from '@/app/lib/backend-client'
 
 type JobResponse = {
   job: {
@@ -29,14 +29,7 @@ export async function GET(
   }
 
   const { jobId } = await params
-  const backendUrl = getBackendApiUrl()
-  const apiKey = getInternalApiKey()
-
-  const response = await fetch(`${backendUrl}/api/platform-jobs/${jobId}`, {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
+  const response = await signedFetch(`/api/platform-jobs/${jobId}`, {
     cache: 'no-store',
     signal: AbortSignal.timeout(10_000),
   })

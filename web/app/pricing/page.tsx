@@ -11,28 +11,28 @@ const plans = [
     id: 'solo',
     name: 'Solo',
     price: '29',
-    features: ['1 Creative Agent thread', 'Audience engagement (Telegram)', 'Opportunity discovery'],
+    features: ['1 Creative Agent thread', 'Audience engagement (Telegram)', 'Opportunity discovery', '1 vCPU / 2 GB runtime floor', 'Best for trials and light workloads'],
     popular: false,
   },
   {
     id: 'collective',
     name: 'Collective',
     price: '69',
-    features: ['3 Creative Agent threads', '1 OpenClaw Business seat', 'Email Triage (50/day)', 'x402 USDC Invoicing'],
+    features: ['3 Creative Agent threads', '1 OpenClaw Business seat', 'Email Triage (50/day)', 'x402 USDC Invoicing', '2 vCPU / 4 GB runtime', 'Recommended production floor'],
     popular: true,
   },
   {
     id: 'label',
     name: 'Label',
     price: '149',
-    features: ['10 Creative Agent threads', '3 OpenClaw Business seats', 'Multi-inbox (A&R@, Booking@)', 'White-label emails'],
+    features: ['10 Creative Agent threads', '3 OpenClaw Business seats', 'Multi-inbox (A&R@, Booking@)', 'White-label emails', '4 vCPU / 8 GB runtime', 'Better for browser + multi-channel work'],
     popular: false,
   },
   {
     id: 'network',
     name: 'Network',
     price: '499',
-    features: ['Unlimited Creative Agents', 'Unlimited OpenClaw seats', 'White-label (resell)', '99.9% SLA guarantee'],
+    features: ['Unlimited Creative Agents', 'Unlimited OpenClaw seats', 'White-label (resell)', '99.9% SLA guarantee', '8 vCPU / 16 GB runtime', 'High-throughput production'],
     popular: false,
   },
 ]
@@ -55,6 +55,10 @@ const faqs = [
   {
     q: 'Can I change plans later?',
     a: 'Yes. Upgrade or downgrade at any time from your dashboard. OpenClaw seats can be added incrementally on Collective+ tiers.',
+  },
+  {
+    q: 'Is 1 vCPU / 2 GB enough for OpenClaw?',
+    a: 'It is enough to boot and run light workloads, but we treat it as a trial/light-use floor. For serious production we recommend at least 2 vCPU / 4 GB, and more if you rely on browser automation, multiple channels, or heavier tool use.',
   },
 ]
 
@@ -120,7 +124,7 @@ export default function PricingPage() {
                 <div className="flex items-center gap-2 mb-6">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <span className="text-[9px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-2 py-0.5">
+                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-orange-500/30 px-2 py-0.5">
                       Popular
                     </span>
                   )}

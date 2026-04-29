@@ -16,35 +16,55 @@ pool.on('error', (err) => {
 });
 
 const SCHEMA = `
--- Core tables
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
   plan TEXT DEFAULT 'solo',
   stripe_subscription_id TEXT,
+  greenlight_cert_pem TEXT,                -- Blockstream Greenlight developer certificate
+  greenlight_key_pem TEXT,                 -- Blockstream Greenlight developer key
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Migration: add greenlight columns (safe on existing DBs)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS greenlight_cert_pem TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS greenlight_key_pem TEXT;
+-- Agents table
 CREATE TABLE IF NOT EXISTS agents (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   config JSONB DEFAULT '{}',
+  bitcoin_xpub TEXT,                       -- xpub/zpub/descriptor for agent's own wallet
   status TEXT DEFAULT 'active',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Migration: add bitcoin_xpub (safe on existing DBs)
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS bitcoin_xpub TEXT;
+
 CREATE TABLE IF NOT EXISTS wallets (
   id SERIAL PRIMARY KEY,
   address TEXT UNIQUE NOT NULL,
-  encrypted_private_key TEXT NOT NULL,
+  encrypted_private_key TEXT,              -- legacy column name (kept for compatibility)
+  wallet_seed_encrypted TEXT,              -- CDP wallet metadata (encrypted)
   balance_usdc NUMERIC DEFAULT 0,
+  user_id TEXT,                            -- owner user ID
   agent_id INTEGER REFERENCES agents(id) ON DELETE CASCADE,
+  network TEXT DEFAULT 'base',             -- chain/network identifier
+  wallet_type TEXT DEFAULT 'cdp',          -- cdp | local
   last_balance_check TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add columns that wallet.ts inserts (safe on existing DBs)
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS wallet_seed_encrypted TEXT;
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS user_id TEXT;
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS network TEXT DEFAULT 'base';
+ALTER TABLE wallets ADD COLUMN IF NOT EXISTS wallet_type TEXT DEFAULT 'cdp';
 
 CREATE TABLE IF NOT EXISTS bitcoin_wallets (
   id SERIAL PRIMARY KEY,
@@ -74,12 +94,22 @@ CREATE TABLE IF NOT EXISTS treasury_transactions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES users(id),
   agent_id INTEGER REFERENCES agents(id),
-  category TEXT NOT NULL,
+  type TEXT,                               -- transfer | coordination | orphan_wallet | etc.
+  category TEXT NOT NULL DEFAULT 'general',
   action TEXT,
+  description TEXT,                        -- human-readable description
   amount_usdc NUMERIC DEFAULT 0,
+  tx_hash TEXT,                            -- on-chain transaction hash
+  status TEXT DEFAULT 'confirmed',         -- confirmed | pending | failed | needs_reconciliation
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add columns used by bus.ts and wallet.ts (safe on existing DBs)
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS type TEXT;
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS tx_hash TEXT;
+ALTER TABLE treasury_transactions ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'confirmed';
 
 -- Royalty splits
 CREATE TABLE IF NOT EXISTS royalty_splits (
@@ -106,20 +136,27 @@ CREATE TABLE IF NOT EXISTS deployments (
   user_id INTEGER REFERENCES users(id),
   agent_id INTEGER REFERENCES agents(id),
   status TEXT DEFAULT 'pending',
-  render_service_id TEXT,
+  railway_service_id TEXT,
   subdomain TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration: add railway_service_id (replaces render_service_id)
+ALTER TABLE deployments ADD COLUMN IF NOT EXISTS railway_service_id TEXT;
 
 -- Bookings (negotiation service)
 CREATE TABLE IF NOT EXISTS bookings (
   id SERIAL PRIMARY KEY,
   agent_id INTEGER REFERENCES agents(id),
   event_id INTEGER REFERENCES events(id),
+  talent_agent_id TEXT,              -- agent ID of the talent being booked (A2A)
+  talent_name TEXT,                  -- display name of talent
   status TEXT DEFAULT 'pending',
   proposed_price_usdc NUMERIC,
+  offer_amount_usdc NUMERIC,         -- alias used by negotiation service
   final_price_usdc NUMERIC,
+  metadata JSONB DEFAULT '{}',       -- full offer payload
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -168,8 +205,12 @@ CREATE TABLE IF NOT EXISTS invite_codes (
   used BOOLEAN NOT NULL DEFAULT FALSE,
   used_at TIMESTAMPTZ,
   created_by TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ
 );
+-- Backfill-safe: add expires_at for deployments that created the table before this column existed.
+-- NULL expires_at means "never expires" (preserves existing codes).
+ALTER TABLE invite_codes ADD COLUMN IF NOT EXISTS expires_at TIMESTAMPTZ;
 
 -- Agent registrations (replaces in-memory registrations map — survives restarts)
 CREATE TABLE IF NOT EXISTS agent_registrations (
@@ -215,6 +256,12 @@ ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS tier TEXT;
 ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS latency_ms INTEGER;
 ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS success BOOLEAN;
 ALTER TABLE model_metrics ADD COLUMN IF NOT EXISTS source TEXT;
+
+-- Migration: bookings — add columns used by negotiation service (safe on existing DBs)
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS talent_agent_id TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS talent_name TEXT;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS offer_amount_usdc NUMERIC;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}';
 
 -- Scheduled tasks (used by inline scheduler in scheduler.ts)
 CREATE TABLE IF NOT EXISTS scheduled_tasks (
@@ -286,6 +333,10 @@ CREATE INDEX IF NOT EXISTS idx_container_metrics_user_time ON container_metrics(
 CREATE INDEX IF NOT EXISTS idx_model_metrics_user ON model_metrics(user_id, created_at DESC);
 -- Invite codes
 CREATE INDEX IF NOT EXISTS idx_invite_codes_used ON invite_codes(used);
+-- Composite indexes for common query patterns (agent+date, agent+status, user+category)
+CREATE INDEX IF NOT EXISTS idx_events_agent_date ON events(agent_id, event_date DESC);
+CREATE INDEX IF NOT EXISTS idx_bookings_agent_status ON bookings(agent_id, status);
+CREATE INDEX IF NOT EXISTS idx_treasury_user_category ON treasury_transactions(user_id, category);
 `;
 
 export async function initDatabase(): Promise<void> {

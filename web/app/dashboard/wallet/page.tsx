@@ -12,6 +12,7 @@ import { setSessionId, clearSessionId } from '@/lib/mpp/session-fetch'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
 import StatusPill from '@/app/components/shared/StatusPill'
 import SignInWithBase from '@/app/components/SignInWithBase'
+import WalletTabs from './WalletTabs'
 
 type WalletAsset = {
   address: string
@@ -436,9 +437,10 @@ export default function WalletPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-blue-400" />} />
+      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-orange-400" />} />
       <DashboardContent>
         <div className="max-w-5xl space-y-6">
+          <WalletTabs />
           {!loading && !effectiveAddress && (
             <div className="border border-zinc-800 bg-zinc-950 p-6">
               <p className="text-[10px] uppercase tracking-widest text-zinc-600">Base Wallet</p>

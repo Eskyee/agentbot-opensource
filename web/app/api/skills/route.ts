@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { deploySkillToAgent, removeSkillFromAgent } from '@/app/lib/agent-deploy'
+import { BASEFM_DJ_SKILL_CODE, BASEFM_DJ_SKILL_NAME, ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
+import { scanSkillMarketplaceInput } from '@/app/lib/skillMarketplaceSafety'
 
 // Default skills catalog — used as seed data if Skill table is empty
 const DEFAULT_SKILLS = [
-  { name: 'DJ Streaming', description: 'Stream live DJ sets via Mux. Verify RAVE token holders for DJ access.', category: 'streaming', author: 'Agentbot', downloads: 150, rating: 5.0, featured: true },
+  { name: BASEFM_DJ_SKILL_NAME, description: 'Create baseFM streams, fetch live DJs, and generate ffmpeg broadcaster commands for agent DJs.', category: 'streaming', author: 'Agentbot', downloads: 150, rating: 5.0, featured: true },
   { name: 'Guestlist Manager', description: 'Manage event guestlists, RSVPs, check-ins, and capacity limits.', category: 'events', author: 'Agentbot', downloads: 280, rating: 4.9, featured: true },
   { name: 'USDC Payments', description: 'Accept USDC payments on Base. Generate payment links, track transactions.', category: 'payments', author: 'Agentbot', downloads: 420, rating: 4.8, featured: true },
   { name: 'Community Treasury', description: 'Track spending, reimbursements, and multi-sig treasury management.', category: 'finance', author: 'Agentbot', downloads: 320, rating: 4.7, featured: true },
@@ -61,20 +64,75 @@ const DEFAULT_SKILLS = [
   { name: 'Code Review', description: 'Review agent code against production best practices. Security, state management, and anti-pattern detection.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
 ]
 
-export const dynamic = 'force-dynamic'
 
 /**
  * Ensure skills are seeded in the database.
- * Runs once on first request; subsequent calls are a no-op.
+ * Uses upsert-like logic to ensure new default skills are added even to existing databases.
  */
 async function ensureSkillsSeeded() {
-  const count = await prisma.skill.count()
-  if (count > 0) return
+  for (const skill of DEFAULT_SKILLS) {
+    await prisma.skill.upsert({
+      where: { name: skill.name },
+      update: {
+        description: skill.description,
+        category: skill.category,
+        author: skill.author,
+        featured: skill.featured,
+        // Don't overwrite dynamic stats
+      },
+      create: {
+        ...skill,
+        code: skill.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '',
+      },
+    })
+  }
 
-  await prisma.skill.createMany({
-    data: DEFAULT_SKILLS.map(s => ({ ...s, code: '' })),
-    skipDuplicates: true,
+  await ensureBasefmDjSkill()
+}
+
+async function getSkillTargetContext(agentId: string, session: NonNullable<Awaited<ReturnType<typeof getAuthSession>>>) {
+  const directAgent = await prisma.agent.findFirst({
+    where: { id: agentId, userId: session.user.id },
   })
+
+  if (directAgent) {
+    return { agent: directAgent, targetUserId: session.user.id, runtimeHydrated: false }
+  }
+
+  const targetUser = await prisma.user.findFirst({
+    where: {
+      openclawInstanceId: agentId,
+      ...(isAdminEmail(session.user.email) ? {} : { id: session.user.id }),
+    },
+    select: {
+      id: true,
+      openclawInstanceId: true,
+      openclawUrl: true,
+    },
+  })
+
+  if (!targetUser?.openclawInstanceId) {
+    return null
+  }
+
+  const synthesizedAgent = await prisma.agent.upsert({
+    where: { id: targetUser.openclawInstanceId },
+    update: {
+      userId: targetUser.id,
+      websocketUrl: targetUser.openclawUrl,
+      status: 'running',
+    },
+    create: {
+      id: targetUser.openclawInstanceId,
+      userId: targetUser.id,
+      name: 'Managed OpenClaw Runtime',
+      model: 'openclaw',
+      status: 'running',
+      websocketUrl: targetUser.openclawUrl,
+    },
+  })
+
+  return { agent: synthesizedAgent, targetUserId: targetUser.id, runtimeHydrated: true }
 }
 
 export async function GET(request: Request) {
@@ -113,6 +171,7 @@ export async function GET(request: Request) {
           downloads: true,
           rating: true,
           featured: true,
+          code: true,
         },
       }),
       prisma.skill.findMany({
@@ -136,19 +195,47 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.json({
-      skills,
+      skills: skills.map((skill) => ({
+        ...skill,
+        scan: scanSkillMarketplaceInput({
+          name: skill.name,
+          description: skill.description,
+          code: skill.code,
+          author: skill.author,
+          featured: skill.featured,
+        }),
+      })),
       categories: categories.map(c => c.category),
-      featured: skills.filter(s => s.featured),
+      featured: skills.filter(s => s.featured).map((skill) => ({
+        ...skill,
+        scan: scanSkillMarketplaceInput({
+          name: skill.name,
+          description: skill.description,
+          code: skill.code,
+          author: skill.author,
+          featured: skill.featured,
+        }),
+      })),
       installedSkillIds,
     })
   } catch (error) {
     console.error('Skills fetch error:', error)
     // Graceful fallback to defaults if DB unavailable
-    let skills = DEFAULT_SKILLS.map((s, i) => ({ id: `default-${i}`, ...s }))
+    let skills = DEFAULT_SKILLS.map((s, i) => ({ id: `default-${i}`, ...s, code: s.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '' }))
     if (category && category !== 'all') skills = skills.filter(s => s.category === category)
     if (featured === 'true') skills = skills.filter(s => s.featured)
     const categories = [...new Set(DEFAULT_SKILLS.map(s => s.category))]
-    return NextResponse.json({ skills, categories, featured: skills.filter(s => s.featured), installedSkillIds: [] })
+    const withScan = skills.map((skill) => ({
+      ...skill,
+      scan: scanSkillMarketplaceInput({
+        name: skill.name,
+        description: skill.description,
+        code: skill.code,
+        author: skill.author,
+        featured: skill.featured,
+      }),
+    }))
+    return NextResponse.json({ skills: withScan, categories, featured: withScan.filter(s => s.featured), installedSkillIds: [] })
   }
 }
 
@@ -165,10 +252,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'skillId and agentId are required' }, { status: 400 })
     }
 
-    // Verify agent belongs to user
-    const agent = await prisma.agent.findFirst({
-      where: { id: agentId, userId: session.user.id },
-    })
+    const target = await getSkillTargetContext(agentId, session)
+    const agent = target?.agent
 
     if (!agent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
@@ -180,19 +265,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 })
     }
 
+    const scan = scanSkillMarketplaceInput({
+      name: skill.name,
+      description: skill.description,
+      code: skill.code,
+      author: skill.author,
+      featured: skill.featured,
+    })
+
+    if (!scan.installAllowed) {
+      return NextResponse.json(
+        { error: 'Skill blocked by marketplace safety checks', scan },
+        { status: 400 }
+      )
+    }
+
     // Install skill (upsert to handle duplicates)
     const installed = await prisma.installedSkill.upsert({
       where: {
         userId_agentId_skillId: {
-          userId: session.user.id,
-          agentId,
+          userId: target!.targetUserId,
+          agentId: agent.id,
           skillId,
         },
       },
       update: { enabled: true },
       create: {
-        userId: session.user.id,
-        agentId,
+        userId: target!.targetUserId,
+        agentId: agent.id,
         skillId,
       },
     })
@@ -205,24 +305,40 @@ export async function POST(request: Request) {
 
     // Deploy skill to OpenClaw gateway (don't fail if gateway is down)
     try {
-      const deployResult = await deploySkillToAgent(agentId, skillId)
+      const deployResult = await deploySkillToAgent(agent.id, skillId)
       if (!deployResult.success) {
         console.warn(`[Skill Install] Gateway deploy warning: ${deployResult.error}`)
         return NextResponse.json({ 
           success: true, 
           installed,
+          runtimeHydrated: target!.runtimeHydrated,
           deployed: false,
-          deployWarning: deployResult.error
+          deployWarning: deployResult.error,
+          message: target!.runtimeHydrated
+            ? 'Skill saved and the managed runtime agent record was created. Gateway deploy still needs attention.'
+            : 'Skill saved, but gateway deploy still needs attention.',
         })
       }
-      return NextResponse.json({ success: true, installed, deployed: true })
+      return NextResponse.json({
+        success: true,
+        installed,
+        runtimeHydrated: target!.runtimeHydrated,
+        deployed: true,
+        message: target!.runtimeHydrated
+          ? 'Skill installed and the managed runtime agent record was created successfully.'
+          : 'Skill installed successfully.',
+      })
     } catch (gatewayError) {
       console.warn('[Skill Install] Gateway deploy failed (will retry on sync):', gatewayError)
       return NextResponse.json({ 
         success: true, 
         installed,
+        runtimeHydrated: target!.runtimeHydrated,
         deployed: false,
-        deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically'
+        deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically',
+        message: target!.runtimeHydrated
+          ? 'Skill saved, the managed runtime agent record was created, and the runtime will pick it up when gateway sync recovers.'
+          : 'Skill saved to the database and will sync to the runtime automatically.',
       })
     }
   } catch (error) {
@@ -244,22 +360,35 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'skillId and agentId are required' }, { status: 400 })
     }
 
+    const target = await getSkillTargetContext(agentId, session)
+    const agent = target?.agent
+
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
     await prisma.installedSkill.deleteMany({
       where: {
-        userId: session.user.id,
-        agentId,
+        userId: target!.targetUserId,
+        agentId: agent.id,
         skillId,
       },
     })
 
     // Remove skill from OpenClaw gateway (don't fail if gateway is down)
     try {
-      await removeSkillFromAgent(agentId, skillId)
+      await removeSkillFromAgent(agent.id, skillId)
     } catch (gatewayError) {
       console.warn('[Skill Uninstall] Gateway removal failed:', gatewayError)
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      runtimeHydrated: target!.runtimeHydrated,
+      message: target!.runtimeHydrated
+        ? 'Skill removed and the managed runtime agent record remains available for future installs.'
+        : 'Skill removed successfully.',
+    })
   } catch (error) {
     console.error('Skill uninstall error:', error)
     return NextResponse.json({ error: 'Failed to uninstall skill' }, { status: 500 })

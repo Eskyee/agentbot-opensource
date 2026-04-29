@@ -83,7 +83,7 @@ export default function Post() {
  March 31 is locked. Agentbot goes live with three plans:
  </p>
  <ul className="list-disc list-inside text-zinc-300 mb-4">
- <li><strong>Underground</strong> — £29/mo — 1 agent, community access</li>
+ <li><strong>Factory</strong> — £29/mo — 1 agent, community access</li>
  <li><strong>Collective</strong> — £69/mo — 3 agents, priority support</li>
  <li><strong>Label</strong> — £199/mo — 10 agents, white-glove onboarding</li>
  </ul>

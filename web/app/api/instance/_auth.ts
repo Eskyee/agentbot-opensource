@@ -13,12 +13,22 @@
  */
 
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 
 export async function verifyInstanceOwnership(userId: string): Promise<boolean | 'no_session' | 'no_instance'> {
   try {
     const session = await getAuthSession()
     if (!session?.user?.id) return 'no_session'
+
+    if (isAdminEmail(session.user.email)) {
+      const targetUser = await prisma.user.findFirst({
+        where: { openclawInstanceId: userId },
+        select: { id: true },
+      })
+
+      return targetUser ? true : 'no_instance'
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },

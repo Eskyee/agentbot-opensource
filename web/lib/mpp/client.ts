@@ -60,7 +60,7 @@ export async function mppFetch(options: MppFetchOptions): Promise<MppFetchResult
     plugin,
     body,
     privateKey,
-    baseUrl = 'https://agentbot.raveculture.xyz',
+    baseUrl = 'https://agentbot.sh',
     stream = false,
     testnet = false,
   } = options;

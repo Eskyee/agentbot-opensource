@@ -15,18 +15,109 @@
  */
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
 
 /**
  * Gateway wrapper image — built from gateway/ directory in the agentbot repo.
  * Includes OpenClaw + Express wrapper with health checks, auto-restart, volume support.
  * The wrapper manages the gateway process — no start command needed.
  */
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/eskyee/agentbot-openclaw:latest'
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.26'
 
-export function getAgentEnvVars(userId: string, plan: string): Record<string, string> {
+function getRailwayTokenType(): RailwayTokenType {
+  const raw = process.env.RAILWAY_TOKEN_TYPE?.trim().toLowerCase()
+  if (raw === 'project' || raw === 'workspace' || raw === 'account' || raw === 'oauth') {
+    return raw
+  }
+  return 'account'
+}
+
+function getRailwayAuthHeaders(key: string): Record<string, string> {
+  return getRailwayTokenType() === 'project'
+    ? {
+        'Project-Access-Token': key,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      }
+    : {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      }
+}
+
+export function getAgentEnvVars(
+  userId: string,
+  plan: string,
+  gatewayToken?: string,
+): Record<string, string> {
+  const explicitOrigins = (process.env.OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+  const defaultOrigins = [
+    'https://agentbot.sh',
+    'https://www.agentbot.sh',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+  ]
+
+  const allowedOrigins = Array.from(new Set([...defaultOrigins, ...explicitOrigins]))
+  const token = gatewayToken || process.env.OPENCLAW_GATEWAY_TOKEN || ''
+  const configJson = JSON.stringify({
+    env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
+    gateway: {
+      mode: 'local',
+      bind: 'lan',
+      auth: { mode: 'token', token },
+      trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
+      controlUi: {
+        allowedOrigins,
+        dangerouslyDisableDeviceAuth: false,
+        dangerouslyAllowHostHeaderOriginFallback: false,
+      },
+      http: { endpoints: { chatCompletions: { enabled: true } } },
+    },
+    agents: {
+      defaults: {
+        model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
+        heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
+      },
+    },
+    channels: {
+      telegram: { enabled: false, dmPolicy: 'pairing' },
+      discord: { enabled: false, dmPolicy: 'pairing' },
+      whatsapp: { enabled: false, dmPolicy: 'pairing' },
+    },
+    cron: { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
+    session: {
+      scope: 'per-sender',
+      reset: { mode: 'daily', atHour: 4 },
+      maintenance: { mode: 'warn', pruneAfter: '30d', maxEntries: 500 },
+    },
+    tools: {
+      profile: 'coding',
+      exec: { backgroundMs: 10000, timeoutSec: 1800 },
+      web: { search: { enabled: true }, fetch: { enabled: true, maxChars: 50000 } },
+    },
+  })
+
   return {
-    OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
+    OPENCLAW_GATEWAY_TOKEN: token,
     OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',
+    OPENCLAW_GATEWAY_BIND:  'lan',
+    OPENCLAW_CONFIG_JSON:   configJson,
+    PORT:                   '18789',
     AGENTBOT_USER_ID:       userId,
     AGENTBOT_PLAN:          plan,
     AGENTBOT_API_URL:       process.env.BACKEND_API_URL        || '',
@@ -35,7 +126,6 @@ export function getAgentEnvVars(userId: string, plan: string): Record<string, st
     INTERNAL_API_KEY:       process.env.INTERNAL_API_KEY       || '',
     WALLET_ENCRYPTION_KEY:  process.env.WALLET_ENCRYPTION_KEY  || '',
     NODE_ENV:               'production',
-    // PORT is injected by Railway — the TCP proxy listens here and forwards to 18789
   }
 }
 
@@ -48,11 +138,7 @@ async function railwayGql<T = unknown>(
 
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
+    headers: getRailwayAuthHeaders(key),
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
   })
@@ -82,7 +168,8 @@ export interface ProvisionResult {
  */
 export async function provisionOnRailway(
   agentId: string,
-  plan: string = 'solo'
+  plan: string = 'solo',
+  gatewayToken?: string,
 ): Promise<ProvisionResult> {
   const projectId     = process.env.RAILWAY_PROJECT_ID?.trim()
   const environmentId = process.env.RAILWAY_ENVIRONMENT_ID?.trim()
@@ -110,7 +197,7 @@ export async function provisionOnRailway(
 
   // 1b. Set resource limits + health check (no start command — image has CMD)
   const planLimits: Record<string, { memoryLimitMb: number; cpuLimit: number }> = {
-    underground: { memoryLimitMb: 2048,  cpuLimit: 1 },
+    autonomous: { memoryLimitMb: 2048,  cpuLimit: 1 },
     solo:        { memoryLimitMb: 2048,  cpuLimit: 1 },
     collective:  { memoryLimitMb: 4096,  cpuLimit: 2 },
     label:       { memoryLimitMb: 8192,  cpuLimit: 4 },
@@ -155,7 +242,7 @@ export async function provisionOnRailway(
   }
 
   // 2. Inject env vars
-  const variables = getAgentEnvVars(agentId, plan)
+  const variables = getAgentEnvVars(agentId, plan, gatewayToken)
   await railwayGql(`
     mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
       variableCollectionUpsert(input: $input)

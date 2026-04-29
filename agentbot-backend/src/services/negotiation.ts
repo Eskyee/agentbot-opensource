@@ -43,50 +43,50 @@ export class NegotiationService {
   private static async finalizeContract(message: AgentMessage) {
     const { payload, from } = message;
 
-    // Verify that the sender is the original offer-maker for this booking.
-    // Prevents any arbitrary agent from accepting bookings they didn't originate.
-    const booking = await pool.query(
-      'SELECT talent_agent_id FROM bookings WHERE id = $1',
-      [payload.bookingId]
+    // Atomic: verify ownership AND update status in one statement.
+    // Eliminates the SELECT→UPDATE race where another request could
+    // sneak in between the two queries and corrupt booking state.
+    const result = await pool.query(
+      `UPDATE bookings
+       SET status = 'accepted', updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1
+         AND talent_agent_id = $2
+         AND status IN ('offered', 'countered')
+       RETURNING id`,
+      [payload.bookingId, String(from.agentId)]
     );
 
-    if (booking.rows.length === 0) {
-      throw new Error(`Booking ${payload.bookingId} not found`);
-    }
-
-    const ownerAgentId = String(booking.rows[0].talent_agent_id);
-    if (ownerAgentId !== String(from.agentId)) {
-      throw new Error(
-        `Agent ${from.agentId} is not authorized to accept booking ${payload.bookingId}`
+    if (result.rows.length === 0) {
+      // Distinguish: booking missing vs. wrong owner vs. wrong status
+      const check = await pool.query(
+        'SELECT talent_agent_id, status FROM bookings WHERE id = $1',
+        [payload.bookingId]
       );
+      if (check.rows.length === 0) {
+        throw new Error(`Booking ${payload.bookingId} not found`);
+      }
+      if (String(check.rows[0].talent_agent_id) !== String(from.agentId)) {
+        throw new Error(`Agent ${from.agentId} is not authorized to accept booking ${payload.bookingId}`);
+      }
+      throw new Error(`Booking ${payload.bookingId} is not in an acceptable state (status: ${check.rows[0].status})`);
     }
-
-    await pool.query(
-      "UPDATE bookings SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
-      [payload.bookingId]
-    );
   }
 
   private static async updateStatus(message: AgentMessage, bookingId: number, status: string) {
     const { from } = message;
 
-    // Verify ownership before any status change
-    const booking = await pool.query(
-      'SELECT talent_agent_id FROM bookings WHERE id = $1',
-      [bookingId]
+    // Atomic: verify ownership AND update in one statement.
+    const result = await pool.query(
+      'UPDATE bookings SET status = $1 WHERE id = $2 AND talent_agent_id = $3 RETURNING id',
+      [status, bookingId, String(from.agentId)]
     );
 
-    if (booking.rows.length === 0) {
-      throw new Error(`Booking ${bookingId} not found`);
+    if (result.rows.length === 0) {
+      const check = await pool.query('SELECT talent_agent_id FROM bookings WHERE id = $1', [bookingId]);
+      if (check.rows.length === 0) {
+        throw new Error(`Booking ${bookingId} not found`);
+      }
+      throw new Error(`Agent ${from.agentId} is not authorized to update booking ${bookingId}`);
     }
-
-    const ownerAgentId = String(booking.rows[0].talent_agent_id);
-    if (ownerAgentId !== String(from.agentId)) {
-      throw new Error(
-        `Agent ${from.agentId} is not authorized to update booking ${bookingId}`
-      );
-    }
-
-    await pool.query('UPDATE bookings SET status = $1 WHERE id = $2', [status, bookingId]);
   }
 }

@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import { redis } from './redis'
 
 export type AutoBlogTrack = 'Shipping' | 'Release' | 'Field Notes' | 'Build Log'
 
@@ -18,64 +18,55 @@ export interface AutoBlogPost {
 const INDEX_KEY = 'blog:auto:index'
 const POST_KEY_PREFIX = 'blog:auto:post:'
 const MAX_POSTS = 30
-
-function trimSecret(value: string | undefined) {
-  return value?.replace(/\s+/g, '').trim() || ''
-}
-
-function getRedis() {
-  const url = trimSecret(process.env.KV_REST_API_URL)
-  const token = trimSecret(process.env.KV_REST_API_TOKEN)
-
-  if (!url || !token) return null
-
-  return new Redis({ url, token })
-}
+const REDIS_TIMEOUT_MS = 2_000
 
 function sortPosts<T extends { isoDate: string }>(posts: T[]) {
   return [...posts].sort((a, b) => new Date(b.isoDate).getTime() - new Date(a.isoDate).getTime())
 }
 
+/**
+ * Lists automatic blog posts from the store.
+ */
 export async function listAutoBlogPosts(): Promise<AutoBlogPost[]> {
-  const redis = getRedis()
   if (!redis) return []
 
   try {
-    const timeoutMs = 800
     const posts = await Promise.race([
       redis.get<AutoBlogPost[]>(INDEX_KEY),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), timeoutMs)),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), REDIS_TIMEOUT_MS)),
     ])
-    if (!Array.isArray(posts)) return []
-    return sortPosts(posts)
+    return Array.isArray(posts) ? sortPosts(posts) : []
   } catch (error) {
-    console.error('[AutoBlog] list error:', error)
+    console.warn('[AutoBlog] list error:', error instanceof Error ? error.message : error)
     return []
   }
 }
 
+/**
+ * Gets a specific automatic blog post by slug.
+ */
 export async function getAutoBlogPost(slug: string): Promise<AutoBlogPost | null> {
-  const redis = getRedis()
   if (!redis) return null
 
   try {
-    const timeoutMs = 800
     const post = await Promise.race([
       redis.get<AutoBlogPost>(`${POST_KEY_PREFIX}${slug}`),
-      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), timeoutMs)),
+      new Promise<null>((_, reject) => setTimeout(() => reject(new Error('Redis timeout')), REDIS_TIMEOUT_MS)),
     ])
     return post || null
   } catch (error) {
-    console.error('[AutoBlog] get error:', error)
+    console.warn('[AutoBlog] get error:', error instanceof Error ? error.message : error)
     return null
   }
 }
 
 export async function upsertAutoBlogPost(post: AutoBlogPost): Promise<void> {
-  const redis = getRedis()
   if (!redis) throw new Error('KV is not configured')
 
-  const existing = await listAutoBlogPosts()
+  // We can't easily invalidate 'use cache' from inside the same process without tags,
+  // but for now, we just update Redis. Next.js will revalidate after cacheLife expires.
+  
+  const existing = await redis.get<AutoBlogPost[]>(INDEX_KEY) || []
   const filtered = existing.filter((entry) => entry.slug !== post.slug)
   const updated = sortPosts([post, ...filtered]).slice(0, MAX_POSTS)
 

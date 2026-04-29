@@ -72,18 +72,40 @@ export class AIProviderService {
   private static OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
   private static OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
+  // Vercel AI Gateway setup for mimo-v2-pro
+  private static VERCEL_AI_GATEWAY_KEY = process.env.VERCEL_AI_GATEWAY_KEY || 'vck_7Hq7rESMo6dHYXbYqRX3jJd3spWNzI2jMVsdLJAxtiGV1LWzGz11Tb8K';
+  private static VERCEL_AI_GATEWAY_URL = 'https://gateway.ai.vercel.com/v1';
+
   /**
    * Check which providers are available
    */
-  static async checkProviders(): Promise<{ openrouter: boolean }> {
-    return { openrouter: !!this.OPENROUTER_API_KEY };
+  static async checkProviders(): Promise<{ openrouter: boolean; vercel: boolean }> {
+    return { 
+      openrouter: !!this.OPENROUTER_API_KEY,
+      vercel: !!this.VERCEL_AI_GATEWAY_KEY 
+    };
   }
 
   /**
-   * Get all available models from OpenRouter
+   * Get all available models
    */
   static async getAllModels(): Promise<AvailableModel[]> {
-    return this.getOpenRouterModels();
+    const openrouterModels = await this.getOpenRouterModels();
+    
+    // Inject the Factory AI Master Model: mimo-v2-pro
+    const masterModel: AvailableModel = {
+      id: 'xiaomi/mimo-v2-pro',
+      name: 'MiMo V2 Pro (Factory Master)',
+      provider: 'vercel-gateway',
+      description: 'Ultra high-performance factory-grade model optimized for autonomous agent operations.',
+      tags: ['factory', 'master', 'autonomous', 'logic'],
+      inputCost: 0.01,
+      outputCost: 0.03,
+      contextWindow: 128000,
+      available: !!this.VERCEL_AI_GATEWAY_KEY,
+    };
+
+    return [masterModel, ...openrouterModels];
   }
 
   /**
@@ -231,7 +253,73 @@ export class AIProviderService {
       }
     }
 
+    if (modelId === 'xiaomi/mimo-v2-pro') {
+      return this.chatVercelGateway(messages, modelId, options, context);
+    }
+
     return this.chatOpenRouter(messages, modelId, options, context);
+  }
+
+  /**
+   * Chat with Vercel AI Gateway (mimo-v2-pro)
+   */
+  private static async chatVercelGateway(
+    messages: AIMessage[],
+    modelId: string,
+    options?: { temperature?: number; top_p?: number; max_tokens?: number },
+    context: UsageContext = {}
+  ): Promise<AIResponse> {
+    if (!this.VERCEL_AI_GATEWAY_KEY) {
+      throw new Error('Vercel AI Gateway key not configured');
+    }
+
+    const startMs = Date.now();
+    let success = false;
+
+    try {
+      const response = await fetch(`${this.VERCEL_AI_GATEWAY_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.VERCEL_AI_GATEWAY_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: modelId,
+          messages,
+          temperature: options?.temperature ?? 0.7,
+          max_tokens: options?.max_tokens,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Vercel AI Gateway chat failed: ${response.status}`);
+      }
+
+      const data = await response.json() as any;
+      success = true;
+      const latencyMs = Date.now() - startMs;
+
+      const inputTokens = data.usage?.prompt_tokens ?? 0;
+      const outputTokens = data.usage?.completion_tokens ?? 0;
+
+      this.logUsage(context, modelId, inputTokens, outputTokens, latencyMs, true);
+
+      return {
+        id: data.id || `vercel-${Date.now()}`,
+        model: modelId,
+        provider: 'groq', // mimicking groq-like response speed through gateway
+        message: {
+          role: 'assistant',
+          content: data.choices?.[0]?.message?.content || '',
+        },
+        usage: data.usage,
+        timestamp: new Date().toISOString(),
+      };
+    } finally {
+      if (!success) {
+        this.logUsage(context, modelId, 0, 0, Date.now() - startMs, false);
+      }
+    }
   }
 
   /**

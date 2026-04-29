@@ -46,7 +46,7 @@ async function getLiveDJs() {
 // Create a new Mux stream for a verified DJ
 async function createStream(djWallet, djName) {
   // Use agentbot API which handles RAVE verification and Mux stream creation
-  const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.raveculture.xyz';
+  const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh';
   
   const response = await fetch(apiUrl + "/api/basefm/streams", {
     method: "POST",

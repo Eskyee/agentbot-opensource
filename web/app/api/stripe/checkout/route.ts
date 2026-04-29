@@ -13,9 +13,12 @@ const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
 
 export async function GET(request: NextRequest) {
   const plan = (request.nextUrl.searchParams.get('plan') || '').toLowerCase()
-  const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
 
   const validPlans = ['solo', 'collective', 'label', 'network']
+  // Fix: use the incoming request origin if NEXT_PUBLIC_APP_URL is missing or inconsistent
+  // this prevents cross-domain cookie drops during redirects
+  const origin = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin
+
   if (!validPlans.includes(plan)) {
     return NextResponse.redirect(new URL(`/pricing?error=invalid_plan`, origin), 303)
   }
@@ -27,6 +30,7 @@ export async function GET(request: NextRequest) {
   // Admin bypass — skip Stripe, go straight to onboard
   const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
   if (userEmail && adminEmails.includes(userEmail.toLowerCase())) {
+    console.log(`[StripeCheckout] Admin bypass for ${userEmail}`);
     return NextResponse.redirect(new URL(`/onboard?plan=${plan}&paid=1&admin=1`, origin), 303)
   }
 
@@ -143,4 +147,3 @@ export async function GET(request: NextRequest) {
 }
 
 
-export const dynamic = 'force-dynamic';

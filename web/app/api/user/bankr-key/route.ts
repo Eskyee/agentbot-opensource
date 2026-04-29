@@ -3,7 +3,6 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { encryptToken, decryptToken } from '@/app/lib/token-encryption'
 
-export const dynamic = 'force-dynamic'
 
 const SETTING_KEY = 'bankr_api_key'
 

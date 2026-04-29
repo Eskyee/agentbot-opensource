@@ -12,7 +12,7 @@ const musicRoles = [
     name: 'Touring DJ',
     description: 'Live performance specialist. Manages setlists, venue logistics, and crowd engagement during shows.',
     skills: ['setlist-oracle', 'track-archaeologist', 'visual-synthesizer', 'event-ticketing', 'booking-settlement'],
-    color: 'from-blue-600 to-blue-400'
+    color: 'from-orange-600 to-orange-400'
   },
   {
     id: 'producer',
@@ -20,7 +20,7 @@ const musicRoles = [
     name: 'Bedroom Producer',
     description: 'Studio specialist. Handles creation workflow, project management, and demo coordination.',
     skills: ['web-search', 'file-handler', 'code-runner', 'demo-submitter', 'visual-synthesizer'],
-    color: 'from-blue-600 to-blue-400'
+    color: 'from-orange-600 to-orange-400'
   },
   {
     id: 'booking-agent',
@@ -153,7 +153,7 @@ export default function MusicWizardPage() {
       <div className="min-h-screen bg-black text-white p-8 flex items-center justify-center">
         <div className="max-w-xl w-full">
           <Link href="/login">
-            <button className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 px-6 rounded-lg font-semibold">
+            <button className="w-full bg-orange-600 hover:bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold">
               Sign In to Start →
             </button>
           </Link>
@@ -210,7 +210,7 @@ export default function MusicWizardPage() {
                   }}
                   className={`p-4 rounded-xl border-2 transition-all ${
                     wizardData.selectedRole === role.id
-                      ? 'border-blue-500 bg-blue-500/10 border-blue-500/50'
+                      ? 'border-orange-500 bg-orange-500/10 border-orange-500/50'
                       : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                   }`}
                 >
@@ -259,7 +259,7 @@ export default function MusicWizardPage() {
                   value={wizardData.artistName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, artistName: e.target.value }))}
                   placeholder="e.g. Bassline Beats"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
                 />
               </div>
 
@@ -272,7 +272,7 @@ export default function MusicWizardPage() {
                   value={wizardData.agentName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, agentName: e.target.value }))}
                   placeholder={`@${selectedRole?.name.toLowerCase().replace(/\s+/g, '')}`}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
                 />
               </div>
 
@@ -284,7 +284,7 @@ export default function MusicWizardPage() {
                   multiple
                   value={wizardData.genres}
                   onChange={(e) => setWizardData(prev => ({ ...prev, genres: Array.from(e.target.selectedOptions).map(o => o.value) }))}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
                 >
                   {genres.map((genre) => (
                     <option key={genre} value={genre}>
@@ -302,7 +302,7 @@ export default function MusicWizardPage() {
                   value={wizardData.musicStyle}
                   onChange={(e) => setWizardData(prev => ({ ...prev, musicStyle: e.target.value }))}
                   placeholder="e.g., Deep House with melodic basslines and rhythmic progressive elements..."
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 min-h-[100px]"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 min-h-[100px]"
                 />
               </div>
             </div>
@@ -331,7 +331,7 @@ export default function MusicWizardPage() {
                   }}
                   className={`w-full p-3 rounded-lg border mb-2 transition-all ${
                     wizardData.goals.includes(goal)
-                      ? 'border-blue-500 bg-blue-500/10 border-blue-500/50'
+                      ? 'border-orange-500 bg-orange-500/10 border-orange-500/50'
                       : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                   }`}
                 >
@@ -374,7 +374,7 @@ export default function MusicWizardPage() {
                   <input
                     type="checkbox"
                     id="telegram"
-                    className="w-6 h-6 accent-blue-500"
+                    className="w-6 h-6 accent-orange-500"
                     checked={wizardData.channels.telegram}
                     onChange={(e) => {
                       setWizardData(prev => ({
@@ -399,7 +399,7 @@ export default function MusicWizardPage() {
                   <input
                     type="checkbox"
                     id="discord"
-                    className="w-6 h-6 accent-blue-500"
+                    className="w-6 h-6 accent-orange-500"
                     checked={wizardData.channels.discord}
                     onChange={(e) => {
                       setWizardData(prev => ({
@@ -424,7 +424,7 @@ export default function MusicWizardPage() {
                   <input
                     type="checkbox"
                     id="whatsapp"
-                    className="w-6 h-6 accent-blue-500"
+                    className="w-6 h-6 accent-orange-500"
                     checked={wizardData.channels.whatsapp}
                     onChange={(e) => {
                       setWizardData(prev => ({
@@ -505,7 +505,7 @@ export default function MusicWizardPage() {
                 {wizardData.channels.discord && (
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">Discord</div>
-                    <div className="text-blue-400">✓ Enabled</div>
+                    <div className="text-orange-400">✓ Enabled</div>
                   </div>
                 )}
 
@@ -585,7 +585,7 @@ export default function MusicWizardPage() {
 
         {/* Back to regular signup option */}
         <div className="text-left mt-8">
-          <Link href="/signup" className="text-sm text-blue-400 hover:text-blue-300">
+          <Link href="/signup" className="text-sm text-orange-400 hover:text-orange-400">
             ← Skip to standard signup process
           </Link>
         </div>

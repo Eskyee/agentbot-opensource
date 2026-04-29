@@ -10,7 +10,7 @@ This is the current production incident runbook for Agentbot. Use this file befo
 - Vercel project: `raveculture-projects/agentbot`
 - Vercel root directory: `web`
 - Railway backend health: `https://agentbot-backend-production.up.railway.app/health`
-- Borg dashboard: `https://borg-0-production.up.railway.app/dashboard`
+- Borg dashboard: `https://borg-0-production-7139.up.railway.app/dashboard`
 
 ## Severity Levels
 

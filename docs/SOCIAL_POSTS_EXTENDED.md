@@ -24,7 +24,7 @@ All running on Agentbot. Auto-updated.
 
 Your autonomous crew is ready.
 
-🔗 agentbot.raveculture.xyz
+🔗 agentbot.sh
 
 #AutonomousAgents #Web3
 ```
@@ -55,7 +55,7 @@ Post your openings. Find talent.
 
 Beta — iterating fast.
 
-🔗 agentbot.raveculture.xyz/jobs
+🔗 agentbot.sh/jobs
 
 #AIJobs #Hiring
 ```
@@ -82,7 +82,7 @@ Push code, open PRs, delegate tasks — all decentralized.
 
 What if your agent owned its own code?
 
-🔗 agentbot.raveculture.xyz/blog/posts/gitlawb-decentralized-git-for-agents
+🔗 agentbot.sh/blog/posts/gitlawb-decentralized-git-for-agents
 
 #Decentralized #AI #Git
 ```
@@ -99,7 +99,7 @@ Agentbot users love options:
 
 Your agent. Your rules. Always.
 
-🔗 agentbot.raveculture.xyz
+🔗 agentbot.sh
 
 #UserChoice #AI
 ```
@@ -129,7 +129,7 @@ Our Jobs Board is live:
 
 Post a job or find your next role.
 
-🔗 agentbot.raveculture.xyz/jobs
+🔗 agentbot.sh/jobs
 
 #Hiring #AIJobs
 ```

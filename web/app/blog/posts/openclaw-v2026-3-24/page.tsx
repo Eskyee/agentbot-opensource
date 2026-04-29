@@ -8,7 +8,7 @@ export const metadata: Metadata = {
  openGraph: {
  title: 'Agentbot Now Runs OpenClaw v2026.3.24',
  description: 'Gateway OpenAI compatibility, security fix, CLI container support, channel isolation.',
- url: 'https://agentbot.raveculture.xyz/blog/posts/openclaw-v2026-3-24',
+ url: 'https://agentbot.sh/blog/posts/openclaw-v2026-3-24',
  },
 }
 
@@ -131,19 +131,19 @@ export default function OpenClawReleasePost() {
  
  <ul className="space-y-2 text-zinc-300 text-sm mb-8">
  <li className="flex items-start gap-2">
- <span className="text-blue-400">→</span>
+ <span className="text-orange-400">→</span>
  <span><strong>Better API compatibility</strong> — more tools and clients work with Agentbot out of the box</span>
  </li>
  <li className="flex items-start gap-2">
- <span className="text-blue-400">→</span>
+ <span className="text-orange-400">→</span>
  <span><strong>Stronger security</strong> — upstream fix for media dispatch bypass</span>
  </li>
  <li className="flex items-start gap-2">
- <span className="text-blue-400">→</span>
+ <span className="text-orange-400">→</span>
  <span><strong>Easier debugging</strong> — <code>--container</code> flag for Docker agent inspection</span>
  </li>
  <li className="flex items-start gap-2">
- <span className="text-blue-400">→</span>
+ <span className="text-orange-400">→</span>
  <span><strong>More reliable</strong> — channel isolation and restart recovery</span>
  </li>
  </ul>

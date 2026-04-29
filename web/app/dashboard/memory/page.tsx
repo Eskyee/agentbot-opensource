@@ -34,7 +34,7 @@ const KIND_META: Record<MemoryKind, {
   color: string
   status: 'active' | 'idle' | 'error' | 'offline'
 }> = {
-  fact: { label: 'Fact', icon: FileText, color: 'text-blue-400', status: 'active' },
+  fact: { label: 'Fact', icon: FileText, color: 'text-orange-400', status: 'active' },
   decision: { label: 'Decision', icon: Lightbulb, color: 'text-yellow-400', status: 'idle' },
   note: { label: 'Note', icon: FileText, color: 'text-zinc-400', status: 'offline' },
   alert: { label: 'Alert', icon: AlertCircle, color: 'text-red-400', status: 'error' },
@@ -93,38 +93,41 @@ async function fetchSystemMemories(): Promise<MemoryEntry[]> {
   const checks = [
     { name: 'Agentbot API', url: `${AGENTBOT_BACKEND_URL}/health`, icon: Server },
     { name: 'x402 Gateway', url: `${X402_GATEWAY_URL}/health`, icon: Zap },
-    { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/health`, icon: Cpu },
-    { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/health`, icon: Shield },
+    { name: 'Tempo Soul', url: `${SOUL_SERVICE_URL}/soul/status`, fallbackUrls: [`${SOUL_SERVICE_URL}/health`, `${SOUL_SERVICE_URL}/readyz`], icon: Cpu },
+    { name: 'Borg-0', url: `${SOUL_SERVICE_URL}/soul/status`, fallbackUrls: [`${SOUL_SERVICE_URL}/health`, `${SOUL_SERVICE_URL}/readyz`], icon: Shield },
   ]
 
   for (const check of checks) {
-    try {
-      const res = await fetch(check.url, { signal: AbortSignal.timeout(5000) })
-      if (res.ok) {
-        const body = await res.json()
-        entries.push({
-          id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
-          kind: 'fact',
-          content: `${check.name} healthy — ${body.version ? `v${body.version}` : body.status || 'ok'}${body.soul_status ? `, soul: ${body.soul_status}` : ''}${body.provisioning ? `, provisioning: ${body.provisioning}` : ''}`,
-          tags: ['infra', check.name.toLowerCase().split(' ')[0]],
-          createdAt: now,
-          source: 'system',
-        })
-      } else {
-        entries.push({
-          id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
-          kind: 'alert',
-          content: `${check.name} degraded — HTTP ${res.status}`,
-          tags: ['infra', 'alert'],
-          createdAt: now,
-          source: 'system',
-        })
+    let successBody: any = null
+    let success = false
+
+    for (const candidate of [check.url, ...(check.fallbackUrls || [])]) {
+      try {
+        const res = await fetch(candidate, { signal: AbortSignal.timeout(6000) })
+        if (!res.ok) continue
+        successBody = await res.json().catch(() => ({}))
+        success = true
+        break
+      } catch {
+        // try next endpoint
       }
-    } catch {
+    }
+
+    if (success) {
+      const body = successBody || {}
+      entries.push({
+        id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
+        kind: 'fact',
+        content: `${check.name} healthy — ${body.version ? `v${body.version}` : body.status || (body.active ? 'active' : body.ready ? 'ready' : 'ok')}${body.soul_status ? `, soul: ${body.soul_status}` : ''}${body.provisioning ? `, provisioning: ${body.provisioning}` : ''}`,
+        tags: ['infra', check.name.toLowerCase().split(' ')[0]],
+        createdAt: now,
+        source: 'system',
+      })
+    } else {
       entries.push({
         id: `sys-${check.name.toLowerCase().replace(/\s/g, '-')}`,
         kind: 'alert',
-        content: `${check.name} unreachable — connection timeout`,
+        content: `${check.name} unreachable — fallback probes exhausted`,
         tags: ['infra', 'alert'],
         createdAt: now,
         source: 'system',
@@ -198,7 +201,7 @@ export default function MemoryPage() {
     <DashboardShell>
       <DashboardHeader
         title="Memory Log"
-        icon={<Brain className="h-5 w-5 text-blue-400" />}
+        icon={<Brain className="h-5 w-5 text-orange-400" />}
         count={entries.length}
         action={
           <div className="flex items-center gap-2">
@@ -322,7 +325,7 @@ export default function MemoryPage() {
         {/* Loading */}
         {loading && entries.length === 0 ? (
           <div className="flex flex-col py-20 gap-4 items-center">
-            <Brain className="h-6 w-6 text-blue-400 animate-pulse" />
+            <Brain className="h-6 w-6 text-orange-400 animate-pulse" />
             <p className="text-zinc-600 text-xs uppercase tracking-widest">Loading memory…</p>
           </div>
         ) : (

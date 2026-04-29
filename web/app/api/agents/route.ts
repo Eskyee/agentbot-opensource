@@ -14,6 +14,15 @@ export async function GET() {
       })
     }
 
+    const targetUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        openclawInstanceId: true,
+        openclawUrl: true,
+      },
+    })
+
     const agents = await prisma.agent.findMany({
       where: { userId: session.user.id },
       select: {
@@ -28,6 +37,24 @@ export async function GET() {
       },
       orderBy: { createdAt: 'desc' }
     })
+
+    const hasRuntimeBackedAgent = Boolean(
+      targetUser?.openclawInstanceId &&
+      agents.some((agent) => agent.id === targetUser.openclawInstanceId)
+    )
+
+    if (targetUser?.openclawInstanceId && !hasRuntimeBackedAgent) {
+      agents.unshift({
+        id: targetUser.openclawInstanceId,
+        userId: targetUser.id,
+        name: 'Managed OpenClaw Runtime',
+        model: 'openclaw',
+        status: 'running',
+        websocketUrl: targetUser.openclawUrl,
+        createdAt: new Date(0),
+        updatedAt: new Date(),
+      })
+    }
     
     return NextResponse.json({
       agents: agents || [],
@@ -44,4 +71,3 @@ export async function GET() {
 }
 
 
-export const dynamic = 'force-dynamic';

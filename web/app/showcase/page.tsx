@@ -1,23 +1,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
+import { Activity } from 'lucide-react'
 import { buildAppUrl } from '@/app/lib/app-url'
 
 export const metadata: Metadata = {
   title: 'Agent Showcase — Agentbot',
-  description: 'Meet the AI agents built on Agentbot. Music, culture, and creative industry agents running on OpenClaw.',
+  description: 'Meet the AI agents built on Agentbot. Factory-grade autonomous agents running on OpenClaw.',
   openGraph: {
     title: 'Agent Showcase — Agentbot',
-    description: 'AI agents for music, culture, and the creative industry. Built on OpenClaw, managed by Agentbot.',
+    description: 'Autonomous AI agents for the future of work. Built on OpenClaw, managed by Agentbot.',
     url: buildAppUrl('/showcase'),
   },
 }
 
 const PERSONALITY_LABELS: Record<string, { label: string; color: string }> = {
-  basement: { label: 'Underground', color: 'text-blue-400 border-blue-900' },
-  selector: { label: 'Selector', color: 'text-green-400 border-green-900' },
-  ar:       { label: 'A&R', color: 'text-purple-400 border-purple-900' },
-  road:     { label: 'Road', color: 'text-yellow-400 border-yellow-900' },
-  label:    { label: 'Label Ops', color: 'text-orange-400 border-orange-900' },
+  factory:  { label: 'Factory AI',   color: 'text-orange-400 border-orange-900' },
+  selector: { label: 'Selector',     color: 'text-green-400 border-green-900' },
+  ar:       { label: 'A&R',          color: 'text-purple-400 border-purple-900' },
+  road:     { label: 'Road',         color: 'text-yellow-400 border-yellow-900' },
+  enterprise: { label: 'Enterprise', color: 'text-orange-400 border-orange-900' },
 }
 
 interface ShowcaseAgent {
@@ -27,6 +29,7 @@ interface ShowcaseAgent {
   personalityType: string
   expertise: string
   memberSince: string
+  imageUrl?: string | null
 }
 
 async function getAgents(): Promise<{ agents: ShowcaseAgent[]; failed: boolean }> {
@@ -44,7 +47,24 @@ async function getAgents(): Promise<{ agents: ShowcaseAgent[]; failed: boolean }
 }
 
 export default async function ShowcasePage() {
-  const { agents, failed } = await getAgents()
+  const { agents: dbAgents, failed } = await getAgents()
+  
+  // 1 AGENT ONLINE: Esky OpenClaw Agent (The Master Fact)
+  const eskyAgent: ShowcaseAgent = {
+    id: 'esky-master',
+    name: 'ESKY OPENCLAW AGENT',
+    description: 'Factory collective building the future of rave culture. No gatekeepers. No middlemen. Direct to the dancefloor.',
+    personalityType: 'factory',
+    expertise: 'Rave Culture, Factory Operations, Autonomy',
+    memberSince: '2026-04-23T00:00:00Z',
+    imageUrl: 'https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi'
+  };
+
+  // Deduplicate: remove any agents from DB that match the master name (case insensitive)
+  const agents = [
+    eskyAgent, 
+    ...dbAgents.filter(a => a.name.toLowerCase().trim() !== eskyAgent.name.toLowerCase().trim())
+  ];
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
@@ -124,14 +144,33 @@ export default async function ShowcasePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
               {agents.map((agent) => {
-                const personality = PERSONALITY_LABELS[agent.personalityType] ?? PERSONALITY_LABELS.basement
+                const personality = PERSONALITY_LABELS[agent.personalityType] ?? PERSONALITY_LABELS.factory
                 const year = new Date(agent.memberSince).getFullYear()
 
                 return (
                   <div
                     key={agent.id}
-                    className="bg-black p-6 flex flex-col gap-4 hover:bg-zinc-950 transition-colors"
+                    className="bg-black p-6 flex flex-col gap-4 hover:bg-zinc-950 transition-colors group"
                   >
+                    {/* Agent Image / Gap Fix */}
+                    <div className="aspect-video w-full bg-zinc-900 border border-zinc-800 overflow-hidden relative">
+                      {agent.imageUrl ? (
+                        <Image 
+                          src={agent.imageUrl} 
+                          alt={agent.name} 
+                          fill 
+                          className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                          <Activity className="w-8 h-8 text-orange-400" />
+                        </div>
+                      )}
+                      <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 border border-zinc-800 text-[8px] text-zinc-500 uppercase tracking-tighter">
+                        v2026.4.23
+                      </div>
+                    </div>
+
                     {/* Name + type */}
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -150,13 +189,13 @@ export default async function ShowcasePage() {
 
                     {/* Description or expertise */}
                     <p className="text-xs text-zinc-500 leading-relaxed line-clamp-3">
-                      {agent.description || agent.expertise || 'Music & culture AI agent running on OpenClaw.'}
+                      {agent.description || agent.expertise || 'Factory-grade AI agent running on OpenClaw.'}
                     </p>
 
                     {/* Expertise tags */}
                     {agent.expertise && (
                       <div className="flex flex-wrap gap-1 mt-auto">
-                        {agent.expertise.split(',').slice(0, 3).map((tag) => (
+                        {String(agent.expertise).split(',').slice(0, 3).map((tag) => (
                           <span
                             key={tag}
                             className="text-[9px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-2 py-0.5"

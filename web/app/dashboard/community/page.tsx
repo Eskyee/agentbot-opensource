@@ -8,7 +8,6 @@ import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 function DetailCard({ label, value, detail }: { label: string; value: string; detail?: string }) {
   return (
@@ -44,7 +43,7 @@ export default async function CommunityDashboardPage() {
       <DashboardHeader
         title="Community Rewards"
         subtitle="Holder status, claim access, and product utility for the Agentbot community token."
-        icon={<Coins className="h-5 w-5 text-blue-400" />}
+        icon={<Coins className="h-5 w-5 text-orange-400" />}
       />
       <DashboardContent className="max-w-5xl mx-auto space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

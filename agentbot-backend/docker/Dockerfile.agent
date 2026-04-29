@@ -1,5 +1,5 @@
 # Agentbot - OpenClaw Agent Container (Official Image)
-FROM ghcr.io/openclaw/openclaw:2026.4.21
+FROM ghcr.io/openclaw/openclaw:2026.4.26
 
 # Performance tuning (from OpenClaw docs)
 ENV NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
@@ -8,7 +8,10 @@ ENV OPENCLAW_NO_RESPAWN=1
 # Copy custom entrypoint
 COPY entrypoint.sh /entrypoint.sh
 USER root
-RUN chmod 755 /entrypoint.sh && mkdir -p /var/tmp/openclaw-compile-cache && chown node:node /var/tmp/openclaw-compile-cache
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/* \
+  && chmod 755 /entrypoint.sh \
+  && mkdir -p /var/tmp/openclaw-compile-cache \
+  && chown node:node /var/tmp/openclaw-compile-cache
 USER node
 
 # Health check — use Node.js (curl not in official image)

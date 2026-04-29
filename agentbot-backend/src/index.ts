@@ -4,7 +4,6 @@ import inviteRouter from './invite';
 import undergroundRouter from './underground';
 import missionControlRouter from './mission-control';
 import aiRouter from './routes/ai';
-import renderMcpRouter from './routes/render-mcp';
 import metricsRouter from './routes/metrics';
 import provisionRouter from './routes/provision';
 import teamProvisionRouter from './routes/team-provision';
@@ -28,6 +27,8 @@ import rateLimit from 'express-rate-limit';
 import { Pool } from 'pg';
 import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw-version';
 import { buildHealthSummary } from './lib/health-summary';
+import { signatureGuard } from './middleware/signature';
+import { snapshotAgentState } from './services/gitlawb';
 
 dotenv.config();
 
@@ -73,6 +74,9 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '1mb' }));
 
+// Identity is a Fact: Use cryptographic signatures when provided
+app.use(signatureGuard);
+
 // Structured request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
@@ -102,14 +106,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.raveculture.xyz,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',').map(o => o.trim()).filter(Boolean);
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.sh,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin only from localhost (server-to-server)
+    // Reject null-origin requests in production (file://, Electron-style attacks)
+    // Only permit null origin in non-production for local dev convenience
     if (!origin) {
-      // In production, null origin means server-to-server from localhost
-      // Block null origin from remote clients (file:// protocol attacks)
-      return callback(null, true); // Keep permissive for server-to-server
+      if (process.env.NODE_ENV !== 'production') return callback(null, true);
+      return callback(new Error('Null origin not permitted'));
     }
     if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
@@ -144,15 +148,12 @@ app.use('/api/', generalLimiter);
 const PORT = process.env.PORT || 3001;
 const RUN_MODE = (process.env.AGENTBOT_RUN_MODE || 'all').toLowerCase();
 
-// API key — refuse to start in production without it
+// API key — refuse to start without it
 if (!process.env.INTERNAL_API_KEY) {
-  if (process.env.NODE_ENV === 'production') {
-    console.error('FATAL: INTERNAL_API_KEY must be set in production. Refusing to start.');
-    process.exit(1);
-  }
-  console.warn('WARNING: INTERNAL_API_KEY not set — using dev fallback. Do NOT deploy to production.');
+  console.error('FATAL: INTERNAL_API_KEY must be set. Refusing to start.');
+  process.exit(1);
 }
-const API_KEY = process.env.INTERNAL_API_KEY || 'dev-api-key-build-only';
+const API_KEY = process.env.INTERNAL_API_KEY;
 
 const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
@@ -386,6 +387,18 @@ console.log(c?.meta?.lastTouchedVersion||'');
   }
 };
 
+const runOpenClawPostUpdateChecks = async (containerName: string): Promise<{ doctor: string; gatewayRestart: string; health: string }> => {
+  const runOpenClaw = async (args: string[]) => {
+    const { stdout, stderr } = await runCommand('docker', ['exec', containerName, 'openclaw', ...args]);
+    return stdout || stderr || 'ok';
+  };
+
+  const doctor = await runOpenClaw(['doctor']);
+  const gatewayRestart = await runOpenClaw(['gateway', 'restart']);
+  const health = await runOpenClaw(['health']);
+  return { doctor, gatewayRestart, health };
+};
+
 const ensureDataDirs = async (): Promise<void> => {
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.mkdir(path.join(DATA_DIR, 'instances'), { recursive: true });
@@ -498,6 +511,8 @@ const readAgentMetadata = async (agentId: string): Promise<AgentMetadata | null>
 
 const writeAgentMetadata = async (agent: AgentMetadata): Promise<void> => {
   await fs.writeFile(agentFilePath(agent.agentId), JSON.stringify(agent, null, 2));
+  // Identity is a Fact: Snapshot the new state to gitlawb
+  await snapshotAgentState(agent.agentId, agent);
 };
 
 const containerStatus = async (containerName: string): Promise<{ status: string; startedAt?: string } | null> => {
@@ -629,6 +644,15 @@ const createOpenClawConfig = (
       },
     },
     channels,
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     gateway: {
       mode: 'local',
       port: 18789,
@@ -706,6 +730,12 @@ const createOpenClawConfig = (
 
 // Auth middleware — timing-safe to prevent key-enumeration attacks
 const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  // Identity is a Fact: If signatureGuard already verified the request, 
+  // we proceed directly.
+  if (req.userId && req.userRole === 'agent') {
+    return next();
+  }
+
   const auth = req.headers.authorization;
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized' });
@@ -724,7 +754,6 @@ app.use('/api/invite', inviteRouter);
 app.use('/api/underground', undergroundRouter);
 app.use('/api/mission-control', missionControlRouter);
 app.use('/api/ai', authenticate, aiChatLimiter, aiRouter);
-app.use('/api/render-mcp', authenticate, renderMcpRouter);
 app.use('/api/provision', authenticate, provisionRouter);
 app.use('/api/provision/team', authenticate, teamProvisionRouter);
 app.use('/api/metrics', authenticate, metricsRouter);
@@ -1008,18 +1037,18 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
   }
 }
 
-async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number }> {
+async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number; skipped: number }> {
   // Check Docker availability first
   try {
     await runCommand('docker', ['version', '--format', '{{.Server.Version}}']);
   } catch (err: any) {
     console.warn('[Auto-Update] Docker not available — skipping container updates');
-    return { success: 0, failed: 0 };
+    return { success: 0, failed: 0, skipped: 0 };
   }
 
   const portsFileContent = await fs.readFile(portsFilePath(), 'utf8').catch(() => '{}');
   const ports = JSON.parse(portsFileContent) as Record<string, number>;
-  const results = { success: 0, failed: 0 };
+  const results = { success: 0, failed: 0, skipped: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
   const agentIds = Object.keys(ports);
 
@@ -1034,7 +1063,7 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
     await runCommand('docker', ['pull', newImage]);
   } catch (err: any) {
     console.error('[Auto-Update] Failed to pull image:', err.message);
-    return { success: 0, failed: 0 };
+    return { success: 0, failed: 0, skipped: 0 };
   }
 
   // Update in parallel batches of 5 so we don't overwhelm the host
@@ -1044,6 +1073,11 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
     const batchResults = await Promise.allSettled(batch.map(async (agentId) => {
       const containerName = getContainerName(agentId);
       console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
+      const inspect = await getContainerInspect(containerName);
+      if (inspect.Config.Image === newImage) {
+        console.log(`[Auto-Update] ${agentId} already on ${newVersion}; skipping`);
+        return 'skipped';
+      }
 
       // MED-04 FIX: Read agent metadata so we can restore plan-specific resource
       // limits when the container is recreated. Without this, every container
@@ -1065,11 +1099,16 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
         '-p', `${port}:18789`,
         newImage,
       ]);
+      await runOpenClawPostUpdateChecks(containerName);
     }));
 
     for (const result of batchResults) {
       if (result.status === 'fulfilled') {
-        results.success++;
+        if (result.value === 'skipped') {
+          results.skipped++;
+        } else {
+          results.success++;
+        }
       } else {
         console.error(`[Auto-Update] Batch failure:`, result.reason);
         results.failed++;
@@ -1086,14 +1125,11 @@ function startAutoUpdater() {
   const checkAndUpdate = async () => {
     console.log('[Auto-Update] Checking for OpenClaw updates...');
     const latestVersion = await checkForOpenClawUpdate();
+    const targetVersion = latestVersion || OPENCLAW_RUNTIME_VERSION;
     
-    if (latestVersion) {
-      console.log(`[Auto-Update] Updating all containers to v${latestVersion}...`);
-      const results = await updateAllContainers(latestVersion);
-      console.log(`[Auto-Update] Update complete: ${results.success} succeeded, ${results.failed} failed`);
-    } else {
-      console.log('[Auto-Update] Already running latest version');
-    }
+    console.log(`[Auto-Update] Reconciling all containers to v${targetVersion}...`);
+    const results = await updateAllContainers(targetVersion);
+    console.log(`[Auto-Update] Update complete: ${results.success} updated, ${results.skipped} already current, ${results.failed} failed`);
   };
   
   const [hour, minute] = (process.env.AUTO_UPDATE_TIME || '03:00').split(':').map(Number);
@@ -1171,6 +1207,13 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
 // /api/agents, and /api/openclaw are already mounted above with Bearer token
 // authentication. Do NOT re-mount them here without auth.
 
+// Global error handler — must be registered after all routes.
+// Prevents Express from leaking stack traces on unhandled route errors.
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
+  console.error('[Unhandled Error]', err.message, err.stack);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 // Initialize database schema on startup.
 // In production, a DB failure is fatal — don't serve traffic with a broken schema.
 initDatabase().then(() => {
@@ -1187,27 +1230,20 @@ initDatabase().then(() => {
   }
 });
 
-// Check Docker availability at startup (non-fatal — container provisioning degrades gracefully)
+// Check Railway availability at startup (non-fatal — container provisioning degrades gracefully)
 const checkProvisioning = async () => {
-  // Check Render API availability (replaces Docker check)
-  const apiKey = process.env.RENDER_API_KEY;
-  if (!apiKey) {
-    console.warn('[Provisioning] RENDER_API_KEY not set — provisioning disabled');
-    return false;
-  }
+  // Use container manager's readiness check (Railway GraphQL)
+  const { isDockerReady } = require('./lib/container-manager').default;
   try {
-    const res = await fetch('https://api.render.com/v1/services?limit=1', {
-      headers: { 'Authorization': `Bearer ${apiKey}` },
-      signal: AbortSignal.timeout(5000),
-    });
-    if (res.ok) {
-      console.log('[Provisioning] Render API available — container provisioning enabled');
+    const ready = await isDockerReady();
+    if (ready) {
+      console.log('[Provisioning] Railway API available — agent provisioning enabled');
       return true;
     }
-    console.warn(`[Provisioning] Render API returned ${res.status} — provisioning disabled`);
+    console.warn('[Provisioning] Railway API unreachable — provisioning disabled');
     return false;
   } catch (err: any) {
-    console.warn('[Provisioning] Render API unreachable — provisioning disabled. Error:', err.code || err.message);
+    console.warn('[Provisioning] Railway check failed:', err.message);
     return false;
   }
 };
@@ -1259,7 +1295,7 @@ export function startServer() {
   server.listen(PORT, () => {
     console.log(`🦞 Agentbot API server running on port ${PORT} (mode=${RUN_MODE})`);
     console.log(`Health check: http://localhost:${PORT}/health`);
-    console.log('Routes: /health, /api/metrics/*, /api/render-mcp/*, /api/ai/*, /api/agents/*, /api/deployments');
+    console.log('Routes: /health, /api/metrics/*, /api/ai/*, /api/agents/*, /api/deployments');
     console.log('OpenClaw proxy: /api/openclaw/proxy/:agentId/*');
 
     if (process.env.NODE_ENV === 'production' && RUN_MODE !== 'worker') {

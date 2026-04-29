@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { scanSkillMarketplaceInput } from '@/app/lib/skillMarketplaceSafety'
 
 const MAX_NAME_LENGTH = 80
 const MAX_DESCRIPTION_LENGTH = 600
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
     const rawCategory = sanitizeInput(body?.category, MAX_CATEGORY_LENGTH)
     const category = rawCategory || 'custom'
     const code = sanitizeInput(body?.code, MAX_CODE_LENGTH)
+    const sourceUrl = sanitizeInput(body?.sourceUrl, 300)
 
     if (!name || !description) {
       return NextResponse.json(
@@ -45,6 +47,21 @@ export async function POST(request: Request) {
       )
     }
 
+    const scan = scanSkillMarketplaceInput({
+      name,
+      description,
+      code,
+      author: session.user.name || session.user.email || 'Community',
+      sourceUrl,
+    })
+
+    if (!scan.installAllowed) {
+      return NextResponse.json(
+        { error: 'Skill blocked by marketplace safety checks', scan },
+        { status: 400 }
+      )
+    }
+
     const skill = await prisma.skill.create({
       data: {
         name,
@@ -58,7 +75,7 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json({ success: true, skill })
+    return NextResponse.json({ success: true, skill, scan })
   } catch (error) {
     console.error('Skill creation error:', error)
     return NextResponse.json(

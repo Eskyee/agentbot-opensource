@@ -99,3 +99,4 @@ agentbot-backend/.env.local
 # Local standalone repos
 btcpay-configurator/
 keys/
+.claude/scheduled_tasks.lock

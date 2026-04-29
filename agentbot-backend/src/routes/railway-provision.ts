@@ -17,6 +17,7 @@ import { authenticate } from '../middleware/auth'
 import * as crypto from 'crypto'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
 const OPENCLAW_HOME_DIR = '/root/.openclaw'
 const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`
 const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`
@@ -58,6 +59,15 @@ function buildOpenClawConfig(): string {
       whatsapp: { enabled: false, dmPolicy: 'pairing' },
     },
     cron:    { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     session: {
       scope: 'per-sender',
       reset: { mode: 'daily', atHour: 4 },
@@ -99,14 +109,23 @@ async function railwayGql<T = unknown>(
 ): Promise<T> {
   const key = process.env.RAILWAY_API_KEY
   if (!key) throw new Error('RAILWAY_API_KEY not configured')
+  const tokenType = ((process.env.RAILWAY_TOKEN_TYPE || 'account').trim().toLowerCase()) as RailwayTokenType
+  const headers =
+    tokenType === 'project'
+      ? {
+          'Project-Access-Token': key,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      : {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
 
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
   })
@@ -142,8 +161,8 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
 
   // 1. Create service — idempotent: if it already exists, look up its ID
   let serviceId: string
-  // Public official openclaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
-  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:latest'
+  // Public official OpenClaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
+  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.26'
 
   try {
     const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
@@ -176,7 +195,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
   // Without this openclaw binds to loopback (127.0.0.1) and Railway proxy gets 502.
   // Sent as its own mutation so resource-limit failures don't block it.
   // Single-quoted sh -c body is safe: no single quotes appear inside it.
-  const startCmd = `sh -c 'mkdir -p "${OPENCLAW_HOME_DIR}" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "${OPENCLAW_CONFIG_PATH}" && exec openclaw gateway'`
+  const startCmd = `sh -c 'mkdir -p "${OPENCLAW_HOME_DIR}" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "${OPENCLAW_CONFIG_PATH}" && (openclaw doctor || true) && exec openclaw gateway'`
   try {
     await railwayGql(`
       mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {

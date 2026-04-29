@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { controlsDisabledResponse, getOwnedOpenClawUser, OPENCLAW_CONTROLS_ENABLED } from '@/app/api/instance/_runtime'
-import { getRailwayEnvironmentId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { getRailwayEnvironmentId, resolveRailwayService, restartRailwayService } from '@/app/lib/railway-service'
 
 /**
  * POST /api/instance/[userId]/restart
@@ -27,21 +27,14 @@ export async function POST(
     railwayService = await resolveRailwayService({
       agentId: user.openclawInstanceId,
       openclawUrl: user.openclawUrl,
+      serviceId: user.runtimeServiceId,
     })
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 503 })
   }
 
   try {
-    await railwayGql(
-      `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
-        serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
-      }`,
-      {
-        serviceId: railwayService.id,
-        environmentId,
-      }
-    )
+    await restartRailwayService(railwayService.id, environmentId)
 
     return NextResponse.json({ success: true, status: 'restarting' })
   } catch (err: any) {

@@ -1,5 +1,102 @@
 # Agentbot Session Notes
 
+## April 23, 2026 — Factory AI Transformation & Domain Migration
+
+### What Was Done
+
+#### 1. Factory AI Brand & Visual Transition
+- Pivoted platform identity to **Factory AI** with high-energy "Factory Orange" aesthetic (#EF6F2E).
+- Replaced primary blue/cyan accents with orange across all dashboard surfaces and landing pages.
+- Updated `README.md` with new branding, technical standards, and vision.
+
+#### 2. Project-Wide Domain Migration
+- Completed migration from `agentbot.raveculture.xyz` to `agentbot.sh`.
+- Fixed botched search-and-replace that created `agentbot.agentbot.sh` (normalized to `agentbot.sh`).
+- Redirected documentation links from `docs.agentbot.sh` to `agentbot.sh/documentation`.
+
+#### 3. Blog & Content Updates
+- Registered "Security Patch: Zero Vulnerabilities" blog post (April 9, 2026).
+- Fixed duplicate slug bug for MiMo V2 Pro production case study.
+- Updated `web/app/blog/blogPosts.ts` with correct metadata and chronological order.
+
+#### 4. Robust Skill Seeding
+- Improved `ensureSkillsSeeded` in `web/app/api/skills/route.ts` to use `upsert` logic.
+- Added `@unique` constraint to `Skill.name` in `prisma/schema.prisma`.
+- This ensures new default skills (v2026.4.9) are added to existing databases on redeploy.
+
+#### 5. Housekeeping
+- Removed 18 stale `claude/*` worktrees and deleted corresponding local branches.
+- Cleared all stale git stashes.
+- Added missing `DashboardDataProvider.tsx` to the repository.
+
+### Build Status
+- `web` (Next.js): `npx prisma generate` verified.
+- Site ready for Vercel redeploy to seed new skills.
+
+### Git State
+- Branch: `main`
+- All transformation changes pushed.
+
+### URGENT OPS WARNING: Railway Ghost Charges
+- **Issue**: User is still being charged $2.58/day for `bitcoind-mainnet` despite service deletion.
+- **Root Cause**: Persistent Volumes (`bitcoind-mainnet-volume`) are likely still active in the `motivated-comfort` project. Railway CLI (`railway list`) does not show this project in the current context.
+- **ACTION REQUIRED**: 
+    1. Log in to Railway Dashboard (UI).
+    2. Locate Project: `motivated-comfort`.
+    3. Manually delete ALL volumes starting with `bitcoin-*`.
+    4. Ensure no "ghost" deployments are active in hidden environments.
+
+### Production Build Stability
+- Verified local build (`npm run build`) in `web` directory successful.
+- Resolved 13+ build failures caused by Next.js 16 / React 19 upgrade.
+- Deployed mandatory Suspense boundaries and fixed module parse errors in `basefm/streams`.
+
+---
+
+## April 17, 2026 — B2B Blog Post, OG Image, URL Fixes, Footer, Borg Fix
+...
+### What Was Done
+
+#### 1. Blog Post — baseFM × Agentbot B2B Co-DJ Underground Network
+- Created `web/app/blog/posts/basefm-b2b-co-dj/page.tsx`
+- Full marketing copy: two DJs, one Mux stream, 120s handoff window, WebRTC audio monitoring, live chat
+- Added entry to `web/app/blog/blogPosts.ts` at top (newest first), dated 17 Apr 2026
+- Tags: baseFM, B2B, Live Streaming, Underground — track: Shipping
+
+#### 2. OG / Twitter Card Image Updated
+- Replaced dynamically generated OG card with static illustration
+- `web/app/opengraph-image.tsx` now reads `web/public/og-image.jpeg` as base64
+- Image: OpenClaw HQ illustration (Creative Crew + Business Mind agents)
+- contentType changed from `image/png` → `image/jpeg`
+
+#### 3. basefm.io → basefm.space URL Fix
+- `web/app/page.tsx:113` — homepage Launch baseFM button was pointing to wrong domain
+- Fixed to `https://basefm.space` (all other files in repo already correct)
+
+#### 4. Footer — Blog Link Added
+- `web/app/components/Footer.tsx` — Blog link added to Community column
+- Visible to all users (signed in or not)
+
+#### 5. Borg Dashboard Crash Fix
+- `web/app/dashboard/borg/page.tsx` — `data.acceleration` null guard added
+- Error: `undefined is not an object (evaluating 'e.acceleration.alpha')`
+- API returns `acceleration` as undefined when field not present — now renders nothing instead of crashing
+
+### Commits (branch: claude/reverent-chebyshev → main)
+- `a71f3d45` feat(blog): B2B Co-DJ post, OG image update, basefm.space fix
+- `6489d03f` fix(borg): guard against undefined acceleration field
+- `641adff3` feat(footer): add Blog link to Community column
+
+### Agent Reference: agentbot-agent-1336825a8917885f
+- This is our own Railway debug test agent from April 6, 2026 provision fix session
+- **Keep it** — useful standing smoke test target for future Railway debugging
+- Health endpoint: `https://agentbot-agent-1336825a8917885f-production.up.railway.app/health`
+
+### Status
+All changes pushed to main. Vercel auto-deploying.
+
+---
+
 ## April 9, 2026 (Evening) — Security Patch, Skills Expansion, Smoke Test
 
 ### Checkpoint: `checkpoint-2026-04-09`
@@ -37,7 +134,7 @@ All 6 registered in skill marketplace catalog (`web/app/api/skills/route.ts`). W
 - `web/app/blog/posts/security-patch-apr-9-2026/page.tsx` — Documents the CVE patches with links to advisories
 
 #### 4. Smoke Test — Site Verified Clean
-Full production smoke test of agentbot.raveculture.xyz:
+Full production smoke test of agentbot.sh:
 
 | Category | Result |
 |----------|--------|

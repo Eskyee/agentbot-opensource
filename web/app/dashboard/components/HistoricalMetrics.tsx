@@ -169,7 +169,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
               {historicalData.slice(-24).map((entry, idx) => (
                 <div
                   key={entry.timestamp}
-                  className="flex-1 bg-blue-500 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+                  className="flex-1 bg-orange-500 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
                   style={{ height: `${entry.memory}%` }}
                   title={`${formatTime(entry.timestamp)}: ${entry.memory}%`}
                 />

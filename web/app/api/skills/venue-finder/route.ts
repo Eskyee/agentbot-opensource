@@ -14,27 +14,27 @@ interface Venue {
 
 const venues: Venue[] = [
   // UK Venues
-  { id: 'v1', name: 'The Basement', city: 'London', type: 'underground', capacity: 200, price: 300, amenities: ['sound-system', 'bar', 'locker'], contact: '@basement_london' },
+  { id: 'v1', name: 'The Basement', city: 'London', type: 'autonomous', capacity: 200, price: 300, amenities: ['sound-system', 'bar', 'locker'], contact: '@basement_london' },
   { id: 'v7', name: 'Printworks', city: 'London', type: 'warehouse', capacity: 5000, price: 5000, amenities: ['stage', 'bar', 'vip', 'parking'], contact: 'book@printworks.london' },
   { id: 'v8', name: 'Studio 338', city: 'London', type: 'club', capacity: 800, price: 1200, amenities: ['sound-system', 'vip', 'booth', 'terrace'], contact: 'info@studio338.co.uk' },
   { id: 'v9', name: 'The Warehouse Project', city: 'Manchester', type: 'warehouse', capacity: 2500, price: 3000, amenities: ['stage', 'bar', 'vip'], contact: 'booking@thewarehouseproject.com' },
-  { id: 'v10', name: 'Cabaret Voltaire', city: 'Edinburgh', type: 'underground', capacity: 150, price: 200, amenities: ['sound-system', 'bar'], contact: '@cabvol' },
+  { id: 'v10', name: 'Cabaret Voltaire', city: 'Edinburgh', type: 'autonomous', capacity: 150, price: 200, amenities: ['sound-system', 'bar'], contact: '@cabvol' },
   // Europe
   { id: 'v2', name: 'Warehouse 42', city: 'Berlin', type: 'warehouse', capacity: 500, price: 800, amenities: ['stage', 'bar', 'vip', 'parking'], contact: 'booking@warehouse42.de' },
   { id: 'v11', name: 'Berghain', city: 'Berlin', type: 'club', capacity: 1500, price: 1500, amenities: ['sound-system', 'vip'], contact: 'info@berghain.de' },
   { id: 'v12', name: 'Fabric', city: 'London', type: 'club', capacity: 1600, price: 2000, amenities: ['sound-system', 'bar', 'vip'], contact: 'hire@fabriclondon.com' },
   { id: 'v13', name: 'Dee Dee', city: 'Amsterdam', type: 'club', capacity: 400, price: 600, amenities: ['sound-system', 'bar'], contact: 'book@deedeebar.nl' },
-  { id: 'v14', name: 'Concrete', city: 'Paris', type: 'underground', capacity: 600, price: 900, amenities: ['sound-system', 'bar'], contact: 'booking@concrete.fr' },
+  { id: 'v14', name: 'Concrete', city: 'Paris', type: 'autonomous', capacity: 600, price: 900, amenities: ['sound-system', 'bar'], contact: 'booking@concrete.fr' },
   // Global
   { id: 'v3', name: 'Rooftop花园', city: 'Shanghai', type: 'rooftop', capacity: 150, price: 600, amenities: ['view', 'bar', 'catering'], contact: 'events@rooftop-sh.com' },
   { id: 'v4', name: 'Club Terminal', city: 'Tokyo', type: 'club', capacity: 300, price: 500, amenities: ['sound-system', 'vip', 'booth'], contact: 'info@terminal.tokyo' },
   { id: 'v5', name: 'The Garden', city: 'Los Angeles', type: 'outdoor', capacity: 400, price: 1200, amenities: ['stage', 'bar', 'parking', 'catering'], contact: 'book@thegarden.la' },
-  { id: 'v6', name: 'Sub basement', city: 'Detroit', type: 'underground', capacity: 100, price: 150, amenities: ['sound-system'], contact: '@detroit_techno' },
-  { id: 'v15', name: 'Hören', city: 'Berlin', type: 'underground', capacity: 80, price: 150, amenities: ['sound-system'], contact: '@hoeren.berlin' },
+  { id: 'v6', name: 'Sub basement', city: 'Detroit', type: 'autonomous', capacity: 100, price: 150, amenities: ['sound-system'], contact: '@detroit_techno' },
+  { id: 'v15', name: 'Hören', city: 'Berlin', type: 'autonomous', capacity: 80, price: 150, amenities: ['sound-system'], contact: '@hoeren.berlin' },
   { id: 'v16', name: 'Club Toon', city: 'Seoul', type: 'club', capacity: 500, price: 700, amenities: ['sound-system', 'vip'], contact: 'info@clubtoon.kr' },
 ];
 
-const VALID_TYPES = ['underground', 'warehouse', 'club', 'rooftop', 'outdoor', 'festival'];
+const VALID_TYPES = ['autonomous', 'warehouse', 'club', 'rooftop', 'outdoor', 'festival'];
 const VALID_AMENTIES = ['sound-system', 'bar', 'vip', 'stage', 'parking', 'catering', 'locker', 'booth', 'view'];
 
 export async function POST(request: NextRequest) {

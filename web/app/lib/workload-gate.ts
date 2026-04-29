@@ -1,5 +1,5 @@
-import { Redis } from '@upstash/redis'
 import { createHash, randomUUID } from 'crypto'
+import { redis } from './redis'
 
 type WorkloadLane = 'deploy' | 'chat' | 'gateway_chat'
 
@@ -56,17 +56,6 @@ const LANE_CONFIG: Record<WorkloadLane, LaneConfig> = {
     globalBudgetPerMinute: 60,
     ttlSeconds: 45,
   },
-}
-
-let redis: Redis | null = null
-try {
-  const restUrl = process.env.KV_REST_API_URL
-  const restToken = process.env.KV_REST_API_TOKEN
-  if (restUrl && restToken && !restUrl.includes('localhost')) {
-    redis = new Redis({ url: restUrl, token: restToken })
-  }
-} catch {
-  redis = null
 }
 
 const memoryActive = new Map<string, Map<string, ActiveEntry>>()

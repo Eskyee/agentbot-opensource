@@ -115,10 +115,10 @@ const newFeatures = [
 ];
 
 const planResources = [
-  { plan: 'Solo', ram: '2GB', cpu: '1 vCPU', price: '£29/mo', description: 'Creative only' },
-  { plan: 'Collective', ram: '4GB', cpu: '2 vCPU', price: '£69/mo', description: '+1 OpenClaw seat' },
-  { plan: 'Label', ram: '8GB', cpu: '4 vCPU', price: '£149/mo', description: '+3 OpenClaw seats' },
-  { plan: 'Network', ram: '16GB', cpu: '8 vCPU', price: '£499/mo', description: 'Unlimited' },
+  { plan: 'Solo', ram: '2GB', cpu: '1 vCPU', price: '£29/mo', description: 'Trial / light workloads only' },
+  { plan: 'Collective', ram: '4GB', cpu: '2 vCPU', price: '£69/mo', description: 'Recommended production floor' },
+  { plan: 'Label', ram: '8GB', cpu: '4 vCPU', price: '£149/mo', description: 'Heavy production + browser/tool work' },
+  { plan: 'Network', ram: '16GB', cpu: '8 vCPU', price: '£499/mo', description: 'High-throughput + unlimited' },
 ];
 
 const supportedModels = [
@@ -156,10 +156,33 @@ export default function ViewDocsPage() {
   return (
     <main className="min-h-screen bg-black text-white font-mono">
       <div className="max-w-5xl mx-auto px-6 py-16">
+        <div className="mb-8 flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-widest text-zinc-600">
+          <Link href="/learn" className="hover:text-white transition-colors">Learn</Link>
+          <span>/</span>
+          <span className="text-zinc-400">Docs</span>
+        </div>
         <h1 className="text-4xl sm:text-5xl font-bold tracking-tighter uppercase mb-4">Docs</h1>
         <p className="text-sm text-zinc-400 mb-10">
-          Everything you need to deploy, operate, and grow your AI agents.
+          This is the structured reference and operator guide for Agentbot. If you want guided walkthroughs instead, start with Learn.
         </p>
+
+        <div className="grid gap-px bg-zinc-800 mb-10 sm:grid-cols-3">
+          <Link href="/learn" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Guided Path</span>
+            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">Learn Agentbot</h2>
+            <p className="text-xs text-zinc-500 mt-2">User-facing walkthroughs, onboarding, and practical “what do I do first?” guidance.</p>
+          </Link>
+          <Link href="/why" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Platform Story</span>
+            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">Why Agentbot</h2>
+            <p className="text-xs text-zinc-500 mt-2">Best product explanation for how Agentbot fits against local OpenClaw and why the platform exists.</p>
+          </Link>
+          <Link href="/learn/developers" className="bg-black p-5 hover:bg-zinc-950 transition-colors group">
+            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-2">Builder Path</span>
+            <h2 className="text-sm font-bold uppercase tracking-tight group-hover:text-white transition-colors">For Developers</h2>
+            <p className="text-xs text-zinc-500 mt-2">Developer docs, APIs, SDKs, runtime guides, and architecture pages.</p>
+          </Link>
+        </div>
 
         <div className="border border-zinc-800 bg-zinc-950 p-5 mb-10">
           <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-3">Full Docs Site</span>
@@ -167,16 +190,16 @@ export default function ViewDocsPage() {
             <p className="text-xs text-zinc-400 max-w-2xl">
               Need the full documentation experience? Open the dedicated docs site for guides, reference pages, and developer docs at{' '}
               <a
-                href="https://docs.agentbot.raveculture.xyz"
+                href="https://agentbot.sh/documentation"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white underline hover:text-zinc-300"
               >
-                docs.agentbot.raveculture.xyz
+                agentbot.sh/documentation
               </a>.
             </p>
             <a
-              href="https://docs.agentbot.raveculture.xyz"
+              href="https://agentbot.sh/documentation"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 transition-colors"
@@ -194,7 +217,7 @@ export default function ViewDocsPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-sm uppercase tracking-tight">{feature.title}</h3>
                   {feature.badge && (
-                    <span className="text-[9px] uppercase tracking-widest text-blue-500 border border-blue-500/30 px-2 py-0.5">
+                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-orange-500/30 px-2 py-0.5">
                       {feature.badge}
                     </span>
                   )}
@@ -282,13 +305,13 @@ export default function ViewDocsPage() {
             <Link href="/blog" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-500">
               Blog
             </Link>
-            <a href="https://docs.agentbot.raveculture.xyz" target="_blank" rel="noopener noreferrer" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:text-white hover:border-zinc-500">
+            <a href="https://agentbot.sh/documentation" target="_blank" rel="noopener noreferrer" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:text-white hover:border-zinc-500">
               Dev Docs
             </a>
-            <Link href="/token" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-blue-400 hover:text-white hover:border-zinc-500">
+            <Link href="/token" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-orange-400 hover:text-white hover:border-zinc-500">
               $AGENTBOT
             </Link>
-            <Link href="/basefm" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-blue-400 hover:text-white hover:border-zinc-500">
+            <Link href="/basefm" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-orange-400 hover:text-white hover:border-zinc-500">
               $BASEFM
             </Link>
             <Link href="/terms" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white hover:border-zinc-500">

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { proxyGet, proxyPost } from '../_proxy'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   return proxyGet('/api/devices')

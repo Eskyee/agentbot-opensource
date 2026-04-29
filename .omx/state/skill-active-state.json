@@ -1,15 +1,15 @@
 {
   "version": 1,
   "active": true,
-  "skill": "ralph",
-  "keyword": "keep going",
+  "skill": "cancel",
+  "keyword": "stop",
   "phase": "planning",
-  "activated_at": "2026-04-04T19:15:37.879Z",
-  "updated_at": "2026-04-04T19:15:37.879Z",
+  "activated_at": "2026-04-22T05:16:45.556Z",
+  "updated_at": "2026-04-22T05:16:45.556Z",
   "source": "keyword-detector",
   "session_id": "",
-  "thread_id": "019d596d-d3f2-7372-b275-3b6e2db3adaf",
-  "turn_id": "019d59ea-dcdb-7661-9f3b-d72cf058f158",
-  "iteration": 27,
-  "last_turn_at": "2026-04-09T01:13:05.197Z"
+  "thread_id": "019dad2b-678d-70a1-aa96-1d9ddbe8e773",
+  "turn_id": "019db39e-3d6d-7ed0-b477-f5569b3ea126",
+  "iteration": 28,
+  "last_turn_at": "2026-04-23T05:42:33.023Z"
 }

@@ -34,7 +34,7 @@ export default function Post() {
 
           <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Why We Open Sourced</h2>
           <p className="text-zinc-300 mb-4">
-            The open source repo (<a href="https://github.com/Eskyee/agentbot-opensource" className="text-blue-400 hover:text-blue-300">github.com/Eskyee/agentbot-opensource</a>) shows our architecture, CI quality, and code standards. The private repo has real features, customer data, and production infra.
+            The open source repo (<a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-400 hover:text-orange-400">github.com/Eskyee/agentbot-opensource</a>) shows our architecture, CI quality, and code standards. The private repo has real features, customer data, and production infra.
           </p>
           <p className="text-zinc-300 mb-4">
             Building in the open builds trust. Contributors see the architecture, users see the code quality, and we attract talent without handing over the sauce.
@@ -42,14 +42,14 @@ export default function Post() {
 
           <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Read the Full Article</h2>
           <p className="text-zinc-300 mb-4">
-            → <a href="https://dev.to/agentbot/how-we-built-a-multi-tenant-ai-agent-platform-and-open-sourced-it-521g" className="text-blue-400 hover:text-blue-300" target="_blank" rel="noopener noreferrer">How We Built a Multi-Tenant AI Agent Platform (And Open-Sourced It)</a>
+            → <a href="https://dev.to/agentbot/how-we-built-a-multi-tenant-ai-agent-platform-and-open-sourced-it-521g" className="text-orange-400 hover:text-orange-400" target="_blank" rel="noopener noreferrer">How We Built a Multi-Tenant AI Agent Platform (And Open-Sourced It)</a>
           </p>
 
           <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Links</h2>
           <ul className="list-disc list-inside text-zinc-300 mb-4">
-            <li><strong>Live Platform:</strong> <a href="https://agentbot.sh" className="text-blue-400 hover:text-blue-300">agentbot.sh</a></li>
-            <li><strong>Open Source:</strong> <a href="https://github.com/Eskyee/agentbot-opensource" className="text-blue-400 hover:text-blue-300">github.com/Eskyee/agentbot-opensource</a></li>
-            <li><strong>Docs:</strong> <a href="https://raveculture.mintlify.app" className="text-blue-400 hover:text-blue-300">raveculture.mintlify.app</a></li>
+            <li><strong>Live Platform:</strong> <a href="https://agentbot.sh" className="text-orange-400 hover:text-orange-400">agentbot.sh</a></li>
+            <li><strong>Open Source:</strong> <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-400 hover:text-orange-400">github.com/Eskyee/agentbot-opensource</a></li>
+            <li><strong>Docs:</strong> <a href="https://raveculture.mintlify.app" className="text-orange-400 hover:text-orange-400">raveculture.mintlify.app</a></li>
           </ul>
         </article>
       </div>

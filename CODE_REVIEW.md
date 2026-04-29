@@ -2,7 +2,7 @@
 **Date:** 2026-03-21
 **Reviewer:** Senior Code Review (Claude)
 **Scope:** `agentbot-backend/src/` — full backend
-**Production URL:** https://agentbot.raveculture.xyz
+**Production URL:** https://agentbot.sh
 
 ---
 

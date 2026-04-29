@@ -59,7 +59,7 @@ export default function Post() {
  <li className="text-zinc-300 mb-2"><strong>White Glove</strong> - £199/mo - 32GB RAM, 8 CPU</li>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Get Started</h2>
- <p className="text-zinc-300 mb-4">Want early access? Sign up now at agentbot.raveculture.xyz</p>
+ <p className="text-zinc-300 mb-4">Want early access? Sign up now at agentbot.sh</p>
 
  <div className="mt-12 p-6 bg-zinc-950 border border-zinc-800">
  <p className="text-zinc-300 mb-4">Deploy your AI agent today</p>

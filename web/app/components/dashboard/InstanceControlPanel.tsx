@@ -8,6 +8,7 @@ import {
   Copy,
   ExternalLink,
   Loader2,
+  Music2,
   Power,
   RefreshCw,
   ShieldCheck,
@@ -23,13 +24,22 @@ interface InstanceControlPanelProps {
   instance: {
     userId: string
     status: string
-    subdomain: string
+    statusReason?: string | null
+    probeChecks?: Array<{
+      path: string
+      ok: boolean
+      status: number | null
+      reason: string | null
+    }>
+    subdomain?: string
     url: string
     plan: string
     botUsername?: string
     gatewayToken?: string
     controlUiUrl?: string
     openclawVersion?: string
+    ffmpegAvailable?: boolean
+    ffmpegVersion?: string | null
     provisionedAt?: string | null
     lastSeenAt?: string | null
     gatewayProcessStatus?: string | null
@@ -47,12 +57,30 @@ interface InstanceControlPanelProps {
   } | null
   controlsEnabled: boolean
   autoPairHealth: 'ready' | 'missing' | 'loading'
+  probeActionLoading: 'probe' | 'resync' | null
   actionLoading: string
   onCopyToken: () => void
   onRefreshPairing: () => void
+  onProbeAction: (action: 'probe' | 'resync') => void
   onAction: (action: RuntimeAction) => void
   skillsManagerUrl: string
   configManagerUrl: string
+  communityRewards: {
+    connected: boolean
+    walletAddress: string | null
+    claimed: boolean
+    currentTier: {
+      id: string
+      label: string
+      credits: number
+      minBalance: number
+    } | null
+    balanceUi: number | null
+    creditsClaimed: number
+    claimedAt?: string | null
+    availability?: 'live' | 'degraded'
+    detail?: string | null
+  } | null
 }
 
 interface TrialStatus {
@@ -97,12 +125,14 @@ function formatDate(value?: string | null) {
 function formatInstanceName(instance: InstanceControlPanelProps['instance']) {
   if (instance.botUsername) return `@${instance.botUsername}`
 
-  const label = instance.subdomain.split('.')[0] || 'Agentbot Runtime'
+  if (!instance.subdomain) return 'OpenClaw Runtime'
+
+  const label = instance.subdomain.split('.')[0] || 'OpenClaw Runtime'
   return label
     .split('-')
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+    .join(' ') || 'OpenClaw Runtime'
 }
 
 function formatPlanLabel(plan?: string | null) {
@@ -118,8 +148,9 @@ function formatSubscriptionLabel(value?: string | null, fallbackPlan?: string) {
 function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | null) {
   if (!plan || plan === 'free' || subscriptionStatus === 'inactive') {
     return {
-      cpuRam: '2 vCPU, 3 GB RAM',
+      cpuRam: '1 vCPU, 2 GB RAM',
       storage: '10 GB SSD',
+      note: 'Trial / light workloads only',
     }
   }
 
@@ -127,6 +158,7 @@ function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | nul
     return {
       cpuRam: '8 vCPU, 16 GB RAM',
       storage: '500 GB SSD',
+      note: 'High-throughput production',
     }
   }
 
@@ -134,6 +166,7 @@ function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | nul
     return {
       cpuRam: '4 vCPU, 8 GB RAM',
       storage: '100 GB SSD',
+      note: 'Heavy production + browser/tool work',
     }
   }
 
@@ -141,12 +174,14 @@ function getManagedSpecs(plan?: string | null, subscriptionStatus?: string | nul
     return {
       cpuRam: '2 vCPU, 4 GB RAM',
       storage: '50 GB SSD',
+      note: 'Recommended production floor',
     }
   }
 
   return {
     cpuRam: '1 vCPU, 2 GB RAM',
     storage: '10 GB SSD',
+    note: 'Minimum viable only',
   }
 }
 
@@ -218,14 +253,29 @@ export function InstanceControlPanel({
   stats,
   controlsEnabled,
   autoPairHealth,
+  probeActionLoading,
   actionLoading,
   onCopyToken,
   onRefreshPairing,
+  onProbeAction,
   onAction,
   skillsManagerUrl,
   configManagerUrl,
+  communityRewards,
 }: InstanceControlPanelProps) {
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null)
+  const [basefmActionLoading, setBasefmActionLoading] = useState(false)
+  const [basefmLaunch, setBasefmLaunch] = useState<null | {
+    name: string
+    wallet: string
+    fullRtmpUrl: string
+    playbackId: string | null
+    ffmpeg?: {
+      command: string
+      inputHint?: string
+    } | null
+  }>(null)
+  const [basefmError, setBasefmError] = useState('')
 
   useEffect(() => {
     fetch('/api/trial')
@@ -239,11 +289,51 @@ export function InstanceControlPanel({
   const lifecycleTelemetry = stats?.telemetry?.lifecycleMetricsAvailable ?? false
   const runtimeHealth = stats?.health === 'healthy' ? 'healthy' : stats?.health || 'checking'
   const managedSpecs = getManagedSpecs(instance.plan, instance.subscriptionStatus)
+  const canLaunchBasefm = Boolean(communityRewards?.claimed && communityRewards?.walletAddress)
+
+  const createBasefmStream = async () => {
+    if (!communityRewards?.walletAddress) {
+      setBasefmError('Claim your Agentbot token perks first so the control panel has a verified wallet to use.')
+      return
+    }
+
+    setBasefmActionLoading(true)
+    setBasefmError('')
+
+    try {
+      const res = await fetch('/api/basefm/streams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wallet: communityRewards.walletAddress,
+          name: `${instanceName} Live`,
+        }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create baseFM stream')
+      }
+
+      setBasefmLaunch({
+        name: data.stream?.name || `${instanceName} Live`,
+        wallet: data.stream?.wallet || communityRewards.walletAddress,
+        fullRtmpUrl: data.stream?.fullRtmpUrl,
+        playbackId: data.stream?.playbackId || null,
+        ffmpeg: data.ffmpeg || null,
+      })
+    } catch (error) {
+      setBasefmError(error instanceof Error ? error.message : 'Failed to create baseFM stream')
+    } finally {
+      setBasefmActionLoading(false)
+    }
+  }
 
   const quickLinks = [
     { label: 'Open Agentbot', href: instance.controlUiUrl || instance.url, external: true },
     { label: 'Skills Manager', href: skillsManagerUrl, external: true },
     { label: 'Config', href: configManagerUrl, external: true },
+    { label: 'Runtime Guide', href: '/learn/developers/openclaw-dashboard', external: false },
     { label: 'Billing', href: '/billing', external: false },
     { label: 'Channels', href: '/dashboard/channels', external: false },
     { label: 'Updates', href: '/dashboard/tech-updates', external: false },
@@ -286,6 +376,11 @@ export function InstanceControlPanel({
           <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
             {managedSpecs.storage}
           </span>
+          {managedSpecs.note ? (
+            <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+              {managedSpecs.note}
+            </span>
+          ) : null}
           <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
             {formatSubscriptionLabel(instance.subscriptionStatus, instance.plan)}
           </span>
@@ -313,7 +408,7 @@ export function InstanceControlPanel({
 
       <div className="space-y-6 px-5 py-5 sm:px-6 lg:px-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
-          <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">
+          <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">Instance Controls</p>
@@ -323,22 +418,39 @@ export function InstanceControlPanel({
                 <button
                   onClick={onCopyToken}
                   disabled={!instance.gatewayToken}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Copy className="h-3.5 w-3.5" />
                   Copy Token
                 </button>
                 <button
                   onClick={onRefreshPairing}
-                  className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
                 >
                   <RefreshCw className={cn('h-3.5 w-3.5', autoPairHealth === 'loading' && 'animate-spin')} />
-                  Refresh Pairing
+                  Refresh
                 </button>
               </div>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="mt-5 grid gap-3 grid-cols-1 sm:grid-cols-2">
+              <ActionButton
+                label="Retry Probe"
+                detail="Re-run the runtime checks against the current OpenClaw URL."
+                icon={RefreshCw}
+                loading={probeActionLoading === 'probe'}
+                disabled={probeActionLoading !== null}
+                onClick={() => onProbeAction('probe')}
+              />
+              <ActionButton
+                label="Resync Runtime URL"
+                detail="Retry runtime sync and refresh the saved OpenClaw endpoint."
+                icon={Wrench}
+                tone="warning"
+                loading={probeActionLoading === 'resync'}
+                disabled={probeActionLoading !== null}
+                onClick={() => onProbeAction('resync')}
+              />
               <ActionButton
                 label={isRunning ? 'Restart Agentbot' : 'Start Machine'}
                 detail={isRunning ? 'Restart the running Agentbot instance.' : 'Bring this Agentbot instance online.'}
@@ -378,6 +490,17 @@ export function InstanceControlPanel({
                 onClick={() => onAction('repair')}
               />
               <ActionButton
+                label="Create baseFM Stream"
+                detail={canLaunchBasefm
+                  ? 'Use your claimed Agentbot token wallet to mint RTMP credentials and an ffmpeg broadcaster command.'
+                  : 'Claim Agentbot token perks first, then launch a baseFM stream in one click.'}
+                icon={Music2}
+                tone="primary"
+                loading={basefmActionLoading}
+                disabled={basefmActionLoading}
+                onClick={createBasefmStream}
+              />
+              <ActionButton
                 label={isRunning ? 'Stop Machine' : 'Standby'}
                 detail={isRunning ? 'Take this instance offline until restarted.' : 'This instance is already offline.'}
                 icon={Power}
@@ -402,6 +525,98 @@ export function InstanceControlPanel({
                 Managed lifecycle actions are temporarily gated while the control path is being hardened.
               </div>
             ) : null}
+
+            <div className="mt-4 rounded-[24px] border border-zinc-800 bg-black p-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">Runtime Probe</p>
+              <div className="mt-3 space-y-3">
+                <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Probed URL</p>
+                  <code className="mt-2 block break-all text-[10px] sm:text-xs text-zinc-300">{instance.url}</code>
+                </div>
+                {instance.statusReason ? (
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Reason</p>
+                    <p className="mt-2 text-xs text-zinc-400 break-words">{instance.statusReason}</p>
+                  </div>
+                ) : null}
+                <div className="grid gap-px bg-zinc-800 grid-cols-1 sm:grid-cols-3 overflow-hidden rounded-xl border border-zinc-800">
+                  {(instance.probeChecks || []).map((check) => (
+                    <div key={check.path} className="bg-zinc-950 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">{check.path}</p>
+                        <StatusBadge
+                          status={check.ok ? 'running' : check.status === 404 ? 'stopped' : 'unknown'}
+                          size="sm"
+                          showIcon={false}
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-zinc-300">
+                        {check.status ? `HTTP ${check.status}` : 'No response'}
+                      </p>
+                      {check.reason ? <p className="mt-1 text-xs text-zinc-500">{check.reason}</p> : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {basefmError ? (
+              <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                {basefmError}
+              </div>
+            ) : null}
+
+            {!canLaunchBasefm ? (
+              <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-orange-400">
+                Agentbot token perks work like the baseFM token here. Claim your Solana Agentbot holder status, then this panel can launch a stream with that verified wallet.
+              </div>
+            ) : null}
+
+            {basefmLaunch ? (
+              <div className="mt-4 rounded-[24px] border border-zinc-800 bg-black p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">baseFM Broadcast Ready</p>
+                    <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-white">{basefmLaunch.name}</p>
+                  </div>
+                  <Link
+                    href="/basefm/live"
+                    className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
+                  >
+                    Play Live
+                    <ArrowUpRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Wallet</p>
+                    <p className="mt-2 break-all text-xs text-zinc-300">{basefmLaunch.wallet}</p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Playback</p>
+                    <p className="mt-2 break-all text-xs text-zinc-300">{basefmLaunch.playbackId || 'Pending'}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">RTMP Target</p>
+                  <code className="mt-2 block break-all text-xs text-zinc-300">{basefmLaunch.fullRtmpUrl}</code>
+                </div>
+
+                {basefmLaunch.ffmpeg?.command ? (
+                  <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
+                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">ffmpeg Broadcaster Path</p>
+                    <code className="mt-2 block whitespace-pre-wrap break-all text-xs text-zinc-300">
+                      {basefmLaunch.ffmpeg.command}
+                    </code>
+                    {basefmLaunch.ffmpeg.inputHint ? (
+                      <p className="mt-2 text-xs text-zinc-500">{basefmLaunch.ffmpeg.inputHint}</p>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="space-y-4">
@@ -416,6 +631,23 @@ export function InstanceControlPanel({
               <SummaryCard label="Last Exit" value="—" detail="Not exposed by the runtime API yet" />
               <SummaryCard label="Provisioned" value={formatRelativeTime(instance.provisionedAt)} detail={instance.subdomain} />
               <SummaryCard label="Version" value={instance.openclawVersion || 'unknown'} detail={instance.userId} />
+              <SummaryCard
+                label="FFmpeg"
+                value={
+                  instance.ffmpegAvailable
+                    ? 'Ready'
+                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
+                      ? 'Not Installed'
+                      : 'Unknown'
+                }
+                detail={
+                  instance.ffmpegAvailable
+                    ? (instance.ffmpegVersion || 'Installed')
+                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
+                      ? 'Upgrade your runtime to install — needed for baseFM broadcasting'
+                      : 'Status unavailable — runtime not fully reachable'
+                }
+              />
             </div>
 
             <div className="rounded-[24px] border border-zinc-800 bg-zinc-950/80 p-5">

@@ -6,21 +6,26 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { getAuthSession } from '@/app/lib/getAuthSession'
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Verify this is an internal request or authenticated user
-    const authHeader = req.headers.get('authorization')
     const { id } = await params
-    
-    // Simple service token validation
+
+    // Allow internal service calls with INTERNAL_API_TOKEN
+    const authHeader = req.headers.get('authorization')
     const serviceToken = process.env.INTERNAL_API_TOKEN
-    if (serviceToken && authHeader !== `Bearer ${serviceToken}`) {
-      // Also allow if the user is requesting their own data
-      // This would need session validation in production
+    const isServiceCall = serviceToken && authHeader === `Bearer ${serviceToken}`
+
+    if (!isServiceCall) {
+      // Otherwise require authenticated session and ownership
+      const session = await getAuthSession()
+      if (!session?.user?.id || session.user.id !== id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
     }
 
     const user = await prisma.user.findUnique({

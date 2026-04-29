@@ -4,6 +4,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 import { isTrialActive } from '@/app/lib/trial-utils'
+import { signedFetch } from '@/app/lib/backend-client'
 
 /**
  * POST /api/provision/team
@@ -78,42 +79,35 @@ export async function POST(req: NextRequest) {
 
   // Kick off background provisioning via the existing /api/provision route.
   // Each agent in the team is provisioned independently.
-  const backendUrl = process.env.BACKEND_API_URL?.trim()
-  const internalKey = process.env.INTERNAL_API_KEY?.trim()
-
-  if (backendUrl && internalKey) {
-    // Use after() so provisioning completes after the response is sent.
-    // Without after(), Vercel serverless may kill the function before the
-    // fire-and-forget fetches resolve.
-    after(async () => {
-      await Promise.allSettled(
-        Array.from({ length: agentCount }, (_, i) =>
-          fetch(`${backendUrl}/api/provision`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${internalKey}`,
-              'X-User-Email': session.user?.email ?? '',
-              'X-User-Id': session.user?.id ?? '',
-            },
-            body: JSON.stringify({
-              userId: `${teamId}-agent-${i + 1}`,
-              plan,
-              email: session.user?.email,
-              stripeSubscriptionId,
-              autoProvision: true,
-              agentType: 'business',
-              teamId,
-              templateKey,
-            }),
-            signal: AbortSignal.timeout(15_000),
-          }).catch(err =>
-            console.error(`[Provision/Team] Agent ${i + 1} provision error:`, err)
-          )
+  // Use after() so provisioning completes after the response is sent.
+  after(async () => {
+    await Promise.allSettled(
+      Array.from({ length: agentCount }, (_, i) =>
+        signedFetch('/api/provision', {
+          method: 'POST',
+          headers: {
+            'X-User-Email': session.user?.email ?? '',
+            'X-User-Id': session.user?.id ?? '',
+            'X-User-Plan': plan || 'collective',
+            'X-Stripe-Subscription-Id': stripeSubscriptionId || '',
+          },
+          body: JSON.stringify({
+            userId: `${teamId}-agent-${i + 1}`,
+            plan,
+            email: session.user?.email,
+            stripeSubscriptionId,
+            autoProvision: true,
+            agentType: 'business',
+            teamId,
+            templateKey,
+          }),
+          signal: AbortSignal.timeout(15_000),
+        }).catch(err =>
+          console.error(`[Provision/Team] Agent ${i + 1} provision error:`, err)
         )
       )
-    })
-  }
+    )
+  })
 
   return NextResponse.json({
     success: true,
@@ -125,4 +119,3 @@ export async function POST(req: NextRequest) {
   })
 }
 
-export const dynamic = 'force-dynamic'

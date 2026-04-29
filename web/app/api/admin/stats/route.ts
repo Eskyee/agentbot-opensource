@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getInternalApiKey, getBackendApiUrl } from '@/app/api/lib/api-keys';
+import { prisma } from '@/app/lib/prisma';
 
-export const dynamic = 'force-dynamic';
 
 function getAdminEmails(): string[] {
   const adminEmails = process.env.ADMIN_EMAILS;
@@ -34,8 +34,20 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const [prismaUserCount, prismaAgentCount] = await Promise.all([
+      prisma.user.count(),
+      prisma.agent.count(),
+    ]);
+
     if (!response.ok) {
-      throw new Error(`Backend returned ${response.status}`);
+      return NextResponse.json({
+        instances: [],
+        count: 0,
+        userBase: prismaUserCount,
+        totalAgents: prismaAgentCount,
+        backendStatus: 'DOWN',
+        timestamp: new Date().toISOString(),
+      });
     }
 
     const data = await response.json();
@@ -43,6 +55,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       instances: data.instances || [],
       count: data.count || 0,
+      userBase: prismaUserCount,
+      totalAgents: prismaAgentCount,
+      backendStatus: 'OK',
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {

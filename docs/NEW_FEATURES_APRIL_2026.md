@@ -45,15 +45,14 @@ Source: Git history (last 30 commits), codebase scan
 - Currently uses template-based generation (placeholder for real AI API)
 - Strategy doc covers roadmap for AI-powered generation
 
-## 5. Bitcoin Dashboard — Mainnet + Blockstream Jade + Liquid
+## 5. Bitcoin Dashboard — Public Node + Blockstream Jade + Liquid
 **Commit:** `949b1560`, earlier commits  
 **Files:** `web/app/dashboard/bitcoin/`, `web/app/api/bitcoin/`
 
-- Full mainnet Bitcoin dashboard: wallet creation, balance, transactions
+- Bitcoin dashboard with public-node/read-only explorer support
 - Blockstream Jade hardware wallet support (USB + QR)
 - Liquid Network (L-BTC) integration via LWK (Lightning Wallet Kit)
-- NBXplorer backend at `bitcoin-backend-mainnet-production.up.railway.app`
-- Docker-based NBXplorer + bitcoind stack on Railway
+- Public-node mode for read-only chain visibility and wallet exploration
 
 ## 6. Git City — 3D GitHub Visualization
 **Files:** `web/app/dashboard/git-city/`
@@ -164,17 +163,66 @@ Key new route groups:
 - `/api/webhooks/*` — Stripe, Discord, WhatsApp, Mux, Railway, Resend
 - `/api/workflows/*` — Workflow CRUD + signup
 
+## 16. Factory AI Transformation (Fact-Based Backend)
+**Commit:** `cb4c552f`, `04ffb626`, `6e507473`
+**Files:** `web/app/api/admin/`, `agentbot-backend/src/middleware/signature.ts`, `web/app/lib/redis.ts`
+
+- **Identity is a Fact:** Shifted from legacy Bearer tokens to DID-native cryptographic signatures.
+- **SignatureGuard:** Backend enforcement of Ethereum-compatible message signatures (`x-agent-signature`).
+- **signedFetch:** Frontend utility for automated, cryptographically signed requests.
+- **Durable Workflows:** Orchestration moved to Vercel Workflow for resilient, replayable execution logs.
+- **State Mirroring:** JSON configuration state is now mirrored to Gitlawb (immutable warm storage).
+- **Railway-Only:** Removed all Render references; unified platform on Railway infrastructure.
+
+## 17. Factory Master Model: MiMo V2 Pro
+**Commit:** `cb4c552f`
+**Files:** `agentbot-backend/src/services/ai-provider.ts`
+
+- **Xiaomi MiMo V2 Pro:** Integrated as the "Factory Master" model for autonomous reasoning.
+- **Vercel AI Gateway:** Unified model routing with centralized rate limiting and security (`vck_` key active).
+- **Default Onboarding:** New agents automatically provision with MiMo V2 Pro for maximum logic performance.
+
+## 18. Bitcoin & Greenlight Sovereignty
+**Commit:** `9df9433f`, `33da78e7`, `57b3ede1`, `1456cea7`
+**Files:** `web/app/dashboard/bitcoin/`, `web/app/api/bitcoin/greenlight/`
+
+- **Zpub/Descriptor Support:** Bitcoin dashboard now enables registration of Zpubs and advanced output descriptors.
+- **Greenlight Credentials:** Secure storage for `device.crt` and `device-key.pem` files (PEM format).
+- **Mainnet Shift:** All Bitcoin/Liquid status tracking moved to mainnet (`liquidv1`, `bitcoin` network).
+- **Resilient Registration:** Local DB persistence for wallets even if private NBXplorer is unreachable (Public Mode).
+
+## 19. Agentbot Coach & Education Hub
+**Commit:** `04ffb626`
+**Files:** `web/app/dashboard/coach/`, `web/app/components/DashboardSidebar.tsx`
+
+- **Interactive Coaching:** New training dashboard at `/dashboard/coach` for new operators.
+- **Education Section:** Sidebar now features a dedicated section for Coach, Learn, and Guide resources.
+- **Onboarding Success:** Transition from agent deployment directly into operator training modules.
+
+## 20. Ops Command Center — Live Data
+**Commit:** `6e507473`, `04ffb626`
+**Files:** `web/app/admin/`, `web/app/api/admin/db-health/`
+
+- **Real-Time Metrics:** Fleet and user base counts pulled live from Prisma.
+- **Force Global Sync:** One-click tool to reconcile singular (frontend) and plural (backend) database tables.
+- **Platform Health:** Dynamic probes for Railway API and Gitlawb node status.
+
+## 21. Global Visual Transition (Factory Orange)
+**Commit:** `cb4c552f` and global refactor
+**Files:** Entire `web/app` directory
+
+- **Factory Orange Aesthetic:** All blue/cyan accents replaced with `#EF6F2E` (Tailwind `orange-500/400`).
+- **High-Energy Spinner:** High-performance loading states across all dashboard views.
+- **Daily Brief Sync:** Unified "Upcoming" section colors and activity logs.
+
 ---
 
-## Tech Stack Additions
+## Tech Stack Additions (Updated)
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| 3D Viz | Three.js + React Three Fiber | Git City visualization |
-| Payments | Stripe checkout sessions | Expert setup bookings |
-| Auth | WebAuthn/Passkeys | Passwordless login |
-| Build | Turborepo 2.9 | Monorepo orchestration |
-| Blockchain | Solana Agent Kit + MCP | Solana DeFi/NFT ops |
-| Bitcoin | NBXplorer + LWK | Mainnet + Liquid wallets |
-| Video | Custom renderer + Vercel Blob | Video generation |
-| DB | Prisma Buddy model | Blockchain Buddies persistence |
+| Identity | did:key + ethers.js | Cryptographic request verification |
+| AI | MiMo V2 Pro + Vercel AI Gateway | High-performance autonomous logic |
+| Workflow | Vercel Workflow DevKit | Durable, resumable orchestration |
+| Persistence | Gitlawb + Prisma | Dual-tier state (Mutable SQL + Immutable Git) |
+| Caching | Upstash Redis (Unified) | Resilient performance and rate limiting |

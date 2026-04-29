@@ -11,6 +11,86 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'london-oxford-bristol-linkup',
+    dateLabel: '26 Apr',
+    isoDate: '2026-04-26',
+    title: 'London • Oxford • Bristol Link Up',
+    excerpt:
+      'The Bristol Collective links with London and Oxford nodes to deploy the next evolution of autonomous rave culture.',
+    tags: ['Community', 'Bristol', 'Link Up'],
+    track: 'Field Notes',
+  },
+  {
+    slug: '25-days-since-launch',
+    dateLabel: '25 Apr',
+    isoDate: '2026-04-25',
+    title: '25 Days Since Launch: The Zero-Human Evolution',
+    excerpt:
+      'First $560 earned, server bills paid, and the transition from SaaS tool to a self-operating cultural protocol.',
+    tags: ['Revenue', 'Autonomy', 'Milestone', 'ZHC'],
+    track: 'Build Log',
+  },
+  {
+    slug: 'factory-ai-unification',
+    dateLabel: '23 Apr',
+    isoDate: '2026-04-23',
+    title: 'The Factory AI Unification: Identity, Execution, and State',
+    excerpt:
+      'Platform update: 100% Railway migration, DID-native cryptographic signatures, durable workflow execution, and state mirroring to Gitlawb. The "Fact-Based Backend" is now live.',
+    tags: ['Architecture', 'Identity', 'Security', 'Railway'],
+    track: 'Build Log',
+  },
+  {
+    slug: 'mimo-v2-pro-factory-master',
+    dateLabel: '23 Apr',
+    isoDate: '2026-04-23',
+    title: 'MiMo V2 Pro: The New Factory Master Model',
+    excerpt:
+      'We are deploying Xiaomi MiMo V2 Pro as the default model for all new agents. High-performance logic via Vercel AI Gateway with unified rate limiting.',
+    tags: ['AI', 'Models', 'MiMo', 'Vercel'],
+    track: 'Shipping',
+  },
+  {
+    slug: 'surviving-250-doc-backdoor',
+    dateLabel: '21 Apr',
+    isoDate: '2026-04-21',
+    title: 'Surviving the 250-Document Backdoor',
+    excerpt:
+      'A joint Anthropic / UK AISI / Alan Turing study proved 250 poisoned documents can permanently backdoor any frontier LLM. Here is the practical playbook humans and agentic systems can deploy this quarter — model diversity, canary probes, signed RAG, sovereign fallback.',
+    tags: ['Security', 'Data Poisoning', 'Provenance', 'Sovereign AI'],
+    track: 'Field Notes',
+  },
+  {
+    slug: 'open-source-catch-up-and-agentbot-coach',
+    dateLabel: '17 Apr',
+    isoDate: '2026-04-17',
+    title: 'Open-Source Catch-Up, Cleaner Docs, and Agentbot Coach',
+    excerpt:
+      'A community update on safer public repos, refreshed SDK/docs surfaces, and the onboarding direction behind Agentbot Coach.',
+    tags: ['Open Source', 'Docs', 'SDK', 'Onboarding'],
+    track: 'Shipping',
+  },
+  {
+    slug: 'agent-to-agent-protocol',
+    dateLabel: '13 Apr',
+    isoDate: '2026-04-13',
+    title: 'Agent-to-Agent Protocol: How Agentbot Agents Talk to Each Other',
+    excerpt:
+      'The A2A bus that lets agents negotiate, delegate, and settle USDC payments autonomously. SSRF-protected, cryptographically signed, MCP-compatible. First settlement at block 9,556,940.',
+    tags: ['A2A', 'Protocol', 'Architecture', 'Autonomous Payments'],
+    track: 'Build Log',
+  },
+  {
+    slug: 'agentbot-open-source-community-token',
+    dateLabel: '13 Apr',
+    isoDate: '2026-04-13',
+    title: 'AgentBot: Open-Source Infrastructure for the AI Agent Economy',
+    excerpt:
+      'What Agentbot is, why it exists, how the community token works, and a realistic view of trading on Pump.fun. The platform is the destination — not the token.',
+    tags: ['Open Source', 'Community', 'Token', 'AI Agents'],
+    track: 'Field Notes',
+  },
+  {
     slug: 'hardening-agentic-stack',
     dateLabel: '10 Apr',
     isoDate: '2026-04-10',
@@ -29,6 +109,16 @@ export const blogPosts: BlogPostSummary[] = [
       'Xiaomi MiMo Token Plan — 1.6B credits for $100/mo. The model behind Agentbot reasoning. Plus OpenRouter for 500+ models.',
     tags: ['Models', 'Guide', 'MiMo', 'OpenRouter'],
     track: 'Shipping',
+  },
+  {
+    slug: 'security-patch-apr-9-2026',
+    dateLabel: '9 Apr',
+    isoDate: '2026-04-09',
+    title: 'Security Patch: Zero Vulnerabilities',
+    excerpt:
+      'We patched three dependency CVEs (hono, @hono/node-server, defu) and brought the platform to zero known vulnerabilities across both web and backend.',
+    tags: ['Security', 'Patch', 'Vulnerabilities', 'Audit'],
+    track: 'Build Log',
   },
   {
     slug: '9-hours-25-commits',
@@ -71,7 +161,7 @@ export const blogPosts: BlogPostSummary[] = [
     track: 'Build Log',
   },
   {
-    slug: 'mimo-v2-pro-powers-agentbot',
+    slug: 'mimo-v2-pro-production-case-study',
     dateLabel: '9 Apr',
     isoDate: '2026-04-09',
     title: 'How MiMo-V2-Pro Powers Every Agent on Agentbot — A Production Case Study',
@@ -188,16 +278,6 @@ export const blogPosts: BlogPostSummary[] = [
     excerpt:
       'We followed all 102 OpenClaw contributors. Here\'s why this matters for the AI agent ecosystem.',
     tags: ['Community', 'OpenClaw'],
-    track: 'Shipping',
-  },
-  {
-    slug: 'btcpay-agentbot',
-    dateLabel: '3 Apr',
-    isoDate: '2026-04-03',
-    title: 'BTCPay Agentbot: Bitcoin-Native Agent Payments',
-    excerpt:
-      'Headless Bitcoin infrastructure for AI agents. Non-custodial wallets, A2A BTC payments, Fast Sync, and 10GB pruned nodes.',
-    tags: ['Bitcoin', 'Payments'],
     track: 'Shipping',
   },
   {

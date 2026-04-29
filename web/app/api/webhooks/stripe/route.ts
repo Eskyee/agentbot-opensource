@@ -4,6 +4,7 @@ import { stripe } from '@/app/lib/stripe'
 import { prisma } from '@/app/lib/prisma'
 import { alertStripeFailure, sendAlert } from '@/app/lib/alerts'
 import { sendPaymentReceiptEmail } from '@/app/lib/email'
+import { signedFetch } from '@/app/lib/backend-client'
 
 // Fail closed: guard at module load
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
@@ -13,7 +14,7 @@ if (!webhookSecret) {
 }
 
 const planMap: Record<string, string> = {
-  underground: 'solo',  // legacy name → map to solo
+  autonomous: 'solo',  // legacy name → map to solo
   solo:        'solo',
   collective:  'collective',
   label:       'label',
@@ -69,14 +70,26 @@ export async function POST(request: Request) {
               await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
             }
           } catch (err) {
-            console.error(`[Webhook] Failed to update by userId, trying email:`, err)
+            console.error(`[Webhook] Failed to update by userId ${userId}, trying email:`, err)
             if (customerEmail) {
-              await prisma.user.upsert({
-                where: { email: customerEmail },
-                update: subscriptionData,
-                create: { email: customerEmail, ...subscriptionData },
-              })
-              await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
+              // Update only — never create. Creating a new user here risks duplicate
+              // accounts when the userId in metadata is stale or incorrect.
+              try {
+                await prisma.user.update({
+                  where: { email: customerEmail },
+                  data: subscriptionData,
+                })
+                console.log(`[Webhook] Updated user by email ${customerEmail} to plan ${mappedPlan}`)
+                await sendPaymentReceiptEmail(customerEmail, amount, mappedPlan)
+              } catch (emailErr) {
+                console.error(`[Webhook] No user found for email ${customerEmail} — skipping to avoid duplicate account`)
+                await sendAlert({
+                  title: 'Stripe Webhook Issue',
+                  message: `userId ${userId} not found and no user with email ${customerEmail} — skipping to avoid duplicate account.`,
+                  severity: 'warning',
+                  fields: { UserId: userId, Email: customerEmail, Issue: 'userId update failed, email fallback also failed' },
+                })
+              }
             }
           }
         } else if (customerEmail) {
@@ -103,6 +116,34 @@ export async function POST(request: Request) {
           console.error('[Webhook] No userId or email in checkout session!')
         }
 
+        // Ad campaign payment confirmed
+        if (session.metadata?.type === 'ad_campaign' && session.metadata?.campaignId) {
+          const campaignId = session.metadata.campaignId
+          const paymentId  = typeof session.payment_intent === 'string' ? session.payment_intent : null
+          try {
+            await prisma.ad_campaigns.update({
+              where: { id: campaignId },
+              data:  {
+                status:            'paid',
+                stripe_payment_id: paymentId,
+              },
+            })
+            console.log(`[Webhook] Ad campaign ${campaignId} marked paid`)
+            await sendAlert({
+              title:    '💰 Ad Campaign Paid',
+              message:  `Campaign ${campaignId} payment confirmed. Review and approve in /admin/ads.`,
+              severity: 'info',
+              fields: {
+                Campaign:  campaignId,
+                Amount:    `£${((session.amount_total ?? 0) / 100).toFixed(2)}`,
+                Advertiser: session.customer_details?.email ?? 'unknown',
+              },
+            }).catch(() => null)
+          } catch (err) {
+            console.error(`[Webhook] Failed to update ad campaign ${campaignId}:`, err)
+          }
+        }
+
         // Storage upgrades
         if (session.metadata?.type === 'storage_upgrade' && session.metadata?.userId) {
           const storageGB = 50
@@ -114,6 +155,21 @@ export async function POST(request: Request) {
             console.log(`[Webhook] Storage upgrade +${storageGB}GB for ${user.email}`)
           }
         }
+
+        // Trigger managed agent deployment if this was a new subscription
+        if (userId && mappedPlan !== 'free') {
+          console.log(`[Webhook] Triggering auto-provision for user ${userId}`);
+          signedFetch('/api/provision', {
+            method: 'POST',
+            body: JSON.stringify({
+              userId,
+              plan: mappedPlan,
+              autoProvision: true,
+              stripeSubscriptionId,
+            }),
+          }).catch(err => console.error('[Webhook] Auto-provision trigger failed:', err));
+        }
+
         break
       }
 

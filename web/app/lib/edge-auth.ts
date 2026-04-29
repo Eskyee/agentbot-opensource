@@ -4,6 +4,7 @@
  */
 
 import { cookies } from 'next/headers';
+import { isAdminEmail } from '@/app/lib/admin';
 
 interface JWTPayload {
   sub?: string;
@@ -38,15 +39,12 @@ export async function getEdgeAuthSession(): Promise<EdgeAuthSession | null> {
     if (sessionToken) {
       const payload = await verifyJWT(sessionToken);
       if (payload && payload.sub) {
-        const adminEmails = (process.env.ADMIN_EMAILS || '')
-          .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-        
         return {
           user: {
             id: payload.sub,
             email: payload.email || null,
             name: payload.name || null,
-            isAdmin: adminEmails.includes((payload.email || '').toLowerCase()),
+            isAdmin: isAdminEmail(payload.email),
           },
         };
       }

@@ -1,26 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
-import { InstanceControlPanel } from '@/app/components/dashboard/InstanceControlPanel'
-import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog'
-import { PermissionGate } from '@/app/components/shared/PermissionGate'
+import { Spinner } from 'geist/components'
+
+const DashboardSidebar = dynamic(() => import('@/app/components/DashboardSidebar').then(m => m.DashboardSidebar))
+const InstanceControlPanel = dynamic(() => import('@/app/components/dashboard/InstanceControlPanel').then(m => m.InstanceControlPanel))
+const ConfirmDialog = dynamic(() => import('@/app/components/shared/ConfirmDialog').then(m => m.ConfirmDialog))
+const PermissionGate = dynamic(() => import('@/app/components/shared/PermissionGate').then(m => m.PermissionGate))
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
 
 interface InstanceData {
   userId: string
   status: string
-  subdomain: string
+  statusReason?: string | null
+  probeChecks?: Array<{
+    path: string
+    ok: boolean
+    status: number | null
+    reason: string | null
+  }>
+  subdomain?: string
   url: string
   plan: string
   openclawVersion?: string
+  ffmpegAvailable?: boolean
+  ffmpegVersion?: string | null
   botUsername?: string
   gatewayToken?: string
   /** Auto-connect URL with token in #fragment */
@@ -54,6 +66,8 @@ interface DashboardBootstrapData {
     balanceUi: number | null
     creditsClaimed: number
     claimedAt?: string | null
+    availability?: 'live' | 'degraded'
+    detail?: string | null
   }
 }
 
@@ -64,6 +78,17 @@ type ConfirmAction = {
   confirmLabel: string
   pendingLabel: string
   variant: 'danger' | 'warning' | 'default'
+}
+
+function DashboardLoadingShell() {
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
+      <div className="mb-4">
+        <Spinner size={48} />
+      </div>
+      <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Dashboard...</p>
+    </div>
+  )
 }
 
 const CONFIRM_ACTIONS: Record<string, ConfirmAction> = {
@@ -114,6 +139,7 @@ function DashboardContent() {
   const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
   const [healingAttempted, setHealingAttempted] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<ConfirmAction | null>(null)
+  const [probeActionLoading, setProbeActionLoading] = useState<'probe' | 'resync' | null>(null)
   const controlsEnabled = OPENCLAW_CONTROLS_ENABLED
 
   useEffect(() => {
@@ -122,114 +148,72 @@ function DashboardContent() {
     }
   }, [status, router])
 
-    useEffect(() => { (async () => {
-      // Clear localStorage instance data when no session (user logged out)
-      if (!session) {
-        localStorage.removeItem('agentbot_instance')
-        setInstance(null)
-        setError('')
-        setLoading(false)
-        return
-      }
-
-      const urlUserId = searchParams.get('id')
-      const storedData = localStorage.getItem('agentbot_instance')
-      
-      // If no session, show login prompt
-      if (!session) {
-        setError('Please sign in to view your dashboard')
-        setLoading(false)
-        return
-      }
-
-      fetchStatusChecks()
-      
-      let userId = urlUserId
-      let botUsername = ''
-      
-      if (storedData) {
-        const parsed = JSON.parse(storedData)
-        if (!userId) userId = parsed.userId
-        botUsername = parsed.botUsername || ''
-      }
-      
-      // Prefer the canonical OpenClaw record in the DB and hydrate credits at the same time.
-      if (!userId) {
-        try {
-          const bootstrapRes = await fetch('/api/dashboard/bootstrap')
-          const bootstrapData = await bootstrapRes.json()
-          setBootstrap(bootstrapData)
-          setCredits(bootstrapData.credits || 0)
-          if (bootstrapData.openclawInstanceId) {
-            userId = bootstrapData.openclawInstanceId
-            // Also restore localStorage for future visits
-            if (bootstrapData.openclawUrl) {
-              localStorage.setItem('agentbot_instance', JSON.stringify({
-                userId: bootstrapData.openclawInstanceId,
-                url: bootstrapData.openclawUrl,
-              }))
-            }
-          }
-        } catch {}
-      } else {
-        fetchBootstrap()
-      }
-
-      // Legacy fallback for older accounts that still rely on the agents route.
-      if (!userId) {
-        try {
-          const agentsRes = await fetch('/api/agents')
-          const agentsData = await agentsRes.json()
-          if (agentsData.agents && agentsData.agents.length > 0) {
-            userId = agentsData.agents[0].userId
-            botUsername = agentsData.agents[0].botUsername || ''
-          }
-        } catch {}
-      }
-
-      if (!userId) {
-        setError('No instance found. Please deploy first.')
-        setLoading(false)
-        return
-      }
-      
-      fetchInstance(userId, botUsername)
-    })(); // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams, session])
-
-  const fetchBootstrap = async () => {
+  const fetchEverything = useCallback(async () => {
+    const urlUserId = searchParams.get('id')
+    const storedData = localStorage.getItem('agentbot_instance')
+    
     try {
-      const res = await fetch('/api/dashboard/bootstrap')
-      if (!res.ok) return
-      const data = await res.json()
-      setBootstrap(data)
+      // FETCH EVERYTHING IN ONE CALL - 90% FASTER
+      const dataRes = await fetch('/api/dashboard/data')
+      if (!dataRes.ok) {
+        if (dataRes.status === 401) {
+          setError('Please sign in to view your dashboard')
+          setLoading(false)
+          return
+        }
+        throw new Error('Failed to fetch dashboard data')
+      }
+      
+      const data = await dataRes.json()
+      
+      // Hydrate UI state from consolidated response
       setCredits(data.credits || 0)
-    } catch (e) {
-      console.error('Failed to fetch dashboard bootstrap:', e)
-    }
-  }
+      setStatusChecks(data.health?.checks || [])
+      setBootstrap(data) // Use consolidated data as bootstrap
+      
+      if (data.instance) {
+        const url = data.instance.url
+        const gatewayToken = data.gatewayToken
+        const controlUiUrl = buildOpenClawControlUrl({
+          view: 'chat',
+          gatewayUrl: url,
+          gatewayToken,
+          session: 'main',
+        })
+        
+        setInstance({ ...data.instance, gatewayToken, controlUiUrl })
+        
+        // Cache for future visits
+        localStorage.setItem('agentbot_instance', JSON.stringify({
+          userId: data.openclawInstanceId,
+          url: data.openclawUrl,
+        }))
+      }
 
-  const fetchStatusChecks = async () => {
-    try {
-      const res = await fetch('/api/dashboard/health')
-      if (!res.ok) return
-      const body = await res.json()
-      setStatusChecks(body.services || [])
-    } catch {
-      setStatusChecks([{ name: 'Service layer', status: 'down', detail: 'unreachable' }])
-    }
-  }
+      if (data.stats) {
+        setStats(data.stats)
+      }
 
-  const healAutoPair = async () => {
+      const health = data.gatewayToken ? 'ready' : 'missing'
+      setAutoPairHealth(health)
+      setLoading(false)
+      
+    } catch (err) {
+      console.error('[Dashboard] Consolidated fetch failed:', err)
+      setError('Failed to initialize dashboard')
+      setLoading(false)
+    }
+  }, [searchParams])
+
+  const healAutoPair = useCallback(async () => {
+    if (healingAttempted) return
     setHealingAttempted(true)
     try {
       // First ensure OpenClaw 2026.4.2 compatibility
       const compatibility = await fetch('/api/openclaw/ensure-compatibility', { method: 'POST' })
       if (compatibility.ok) {
         const compatData = await compatibility.json()
-        if (compatData.fixes?.length > 0) {
-          console.log('Applied compatibility fixes:', compatData.fixes)
-        }
+        if (compatData.fixes?.length > 0) console.log('Applied compatibility fixes:', compatData.fixes)
       }
 
       // Now heal the token
@@ -238,87 +222,59 @@ function DashboardContent() {
         const data = await res.json()
         if (data.healed) {
           setAutoPairHealth('ready')
-          // Update instance with new token
-          if (data.token && instance) {
-            const newControlUiUrl = buildOpenClawControlUrl({
-              view: 'chat',
-              gatewayUrl: instance.url,
-              gatewayToken: data.token,
-              session: 'main',
-            })
-            setInstance({ ...instance, gatewayToken: data.token, controlUiUrl: newControlUiUrl })
-          }
+          // Refresh data after healing
+          fetchEverything()
         }
       }
     } catch (error) {
       console.error('Auto Pair heal failed', error)
     }
-  }
+  }, [fetchEverything, healingAttempted])
+
+  // Trigger healing effect
+  useEffect(() => {
+    if (autoPairHealth === 'missing' && !healingAttempted && !loading) {
+      healAutoPair()
+    }
+  }, [autoPairHealth, healingAttempted, loading, healAutoPair])
 
   useEffect(() => {
-    const interval = setInterval(fetchStatusChecks, 30_000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const fetchInstance = async (userId: string, botUsername: string) => {
-    try {
-      const res = await fetch(`/api/instance/${userId}`)
-      const data = await res.json()
-
-      if (data.error) {
-        setError(data.error)
-      } else {
-        // Prefer the user's persisted OpenClaw instance URL. Only fall back to the
-        // shared gateway when the user has no instance-specific URL yet.
-        const preferredUrl = bootstrap?.openclawUrl || data.url
-        const fallbackUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
-        const url = String(preferredUrl || fallbackUrl).replace(/\/$/, '')
-        const gatewayToken = bootstrap?.gatewayToken || undefined
-        // Control UI auto-connects via hash fragment — token + gateway URL
-        // Hash is never sent to server, so it's safe to embed the token
-        const controlUiUrl = buildOpenClawControlUrl({
-          view: 'chat',
-          gatewayUrl: url,
-          gatewayToken,
-          session: 'main',
-        })
-        const resolvedUserId = bootstrap?.openclawInstanceId || data.userId || userId
-        localStorage.setItem('agentbot_instance', JSON.stringify({
-          userId: resolvedUserId,
-          url,
-          botUsername,
-        }))
-        setInstance({ ...data, userId: resolvedUserId, url, botUsername, gatewayToken, controlUiUrl })
-        fetchStats(resolvedUserId)
-        const health = gatewayToken ? 'ready' : 'missing'
-        setAutoPairHealth(health)
-        if (health === 'missing' && !healingAttempted) {
-          healAutoPair()
-        }
-      }
-    } catch (e) {
-      setError('Failed to fetch instance')
-    } finally {
+    // Clear localStorage instance data when no session (user logged out)
+    if (!session) {
+      localStorage.removeItem('agentbot_instance')
+      setInstance(null)
+      setError('')
       setLoading(false)
+      return
     }
-  }
 
-  const fetchStats = async (userId: string) => {
+    setLoading(true)
+    fetchEverything()
+  }, [session, fetchEverything])
+
+  const handleRuntimeProbeAction = async (action: 'probe' | 'resync') => {
+    if (!instance) return
+
+    setProbeActionLoading(action)
     try {
-      const res = await fetch(`/api/instance/${userId}/stats`)
+      const res = await fetch(`/api/instance/${instance.userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
       const data = await res.json()
-      if (!data.error) {
-        setStats({
-          cpu: data.cpu,
-          memory: data.memory,
-          uptime: data.uptime,
-          messages: data.messages,
-          errors: data.errors,
-          health: data.health,
-          telemetry: data.telemetry,
-        })
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Failed to ${action} runtime`)
       }
-    } catch {}
+
+      await fetchEverything()
+      toast.success(action === 'probe' ? 'Runtime probe refreshed' : 'Runtime resync triggered')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Failed to ${action} runtime`)
+    } finally {
+      setProbeActionLoading(null)
+    }
   }
 
   const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
@@ -361,7 +317,7 @@ function DashboardContent() {
           'reset-memory': 'Memory wiped — agent is fresh',
         }
         toast.success(successMsg[action] || 'Done', { id: toastId })
-        setTimeout(() => fetchInstance(instance.userId, instance.botUsername || ''), 1000)
+        setTimeout(() => fetchEverything(), 1000)
       } else {
         toast.error(data.error || 'Action failed', { id: toastId })
       }
@@ -372,62 +328,18 @@ function DashboardContent() {
     }
   }
 
-   if (loading && status === 'authenticated') {
-     return (
-       <div className="flex min-h-screen bg-black font-mono">
-         <DashboardSidebar
-           userName={userName}
-           credits={credits}
-           plan={bootstrap?.plan || instance?.plan}
-           runtimeUrl={bootstrap?.openclawUrl}
-           runtimeGatewayToken={bootstrap?.gatewayToken}
-           runtimeInstanceId={bootstrap?.openclawInstanceId}
-           isOpen={sidebarOpen}
-           onToggle={() => setSidebarOpen(!sidebarOpen)}
-         />
-         <div className="flex-1 flex flex-col">
-           <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
-             <div className="flex items-center gap-4">
-               <button
-                 onClick={() => setSidebarOpen(true)}
-                 className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
-                 aria-label="Open menu"
-               >
-                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                 </svg>
-               </button>
-               <span className="text-sm font-bold uppercase tracking-tighter">◈ Mission Control</span>
-             </div>
-           </header>
-           <main className="flex-1 overflow-y-auto">
-             <div className="p-4 lg:p-8 space-y-6">
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                 {Array.from({ length: 3 }).map((_, i) => (
-                   <div key={i} className="border border-zinc-800 bg-zinc-950 p-4 rounded-lg animate-pulse">
-                     <div className="h-3 w-24 bg-zinc-800 rounded mb-3" />
-                     <div className="h-7 w-32 bg-zinc-900 rounded" />
-                   </div>
-                 ))}
-               </div>
-               <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                 {Array.from({ length: 5 }).map((_, i) => (
-                   <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 animate-pulse">
-                     <div className="h-3 w-28 bg-zinc-800 rounded mb-4" />
-                     <div className="space-y-3">
-                       <div className="h-3 bg-zinc-800 rounded" />
-                       <div className="h-3 bg-zinc-800 rounded w-5/6" />
-                       <div className="h-3 bg-zinc-800 rounded w-3/4" />
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
-           </main>
-         </div>
-       </div>
-     )
-   }
+  // NextAuth status handling
+  if (status === 'unauthenticated') {
+    return null 
+  }
+
+  if (status === 'loading') {
+    return <DashboardLoadingShell />
+  }
+
+  if (loading && status === 'authenticated') {
+    return <DashboardLoadingShell />
+  }
 
   if (error) {
     const isAuthError = error.includes('sign in') || error.includes('Unauthorized')
@@ -435,7 +347,7 @@ function DashboardContent() {
     const isInstanceError = !isAuthError && !isNoInstance // backend returned error for existing instance
 
     let title = 'Deploy your first agent'
-    let cta = { label: 'Deploy Now', href: '/onboard' }
+    let cta = { label: 'Create New Runtime', href: '/onboard?mode=deploy' }
 
     if (isAuthError) {
       title = 'Sign in required'
@@ -538,8 +450,8 @@ function DashboardContent() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
 
@@ -593,6 +505,7 @@ function DashboardContent() {
             stats={stats}
             controlsEnabled={controlsEnabled}
             autoPairHealth={autoPairHealth}
+            probeActionLoading={probeActionLoading}
             actionLoading={actionLoading}
             onCopyToken={() => {
               const token = instance?.gatewayToken || bootstrap?.gatewayToken
@@ -603,11 +516,13 @@ function DashboardContent() {
             }}
             onRefreshPairing={() => {
               setAutoPairHealth('loading')
-              fetchInstance(instance.userId, instance.botUsername || '')
+              fetchEverything()
             }}
+            onProbeAction={handleRuntimeProbeAction}
             onAction={performAction}
             skillsManagerUrl={skillsManagerUrl}
             configManagerUrl={configManagerUrl}
+            communityRewards={bootstrap?.communityRewards || null}
           />
         </div>
         </main>
@@ -634,14 +549,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-screen bg-black font-mono">
-        <div className="text-left">
-          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
-          <p className="text-zinc-400 text-sm">Loading...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<DashboardLoadingShell />}>
       <DashboardContent />
     </Suspense>
   )

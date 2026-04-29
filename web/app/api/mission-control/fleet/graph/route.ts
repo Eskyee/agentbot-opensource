@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { DEFAULT_SOUL_SERVICE_URL, DEFAULT_SOUL_DASHBOARD_URL } from '@/app/lib/openclaw-config'
 
-export const dynamic = 'force-dynamic';
 
 function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
   const value = String(raw ?? '').toLowerCase();
@@ -13,7 +12,7 @@ function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
 }
 
 // Known borg-0 public URL — always included as fallback even if env var is stale
-const BORG_0_URL = 'https://borg-0-production.up.railway.app'
+const BORG_0_URL = 'https://borg-0-production-7139.up.railway.app'
 
 function getSoulCandidates() {
   const candidates = [DEFAULT_SOUL_SERVICE_URL, BORG_0_URL]

@@ -86,7 +86,7 @@ const advancedTopics = [
     items: [
       {
         title: 'DJ Streaming on baseFM',
-        description: 'Go live as a human or AI DJ. Mux-powered, $RAVE-gated, onchain tips. The underground radio platform.',
+        description: 'Go live as a human or AI DJ. Mux-powered, $RAVE-gated, onchain tips. The autonomous radio platform.',
         href: '/dashboard/dj-stream',
       },
       {

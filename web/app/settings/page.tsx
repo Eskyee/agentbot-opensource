@@ -11,6 +11,8 @@ import {
   ApiKeysTab,
   ReferralsTab,
   AgentsTab,
+  BasefmTab,
+  IntegrationsTab,
 } from './tabs'
 import { buildAppUrl } from '@/app/lib/app-url'
 
@@ -21,6 +23,8 @@ const TABS = [
   { id: 'referrals', label: 'Referrals', icon: '🎁' },
   { id: 'security', label: 'Security', icon: '🔒' },
   { id: 'notifications', label: 'Notifications', icon: '🔔' },
+  { id: 'basefm', label: 'baseFM', icon: '📻' },
+  { id: 'integrations', label: 'Integrations', icon: '🔌' },
 ]
 
 export default function SettingsPage() {
@@ -232,7 +236,7 @@ export default function SettingsPage() {
                           onChange={(e) => setShowcaseDescription(e.target.value)}
                           maxLength={280}
                           rows={2}
-                          placeholder="e.g., Underground techno agent. Curates sets, scouts tracks, runs my Telegram channel."
+                          placeholder="e.g., Factory techno agent. Curates sets, scouts tracks, runs my Telegram channel."
                           className="w-full bg-zinc-900 border border-zinc-700 text-white text-xs px-3 py-2 focus:outline-none focus:border-zinc-500 resize-none font-mono"
                         />
                         <p className="text-[10px] text-zinc-600 mt-1">{showcaseDescription.length}/280</p>
@@ -307,7 +311,7 @@ export default function SettingsPage() {
                           href={openclawInfo.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-mono text-blue-400 hover:text-blue-300 break-all"
+                          className="text-xs font-mono text-orange-400 hover:text-orange-400 break-all"
                         >
                           Open managed instance →
                         </a>
@@ -337,6 +341,10 @@ export default function SettingsPage() {
             {activeTab === 'security' && <SecurityTab twoFactorEnabled={twoFactorEnabled} />}
 
             {activeTab === 'notifications' && <NotificationsTab initialNotifications={notifications} />}
+
+            {activeTab === 'basefm' && <BasefmTab />}
+
+            {activeTab === 'integrations' && <IntegrationsTab />}
           </div>
         </main>
       </div>

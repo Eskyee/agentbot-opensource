@@ -5,7 +5,7 @@ import { prisma } from '@/app/lib/prisma'
 import { isTrialActive } from '@/app/lib/trial-utils'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 import { acquireWorkloadSlot, releaseWorkloadSlot, type WorkloadTicket } from '@/app/lib/workload-gate'
-import { getBackendApiUrl, getInternalApiKey } from '@/app/api/lib/api-keys'
+import { signedFetch } from '@/app/lib/backend-client'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       .filter(Boolean)
 
     // Hardcoded admin fallback — env var encoding can break on Vercel
-    const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.raveculture.xyz', 'rbasefm@icloud.com']
+    const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
     const allAdmins = [...new Set([...adminEmails, ...HARDCODED_ADMINS])]
 
     // Admin check — session email ONLY, never body email
@@ -147,14 +147,12 @@ export async function POST(request: NextRequest) {
       agentType: agentType || 'creative',
     }
 
-    const backendUrl = getBackendApiUrl()
-    const internalKey = getInternalApiKey()
-
-    const enqueueRes = await fetch(`${backendUrl}/api/platform-jobs/provision`, {
+    const enqueueRes = await signedFetch('/api/platform-jobs/provision', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${internalKey}`,
+        'X-User-Email': userEmail,
+        'X-User-Plan': plan || 'solo',
+        'X-Stripe-Subscription-Id': stripeSubscriptionId || '',
       },
       body: JSON.stringify({
         ...legacyPayload,
@@ -235,4 +233,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export const dynamic = 'force-dynamic';

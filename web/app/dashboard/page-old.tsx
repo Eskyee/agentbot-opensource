@@ -411,7 +411,7 @@ function DashboardContent() {
     const isInstanceError = !isAuthError && !isNoInstance // backend returned error for existing instance
 
     let title = 'Deploy your first agent'
-    let cta = { label: 'Deploy Now', href: '/onboard' }
+    let cta = { label: 'Create New Runtime', href: '/onboard?mode=deploy' }
 
     if (isAuthError) {
       title = 'Sign in required'
@@ -566,7 +566,7 @@ function DashboardContent() {
                         href={`https://t.me/${instance?.botUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
+                        className="text-orange-400 hover:underline"
                       >
                         @{instance?.botUsername}
                       </a>
@@ -819,7 +819,7 @@ function DashboardContent() {
                   Documentation
                 </a>
                 <a
-                  href="https://docs.agentbot.raveculture.xyz"
+                  href="https://agentbot.sh/documentation"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"

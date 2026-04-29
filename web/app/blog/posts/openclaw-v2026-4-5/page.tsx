@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Agentbot Update — OpenClaw v2026.4.5',
     description: 'Video generation, music generation, new providers, multilingual Control UI. All live.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/openclaw-v2026-4-5',
+    url: 'https://agentbot.sh/blog/posts/openclaw-v2026-4-5',
   },
 }
 

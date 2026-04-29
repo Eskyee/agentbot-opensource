@@ -95,8 +95,8 @@ export default function BillingPage() {
 
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'User'
 
-  const buyPlan = (priceId: string) => {
-    window.location.href = `/api/stripe/checkout?plan=${priceId}`
+  const buyPlan = (planId: string) => {
+    window.location.href = `/api/stripe/checkout?plan=${planId}`
   }
 
   if (status === 'loading') {

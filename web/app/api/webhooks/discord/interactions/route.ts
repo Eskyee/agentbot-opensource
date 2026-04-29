@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * Discord Application Interaction Endpoint
  *
- * SECURITY PATTERN FIX (underground.ts / mux.ts templates):
+ * SECURITY PATTERN FIX (autonomous.ts / mux.ts templates):
  *
  *  CRITICAL: The previous implementation used SHA256 for signature verification.
  *  Discord Application interactions MUST be verified with Ed25519 using the
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       case 'ping':    responseContent = '🏓 Pong!'; break;
       case 'status':  responseContent = '✅ Agent is online and ready'; break;
       case 'help':    responseContent = 'Available commands:\n- /ping\n- /status\n- /help\n- /stream'; break;
-      case 'stream':  responseContent = '🔴 Check live streams: https://agentbot.raveculture.xyz/live'; break;
+      case 'stream':  responseContent = '🔴 Check live streams: https://agentbot.sh/live'; break;
       default:        responseContent = `Unknown command: ${commandName ?? 'none'}`;
     }
 
