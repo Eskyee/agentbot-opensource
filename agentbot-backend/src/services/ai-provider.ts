@@ -73,7 +73,12 @@ export class AIProviderService {
   private static OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
   // Vercel AI Gateway setup for mimo-v2-pro
-  private static VERCEL_AI_GATEWAY_KEY = process.env.VERCEL_AI_GATEWAY_KEY || 'vck_7Hq7rESMo6dHYXbYqRX3jJd3spWNzI2jMVsdLJAxtiGV1LWzGz11Tb8K';
+  // Fail-closed: never fall back to a hardcoded literal. The previous default
+  // committed an active credential to git history; the caller must set
+  // VERCEL_AI_GATEWAY_KEY in env or this provider will reject every request.
+  // (The leaked literal must be rotated in the Vercel dashboard separately —
+  // removing the fallback here only stops new deploys from reusing it.)
+  private static VERCEL_AI_GATEWAY_KEY = process.env.VERCEL_AI_GATEWAY_KEY || '';
   private static VERCEL_AI_GATEWAY_URL = 'https://gateway.ai.vercel.com/v1';
 
   /**

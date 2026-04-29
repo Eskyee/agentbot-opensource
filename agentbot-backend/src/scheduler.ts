@@ -2,6 +2,17 @@
  * Inline scheduled tasks — replaces the separate BullMQ worker service.
  * Import and call startScheduler() from the main API process.
  * No Redis needed. Uses setInterval + direct DB queries.
+ *
+ * Reliability contract (matches platform_jobs):
+ *   1. Task rows are claimed atomically with FOR UPDATE SKIP LOCKED so
+ *      multiple replicas / overlapping ticks never process the same row.
+ *   2. A task is only marked 'completed' if the downstream agent call
+ *      actually succeeded. On failure we either re-queue with exponential
+ *      backoff (attempts < max_attempts) or mark 'failed' so it is visible.
+ *   3. Each interval is guarded by an isRunning flag — setInterval does NOT
+ *      skip a tick when the previous async callback is still in flight, so
+ *      without this flag a slow Railway provisioning pass would spawn an
+ *      unbounded number of concurrent processors.
  */
 
 import { Pool } from 'pg';
@@ -13,60 +24,179 @@ const pool = new Pool({ connectionString: DATABASE_URL });
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
 let platformJobInterval: ReturnType<typeof setInterval> | null = null;
 
+// Overlap guards — see header comment.
+let scheduledTasksRunning = false;
+let platformJobsRunning = false;
+
+interface ClaimedTask {
+  id: string | number;
+  agent_id: string | null;
+  user_id: string | null;
+  config: { agentUrl?: string } | null;
+  attempts: number;
+  max_attempts: number;
+}
+
 /**
- * Process scheduled tasks that are due.
- * Checks the scheduled_tasks table for tasks with status 'pending'
- * and next_run_at <= NOW().
+ * Atomically claim up to `limit` due tasks. Mirrors platform_jobs.claimNextJob:
+ * the SELECT ... FOR UPDATE SKIP LOCKED inside a CTE runs in the same statement
+ * as the UPDATE, so no other replica/tick can claim the same row.
+ */
+async function claimDueTasks(limit: number): Promise<ClaimedTask[]> {
+  const result = await pool.query<ClaimedTask>(
+    `WITH due AS (
+       SELECT id
+       FROM scheduled_tasks
+       WHERE status = 'pending' AND next_run_at <= NOW()
+       ORDER BY next_run_at ASC
+       LIMIT $1
+       FOR UPDATE SKIP LOCKED
+     )
+     UPDATE scheduled_tasks t
+     SET
+       status      = 'running',
+       attempts    = t.attempts + 1,
+       last_run_at = NOW(),
+       locked_at   = NOW(),
+       updated_at  = NOW()
+     FROM due
+     WHERE t.id = due.id
+     RETURNING t.id, t.agent_id, t.user_id, t.config, t.attempts, t.max_attempts`,
+    [limit]
+  );
+  return result.rows;
+}
+
+/**
+ * Recover tasks whose worker died mid-flight (status='running' for >10min with
+ * no completion). Same pattern as requeueStaleRunningJobs in platform-jobs.
+ */
+async function requeueStaleRunningTasks(): Promise<void> {
+  await pool.query(
+    `UPDATE scheduled_tasks
+     SET
+       status      = 'pending',
+       locked_at   = NULL,
+       next_run_at = NOW(),
+       updated_at  = NOW(),
+       error       = COALESCE(error, 'Recovered after stale worker lock')
+     WHERE status = 'running'
+       AND locked_at IS NOT NULL
+       AND locked_at < NOW() - INTERVAL '10 minutes'`
+  );
+}
+
+async function markCompleted(taskId: ClaimedTask['id']): Promise<void> {
+  await pool.query(
+    `UPDATE scheduled_tasks
+     SET status = 'completed', locked_at = NULL, error = NULL, updated_at = NOW()
+     WHERE id = $1`,
+    [taskId]
+  );
+}
+
+async function markFailureOrRetry(task: ClaimedTask, errorMessage: string): Promise<void> {
+  const shouldRetry = task.attempts < task.max_attempts;
+  if (shouldRetry) {
+    // Linear-then-capped backoff (30s * attempts, max 5min) — matches platform_jobs.
+    const backoffSeconds = Math.min(30 * task.attempts, 300);
+    await pool.query(
+      `UPDATE scheduled_tasks
+       SET
+         status      = 'pending',
+         next_run_at = NOW() + ($2 || ' seconds')::interval,
+         locked_at   = NULL,
+         error       = $3,
+         updated_at  = NOW()
+       WHERE id = $1`,
+      [task.id, String(backoffSeconds), errorMessage]
+    );
+    console.warn(
+      `[Scheduler] Task ${task.id} failed (attempt ${task.attempts}/${task.max_attempts}); ` +
+      `retrying in ${backoffSeconds}s — ${errorMessage}`
+    );
+    return;
+  }
+  await pool.query(
+    `UPDATE scheduled_tasks
+     SET status = 'failed', locked_at = NULL, error = $2, updated_at = NOW()
+     WHERE id = $1`,
+    [task.id, errorMessage]
+  );
+  console.error(
+    `[Scheduler] Task ${task.id} permanently failed after ${task.attempts} attempts: ${errorMessage}`
+  );
+}
+
+async function executeTask(task: ClaimedTask): Promise<void> {
+  const agentUrl = task.config?.agentUrl;
+  if (!agentUrl) {
+    // No-op tasks (e.g. config-only) are still real work — mark completed.
+    console.log(`[Scheduler] Task ${task.id} has no agentUrl — completing as no-op`);
+    await markCompleted(task.id);
+    return;
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${agentUrl}/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskId: task.id, config: task.config }),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch (fetchErr: unknown) {
+    const message = fetchErr instanceof Error ? fetchErr.message : String(fetchErr);
+    await markFailureOrRetry(task, `Agent fetch failed: ${message}`);
+    return;
+  }
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    await markFailureOrRetry(
+      task,
+      `Agent ${agentUrl} returned ${res.status}: ${text.slice(0, 200) || res.statusText}`
+    );
+    return;
+  }
+
+  // We only care that the agent acknowledged. Body parsing is best-effort —
+  // its failure should not flip the task back to pending.
+  await res.json().catch(() => null);
+  console.log(`[Scheduler] Task ${task.id} completed successfully`);
+  await markCompleted(task.id);
+}
+
+/**
+ * Process scheduled tasks that are due. Atomic claim + per-task settle.
  */
 async function processScheduledTasks(): Promise<void> {
   try {
-    const result = await pool.query(
-      `SELECT id, agent_id, user_id, config FROM scheduled_tasks 
-       WHERE status = 'pending' AND next_run_at <= NOW() 
-       LIMIT 10`
-    );
+    await requeueStaleRunningTasks();
 
-    for (const task of result.rows) {
-      const { id: taskId, agent_id: agentId, user_id: userId, config: taskConfig } = task;
-      
-      console.log(`[Scheduler] Executing task ${taskId} for agent ${agentId}`);
-      
-      // Mark as running
-      await pool.query(
-        `UPDATE scheduled_tasks SET status = 'running', last_run_at = NOW() WHERE id = $1`,
-        [taskId]
-      ).catch(err => console.error(`[Scheduler] Failed to update task status:`, err));
+    const tasks = await claimDueTasks(10);
+    if (tasks.length === 0) return;
 
-      // Call agent if URL configured
-      const agentUrl = taskConfig?.agentUrl;
-      if (agentUrl) {
-        try {
-          const res = await fetch(`${agentUrl}/execute`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ taskId, config: taskConfig }),
-            signal: AbortSignal.timeout(30000),
-          });
-          const result = await res.json();
-          console.log(`[Scheduler] Task ${taskId} completed:`, result);
-        } catch (fetchErr: any) {
-          console.error(`[Scheduler] Task ${taskId} agent call failed:`, fetchErr.message);
-        }
+    for (const task of tasks) {
+      try {
+        await executeTask(task);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`[Scheduler] Unexpected error executing task ${task.id}:`, message);
+        await markFailureOrRetry(task, `Unhandled scheduler error: ${message}`).catch((e) =>
+          console.error(`[Scheduler] Failed to settle task ${task.id} after error:`, e)
+        );
       }
-
-      // Mark completed
-      await pool.query(
-        `UPDATE scheduled_tasks SET status = 'completed', updated_at = NOW() WHERE id = $1`,
-        [taskId]
-      ).catch(err => console.error(`[Scheduler] Failed to mark task completed:`, err));
     }
-  } catch (err: any) {
-    // 42P01 = undefined_table — DB schema not ready yet (race on first boot)
-    if (err.code === '42P01') {
+  } catch (err: unknown) {
+    const code = (err as { code?: string } | null)?.code;
+    // 42P01 = undefined_table — DB schema not ready yet (race on first boot).
+    if (code === '42P01') {
       console.warn('[Scheduler] scheduled_tasks table not ready yet — will retry next tick');
       return;
     }
-    console.error('[Scheduler] Error processing tasks:', err.message);
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[Scheduler] Error processing tasks:', message);
   }
 }
 
@@ -76,6 +206,34 @@ async function processScheduledTasks(): Promise<void> {
 async function processSkillExecutions(): Promise<void> {
   // Skill execution is handled by the agent container, not the backend.
   // This is a no-op placeholder for future direct execution if needed.
+}
+
+async function tickScheduledTasks(): Promise<void> {
+  if (scheduledTasksRunning) {
+    // Previous tick still in flight — skip this one. Avoids unbounded concurrency
+    // when DB or downstream agents are slow.
+    return;
+  }
+  scheduledTasksRunning = true;
+  try {
+    await processScheduledTasks();
+    await processSkillExecutions();
+  } finally {
+    scheduledTasksRunning = false;
+  }
+}
+
+async function tickPlatformJobs(): Promise<void> {
+  if (platformJobsRunning) return;
+  platformJobsRunning = true;
+  try {
+    await processPlatformJobs();
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[Scheduler] Platform jobs tick failed:', message);
+  } finally {
+    platformJobsRunning = false;
+  }
 }
 
 /**
@@ -89,18 +247,17 @@ export function startScheduler(): void {
   }
 
   console.log('[Scheduler] Starting inline task scheduler (scheduled tasks every 30s, platform jobs every 5s)');
-  
-  // Run immediately on start, then every 30 seconds
-  processScheduledTasks();
-  processPlatformJobs().catch((err) => console.error('[Scheduler] Platform jobs failed:', err));
-  
-  schedulerInterval = setInterval(async () => {
-    await processScheduledTasks();
-    await processSkillExecutions();
+
+  // Kick off immediately so we don't wait one full tick on boot.
+  void tickScheduledTasks();
+  void tickPlatformJobs();
+
+  schedulerInterval = setInterval(() => {
+    void tickScheduledTasks();
   }, 30_000);
 
-  platformJobInterval = setInterval(async () => {
-    await processPlatformJobs();
+  platformJobInterval = setInterval(() => {
+    void tickPlatformJobs();
   }, 5_000);
 }
 

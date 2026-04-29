@@ -280,6 +280,15 @@ CREATE INDEX IF NOT EXISTS idx_scheduled_tasks_due
   ON scheduled_tasks(status, next_run_at)
   WHERE status = 'pending';
 
+-- Migration: scheduled_tasks reliability columns (safe on existing DBs).
+-- attempts/max_attempts/error/locked_at let processScheduledTasks behave like
+-- platform_jobs: bounded retries with backoff, stale-claim recovery, and a
+-- real failure surface instead of "always mark completed."
+ALTER TABLE scheduled_tasks ADD COLUMN IF NOT EXISTS attempts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE scheduled_tasks ADD COLUMN IF NOT EXISTS max_attempts INTEGER NOT NULL DEFAULT 3;
+ALTER TABLE scheduled_tasks ADD COLUMN IF NOT EXISTS error TEXT;
+ALTER TABLE scheduled_tasks ADD COLUMN IF NOT EXISTS locked_at TIMESTAMPTZ;
+
 CREATE TABLE IF NOT EXISTS platform_jobs (
   id TEXT PRIMARY KEY,
   user_id TEXT,
