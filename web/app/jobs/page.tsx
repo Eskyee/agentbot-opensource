@@ -441,7 +441,7 @@ function SponsorsSection() {
   return (
     <div>
       {/* Agentbot Sponsorship Banner */}
-      <div className="border border-blue-800 bg-gradient-to-r from-orange-900/30 to-green-900/30 p-6 mb-8">
+      <div className="border border-orange-800 bg-gradient-to-r from-orange-900/30 to-green-900/30 p-6 mb-8">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-white font-bold text-lg">Support Agentbot</h3>

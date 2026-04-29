@@ -6,7 +6,7 @@
 
 <img src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeigkpl3kax3x5wpx4xyyfldhyq6hqcwlihz5ku4cxc4ltufow4osyi" alt="Factory AI" width="900" />
 
-[![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.21-EF6F2E)](https://github.com/OpenClaw/openclaw)
+[![Runtime](https://img.shields.io/badge/runtime-OpenClaw_2026.4.26-EF6F2E)](https://github.com/OpenClaw/openclaw)
 [![Website](https://img.shields.io/badge/site-agentbot.sh-black)](https://agentbot.sh)
 [![Docs](https://img.shields.io/badge/docs-live-EF6F2E)](https://agentbot.sh/documentation)
 [![Discord](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/vTPG4vdV6D)
@@ -86,4 +86,3 @@ npm run test    # Identity and Logic verification
 ## License
 
 MIT
-

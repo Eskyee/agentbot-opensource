@@ -1,54 +1,39 @@
 import Link from 'next/link'
 import { MarketplaceClient } from '@/app/components/MarketplaceClient'
 import { formatPublicCount, getPublicPlatformStats } from '@/app/lib/public-platform-stats'
+import { prisma } from '@/app/lib/prisma'
 
 export const metadata = {
   title: 'Marketplace — Agentbot',
   description: 'Gordon-Approved production agents. Zero slop. Tuned for high-performance crew operations.',
 }
 
+export const dynamic = 'force-dynamic'
 
-const templates = [
-  {
-    name: 'the-strategist',
-    role: 'Mission Planning Agent',
-    description: 'Advanced reasoning for complex crew operations. Powered by DeepSeek R1. Plans tours, logistics, and resource allocation.',
-    skills: ['Mission Planning', 'Logistics', 'Resource Analysis', 'A2A Coordination'],
-    popular: true,
-    tier: 'Label',
-    brain: 'DeepSeek R1'
-  },
-  {
-    name: 'crew-manager',
-    role: 'Operations & Finance Agent',
-    description: 'The backbone of your collective. Manages autonomous royalty splits, talent bookings, and treasury reporting.',
-    skills: ['Royalty Splits', 'Talent Booking', 'Treasury Guard', 'USDC Payments'],
-    popular: true,
-    tier: 'Factory',
-    brain: 'Llama 3.3'
-  },
-  {
-    name: 'sound-system',
-    role: 'Automation & Feedback Agent',
-    description: 'Real-time automation for soundsystems. Monitors Mux streams, handles $RAVE gating, and fast community feedback.',
-    skills: ['Mux Monitor', 'RAVE Gating', 'Fast Feedback', 'Live Traces'],
-    popular: true,
-    tier: 'Free',
-    brain: 'Mistral 7B'
-  },
-  {
-    name: 'the-developer',
-    role: 'Logic & Scripting Agent',
-    description: 'Expert agent for building custom logic. Generates smart contracts, shell scripts, and OpenClaw skill extensions.',
-    skills: ['Code Gen', 'Scripting', 'Contract Audit', 'Skill Builder'],
-    popular: false,
-    tier: 'Collective',
-    brain: 'Qwen 2.5'
-  }
-]
+async function getTemplates() {
+  const agents = await prisma.agent.findMany({
+    where: { status: 'template' },
+    orderBy: { createdAt: 'asc' },
+  })
+  return agents.map((a) => {
+    const cfg = (a.config as Record<string, any>) || {}
+    return {
+      name: a.name,
+      role: cfg.role || a.name,
+      description: cfg.description || a.showcaseDescription || '',
+      skills: cfg.skills || [],
+      popular: true,
+      tier: cfg.tier || 'solo',
+      brain: cfg.brain || a.model || 'Unknown',
+    }
+  })
+}
 
 export default async function MarketplacePage() {
-  const stats = await getPublicPlatformStats(templates.length)
+  const [templates, stats] = await Promise.all([
+    getTemplates(),
+    getPublicPlatformStats(0),
+  ])
 
   return (
     <main className="min-h-screen bg-black text-white font-mono">
@@ -92,29 +77,6 @@ export default async function MarketplacePage() {
         </section>
 
         <MarketplaceClient templates={templates} />
-
-        <section className="mt-12 sm:mt-16 pt-8 border-t border-zinc-800">
-          <div className="max-w-3xl">
-            <span className="text-[10px] uppercase tracking-widest text-zinc-600 block mb-4">Verified Skill Market</span>
-            <h3 className="text-lg font-bold uppercase tracking-tight mb-3">Trust Before Money</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-              Users can sell and buy skills here, but every listing should pass staged verification first: static scan, publisher identity, install guardrails, and human review for anything non-trivial. The goal is closer to a verified plugin registry than a raw code dump.
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                ['Scan', 'Block obvious risky code before listing'],
-                ['Verify', 'Bind listings to a real publisher identity'],
-                ['Sandbox', 'Test install and runtime behavior safely'],
-                ['Review', 'Manual approval before paid promotion'],
-              ].map(([label, body]) => (
-                <div key={label} className="border border-zinc-800 bg-zinc-950/40 px-4 py-4">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-600">{label}</div>
-                  <p className="mt-2 text-xs text-zinc-400 leading-relaxed">{body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         <div className="mt-12 sm:mt-16 pt-8 border-t border-zinc-800">
           <div className="max-w-2xl">

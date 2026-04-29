@@ -27,7 +27,7 @@ export default function AgenticInfrastructurePost() {
               The Agentic Infrastructure Shift
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Industry</span>
+              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Industry</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">AI Agents</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Infrastructure</span>
             </div>

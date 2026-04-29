@@ -110,7 +110,7 @@ export default function TestStreamClient() {
               <button
                 onClick={createStream}
                 disabled={loading}
-                className="w-full bg-orange-600 hover:bg-blue-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
               >
                 {loading ? 'Creating...' : 'Create Stream'}
               </button>
@@ -123,7 +123,7 @@ export default function TestStreamClient() {
               <button
                 onClick={checkLive}
                 disabled={loading}
-                className="w-full bg-orange-600 hover:bg-blue-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
               >
                 {loading ? 'Loading...' : 'Get Live DJs'}
               </button>

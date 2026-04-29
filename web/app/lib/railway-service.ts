@@ -176,6 +176,35 @@ export async function resolveRailwayService(params: {
   return match
 }
 
+export async function deployRailwayServiceImage(params: {
+  serviceId: string
+  environmentId: string
+  image: string
+}) {
+  await railwayGql(
+    `mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+      serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+    }`,
+    {
+      serviceId: params.serviceId,
+      environmentId: params.environmentId,
+      input: {
+        source: { image: params.image },
+      },
+    }
+  )
+
+  await railwayGql(
+    `mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+      serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+    }`,
+    {
+      serviceId: params.serviceId,
+      environmentId: params.environmentId,
+    }
+  )
+}
+
 export async function restartRailwayService(
   serviceId: string,
   environmentId: string

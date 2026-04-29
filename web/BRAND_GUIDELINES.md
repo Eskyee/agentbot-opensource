@@ -82,9 +82,9 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 ### Accents
 | Token | Value | Usage |
 |---|---|---|
-| `text-blue-500` | `#EF6F2E` | Section labels, active states, links |
-| `border-blue-500/30` | `rgba(239,111,46,0.3)` | Active badges |
-| `bg-blue-500/30` | `rgba(239,111,46,0.3)` | Selection highlight |
+| `text-orange-500` | `#EF6F2E` | Section labels, active states, links |
+| `border-orange-500/30` | `rgba(239,111,46,0.3)` | Active badges |
+| `bg-orange-500/30` | `rgba(239,111,46,0.3)` | Selection highlight |
 | `bg-white` | `#fafafa` | Primary CTA buttons |
 
 ### Status
@@ -98,7 +98,7 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 ### Rules
 - **No gradients** — flat colors only
 - **No transparency overlays** on backgrounds
-- **Orange (`#EF6F2E`)** is the primary accent — mapped to Tailwind `blue-500` via config override
+- **Orange (`#EF6F2E`)** is the primary accent — use `text-orange-400`, `bg-orange-500`, `border-orange-600` etc. Never use `blue-*`, `sky-*`, `indigo-*`, `cyan-*`, or `violet-*` accent classes.
 - Borders always `border-zinc-800` (interactive) or `border-zinc-900` (structural dividers)
 
 ---
@@ -107,7 +107,7 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 
 ### Page Structure
 ```tsx
-<main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+<main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono">
   {/* Hero section — no border-top */}
   <section className="max-w-7xl mx-auto px-6 py-32 md:py-44">
     ...
@@ -228,7 +228,7 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 
 ```tsx
 // Section label
-<Badge variant="outline" className="border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest">
+<Badge variant="outline" className="border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest">
   Platform Operator Protocol
 </Badge>
 
@@ -238,7 +238,7 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 </Badge>
 
 // Status badge
-<Badge variant="outline" className="text-[9px] uppercase tracking-widest text-blue-500 border-blue-500/30">
+<Badge variant="outline" className="text-[9px] uppercase tracking-widest text-orange-500 border-orange-500/30">
   Popular
 </Badge>
 
@@ -250,7 +250,7 @@ font-sans  (Geist Sans — body text only in content-heavy pages like /why, /lea
 
 ### Badges — Rules
 - **Always** `text-[10px] uppercase tracking-widest` (or `text-[9px]` for tight spaces)
-- Section labels: `border-zinc-800 text-blue-500`
+- Section labels: `border-zinc-800 text-orange-500`
 - Categories: `variant="secondary"`
 - Pills/chips: `border-zinc-900 text-zinc-500`
 

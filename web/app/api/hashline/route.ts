@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import {
   readWithHashes,
   formatWithHashes,
@@ -21,6 +22,26 @@ import {
 } from '@/app/lib/hashline'
 
 /**
+ * Admin-only gate — hashline is a read-any/write-any-file primitive.
+ * It MUST NOT be reachable by ordinary authenticated users.
+ */
+async function requireAdmin() {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return { ok: false as const, status: 401, error: 'Unauthorized' }
+  }
+  // Authoritative check via env-backed allowlist only. The JWT `isAdmin`
+  // claim is set at login and cached for up to 30 days, so relying on it
+  // with `||` would keep removed admins privileged until token expiry.
+  // Every other admin-gated route in the codebase uses isAdminEmail alone
+  // (e.g. /api/admin/summary, /api/wallet-monitor/status).
+  if (!isAdminEmail(session.user.email)) {
+    return { ok: false as const, status: 403, error: 'Forbidden' }
+  }
+  return { ok: true as const, session }
+}
+
+/**
  * GET /api/hashline?path=/path/to/file.ts
  *
  * Returns file content with hash markers for each line.
@@ -28,9 +49,9 @@ import {
  */
 export async function GET(req: NextRequest) {
   try {
-    const session = await getAuthSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const gate = await requireAdmin()
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status })
     }
 
     const { searchParams } = new URL(req.url)
@@ -97,9 +118,9 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const session = await getAuthSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const gate = await requireAdmin()
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status })
     }
 
     const body = await req.json()
@@ -204,9 +225,9 @@ export async function POST(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   try {
-    const session = await getAuthSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const gate = await requireAdmin()
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status })
     }
 
     const { searchParams } = new URL(req.url)

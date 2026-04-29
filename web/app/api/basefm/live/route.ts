@@ -10,6 +10,7 @@ interface DjSessionRow {
   mux_stream_id: string
   started_at: Date
   status: string
+  metadata: unknown
 }
 
 interface MuxLiveStream {
@@ -20,6 +21,7 @@ interface MuxLiveStream {
   metadata?: {
     dj_wallet?: string
     dj_name?: string
+    dj_city?: string
   }
   created_at: number
 }
@@ -34,6 +36,7 @@ function getMuxCredentials() {
 function toLiveDj(args: {
   id: string
   name: string
+  city?: string | null
   wallet: string | null
   playbackId: string | null
   streamKey?: string | null
@@ -46,6 +49,7 @@ function toLiveDj(args: {
   return {
     id: args.id,
     name: args.name,
+    city: args.city || null,
     wallet: args.wallet,
     playbackId,
     streamKey: args.streamKey || null,
@@ -57,10 +61,18 @@ function toLiveDj(args: {
   }
 }
 
+function getSessionCity(session: Pick<DjSessionRow, 'metadata'> | undefined) {
+  const metadata = session?.metadata
+  if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) return null
+  const city = (metadata as { city?: unknown }).city
+  return typeof city === 'string' && city.trim() ? city.trim() : null
+}
+
 function fromSessionRow(session: DjSessionRow) {
   return toLiveDj({
     id: session.mux_stream_id,
     name: session.dj_name || 'Anonymous DJ',
+    city: getSessionCity(session),
     wallet: session.wallet,
     playbackId: session.playback_id,
     status: session.status,
@@ -188,6 +200,7 @@ export async function GET() {
         return toLiveDj({
           id: stream.id,
           name: stream.metadata?.dj_name || session?.dj_name || 'Anonymous DJ',
+          city: stream.metadata?.dj_city || getSessionCity(session),
           wallet: stream.metadata?.dj_wallet || session?.wallet || null,
           playbackId: stream.playback_ids?.[0]?.id || session?.playback_id || null,
           streamKey: stream.stream_key,
@@ -218,7 +231,7 @@ export async function GET() {
     const relays = await listBasefmRelayDestinations().catch(() => [])
     const verifiedRelays = await verifyRelayPlaybackCoverage(primaryDj, relays).catch(() => relays)
     const distribution = buildBasefmDistribution({
-      availability: liveDJs.length > 0 ? 'live' : 'degraded',
+      availability: liveDJs.length > 0 ? 'live' : 'idle',
       primaryDj,
       relays: verifiedRelays,
     })
@@ -227,7 +240,7 @@ export async function GET() {
       djs: liveDJs,
       count: liveDJs.length,
       primaryDj,
-      availability: liveDJs.length > 0 ? 'live' : 'degraded',
+      availability: liveDJs.length > 0 ? 'live' : 'idle',
       distribution,
     })
   } catch (error) {
@@ -252,4 +265,3 @@ export async function GET() {
     )
   }
 }
-

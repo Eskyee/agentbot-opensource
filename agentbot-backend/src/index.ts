@@ -387,6 +387,18 @@ console.log(c?.meta?.lastTouchedVersion||'');
   }
 };
 
+const runOpenClawPostUpdateChecks = async (containerName: string): Promise<{ doctor: string; gatewayRestart: string; health: string }> => {
+  const runOpenClaw = async (args: string[]) => {
+    const { stdout, stderr } = await runCommand('docker', ['exec', containerName, 'openclaw', ...args]);
+    return stdout || stderr || 'ok';
+  };
+
+  const doctor = await runOpenClaw(['doctor']);
+  const gatewayRestart = await runOpenClaw(['gateway', 'restart']);
+  const health = await runOpenClaw(['health']);
+  return { doctor, gatewayRestart, health };
+};
+
 const ensureDataDirs = async (): Promise<void> => {
   await fs.mkdir(DATA_DIR, { recursive: true });
   await fs.mkdir(path.join(DATA_DIR, 'instances'), { recursive: true });
@@ -632,6 +644,15 @@ const createOpenClawConfig = (
       },
     },
     channels,
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     gateway: {
       mode: 'local',
       port: 18789,
@@ -1016,18 +1037,18 @@ async function checkForOpenClawUpdate(): Promise<string | null> {
   }
 }
 
-async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number }> {
+async function updateAllContainers(newVersion: string): Promise<{ success: number; failed: number; skipped: number }> {
   // Check Docker availability first
   try {
     await runCommand('docker', ['version', '--format', '{{.Server.Version}}']);
   } catch (err: any) {
     console.warn('[Auto-Update] Docker not available — skipping container updates');
-    return { success: 0, failed: 0 };
+    return { success: 0, failed: 0, skipped: 0 };
   }
 
   const portsFileContent = await fs.readFile(portsFilePath(), 'utf8').catch(() => '{}');
   const ports = JSON.parse(portsFileContent) as Record<string, number>;
-  const results = { success: 0, failed: 0 };
+  const results = { success: 0, failed: 0, skipped: 0 };
   const newImage = `ghcr.io/openclaw/openclaw:${newVersion}`;
   const agentIds = Object.keys(ports);
 
@@ -1042,7 +1063,7 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
     await runCommand('docker', ['pull', newImage]);
   } catch (err: any) {
     console.error('[Auto-Update] Failed to pull image:', err.message);
-    return { success: 0, failed: 0 };
+    return { success: 0, failed: 0, skipped: 0 };
   }
 
   // Update in parallel batches of 5 so we don't overwhelm the host
@@ -1052,6 +1073,11 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
     const batchResults = await Promise.allSettled(batch.map(async (agentId) => {
       const containerName = getContainerName(agentId);
       console.log(`[Auto-Update] Updating ${agentId} to ${newVersion}...`);
+      const inspect = await getContainerInspect(containerName);
+      if (inspect.Config.Image === newImage) {
+        console.log(`[Auto-Update] ${agentId} already on ${newVersion}; skipping`);
+        return 'skipped';
+      }
 
       // MED-04 FIX: Read agent metadata so we can restore plan-specific resource
       // limits when the container is recreated. Without this, every container
@@ -1073,11 +1099,16 @@ async function updateAllContainers(newVersion: string): Promise<{ success: numbe
         '-p', `${port}:18789`,
         newImage,
       ]);
+      await runOpenClawPostUpdateChecks(containerName);
     }));
 
     for (const result of batchResults) {
       if (result.status === 'fulfilled') {
-        results.success++;
+        if (result.value === 'skipped') {
+          results.skipped++;
+        } else {
+          results.success++;
+        }
       } else {
         console.error(`[Auto-Update] Batch failure:`, result.reason);
         results.failed++;
@@ -1094,14 +1125,11 @@ function startAutoUpdater() {
   const checkAndUpdate = async () => {
     console.log('[Auto-Update] Checking for OpenClaw updates...');
     const latestVersion = await checkForOpenClawUpdate();
+    const targetVersion = latestVersion || OPENCLAW_RUNTIME_VERSION;
     
-    if (latestVersion) {
-      console.log(`[Auto-Update] Updating all containers to v${latestVersion}...`);
-      const results = await updateAllContainers(latestVersion);
-      console.log(`[Auto-Update] Update complete: ${results.success} succeeded, ${results.failed} failed`);
-    } else {
-      console.log('[Auto-Update] Already running latest version');
-    }
+    console.log(`[Auto-Update] Reconciling all containers to v${targetVersion}...`);
+    const results = await updateAllContainers(targetVersion);
+    console.log(`[Auto-Update] Update complete: ${results.success} updated, ${results.skipped} already current, ${results.failed} failed`);
   };
   
   const [hour, minute] = (process.env.AUTO_UPDATE_TIME || '03:00').split(':').map(Number);

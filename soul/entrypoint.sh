@@ -39,10 +39,26 @@ if ! awk -v p="${DATA_DIR}" '$2 == p { found=1; exit } END { exit !found }' /pro
 fi
 
 # Fix volume ownership — Railway mounts volumes as root. Running as root
-# here allows us to chown before dropping privileges.
-chown -R agent:agent "${DATA_DIR}"
+# here allows us to create required runtime directories and chown them before
+# dropping privileges.
+mkdir -p \
+  "${DATA_DIR}/workspace" \
+  "${DATA_DIR}/brain_checkpoints" \
+  "${DATA_DIR}/benchmark_history" \
+  "${DATA_DIR}/cartridges" \
+  "${DATA_DIR}/cargo"
 
-mkdir -p "${DATA_DIR}/workspace" "${DATA_DIR}/brain_checkpoints" "${DATA_DIR}/benchmark_history" "${DATA_DIR}/cartridges"
+if [ ! -f "${DATA_DIR}/workspace/Cargo.toml" ]; then
+  echo "Seeding tempo-x402 workspace into ${DATA_DIR}/workspace"
+  cp -a /opt/tempo-x402/. "${DATA_DIR}/workspace/"
+fi
+
+if [ ! -d "${DATA_DIR}/cargo/registry" ] && [ -d /usr/local/cargo/registry ]; then
+  echo "Seeding Cargo registry cache into ${DATA_DIR}/cargo"
+  cp -a /usr/local/cargo/. "${DATA_DIR}/cargo/"
+fi
+
+chown -R agent:agent "${DATA_DIR}"
 
 # Resolve ports — honour env overrides, fall back to defaults.
 INTERNAL_PORT="${PORT:-4024}"

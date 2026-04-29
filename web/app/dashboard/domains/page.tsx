@@ -103,7 +103,7 @@ export default function DomainsPage() {
         action={
           <div className="flex items-center gap-2">
             {plan && (
-              <span className="text-[10px] uppercase tracking-widest text-orange-400 bg-orange-900/20 border border-blue-800 rounded px-2 py-0.5 font-mono">
+              <span className="text-[10px] uppercase tracking-widest text-orange-400 bg-orange-900/20 border border-orange-800 rounded px-2 py-0.5 font-mono">
                 {plan}
               </span>
             )}

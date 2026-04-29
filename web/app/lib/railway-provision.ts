@@ -22,7 +22,7 @@ type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
  * Includes OpenClaw + Express wrapper with health checks, auto-restart, volume support.
  * The wrapper manages the gateway process — no start command needed.
  */
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.21'
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.26'
 
 function getRailwayTokenType(): RailwayTokenType {
   const raw = process.env.RAILWAY_TOKEN_TYPE?.trim().toLowerCase()
@@ -91,6 +91,15 @@ export function getAgentEnvVars(
       whatsapp: { enabled: false, dmPolicy: 'pairing' },
     },
     cron: { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     session: {
       scope: 'per-sender',
       reset: { mode: 'daily', atHour: 4 },

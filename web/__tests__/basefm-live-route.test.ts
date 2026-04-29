@@ -50,7 +50,7 @@ describe('/api/basefm/live', () => {
             status: 'active',
             created_at: 1712800000,
             playback_ids: [{ id: 'playback-1', policy: 'public' }],
-            metadata: { dj_name: 'DJ Atlas', dj_wallet: '0xabc' },
+            metadata: { dj_name: 'DJ Atlas', dj_wallet: '0xabc', dj_city: 'London' },
           },
         ],
       }),
@@ -63,6 +63,7 @@ describe('/api/basefm/live', () => {
     expect(body.primaryDj).toMatchObject({
       id: 'stream-1',
       name: 'DJ Atlas',
+      city: 'London',
       playbackId: 'playback-1',
       source: 'mux',
     })
@@ -119,6 +120,7 @@ describe('/api/basefm/live', () => {
         mux_stream_id: 'stream-cache',
         started_at: new Date('2026-04-11T12:00:00.000Z'),
         status: 'live',
+        metadata: { city: 'Manchester' },
       },
     ])
 
@@ -130,6 +132,7 @@ describe('/api/basefm/live', () => {
     expect(body.primaryDj).toMatchObject({
       id: 'stream-cache',
       name: 'Cached DJ',
+      city: 'Manchester',
       playbackId: 'playback-cache',
       source: 'session-cache',
     })

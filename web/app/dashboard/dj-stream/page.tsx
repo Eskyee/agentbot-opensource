@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import Link from 'next/link'
+import { Check, Copy } from 'lucide-react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { coinbaseWallet } from 'wagmi/connectors'
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
@@ -12,6 +13,7 @@ import type { BasefmDistributionState } from '@/app/lib/basefmDistribution'
 const BASEFM_TOKEN_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
 const BASEFM_THRESHOLD = BigInt('2500000000000000000000000') // 2,500,000 BASEFM in wei — covers Mux USDC costs + profit
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
+const BASEFM_SESSION_STORAGE_KEY = 'basefm.streamSessionToken'
 
 interface CommunityProgramResponse {
   perks: Array<{
@@ -63,11 +65,84 @@ interface StreamMuxStatus {
   error?: string
 }
 
+type EncoderMode = 'audio' | 'playlist' | 'video'
+
 function toStatusPillStatus(status: string): 'active' | 'idle' | 'error' | 'offline' {
   if (status === 'healthy' || status === 'active') return 'active'
   if (status === 'pending' || status === 'degraded' || status === 'idle') return 'idle'
   if (status === 'failed' || status === 'error') return 'error'
   return 'offline'
+}
+
+function formatDuration(totalSeconds: number | null) {
+  if (totalSeconds === null) return 'Unknown'
+  const safeSeconds = Math.max(0, totalSeconds)
+  const minutes = Math.floor(safeSeconds / 60)
+  const seconds = safeSeconds % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
+
+function CopyButton({
+  label = 'Copy',
+  value,
+  onCopy,
+}: {
+  label?: string
+  value: string
+  onCopy: (value: string, label: string) => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onCopy(value, label)}
+      disabled={!value}
+      className="inline-flex items-center gap-2 border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:border-zinc-800 disabled:text-zinc-600"
+    >
+      <Copy className="h-3.5 w-3.5" />
+      {label}
+    </button>
+  )
+}
+
+function InfoPanel({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="border border-zinc-800 bg-black p-4">
+      <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">{title}</div>
+      {children}
+    </div>
+  )
+}
+
+function EncoderModeButton({
+  active,
+  title,
+  meta,
+  body,
+  onClick,
+}: {
+  active: boolean
+  title: string
+  meta: string
+  body: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex min-h-[104px] flex-col border p-4 text-left transition-colors ${
+        active
+          ? 'border-white bg-zinc-900 ring-1 ring-white'
+          : 'border-zinc-800 bg-black hover:border-zinc-600'
+      }`}
+    >
+      <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-white' : 'text-zinc-500'}`}>
+        {title}
+      </span>
+      <span className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">{meta}</span>
+      <span className="mt-3 text-xs leading-relaxed text-zinc-500">{body}</span>
+    </button>
+  )
 }
 
 export default function DJStreamPage() {
@@ -80,6 +155,7 @@ export default function DJStreamPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [djName, setDjName] = useState('DJ Escaba')
+  const [djCity, setDjCity] = useState('')
   const [communityProgram, setCommunityProgram] = useState<CommunityProgramResponse | null>(null)
   const [distribution, setDistribution] = useState<BasefmDistributionState | null>(null)
   const [relays, setRelays] = useState<RelayRow[]>([])
@@ -95,6 +171,10 @@ export default function DJStreamPage() {
   const [muxStatus, setMuxStatus] = useState<StreamMuxStatus | null>(null)
   const [muxStatusLoading, setMuxStatusLoading] = useState(false)
   const [muxSyncing, setMuxSyncing] = useState(false)
+  const [activeStreamLoading, setActiveStreamLoading] = useState(true)
+  const [copiedLabel, setCopiedLabel] = useState('')
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null)
+  const [encoderMode, setEncoderMode] = useState<EncoderMode>('audio')
 
   const handleConnect = () => {
     connect({ connector: coinbaseWallet({ appName: 'Agentbot', preference: 'smartWalletOnly' }) })
@@ -117,14 +197,67 @@ export default function DJStreamPage() {
   }, [])
 
   useEffect(() => {
-    if (!stream || !streamSessionToken) return
+    const storedToken = window.localStorage.getItem(BASEFM_SESSION_STORAGE_KEY)
+    if (storedToken) {
+      setStreamSessionToken(storedToken)
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    const loadActiveStream = async () => {
+      setActiveStreamLoading(true)
+      try {
+        const token = streamSessionToken || window.localStorage.getItem(BASEFM_SESSION_STORAGE_KEY)
+        const res = await fetch('/api/basefm/streams', {
+          headers: token ? { 'x-basefm-session': token } : undefined,
+          cache: 'no-store',
+        })
+
+        if (!active) return
+
+        if (res.status === 401 || res.status === 403) {
+          if (token) window.localStorage.removeItem(BASEFM_SESSION_STORAGE_KEY)
+          return
+        }
+
+        const data = await res.json()
+        if (!res.ok || !data?.active) {
+          if (token) window.localStorage.removeItem(BASEFM_SESSION_STORAGE_KEY)
+          return
+        }
+
+        if (data.stream) {
+          setStream({
+            ...data.stream,
+            ffmpeg: data.ffmpeg || data.stream.ffmpeg || null,
+          })
+          setRemainingSeconds(typeof data.session?.remaining === 'number' ? data.session.remaining : null)
+        }
+      } catch {
+        // Keep the create-stream path available if recovery cannot prove an active session.
+      } finally {
+        if (active) setActiveStreamLoading(false)
+      }
+    }
+
+    loadActiveStream()
+
+    return () => {
+      active = false
+    }
+  }, [streamSessionToken])
+
+  useEffect(() => {
+    if (!stream) return
 
     let active = true
 
     const checkAndMaybeSync = async () => {
       try {
         const res = await fetch('/api/basefm/streams/status', {
-          headers: { 'x-basefm-session': streamSessionToken },
+          headers: streamSessionToken ? { 'x-basefm-session': streamSessionToken } : undefined,
           cache: 'no-store',
         })
         const data = await res.json()
@@ -135,13 +268,13 @@ export default function DJStreamPage() {
         if (data?.pickupRecommended) {
           const syncRes = await fetch('/api/basefm/streams/status', {
             method: 'POST',
-            headers: { 'x-basefm-session': streamSessionToken },
+            headers: streamSessionToken ? { 'x-basefm-session': streamSessionToken } : undefined,
           })
           const syncData = await syncRes.json()
           if (!active || !syncRes.ok) return
 
           const refreshed = await fetch('/api/basefm/streams/status', {
-            headers: { 'x-basefm-session': streamSessionToken },
+            headers: streamSessionToken ? { 'x-basefm-session': streamSessionToken } : undefined,
             cache: 'no-store',
           })
           const refreshedData = await refreshed.json()
@@ -168,6 +301,19 @@ export default function DJStreamPage() {
       clearInterval(interval)
     }
   }, [stream, streamSessionToken])
+
+  useEffect(() => {
+    if (!stream || remainingSeconds === null) return
+
+    const interval = setInterval(() => {
+      setRemainingSeconds((current) => {
+        if (current === null) return null
+        return Math.max(0, current - 1)
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [stream, remainingSeconds])
 
   useEffect(() => {
     let active = true
@@ -301,14 +447,18 @@ export default function DJStreamPage() {
       const res = await fetch('/api/basefm/streams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet: streamWallet, name: djName })
+        body: JSON.stringify({ wallet: streamWallet, name: djName, city: djCity.trim() || null })
       })
       const data = await res.json()
       if (!res.ok) {
         setError(data.message || data.error || 'Failed to create stream')
       } else {
-        setStream(data.stream)
+        setStream({ ...data.stream, ffmpeg: data.ffmpeg || null })
+        setRemainingSeconds(typeof data?.session?.remaining === 'number' ? data.session.remaining : null)
         setStreamSessionToken(data?.session?.accessToken || null)
+        if (data?.session?.accessToken) {
+          window.localStorage.setItem(BASEFM_SESSION_STORAGE_KEY, data.session.accessToken)
+        }
         setStreamActionMessage('')
       }
     } catch (e: any) {
@@ -343,6 +493,8 @@ export default function DJStreamPage() {
       setStream(null)
       setStreamSessionToken(null)
       setMuxStatus(null)
+      setRemainingSeconds(null)
+      window.localStorage.removeItem(BASEFM_SESSION_STORAGE_KEY)
 
       const [distributionRes, relaysRes] = await Promise.all([
         fetch('/api/basefm/distribution', { cache: 'no-store' }),
@@ -416,6 +568,19 @@ export default function DJStreamPage() {
     }
   }
 
+  const copyValue = async (value: string, label: string) => {
+    if (!value) return
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopiedLabel(label)
+      window.setTimeout(() => {
+        setCopiedLabel((current) => (current === label ? '' : current))
+      }, 1800)
+    } catch {
+      setError('Copy failed. Select the text manually and copy it.')
+    }
+  }
+
   const hasBasefmAccess = Boolean(basefmBalance && BigInt(basefmBalance) >= BASEFM_THRESHOLD)
   const claimedWallet = communityProgram?.rewards.walletAddress || null
   const hasCommunityPass = Boolean(
@@ -424,6 +589,53 @@ export default function DJStreamPage() {
   const hasAccess = hasBasefmAccess || hasCommunityPass
   const streamWallet = hasBasefmAccess ? address || null : claimedWallet
   const formatAddress = (addr: string) => addr ? addr.slice(0, 6) + '...' + addr.slice(-4) : ''
+  const audioOnlyCommand = stream?.ffmpeg?.audioOnlyCommand || ''
+  const playlistCommand = stream?.ffmpeg?.playlistCommand || ''
+  const artworkCommand = stream?.ffmpeg?.artworkCommand || stream?.ffmpeg?.command || ''
+  const streamTarget = stream?.fullRtmpUrl || stream?.rtmpUrl || ''
+  const rtmpServer = stream?.rtmpUrl || MUX_RTMP_URL
+  const streamKey = stream?.streamKey || ''
+  const selectedEncoderCommand =
+    encoderMode === 'video'
+      ? artworkCommand
+      : encoderMode === 'playlist'
+        ? playlistCommand
+        : audioOnlyCommand
+  const selectedEncoderLabel =
+    encoderMode === 'video'
+      ? 'Artwork Video'
+      : encoderMode === 'playlist'
+        ? 'Playlist'
+        : 'Audio Only'
+  const copyFeedback = copiedLabel ? `${copiedLabel} copied` : ''
+  const broadcastStatus =
+    muxStatus?.streamHealth === 'good'
+      ? { pill: 'active' as const, label: 'Broadcast Live', helper: 'Mux is receiving the feed and the station should be ready.' }
+      : muxStatus?.streamHealth === 'waiting'
+        ? { pill: 'idle' as const, label: 'Waiting for Encoder', helper: muxStatus.message || 'Start OBS or ffmpeg to send your program feed.' }
+        : muxStatus?.streamHealth === 'bad'
+          ? { pill: 'error' as const, label: 'Needs Attention', helper: muxStatus.message || 'Mux is not reporting a healthy stream.' }
+          : { pill: 'idle' as const, label: 'Stream Armed', helper: 'Your stream key is ready. Start OBS or ffmpeg to go live.' }
+  const originStatus = distribution?.origin.status || 'idle'
+  const originDisplay = stream
+    ? originStatus === 'active'
+      ? { status: 'active' as const, label: 'Live' }
+      : { status: 'idle' as const, label: 'Waiting' }
+    : originStatus === 'active'
+      ? { status: 'active' as const, label: 'Live' }
+      : { status: 'idle' as const, label: 'Off Air' }
+  const firstPartyStatus = distribution?.firstParty.status || 'stopped'
+  const firstPartyDisplay = stream
+    ? muxStatus?.streamHealth === 'waiting' && firstPartyStatus === 'stopped'
+      ? { status: 'idle' as const, label: 'Standby' }
+      : firstPartyStatus === 'healthy'
+        ? { status: 'active' as const, label: 'Live' }
+        : firstPartyStatus === 'degraded' || firstPartyStatus === 'failed'
+          ? { status: 'error' as const, label: 'Station Issue' }
+          : { status: 'idle' as const, label: 'Standby' }
+    : firstPartyStatus === 'healthy'
+      ? { status: 'active' as const, label: 'Live' }
+      : { status: 'idle' as const, label: 'Off Air' }
 
   return (
     <DashboardShell>
@@ -631,7 +843,7 @@ export default function DJStreamPage() {
           )}
 
           {/* Step 3: Create Stream */}
-          {hasAccess && !stream && (
+          {hasAccess && !stream && !activeStreamLoading && (
             <div className="border border-zinc-800 bg-zinc-950 p-6">
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-[10px] uppercase tracking-widest text-zinc-600">Step 03</span>
@@ -647,6 +859,48 @@ export default function DJStreamPage() {
                   placeholder="DJ YourName"
                   className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
                 />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">CITY / LOCATION</label>
+                <input
+                  type="text"
+                  value={djCity}
+                  onChange={(e) => setDjCity(e.target.value)}
+                  placeholder="London"
+                  maxLength={80}
+                  className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                />
+                <p className="mt-2 text-xs text-zinc-500">
+                  Optional. Leave it blank to go live faster.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Stream Mode</label>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <EncoderModeButton
+                    active={encoderMode === 'audio'}
+                    title="Audio Only"
+                    meta="Default"
+                    body="Lowest friction for DJ sets and agent streams."
+                    onClick={() => setEncoderMode('audio')}
+                  />
+                  <EncoderModeButton
+                    active={encoderMode === 'playlist'}
+                    title="Playlist"
+                    meta="Audio concat"
+                    body="Use an ffmpeg playlist file for ordered tracks."
+                    onClick={() => setEncoderMode('playlist')}
+                  />
+                  <EncoderModeButton
+                    active={encoderMode === 'video'}
+                    title="Video"
+                    meta="Artwork loop"
+                    body="Use when the DJ explicitly wants a video track."
+                    onClick={() => setEncoderMode('video')}
+                  />
+                </div>
               </div>
 
               <button
@@ -666,6 +920,15 @@ export default function DJStreamPage() {
             </div>
           )}
 
+          {hasAccess && !stream && activeStreamLoading ? (
+            <div className="border border-zinc-800 bg-zinc-950 p-6">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-bold tracking-tight uppercase">Checking Active Stream</span>
+                <StatusPill status="idle" label="Loading" />
+              </div>
+            </div>
+          ) : null}
+
           <div className="border border-zinc-800 bg-zinc-950 p-6">
             <SectionHeader
               label="Distribution"
@@ -678,16 +941,16 @@ export default function DJStreamPage() {
                 <div className="bg-black p-4">
                   <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Origin</span>
                   <StatusPill
-                    status={toStatusPillStatus(distribution?.origin.status || 'offline')}
-                    label={distribution?.origin.status || 'offline'}
+                    status={originDisplay.status}
+                    label={originDisplay.label}
                     size="sm"
                   />
                 </div>
                 <div className="bg-black p-4">
                   <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Agentbot</span>
                   <StatusPill
-                    status={toStatusPillStatus(distribution?.firstParty.status || 'offline')}
-                    label={distribution?.firstParty.status || 'offline'}
+                    status={firstPartyDisplay.status}
+                    label={firstPartyDisplay.label}
                     size="sm"
                   />
                 </div>
@@ -802,10 +1065,36 @@ export default function DJStreamPage() {
 
               <div className="space-y-6">
                 {/* Status */}
-                <div className="flex items-center gap-3">
-                  <StatusPill status="active" label="Broadcast Live" />
-                  <span className="text-xs text-zinc-500">Show: {stream.name || djName}</span>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <StatusPill status={broadcastStatus.pill} label={broadcastStatus.label} />
+                    <span className="text-xs text-zinc-500">Show: {stream.name || djName}</span>
+                  </div>
+                  <div className="text-left sm:text-right">
+                    <div className="text-xs text-zinc-500">{broadcastStatus.helper}</div>
+                    <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                      Remaining: <span className="text-zinc-300">{formatDuration(remainingSeconds)}</span>
+                    </div>
+                  </div>
                 </div>
+
+                {copyFeedback ? (
+                  <div className="inline-flex items-center gap-2 border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-emerald-300">
+                    <Check className="h-3.5 w-3.5" />
+                    {copyFeedback}
+                  </div>
+                ) : null}
+
+                <InfoPanel title="Setup Checklist">
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    {['Copy RTMP', 'Paste in OBS', 'Start Streaming', 'Wait for Live'].map((step, index) => (
+                      <div key={step} className="border border-zinc-800 p-3">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Step {index + 1}</div>
+                        <div className="text-xs text-zinc-300">{step}</div>
+                      </div>
+                    ))}
+                  </div>
+                </InfoPanel>
 
                 <div className="flex flex-wrap gap-3">
                   <button
@@ -908,18 +1197,24 @@ export default function DJStreamPage() {
 
                 {/* RTMP URL */}
                 <div>
-                  <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Program Feed Target</span>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Program Feed Target</span>
+                    <CopyButton label="Copy RTMP" value={streamTarget} onCopy={copyValue} />
+                  </div>
                   <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
-                    {stream.fullRtmpUrl}
+                    {streamTarget || 'Reconnect status loaded. Create a fresh stream if the RTMP key is unavailable.'}
                   </code>
                 </div>
 
                 {/* Stream Key + Playback */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-zinc-800">
                   <div className="bg-black p-4">
-                    <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Broadcast Key</span>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Broadcast Key</span>
+                      <CopyButton label="Copy Key" value={streamKey} onCopy={copyValue} />
+                    </div>
                     <code className="block text-xs text-zinc-400 break-all select-all">
-                      {stream.streamKey}
+                      {streamKey || 'Unavailable'}
                     </code>
                   </div>
                   <div className="bg-black p-4">
@@ -947,7 +1242,7 @@ export default function DJStreamPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-zinc-500">RTMP Server</span>
-                      <code className="text-zinc-400">{MUX_RTMP_URL}</code>
+                      <code className="text-zinc-400">{rtmpServer}</code>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-zinc-500">Audio</span>
@@ -959,6 +1254,68 @@ export default function DJStreamPage() {
                     </div>
                   </div>
                 </div>
+
+                <div className="border border-zinc-800 p-4">
+                  <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Agent Encoder Commands</span>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <EncoderModeButton
+                      active={encoderMode === 'audio'}
+                      title="Audio Only"
+                      meta="Default"
+                      body="Single file stream. Best default if the DJ makes no choice."
+                      onClick={() => setEncoderMode('audio')}
+                    />
+                    <EncoderModeButton
+                      active={encoderMode === 'playlist'}
+                      title="Playlist"
+                      meta="Audio concat"
+                      body="Ordered tracks from a local ffmpeg concat playlist."
+                      onClick={() => setEncoderMode('playlist')}
+                    />
+                    <EncoderModeButton
+                      active={encoderMode === 'video'}
+                      title="Video"
+                      meta="Artwork loop"
+                      body="Video track with the baseFM artwork for visual surfaces."
+                      onClick={() => setEncoderMode('video')}
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">{selectedEncoderLabel}</span>
+                        <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                          {encoderMode === 'audio'
+                            ? 'Audio-only'
+                            : encoderMode === 'playlist'
+                              ? 'Audio-only concat'
+                              : 'Video + silent bed'}
+                        </div>
+                      </div>
+                      <CopyButton label="Copy" value={selectedEncoderCommand} onCopy={copyValue} />
+                    </div>
+                    <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
+                      {selectedEncoderCommand || 'Create a stream to generate the selected encoder command.'}
+                    </code>
+                  </div>
+                </div>
+
+                <InfoPanel title="Test Before Your Set">
+                  <div className="space-y-2 text-xs text-zinc-500">
+                    <p>Run a short test tone or private audio file first, then press Check Mux Status.</p>
+                    <p>For OBS, start streaming for 10-15 seconds and wait for the status to move from Waiting for Encoder to Broadcast Live.</p>
+                    <p>For agents, copy the audio-only command and replace <code className="text-zinc-300">/path/to/set.mp3</code> with a short test file before your real mix.</p>
+                  </div>
+                </InfoPanel>
+
+                <InfoPanel title="Recovery">
+                  <div className="space-y-2 text-xs text-zinc-500">
+                    <p>If the key looks stale or Mux stays idle after your encoder is running, use End Set and create a fresh stream.</p>
+                    <p>This browser stores your session token so refreshes keep the controls visible. If you are signed in, Agentbot can also recover the active panel from your account session.</p>
+                    <p>On another browser or device, sign in with the same account first; local browser recovery only works where the stream was created.</p>
+                  </div>
+                </InfoPanel>
 
                 <div className="border border-zinc-800 p-4">
                   <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Pioneer / Rekordbox Quick Notes</span>

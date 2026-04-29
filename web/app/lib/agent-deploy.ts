@@ -271,15 +271,30 @@ export async function deploySkillToAgent(
     })
 
     if (!response.ok) {
+      const errorBody = await response.text().catch(() => '')
       return {
         success: false,
-        error: `Gateway error: ${response.status}`,
+        error: `Gateway error: ${response.status}${errorBody ? ` - ${errorBody}` : ''}`,
+      }
+    }
+
+    const data = await response.json().catch(() => ({}))
+    if (data?.success === false) {
+      return {
+        success: false,
+        error: typeof data.error === 'string' ? data.error : 'Gateway rejected skill install',
       }
     }
 
     return {
       success: true,
+      gatewayId: data.gatewayId || agentId,
       deployedAt: new Date().toISOString(),
+      details: {
+        skillsDeployed: 1,
+        memoriesDeployed: 0,
+        filesDeployed: 0,
+      },
     }
   } catch (error) {
     console.error('[AgentDeploy] Skill deploy failed:', error)

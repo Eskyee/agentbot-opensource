@@ -14,7 +14,7 @@
     "test:ui": "playwright test --ui",
     "clean": "rm -rf .next",
     "design:check": "grep -rn 'gray-\\|purple-' app/ --include=\"*.tsx\" | grep -v node_modules || echo 'Design check passed'",
-    "design:fix": "find app -name '*.tsx' -exec sed -i '' 's/bg-gray-/bg-zinc-/g; s/text-gray-/text-zinc-/g; s/border-gray-/border-zinc-/g; s/hover:bg-gray-/hover:bg-zinc-/g; s/bg-purple-/bg-blue-/g; s/text-purple-/text-blue-/g; s/border-purple-/border-blue-/g; s/hover:bg-purple-/hover:bg-blue-/g' {} +"
+    "design:fix": "find app -name '*.tsx' -exec sed -i '' 's/bg-gray-/bg-zinc-/g; s/text-gray-/text-zinc-/g; s/border-gray-/border-zinc-/g; s/hover:bg-gray-/hover:bg-zinc-/g; s/bg-purple-/bg-orange-/g; s/text-purple-/text-orange-/g; s/border-purple-/border-orange-/g; s/hover:bg-purple-/hover:bg-orange-/g' {} +"
   },
   "dependencies": {
     "@base-org/account": "^2.5.2",

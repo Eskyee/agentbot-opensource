@@ -37,7 +37,10 @@ jest.mock('@/app/lib/prisma', () => ({
     },
     installedSkill: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
       upsert: jest.fn(),
+      update: jest.fn(),
+      create: jest.fn(),
       deleteMany: jest.fn(),
     },
   },
@@ -74,7 +77,10 @@ describe('runtime-backed skills management', () => {
     }
     installedSkill: {
       findMany: jest.Mock
+      findUnique: jest.Mock
       upsert: jest.Mock
+      update: jest.Mock
+      create: jest.Mock
       deleteMany: jest.Mock
     }
   }
@@ -123,7 +129,15 @@ describe('runtime-backed skills management', () => {
     })
     mockedPrisma.skill.update.mockResolvedValue({})
     mockedPrisma.installedSkill.findMany.mockResolvedValue([])
-    mockedPrisma.installedSkill.upsert.mockResolvedValue({
+    mockedPrisma.installedSkill.findUnique.mockResolvedValue(null)
+    mockedPrisma.installedSkill.update.mockResolvedValue({
+      id: 'installed-1',
+      userId: 'user-1',
+      agentId: 'runtime-1',
+      skillId: 'skill-1',
+      enabled: true,
+    })
+    mockedPrisma.installedSkill.create.mockResolvedValue({
       id: 'installed-1',
       userId: 'user-1',
       agentId: 'runtime-1',
@@ -174,7 +188,7 @@ describe('runtime-backed skills management', () => {
         websocketUrl: 'https://runtime.example.com',
       },
     })
-    expect(mockedPrisma.installedSkill.upsert).toHaveBeenCalledWith({
+    expect(mockedPrisma.installedSkill.findUnique).toHaveBeenCalledWith({
       where: {
         userId_agentId_skillId: {
           userId: 'user-1',
@@ -182,8 +196,9 @@ describe('runtime-backed skills management', () => {
           skillId: 'skill-1',
         },
       },
-      update: { enabled: true },
-      create: {
+    })
+    expect(mockedPrisma.installedSkill.create).toHaveBeenCalledWith({
+      data: {
         userId: 'user-1',
         agentId: 'runtime-1',
         skillId: 'skill-1',
@@ -191,5 +206,29 @@ describe('runtime-backed skills management', () => {
     })
     expect(mockedDeploySkill).toHaveBeenCalledWith('runtime-1', 'skill-1')
     expect(body.success).toBe(true)
+  })
+
+  test('returns already installed without redeploying an enabled skill', async () => {
+    mockedPrisma.installedSkill.findUnique.mockResolvedValue({
+      id: 'installed-1',
+      userId: 'user-1',
+      agentId: 'runtime-1',
+      skillId: 'skill-1',
+      enabled: true,
+    })
+
+    const request = new NextRequest('http://localhost/api/skills', {
+      method: 'POST',
+      body: JSON.stringify({ skillId: 'skill-1', agentId: 'runtime-1' }),
+    })
+
+    const response = await installSkill(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.alreadyInstalled).toBe(true)
+    expect(body.message).toContain('already installed')
+    expect(mockedPrisma.installedSkill.create).not.toHaveBeenCalled()
+    expect(mockedDeploySkill).not.toHaveBeenCalled()
   })
 })

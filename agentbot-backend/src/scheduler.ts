@@ -72,10 +72,6 @@ async function claimDueTasks(limit: number): Promise<ClaimedTask[]> {
  * no completion). Same pattern as requeueStaleRunningJobs in platform-jobs.
  */
 async function requeueStaleRunningTasks(): Promise<void> {
-  // Two-step recovery so we don't grant tasks an extra retry beyond
-  // max_attempts: requeue rows that still have retries left, and
-  // permanently fail rows that have exhausted them. This matches the
-  // contract enforced by markFailureOrRetry on the live path.
   await pool.query(
     `UPDATE scheduled_tasks
      SET
@@ -86,20 +82,7 @@ async function requeueStaleRunningTasks(): Promise<void> {
        error       = COALESCE(error, 'Recovered after stale worker lock')
      WHERE status = 'running'
        AND locked_at IS NOT NULL
-       AND locked_at < NOW() - INTERVAL '10 minutes'
-       AND attempts < max_attempts`
-  );
-  await pool.query(
-    `UPDATE scheduled_tasks
-     SET
-       status     = 'failed',
-       locked_at  = NULL,
-       updated_at = NOW(),
-       error      = COALESCE(error, 'Failed after max attempts (stale worker recovery)')
-     WHERE status = 'running'
-       AND locked_at IS NOT NULL
-       AND locked_at < NOW() - INTERVAL '10 minutes'
-       AND attempts >= max_attempts`
+       AND locked_at < NOW() - INTERVAL '10 minutes'`
   );
 }
 

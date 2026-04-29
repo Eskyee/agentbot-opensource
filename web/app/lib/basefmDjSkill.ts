@@ -4,7 +4,33 @@ export const BASEFM_DJ_SKILL_NAME = 'DJ Streaming'
 export const BASEFM_DEFAULT_STREAM_IMAGE =
   'https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafybeicst263mihhveiveb4jghdta5dkrt5nphpgygsux435kn7nlabvje'
 
-export function buildBasefmFfmpegCommandTemplate(fullRtmpUrl: string) {
+export function buildBasefmAudioOnlyFfmpegCommandTemplate(
+  fullRtmpUrl: string,
+  audioPath = '/path/to/set.mp3'
+) {
+  return [
+    'ffmpeg -re',
+    `-i "${audioPath}"`,
+    '-c:a aac -b:a 128k -ar 44100 -ac 2',
+    '-f flv',
+    `"${fullRtmpUrl}"`,
+  ].join(' ')
+}
+
+export function buildBasefmPlaylistFfmpegCommandTemplate(
+  fullRtmpUrl: string,
+  playlistPath = '/tmp/basefm-playlist.txt'
+) {
+  return [
+    'ffmpeg -re',
+    `-f concat -safe 0 -i "${playlistPath}"`,
+    '-c:a aac -b:a 128k -ar 44100 -ac 2',
+    '-f flv',
+    `"${fullRtmpUrl}"`,
+  ].join(' ')
+}
+
+export function buildBasefmArtworkFfmpegCommandTemplate(fullRtmpUrl: string) {
   return [
     `ffmpeg -re -loop 1 -i "${BASEFM_DEFAULT_STREAM_IMAGE}"`,
     '-f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100',
@@ -15,6 +41,20 @@ export function buildBasefmFfmpegCommandTemplate(fullRtmpUrl: string) {
     '-f flv',
     `"${fullRtmpUrl}"`,
   ].join(' ')
+}
+
+export function buildBasefmFfmpegCommandTemplate(fullRtmpUrl: string) {
+  return buildBasefmAudioOnlyFfmpegCommandTemplate(fullRtmpUrl)
+}
+
+export function buildBasefmFfmpegCommandTemplates(fullRtmpUrl: string) {
+  return {
+    command: buildBasefmAudioOnlyFfmpegCommandTemplate(fullRtmpUrl),
+    audioOnlyCommand: buildBasefmAudioOnlyFfmpegCommandTemplate(fullRtmpUrl),
+    playlistCommand: buildBasefmPlaylistFfmpegCommandTemplate(fullRtmpUrl),
+    artworkCommand: buildBasefmArtworkFfmpegCommandTemplate(fullRtmpUrl),
+    inputHint: 'Default command is audio-only. Use playlistCommand for an ffmpeg concat playlist, or artworkCommand when the DJ explicitly wants a video track with the baseFM standby image.',
+  }
 }
 
 export const BASEFM_DJ_SKILL_CODE = String.raw`// baseFM DJ Streaming Skill
@@ -35,7 +75,27 @@ function getStreamUrl(playbackId) {
   };
 }
 
-function getFfmpegCommand(fullRtmpUrl) {
+function getAudioOnlyFfmpegCommand(fullRtmpUrl, audioPath) {
+  return [
+    "ffmpeg -re",
+    '-i "' + (audioPath || "/path/to/set.mp3") + '"',
+    "-c:a aac -b:a 128k -ar 44100 -ac 2",
+    "-f flv",
+    '"' + fullRtmpUrl + '"'
+  ].join(" ");
+}
+
+function getPlaylistFfmpegCommand(fullRtmpUrl, playlistPath) {
+  return [
+    "ffmpeg -re",
+    '-f concat -safe 0 -i "' + (playlistPath || "/tmp/basefm-playlist.txt") + '"',
+    "-c:a aac -b:a 128k -ar 44100 -ac 2",
+    "-f flv",
+    '"' + fullRtmpUrl + '"'
+  ].join(" ");
+}
+
+function getArtworkFfmpegCommand(fullRtmpUrl) {
   return [
     'ffmpeg -re -loop 1 -i "' + DEFAULT_STREAM_IMAGE + '"',
     "-f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100",
@@ -46,6 +106,20 @@ function getFfmpegCommand(fullRtmpUrl) {
     "-f flv",
     '"' + fullRtmpUrl + '"'
   ].join(" ");
+}
+
+function getFfmpegCommand(fullRtmpUrl) {
+  return getAudioOnlyFfmpegCommand(fullRtmpUrl);
+}
+
+function getFfmpegCommands(fullRtmpUrl) {
+  return {
+    command: getAudioOnlyFfmpegCommand(fullRtmpUrl),
+    audioOnlyCommand: getAudioOnlyFfmpegCommand(fullRtmpUrl),
+    playlistCommand: getPlaylistFfmpegCommand(fullRtmpUrl),
+    artworkCommand: getArtworkFfmpegCommand(fullRtmpUrl),
+    inputHint: "Default command is audio-only. Use playlistCommand for an ffmpeg concat playlist, or artworkCommand when the DJ explicitly wants a video track with the baseFM standby image."
+  };
 }
 
 async function getLiveDJs() {
@@ -72,8 +146,7 @@ async function createStream(djWallet, djName) {
     ...result.stream,
     session: result.session,
     ffmpeg: result.ffmpeg || {
-      command: getFfmpegCommand(result.stream.fullRtmpUrl),
-      inputHint: "Uses the default baseFM artwork image. Swap DEFAULT_STREAM_IMAGE if you want a different visual source."
+      ...getFfmpegCommands(result.stream.fullRtmpUrl)
     }
   };
 }
@@ -97,7 +170,11 @@ module.exports = {
   getLiveDJs,
   createStream,
   getStreamUrl,
+  getAudioOnlyFfmpegCommand,
+  getPlaylistFfmpegCommand,
+  getArtworkFfmpegCommand,
   getFfmpegCommand,
+  getFfmpegCommands,
   formatLiveAnnouncement,
 };`
 

@@ -24,7 +24,7 @@ import { setupRoutes } from './routes/setup.js';
 import { apiRoutes } from './routes/api.js';
 import { proxyMiddleware } from './middleware/proxy.js';
 import { requestLogger } from './middleware/logger.js';
-import { requireAdminAuth, setAuthCookie, clearAuthCookie } from './middleware/auth.js';
+import { requireAdminAuth, setAuthCookie, clearAuthCookie, verifyAdminPassword } from './middleware/auth.js';
 import { ensureDataDir } from './utils/fs.js';
 import { log } from './utils/log.js';
 import { probeRuntimeCapabilities } from './services/runtimeProbe.js';
@@ -115,7 +115,19 @@ async function main() {
 
   // Login page
   app.get('/login', (req, res) => {
-    if (!config.WRAPPER_ADMIN_PASSWORD) return res.redirect('/admin');
+    // Previously: no password configured → bypass login entirely.
+    // That made every deploy without WRAPPER_ADMIN_PASSWORD publicly writable.
+    // Now we render an explicit 503 so the gateway refuses to serve until
+    // the env var is set.
+    if (!config.WRAPPER_ADMIN_PASSWORD) {
+      return res
+        .status(503)
+        .type('text/plain')
+        .send(
+          'WRAPPER_ADMIN_PASSWORD is not configured on this gateway. ' +
+            'Set it in the environment and redeploy.'
+        );
+    }
     const returnTo = req.query.returnTo || '/admin';
     res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>OpenClaw Login</title>
@@ -145,8 +157,19 @@ ${req.query.err ? '<p class="err">Incorrect password</p>' : ''}
 
   app.post('/login', express.urlencoded({ extended: false }), (req, res) => {
     const { password, returnTo = '/admin' } = req.body;
-    if (!config.WRAPPER_ADMIN_PASSWORD || password === config.WRAPPER_ADMIN_PASSWORD) {
-      setAuthCookie(res, password);
+    // Fail-closed: refuse login entirely when no password is configured.
+    // The previous `!WRAPPER_ADMIN_PASSWORD` short-circuit bypassed auth.
+    if (!config.WRAPPER_ADMIN_PASSWORD) {
+      return res
+        .status(503)
+        .type('text/plain')
+        .send(
+          'WRAPPER_ADMIN_PASSWORD is not configured on this gateway. ' +
+            'Set it in the environment and redeploy.'
+        );
+    }
+    if (verifyAdminPassword(password)) {
+      setAuthCookie(res);
       return res.redirect(returnTo);
     }
     const r = encodeURIComponent(returnTo);

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildBasefmFfmpegCommandTemplate } from '@/app/lib/basefmDjSkill'
+import { buildBasefmFfmpegCommandTemplates } from '@/app/lib/basefmDjSkill'
 import { createBasefmSessionToken, verifyBasefmSessionToken } from '@/app/lib/basefmSession'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getCommunityProgramForUser } from '@/app/lib/communityProgram'
 import { getMuxCredentials, retireMuxLiveStream } from '@/app/lib/basefmMux'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { verifyUsdcTransfer } from '@/lib/onchain/verify-transaction'
 import { type Address, type Hash } from 'viem'
@@ -29,6 +30,18 @@ type ActiveDjSession = {
   ended_at: Date | null
   max_duration: number
   status: string
+  metadata?: unknown
+}
+
+type MuxLiveStream = {
+  id: string
+  stream_key?: string
+  status: string
+  playback_ids?: Array<{ id: string }>
+  metadata?: {
+    dj_name?: string
+    access_type?: string
+  }
 }
 
 const CURRENT_SESSION_STATUSES = ['active', 'live'] as const
@@ -70,14 +83,46 @@ async function retireSessionStreams(
   )
 }
 
-function buildActiveSessionResponse(activeSession: ActiveDjSession) {
+function buildStreamControlPayload(activeSession: ActiveDjSession, muxStream?: MuxLiveStream | null) {
+  const streamKey = muxStream?.stream_key || null
+  const fullRtmpUrl = streamKey ? `${MUX_RTMP_URL}/${streamKey}` : null
+  const playbackId = muxStream?.playback_ids?.[0]?.id || activeSession.playback_id || null
+  const accessGrantedBy =
+    muxStream?.metadata?.access_type ||
+    (
+      activeSession.metadata &&
+      typeof activeSession.metadata === 'object' &&
+      !Array.isArray(activeSession.metadata)
+        ? (activeSession.metadata as { accessType?: unknown }).accessType
+        : null
+    )
+
+  return {
+    id: muxStream?.id || activeSession.mux_stream_id,
+    name: muxStream?.metadata?.dj_name || activeSession.dj_name || 'DJ',
+    wallet: activeSession.wallet,
+    streamKey,
+    rtmpUrl: MUX_RTMP_URL,
+    fullRtmpUrl,
+    playbackId,
+    status: muxStream?.status || activeSession.status,
+    accessGrantedBy,
+    ffmpeg: fullRtmpUrl ? buildBasefmFfmpegCommandTemplates(fullRtmpUrl) : null,
+  }
+}
+
+function buildActiveSessionResponse(activeSession: ActiveDjSession, muxStream?: MuxLiveStream | null) {
   const remaining = getSessionRemainingSeconds(activeSession)
+  const stream = buildStreamControlPayload(activeSession, muxStream)
   return {
     active: true,
+    stream,
+    ffmpeg: stream.ffmpeg,
     session: {
       id: activeSession.id,
       wallet: activeSession.wallet,
       djName: activeSession.dj_name,
+      muxStreamId: activeSession.mux_stream_id,
       playbackId: activeSession.playback_id,
       startedAt: activeSession.started_at,
       elapsed: MAX_SESSION_SECONDS - remaining,
@@ -86,6 +131,27 @@ function buildActiveSessionResponse(activeSession: ActiveDjSession) {
       expiresAt: new Date(activeSession.started_at.getTime() + MAX_SESSION_SECONDS * 1000).toISOString(),
     },
   }
+}
+
+async function getMuxLiveStream(streamId: string): Promise<MuxLiveStream | null> {
+  const { tokenId, tokenSecret } = getMuxCredentials()
+  if (!tokenId || !tokenSecret) return null
+
+  const auth = Buffer.from(`${tokenId}:${tokenSecret}`).toString('base64')
+  const response = await fetch(`https://api.mux.com/video/v1/live-streams/${streamId}`, {
+    headers: { Authorization: `Basic ${auth}` },
+    cache: 'no-store',
+  })
+
+  if (!response.ok) return null
+  const payload = await response.json()
+  return payload.data || null
+}
+
+function normalizeCity(value: unknown) {
+  if (typeof value !== 'string') return null
+  const city = value.trim().replace(/\s+/g, ' ')
+  return city ? city.slice(0, 80) : null
 }
 
 async function getAuthorizedActiveSession(request: NextRequest) {
@@ -137,9 +203,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const session = await getAuthSession()
+    const isAdmin = isAdminEmail(session?.user?.email)
     const body = await request.json()
     const wallet = typeof body?.wallet === 'string' ? body.wallet.trim() : ''
     const name = typeof body?.name === 'string' ? body.name.trim() : ''
+    const city = normalizeCity(body?.city)
     const txHash = typeof body?.txHash === 'string' ? body.txHash.trim() : ''
 
     if (!wallet) return NextResponse.json({ error: 'Wallet address required' }, { status: 400 })
@@ -180,9 +248,11 @@ export async function POST(request: NextRequest) {
           const muxRes = await fetch(`https://api.mux.com/video/v1/live-streams/${blocking.mux_stream_id}`, { headers: { 'Authorization': `Basic ${auth}` } })
           if (muxRes.ok) {
             const stream = (await muxRes.json()).data
+            const fullRtmpUrl = `${MUX_RTMP_URL}/${stream.stream_key}`
             return NextResponse.json({
               success: true, reconnected: true,
-              stream: { id: stream.id, name: stream.metadata?.dj_name || blocking.dj_name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
+              stream: { id: stream.id, name: stream.metadata?.dj_name || blocking.dj_name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, fullRtmpUrl, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
+              ffmpeg: buildBasefmFfmpegCommandTemplates(fullRtmpUrl),
               session: { id: blocking.id, wallet: streamWallet, maxDuration: MAX_SESSION_SECONDS, remaining: getSessionRemainingSeconds(blocking), expiresAt: new Date(blocking.started_at.getTime() + MAX_SESSION_SECONDS * 1000).toISOString(), accessToken: createBasefmSessionToken({ sessionId: blocking.id, wallet: streamWallet, userId: session!.user.id, ttlSeconds: getSessionRemainingSeconds(blocking) + 3600 }) }
             })
           }
@@ -192,7 +262,7 @@ export async function POST(request: NextRequest) {
     }
 
     const lastEnded = await getLastEndedSessionForWallet(streamWallet)
-    if (lastEnded?.ended_at) {
+    if (!isAdmin && lastEnded?.ended_at) {
       const actualExpiry = new Date(lastEnded.started_at.getTime() + MAX_SESSION_SECONDS * 1000)
       const effectiveEnd = lastEnded.ended_at < actualExpiry ? lastEnded.ended_at : actualExpiry
       if (Date.now() - effectiveEnd.getTime() < COOLDOWN_MS) return NextResponse.json({ error: 'cooldown_active', message: '24h cooldown in effect.' }, { status: 429 })
@@ -202,17 +272,28 @@ export async function POST(request: NextRequest) {
     const muxRes = await fetch('https://api.mux.com/video/v1/live-streams', {
       method: 'POST',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playback_policy: ['public'], new_asset_settings: { playback_policy: ['public'] }, metadata: { dj_wallet: streamWallet, dj_name: name || 'DJ', access_type: accessType, tx_hash: txHash || null } }),
+      body: JSON.stringify({
+        playback_policy: ['public'],
+        new_asset_settings: { playback_policy: ['public'] },
+        metadata: {
+          dj_wallet: streamWallet,
+          dj_name: name || 'DJ',
+          ...(city ? { dj_city: city } : {}),
+          access_type: accessType,
+          tx_hash: txHash || null,
+        },
+      }),
     })
     if (!muxRes.ok) return NextResponse.json({ error: 'Mux creation failed' }, { status: muxRes.status })
     const stream = (await muxRes.json()).data
-    const sessionRecord = await prisma.dj_sessions.create({ data: { user_id: session?.user?.id || 'anonymous', wallet: streamWallet, dj_name: name || 'DJ', mux_stream_id: stream.id, playback_id: stream.playback_ids?.[0]?.id || null, max_duration: MAX_SESSION_SECONDS, metadata: { accessType, txHash: txHash || null } as any } })
+    const sessionRecord = await prisma.dj_sessions.create({ data: { user_id: session?.user?.id || 'anonymous', wallet: streamWallet, dj_name: name || 'DJ', mux_stream_id: stream.id, playback_id: stream.playback_ids?.[0]?.id || null, max_duration: MAX_SESSION_SECONDS, metadata: { accessType, txHash: txHash || null, city } as any } })
+    const fullRtmpUrl = `${MUX_RTMP_URL}/${stream.stream_key}`
 
     return NextResponse.json({
       success: true,
-      stream: { id: stream.id, name: name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, fullRtmpUrl: `${MUX_RTMP_URL}/${stream.stream_key}`, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
+      stream: { id: stream.id, name: name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, fullRtmpUrl, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
       session: { id: sessionRecord.id, wallet: streamWallet, maxDuration: MAX_SESSION_SECONDS, remaining: MAX_SESSION_SECONDS, expiresAt: new Date(Date.now() + MAX_SESSION_SECONDS * 1000).toISOString(), accessToken: createBasefmSessionToken({ sessionId: sessionRecord.id, wallet: streamWallet, userId: session?.user?.id || null, ttlSeconds: MAX_SESSION_SECONDS + 3600 }) },
-      ffmpeg: { command: buildBasefmFfmpegCommandTemplate(`${MUX_RTMP_URL}/${stream.stream_key}`) }
+      ffmpeg: buildBasefmFfmpegCommandTemplates(fullRtmpUrl)
     })
   } catch (error) { return NextResponse.json({ error: 'Internal error' }, { status: 500 }) }
 }
@@ -227,7 +308,8 @@ export async function GET(request: NextRequest) {
     await retireSessionStreams([auth.activeSession]).catch(() => {})
     return NextResponse.json({ active: false, message: 'Session expired.' })
   }
-  return NextResponse.json(buildActiveSessionResponse(auth.activeSession))
+  const muxStream = await getMuxLiveStream(auth.activeSession.mux_stream_id).catch(() => null)
+  return NextResponse.json(buildActiveSessionResponse(auth.activeSession, muxStream))
 }
 
 export async function DELETE(request: NextRequest) {

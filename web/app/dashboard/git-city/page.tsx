@@ -228,7 +228,7 @@ export default function GitCityPage() {
             href="https://www.thegitcity.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-blue-800 bg-orange-900/20 p-4 hover:border-orange-600 transition-colors"
+            className="border border-orange-800 bg-orange-900/20 p-4 hover:border-orange-600 transition-colors"
           >
             <GitBranch className="h-6 w-6 text-orange-400 mb-2" />
             <h3 className="text-white font-bold">3D City</h3>
@@ -411,7 +411,7 @@ export default function GitCityPage() {
 
               {/* Selected Block Details */}
               {viewMode === '3d' && selectedBlock && (
-                <div className="border border-blue-800 bg-orange-900/20 p-4">
+                <div className="border border-orange-800 bg-orange-900/20 p-4">
                   {(() => {
                     const block = cityBlocks.find(b => b.id === selectedBlock)
                     if (!block) return null

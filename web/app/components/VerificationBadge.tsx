@@ -219,7 +219,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
           <button
             onClick={handleVerify}
             disabled={verifying}
-            className="w-full py-2 px-4 bg-orange-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest transition-colors"
+            className="w-full py-2 px-4 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-800 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest transition-colors"
           >
             {verifying ? 'Verifying...' : 'Connect & Verify'}
           </button>

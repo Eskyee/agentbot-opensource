@@ -17,8 +17,10 @@ import { NotificationBell } from "@/app/social/_components/NotificationBell";
 const EXPLORE_LINKS = [
   { href: "/demo",        label: "Demo",         detail: "See Agentbot in action" },
   { href: "/showcase",    label: "Showcase",     detail: "Meet agents built on Agentbot" },
+  { href: "/capabilities",label: "Capabilities", detail: "Browse the platform feature set" },
   { href: "/why",         label: "Why Agentbot", detail: "The case for agent infrastructure" },
   { href: "/basefm/live", label: "baseFM Live",  detail: "Live autonomous radio — on now" },
+  { href: "/solana",      label: "Solana",       detail: "Solana agents, tools and workflows" },
   { href: "/search",      label: "Search",       detail: "Search docs, guides and blog" },
   { href: "/social",      label: "Social",       detail: "Agent network for creatives" },
   { href: "/agents",      label: "Agents",       detail: "Browse available agents" },
@@ -29,6 +31,8 @@ const EXPLORE_LINKS = [
 const BUILD_LINKS = [
   { href: "/documentation", label: "Docs",        detail: "Platform documentation" },
   { href: "/guide",          label: "Guide",       detail: "Dashboard, skills and OpenClaw" },
+  { href: "/playground",     label: "Playground",  detail: "Generate and test mini apps" },
+  { href: "/open-learning",  label: "Open Learning", detail: "Learn and contribute in public" },
   { href: SOUL_DASHBOARD_URL, label: "Borg",       detail: "Soul dashboard for agents", external: true },
   { href: "/skills",         label: "Skills API",  detail: "Build and publish agent skills" },
   { href: "https://github.com/Eskyee/agentbot-opensource", label: "Open Source", detail: "GitHub — MIT licensed", external: true },
@@ -263,7 +267,9 @@ export default function Navbar() {
                   <MobileLink href="/dashboard/verify" onClick={closeMenu}>Verify</MobileLink>
                 </MobileSection>
                 <MobileSection label="Explore">
+                  <MobileLink href="/capabilities" onClick={closeMenu}>Capabilities</MobileLink>
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
+                  <MobileLink href="/solana" onClick={closeMenu}>Solana</MobileLink>
                   <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/colony" onClick={closeMenu}>Colony</MobileLink>
@@ -273,6 +279,8 @@ export default function Navbar() {
                   <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
                 </MobileSection>
                 <MobileSection label="Advanced">
+                  <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
+                  <MobileLink href="/open-learning" onClick={closeMenu}>Open Learning</MobileLink>
                   <MobileLink href="/basefm" onClick={closeMenu}>DJ Streaming</MobileLink>
                   <MobileLink href="/dashboard/mixtape" onClick={closeMenu}>Mix Uploads</MobileLink>
                   <MobileLink href="/dashboard/gitlawb-network" onClick={closeMenu}>Gitlawb Network</MobileLink>
@@ -299,8 +307,10 @@ export default function Navbar() {
                 <MobileSection label="Explore" defaultOpen>
                   <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
                   <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
+                  <MobileLink href="/capabilities" onClick={closeMenu}>Capabilities</MobileLink>
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
                   <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
+                  <MobileLink href="/solana" onClick={closeMenu}>Solana</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
@@ -309,6 +319,8 @@ export default function Navbar() {
                 <MobileSection label="Build">
                   <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                   <MobileLink href="/guide" onClick={closeMenu}>Guide</MobileLink>
+                  <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
+                  <MobileLink href="/open-learning" onClick={closeMenu}>Open Learning</MobileLink>
                   <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu} external>Borg</MobileLink>
                   <MobileLink href="/skills" onClick={closeMenu}>Skills API</MobileLink>
                   <MobileLink href="https://github.com/Eskyee/agentbot-opensource" onClick={closeMenu} external>Open Source</MobileLink>
