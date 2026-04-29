@@ -25,25 +25,35 @@ function getRedis(): Redis | null {
 
 export async function POST(req: NextRequest) {
   try {
-    // Verify webhook secret
+    // Fail CLOSED when RAILWAY_WEBHOOK_SECRET is unset — previously the
+    // webhook accepted unsigned POSTs in that case, letting anyone poison
+    // `railway:status:latest` in Redis and the downstream colony dashboard.
+    // This matches the Stripe webhook handler's behaviour.
     const webhookSecret = process.env.RAILWAY_WEBHOOK_SECRET
-    if (webhookSecret) {
-      const providedSecret =
-        req.headers.get('x-railway-secret') ||
-        new URL(req.url).searchParams.get('secret')
+    if (!webhookSecret) {
+      console.error(
+        '[Railway Status] RAILWAY_WEBHOOK_SECRET not configured — rejecting webhook'
+      )
+      return NextResponse.json(
+        { error: 'Webhook not configured' },
+        { status: 503 }
+      )
+    }
 
-      if (
-        !providedSecret ||
-        !crypto.timingSafeEqual(
-          Buffer.from(providedSecret),
-          Buffer.from(webhookSecret)
-        )
-      ) {
-        console.warn('[Railway Status] Invalid webhook secret — rejecting')
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-      }
-    } else {
-      console.warn('[Railway Status] RAILWAY_WEBHOOK_SECRET not set — accepting without verification')
+    const providedSecret =
+      req.headers.get('x-railway-secret') ||
+      new URL(req.url).searchParams.get('secret') ||
+      ''
+
+    const providedBuf = Buffer.from(providedSecret)
+    const secretBuf = Buffer.from(webhookSecret)
+    const secretMatches =
+      providedBuf.length === secretBuf.length &&
+      crypto.timingSafeEqual(providedBuf, secretBuf)
+
+    if (!providedSecret || !secretMatches) {
+      console.warn('[Railway Status] Invalid webhook secret — rejecting')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await req.json()
