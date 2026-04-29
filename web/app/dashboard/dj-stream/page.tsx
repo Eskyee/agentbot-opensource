@@ -65,6 +65,8 @@ interface StreamMuxStatus {
   error?: string
 }
 
+type EncoderMode = 'audio' | 'playlist' | 'video'
+
 function toStatusPillStatus(status: string): 'active' | 'idle' | 'error' | 'offline' {
   if (status === 'healthy' || status === 'active') return 'active'
   if (status === 'pending' || status === 'degraded' || status === 'idle') return 'idle'
@@ -111,6 +113,38 @@ function InfoPanel({ title, children }: { title: string; children: ReactNode }) 
   )
 }
 
+function EncoderModeButton({
+  active,
+  title,
+  meta,
+  body,
+  onClick,
+}: {
+  active: boolean
+  title: string
+  meta: string
+  body: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex min-h-[104px] flex-col border p-4 text-left transition-colors ${
+        active
+          ? 'border-white bg-zinc-900 ring-1 ring-white'
+          : 'border-zinc-800 bg-black hover:border-zinc-600'
+      }`}
+    >
+      <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-white' : 'text-zinc-500'}`}>
+        {title}
+      </span>
+      <span className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">{meta}</span>
+      <span className="mt-3 text-xs leading-relaxed text-zinc-500">{body}</span>
+    </button>
+  )
+}
+
 export default function DJStreamPage() {
   const { address, isConnected } = useAccount()
   const { connect } = useConnect()
@@ -140,6 +174,7 @@ export default function DJStreamPage() {
   const [activeStreamLoading, setActiveStreamLoading] = useState(true)
   const [copiedLabel, setCopiedLabel] = useState('')
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null)
+  const [encoderMode, setEncoderMode] = useState<EncoderMode>('audio')
 
   const handleConnect = () => {
     connect({ connector: coinbaseWallet({ appName: 'Agentbot', preference: 'smartWalletOnly' }) })
@@ -560,6 +595,18 @@ export default function DJStreamPage() {
   const streamTarget = stream?.fullRtmpUrl || stream?.rtmpUrl || ''
   const rtmpServer = stream?.rtmpUrl || MUX_RTMP_URL
   const streamKey = stream?.streamKey || ''
+  const selectedEncoderCommand =
+    encoderMode === 'video'
+      ? artworkCommand
+      : encoderMode === 'playlist'
+        ? playlistCommand
+        : audioOnlyCommand
+  const selectedEncoderLabel =
+    encoderMode === 'video'
+      ? 'Artwork Video'
+      : encoderMode === 'playlist'
+        ? 'Playlist'
+        : 'Audio Only'
   const copyFeedback = copiedLabel ? `${copiedLabel} copied` : ''
   const broadcastStatus =
     muxStatus?.streamHealth === 'good'
@@ -807,6 +854,33 @@ export default function DJStreamPage() {
                 <p className="mt-2 text-xs text-zinc-500">
                   Optional. Leave it blank to go live faster.
                 </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Stream Mode</label>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <EncoderModeButton
+                    active={encoderMode === 'audio'}
+                    title="Audio Only"
+                    meta="Default"
+                    body="Lowest friction for DJ sets and agent streams."
+                    onClick={() => setEncoderMode('audio')}
+                  />
+                  <EncoderModeButton
+                    active={encoderMode === 'playlist'}
+                    title="Playlist"
+                    meta="Audio concat"
+                    body="Use an ffmpeg playlist file for ordered tracks."
+                    onClick={() => setEncoderMode('playlist')}
+                  />
+                  <EncoderModeButton
+                    active={encoderMode === 'video'}
+                    title="Video"
+                    meta="Artwork loop"
+                    body="Use when the DJ explicitly wants a video track."
+                    onClick={() => setEncoderMode('video')}
+                  />
+                </div>
               </div>
 
               <button
@@ -1163,37 +1237,47 @@ export default function DJStreamPage() {
 
                 <div className="border border-zinc-800 p-4">
                   <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Agent Encoder Commands</span>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">Single File</span>
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-600">Audio-only</span>
-                        <CopyButton label="Copy" value={audioOnlyCommand} onCopy={copyValue} />
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <EncoderModeButton
+                      active={encoderMode === 'audio'}
+                      title="Audio Only"
+                      meta="Default"
+                      body="Single file stream. Best default if the DJ makes no choice."
+                      onClick={() => setEncoderMode('audio')}
+                    />
+                    <EncoderModeButton
+                      active={encoderMode === 'playlist'}
+                      title="Playlist"
+                      meta="Audio concat"
+                      body="Ordered tracks from a local ffmpeg concat playlist."
+                      onClick={() => setEncoderMode('playlist')}
+                    />
+                    <EncoderModeButton
+                      active={encoderMode === 'video'}
+                      title="Video"
+                      meta="Artwork loop"
+                      body="Video track with the baseFM artwork for visual surfaces."
+                      onClick={() => setEncoderMode('video')}
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">{selectedEncoderLabel}</span>
+                        <div className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                          {encoderMode === 'audio'
+                            ? 'Audio-only'
+                            : encoderMode === 'playlist'
+                              ? 'Audio-only concat'
+                              : 'Video + silent bed'}
+                        </div>
                       </div>
-                      <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
-                        {audioOnlyCommand || 'Create a stream to generate the audio-only command.'}
-                      </code>
+                      <CopyButton label="Copy" value={selectedEncoderCommand} onCopy={copyValue} />
                     </div>
-                    <div>
-                      <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">Playlist</span>
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-600">Audio-only concat</span>
-                        <CopyButton label="Copy" value={playlistCommand} onCopy={copyValue} />
-                      </div>
-                      <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
-                        {playlistCommand || 'Create a stream to generate the playlist command.'}
-                      </code>
-                    </div>
-                    <div>
-                      <div className="mb-2 flex items-center justify-between gap-3">
-                        <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">Artwork Video</span>
-                        <span className="text-[10px] uppercase tracking-widest text-zinc-600">Video + silent bed</span>
-                        <CopyButton label="Copy" value={artworkCommand} onCopy={copyValue} />
-                      </div>
-                      <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
-                        {artworkCommand || 'Create a stream to generate the artwork video command.'}
-                      </code>
-                    </div>
+                    <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
+                      {selectedEncoderCommand || 'Create a stream to generate the selected encoder command.'}
+                    </code>
                   </div>
                 </div>
 
