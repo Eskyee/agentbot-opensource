@@ -177,6 +177,7 @@ export default function Navbar() {
               <Dropdown label="Community"  items={COMMUNITY_LINKS}  current={pathname} />
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
               <NavLink href="/dashboard/signals" current={pathname}>Signals</NavLink>
+              <NavLink href="/dashboard/dj-stream" current={pathname}>DJ Stream</NavLink>
               <NavLink href="/social" current={pathname}>Social</NavLink>
               <NavLink href="/agents" current={pathname}>Agents</NavLink>
               <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
@@ -261,6 +262,7 @@ export default function Navbar() {
                 <MobileSection label="Primary" defaultOpen>
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
                   <MobileLink href="/dashboard/signals" onClick={closeMenu}>Signals</MobileLink>
+                  <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>DJ Stream</MobileLink>
                   <MobileLink href="/dashboard/skills" onClick={closeMenu}>Skills</MobileLink>
                   <MobileLink href="/dashboard/wallet" onClick={closeMenu}>Wallet</MobileLink>
                   <MobileLink href="/dashboard/workflows" onClick={closeMenu}>Workflows</MobileLink>
@@ -281,7 +283,7 @@ export default function Navbar() {
                 <MobileSection label="Advanced">
                   <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
                   <MobileLink href="/open-learning" onClick={closeMenu}>Open Learning</MobileLink>
-                  <MobileLink href="/basefm" onClick={closeMenu}>DJ Streaming</MobileLink>
+                  <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>DJ Streaming</MobileLink>
                   <MobileLink href="/dashboard/mixtape" onClick={closeMenu}>Mix Uploads</MobileLink>
                   <MobileLink href="/dashboard/gitlawb-network" onClick={closeMenu}>Gitlawb Network</MobileLink>
                   <MobileLink href="/dashboard/git-city" onClick={closeMenu}>Git City</MobileLink>
