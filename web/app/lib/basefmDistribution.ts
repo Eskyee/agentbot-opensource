@@ -41,7 +41,7 @@ export interface BasefmDistributionState {
 }
 
 type BuildDistributionArgs = {
-  availability: 'live' | 'degraded'
+  availability: 'live' | 'degraded' | 'idle'
   primaryDj: BasefmLiveDjLike | null
   relays?: BasefmRelayDestination[]
 }

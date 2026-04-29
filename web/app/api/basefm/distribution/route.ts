@@ -96,7 +96,7 @@ export async function GET() {
     const relays = await listBasefmRelayDestinations().catch(() => [])
     const verifiedRelays = await verifyRelayPlaybackCoverage(primaryDj, relays).catch(() => relays)
     const distribution = buildBasefmDistribution({
-      availability: primaryDj?.hlsUrl ? 'live' : 'degraded',
+      availability: primaryDj?.hlsUrl ? 'live' : 'idle',
       primaryDj,
       relays: verifiedRelays,
     })
@@ -126,4 +126,3 @@ export async function GET() {
     )
   }
 }
-
