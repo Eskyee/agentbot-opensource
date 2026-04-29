@@ -616,6 +616,20 @@ export default function DJStreamPage() {
         : muxStatus?.streamHealth === 'bad'
           ? { pill: 'error' as const, label: 'Needs Attention', helper: muxStatus.message || 'Mux is not reporting a healthy stream.' }
           : { pill: 'idle' as const, label: 'Stream Armed', helper: 'Your stream key is ready. Start OBS or ffmpeg to go live.' }
+  const originDisplay =
+    stream && (muxStatus?.streamHealth === 'waiting' || distribution?.origin.status === 'degraded')
+      ? { status: 'idle' as const, label: 'Waiting' }
+      : {
+          status: toStatusPillStatus(distribution?.origin.status || 'offline'),
+          label: distribution?.origin.status || 'offline',
+        }
+  const firstPartyDisplay =
+    stream && muxStatus?.streamHealth === 'waiting' && distribution?.firstParty.status === 'stopped'
+      ? { status: 'idle' as const, label: 'Standby' }
+      : {
+          status: toStatusPillStatus(distribution?.firstParty.status || 'offline'),
+          label: distribution?.firstParty.status || 'offline',
+        }
 
   return (
     <DashboardShell>
@@ -921,16 +935,16 @@ export default function DJStreamPage() {
                 <div className="bg-black p-4">
                   <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Origin</span>
                   <StatusPill
-                    status={toStatusPillStatus(distribution?.origin.status || 'offline')}
-                    label={distribution?.origin.status || 'offline'}
+                    status={originDisplay.status}
+                    label={originDisplay.label}
                     size="sm"
                   />
                 </div>
                 <div className="bg-black p-4">
                   <span className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Agentbot</span>
                   <StatusPill
-                    status={toStatusPillStatus(distribution?.firstParty.status || 'offline')}
-                    label={distribution?.firstParty.status || 'offline'}
+                    status={firstPartyDisplay.status}
+                    label={firstPartyDisplay.label}
                     size="sm"
                   />
                 </div>
