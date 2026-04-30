@@ -11,8 +11,6 @@ import {
 } from '@/app/lib/railway-service'
 import { getAgentEnvVars } from '@/app/lib/railway-provision'
 
-const DEFAULT_GATEWAY_PORT = 18789
-
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
@@ -112,24 +110,10 @@ function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string) {
     },
     gateway: {
       mode: 'local',
-      bind: 'lan',
-      port: DEFAULT_GATEWAY_PORT,
       auth: {
         mode: 'token',
         token: gatewayToken,
       },
-      trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
-      controlUi: {
-        allowedOrigins: [
-          'https://agentbot.sh',
-          'https://www.agentbot.sh',
-          'http://localhost:3000',
-          'http://127.0.0.1:3000',
-        ],
-        dangerouslyDisableDeviceAuth: false,
-        dangerouslyAllowHostHeaderOriginFallback: false,
-      },
-      http: { endpoints: { chatCompletions: { enabled: true } } },
     },
     plugins: {
       allow: [],
@@ -143,17 +127,8 @@ function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string) {
         },
       },
     },
-    update: {
-      channel: 'stable',
-      auto: {
-        enabled: true,
-        stableDelayHours: 6,
-        stableJitterHours: 12,
-        betaCheckIntervalHours: 1,
-      },
-    },
     meta: {
-      configuredBy: 'agentbot-admin',
+      lastTouchedVersion: '2026.4.26',
       lastTouchedAt: new Date().toISOString(),
     },
   }
