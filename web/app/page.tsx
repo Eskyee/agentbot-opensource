@@ -7,7 +7,6 @@ const HeroSphere = dynamic(() => import('@/app/components/HeroSphereClient'))
 const HeroImage = dynamic(() => import('@/app/components/HeroImage').then(m => ({ default: m.HeroImage })))
 const DashboardPreview = dynamic(() => import('@/app/components/DashboardPreview').then(m => ({ default: m.DashboardPreview })))
 const CapabilitiesTicker = dynamic(() => import('@/app/components/landing').then(m => ({ default: m.CapabilitiesTicker })))
-const PartnerLogos = dynamic(() => import('@/app/components/PartnerLogos'))
 
 export default async function Home() {
   const session = await getAuthSession()
@@ -307,7 +306,58 @@ export default async function Home() {
         </div>
       </section>
 
-      <PartnerLogos />
+      {/* Partners */}
+      <section className="border-t border-zinc-900">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
+          <div className="max-w-2xl mb-10 sm:mb-16">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Partners</div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter uppercase">
+              Growing Together<br />
+              <span className="text-zinc-700">With Our Partners.</span>
+            </h2>
+            <p className="text-zinc-500 text-sm max-w-xl leading-relaxed mt-6">
+              The collectives and crews helping grow baseFM, unite the scene, and push autonomous culture forward.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-zinc-900">
+            {[
+              {
+                name: 'Salted Roots',
+                href: 'https://saltedroots.co.uk',
+                description: 'Rooted in the underground — helping grow baseFM through music, culture, and community.',
+              },
+              {
+                name: 'One Love Collective',
+                description: 'Unity through sound — bridging scenes and growing the baseFM network together.',
+              },
+              {
+                name: 'Bristol Collective',
+                description: 'The heart of the sound — uniting Bristol with the baseFM movement through events and pure sonic energy.',
+              },
+              {
+                name: 'Oxford Collective',
+                description: 'Deep research meets deep bass — joining forces to expand baseFM across the Oxford node.',
+              },
+            ].map((partner) => {
+              const content = (
+                <>
+                  <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-4">{partner.name}</div>
+                  <p className="text-zinc-500 text-sm leading-relaxed">{partner.description}</p>
+                </>
+              )
+              return partner.href ? (
+                <a key={partner.name} href={partner.href} target="_blank" rel="noopener noreferrer" className="bg-black p-6 sm:p-8 group hover:bg-zinc-950 transition-colors">
+                  {content}
+                </a>
+              ) : (
+                <div key={partner.name} className="bg-black p-6 sm:p-8 group hover:bg-zinc-950 transition-colors">
+                  {content}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* Pricing — compact */}
       <section id="pricing" className="border-t border-zinc-900 scroll-mt-20">
