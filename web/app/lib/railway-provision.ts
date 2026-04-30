@@ -22,7 +22,7 @@ type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
  * Includes OpenClaw + Express wrapper with health checks, auto-restart, volume support.
  * The wrapper manages the gateway process — no start command needed.
  */
-const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.26'
+const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.27'
 
 function getRailwayTokenType(): RailwayTokenType {
   const raw = process.env.RAILWAY_TOKEN_TYPE?.trim().toLowerCase()
