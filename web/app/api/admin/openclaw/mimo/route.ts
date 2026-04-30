@@ -13,6 +13,9 @@ import { getAgentEnvVars } from '@/app/lib/railway-provision'
 
 const DEFAULT_GATEWAY_PORT = 18789
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 type MimoRequestBody = {
   apiKey?: string
   gatewayToken?: string
@@ -21,6 +24,25 @@ type MimoRequestBody = {
 
 function assertString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function sanitizeErrorMessage(message: string) {
+  return message
+    .replace(/tp-[a-z0-9]+/gi, '[redacted]')
+    .replace(/[a-f0-9]{40,}/gi, '[redacted]')
+}
+
+function errorResponse(code: string, error: string, status: number) {
+  return NextResponse.json(
+    { success: false, code, error: sanitizeErrorMessage(error) },
+    { status }
+  )
+}
+
+function errorCodeFor(message: string, fallback: string) {
+  return /not authorized|unauthorized|forbidden/i.test(message)
+    ? 'railway_not_authorized'
+    : fallback
 }
 
 function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string) {
@@ -147,7 +169,7 @@ async function smokeRuntime(openclawUrl: string | null) {
 export async function POST(request: Request) {
   const session = await getAuthSession()
   if (!session?.user?.id || (!session.user.isAdmin && !isAdminEmail(session.user.email))) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
+    return errorResponse('admin_unauthorized', 'Admin authorization failed', 403)
   }
 
   const body = await request.json().catch(() => ({})) as MimoRequestBody
@@ -156,7 +178,7 @@ export async function POST(request: Request) {
   const dryRun = body.dryRun === true
 
   if (!apiKey) {
-    return NextResponse.json({ success: false, error: 'MiMo API key is required' }, { status: 400 })
+    return errorResponse('missing_mimo_api_key', 'MiMo API key is required', 400)
   }
 
   const [user, registration, latestAgent] = await Promise.all([
@@ -181,10 +203,7 @@ export async function POST(request: Request) {
   ])
 
   if (!user?.openclawInstanceId && !latestAgent?.id) {
-    return NextResponse.json(
-      { success: false, error: 'Admin user does not have a managed OpenClaw runtime' },
-      { status: 404 }
-    )
+    return errorResponse('runtime_not_found', 'Admin user does not have a managed OpenClaw runtime', 404)
   }
 
   const latestConfig = latestAgent?.config && typeof latestAgent.config === 'object'
@@ -206,10 +225,8 @@ export async function POST(request: Request) {
       serviceId: runtimeServiceId,
     })
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : 'Railway runtime not found' },
-      { status: 503 }
-    )
+    const message = error instanceof Error ? error.message : 'Railway runtime not found'
+    return errorResponse(errorCodeFor(message, 'railway_resolve_failed'), message, 503)
   }
 
   const variables = {
@@ -219,36 +236,41 @@ export async function POST(request: Request) {
   }
 
   if (!dryRun) {
-    await railwayGql(
-      `mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
-        variableCollectionUpsert(input: $input)
-      }`,
-      {
-        input: {
-          projectId: process.env.RAILWAY_PROJECT_ID?.trim(),
-          serviceId: railwayService.id,
-          environmentId,
-          variables,
-        },
-      }
-    )
-
-    await restartRailwayService(railwayService.id, environmentId)
-
-    if (latestAgent) {
-      await prisma.agent.update({
-        where: { id: latestAgent.id },
-        data: {
-          status: 'updating',
-          config: {
-            ...latestConfig,
-            runtimeServiceId: railwayService.id,
-            modelProvider: 'xiaomi-coding',
-            primaryModel: 'xiaomi-coding/mimo-v2.5-pro',
-            adminMimoConfiguredAt: new Date().toISOString(),
+    try {
+      await railwayGql(
+        `mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+          variableCollectionUpsert(input: $input)
+        }`,
+        {
+          input: {
+            projectId: process.env.RAILWAY_PROJECT_ID?.trim(),
+            serviceId: railwayService.id,
+            environmentId,
+            variables,
           },
-        },
-      })
+        }
+      )
+
+      await restartRailwayService(railwayService.id, environmentId)
+
+      if (latestAgent) {
+        await prisma.agent.update({
+          where: { id: latestAgent.id },
+          data: {
+            status: 'updating',
+            config: {
+              ...latestConfig,
+              runtimeServiceId: railwayService.id,
+              modelProvider: 'xiaomi-coding',
+              primaryModel: 'xiaomi-coding/mimo-v2.5-pro',
+              adminMimoConfiguredAt: new Date().toISOString(),
+            },
+          },
+        })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Railway update failed'
+      return errorResponse(errorCodeFor(message, 'railway_update_failed'), message, 502)
     }
   }
 
