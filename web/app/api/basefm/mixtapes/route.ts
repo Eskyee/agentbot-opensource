@@ -3,6 +3,7 @@ import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
 const MIXTAPE_PLANS = ['collective', 'label', 'network']
+const ADMIN_EMAILS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
 const MIXTAPE_UPLOAD_COST_ENV = 'BASEFM_MIXTAPE_CREDIT_COST' // optional env for future credit billing
 
 function getMuxAuth() {
@@ -30,16 +31,19 @@ export async function POST(request: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { plan: true, subscriptionStatus: true },
+    select: { plan: true, subscriptionStatus: true, email: true },
   })
 
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 })
   }
 
+  const isAdmin = ADMIN_EMAILS.includes(user.email || '')
+
   const hasAccess =
-    MIXTAPE_PLANS.includes(user.plan || '') &&
-    (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing')
+    isAdmin ||
+    (MIXTAPE_PLANS.includes(user.plan || '') &&
+    (user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing'))
 
   if (!hasAccess) {
     return NextResponse.json(
