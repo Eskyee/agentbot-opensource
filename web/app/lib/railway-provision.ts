@@ -118,8 +118,8 @@ function getRailwayTokenType(): RailwayTokenType {
   return 'account'
 }
 
-function getRailwayAuthHeaders(key: string): Record<string, string> {
-  return getRailwayTokenType() === 'project'
+function getRailwayAuthHeaders(key: string, tokenType = getRailwayTokenType()): Record<string, string> {
+  return tokenType === 'project'
     ? {
         'Project-Access-Token': key,
         'Content-Type': 'application/json',
@@ -130,6 +130,17 @@ function getRailwayAuthHeaders(key: string): Record<string, string> {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       }
+}
+
+function getRailwayAuthAttempts(): RailwayTokenType[] {
+  const configured = getRailwayTokenType()
+  if (configured === 'project') return ['project', 'account']
+  if (configured === 'account') return ['account', 'project']
+  return [configured]
+}
+
+function isRailwayUnauthorized(message: string) {
+  return /not authorized|unauthorized|forbidden/i.test(message)
 }
 
 export function getAgentEnvVars(
@@ -225,23 +236,36 @@ async function railwayGql<T = unknown>(
   const key = process.env.RAILWAY_API_KEY
   if (!key) throw new Error('RAILWAY_API_KEY not configured')
 
-  const res = await fetch(RAILWAY_API, {
-    method: 'POST',
-    headers: getRailwayAuthHeaders(key),
-    body: JSON.stringify({ query, variables }),
-    signal: AbortSignal.timeout(30_000),
-  })
+  let lastError: Error | null = null
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw new Error(`Railway API ${res.status}: ${text}`)
+  for (const tokenType of getRailwayAuthAttempts()) {
+    const res = await fetch(RAILWAY_API, {
+      method: 'POST',
+      headers: getRailwayAuthHeaders(key, tokenType),
+      body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(30_000),
+    })
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '')
+      const message = `Railway API ${res.status}: ${text}`
+      lastError = new Error(message)
+      if (isRailwayUnauthorized(message)) continue
+      throw lastError
+    }
+
+    const json = await res.json() as { data?: T; errors?: { message: string }[] }
+    if (json.errors?.length) {
+      const message = `Railway GQL: ${json.errors.map(e => e.message).join(', ')}`
+      lastError = new Error(message)
+      if (isRailwayUnauthorized(message)) continue
+      throw lastError
+    }
+
+    return json.data as T
   }
 
-  const json = await res.json() as { data?: T; errors?: { message: string }[] }
-  if (json.errors?.length) {
-    throw new Error(`Railway GQL: ${json.errors.map(e => e.message).join(', ')}`)
-  }
-  return json.data as T
+  throw lastError || new Error('Railway API authorization failed')
 }
 
 export interface ProvisionResult {
