@@ -146,7 +146,7 @@ async function smokeRuntime(openclawUrl: string | null) {
 
 export async function POST(request: Request) {
   const session = await getAuthSession()
-  if (!session?.user?.id || !isAdminEmail(session.user.email)) {
+  if (!session?.user?.id || (!session.user.isAdmin && !isAdminEmail(session.user.email))) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 })
   }
 

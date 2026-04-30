@@ -39,7 +39,7 @@ export async function getAuthSession(): Promise<AuthSession | null> {
             id: session.user.id,
             name: session.user.name,
             email: session.user.email,
-            isAdmin: isAdminEmail(session.user.email),
+            isAdmin: isAdminEmail(session.user.email) || session.user.role === 'admin',
           },
         };
       }
@@ -56,7 +56,7 @@ export async function getAuthSession(): Promise<AuthSession | null> {
         id: nextAuthSession.user.id || '',
         name: nextAuthSession.user.name || null,
         email: nextAuthSession.user.email || null,
-        isAdmin: nextAuthSession.user.isAdmin ?? false,
+        isAdmin: nextAuthSession.user.isAdmin ?? isAdminEmail(nextAuthSession.user.email),
       },
     };
   }

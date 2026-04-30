@@ -8,7 +8,7 @@ import { getTrialCountdown } from '@/app/lib/trial-utils'
 
 export async function GET() {
   const session = await getAuthSession()
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!session?.user?.email || (!session.user.isAdmin && !isAdminEmail(session.user.email))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 
