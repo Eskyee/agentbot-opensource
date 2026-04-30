@@ -60,6 +60,17 @@ apiRoutes.get('/status', async (req, res) => {
   });
 });
 
+// Public version endpoint — reads actual OpenClaw binary version
+apiRoutes.get('/version', (req, res) => {
+  try {
+    const { execFileSync } = require('child_process');
+    const version = execFileSync('openclaw', ['--version'], { encoding: 'utf8', timeout: 5000 }).trim();
+    res.json({ openclawVersion: version, ts: new Date().toISOString() });
+  } catch {
+    res.json({ openclawVersion: 'unknown', ts: new Date().toISOString() });
+  }
+});
+
 // ── Protected routes — everything below requires admin auth ────────
 apiRoutes.use(requireAdminAuth);
 
