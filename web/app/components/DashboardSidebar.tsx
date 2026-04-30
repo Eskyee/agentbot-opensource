@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, memo, useTransition } from 'react';
+import { useState, useEffect, useCallback, memo, useMemo, useTransition } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { buildOpenClawControlUrl } from '@/app/lib/openclaw-control';
@@ -110,8 +110,15 @@ export const navSections = [
   },
 ];
 
+export const adminNavSection = {
+  label: 'Admin',
+  items: [
+    { label: 'Admin Control', href: '/dashboard/admin', icon: '▣' },
+  ],
+};
+
 // Flat list for breadcrumb lookups
-export const allNavItems = navSections.flatMap((s) => s.items);
+export const allNavItems = [...navSections, adminNavSection].flatMap((s) => s.items);
 
 const COLLAPSED_KEY = 'agentbot_sidebar_collapsed';
 
@@ -122,6 +129,7 @@ interface DashboardSidebarProps {
   runtimeUrl?: string | null;
   runtimeGatewayToken?: string | null;
   runtimeInstanceId?: string | null;
+  isAdmin?: boolean;
   isOpen: boolean;
   onToggle: () => void;
 }
@@ -132,6 +140,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   plan,
   runtimeUrl,
   runtimeGatewayToken,
+  isAdmin = false,
   isOpen,
   onToggle,
 }: DashboardSidebarProps) {
@@ -142,6 +151,10 @@ export const DashboardSidebar = memo(function DashboardSidebar({
   const { plan: contextPlan, openclawUrl, gatewayToken, operatorEnabled } = dashboardData;
   const effectiveOpenclawUrl = runtimeUrl || openclawUrl;
   const effectiveGatewayToken = runtimeGatewayToken || gatewayToken;
+  const visibleNavSections = useMemo(
+    () => (isAdmin ? [...navSections, adminNavSection] : navSections),
+    [isAdmin]
+  );
 
   // Start fully expanded (safe for SSR), hydrate from localStorage in effect
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -156,7 +169,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
 
       if (window.innerWidth < 768) {
         const next = Object.fromEntries(
-          navSections.map((section) => [
+          visibleNavSections.map((section) => [
             section.label,
             !section.items.some(
               (item) => pathname === item.href || pathname.startsWith(item.href + '/')
@@ -169,7 +182,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
         setCollapsed(next);
       }
     } catch {}
-  }, [pathname]);
+  }, [pathname, visibleNavSections]);
 
   const toggleSection = useCallback((label: string) => {
     startTransition(() => {
@@ -367,7 +380,7 @@ export const DashboardSidebar = memo(function DashboardSidebar({
             })()}
 
           {/* Nav sections */}
-          {navSections.map((section, i) => {
+          {visibleNavSections.map((section, i) => {
             const sectionHasActive = section.items.some(
               (item) => pathname === item.href || pathname.startsWith(item.href + '/')
             );

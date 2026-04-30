@@ -209,7 +209,7 @@ export default function Navbar() {
                 Claim
               </Link>
               {isAdmin && (
-                <Link href="/admin" className="text-[11px] text-orange-400 hover:text-orange-400 transition-colors uppercase tracking-wider">
+                <Link href="/dashboard/admin" className="text-[11px] text-orange-400 hover:text-orange-400 transition-colors uppercase tracking-wider">
                   Admin
                 </Link>
               )}
@@ -294,7 +294,7 @@ export default function Navbar() {
                   <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
-                  {isAdmin && <MobileLink href="/admin" onClick={closeMenu}>Admin</MobileLink>}
+                  {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
                   {displayName && <div className="text-[10px] text-zinc-600 px-3 py-2 uppercase tracking-widest">{displayName}</div>}
                   <button
                     onClick={() => { closeMenu(); customSignOut(); }}

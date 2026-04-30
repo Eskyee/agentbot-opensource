@@ -112,6 +112,7 @@ export default function BillingPage() {
       <DashboardSidebar
         userName={userName}
         plan={currentPlan}
+        isAdmin={session?.user?.isAdmin === true}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />

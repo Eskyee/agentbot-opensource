@@ -40,6 +40,7 @@ export default function DashboardLayout({
       <div className="flex min-h-screen bg-black font-mono">
         <DashboardSidebar
           userName={session?.user?.name || session?.user?.email?.split('@')[0] || 'User'}
+          isAdmin={session?.user?.isAdmin === true}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />

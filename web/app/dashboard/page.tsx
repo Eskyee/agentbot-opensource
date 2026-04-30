@@ -362,6 +362,7 @@ function DashboardContent() {
         <DashboardSidebar
           userName={userName}
           plan={instance?.plan}
+          isAdmin={session?.user?.isAdmin === true}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
@@ -404,6 +405,7 @@ function DashboardContent() {
         runtimeUrl={instance?.url || bootstrap?.openclawUrl}
         runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken}
         runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId}
+        isAdmin={session?.user?.isAdmin === true}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />

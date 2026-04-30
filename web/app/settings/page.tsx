@@ -132,6 +132,7 @@ export default function SettingsPage() {
       <DashboardSidebar
         userName={userName}
         plan="Solo"
+        isAdmin={session?.user?.isAdmin === true}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
