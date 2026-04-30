@@ -54,7 +54,7 @@ const COLUMNS = [
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
   const [version, setVersion] = useState<string>('v0.0.0');
-  const [openClawVersion, setOpenClawVersion] = useState<string>('loading...');
+  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.4.27');
 
   useEffect(() => {
     async function checkStatus() {
