@@ -162,7 +162,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
   // 1. Create service — idempotent: if it already exists, look up its ID
   let serviceId: string
   // Public official OpenClaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
-  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.26'
+  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.27'
 
   try {
     const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
