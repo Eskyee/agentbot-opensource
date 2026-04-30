@@ -45,6 +45,12 @@ function errorCodeFor(message: string, fallback: string) {
     : fallback
 }
 
+function runtimeErrorCodeFor(status: number, fallback: string) {
+  return status === 401 || status === 403
+    ? 'runtime_config_unauthorized'
+    : fallback
+}
+
 function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string) {
   return {
     models: {
@@ -166,6 +172,50 @@ async function smokeRuntime(openclawUrl: string | null) {
   }
 }
 
+async function applyRuntimeConfig(openclawUrl: string | null, gatewayToken: string, openclawConfig: ReturnType<typeof buildMimoOpenClawConfig>) {
+  if (!openclawUrl) {
+    return { ok: false, code: 'runtime_url_missing', error: 'No OpenClaw URL found for admin user' }
+  }
+
+  try {
+    const baseUrl = openclawUrl.replace(/\/$/, '')
+    const response = await fetch(`${baseUrl}/api/config`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${gatewayToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(openclawConfig),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
+    })
+    const data = await response.json().catch(() => null) as { error?: string; message?: string } | null
+
+    if (!response.ok) {
+      const message = data?.error || data?.message || `OpenClaw config API returned ${response.status}`
+      return {
+        ok: false,
+        code: runtimeErrorCodeFor(response.status, 'runtime_config_failed'),
+        status: response.status,
+        error: message,
+      }
+    }
+
+    return {
+      ok: true,
+      code: 'runtime_config_applied',
+      status: response.status,
+      message: data?.message || 'Config written through OpenClaw Agentbot',
+    }
+  } catch (error) {
+    return {
+      ok: false,
+      code: 'runtime_config_unreachable',
+      error: error instanceof Error ? error.message : 'OpenClaw config API failed',
+    }
+  }
+}
+
 export async function POST(request: Request) {
   const session = await getAuthSession()
   if (!session?.user?.id || (!session.user.isAdmin && !isAdminEmail(session.user.email))) {
@@ -214,77 +264,96 @@ export async function POST(request: Request) {
     : null
   const gatewayToken = requestedGatewayToken || registration[0]?.gateway_token || crypto.randomUUID()
   const openclawConfig = buildMimoOpenClawConfig(apiKey, gatewayToken)
-
-  let railwayService: Awaited<ReturnType<typeof resolveRailwayService>>
-  let environmentId: string
-  try {
-    environmentId = getRailwayEnvironmentId()
-    railwayService = await resolveRailwayService({
-      agentId: user?.openclawInstanceId || latestAgent?.id,
-      openclawUrl: user?.openclawUrl || latestAgent?.websocketUrl,
-      serviceId: runtimeServiceId,
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Railway runtime not found'
-    return errorResponse(errorCodeFor(message, 'railway_resolve_failed'), message, 503)
-  }
+  const runtimeUrl = user?.openclawUrl || latestAgent?.websocketUrl || null
 
   const variables = {
     ...getAgentEnvVars(user?.id || session.user.id, user?.plan || 'solo', gatewayToken),
     OPENCLAW_GATEWAY_TOKEN: gatewayToken,
+    WRAPPER_ADMIN_PASSWORD: gatewayToken,
     OPENCLAW_CONFIG_JSON: JSON.stringify(openclawConfig),
   }
 
+  let applyResult: Awaited<ReturnType<typeof applyRuntimeConfig>> | { ok: true; code: 'dry_run'; skipped: true }
+  let railwayService: Awaited<ReturnType<typeof resolveRailwayService>> | null = null
+
   if (!dryRun) {
-    try {
-      await railwayGql(
-        `mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
-          variableCollectionUpsert(input: $input)
-        }`,
-        {
-          input: {
-            projectId: process.env.RAILWAY_PROJECT_ID?.trim(),
-            serviceId: railwayService.id,
-            environmentId,
-            variables,
-          },
-        }
-      )
+    applyResult = await applyRuntimeConfig(runtimeUrl, gatewayToken, openclawConfig)
 
-      await restartRailwayService(railwayService.id, environmentId)
-
-      if (latestAgent) {
-        await prisma.agent.update({
-          where: { id: latestAgent.id },
-          data: {
-            status: 'updating',
-            config: {
-              ...latestConfig,
-              runtimeServiceId: railwayService.id,
-              modelProvider: 'xiaomi-coding',
-              primaryModel: 'xiaomi-coding/mimo-v2.5-pro',
-              adminMimoConfiguredAt: new Date().toISOString(),
-            },
-          },
+    if (!applyResult.ok) {
+      try {
+        const environmentId = getRailwayEnvironmentId()
+        railwayService = await resolveRailwayService({
+          agentId: user?.openclawInstanceId || latestAgent?.id,
+          openclawUrl: runtimeUrl,
+          serviceId: runtimeServiceId,
         })
+
+        await railwayGql(
+          `mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+            variableCollectionUpsert(input: $input)
+          }`,
+          {
+            input: {
+              projectId: process.env.RAILWAY_PROJECT_ID?.trim(),
+              serviceId: railwayService.id,
+              environmentId,
+              variables,
+            },
+          }
+        )
+
+        await restartRailwayService(railwayService.id, environmentId)
+
+        applyResult = {
+          ok: true,
+          code: 'railway_env_applied',
+          status: 200,
+          message: 'Config written through Railway env and service restarted',
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Railway update failed'
+        const fallbackCode = applyResult.code === 'runtime_config_unauthorized'
+          ? 'runtime_config_unauthorized'
+          : errorCodeFor(message, 'railway_update_failed')
+        return errorResponse(
+          fallbackCode,
+          `${applyResult.error || 'OpenClaw config API failed'}; Railway fallback: ${message}`,
+          502
+        )
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Railway update failed'
-      return errorResponse(errorCodeFor(message, 'railway_update_failed'), message, 502)
     }
+  } else {
+    applyResult = { ok: true, code: 'dry_run', skipped: true }
+  }
+
+  if (!dryRun && latestAgent) {
+    await prisma.agent.update({
+      where: { id: latestAgent.id },
+      data: {
+        status: applyResult.code === 'railway_env_applied' ? 'updating' : 'running',
+        config: {
+          ...latestConfig,
+          ...(railwayService?.id ? { runtimeServiceId: railwayService.id } : {}),
+          modelProvider: 'xiaomi-coding',
+          primaryModel: 'xiaomi-coding/mimo-v2.5-pro',
+          adminMimoConfiguredAt: new Date().toISOString(),
+        },
+      },
+    })
   }
 
   const smoke = dryRun
     ? { ok: true, skipped: true }
-    : await smokeRuntime(user?.openclawUrl || latestAgent?.websocketUrl || null)
+    : await smokeRuntime(runtimeUrl)
 
   return NextResponse.json({
     success: true,
     dryRun,
-    service: {
+    apply: applyResult,
+    service: railwayService ? {
       id: railwayService.id,
       name: railwayService.name,
-    },
+    } : null,
     configured: {
       provider: 'xiaomi-coding',
       primaryModel: 'xiaomi-coding/mimo-v2.5-pro',

@@ -201,6 +201,7 @@ export function getAgentEnvVars(
 
   return {
     OPENCLAW_GATEWAY_TOKEN: token,
+    WRAPPER_ADMIN_PASSWORD: token,
     OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',
     OPENCLAW_GATEWAY_BIND:  'lan',
     OPENCLAW_CONFIG_JSON:   configJson,
