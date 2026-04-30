@@ -20,6 +20,8 @@ RUN npm install --omit=dev
 
 
 FROM node:22.13.0-bookworm-slim
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /usr/local/bin/tailscale
+COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 
 ARG OPENCLAW_VERSION=2026.4.27
 
@@ -43,13 +45,17 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY src/ ./src/
 COPY public/ ./public/
 COPY package.json ./
+COPY scripts/agentbot-tailscale-start.sh /usr/local/bin/agentbot-tailscale-start
 
-RUN mkdir -p /data/.openclaw/nodes /data/.openclaw/workspace
+RUN chmod 755 /usr/local/bin/agentbot-tailscale-start \
+    && mkdir -p /data/.openclaw/nodes /data/.openclaw/workspace /data/tailscale /var/run/tailscale \
+    && chown -R node:node /var/run/tailscale
 
 ENV PATH="/app/node_modules/.bin:${PATH}"
 ENV PORT=3000
 ENV NODE_ENV=production
 ENV OPENCLAW_DATA_DIR=/data
+ENV TAILSCALE_STATE_DIR=/data/tailscale
 
 RUN chown -R node:node /app /data
 
@@ -59,4 +65,4 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
     CMD curl -sf http://localhost:${PORT}/api/status || exit 1
 
 USER node
-CMD ["node", "src/server.js"]
+CMD ["sh", "-c", "agentbot-tailscale-start && exec node src/server.js"]

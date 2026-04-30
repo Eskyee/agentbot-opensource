@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 import { Pool } from 'pg';
-import { provisionOnRailway } from '../routes/railway-provision';
+import { provisionOnRailway, type TailscaleProvisionOptions } from '../routes/railway-provision';
 import { snapshotAgentState } from './gitlawb';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -39,6 +39,7 @@ type QueueProvisionPayload = {
   agentType?: string;
   autoProvision?: boolean;
   stripeSubscriptionId?: string | null;
+  tailscale?: TailscaleProvisionOptions | null;
 };
 
 type QueueChatPayload = {
@@ -136,6 +137,10 @@ function makeJobId(): string {
 
 function sanitizeJob(row: PlatformJobRow) {
   const payload = row.payload || {};
+  const tailscalePayload =
+    payload.tailscale && typeof payload.tailscale === 'object'
+      ? payload.tailscale as Record<string, unknown>
+      : null;
   const safePayload = {
     userId: typeof payload.userId === 'string' ? payload.userId : row.user_id,
     agentId: typeof payload.agentId === 'string' ? payload.agentId : row.agent_id,
@@ -143,6 +148,16 @@ function sanitizeJob(row: PlatformJobRow) {
     aiProvider: typeof payload.aiProvider === 'string' ? payload.aiProvider : null,
     agentType: typeof payload.agentType === 'string' ? payload.agentType : null,
     autoProvision: payload.autoProvision === true,
+    tailscale: tailscalePayload?.enabled === true
+      ? {
+          enabled: true,
+          mode: typeof tailscalePayload.mode === 'string' ? tailscalePayload.mode : 'serve',
+          hostname: typeof tailscalePayload.hostname === 'string' ? tailscalePayload.hostname : null,
+          tags: Array.isArray(tailscalePayload.tags) ? tailscalePayload.tags : [],
+          acceptRoutes: tailscalePayload.acceptRoutes !== false,
+          resetOnExit: tailscalePayload.resetOnExit === true,
+        }
+      : null,
   };
 
   return {
@@ -312,7 +327,7 @@ async function failJob(job: PlatformJobRow, errorMessage: string) {
 
 async function processProvisionJob(job: PlatformJobRow) {
   const payload = job.payload as unknown as QueueProvisionPayload;
-  const result = await provisionOnRailway(payload.agentId, payload.plan || 'solo');
+  const result = await provisionOnRailway(payload.agentId, payload.plan || 'solo', payload.tailscale || null);
 
   // Non-fatal: Railway service is deployed regardless of DB persistence success.
   // A FK violation (user not found) or transient DB error must not re-queue

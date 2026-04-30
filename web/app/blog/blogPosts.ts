@@ -11,6 +11,16 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'remote-access-for-agentbot-agents',
+    dateLabel: '30 Apr',
+    isoDate: '2026-04-30',
+    title: 'Remote Access for Agentbot Agents',
+    excerpt:
+      'How to choose and set up SSH tunnels, Tailscale Serve, Funnel, or direct Tailnet access for your OpenClaw Gateway.',
+    tags: ['OpenClaw', 'Remote Access', 'Tailscale', 'Guide'],
+    track: 'Build Log',
+  },
+  {
     slug: 'london-oxford-bristol-linkup',
     dateLabel: '26 Apr',
     isoDate: '2026-04-26',

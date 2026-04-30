@@ -20,6 +20,7 @@ import {
   GATEWAY_INTERNAL_URL,
   GATEWAY_WS_URL,
   OPENCLAW_GATEWAY_TOKEN,
+  OPENCLAW_GATEWAY_PASSWORD,
   OPENCLAW_STATE_DIR,
   DATA_DIR,
 } from '../config/index.js';
@@ -238,6 +239,8 @@ class GatewayManager extends EventEmitter {
       // Ignore — stop failure just means no stale lock to clear
     }
 
+    const tailscaleMode = process.env.OPENCLAW_TAILSCALE_MODE || process.env.GATEWAY_TAILSCALE_MODE || 'off';
+
     // Match reference: openclaw gateway run --bind loopback --port 18789 --auth token --token <TOKEN>
     const args = [
       'gateway', 'run',
@@ -246,8 +249,20 @@ class GatewayManager extends EventEmitter {
       '--allow-unconfigured',
     ];
 
-    if (OPENCLAW_GATEWAY_TOKEN) {
+    if (OPENCLAW_GATEWAY_TOKEN && tailscaleMode !== 'funnel') {
       args.push('--auth', 'token', '--token', OPENCLAW_GATEWAY_TOKEN);
+    }
+    if (tailscaleMode === 'serve' || tailscaleMode === 'funnel') {
+      args.push('--tailscale', tailscaleMode);
+      if (process.env.OPENCLAW_TAILSCALE_RESET_ON_EXIT === 'true') {
+        args.push('--tailscale-reset-on-exit');
+      }
+      if (tailscaleMode === 'funnel') {
+        args.push('--auth', 'password');
+        if (!OPENCLAW_GATEWAY_PASSWORD) {
+          log.warn('OPENCLAW_TAILSCALE_MODE=funnel requires OPENCLAW_GATEWAY_PASSWORD.');
+        }
+      }
     }
 
     this._proc = spawn('openclaw', args, {

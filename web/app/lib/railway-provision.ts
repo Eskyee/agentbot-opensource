@@ -24,6 +24,92 @@ type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
  */
 const OPENCLAW_IMAGE = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.27'
 
+export interface TailscaleProvisionOptions {
+  enabled?: boolean
+  mode?: 'serve' | 'funnel' | 'tailnet'
+  authKey?: string
+  hostname?: string
+  tags?: string[]
+  acceptRoutes?: boolean
+  password?: string
+  resetOnExit?: boolean
+}
+
+type NormalizedTailscaleOptions = Required<Pick<TailscaleProvisionOptions, 'enabled' | 'mode' | 'authKey' | 'acceptRoutes'>> &
+  Pick<TailscaleProvisionOptions, 'hostname' | 'tags' | 'password' | 'resetOnExit'>
+
+function normalizeTailscaleOptions(options?: TailscaleProvisionOptions | null): NormalizedTailscaleOptions | null {
+  if (!options?.enabled) return null
+  const authKey = options.authKey?.trim()
+  if (!authKey) {
+    throw new Error('Tailscale auth key is required when Tailscale is enabled')
+  }
+  const mode = options.mode === 'funnel' || options.mode === 'tailnet' ? options.mode : 'serve'
+  const password = options.password?.trim()
+  if (mode === 'funnel' && !password) {
+    throw new Error('Tailscale Funnel requires a gateway password')
+  }
+
+  return {
+    enabled: true,
+    mode,
+    authKey,
+    hostname: options.hostname?.trim() || undefined,
+    tags: Array.isArray(options.tags)
+      ? options.tags.map((tag) => tag.trim()).filter(Boolean)
+      : undefined,
+    acceptRoutes: options.acceptRoutes !== false,
+    password,
+    resetOnExit: options.resetOnExit === true,
+  }
+}
+
+function buildGatewayTailscaleConfig(token: string, options?: TailscaleProvisionOptions | null) {
+  const tailscale = normalizeTailscaleOptions(options)
+  if (!tailscale) {
+    return {
+      bind: 'lan',
+      auth: { mode: 'token', token },
+    }
+  }
+
+  if (tailscale.mode === 'tailnet') {
+    return {
+      bind: 'tailnet',
+      auth: { mode: 'token', token },
+    }
+  }
+
+  return {
+    bind: 'loopback',
+    tailscale: {
+      mode: tailscale.mode,
+      resetOnExit: tailscale.resetOnExit,
+    },
+    auth: tailscale.mode === 'funnel'
+      ? { mode: 'password' }
+      : { mode: 'token', token, allowTailscale: true },
+  }
+}
+
+function getTailscaleEnvVars(agentId: string, options?: TailscaleProvisionOptions | null): Record<string, string> {
+  const tailscale = normalizeTailscaleOptions(options)
+  if (!tailscale) return {}
+
+  return {
+    OPENCLAW_TAILSCALE_MODE: tailscale.mode,
+    TAILSCALE_AUTHKEY: tailscale.authKey || '',
+    TAILSCALE_HOSTNAME: tailscale.hostname || `agentbot-${agentId}`,
+    TAILSCALE_TAGS: tailscale.tags?.join(',') || '',
+    TAILSCALE_ACCEPT_ROUTES: String(tailscale.acceptRoutes !== false),
+    TAILSCALE_STATE_DIR: '/data/tailscale',
+    TAILSCALE_SOCKS5_SERVER: '127.0.0.1:1055',
+    TAILSCALE_OUTBOUND_HTTP_PROXY_LISTEN: '127.0.0.1:1055',
+    AGENTBOT_TAILSCALE_PROXY: 'socks5://127.0.0.1:1055',
+    ...(tailscale.password ? { OPENCLAW_GATEWAY_PASSWORD: tailscale.password } : {}),
+  }
+}
+
 function getRailwayTokenType(): RailwayTokenType {
   const raw = process.env.RAILWAY_TOKEN_TYPE?.trim().toLowerCase()
   if (raw === 'project' || raw === 'workspace' || raw === 'account' || raw === 'oauth') {
@@ -50,6 +136,7 @@ export function getAgentEnvVars(
   userId: string,
   plan: string,
   gatewayToken?: string,
+  tailscaleOptions?: TailscaleProvisionOptions | null,
 ): Record<string, string> {
   const explicitOrigins = (process.env.OPENCLAW_CONTROL_UI_ALLOWED_ORIGINS || '')
     .split(',')
@@ -65,12 +152,12 @@ export function getAgentEnvVars(
 
   const allowedOrigins = Array.from(new Set([...defaultOrigins, ...explicitOrigins]))
   const token = gatewayToken || process.env.OPENCLAW_GATEWAY_TOKEN || ''
+  const gatewayTailscaleConfig = buildGatewayTailscaleConfig(token, tailscaleOptions)
   const configJson = JSON.stringify({
     env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
     gateway: {
       mode: 'local',
-      bind: 'lan',
-      auth: { mode: 'token', token },
+      ...gatewayTailscaleConfig,
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
         allowedOrigins,
@@ -126,6 +213,7 @@ export function getAgentEnvVars(
     INTERNAL_API_KEY:       process.env.INTERNAL_API_KEY       || '',
     WALLET_ENCRYPTION_KEY:  process.env.WALLET_ENCRYPTION_KEY  || '',
     NODE_ENV:               'production',
+    ...getTailscaleEnvVars(userId, tailscaleOptions),
   }
 }
 
@@ -170,6 +258,7 @@ export async function provisionOnRailway(
   agentId: string,
   plan: string = 'solo',
   gatewayToken?: string,
+  tailscaleOptions?: TailscaleProvisionOptions | null,
 ): Promise<ProvisionResult> {
   const projectId     = process.env.RAILWAY_PROJECT_ID?.trim()
   const environmentId = process.env.RAILWAY_ENVIRONMENT_ID?.trim()
@@ -242,7 +331,7 @@ export async function provisionOnRailway(
   }
 
   // 2. Inject env vars
-  const variables = getAgentEnvVars(agentId, plan, gatewayToken)
+  const variables = getAgentEnvVars(agentId, plan, gatewayToken, tailscaleOptions)
   await railwayGql(`
     mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
       variableCollectionUpsert(input: $input)

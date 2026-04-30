@@ -888,6 +888,16 @@ app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, r
       aiProvider?: string;
       apiKey?: string;
       plan?: string;
+      tailscale?: {
+        enabled?: boolean;
+        mode?: 'serve' | 'funnel' | 'tailnet';
+        authKey?: string;
+        hostname?: string;
+        tags?: string[];
+        acceptRoutes?: boolean;
+        password?: string;
+        resetOnExit?: boolean;
+      };
     };
   };
 
@@ -971,6 +981,36 @@ app.post('/api/deployments', authenticate, deployLimiter, async (req: Request, r
       addEnvIfKeyExists('OPENAI_API_KEY');
     } else if (provider === 'openrouter') {
       addEnvIfKeyExists('OPENROUTER_API_KEY');
+    }
+
+    if (config.tailscale?.enabled) {
+      const authKey = config.tailscale.authKey?.trim();
+      if (!authKey) {
+        res.status(400).json({ error: 'tailscale.authKey is required when Tailscale is enabled' });
+        return;
+      }
+      const tailscaleMode = config.tailscale.mode === 'funnel' || config.tailscale.mode === 'tailnet'
+        ? config.tailscale.mode
+        : 'serve';
+      const tailscalePassword = config.tailscale.password?.trim();
+      if (tailscaleMode === 'funnel' && !tailscalePassword) {
+        res.status(400).json({ error: 'tailscale.password is required when Tailscale Funnel is enabled' });
+        return;
+      }
+      envArgs.push('-e', `OPENCLAW_TAILSCALE_MODE=${tailscaleMode}`);
+      envArgs.push('-e', `TAILSCALE_AUTHKEY=${authKey}`);
+      envArgs.push('-e', `TAILSCALE_HOSTNAME=${config.tailscale.hostname || `agentbot-${safeAgentId}`}`);
+      envArgs.push('-e', `TAILSCALE_ACCEPT_ROUTES=${config.tailscale.acceptRoutes !== false}`);
+      envArgs.push('-e', `OPENCLAW_GATEWAY_BIND=${tailscaleMode === 'tailnet' ? 'tailnet' : 'loopback'}`);
+      if (config.tailscale.resetOnExit === true) {
+        envArgs.push('-e', 'OPENCLAW_TAILSCALE_RESET_ON_EXIT=true');
+      }
+      if (tailscalePassword) {
+        envArgs.push('-e', `OPENCLAW_GATEWAY_PASSWORD=${tailscalePassword}`);
+      }
+      if (Array.isArray(config.tailscale.tags) && config.tailscale.tags.length > 0) {
+        envArgs.push('-e', `TAILSCALE_TAGS=${config.tailscale.tags.map((tag) => tag.trim()).filter(Boolean).join(',')}`);
+      }
     }
 
     const resources = getPlanResources(config.plan || 'free');

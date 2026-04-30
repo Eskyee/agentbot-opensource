@@ -23,6 +23,92 @@ const CONTROL_UI_ALLOWED_ORIGINS = [
   process.env.CONTROL_UI_COMPAT_ORIGIN,
 ].filter(Boolean);
 
+export interface TailscaleProvisionOptions {
+  enabled?: boolean;
+  mode?: 'serve' | 'funnel' | 'tailnet';
+  authKey?: string;
+  hostname?: string;
+  tags?: string[];
+  acceptRoutes?: boolean;
+  password?: string;
+  resetOnExit?: boolean;
+}
+
+type NormalizedTailscaleOptions = Required<Pick<TailscaleProvisionOptions, 'enabled' | 'mode' | 'authKey' | 'acceptRoutes'>> &
+  Pick<TailscaleProvisionOptions, 'hostname' | 'tags' | 'password' | 'resetOnExit'>;
+
+function normalizeTailscaleOptions(options?: TailscaleProvisionOptions | null): NormalizedTailscaleOptions | null {
+  if (!options?.enabled) return null;
+  const authKey = options.authKey?.trim();
+  if (!authKey) {
+    throw new Error('Tailscale auth key is required when Tailscale is enabled');
+  }
+  const mode = options.mode === 'funnel' || options.mode === 'tailnet' ? options.mode : 'serve';
+  const password = options.password?.trim();
+  if (mode === 'funnel' && !password) {
+    throw new Error('Tailscale Funnel requires a gateway password');
+  }
+
+  return {
+    enabled: true,
+    mode,
+    authKey,
+    hostname: options.hostname?.trim() || undefined,
+    tags: Array.isArray(options.tags)
+      ? options.tags.map((tag) => tag.trim()).filter(Boolean)
+      : undefined,
+    acceptRoutes: options.acceptRoutes !== false,
+    password,
+    resetOnExit: options.resetOnExit === true,
+  };
+}
+
+function buildGatewayTailscaleConfig(gatewayToken: string, options?: TailscaleProvisionOptions | null) {
+  const tailscale = normalizeTailscaleOptions(options);
+  if (!tailscale) {
+    return {
+      bind: 'lan',
+      auth: { mode: 'token', token: gatewayToken },
+    };
+  }
+
+  if (tailscale.mode === 'tailnet') {
+    return {
+      bind: 'tailnet',
+      auth: { mode: 'token', token: gatewayToken },
+    };
+  }
+
+  return {
+    bind: 'loopback',
+    tailscale: {
+      mode: tailscale.mode,
+      resetOnExit: tailscale.resetOnExit,
+    },
+    auth: tailscale.mode === 'funnel'
+      ? { mode: 'password' }
+      : { mode: 'token', token: gatewayToken, allowTailscale: true },
+  };
+}
+
+function getTailscaleEnvVars(agentId: string, options?: TailscaleProvisionOptions | null): Record<string, string> {
+  const tailscale = normalizeTailscaleOptions(options);
+  if (!tailscale) return {};
+
+  return {
+    OPENCLAW_TAILSCALE_MODE: tailscale.mode,
+    TAILSCALE_AUTHKEY: tailscale.authKey || '',
+    TAILSCALE_HOSTNAME: tailscale.hostname || `agentbot-${agentId}`,
+    TAILSCALE_TAGS: tailscale.tags?.join(',') || '',
+    TAILSCALE_ACCEPT_ROUTES: String(tailscale.acceptRoutes !== false),
+    TAILSCALE_STATE_DIR: '/data/tailscale',
+    TAILSCALE_SOCKS5_SERVER: '127.0.0.1:1055',
+    TAILSCALE_OUTBOUND_HTTP_PROXY_LISTEN: '127.0.0.1:1055',
+    AGENTBOT_TAILSCALE_PROXY: 'socks5://127.0.0.1:1055',
+    ...(tailscale.password ? { OPENCLAW_GATEWAY_PASSWORD: tailscale.password } : {}),
+  };
+}
+
 // Plan → CPU (millicores) + Memory (MB)
 const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }> = {
   solo:       { cpuMillicores: 1000, memoryMB: 2048 },
@@ -32,7 +118,12 @@ const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }
 };
 
 // Env vars to inject into each agent container
-function getAgentEnvVars(userId: string, plan: string, agentId?: string): Record<string, string> {
+function getAgentEnvVars(
+  userId: string,
+  plan: string,
+  agentId?: string,
+  tailscaleOptions?: TailscaleProvisionOptions | null
+): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
     OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',
@@ -52,6 +143,7 @@ function getAgentEnvVars(userId: string, plan: string, agentId?: string): Record
     // Permission hooks — tiered command classification
     AGENTBOT_HOOK_ENABLED:  'true',
     AGENTBOT_PERMISSION_MODE: plan === 'solo' ? 'permissive' : 'strict',
+    ...getTailscaleEnvVars(agentId || userId, tailscaleOptions),
   };
 }
 
@@ -142,7 +234,8 @@ export async function isDockerReady(): Promise<boolean> {
  */
 export async function createContainer(
   userId: string,
-  plan: PlanType = 'solo'
+  plan: PlanType = 'solo',
+  tailscaleOptions?: TailscaleProvisionOptions | null
 ): Promise<ContainerResult> {
   const projectId     = process.env.RAILWAY_PROJECT_ID;
   const environmentId = process.env.RAILWAY_ENVIRONMENT_ID;
@@ -172,12 +265,12 @@ export async function createContainer(
   //    can write it without shell heredoc quoting issues.
   // Generate a unique token for each agent - don't use shared platform token
   const gatewayToken = crypto.randomBytes(32).toString('hex')
+  const gatewayTailscaleConfig = buildGatewayTailscaleConfig(gatewayToken, tailscaleOptions)
   const openclawConfig = {
     env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
     gateway: {
       mode: 'local',
-      bind: 'lan',
-      auth: { mode: 'token', token: gatewayToken },
+      ...gatewayTailscaleConfig,
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
         allowedOrigins: CONTROL_UI_ALLOWED_ORIGINS,
@@ -222,7 +315,7 @@ export async function createContainer(
   };
 
   const variables = {
-    ...getAgentEnvVars(userId, plan),
+    ...getAgentEnvVars(userId, plan, userId, tailscaleOptions),
     OPENCLAW_CONFIG_JSON: JSON.stringify(openclawConfig),
   };
 
@@ -236,7 +329,7 @@ export async function createContainer(
 
   // 3. Set start command — reads config from env var (no heredoc quoting issues).
   //    Single-quoted sh -c body is safe because no single quotes appear inside it.
-  const startCmd = `sh -c 'mkdir -p ${OPENCLAW_HOME_DIR} && printf "%s" "$OPENCLAW_CONFIG_JSON" > ${OPENCLAW_CONFIG_PATH} && (openclaw doctor || true) && exec openclaw gateway'`;
+  const startCmd = `sh -c 'if [ -n "$TAILSCALE_AUTHKEY$TS_AUTHKEY" ]; then if command -v agentbot-tailscale-start >/dev/null 2>&1; then agentbot-tailscale-start; else echo "TAILSCALE_AUTHKEY set but this runtime image does not include Tailscale support" >&2; exit 1; fi; fi; mkdir -p ${OPENCLAW_HOME_DIR} && printf "%s" "$OPENCLAW_CONFIG_JSON" > ${OPENCLAW_CONFIG_PATH} && (openclaw doctor || true); if [ -n "$OPENCLAW_TAILSCALE_MODE" ] && [ "$OPENCLAW_TAILSCALE_MODE" != "tailnet" ]; then exec openclaw gateway --tailscale "$OPENCLAW_TAILSCALE_MODE"; fi; exec openclaw gateway'`;
 
   const planResources = PLAN_RESOURCES[plan] ?? PLAN_RESOURCES.solo;
 

@@ -34,6 +34,43 @@ interface ProvisionAgentRequest {
   model?: 'claude-opus-4-6' | 'gpt-4' | 'custom';
   config?: Record<string, any>;
   tier?: 'starter' | 'pro' | 'enterprise';
+  remoteAccess?: {
+    type?: 'off' | 'ssh' | 'tailscale-serve' | 'tailscale-funnel' | 'tailnet';
+    authKey?: string;
+    hostname?: string;
+    tags?: string[];
+    acceptRoutes?: boolean;
+    password?: string;
+    resetOnExit?: boolean;
+    sshTarget?: string;
+    sshIdentity?: string;
+    port?: number;
+  };
+  tailscale?: {
+    enabled?: boolean;
+    mode?: 'serve' | 'funnel' | 'tailnet';
+    authKey?: string;
+    hostname?: string;
+    tags?: string[];
+    acceptRoutes?: boolean;
+    password?: string;
+    resetOnExit?: boolean;
+  };
+}
+
+function resolveTailscaleChoice(body: ProvisionAgentRequest) {
+  if (body.tailscale) return body.tailscale
+
+  switch (body.remoteAccess?.type) {
+    case 'tailscale-serve':
+      return { ...body.remoteAccess, enabled: true, mode: 'serve' as const }
+    case 'tailscale-funnel':
+      return { ...body.remoteAccess, enabled: true, mode: 'funnel' as const }
+    case 'tailnet':
+      return { ...body.remoteAccess, enabled: true, mode: 'tailnet' as const }
+    default:
+      return null
+  }
 }
 
 interface AgentConfig {
@@ -153,6 +190,7 @@ export async function POST(request: NextRequest) {
     const requestedPlan = normalizeProvisionPlan(
       body.tier || (typeof body.config?.tier === 'string' ? body.config.tier : null) || user?.plan || null
     )
+    const tailscaleChoice = resolveTailscaleChoice(body)
 
     // Create agent record with ALL data (skills, memories, files)
     const agent = await prisma.agent.create({
@@ -228,7 +266,7 @@ export async function POST(request: NextRequest) {
           SELECT gateway_token FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
         `
         const userGatewayToken = registration[0]?.gateway_token || crypto.randomUUID()
-        const runtime = await provisionOnRailway(agent.id, requestedPlan, userGatewayToken)
+        const runtime = await provisionOnRailway(agent.id, requestedPlan, userGatewayToken, tailscaleChoice)
 
         await prisma.$transaction([
           prisma.user.update({
@@ -247,6 +285,24 @@ export async function POST(request: NextRequest) {
                 ...(agent.config as Record<string, unknown> || {}),
                 runtimeUrl: runtime.url,
                 runtimeServiceId: runtime.serviceId,
+                remoteAccess: body.remoteAccess?.type
+                  ? {
+                      type: body.remoteAccess.type,
+                      sshTarget: body.remoteAccess.sshTarget,
+                      sshIdentity: body.remoteAccess.sshIdentity,
+                      port: body.remoteAccess.port || 18789,
+                    }
+                  : undefined,
+                tailscale: tailscaleChoice?.enabled
+                  ? {
+                      enabled: true,
+                      mode: tailscaleChoice.mode || 'serve',
+                      hostname: tailscaleChoice.hostname || `agentbot-${agent.id}`,
+                      tags: Array.isArray(tailscaleChoice.tags) ? tailscaleChoice.tags : [],
+                      acceptRoutes: tailscaleChoice.acceptRoutes !== false,
+                      resetOnExit: tailscaleChoice.resetOnExit === true,
+                    }
+                  : undefined,
                 pendingGatewaySync: true,
               },
             },

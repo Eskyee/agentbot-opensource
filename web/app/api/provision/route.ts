@@ -21,6 +21,31 @@ import { signedFetch } from '@/app/lib/backend-client'
  *   - stripeSubscriptionId looked up from DB (set by Stripe webhook on checkout).
  */
 
+type RemoteAccessPayload =
+  | { type?: 'off' | 'ssh' | 'tailscale-serve' | 'tailscale-funnel' | 'tailnet'; [key: string]: unknown }
+  | null
+
+function resolveTailscaleChoice(tailscale: unknown, remoteAccess: RemoteAccessPayload) {
+  if (tailscale && typeof tailscale === 'object') {
+    return tailscale
+  }
+
+  if (!remoteAccess || typeof remoteAccess !== 'object') {
+    return null
+  }
+
+  switch (remoteAccess.type) {
+    case 'tailscale-serve':
+      return { ...remoteAccess, enabled: true, mode: 'serve' }
+    case 'tailscale-funnel':
+      return { ...remoteAccess, enabled: true, mode: 'funnel' }
+    case 'tailnet':
+      return { ...remoteAccess, enabled: true, mode: 'tailnet' }
+    default:
+      return null
+  }
+}
+
 export async function POST(request: NextRequest) {
   let workloadTicket: WorkloadTicket | null = null
   try {
@@ -42,6 +67,8 @@ export async function POST(request: NextRequest) {
       email: bodyEmail,
       autoProvision,
       agentType,
+      tailscale,
+      remoteAccess,
     } = body
 
     // 1. Require an authenticated session — NEVER trust body email for auth
@@ -145,6 +172,7 @@ export async function POST(request: NextRequest) {
       stripeSubscriptionId,
       autoProvision: autoProvision || false,
       agentType: agentType || 'creative',
+      tailscale: resolveTailscaleChoice(tailscale, remoteAccess),
     }
 
     const enqueueRes = await signedFetch('/api/platform-jobs/provision', {
@@ -232,4 +260,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'database error' }, { status: 500 })
   }
 }
-
