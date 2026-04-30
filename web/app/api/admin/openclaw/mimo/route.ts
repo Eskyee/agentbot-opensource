@@ -64,7 +64,15 @@ function runtimeErrorCodeFor(status: number, fallback: string) {
     : fallback
 }
 
-function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string) {
+function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string, runtimeUrl: string | null) {
+  const allowedOrigins = Array.from(new Set([
+    runtimeUrl,
+    'https://agentbot.sh',
+    'https://www.agentbot.sh',
+    'http://localhost:18789',
+    'http://127.0.0.1:18789',
+  ].filter((origin): origin is string => Boolean(origin))))
+
   return {
     models: {
       mode: 'merge',
@@ -113,6 +121,10 @@ function buildMimoOpenClawConfig(apiKey: string, gatewayToken: string) {
       auth: {
         mode: 'token',
         token: gatewayToken,
+      },
+      trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
+      controlUi: {
+        allowedOrigins,
       },
     },
     plugins: {
@@ -282,12 +294,13 @@ export async function POST(request: Request) {
     ? latestConfig.runtimeServiceId
     : null
   const gatewayToken = requestedGatewayToken || registration[0]?.gateway_token || crypto.randomUUID()
-  const openclawConfig = buildMimoOpenClawConfig(apiKey, gatewayToken)
+  const openclawConfig = buildMimoOpenClawConfig(apiKey, gatewayToken, runtimeUrl)
 
   const variables = {
     ...getAgentEnvVars(ownerUser?.id || session.user.id, ownerUser?.plan || 'solo', gatewayToken),
     OPENCLAW_GATEWAY_TOKEN: gatewayToken,
     WRAPPER_ADMIN_PASSWORD: gatewayToken,
+    OPENCLAW_CONFIG: JSON.stringify(openclawConfig),
     OPENCLAW_CONFIG_JSON: JSON.stringify(openclawConfig),
   }
 
