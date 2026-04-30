@@ -50,8 +50,11 @@ export async function GET() {
     }
 
     const data = await response.json()
+    const backendVersion = normalizeOpenClawVersion(data?.openclawVersion)
+    // Use default if it's newer than backend (e.g. after code deploy but before backend redeploy)
+    const finalVersion = DEFAULT_OPENCLAW_VERSION > backendVersion ? DEFAULT_OPENCLAW_VERSION : backendVersion
     return NextResponse.json({
-      openclawVersion: normalizeOpenClawVersion(data?.openclawVersion),
+      openclawVersion: finalVersion,
       image: data?.image || DEFAULT_OPENCLAW_IMAGE,
       source: 'backend',
       deployedAt: data?.deployedAt
