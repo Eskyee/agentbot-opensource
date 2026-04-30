@@ -19,11 +19,26 @@ export const dynamic = 'force-dynamic'
 type MimoRequestBody = {
   apiKey?: string
   gatewayToken?: string
+  targetRuntimeUrl?: string
   dryRun?: boolean
 }
 
 function assertString(value: unknown) {
   return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizeRuntimeUrl(value: string) {
+  if (!value) return ''
+  const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`
+  try {
+    const url = new URL(withProtocol)
+    url.pathname = ''
+    url.search = ''
+    url.hash = ''
+    return url.toString().replace(/\/$/, '')
+  } catch {
+    return ''
+  }
 }
 
 function sanitizeErrorMessage(message: string) {
@@ -225,13 +240,18 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({})) as MimoRequestBody
   const apiKey = assertString(body.apiKey)
   const requestedGatewayToken = assertString(body.gatewayToken)
+  const targetRuntimeUrl = normalizeRuntimeUrl(assertString(body.targetRuntimeUrl))
   const dryRun = body.dryRun === true
 
   if (!apiKey) {
     return errorResponse('missing_mimo_api_key', 'MiMo API key is required', 400)
   }
 
-  const [user, registration, latestAgent] = await Promise.all([
+  if (assertString(body.targetRuntimeUrl) && !targetRuntimeUrl) {
+    return errorResponse('invalid_runtime_url', 'Target runtime URL is not valid', 400)
+  }
+
+  const [user, latestAgent, targetUser, targetAgent] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -242,32 +262,55 @@ export async function POST(request: Request) {
         openclawInstanceId: true,
       },
     }),
-    prisma.$queryRaw<{ gateway_token: string | null }[]>`
-      SELECT gateway_token FROM agent_registrations WHERE user_id = ${session.user.id} LIMIT 1
-    `,
     prisma.agent.findFirst({
       where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
-      select: { id: true, config: true, websocketUrl: true },
+      select: { id: true, userId: true, config: true, websocketUrl: true },
     }),
+    targetRuntimeUrl
+      ? prisma.user.findFirst({
+          where: { openclawUrl: { in: [targetRuntimeUrl, `${targetRuntimeUrl}/`] } },
+          select: {
+            id: true,
+            email: true,
+            plan: true,
+            openclawUrl: true,
+            openclawInstanceId: true,
+          },
+        })
+      : Promise.resolve(null),
+    targetRuntimeUrl
+      ? prisma.agent.findFirst({
+          where: { websocketUrl: { in: [targetRuntimeUrl, `${targetRuntimeUrl}/`] } },
+          orderBy: { createdAt: 'desc' },
+          select: { id: true, userId: true, config: true, websocketUrl: true },
+        })
+      : Promise.resolve(null),
   ])
 
-  if (!user?.openclawInstanceId && !latestAgent?.id) {
+  const ownerUser = targetUser || user
+  const managedAgent = targetAgent || latestAgent
+  const runtimeUrl = targetRuntimeUrl || ownerUser?.openclawUrl || managedAgent?.websocketUrl || null
+
+  if (!ownerUser?.openclawInstanceId && !managedAgent?.id && !targetRuntimeUrl) {
     return errorResponse('runtime_not_found', 'Admin user does not have a managed OpenClaw runtime', 404)
   }
 
-  const latestConfig = latestAgent?.config && typeof latestAgent.config === 'object'
-    ? latestAgent.config as Record<string, unknown>
+  const registration = await prisma.$queryRaw<{ gateway_token: string | null }[]>`
+    SELECT gateway_token FROM agent_registrations WHERE user_id = ${ownerUser?.id || session.user.id} LIMIT 1
+  `
+
+  const latestConfig = managedAgent?.config && typeof managedAgent.config === 'object'
+    ? managedAgent.config as Record<string, unknown>
     : {}
   const runtimeServiceId = typeof latestConfig.runtimeServiceId === 'string'
     ? latestConfig.runtimeServiceId
     : null
   const gatewayToken = requestedGatewayToken || registration[0]?.gateway_token || crypto.randomUUID()
   const openclawConfig = buildMimoOpenClawConfig(apiKey, gatewayToken)
-  const runtimeUrl = user?.openclawUrl || latestAgent?.websocketUrl || null
 
   const variables = {
-    ...getAgentEnvVars(user?.id || session.user.id, user?.plan || 'solo', gatewayToken),
+    ...getAgentEnvVars(ownerUser?.id || session.user.id, ownerUser?.plan || 'solo', gatewayToken),
     OPENCLAW_GATEWAY_TOKEN: gatewayToken,
     WRAPPER_ADMIN_PASSWORD: gatewayToken,
     OPENCLAW_CONFIG_JSON: JSON.stringify(openclawConfig),
@@ -283,7 +326,7 @@ export async function POST(request: Request) {
       try {
         const environmentId = getRailwayEnvironmentId()
         railwayService = await resolveRailwayService({
-          agentId: user?.openclawInstanceId || latestAgent?.id,
+          agentId: ownerUser?.openclawInstanceId || managedAgent?.id,
           openclawUrl: runtimeUrl,
           serviceId: runtimeServiceId,
         })
@@ -326,9 +369,9 @@ export async function POST(request: Request) {
     applyResult = { ok: true, code: 'dry_run', skipped: true }
   }
 
-  if (!dryRun && latestAgent) {
+  if (!dryRun && managedAgent) {
     await prisma.agent.update({
-      where: { id: latestAgent.id },
+      where: { id: managedAgent.id },
       data: {
         status: applyResult.code === 'railway_env_applied' ? 'updating' : 'running',
         config: {
@@ -358,6 +401,7 @@ export async function POST(request: Request) {
       provider: 'xiaomi-coding',
       primaryModel: 'xiaomi-coding/mimo-v2.5-pro',
       gatewayTokenSource: requestedGatewayToken ? 'request' : registration[0]?.gateway_token ? 'registration' : 'generated',
+      targetRuntimeUrl: runtimeUrl,
     },
     smoke,
   })

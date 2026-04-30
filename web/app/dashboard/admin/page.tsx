@@ -58,6 +58,7 @@ export default function AdminDashboard() {
   const [remoteAccess, setRemoteAccess] = useState<RemoteAccessOptionsPayload | null>(null)
   const [mimoApiKey, setMimoApiKey] = useState('')
   const [mimoGatewayToken, setMimoGatewayToken] = useState('')
+  const [mimoTargetRuntimeUrl, setMimoTargetRuntimeUrl] = useState('https://agentbot-agent-8711c7cdf8242b25-production.up.railway.app')
   const [mimoDryRun, setMimoDryRun] = useState(false)
   const [mimoLoading, setMimoLoading] = useState(false)
   const [mimoResult, setMimoResult] = useState<Record<string, any> | null>(null)
@@ -103,6 +104,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           apiKey: mimoApiKey,
           gatewayToken: mimoGatewayToken || undefined,
+          targetRuntimeUrl: mimoTargetRuntimeUrl || undefined,
           dryRun: mimoDryRun,
         }),
       })
@@ -306,6 +308,17 @@ export default function AdminDashboard() {
             </div>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
+              <label className="block md:col-span-2">
+                <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-600">Target OpenClaw agent URL</span>
+                <input
+                  type="url"
+                  value={mimoTargetRuntimeUrl}
+                  onChange={(event) => setMimoTargetRuntimeUrl(event.target.value)}
+                  placeholder="https://agentbot-agent-8711c7cdf8242b25-production.up.railway.app"
+                  className="mt-2 w-full rounded border border-zinc-800 bg-black px-3 py-2 text-xs text-white outline-none focus:border-orange-500"
+                  autoComplete="off"
+                />
+              </label>
               <label className="block">
                 <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-600">MiMo API key</span>
                 <input
