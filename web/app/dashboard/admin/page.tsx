@@ -108,7 +108,11 @@ export default function AdminDashboard() {
       })
       const data = await response.json()
       if (!response.ok) {
-        throw new Error(data.error || 'MiMo config failed')
+        setMimoResult({
+          ...data,
+          responseStatus: response.status,
+        })
+        return
       }
       setMimoResult(data)
       if (!mimoDryRun) {
@@ -117,6 +121,7 @@ export default function AdminDashboard() {
     } catch (err) {
       setMimoResult({
         success: false,
+        code: 'admin_request_failed',
         error: err instanceof Error ? err.message : 'MiMo config failed',
       })
     } finally {
