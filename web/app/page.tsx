@@ -570,16 +570,28 @@ export default async function Home() {
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
           <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-6">From the community</div>
           <div className="max-w-lg">
-            <blockquote className="twitter-tweet" data-theme="dark">
-              <p lang="zxx" dir="ltr">
-                <a href="https://t.co/SbyUPtltwe">https://t.co/SbyUPtltwe</a>
+            <a
+              href="https://x.com/Esky33junglist/status/2043491562479329427"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block border border-zinc-800 hover:border-zinc-700 bg-zinc-950 p-5 transition-colors group"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] text-zinc-400 font-bold">
+                  E
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">esky33</p>
+                  <p className="text-[10px] text-zinc-500">@Esky33junglist</p>
+                </div>
+              </div>
+              <p className="text-sm text-zinc-300 leading-relaxed mb-3">
+                x.com/i/article/2043489178743451648
               </p>
-              &mdash; esky33 (@Esky33junglist){' '}
-              <a href="https://twitter.com/Esky33junglist/status/2043491562479329427?ref_src=twsrc%5Etfw">
+              <p className="text-[10px] text-zinc-600 group-hover:text-zinc-500 transition-colors">
                 April 13, 2026
-              </a>
-            </blockquote>
-            <script async src="https://platform.twitter.com/widgets.js" charSet="utf-8" />
+              </p>
+            </a>
           </div>
         </div>
       </section>
