@@ -11,6 +11,17 @@ export interface BlogPostSummary {
 
 export const blogPosts: BlogPostSummary[] = [
   {
+    slug: 'openclaw-security-in-public',
+    dateLabel: '1 May',
+    isoDate: '2026-05-01',
+    title: 'How OpenClaw Got Safer in Public',
+    excerpt:
+      'Open source is supposed to be the unsafe option. OpenClaw started on a Mac in Vienna as an experiment — now companies run it in production and help secure it. 1,309 security advisories later, here is what actually changed.',
+    tags: ['OpenClaw', 'Security', 'Open Source'],
+    track: 'Field Notes',
+    href: 'https://openclaw.ai/blog/openclaw-security-in-public/',
+  },
+  {
     slug: 'remote-access-for-agentbot-agents',
     dateLabel: '30 Apr',
     isoDate: '2026-04-30',
