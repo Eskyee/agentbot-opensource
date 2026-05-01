@@ -13,6 +13,7 @@ import { prisma } from '@/app/lib/prisma'
 
 const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://openclaw-gateway-lqma:10000'
 const apiSecret = (process.env.BACKEND_API_SECRET || process.env.INTERNAL_API_KEY)?.trim()
+const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN?.trim()
 
 export interface AgentDeployPayload {
   agentId: string
@@ -81,7 +82,7 @@ export async function deployAgentToGateway(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
+        ...(gatewayToken ? { 'Authorization': `Bearer ${gatewayToken}` } : apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
       },
       body: JSON.stringify({
         type: 'deploy_agent',
@@ -251,7 +252,7 @@ export async function deploySkillToAgent(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
+        ...(gatewayToken ? { 'Authorization': `Bearer ${gatewayToken}` } : apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
       },
       body: JSON.stringify({
         type: 'install_skill',
@@ -317,7 +318,7 @@ export async function removeSkillFromAgent(
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
+        ...(gatewayToken ? { 'Authorization': `Bearer ${gatewayToken}` } : apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
       },
       signal: AbortSignal.timeout(10000),
     })
