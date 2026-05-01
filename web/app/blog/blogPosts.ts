@@ -19,7 +19,6 @@ export const blogPosts: BlogPostSummary[] = [
       'Open source is supposed to be the unsafe option. OpenClaw started on a Mac in Vienna as an experiment — now companies run it in production and help secure it. 1,309 security advisories later, here is what actually changed.',
     tags: ['OpenClaw', 'Security', 'Open Source'],
     track: 'Field Notes',
-    href: 'https://openclaw.ai/blog/openclaw-security-in-public/',
   },
   {
     slug: 'remote-access-for-agentbot-agents',
