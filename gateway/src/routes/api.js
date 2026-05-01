@@ -22,6 +22,7 @@ import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import { execFileSync } from 'child_process';
 import { config } from '../config/index.js';
 import { OPENCLAW_GATEWAY_TOKEN } from '../config/index.js';
 import { gatewayManager } from '../services/gatewayManager.js';
@@ -53,7 +54,7 @@ apiRoutes.get('/status', async (req, res) => {
     configured: true,
     uptime: process.uptime(),
     terminalSessions: getActiveSessionCount(),
-    gatewayToken: OPENCLAW_GATEWAY_TOKEN || null,
+    gatewayToken: OPENCLAW_GATEWAY_TOKEN ? '[set]' : null,
     aiProvider,
     runtime,
     ts: new Date().toISOString(),
@@ -63,7 +64,6 @@ apiRoutes.get('/status', async (req, res) => {
 // Public version endpoint — reads actual OpenClaw binary version
 apiRoutes.get('/version', (req, res) => {
   try {
-    const { execFileSync } = require('child_process');
     const version = execFileSync('openclaw', ['--version'], { encoding: 'utf8', timeout: 5000 }).trim();
     res.json({ openclawVersion: version, ts: new Date().toISOString() });
   } catch {
