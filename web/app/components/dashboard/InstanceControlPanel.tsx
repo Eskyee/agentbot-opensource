@@ -223,7 +223,7 @@ function ActionButton({
   const toneClass = tone === 'primary'
     ? 'border-white bg-white text-black hover:bg-zinc-200'
     : tone === 'warning'
-      ? 'border-amber-400/30 bg-amber-400/10 text-amber-200 hover:border-amber-300/60 hover:text-white'
+      ? 'border-red-500/30 bg-red-500/10 text-red-200 hover:border-red-400/60 hover:text-white'
       : tone === 'danger'
         ? 'border-red-500/30 bg-red-500/10 text-red-300 hover:border-red-400/60 hover:text-white'
         : 'border-zinc-800 bg-zinc-950 text-zinc-300 hover:border-zinc-700 hover:text-white'
@@ -521,7 +521,7 @@ export function InstanceControlPanel({
             </div>
 
             {!controlsEnabled ? (
-              <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
+              <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-100">
                 Managed lifecycle actions are temporarily gated while the control path is being hardened.
               </div>
             ) : null}
@@ -567,7 +567,7 @@ export function InstanceControlPanel({
             ) : null}
 
             {!canLaunchBasefm ? (
-              <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-orange-400">
+              <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-500">
                 Agentbot token perks work like the baseFM token here. Claim your Solana Agentbot holder status, then this panel can launch a stream with that verified wallet.
               </div>
             ) : null}

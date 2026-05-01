@@ -18,7 +18,7 @@ export default function RemoteAccessForAgentbotAgentsPost() {
         </Link>
 
         <header className="mt-10 mb-12">
-          <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-4">Guide</div>
+          <div className="text-[10px] uppercase tracking-widest text-red-500 mb-4">Guide</div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-6">
             Remote Access for Agentbot Agents
           </h1>
@@ -36,7 +36,7 @@ export default function RemoteAccessForAgentbotAgentsPost() {
           </p>
 
           <div className="border border-zinc-800 bg-zinc-950 p-6 my-8">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-orange-400 mb-4">Fast Choice</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-red-500 mb-4">Fast Choice</h2>
             <ul className="space-y-3 text-sm text-zinc-300">
               <li><strong className="text-white">SSH:</strong> safest universal fallback. Nothing public is exposed.</li>
               <li><strong className="text-white">Tailscale Serve:</strong> best tailnet UX. HTTPS on your tailnet, Gateway stays loopback-only.</li>
@@ -61,7 +61,7 @@ export default function RemoteAccessForAgentbotAgentsPost() {
             <code>{sshCommand}</code>
           </pre>
           <p className="text-zinc-400 mb-6">
-            With the tunnel open, connect tools and clients to <code className="text-orange-400">ws://127.0.0.1:18789</code>.
+            With the tunnel open, connect tools and clients to <code className="text-red-500">ws://127.0.0.1:18789</code>.
             SSH does not bypass Gateway auth, so keep your normal OpenClaw token or password ready.
           </p>
 
@@ -116,8 +116,8 @@ export default function RemoteAccessForAgentbotAgentsPost() {
 }`}</code>
           </pre>
           <p className="text-zinc-400 mb-6">
-            From another Tailnet device, connect to <code className="text-orange-400">http://&lt;tailscale-ip&gt;:18789/</code> or{' '}
-            <code className="text-orange-400">ws://&lt;tailscale-ip&gt;:18789</code>.
+            From another Tailnet device, connect to <code className="text-red-500">http://&lt;tailscale-ip&gt;:18789/</code> or{' '}
+            <code className="text-red-500">ws://&lt;tailscale-ip&gt;:18789</code>.
           </p>
 
           <h2 className="text-2xl font-bold tracking-tighter uppercase mt-12 mb-4">Need Help Choosing?</h2>
@@ -133,7 +133,7 @@ export default function RemoteAccessForAgentbotAgentsPost() {
           </p>
 
           <div className="border border-zinc-800 bg-zinc-950 p-6 mt-12">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-orange-400 mb-4">Security Rules</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-red-500 mb-4">Security Rules</h2>
             <ul className="space-y-3 text-sm text-zinc-300">
               <li>Keep the Gateway loopback-only unless you explicitly need Tailnet IP binding.</li>
               <li>Use SSH or Tailscale Serve for normal operator access.</li>

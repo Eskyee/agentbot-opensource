@@ -98,12 +98,12 @@ export default function DomainsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Custom Domains"
-        icon={<Globe className="h-5 w-5 text-orange-400" />}
+        icon={<Globe className="h-5 w-5 text-red-500" />}
         count={domains.length}
         action={
           <div className="flex items-center gap-2">
             {plan && (
-              <span className="text-[10px] uppercase tracking-widest text-orange-400 bg-orange-900/20 border border-orange-800 rounded px-2 py-0.5 font-mono">
+              <span className="text-[10px] uppercase tracking-widest text-red-500 bg-red-900/20 border border-red-800 rounded px-2 py-0.5 font-mono">
                 {plan}
               </span>
             )}
@@ -123,7 +123,7 @@ export default function DomainsPage() {
           <div className="border border-zinc-800 bg-zinc-950 p-5">
             <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Your Subdomain</div>
             <div className="flex items-center gap-3">
-              <code className="text-orange-400 font-mono text-sm flex-1">{subdomainUrl}</code>
+              <code className="text-red-500 font-mono text-sm flex-1">{subdomainUrl}</code>
               <button
                 onClick={() => copyText(`https://${subdomainUrl}`)}
                 className="p-1.5 border border-zinc-800 hover:border-zinc-600"
@@ -163,7 +163,7 @@ export default function DomainsPage() {
             <button
               onClick={addDomain}
               disabled={adding || !newDomain.trim() || domains.length >= maxDomains}
-              className="flex items-center gap-2 px-5 py-2.5 bg-orange-600/10 border border-orange-500/30 text-orange-400 text-xs font-bold hover:bg-orange-600/20 disabled:opacity-30 transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 border border-red-500/30 text-red-500 text-xs font-bold hover:bg-red-600/20 disabled:opacity-30 transition-colors"
             >
               {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Add
@@ -182,7 +182,7 @@ export default function DomainsPage() {
             </ol>
             <div className="mt-3 p-3 bg-zinc-900 border border-zinc-800 rounded">
               <div className="text-[10px] text-zinc-500 mb-1">Verification Token</div>
-              <code className="text-xs text-orange-400 font-mono">{verificationInfo.token}</code>
+              <code className="text-xs text-red-500 font-mono">{verificationInfo.token}</code>
             </div>
           </div>
         )}

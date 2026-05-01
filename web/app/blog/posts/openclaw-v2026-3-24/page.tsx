@@ -25,7 +25,7 @@ export default function OpenClawReleasePost() {
  <p className="text-sm text-zinc-500 mb-2">26 March 2026</p>
  <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">OpenClaw v2026.3.24</h1>
  <div className="flex gap-2 flex-wrap">
- <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Release</span>
+ <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Release</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Gateway</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Security</span>
  </div>
@@ -131,19 +131,19 @@ export default function OpenClawReleasePost() {
  
  <ul className="space-y-2 text-zinc-300 text-sm mb-8">
  <li className="flex items-start gap-2">
- <span className="text-orange-400">→</span>
+ <span className="text-red-500">→</span>
  <span><strong>Better API compatibility</strong> — more tools and clients work with Agentbot out of the box</span>
  </li>
  <li className="flex items-start gap-2">
- <span className="text-orange-400">→</span>
+ <span className="text-red-500">→</span>
  <span><strong>Stronger security</strong> — upstream fix for media dispatch bypass</span>
  </li>
  <li className="flex items-start gap-2">
- <span className="text-orange-400">→</span>
+ <span className="text-red-500">→</span>
  <span><strong>Easier debugging</strong> — <code>--container</code> flag for Docker agent inspection</span>
  </li>
  <li className="flex items-start gap-2">
- <span className="text-orange-400">→</span>
+ <span className="text-red-500">→</span>
  <span><strong>More reliable</strong> — channel isolation and restart recovery</span>
  </li>
  </ul>

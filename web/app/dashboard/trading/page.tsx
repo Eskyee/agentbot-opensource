@@ -148,7 +148,7 @@ export default function TradingPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Trading Agent" icon={<Sparkles className="h-5 w-5 text-orange-400" />} />
+      <DashboardHeader title="Trading Agent" icon={<Sparkles className="h-5 w-5 text-red-500" />} />
       <DashboardContent>
 
         {/* API Key Banner */}
@@ -226,7 +226,7 @@ export default function TradingPage() {
                 href="https://bankr.bot/agents"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] uppercase tracking-widest text-orange-400 hover:text-orange-400 transition-colors"
+                className="text-[10px] uppercase tracking-widest text-red-500 hover:text-red-500 transition-colors"
               >
                 Open Profiles
               </a>
@@ -261,7 +261,7 @@ export default function TradingPage() {
                     </p>
                   </div>
                   <div className="shrink-0">
-                    <CheckCircle className="h-5 w-5 text-orange-400" />
+                    <CheckCircle className="h-5 w-5 text-red-500" />
                   </div>
                 </div>
 
@@ -437,7 +437,7 @@ export default function TradingPage() {
 
               {jobId && !result && (
                 <div className="bg-zinc-950 border border-zinc-800 p-6 flex items-center gap-3">
-                  <Loader2 className="h-5 w-5 animate-spin text-orange-400" />
+                  <Loader2 className="h-5 w-5 animate-spin text-red-500" />
                   <span className="text-xs text-zinc-500">Processing job: {jobId}</span>
                 </div>
               )}

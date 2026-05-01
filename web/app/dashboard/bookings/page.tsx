@@ -22,7 +22,7 @@ export default function BookingInboxPage() {
   });
 
   const InboxIcon = () => (
-    <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
     </svg>
   )
@@ -34,8 +34,8 @@ export default function BookingInboxPage() {
         icon={<InboxIcon />}
         count={bookings?.length}
         action={
-          <div className="border border-orange-500/30 bg-orange-500/10 px-3 py-1.5">
-            <span className="text-[10px] text-orange-400 font-bold uppercase tracking-widest">A2A Negotiator Active</span>
+          <div className="border border-red-500/30 bg-red-500/10 px-3 py-1.5">
+            <span className="text-[10px] text-red-500 font-bold uppercase tracking-widest">A2A Negotiator Active</span>
           </div>
         }
       />
@@ -107,7 +107,7 @@ export default function BookingInboxPage() {
                   {booking.status === 'accepted' && (
                     <div className="text-right">
                       <div className="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mb-1">Onchain Contract</div>
-                      <div className="font-mono text-[10px] text-orange-400 truncate w-32">0x{booking.contract_tx_hash || 'pending...'}</div>
+                      <div className="font-mono text-[10px] text-red-500 truncate w-32">0x{booking.contract_tx_hash || 'pending...'}</div>
                     </div>
                   )}
                 </div>

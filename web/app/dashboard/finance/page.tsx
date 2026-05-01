@@ -102,7 +102,7 @@ export default function FinancePage() {
           <div className="bg-zinc-950 border border-zinc-800 p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <Wallet className="h-5 w-5 text-orange-400" />
+                <Wallet className="h-5 w-5 text-red-500" />
                 <div>
                   <span className="text-[10px] uppercase tracking-widest text-zinc-600 block">Crypto Wallet</span>
                   <span className="text-sm font-bold tracking-tight uppercase">Bankr Trading Balance</span>

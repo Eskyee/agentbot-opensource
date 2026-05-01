@@ -27,14 +27,14 @@ export default function GitlawbPost() {
               Decentralized Git for AI Agents
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Exploration</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Exploration</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">gitlawb</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Decentralized</span>
             </div>
           </div>
 
           <p className="text-zinc-300 mb-8">
-            Found <a href="https://gitlawb.com" className="text-orange-400 hover:text-white">gitlawb.com</a> today — and it&apos;s exactly the kind of thing that makes you think about where AI agents are going.
+            Found <a href="https://gitlawb.com" className="text-red-500 hover:text-white">gitlawb.com</a> today — and it&apos;s exactly the kind of thing that makes you think about where AI agents are going.
           </p>
 
           <h2 className="text-2xl font-bold uppercase tracking-tight mb-4 text-white">
@@ -99,7 +99,7 @@ export default function GitlawbPost() {
 
           <div className="border-t border-zinc-800 mt-8 pt-8">
             <p className="text-zinc-400 text-sm">
-              <a href="https://gitlawb.com" className="text-orange-400 hover:text-white">gitlawb.com →</a>
+              <a href="https://gitlawb.com" className="text-red-500 hover:text-white">gitlawb.com →</a>
             </p>
           </div>
         </article>

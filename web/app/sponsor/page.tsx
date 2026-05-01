@@ -135,13 +135,13 @@ export default function SponsorPage() {
             {/* Bitcoin */}
             <a
               href="#bitcoin"
-              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-orange-600 transition-all text-center"
+              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-red-600 transition-all text-center"
               onClick={(e) => {
                 e.preventDefault()
                 document.getElementById('bitcoin-section')?.scrollIntoView({ behavior: 'smooth' })
               }}
             >
-              <Bitcoin className="h-8 w-8 text-orange-400 mx-auto mb-3" />
+              <Bitcoin className="h-8 w-8 text-red-500 mx-auto mb-3" />
               <h3 className="text-white font-bold mb-2">Bitcoin</h3>
               <p className="text-zinc-500 text-xs">On-chain or Lightning</p>
             </a>
@@ -174,7 +174,7 @@ export default function SponsorPage() {
               </a>
               <a
                 href="/claim"
-                className="border border-orange-700 hover:border-orange-600 text-orange-400 font-bold text-sm px-6 py-3"
+                className="border border-red-700 hover:border-red-600 text-red-500 font-bold text-sm px-6 py-3"
               >
                 Claim Holder Credits
               </a>
@@ -182,9 +182,9 @@ export default function SponsorPage() {
           </div>
 
           {/* Blockstream Green Integration */}
-          <div className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
+          <div className="border border-red-900 bg-red-900/20 p-6 mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Bitcoin className="h-6 w-6 text-orange-400" />
+              <Bitcoin className="h-6 w-6 text-red-500" />
               <h3 className="text-white font-bold text-lg">Use Your Blockstream Green Wallet</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
@@ -234,9 +234,9 @@ export default function SponsorPage() {
           </div>
 
           {/* Bitcoin Section */}
-          <div id="bitcoin-section" className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
+          <div id="bitcoin-section" className="border border-red-900 bg-red-900/20 p-6 mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Bitcoin className="h-6 w-6 text-orange-400" />
+              <Bitcoin className="h-6 w-6 text-red-500" />
               <h3 className="text-white font-bold text-lg">Bitcoin Donations</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
@@ -245,7 +245,7 @@ export default function SponsorPage() {
             <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
               <div className="bg-black p-4 border border-zinc-800">
                 <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
-                <code className="text-orange-400 text-sm break-all">bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr</code>
+                <code className="text-red-500 text-sm break-all">bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr</code>
               </div>
               <div className="bg-black p-4 border border-zinc-800 flex flex-col items-center justify-center">
                 <p className="text-zinc-500 text-xs uppercase mb-3">Scan To Donate</p>
@@ -259,7 +259,7 @@ export default function SponsorPage() {
             </div>
             <div className="mt-4 bg-black p-4 border border-zinc-800">
               <p className="text-zinc-500 text-xs uppercase mb-2">Lightning (LNURL)</p>
-              <code className="text-orange-400 text-sm break-all">LNURL1DP68GURN8GHJ7MR9VAJKUEPWD9XZ7PHVEFNVEMN6RPJCMN8DDKGDR3A8K6T</code>
+              <code className="text-red-500 text-sm break-all">LNURL1DP68GURN8GHJ7MR9VAJKUEPWD9XZ7PHVEFNVEMN6RPJCMN8DDKGDR3A8K6T</code>
             </div>
             <p className="text-zinc-500 text-xs mt-4">
               ⚡ For larger amounts, ask for an invoice via esky33@proton.me

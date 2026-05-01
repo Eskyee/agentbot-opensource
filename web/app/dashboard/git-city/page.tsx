@@ -210,7 +210,7 @@ export default function GitCityPage() {
     <DashboardShell>
       <DashboardHeader
         title="Git City"
-        icon={<GitBranch className="h-5 w-5 text-orange-400" />}
+        icon={<GitBranch className="h-5 w-5 text-red-500" />}
       />
 
       <DashboardContent>
@@ -228,9 +228,9 @@ export default function GitCityPage() {
             href="https://www.thegitcity.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-orange-800 bg-orange-900/20 p-4 hover:border-orange-600 transition-colors"
+            className="border border-red-800 bg-red-900/20 p-4 hover:border-red-600 transition-colors"
           >
-            <GitBranch className="h-6 w-6 text-orange-400 mb-2" />
+            <GitBranch className="h-6 w-6 text-red-500 mb-2" />
             <h3 className="text-white font-bold">3D City</h3>
             <p className="text-zinc-400 text-xs mt-1">Visit the virtual city</p>
             <ExternalLink className="h-3 w-3 text-zinc-500 mt-2" />
@@ -259,13 +259,13 @@ export default function GitCityPage() {
                 value={repoUrl}
                 onChange={(e) => setRepoUrl(e.target.value)}
                 placeholder="https://github.com/owner/repo"
-                className="flex-1 bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-orange-500 focus:outline-none"
+                className="flex-1 bg-zinc-900 border border-zinc-700 text-white px-4 py-2 text-sm focus:border-red-500 focus:outline-none"
                 disabled={loading}
               />
               <button
                 type="submit"
                 disabled={loading || !repoUrl}
-                className="bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest px-6 py-2 transition-colors flex items-center gap-2"
+                className="bg-red-600 hover:bg-red-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest px-6 py-2 transition-colors flex items-center gap-2"
               >
                 {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                 Analyze
@@ -326,7 +326,7 @@ export default function GitCityPage() {
                 {data.stats.topics?.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">
                     {data.stats.topics.map((topic: string) => (
-                      <span key={topic} className="px-2 py-1 bg-orange-900/30 text-orange-400 text-xs">
+                      <span key={topic} className="px-2 py-1 bg-red-900/30 text-red-500 text-xs">
                         {topic}
                       </span>
                     ))}
@@ -348,7 +348,7 @@ export default function GitCityPage() {
                     onClick={() => setViewMode('list')}
                     className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
                       viewMode === 'list' 
-                        ? 'bg-orange-600 text-white' 
+                        ? 'bg-red-600 text-white' 
                         : 'bg-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
@@ -359,7 +359,7 @@ export default function GitCityPage() {
                     onClick={() => setViewMode('3d')}
                     className={`flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
                       viewMode === '3d' 
-                        ? 'bg-orange-600 text-white' 
+                        ? 'bg-red-600 text-white' 
                         : 'bg-zinc-800 text-zinc-400 hover:text-white'
                     }`}
                   >
@@ -411,7 +411,7 @@ export default function GitCityPage() {
 
               {/* Selected Block Details */}
               {viewMode === '3d' && selectedBlock && (
-                <div className="border border-orange-800 bg-orange-900/20 p-4">
+                <div className="border border-red-800 bg-red-900/20 p-4">
                   {(() => {
                     const block = cityBlocks.find(b => b.id === selectedBlock)
                     if (!block) return null
@@ -433,7 +433,7 @@ export default function GitCityPage() {
                             ×
                           </button>
                         </div>
-                        <p className="text-orange-400 text-sm mb-3">
+                        <p className="text-red-500 text-sm mb-3">
                           {block.commits} commits
                         </p>
                         <div className="space-y-2 max-h-40 overflow-y-auto">
@@ -478,7 +478,7 @@ export default function GitCityPage() {
                           <div className="flex-1 min-w-0">
                             <p className="text-white text-sm truncate">{commit.message}</p>
                             <p className="text-zinc-500 text-xs mt-1">
-                              <span className="text-orange-400">{commit.sha}</span>
+                              <span className="text-red-500">{commit.sha}</span>
                               {' • '}
                               {commit.author}
                               {' • '}

@@ -246,7 +246,7 @@ function DashboardContent() {
       <div className="flex min-h-screen bg-black items-center justify-center">
         <div className="text-center">
           <p className="text-zinc-400 mb-4">Please sign in to view your dashboard</p>
-          <Link href="/login" className="text-orange-400 hover:underline">
+          <Link href="/login" className="text-red-500 hover:underline">
             Sign In
           </Link>
         </div>
@@ -297,7 +297,7 @@ function DashboardContent() {
               </div>
               <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-orange-500 transition-all duration-500"
+                  className="h-full bg-red-500 transition-all duration-500"
                   style={{ width: stats?.cpu || '0%' }}
                 />
               </div>
@@ -337,7 +337,7 @@ function DashboardContent() {
                 href={controlUiUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
               >
                 Launch Control UI
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -13,7 +13,7 @@ export default function CreatorStudioPage() {
         <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[600px] h-[400px] bg-purple-500/5 rounded-full blur-[150px]" />
         <div className="relative max-w-7xl mx-auto px-5 sm:px-6 py-20 sm:py-32">
           <div className="text-6xl sm:text-8xl mb-6">📡</div>
-          <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-400 text-[10px] uppercase tracking-widest mb-6">Use Case</div>
+          <div className="inline-block px-3 py-1 border border-zinc-800 text-red-500 text-[10px] uppercase tracking-widest mb-6">Use Case</div>
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9]">
             Creator<br />
             <span className="text-zinc-700">Studio</span>

@@ -270,7 +270,7 @@ function LoginFormFallback() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-orange-500/30 font-mono">
+    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-red-500/30 font-mono">
       <Suspense fallback={<LoginFormFallback />}>
         <LoginForm />
       </Suspense>

@@ -13,7 +13,7 @@ export default function PaymentEnforcementPost() {
  <p className="text-sm text-zinc-500 mb-2">March 30, 2026</p>
  <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">Pre-Launch Hardening: Full Payment Enforcement & Code Audit</h1>
  <div className="flex gap-2">
- <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Security</span>
+ <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Security</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Payment</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Launch</span>
  </div>

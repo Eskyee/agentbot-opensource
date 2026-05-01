@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import type { BlogPostSummary } from './blogPosts'
 
 const trackPalette: Record<BlogPostSummary['track'], string> = {
-  Shipping: 'text-orange-400 border-orange-900/60 bg-orange-950/30',
+  Shipping: 'text-red-500 border-red-900/60 bg-red-950/30',
   Release: 'text-green-400 border-green-900/60 bg-green-950/30',
   'Field Notes': 'text-amber-300 border-amber-900/60 bg-amber-950/20',
   'Build Log': 'text-fuchsia-300 border-fuchsia-900/60 bg-fuchsia-950/20',

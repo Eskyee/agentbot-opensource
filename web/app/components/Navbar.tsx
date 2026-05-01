@@ -209,7 +209,7 @@ export default function Navbar() {
                 Claim
               </Link>
               {isAdmin && (
-                <Link href="/dashboard/admin" className="text-[11px] text-orange-400 hover:text-orange-400 transition-colors uppercase tracking-wider">
+                <Link href="/dashboard/admin" className="text-[11px] text-red-500 hover:text-red-500 transition-colors uppercase tracking-wider">
                   Admin
                 </Link>
               )}
@@ -229,7 +229,7 @@ export default function Navbar() {
               <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
                 Sign in
               </Link>
-              <Link href="/signup" className="text-[11px] bg-orange-500 text-white px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors">
+              <Link href="/signup" className="text-[11px] bg-red-500 text-white px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-red-400 transition-colors">
                 Get Started
               </Link>
             </>
@@ -243,7 +243,7 @@ export default function Navbar() {
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
         >
-          <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {menuOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             ) : (

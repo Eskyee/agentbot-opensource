@@ -27,7 +27,7 @@ export default function ShippingDayPost() {
               9 Hours, 25 Commits, 7 Services
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Shipping</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Shipping</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Infrastructure</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Update</span>
             </div>

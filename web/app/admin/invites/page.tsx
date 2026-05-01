@@ -74,7 +74,7 @@ export default function AdminInvitesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-red-500/30 font-mono p-8">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Invite Management</h1>
 
@@ -163,7 +163,7 @@ export default function AdminInvitesPage() {
                       <code className="text-xs text-zinc-400 bg-zinc-800 px-2 py-1 rounded">
                         {invite.code}
                       </code>
-                      <span className="text-xs px-2 py-1 rounded bg-orange-500/10 text-orange-300 uppercase">
+                      <span className="text-xs px-2 py-1 rounded bg-red-500/10 text-red-400 uppercase">
                         {invite.audience}
                       </span>
                       <span

@@ -41,7 +41,7 @@ export default function TempoDexPage() {
     <DashboardShell>
       <DashboardHeader
         title="Tempo DEX"
-        icon={<ArrowDownUp className="h-5 w-5 text-orange-400" />}
+        icon={<ArrowDownUp className="h-5 w-5 text-red-500" />}
         action={
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-zinc-600 font-mono">Chain 4217</span>
@@ -115,7 +115,7 @@ export default function TempoDexPage() {
           <button
             onClick={handleSwap}
             disabled={swapping || !fromAmount}
-            className="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-bold py-4 rounded-lg transition-colors text-sm uppercase tracking-widest"
+            className="w-full bg-red-600 hover:bg-red-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-bold py-4 rounded-lg transition-colors text-sm uppercase tracking-widest"
           >
             {swapping ? (
               <span className="flex items-center justify-center gap-2">

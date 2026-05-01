@@ -80,7 +80,7 @@ export default function XWithAgentbotGuidePage() {
                 <li key={item}>• {item}</li>
               ))}
             </ul>
-            <Link href="/dashboard/signals" className="mt-4 inline-block text-sm text-orange-400 hover:text-white">
+            <Link href="/dashboard/signals" className="mt-4 inline-block text-sm text-red-500 hover:text-white">
               Open Signals Dashboard →
             </Link>
           </div>
@@ -93,7 +93,7 @@ export default function XWithAgentbotGuidePage() {
                   href={doc.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block text-sm text-orange-400 hover:text-white"
+                  className="block text-sm text-red-500 hover:text-white"
                 >
                   {doc.label} →
                 </a>

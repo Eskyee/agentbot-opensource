@@ -25,7 +25,7 @@ export function SectionHeader({
           variant={badgeVariant}
           className={cn(
             'mb-4 text-[10px] uppercase tracking-widest',
-            badgeVariant === 'outline' && 'border-zinc-800 text-orange-400'
+            badgeVariant === 'outline' && 'border-zinc-800 text-red-500'
           )}
         >
           {label}

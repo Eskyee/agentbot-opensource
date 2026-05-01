@@ -107,7 +107,7 @@ export default function OpenClawDashboardGuidePage() {
               access, go live, and end set.
               Advanced Mux and relay diagnostics are there for recovery, not as the main workflow.
             </p>
-            <Link href="/dashboard/dj-stream" className="mt-4 inline-block text-sm text-orange-400 hover:text-white">
+            <Link href="/dashboard/dj-stream" className="mt-4 inline-block text-sm text-red-500 hover:text-white">
               Open DJ Stream →
             </Link>
           </div>
@@ -117,7 +117,7 @@ export default function OpenClawDashboardGuidePage() {
               If the runtime is healthy but a skill still complains, the problem is usually that skill setup, not the machine.
               That is why the next move after Mission Control is usually Skills Manager or Config.
             </p>
-            <Link href="/dashboard" className="mt-4 inline-block text-sm text-orange-400 hover:text-white">
+            <Link href="/dashboard" className="mt-4 inline-block text-sm text-red-500 hover:text-white">
               Open Mission Control →
             </Link>
           </div>
@@ -136,7 +136,7 @@ export default function OpenClawDashboardGuidePage() {
               href="https://www.mux.com/docs/api-reference/video/assets"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-orange-400 hover:text-white"
+              className="text-red-500 hover:text-white"
             >
               Mux Assets API
             </a>

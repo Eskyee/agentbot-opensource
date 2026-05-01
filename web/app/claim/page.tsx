@@ -223,7 +223,7 @@ export default function ClaimPage() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
           <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
             <div className="flex items-start gap-3">
-              <Wallet className="mt-1 h-5 w-5 text-orange-400" />
+              <Wallet className="mt-1 h-5 w-5 text-red-500" />
               <div>
                 <h2 className="text-lg font-bold uppercase tracking-tight text-white">Verify Solana Wallet</h2>
                 <p className="mt-2 text-sm leading-6 text-zinc-400">
@@ -253,12 +253,12 @@ export default function ClaimPage() {
 
             <div className="mt-6 rounded-2xl border border-zinc-800 bg-black p-4">
               <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Connected Address</div>
-              <div className="mt-2 break-all text-sm text-orange-400">{address || 'Connect your wallet to begin'}</div>
+              <div className="mt-2 break-all text-sm text-red-500">{address || 'Connect your wallet to begin'}</div>
             </div>
 
             {mobile && providerMissing && (
-              <div className="mt-6 rounded-2xl border border-orange-500/30 bg-orange-500/5 p-4">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-orange-400 mb-2">iPhone / Android</div>
+              <div className="mt-6 rounded-2xl border border-red-500/30 bg-red-500/5 p-4">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-red-500 mb-2">iPhone / Android</div>
                 <p className="text-sm leading-6 text-zinc-300 mb-3">
                   Solana wallets don&apos;t inject into mobile Safari. Open this
                   page inside your wallet app&apos;s in-app browser to connect.
@@ -308,7 +308,7 @@ export default function ClaimPage() {
               <div key={tier.label} className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-bold uppercase text-white">{tier.label}</div>
-                  <div className="text-xs font-bold uppercase text-orange-400">{tier.credits} credits</div>
+                  <div className="text-xs font-bold uppercase text-red-500">{tier.credits} credits</div>
                 </div>
                 <div className="mt-2 text-sm text-zinc-400">{tier.desc}</div>
               </div>

@@ -19,8 +19,8 @@ const TEMPLATES = [
     name: 'Support Ops',
     description: 'Triage, respond, escalate. Handles inbound queries autonomously.',
     agents: ['Triager', 'Responder', 'Escalator'],
-    color: 'text-orange-400',
-    border: 'border-orange-900',
+    color: 'text-red-500',
+    border: 'border-red-900',
   },
   {
     id: 'content-studio',

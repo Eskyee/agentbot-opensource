@@ -176,7 +176,7 @@ export default function StartPage() {
                     <span className="text-purple-400">◈</span> An AI agent powered by MiMo-V2-Pro
                   </li>
                   <li className="flex items-center gap-2">
-                    <span className="text-orange-400">⊞</span> An automated workflow with pre-configured triggers
+                    <span className="text-red-500">⊞</span> An automated workflow with pre-configured triggers
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-green-400">✳</span> Skills: web search, social posting, and more
@@ -236,7 +236,7 @@ export default function StartPage() {
               <button
                 onClick={handleLaunch}
                 disabled={launching}
-                className="px-10 py-3 bg-gradient-to-r from-purple-600 to-orange-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-orange-500 transition-all disabled:opacity-50"
+                className="px-10 py-3 bg-gradient-to-r from-purple-600 to-red-600 text-white font-medium rounded-lg hover:from-purple-500 hover:to-red-500 transition-all disabled:opacity-50"
               >
                 {launching ? 'Launching...' : 'Launch Agent'}
               </button>

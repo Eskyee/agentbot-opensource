@@ -24,7 +24,7 @@ export default function PartnerLogos() {
     <section className="border-t border-zinc-900">
       <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
         <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-14">
-          <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-orange-400">
+          <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-red-500">
             Partners
           </p>
           <h2 className="text-2xl font-bold uppercase leading-[0.95] tracking-tighter text-white sm:text-4xl">
@@ -41,7 +41,7 @@ export default function PartnerLogos() {
               key={partner.name}
               className="group bg-black p-5 transition-colors hover:bg-zinc-950 sm:p-6"
             >
-              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 transition-colors group-hover:border-orange-500/40">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-950 transition-colors group-hover:border-red-500/40">
                 <span className="text-sm font-bold text-zinc-500 transition-colors group-hover:text-white">
                   {partner.name
                     .split(' ')

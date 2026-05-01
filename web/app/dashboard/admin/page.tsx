@@ -240,7 +240,7 @@ export default function AdminDashboard() {
             </div>
             <Link
               href="/blog/posts/remote-access-for-agentbot-agents"
-              className="text-[10px] uppercase tracking-[0.3em] text-orange-400 hover:text-white"
+              className="text-[10px] uppercase tracking-[0.3em] text-red-500 hover:text-white"
             >
               Read guide
             </Link>
@@ -315,7 +315,7 @@ export default function AdminDashboard() {
                   value={mimoTargetRuntimeUrl}
                   onChange={(event) => setMimoTargetRuntimeUrl(event.target.value)}
                   placeholder="https://agentbot-agent-8711c7cdf8242b25-production.up.railway.app"
-                  className="mt-2 w-full rounded border border-zinc-800 bg-black px-3 py-2 text-xs text-white outline-none focus:border-orange-500"
+                  className="mt-2 w-full rounded border border-zinc-800 bg-black px-3 py-2 text-xs text-white outline-none focus:border-red-500"
                   autoComplete="off"
                 />
               </label>
@@ -326,7 +326,7 @@ export default function AdminDashboard() {
                   value={mimoApiKey}
                   onChange={(event) => setMimoApiKey(event.target.value)}
                   placeholder="tp-..."
-                  className="mt-2 w-full rounded border border-zinc-800 bg-black px-3 py-2 text-xs text-white outline-none focus:border-orange-500"
+                  className="mt-2 w-full rounded border border-zinc-800 bg-black px-3 py-2 text-xs text-white outline-none focus:border-red-500"
                   autoComplete="off"
                 />
               </label>
@@ -337,7 +337,7 @@ export default function AdminDashboard() {
                   value={mimoGatewayToken}
                   onChange={(event) => setMimoGatewayToken(event.target.value)}
                   placeholder="Optional; uses registration token if empty"
-                  className="mt-2 w-full rounded border border-zinc-800 bg-black px-3 py-2 text-xs text-white outline-none focus:border-orange-500"
+                  className="mt-2 w-full rounded border border-zinc-800 bg-black px-3 py-2 text-xs text-white outline-none focus:border-red-500"
                   autoComplete="off"
                 />
               </label>
@@ -348,7 +348,7 @@ export default function AdminDashboard() {
                 type="button"
                 onClick={applyMimoConfig}
                 disabled={mimoLoading || !mimoApiKey.trim()}
-                className="rounded border border-orange-500 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.25em] text-orange-300 hover:bg-orange-500 hover:text-black disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600"
+                className="rounded border border-red-500 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.25em] text-red-400 hover:bg-red-500 hover:text-black disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-600"
               >
                 {mimoLoading ? 'Testing...' : mimoDryRun ? 'Dry Run Config' : 'Apply + Smoke Test'}
               </button>

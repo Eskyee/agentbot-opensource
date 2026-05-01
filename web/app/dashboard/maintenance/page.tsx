@@ -382,7 +382,7 @@ export default function MaintenancePage() {
             className="w-full flex items-center justify-between p-5 hover:bg-zinc-900 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-orange-400" />
+              <Activity className="h-4 w-4 text-red-500" />
               <span className="text-xs font-bold uppercase tracking-widest">Runtime Probe Checks</span>
             </div>
             {showDocker ? <ChevronDown className="h-4 w-4 text-zinc-500" /> : <ChevronRight className="h-4 w-4 text-zinc-500" />}

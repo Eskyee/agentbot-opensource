@@ -26,7 +26,7 @@ export default function SwarmsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Agent Swarms"
-        icon={<Users className="h-5 w-5 text-orange-400" />}
+        icon={<Users className="h-5 w-5 text-red-500" />}
         count={swarms.length}
         action={
           <Button

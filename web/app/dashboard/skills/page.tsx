@@ -351,7 +351,7 @@ export default function SkillsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Skill Marketplace"
-        icon={<Wrench className="h-5 w-5 text-orange-400" />}
+        icon={<Wrench className="h-5 w-5 text-red-500" />}
         action={
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger>
@@ -434,9 +434,9 @@ export default function SkillsPage() {
 
       <DashboardContent className="max-w-7xl space-y-6">
         {openclawSkillsUrl && (
-          <div className="flex items-center justify-between gap-4 rounded-lg border border-orange-500/30 bg-orange-500/5 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-orange-400">Runtime Skills Manager</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-red-500">Runtime Skills Manager</div>
               <p className="mt-1 text-sm text-zinc-300">
                 Open the real OpenClaw skills manager for this agent through the managed control UI, using your paired runtime session.
               </p>
@@ -451,7 +451,7 @@ export default function SkillsPage() {
                 size="sm"
                 onClick={syncRuntime}
                 disabled={!selectedAgentId || syncingRuntime}
-                className="border-orange-500/40 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-white"
+                className="border-red-500/40 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:border-red-400 hover:text-white"
               >
                 <RefreshCw className={`mr-2 h-3 w-3 ${syncingRuntime ? 'animate-spin' : ''}`} />
                 {syncingRuntime ? 'Syncing' : 'Sync Runtime'}
@@ -460,7 +460,7 @@ export default function SkillsPage() {
                 href={openclawSkillsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-orange-500/40 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-white"
+                className="border border-red-500/40 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-widest text-red-500 hover:border-red-400 hover:text-white"
               >
                 Open Skills Manager
               </a>
@@ -491,7 +491,7 @@ export default function SkillsPage() {
               id="agent-select"
               value={selectedAgentId}
               onChange={(e) => setSelectedAgentId(e.target.value)}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-white focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             >
               {agents.map((agent) => (
                 <option key={agent.id} value={agent.id}>
@@ -550,7 +550,7 @@ export default function SkillsPage() {
                     {skill.featured && (
                       <Badge
                         variant="outline"
-                        className="border-orange-500/30 text-orange-400 text-[10px] uppercase tracking-widest"
+                        className="border-red-500/30 text-red-500 text-[10px] uppercase tracking-widest"
                       >
                         Featured
                       </Badge>
@@ -595,11 +595,11 @@ export default function SkillsPage() {
                             type="button"
                             onClick={() => rateSkill(skill.id, ratingValue)}
                             disabled={ratingSkillId === skill.id}
-                            className="p-1 text-zinc-600 transition-colors hover:text-orange-300 disabled:cursor-wait disabled:opacity-60"
+                            className="p-1 text-zinc-600 transition-colors hover:text-red-400 disabled:cursor-wait disabled:opacity-60"
                             aria-label={`Rate ${skill.name} ${ratingValue} star${ratingValue === 1 ? '' : 's'}`}
                           >
                             <Star
-                              className={`h-4 w-4 ${isActive ? 'fill-orange-400 text-orange-400' : ''}`}
+                              className={`h-4 w-4 ${isActive ? 'fill-orange-400 text-red-500' : ''}`}
                             />
                           </button>
                         )

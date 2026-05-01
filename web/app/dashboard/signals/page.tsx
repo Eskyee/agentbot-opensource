@@ -122,10 +122,10 @@ function formatManagedEventLabel(type: string) {
 }
 
 const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
-  reddit:        { label: 'Reddit',  color: 'text-orange-400' },
-  twitter:       { label: 'X',       color: 'text-orange-400' },
+  reddit:        { label: 'Reddit',  color: 'text-red-500' },
+  twitter:       { label: 'X',       color: 'text-red-500' },
   'hacker-news': { label: 'HN',     color: 'text-yellow-400' },
-  discord:       { label: 'Discord', color: 'text-orange-400' },
+  discord:       { label: 'Discord', color: 'text-red-500' },
 };
 
 export default function SignalsPage() {
@@ -543,7 +543,7 @@ export default function SignalsPage() {
                 Use this dashboard to monitor X signals, generate drafts, approve them, and publish from a connected X account.
               </p>
             </div>
-            <Link href="/learn/developers/x-agentbot" className="text-xs uppercase tracking-widest text-orange-400 hover:text-white">
+            <Link href="/learn/developers/x-agentbot" className="text-xs uppercase tracking-widest text-red-500 hover:text-white">
               Read the X guide →
             </Link>
           </div>
@@ -752,7 +752,7 @@ export default function SignalsPage() {
                   <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Draft</p>
                   <p className="text-sm text-zinc-300 leading-relaxed">{draft.draftText}</p>
                   {draft.scheduledFor ? (
-                    <div className="mt-3 text-[10px] uppercase tracking-widest text-orange-400">
+                    <div className="mt-3 text-[10px] uppercase tracking-widest text-red-500">
                       Scheduled: {new Date(draft.scheduledFor).toLocaleString()}
                     </div>
                   ) : null}
@@ -828,7 +828,7 @@ export default function SignalsPage() {
                 <div key={mention.id} className="border border-zinc-800 bg-black p-4">
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-orange-400">Mention</div>
+                      <div className="text-[10px] uppercase tracking-widest text-red-500">Mention</div>
                       <div className="mt-1 text-xs text-zinc-400 font-mono">@{mention.authorUsername}</div>
                     </div>
                     <span className="text-[10px] text-zinc-700 font-mono">{new Date(mention.createdAt).toLocaleString()}</span>
@@ -949,7 +949,7 @@ export default function SignalsPage() {
                 href={`https://x.com/i/communities/${communityId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-orange-400 hover:text-orange-400 font-mono"
+                className="text-xs text-red-500 hover:text-red-500 font-mono"
               >
                 x.com/i/communities/{communityId}
               </a>

@@ -486,7 +486,7 @@ export default function BitcoinPage() {
     <DashboardShell>
       <DashboardHeader
         title="Bitcoin"
-        icon={<Bitcoin className="h-5 w-5 text-orange-400" />}
+        icon={<Bitcoin className="h-5 w-5 text-red-500" />}
         action={
           <button
             onClick={() => void loadData({ quiet: true })}
@@ -502,7 +502,7 @@ export default function BitcoinPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="border border-zinc-800 bg-zinc-950 p-4">
             <div className="text-[10px] text-zinc-500 uppercase mb-1">Bitcoin</div>
-            <div className="text-lg font-bold text-orange-400">Mainnet</div>
+            <div className="text-lg font-bold text-red-500">Mainnet</div>
             <div className="text-[10px] text-zinc-600">{isPublicBitcoinMode ? 'Public explorer mode' : 'Watch-only wallets'}</div>
           </div>
           <div className="border border-zinc-800 bg-zinc-950 p-4">
@@ -517,7 +517,7 @@ export default function BitcoinPage() {
           </div>
           <div className="border border-zinc-800 bg-zinc-950 p-4">
             <div className="text-[10px] text-zinc-500 uppercase mb-1">Node</div>
-            <div className="text-lg font-bold text-orange-400">{liquidInfo?.mode === 'public' ? 'Explorer' : 'Elements'}</div>
+            <div className="text-lg font-bold text-red-500">{liquidInfo?.mode === 'public' ? 'Explorer' : 'Elements'}</div>
             <div className="text-[10px] text-zinc-600">
               {liquidInfo
                 ? `${liquidInfo.mode === 'public' ? 'Public API' : formatLiquidStorage(liquidInfo.sizeOnDisk, liquidInfo.pruned)}, ${liquidStatusPill.label.toLowerCase()}`
@@ -564,7 +564,7 @@ export default function BitcoinPage() {
               </div>
 
               <div className="border border-zinc-800 bg-black/40 p-4">
-                <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-3 font-bold">Mainnet Credentials</div>
+                <div className="text-[10px] uppercase tracking-widest text-red-500 mb-3 font-bold">Mainnet Credentials</div>
                 <div className="space-y-4">
                   <div>
                     <label className="text-[10px] text-zinc-600 uppercase tracking-widest block mb-1">
@@ -575,7 +575,7 @@ export default function BitcoinPage() {
                       onChange={e => setGlCert(e.target.value)}
                       placeholder="-----BEGIN CERTIFICATE----- ..."
                       rows={3}
-                      className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-[10px] text-white font-mono focus:outline-none focus:border-orange-500/50 resize-none"
+                      className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-[10px] text-white font-mono focus:outline-none focus:border-red-500/50 resize-none"
                     />
                   </div>
                   <div>
@@ -587,7 +587,7 @@ export default function BitcoinPage() {
                       onChange={e => setGlKey(e.target.value)}
                       placeholder="-----BEGIN RSA PRIVATE KEY----- ..."
                       rows={3}
-                      className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-[10px] text-white font-mono focus:outline-none focus:border-orange-500/50 resize-none"
+                      className="w-full bg-zinc-900 border border-zinc-800 px-3 py-2 text-[10px] text-white font-mono focus:outline-none focus:border-red-500/50 resize-none"
                     />
                   </div>
                   <button
@@ -656,14 +656,14 @@ export default function BitcoinPage() {
                   <button
                     onClick={() => void submitGreenlightRequest('paid_mainnet')}
                     disabled={greenlightSubmitting !== ''}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:bg-orange-500/20 disabled:opacity-40 transition-colors"
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 border border-red-500/30 bg-red-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-500/20 disabled:opacity-40 transition-colors"
                   >
                     {greenlightSubmitting === 'paid_mainnet' ? 'Submitting...' : 'Request paid mainnet setup'}
                   </button>
                 ) : (
                   <a
                     href="/billing"
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 border border-orange-500/30 bg-orange-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:bg-orange-500/20 transition-colors"
+                    className="mt-4 w-full inline-flex items-center justify-center gap-2 border border-red-500/30 bg-red-500/10 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:bg-red-500/20 transition-colors"
                   >
                     Upgrade to unlock paid setup
                   </a>
@@ -673,10 +673,10 @@ export default function BitcoinPage() {
               <div className="border border-zinc-800 bg-black/40 p-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 font-bold">Official docs</div>
                 <div className="flex flex-wrap gap-3 text-[10px] uppercase tracking-widest">
-                  <a href={greenlight?.docs.overview || 'https://blockstream.github.io/greenlight/getting-started/'} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-white">Overview →</a>
-                  <a href={greenlight?.docs.certificates || 'https://blockstream.github.io/greenlight/getting-started/certs/'} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-white">Certificates →</a>
-                  <a href={greenlight?.docs.registerNode || 'https://blockstream.github.io/greenlight/getting-started/register/'} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-white">Register node →</a>
-                  <a href={greenlight?.docs.github || 'https://github.com/Blockstream/greenlight'} target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-white">GitHub →</a>
+                  <a href={greenlight?.docs.overview || 'https://blockstream.github.io/greenlight/getting-started/'} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-white">Overview →</a>
+                  <a href={greenlight?.docs.certificates || 'https://blockstream.github.io/greenlight/getting-started/certs/'} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-white">Certificates →</a>
+                  <a href={greenlight?.docs.registerNode || 'https://blockstream.github.io/greenlight/getting-started/register/'} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-white">Register node →</a>
+                  <a href={greenlight?.docs.github || 'https://github.com/Blockstream/greenlight'} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-white">GitHub →</a>
                 </div>
               </div>
             </div>
@@ -761,7 +761,7 @@ export default function BitcoinPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full inline-flex items-center justify-center gap-2 bg-orange-500 text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-orange-400 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 bg-red-500 text-black py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-red-400 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors"
               >
                 <Plus className="h-4 w-4" />
                 {submitting ? 'Registering...' : 'Register Watch-Only Wallet'}
@@ -973,7 +973,7 @@ export default function BitcoinPage() {
               <div className="border border-zinc-800 bg-black/40 p-4">
                 <div className="text-[10px] text-zinc-500 uppercase mb-1">Pruned</div>
                 <div className="text-sm font-bold font-mono">
-                  <span className={liquidInfo?.pruned ? 'text-orange-400' : 'text-zinc-500'}>
+                  <span className={liquidInfo?.pruned ? 'text-red-500' : 'text-zinc-500'}>
                     {liquidInfo ? formatLiquidStorage(liquidInfo.sizeOnDisk, liquidInfo.pruned) : '—'}
                   </span>
                 </div>
@@ -1052,7 +1052,7 @@ export default function BitcoinPage() {
                 href="https://blockstream.com/liquid/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] text-orange-400 hover:text-orange-400"
+                className="text-[10px] text-red-500 hover:text-red-500"
               >
                 About Liquid Network →
               </a>
@@ -1090,7 +1090,7 @@ export default function BitcoinPage() {
               href="https://blockstream.com/jade/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-orange-400 hover:text-orange-400"
+              className="text-[10px] text-red-500 hover:text-red-500"
             >
               Get Jade →
             </a>
@@ -1106,7 +1106,7 @@ export default function BitcoinPage() {
                 <div key={step} className="flex items-center gap-2">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border ${
                     isPast ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' :
-                    isActive ? 'bg-orange-500/20 border-orange-500/50 text-orange-400' :
+                    isActive ? 'bg-red-500/20 border-red-500/50 text-red-500' :
                     'border-zinc-700 text-zinc-600'
                   }`}>
                     {isPast ? <CheckCircle2 className="w-3 h-3" /> : i + 1}
@@ -1165,7 +1165,7 @@ export default function BitcoinPage() {
                   setAirGapStep('create')
                 }}
                 disabled={!jadeWalletId || !jadeRecipient || !jadeAmount}
-                className="flex items-center gap-2 px-5 py-2.5 bg-orange-600/10 border border-orange-500/30 text-orange-400 text-xs font-bold hover:bg-orange-600/20 disabled:opacity-30 transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 border border-red-500/30 text-red-500 text-xs font-bold hover:bg-red-600/20 disabled:opacity-30 transition-colors"
               >
                 <QrCode className="w-3 h-3" />
                 Generate Unsigned TX → QR Code
@@ -1210,7 +1210,7 @@ export default function BitcoinPage() {
                     </div>
                     <button
                       onClick={() => navigator.clipboard.writeText(unsignedPsbt)}
-                      className="mt-2 text-[10px] text-orange-400 hover:text-orange-400"
+                      className="mt-2 text-[10px] text-red-500 hover:text-red-500"
                     >
                       Copy full PSBT
                     </button>
@@ -1309,7 +1309,7 @@ export default function BitcoinPage() {
             <div className="flex flex-wrap gap-4">
               <a
                 href="/docs/liquid-lwk-railway"
-                className="inline-flex items-center gap-2 text-[10px] text-orange-400 hover:text-orange-400"
+                className="inline-flex items-center gap-2 text-[10px] text-red-500 hover:text-red-500"
               >
                 Deploy LWK on Railway →
               </a>

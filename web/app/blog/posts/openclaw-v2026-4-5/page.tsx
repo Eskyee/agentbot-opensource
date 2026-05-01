@@ -27,7 +27,7 @@ export default function OpenClawV202645() {
               OpenClaw v2026.4.5
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Release</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Release</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Video</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Music</span>

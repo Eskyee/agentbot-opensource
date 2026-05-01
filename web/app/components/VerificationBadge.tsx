@@ -200,7 +200,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
                   onClick={() => setSelectedType(method.id as VerificationType)}
                   className={`p-3 border text-left transition-all ${
                     selectedType === method.id
-                      ? 'border-orange-500 bg-orange-500/10'
+                      ? 'border-red-500 bg-red-500/10'
                       : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'
                   }`}
                 >
@@ -219,7 +219,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
           <button
             onClick={handleVerify}
             disabled={verifying}
-            className="w-full py-2 px-4 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-800 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest transition-colors"
+            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed text-white font-bold text-xs uppercase tracking-widest transition-colors"
           >
             {verifying ? 'Verifying...' : 'Connect & Verify'}
           </button>

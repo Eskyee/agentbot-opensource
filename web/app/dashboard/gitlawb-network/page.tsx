@@ -631,7 +631,7 @@ export default function GitlawbNetworkPage() {
             href="https://gitlawb.com/node/peers"
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-orange-600 transition-colors"
+            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-red-600 transition-colors"
           >
             <Users className="h-6 w-6 text-red-500 mb-2" />
             <h4 className="text-white font-bold text-sm">Peer Connectivity</h4>
@@ -651,7 +651,7 @@ export default function GitlawbNetworkPage() {
             href="https://gitlawb.com/node/events"
             target="_blank"
             rel="noopener noreferrer"
-            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-orange-600 transition-colors"
+            className="border border-zinc-800 bg-zinc-900/50 p-4 hover:border-red-600 transition-colors"
           >
             <Signal className="h-6 w-6 text-red-500 mb-2" />
             <h4 className="text-white font-bold text-sm">Ref Events</h4>

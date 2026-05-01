@@ -388,7 +388,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <span className="text-[8px] uppercase tracking-widest text-red-500 border border-orange-500/30 px-1.5 py-0.5">Popular</span>
+                    <span className="text-[8px] uppercase tracking-widest text-red-500 border border-red-500/30 px-1.5 py-0.5">Popular</span>
                   )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">
@@ -441,7 +441,7 @@ export default async function Home() {
       <section className="border-t border-red-900/40 bg-gradient-to-b from-red-950/20 to-black">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-orange-500/40 text-red-500 text-[10px] uppercase tracking-widest">
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/40 text-red-500 text-[10px] uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
               baseFM × Agentbot
             </span>
@@ -471,7 +471,7 @@ export default async function Home() {
                 </a>
                 <Link
                   href="/onboard?plan=collective"
-                  className="inline-flex items-center justify-center border border-orange-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-500 hover:border-orange-400 hover:text-orange-300 transition-colors"
+                  className="inline-flex items-center justify-center border border-red-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-500 hover:border-red-400 hover:text-red-400 transition-colors"
                 >
                   Get Access →
                 </Link>
@@ -501,7 +501,7 @@ export default async function Home() {
                 },
               ].map((step) => (
                 <div key={step.num} className="flex gap-4 border border-zinc-800 hover:border-red-900/60 transition-colors p-4 sm:p-5 bg-black">
-                  <div className="text-[10px] font-bold text-orange-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
+                  <div className="text-[10px] font-bold text-red-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
                   <div>
                     <div className="text-xs font-bold text-white uppercase tracking-wider mb-1">{step.title}</div>
                     <p className="text-zinc-500 text-xs leading-relaxed">{step.body}</p>

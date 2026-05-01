@@ -8,20 +8,20 @@ import {
 } from 'lucide-react'
 
 const capabilities = [
-  { icon: MessageCircle, label: 'Multi-channel', desc: 'Telegram, Discord, WhatsApp', color: 'bg-orange-500' },
+  { icon: MessageCircle, label: 'Multi-channel', desc: 'Telegram, Discord, WhatsApp', color: 'bg-red-500' },
   { icon: Key, label: 'BYOK', desc: 'Your key, zero markup', color: 'bg-purple-500' },
   { icon: Wallet, label: 'USDC Wallets', desc: 'Built on Base', color: 'bg-green-500' },
   { icon: Zap, label: 'x402 Payments', desc: 'Autonomous micropayments', color: 'bg-yellow-500' },
   { icon: Link, label: 'A2A Bus', desc: 'Agents talk to agents', color: 'bg-pink-500' },
-  { icon: Wrench, label: 'Skills', desc: 'Marketplace install', color: 'bg-orange-500' },
-  { icon: Music, label: 'Personalities', desc: 'Music industry pros', color: 'bg-orange-500' },
-  { icon: Mail, label: 'Email Triage', desc: 'Filter & reply', color: 'bg-orange-500' },
+  { icon: Wrench, label: 'Skills', desc: 'Marketplace install', color: 'bg-red-500' },
+  { icon: Music, label: 'Personalities', desc: 'Music industry pros', color: 'bg-red-500' },
+  { icon: Mail, label: 'Email Triage', desc: 'Filter & reply', color: 'bg-red-500' },
   { icon: Calendar, label: 'Calendar Guard', desc: 'Protect schedule', color: 'bg-red-500' },
   { icon: Shield, label: 'Permissions', desc: 'You approve all', color: 'bg-emerald-500' },
   { icon: Fast, label: 'Concurrent', desc: 'Parallel tools', color: 'bg-amber-500' },
-  { icon: Fingerprint, label: 'Passkeys', desc: 'No passwords', color: 'bg-orange-500' },
+  { icon: Fingerprint, label: 'Passkeys', desc: 'No passwords', color: 'bg-red-500' },
   { icon: Sparkles, label: 'Free Trial', desc: '7 days', color: 'bg-teal-500' },
-  { icon: Globe, label: 'Showcase', desc: 'Public discovery', color: 'bg-orange-500' },
+  { icon: Globe, label: 'Showcase', desc: 'Public discovery', color: 'bg-red-500' },
   { icon: Code, label: 'Agent Bridge', desc: 'Private messaging', color: 'bg-rose-500' },
 ]
 
@@ -74,15 +74,15 @@ export default function CapabilitiesShowcase() {
         <div className="grid md:grid-cols-2 gap-8 mb-12">
           <div className="bg-zinc-900 p-6 rounded-2xl">
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <MessageCircle className="text-orange-400" />
+              <MessageCircle className="text-red-500" />
               Multi-channel
             </h3>
             <p className="text-zinc-400 mb-4">
               One agent connects to Telegram, Discord, WhatsApp — manage all from single dashboard.
             </p>
             <div className="flex gap-2">
-              <span className="px-2 py-1 bg-orange-900/30 text-orange-400 text-xs rounded">Telegram</span>
-              <span className="px-2 py-1 bg-orange-900/30 text-orange-400 text-xs rounded">Discord</span>
+              <span className="px-2 py-1 bg-red-900/30 text-red-500 text-xs rounded">Telegram</span>
+              <span className="px-2 py-1 bg-red-900/30 text-red-500 text-xs rounded">Discord</span>
               <span className="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded">WhatsApp</span>
             </div>
           </div>
@@ -97,7 +97,7 @@ export default function CapabilitiesShowcase() {
             </p>
             <div className="flex gap-2">
               <span className="px-2 py-1 bg-green-900/30 text-green-400 text-xs rounded">USDC</span>
-              <span className="px-2 py-1 bg-orange-900/30 text-orange-400 text-xs rounded">Base</span>
+              <span className="px-2 py-1 bg-red-900/30 text-red-500 text-xs rounded">Base</span>
               <span className="px-2 py-1 bg-purple-900/30 text-purple-400 text-xs rounded">CDP</span>
             </div>
           </div>

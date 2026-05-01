@@ -18,7 +18,7 @@ interface Buddy {
 }
 
 const BUDDY_TYPES: Record<BuddyType, { emoji: string; name: string; rarity: string; color: string; border: string; desc: string }> = {
-  crab: { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'from-orange-500 to-orange-500', border: 'border-orange-500/30', desc: 'Your basic AI companion. Reliable and eager to learn.' },
+  crab: { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'from-orange-500 to-orange-500', border: 'border-red-500/30', desc: 'Your basic AI companion. Reliable and eager to learn.' },
   robot: { emoji: '⚡', name: 'Spark Agent', rarity: 'Uncommon', color: 'from-yellow-500 to-orange-500', border: 'border-yellow-500/30', desc: 'Charged with energy. Gains XP faster from play.' },
   ghost: { emoji: '👻', name: 'Ghost Agent', rarity: 'Rare', color: 'from-purple-500 to-pink-500', border: 'border-purple-500/30', desc: 'Mysterious and elusive. Hard to find in eggs.' },
   dragon: { emoji: '🐉', name: 'Dragon Agent', rarity: 'Epic', color: 'from-green-500 to-emerald-500', border: 'border-green-500/30', desc: 'Powerful and wise. A prized companion.' },
@@ -668,7 +668,7 @@ export default function BuddiesPage() {
                     <span className="text-white font-bold">{selectedBuddy.energy}/100</span>
                   </div>
                   <div className="w-full bg-zinc-700 rounded-full h-2.5">
-                    <div className={`h-2.5 rounded-full transition-all duration-500 ${selectedBuddy.energy > 60 ? 'bg-yellow-400' : selectedBuddy.energy > 30 ? 'bg-orange-400' : 'bg-red-400'}`}
+                    <div className={`h-2.5 rounded-full transition-all duration-500 ${selectedBuddy.energy > 60 ? 'bg-yellow-400' : selectedBuddy.energy > 30 ? 'bg-red-400' : 'bg-red-400'}`}
                       style={{ width: `${selectedBuddy.energy}%` }} />
                   </div>
                 </div>
@@ -678,7 +678,7 @@ export default function BuddiesPage() {
                     <span className="text-white font-bold">{selectedBuddy.happiness}/100</span>
                   </div>
                   <div className="w-full bg-zinc-700 rounded-full h-2.5">
-                    <div className={`h-2.5 rounded-full transition-all duration-500 ${selectedBuddy.happiness > 60 ? 'bg-pink-400' : selectedBuddy.happiness > 30 ? 'bg-orange-400' : 'bg-red-400'}`}
+                    <div className={`h-2.5 rounded-full transition-all duration-500 ${selectedBuddy.happiness > 60 ? 'bg-pink-400' : selectedBuddy.happiness > 30 ? 'bg-red-400' : 'bg-red-400'}`}
                       style={{ width: `${selectedBuddy.happiness}%` }} />
                   </div>
                 </div>
@@ -697,13 +697,13 @@ export default function BuddiesPage() {
               {/* Actions */}
               <div className="grid gap-3 sm:grid-cols-3">
                 <button onClick={() => doAction(selectedBuddy, 'feed')} disabled={actionCooldown}
-                  className="bg-orange-500/10 border border-orange-500/30 text-orange-400 py-3 rounded-xl font-bold hover:bg-orange-500/20 transition-all active:scale-95 disabled:opacity-50">
+                  className="bg-red-500/10 border border-red-500/30 text-red-500 py-3 rounded-xl font-bold hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-50">
                   <div className="text-lg mb-0.5">🍕</div>
                   <div className="text-sm">Feed</div>
                   <div className="text-[10px] opacity-60">+20 energy, +10 XP</div>
                 </button>
                 <button onClick={() => doAction(selectedBuddy, 'play')} disabled={actionCooldown}
-                  className="bg-orange-500/10 border border-orange-500/30 text-orange-400 py-3 rounded-xl font-bold hover:bg-orange-500/20 transition-all active:scale-95 disabled:opacity-50">
+                  className="bg-red-500/10 border border-red-500/30 text-red-500 py-3 rounded-xl font-bold hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-50">
                   <div className="text-lg mb-0.5">🎮</div>
                   <div className="text-sm">Play</div>
                   <div className="text-[10px] opacity-60">+15 happy, +25 XP</div>

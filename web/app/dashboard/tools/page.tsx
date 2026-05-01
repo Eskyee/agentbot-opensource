@@ -25,10 +25,10 @@ export default function PaidToolsPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/openapi.json" className="text-xs uppercase tracking-widest text-orange-400 hover:text-white">
+              <Link href="/openapi.json" className="text-xs uppercase tracking-widest text-red-500 hover:text-white">
                 OpenAPI →
               </Link>
-              <Link href="/dashboard/x402" className="text-xs uppercase tracking-widest text-orange-400 hover:text-white">
+              <Link href="/dashboard/x402" className="text-xs uppercase tracking-widest text-red-500 hover:text-white">
                 Seller UX →
               </Link>
             </div>
@@ -65,7 +65,7 @@ export default function PaidToolsPage() {
                     <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Workflow chains</div>
                     <div className="flex flex-wrap gap-2">
                       {tool.workflowChain.map((chain) => (
-                        <span key={chain} className="border border-orange-500/20 bg-orange-500/5 px-2 py-1 text-[10px] uppercase tracking-widest text-orange-400">
+                        <span key={chain} className="border border-red-500/20 bg-red-500/5 px-2 py-1 text-[10px] uppercase tracking-widest text-red-500">
                           {chain}
                         </span>
                       ))}

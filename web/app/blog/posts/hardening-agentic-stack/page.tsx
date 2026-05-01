@@ -27,7 +27,7 @@ export default function HardeningAgenticStackPost() {
               The Hardening Agentic Stack
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">Industry</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Industry</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Infrastructure</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Analysis</span>
             </div>
@@ -134,7 +134,7 @@ export default function HardeningAgenticStackPost() {
               <p className="text-[10px] text-zinc-400">Docker isolation per user. Firecracker microVM sandbox. Per-route auth. Payment verification via x402.</p>
             </div>
             <div className="border border-zinc-800 bg-zinc-950 p-4">
-              <div className="text-xs font-bold text-orange-400 mb-1">Tool Layer</div>
+              <div className="text-xs font-bold text-red-500 mb-1">Tool Layer</div>
               <p className="text-[10px] text-zinc-400">MCP-compatible skill marketplace. Browser automation (Playwright). Sandbox execution. 500+ models via ClawRouter.</p>
             </div>
             <div className="border border-zinc-800 bg-zinc-950 p-4">
@@ -146,7 +146,7 @@ export default function HardeningAgenticStackPost() {
               <p className="text-[10px] text-zinc-400">x402 micropayments on Base. Agent-to-agent payments. USDC settlement. Token economy ($AGENTBOT).</p>
             </div>
             <div className="border border-zinc-800 bg-zinc-950 p-4">
-              <div className="text-xs font-bold text-orange-400 mb-1">Orchestration Layer</div>
+              <div className="text-xs font-bold text-red-500 mb-1">Orchestration Layer</div>
               <p className="text-[10px] text-zinc-400">Workflow SDK for durable execution. Factory Droids for agent provisioning. A2A bus for agent communication.</p>
             </div>
           </div>

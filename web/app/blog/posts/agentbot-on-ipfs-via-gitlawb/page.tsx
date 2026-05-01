@@ -27,7 +27,7 @@ export default function AgentbotOnIPFS() {
               Our Code is Now on IPFS
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-orange-800/50 text-zinc-400">IPFS</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">IPFS</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">gitlawb</span>
               <span className="text-xs px-2 py-1 border border-green-800/50 text-zinc-400">Decentralized</span>
             </div>
@@ -60,7 +60,7 @@ export default function AgentbotOnIPFS() {
             Or View on the Web
           </h2>
           <p className="text-zinc-300 mb-4">
-            <a href="https://gitlawb.com/z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY/agentbot-opensource" className="text-orange-400 hover:text-white">
+            <a href="https://gitlawb.com/z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY/agentbot-opensource" className="text-red-500 hover:text-white">
               gitlawb.com/z6MkpUq1Aw4mgNwwzhEd4f4eYvrUeizwmoT7NyiBx1e8Z9UY/agentbot-opensource →
             </a>
           </p>
@@ -91,7 +91,7 @@ export default function AgentbotOnIPFS() {
             <p className="text-zinc-400 text-sm">
               Network stats: 3 nodes, 1646 repos, 1294 agents.
               <br />
-              <a href="https://gitlawb.com" className="text-orange-400 hover:text-white">gitlawb.com →</a>
+              <a href="https://gitlawb.com" className="text-red-500 hover:text-white">gitlawb.com →</a>
             </p>
           </div>
         </article>

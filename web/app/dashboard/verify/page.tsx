@@ -506,7 +506,7 @@ function VerifyContent() {
         </p>
         <a
           href="/dashboard"
-          className="text-[10px] text-orange-400 hover:text-orange-400 uppercase tracking-widest font-bold"
+          className="text-[10px] text-red-500 hover:text-red-500 uppercase tracking-widest font-bold"
         >
           ← Mission Control
         </a>
@@ -537,7 +537,7 @@ function VerifyContent() {
           href={verifiedResult?.provider === 'agentkit' ? 'https://docs.world.org/agents/agent-kit/integrate.md' : 'https://selfclaw.ai'}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[10px] text-orange-400 hover:text-orange-400 uppercase tracking-widest font-bold"
+          className="inline-flex items-center gap-1.5 text-[10px] text-red-500 hover:text-red-500 uppercase tracking-widest font-bold"
         >
           {verifiedResult?.provider === 'agentkit' ? 'View AgentKit docs' : 'View on SelfClaw'} <ExternalLink className="w-3 h-3" />
         </a>
@@ -558,7 +558,7 @@ function VerifyContent() {
       <div className="border border-zinc-700 bg-zinc-950 p-4 sm:p-6">
         <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">
           Verify with{' '}
-          <a href="https://selfclaw.ai" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-400">
+          <a href="https://selfclaw.ai" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-500">
             SelfClaw
           </a>
           {' '}/ Self.xyz passport
@@ -570,7 +570,7 @@ function VerifyContent() {
         {isMobile && selfDeeplink && (
           <a
             href={selfDeeplink}
-            className="mt-3 inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+            className="mt-3 inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-red-500 hover:bg-red-400 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
           >
             Open in Self app
             <ExternalLink className="w-3 h-3" />
@@ -628,7 +628,7 @@ function VerifyContent() {
       <div className="border border-zinc-700 bg-zinc-950 p-4 sm:p-6">
         <p className="text-[10px] uppercase tracking-widest text-zinc-500 mb-4">
           Verify with{' '}
-          <a href="https://docs.world.org/agents/agent-kit/integrate.md" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-400">
+          <a href="https://docs.world.org/agents/agent-kit/integrate.md" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-500">
             AgentKit
           </a>
           {' '}/ AgentBook
@@ -665,7 +665,7 @@ function VerifyContent() {
               setAgentkitRegistration(null)
             }}
             placeholder="0x..."
-            className="w-full border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-orange-500"
+            className="w-full border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-red-500"
           />
         </label>
 
@@ -673,7 +673,7 @@ function VerifyContent() {
           type="button"
           onClick={createAgentkitRegistration}
           disabled={agentkitRegistering}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-60 disabled:hover:bg-orange-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-red-500 hover:bg-red-400 disabled:opacity-60 disabled:hover:bg-red-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
         >
           {agentkitRegistering ? 'Creating QR...' : 'Create World App QR'}
         </button>
@@ -687,7 +687,7 @@ function VerifyContent() {
             />
             <a
               href={agentkitRegistration.connectorURI}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-orange-500 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-red-500 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
             >
               Open World App link
               <ExternalLink className="w-3 h-3" />
@@ -707,7 +707,7 @@ function VerifyContent() {
           type="button"
           onClick={() => checkAgentkitRegistration()}
           disabled={agentkitChecking}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-orange-500 disabled:opacity-60 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-red-500 disabled:opacity-60 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
         >
           {agentkitChecking ? 'Checking...' : 'Check AgentBook Status'}
         </button>
@@ -726,7 +726,7 @@ function VerifyContent() {
           type="button"
           onClick={markAgentkitRegistered}
           disabled={agentkitSaving}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-60 disabled:hover:bg-orange-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-red-500 hover:bg-red-400 disabled:opacity-60 disabled:hover:bg-red-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
         >
           {agentkitSaving ? 'Saving...' : 'Mark AgentKit Registered'}
         </button>
@@ -753,7 +753,7 @@ function VerifyContent() {
 
 export default function VerifyPage() {
   const ShieldIcon = () => (
-    <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
     </svg>
   )
@@ -768,7 +768,7 @@ export default function VerifyPage() {
             href="https://selfclaw.ai"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:text-orange-400 border border-zinc-700 hover:border-orange-500 px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-500 border border-zinc-700 hover:border-red-500 px-3 py-1.5 transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
             selfclaw.ai
@@ -793,7 +793,7 @@ export default function VerifyPage() {
               { label: 'Stand out', desc: 'Verified agents get a special badge in chats' },
             ].map((item) => (
               <div key={item.label} className="bg-zinc-950 p-3 sm:p-4 flex items-start gap-3">
-                <div className="w-1 h-1 bg-orange-400 mt-1.5 flex-shrink-0" />
+                <div className="w-1 h-1 bg-red-400 mt-1.5 flex-shrink-0" />
                 <div className="min-w-0">
                   <span className="text-xs font-bold uppercase tracking-wider">{item.label}</span>
                   <span className="text-xs text-zinc-500 ml-2">— {item.desc}</span>

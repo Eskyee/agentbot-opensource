@@ -153,7 +153,7 @@ export default function MusicWizardPage() {
       <div className="min-h-screen bg-black text-white p-8 flex items-center justify-center">
         <div className="max-w-xl w-full">
           <Link href="/login">
-            <button className="w-full bg-orange-600 hover:bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold">
+            <button className="w-full bg-red-600 hover:bg-red-500 text-white py-3 px-6 rounded-lg font-semibold">
               Sign In to Start →
             </button>
           </Link>
@@ -210,7 +210,7 @@ export default function MusicWizardPage() {
                   }}
                   className={`p-4 rounded-xl border-2 transition-all ${
                     wizardData.selectedRole === role.id
-                      ? 'border-orange-500 bg-orange-500/10 border-orange-500/50'
+                      ? 'border-red-500 bg-red-500/10 border-red-500/50'
                       : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                   }`}
                 >
@@ -259,7 +259,7 @@ export default function MusicWizardPage() {
                   value={wizardData.artistName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, artistName: e.target.value }))}
                   placeholder="e.g. Bassline Beats"
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500"
                 />
               </div>
 
@@ -272,7 +272,7 @@ export default function MusicWizardPage() {
                   value={wizardData.agentName}
                   onChange={(e) => setWizardData(prev => ({ ...prev, agentName: e.target.value }))}
                   placeholder={`@${selectedRole?.name.toLowerCase().replace(/\s+/g, '')}`}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500"
                 />
               </div>
 
@@ -284,7 +284,7 @@ export default function MusicWizardPage() {
                   multiple
                   value={wizardData.genres}
                   onChange={(e) => setWizardData(prev => ({ ...prev, genres: Array.from(e.target.selectedOptions).map(o => o.value) }))}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500"
                 >
                   {genres.map((genre) => (
                     <option key={genre} value={genre}>
@@ -302,7 +302,7 @@ export default function MusicWizardPage() {
                   value={wizardData.musicStyle}
                   onChange={(e) => setWizardData(prev => ({ ...prev, musicStyle: e.target.value }))}
                   placeholder="e.g., Deep House with melodic basslines and rhythmic progressive elements..."
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 min-h-[100px]"
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-red-500 min-h-[100px]"
                 />
               </div>
             </div>
@@ -331,7 +331,7 @@ export default function MusicWizardPage() {
                   }}
                   className={`w-full p-3 rounded-lg border mb-2 transition-all ${
                     wizardData.goals.includes(goal)
-                      ? 'border-orange-500 bg-orange-500/10 border-orange-500/50'
+                      ? 'border-red-500 bg-red-500/10 border-red-500/50'
                       : 'border-zinc-700 bg-zinc-800 hover:border-zinc-600'
                   }`}
                 >
@@ -505,7 +505,7 @@ export default function MusicWizardPage() {
                 {wizardData.channels.discord && (
                   <div>
                     <div className="text-sm text-zinc-500 mb-1">Discord</div>
-                    <div className="text-orange-400">✓ Enabled</div>
+                    <div className="text-red-500">✓ Enabled</div>
                   </div>
                 )}
 
@@ -585,7 +585,7 @@ export default function MusicWizardPage() {
 
         {/* Back to regular signup option */}
         <div className="text-left mt-8">
-          <Link href="/signup" className="text-sm text-orange-400 hover:text-orange-400">
+          <Link href="/signup" className="text-sm text-red-500 hover:text-red-500">
             ← Skip to standard signup process
           </Link>
         </div>

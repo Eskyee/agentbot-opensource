@@ -175,7 +175,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
     switch (type) {
       case 'warning': return 'bg-yellow-500/10 border-yellow-500/30'
       case 'error': return 'bg-red-500/10 border-red-500/30'
-      case 'info': return 'bg-orange-500/10 border-orange-500/30'
+      case 'info': return 'bg-red-500/10 border-red-500/30'
     }
   }
 

@@ -177,22 +177,22 @@ export default function BlogPost() {
             <p className="mb-1">Primary sources</p>
             <ul className="space-y-1">
               <li>
-                <a href="https://www.anthropic.com/research/small-samples-poison" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">
+                <a href="https://www.anthropic.com/research/small-samples-poison" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
                   Anthropic — Small Samples Poison
                 </a>
               </li>
               <li>
-                <a href="https://arxiv.org/abs/2510.07192" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">
+                <a href="https://arxiv.org/abs/2510.07192" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
                   arXiv 2510.07192 — Full Paper
                 </a>
               </li>
               <li>
-                <a href="https://www.aisi.gov.uk/blog/examining-backdoor-data-poisoning-at-scale" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">
+                <a href="https://www.aisi.gov.uk/blog/examining-backdoor-data-poisoning-at-scale" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
                   UK AI Security Institute
                 </a>
               </li>
               <li>
-                <a href="https://www.turing.ac.uk/blog/llms-may-be-more-vulnerable-data-poisoning-we-thought" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:underline">
+                <a href="https://www.turing.ac.uk/blog/llms-may-be-more-vulnerable-data-poisoning-we-thought" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">
                   Alan Turing Institute
                 </a>
               </li>

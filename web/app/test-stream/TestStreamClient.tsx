@@ -76,7 +76,7 @@ export default function TestStreamClient() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-red-500/30 font-mono p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">🎛️ baseFM Stream Test</h1>
 
@@ -110,7 +110,7 @@ export default function TestStreamClient() {
               <button
                 onClick={createStream}
                 disabled={loading}
-                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
               >
                 {loading ? 'Creating...' : 'Create Stream'}
               </button>
@@ -123,7 +123,7 @@ export default function TestStreamClient() {
               <button
                 onClick={checkLive}
                 disabled={loading}
-                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
               >
                 {loading ? 'Loading...' : 'Get Live DJs'}
               </button>

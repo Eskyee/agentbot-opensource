@@ -116,13 +116,13 @@ export default function AgentbotLaunchPost() {
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Get Started</h2>
  <p className="text-zinc-300 mb-4">
- → <Link href="/onboard" className="text-orange-400 hover:text-orange-400">agentbot.sh</Link>
+ → <Link href="/onboard" className="text-red-500 hover:text-red-500">agentbot.sh</Link>
  </p>
  <p className="text-zinc-300 mb-4">
- → <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-400 hover:text-orange-400">GitHub (MIT)</a>
+ → <a href="https://github.com/Eskyee/agentbot-opensource" className="text-red-500 hover:text-red-500">GitHub (MIT)</a>
  </p>
  <p className="text-zinc-300 mb-4">
- → <a href="https://raveculture.mintlify.app" className="text-orange-400 hover:text-orange-400">Docs</a>
+ → <a href="https://raveculture.mintlify.app" className="text-red-500 hover:text-red-500">Docs</a>
  </p>
 
  <p className="text-xl text-zinc-300 mt-12 mb-4">
