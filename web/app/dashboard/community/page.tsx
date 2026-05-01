@@ -76,7 +76,7 @@ export default async function CommunityDashboardPage() {
         </div>
 
         <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
-          <div className="bg-[radial-gradient(circle_at_top_left,_rgba(245,158,11,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(24,24,27,0.92),_rgba(9,9,11,0.96))] -m-6 mb-4 p-6">
+          <div className="bg-[radial-gradient(circle_at_top_left,_rgba(232,93,38,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(24,24,27,0.92),_rgba(9,9,11,0.96))] -m-6 mb-4 p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div className="max-w-2xl">
               <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Community Status</div>
