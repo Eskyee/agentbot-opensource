@@ -51,6 +51,18 @@ async function main() {
   // 1. Ensure all required directories exist on the volume
   await ensureDataDir();
 
+  // 1b. If no config file on disk but OPENCLAW_CONFIG env var is set, write it
+  // This handles ephemeral containers (no volume) where config is passed via env
+  if (!(await config.isAlreadyConfigured()) && process.env.OPENCLAW_CONFIG) {
+    try {
+      const envConfig = JSON.parse(process.env.OPENCLAW_CONFIG);
+      await config.writeConfig(envConfig);
+      log.info('Wrote OPENCLAW_CONFIG env var to disk');
+    } catch (e) {
+      log.warn('Failed to parse OPENCLAW_CONFIG env var: ' + e.message);
+    }
+  }
+
   const app = express();
   const httpServer = createServer(app);
 
