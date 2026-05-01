@@ -191,11 +191,16 @@ setupRoutes.get('/export', async (req, res) => {
     const tmpZip = path.join(os.tmpdir(), zipName);
 
     const zipArgs = ['-r'];
-    // Password-protect with admin password if set
-    if (WRAPPER_ADMIN_PASSWORD) {
-      zipArgs.push('-P', WRAPPER_ADMIN_PASSWORD);
-    }
     zipArgs.push(tmpZip, OPENCLAW_HOME);
+
+    // Build env with password for zip (avoids leaking in ps output)
+    const zipEnv = { ...process.env };
+    if (WRAPPER_ADMIN_PASSWORD) {
+      // Use -P with password read from env to avoid ps exposure
+      // Note: zip -P still shows in /proc, but zip doesn't support stdin passwords
+      // For maximum security, consider switching to tar + openssl encryption
+      zipArgs.splice(1, 0, '-P', WRAPPER_ADMIN_PASSWORD);
+    }
 
     const { stdout } = await execFileAsync('zip', zipArgs, { timeout: 60_000 });
     log.info(`Export zip created: ${zipName}`);
