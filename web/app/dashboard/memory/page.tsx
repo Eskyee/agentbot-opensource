@@ -34,7 +34,7 @@ const KIND_META: Record<MemoryKind, {
   color: string
   status: 'active' | 'idle' | 'error' | 'offline'
 }> = {
-  fact: { label: 'Fact', icon: FileText, color: 'text-red-500', status: 'active' },
+  fact: { label: 'Fact', icon: FileText, color: 'text-orange-400', status: 'active' },
   decision: { label: 'Decision', icon: Lightbulb, color: 'text-yellow-400', status: 'idle' },
   note: { label: 'Note', icon: FileText, color: 'text-zinc-400', status: 'offline' },
   alert: { label: 'Alert', icon: AlertCircle, color: 'text-red-400', status: 'error' },
@@ -201,7 +201,7 @@ export default function MemoryPage() {
     <DashboardShell>
       <DashboardHeader
         title="Memory Log"
-        icon={<Brain className="h-5 w-5 text-red-500" />}
+        icon={<Brain className="h-5 w-5 text-orange-400" />}
         count={entries.length}
         action={
           <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ export default function MemoryPage() {
         {/* Loading */}
         {loading && entries.length === 0 ? (
           <div className="flex flex-col py-20 gap-4 items-center">
-            <Brain className="h-6 w-6 text-red-500 animate-pulse" />
+            <Brain className="h-6 w-6 text-orange-400 animate-pulse" />
             <p className="text-zinc-600 text-xs uppercase tracking-widest">Loading memory…</p>
           </div>
         ) : (

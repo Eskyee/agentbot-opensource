@@ -145,7 +145,7 @@ export default function LearnPage() {
           <div className="border border-red-500/20 bg-red-500/5 p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h3 className="text-xl font-bold uppercase tracking-tight text-red-500 mb-2">Agentbot Coach</h3>
+                <h3 className="text-xl font-bold uppercase tracking-tight text-orange-400 mb-2">Agentbot Coach</h3>
                 <p className="text-sm text-zinc-400 max-w-lg">
                   Follow the interactive factory protocol. Step-by-step coaching modules to master agent deployment, verification, and Bitcoin integration.
                 </p>

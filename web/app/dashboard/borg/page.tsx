@@ -167,7 +167,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
 
 function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
   const F = parseFloat(fe.F);
-  const regimeColor = fe.regime === 'LEARN' ? 'text-red-500' : fe.regime === 'EXPLOIT' ? 'text-emerald-400' : 'text-amber-400';
+  const regimeColor = fe.regime === 'LEARN' ? 'text-orange-400' : fe.regime === 'EXPLOIT' ? 'text-emerald-400' : 'text-amber-400';
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center justify-between mb-3">
@@ -237,8 +237,8 @@ function BrainPanel({ brain, transformer, benchmark }: Pick<SoulStatus, 'brain' 
   return (
     <div className="border border-zinc-800 bg-zinc-950 p-4">
       <div className="flex items-center gap-2 mb-3">
-        <Brain className="w-3 h-3 text-red-500" />
-        <span className="text-[10px] font-mono text-red-500 uppercase tracking-widest">Cognitive Systems</span>
+        <Brain className="w-3 h-3 text-orange-400" />
+        <span className="text-[10px] font-mono text-orange-400 uppercase tracking-widest">Cognitive Systems</span>
       </div>
       <div className="grid grid-cols-3 gap-3 text-[10px] font-mono mb-4">
         <div>
@@ -444,7 +444,7 @@ export default function BorgDashboardPage() {
   const fitness = data?.fitness ?? EMPTY_FITNESS;
 
   const BorgIcon = () => (
-    <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
       <circle cx="12" cy="12" r="3" />
       <path strokeLinecap="square" d="M12 2v3M12 19v3M2 12h3M19 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" />
     </svg>

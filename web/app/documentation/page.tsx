@@ -217,7 +217,7 @@ export default function ViewDocsPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-sm uppercase tracking-tight">{feature.title}</h3>
                   {feature.badge && (
-                    <span className="text-[9px] uppercase tracking-widest text-red-500 border border-red-500/30 px-2 py-0.5">
+                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-red-500/30 px-2 py-0.5">
                       {feature.badge}
                     </span>
                   )}
@@ -308,10 +308,10 @@ export default function ViewDocsPage() {
             <a href="https://agentbot.sh/documentation" target="_blank" rel="noopener noreferrer" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-white hover:text-white hover:border-zinc-500">
               Dev Docs
             </a>
-            <Link href="/token" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-red-500 hover:text-white hover:border-zinc-500">
+            <Link href="/token" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-orange-400 hover:text-white hover:border-zinc-500">
               $AGENTBOT
             </Link>
-            <Link href="/basefm" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-red-500 hover:text-white hover:border-zinc-500">
+            <Link href="/basefm" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-orange-400 hover:text-white hover:border-zinc-500">
               $BASEFM
             </Link>
             <Link href="/terms" className="border border-zinc-700 px-4 py-2 text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white hover:border-zinc-500">

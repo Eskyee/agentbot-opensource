@@ -42,7 +42,14 @@ export function PermissionGate({ agentId, onRequestHandled }: PermissionGateProp
     // Initial fetch
     fetchPending()
 
-    // Connect WebSocket
+    // Vercel doesn't support WebSocket — use polling directly
+    const isVercel = window.location.host.includes('vercel.app') || window.location.host.includes('agentbot.sh')
+    if (isVercel) {
+      const interval = setInterval(fetchPending, 5000)
+      return () => clearInterval(interval)
+    }
+
+    // Connect WebSocket (for self-hosted/Railway deployments)
     const userId = agentId || 'default'
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const host = window.location.host

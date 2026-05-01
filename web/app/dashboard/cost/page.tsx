@@ -63,7 +63,7 @@ async function fetchCostData(period: string): Promise<CostData> {
 }
 
 const StatCard = ({
-  icon: Icon, label, value, sub, trend, colorClass = 'text-red-500',
+  icon: Icon, label, value, sub, trend, colorClass = 'text-orange-400',
 }: {
   icon: LucideIcon; label: string; value: string; sub?: string; trend?: 'up' | 'down'; colorClass?: string;
 }) => (
@@ -266,14 +266,14 @@ export default function CostPage() {
             label="Tokens Used"
             value={`${(summary.totalTokens / 1_000_000).toFixed(1)}M`}
             sub="input + output"
-            colorClass="text-red-500"
+            colorClass="text-orange-400"
           />
           <StatCard
             icon={Clock}
             label="API Calls"
             value={summary.totalCalls.toLocaleString()}
             sub={`last ${period}`}
-            colorClass="text-red-500"
+            colorClass="text-orange-400"
           />
           <StatCard
             icon={DollarSign}

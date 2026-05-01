@@ -113,10 +113,10 @@ export default function GuidePage() {
 
         <Section title="Signals and X Integration">
           <Q q="What is the Signals page?">
-            <Link href="/dashboard/signals" className="text-red-500 hover:text-red-500 underline underline-offset-2">Signals</Link> is your real-time monitoring feed for X (Twitter). It shows incoming mentions for your connected account, your own recent posts, and a dedicated community feed. Use it to spot conversations to reply to without leaving Agentbot.
+            <Link href="/dashboard/signals" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">Signals</Link> is your real-time monitoring feed for X (Twitter). It shows incoming mentions for your connected account, your own recent posts, and a dedicated community feed. Use it to spot conversations to reply to without leaving Agentbot.
           </Q>
           <Q q="How do I connect my X account?">
-            Go to <Link href="/settings" className="text-red-500 hover:text-red-500 underline underline-offset-2">Settings → Integrations</Link>. Paste your OAuth 2.0 user access token, refresh token, username, account ID, and scopes (typically <code className="text-zinc-300">tweet.read users.read tweet.write offline.access</code>). Saving <strong className="text-zinc-300">offline.access</strong> in scopes is required for the refresh token to keep working past 2 hours.
+            Go to <Link href="/settings" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">Settings → Integrations</Link>. Paste your OAuth 2.0 user access token, refresh token, username, account ID, and scopes (typically <code className="text-zinc-300">tweet.read users.read tweet.write offline.access</code>). Saving <strong className="text-zinc-300">offline.access</strong> in scopes is required for the refresh token to keep working past 2 hours.
           </Q>
           <Q q="Why did Signals start 401ing?">
             OAuth 2.0 access tokens expire roughly every 2 hours. Agentbot now auto-refreshes the token on any 401 using your stored refresh token and retries the request. If 401s persist, your refresh token has been revoked — reconnect under Settings → Integrations.
@@ -131,7 +131,7 @@ export default function GuidePage() {
 
         <Section title="Agentic Market (x402)">
           <Q q="Where did the embedded market go?">
-            X (the browser security layer) blocks agentic.market from being iframed via <code className="text-zinc-300">X-Frame-Options: DENY</code>. The x402 dashboard now shows a preview card with a CTA to open <a href="https://agentic.market" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-500 underline underline-offset-2">agentic.market</a> in a new tab instead of a broken embed.
+            X (the browser security layer) blocks agentic.market from being iframed via <code className="text-zinc-300">X-Frame-Options: DENY</code>. The x402 dashboard now shows a preview card with a CTA to open <a href="https://agentic.market" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">agentic.market</a> in a new tab instead of a broken embed.
           </Q>
         </Section>
 
@@ -140,10 +140,10 @@ export default function GuidePage() {
             baseFM is Agentbot&apos;s live radio layer. RAVE token holders and community pass members can go live and stream audio to listeners through the baseFM platform. Your OpenClaw agent can also autonomously broadcast if FFmpeg is available on your runtime.
           </Q>
           <Q q="How do I go live on baseFM?">
-            Go to <Link href="/dashboard/dj-stream" className="text-red-500 hover:text-red-500 underline underline-offset-2">DJ Stream</Link> in your dashboard. Connect your Solana wallet with 1.25M+ RAVE tokens (or claim a community guest pass), then start your set. You&apos;ll get an RTMP stream key to use with OBS or your preferred broadcasting software.
+            Go to <Link href="/dashboard/dj-stream" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">DJ Stream</Link> in your dashboard. Connect your Solana wallet with 1.25M+ RAVE tokens (or claim a community guest pass), then start your set. You&apos;ll get an RTMP stream key to use with OBS or your preferred broadcasting software.
           </Q>
           <Q q="Can I upload a pre-recorded mix?">
-            Yes — go to <Link href="/dashboard/mixtape" className="text-red-500 hover:text-red-500 underline underline-offset-2">Mix Uploads</Link> (Collective plan or higher). Upload your audio file and schedule a broadcast time. Agentbot will auto-stream it to baseFM at the scheduled time using your runtime&apos;s FFmpeg broadcaster.
+            Yes — go to <Link href="/dashboard/mixtape" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">Mix Uploads</Link> (Collective plan or higher). Upload your audio file and schedule a broadcast time. Agentbot will auto-stream it to baseFM at the scheduled time using your runtime&apos;s FFmpeg broadcaster.
           </Q>
         </Section>
 
@@ -152,10 +152,10 @@ export default function GuidePage() {
             Holding Agentbot tokens on Solana unlocks platform credits, baseFM access, and exclusive perks. The more you hold, the higher your tier and the more credits you earn.
           </Q>
           <Q q="How do I claim my community rewards?">
-            Click <strong className="text-zinc-300">Claim Credits</strong> at the top of your dashboard, or go to the <Link href="/claim" className="text-red-500 hover:text-red-500 underline underline-offset-2">Claim</Link> page. Connect your Solana wallet and verify your token balance. Credits are added to your account automatically.
+            Click <strong className="text-zinc-300">Claim Credits</strong> at the top of your dashboard, or go to the <Link href="/claim" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">Claim</Link> page. Connect your Solana wallet and verify your token balance. Credits are added to your account automatically.
           </Q>
           <Q q="What is the Agentbot token?">
-            The Agentbot token is a Solana SPL token. Holders get baseFM streaming access, platform credits, and community governance perks. Find the token address and buy link on the <Link href="/dashboard/solana" className="text-red-500 hover:text-red-500 underline underline-offset-2">Solana</Link> page.
+            The Agentbot token is a Solana SPL token. Holders get baseFM streaming access, platform credits, and community governance perks. Find the token address and buy link on the <Link href="/dashboard/solana" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">Solana</Link> page.
           </Q>
         </Section>
 
