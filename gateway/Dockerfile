@@ -1,6 +1,6 @@
 # Agentbot OpenClaw Gateway — Railway wrapper
 # Based on openclaw-railway template (persistent volume, health checks, auto-restart)
-FROM node:22.13.0-bookworm-slim AS builder
+FROM node:22.14-bookworm-slim AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
@@ -19,11 +19,11 @@ RUN printf '[url "https://github.com/"]\n\tinsteadOf = ssh://git@github.com/\n\t
 RUN npm install --omit=dev
 
 
-FROM node:22.13.0-bookworm-slim
+FROM node:22.14-bookworm-slim
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /usr/local/bin/tailscale
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 
-ARG OPENCLAW_VERSION=2026.4.27
+ARG OPENCLAW_VERSION=2026.4.29
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
