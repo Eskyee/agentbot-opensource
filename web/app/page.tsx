@@ -23,7 +23,7 @@ export default async function Home() {
   } catch {}
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white selection:bg-red-500/30 font-mono overflow-x-hidden">
       {/* Hero */}
       <section className="relative max-w-7xl mx-auto px-5 sm:px-6 py-20 sm:py-32 md:py-44 overflow-hidden">
         <div className="hidden lg:block absolute top-0 right-0 w-[55%] h-full">
@@ -32,7 +32,7 @@ export default async function Home() {
 
         <div className="relative z-10 max-w-3xl">
           <div className="flex flex-wrap items-center gap-3 mb-6 sm:mb-8">
-            <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-400 text-[10px] uppercase tracking-widest">
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-red-500 text-[10px] uppercase tracking-widest">
               Production Private Cloud
             </div>
             <a
@@ -179,7 +179,7 @@ export default async function Home() {
           </div>
           <div className="grid lg:grid-cols-2 gap-px bg-zinc-900">
             <div className="bg-black p-6 sm:p-8">
-              <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-4">Production Private Cloud</div>
+              <div className="text-[10px] uppercase tracking-widest text-red-500 mb-4">Production Private Cloud</div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-3">Managed runtime for teams that need speed and control.</h3>
               <div className="space-y-3 text-zinc-500 text-sm">
                 <p>Approval queues, dashboards, billing, and operator tooling around your X workflow.</p>
@@ -245,7 +245,7 @@ export default async function Home() {
               },
             ].map((item) => (
               <Link key={item.href} href={item.href} className="bg-black p-6 sm:p-8 hover:bg-zinc-950 transition-colors">
-                <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-4">{item.label}</div>
+                <div className="text-[10px] uppercase tracking-widest text-red-500 mb-4">{item.label}</div>
                 <p className="text-zinc-500 text-sm leading-relaxed">{item.body}</p>
               </Link>
             ))}
@@ -341,7 +341,7 @@ export default async function Home() {
             ].map((partner) => {
               const content = (
                 <>
-                  <div className="text-[10px] uppercase tracking-widest text-orange-400 mb-4">{partner.name}</div>
+                  <div className="text-[10px] uppercase tracking-widest text-red-500 mb-4">{partner.name}</div>
                   <p className="text-zinc-500 text-sm leading-relaxed">{partner.description}</p>
                 </>
               )
@@ -388,7 +388,7 @@ export default async function Home() {
                 <div className="flex items-center gap-2 mb-4">
                   <span className="text-[10px] uppercase tracking-widest text-zinc-500">{plan.name}</span>
                   {plan.popular && (
-                    <span className="text-[8px] uppercase tracking-widest text-orange-400 border border-orange-500/30 px-1.5 py-0.5">Popular</span>
+                    <span className="text-[8px] uppercase tracking-widest text-red-500 border border-orange-500/30 px-1.5 py-0.5">Popular</span>
                   )}
                 </div>
                 <div className="text-2xl sm:text-3xl font-bold tracking-tighter mb-6">
@@ -438,11 +438,11 @@ export default async function Home() {
       <CapabilitiesTicker />
 
       {/* Co-DJ B2B — baseFM feature */}
-      <section className="border-t border-orange-900/40 bg-gradient-to-b from-orange-950/20 to-black">
+      <section className="border-t border-red-900/40 bg-gradient-to-b from-red-950/20 to-black">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 py-14 sm:py-20">
           <div className="flex flex-wrap items-center gap-3 mb-6">
-            <span className="inline-flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/40 text-orange-400 text-[10px] uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse inline-block" />
+            <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-orange-500/40 text-red-500 text-[10px] uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse inline-block" />
               baseFM × Agentbot
             </span>
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 border border-zinc-800 px-3 py-1">Factory Network</span>
@@ -451,7 +451,7 @@ export default async function Home() {
             <div>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tighter uppercase leading-[0.95] mb-6">
                 Co-DJ B2B.<br />
-                <span className="text-orange-400">Two DJs.</span><br />
+                <span className="text-red-500">Two DJs.</span><br />
                 <span className="text-zinc-700">One Live Stream.</span>
               </h2>
               <p className="text-zinc-400 text-sm leading-relaxed mb-6 max-w-lg">
@@ -465,13 +465,13 @@ export default async function Home() {
                   href="https://basefm.space"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-orange-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors"
+                  className="inline-flex items-center justify-center bg-red-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-red-500 transition-colors"
                 >
                   Launch baseFM
                 </a>
                 <Link
                   href="/onboard?plan=collective"
-                  className="inline-flex items-center justify-center border border-orange-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-orange-300 transition-colors"
+                  className="inline-flex items-center justify-center border border-orange-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-500 hover:border-orange-400 hover:text-orange-300 transition-colors"
                 >
                   Get Access →
                 </Link>
@@ -500,7 +500,7 @@ export default async function Home() {
                   body: 'Real-time chat for both DJs to coordinate and for listeners to interact. DJ messages highlighted — the crowd sees the handoff coming.',
                 },
               ].map((step) => (
-                <div key={step.num} className="flex gap-4 border border-zinc-800 hover:border-orange-900/60 transition-colors p-4 sm:p-5 bg-black">
+                <div key={step.num} className="flex gap-4 border border-zinc-800 hover:border-red-900/60 transition-colors p-4 sm:p-5 bg-black">
                   <div className="text-[10px] font-bold text-orange-600 uppercase tracking-widest pt-0.5 shrink-0 w-6">{step.num}</div>
                   <div>
                     <div className="text-xs font-bold text-white uppercase tracking-wider mb-1">{step.title}</div>

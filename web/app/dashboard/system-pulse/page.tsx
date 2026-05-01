@@ -179,7 +179,7 @@ export default function SystemPulsePage() {
     label,
     value,
     sub,
-    color = 'text-orange-400',
+    color = 'text-red-500',
   }: {
     icon: LucideIcon
     label: string
@@ -201,7 +201,7 @@ export default function SystemPulsePage() {
     <DashboardShell>
       <DashboardHeader
         title="System Pulse"
-        icon={<Activity className="h-5 w-5 text-orange-400" />}
+        icon={<Activity className="h-5 w-5 text-red-500" />}
         action={
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill
@@ -242,7 +242,7 @@ export default function SystemPulsePage() {
             label="Runtime Version"
             value={instance?.openclawVersion || '—'}
             sub={instance?.startedAt ? `Started ${new Date(instance.startedAt).toLocaleString()}` : 'No instance timestamp'}
-            color="text-orange-400"
+            color="text-red-500"
           />
           <StatCard
             icon={MessageSquare}
@@ -256,7 +256,7 @@ export default function SystemPulsePage() {
             label="Cron Jobs"
             value={gateway?.cron.available ? gateway.cron.enabled : '—'}
             sub={cronLabel}
-            color={gateway?.cron.available ? 'text-orange-400' : 'text-zinc-400'}
+            color={gateway?.cron.available ? 'text-red-500' : 'text-zinc-400'}
           />
         </div>
 
@@ -280,7 +280,7 @@ export default function SystemPulsePage() {
             label="API Calls"
             value={costSummary?.totalCalls?.toLocaleString() ?? '0'}
             sub={`${costPeriod} total calls`}
-            color="text-orange-400"
+            color="text-red-500"
           />
           <StatCard
             icon={Shield}
@@ -402,7 +402,7 @@ export default function SystemPulsePage() {
                   <span className="text-xs font-mono text-zinc-500 w-24 sm:w-40 truncate">{model.model}</span>
                   <div className="flex-1 bg-zinc-800 h-2 overflow-hidden">
                     <div
-                      className="h-full bg-orange-500 transition-all duration-500"
+                      className="h-full bg-red-500 transition-all duration-500"
                       style={{ width: `${model.percent}%` }}
                     />
                   </div>

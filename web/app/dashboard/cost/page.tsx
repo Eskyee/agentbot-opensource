@@ -63,7 +63,7 @@ async function fetchCostData(period: string): Promise<CostData> {
 }
 
 const StatCard = ({
-  icon: Icon, label, value, sub, trend, colorClass = 'text-orange-400',
+  icon: Icon, label, value, sub, trend, colorClass = 'text-red-500',
 }: {
   icon: LucideIcon; label: string; value: string; sub?: string; trend?: 'up' | 'down'; colorClass?: string;
 }) => (
@@ -266,14 +266,14 @@ export default function CostPage() {
             label="Tokens Used"
             value={`${(summary.totalTokens / 1_000_000).toFixed(1)}M`}
             sub="input + output"
-            colorClass="text-orange-400"
+            colorClass="text-red-500"
           />
           <StatCard
             icon={Clock}
             label="API Calls"
             value={summary.totalCalls.toLocaleString()}
             sub={`last ${period}`}
-            colorClass="text-orange-400"
+            colorClass="text-red-500"
           />
           <StatCard
             icon={DollarSign}
@@ -353,7 +353,7 @@ export default function CostPage() {
               <div key={m.model} className="flex items-center gap-4">
                 <div className="w-24 sm:w-40 text-xs font-mono text-zinc-400 truncate">{m.model}</div>
                 <div className="flex-1 bg-zinc-800 h-1.5 overflow-hidden">
-                  <div className="h-full bg-orange-500" style={{ width: `${m.percent}%` }} />
+                  <div className="h-full bg-red-500" style={{ width: `${m.percent}%` }} />
                 </div>
                 <div className="w-12 text-right text-[10px] text-zinc-500">{m.percent}%</div>
                 <div className="w-20 text-right text-xs font-mono text-green-400">${m.cost.toFixed(2)}</div>

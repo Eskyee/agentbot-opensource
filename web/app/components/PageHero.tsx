@@ -7,7 +7,7 @@ interface PageHeroProps {
 }
 
 const gradients = {
-  blue: 'bg-orange-500/5',
+  blue: 'bg-red-500/5',
   purple: 'bg-purple-500/5',
   green: 'bg-green-500/5',
   amber: 'bg-amber-500/5',
@@ -30,7 +30,7 @@ export function PageHero({ label, title, highlight, description, gradient = 'blu
       />
 
       <div className="relative max-w-7xl mx-auto px-5 sm:px-6 py-16 sm:py-24">
-        <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-400 text-[10px] uppercase tracking-widest mb-6">
+        <div className="inline-block px-3 py-1 border border-zinc-800 text-red-500 text-[10px] uppercase tracking-widest mb-6">
           {label}
         </div>
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter uppercase leading-[0.9] max-w-3xl">

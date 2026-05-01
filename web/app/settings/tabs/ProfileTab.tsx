@@ -108,8 +108,8 @@ export function ProfileTab({
             </div>
             {basename ? (
               <p className="mt-2 flex items-center gap-2 text-sm">
-                <span className="inline-block w-4 h-4 rounded-full bg-orange-500" aria-hidden="true" />
-                <span className="text-orange-400 font-medium">{basename}</span>
+                <span className="inline-block w-4 h-4 rounded-full bg-red-500" aria-hidden="true" />
+                <span className="text-red-500 font-medium">{basename}</span>
                 <span className="text-zinc-500">· Base Name</span>
               </p>
             ) : (
@@ -119,7 +119,7 @@ export function ProfileTab({
                   href="https://www.base.org/names"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-orange-400 hover:underline"
+                  className="text-red-500 hover:underline"
                 >
                   Get one free →
                 </a>

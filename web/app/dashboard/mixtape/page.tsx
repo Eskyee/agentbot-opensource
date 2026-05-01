@@ -37,7 +37,7 @@ function statusColor(status: string) {
   switch (status) {
     case 'broadcasting': return 'text-green-400'
     case 'ready':
-    case 'scheduled':    return 'text-orange-400'
+    case 'scheduled':    return 'text-red-500'
     case 'done':         return 'text-zinc-500'
     case 'failed':       return 'text-red-400'
     default:             return 'text-amber-400'
@@ -270,7 +270,7 @@ export default function MixtapePage() {
                           href={`https://stream.mux.com/${m.playbackId}.html`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-400 transition-colors"
+                          className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-500 transition-colors"
                         >
                           <Play className="h-3 w-3" />
                           Playback

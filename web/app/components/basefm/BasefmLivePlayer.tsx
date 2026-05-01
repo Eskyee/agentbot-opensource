@@ -56,7 +56,7 @@ function statusColor(status: BasefmRelayStatus) {
   if (status === 'healthy') return 'bg-green-400'
   if (status === 'degraded') return 'bg-yellow-400'
   if (status === 'failed') return 'bg-red-400'
-  if (status === 'pending') return 'bg-orange-500'
+  if (status === 'pending') return 'bg-red-500'
   return 'bg-zinc-600'
 }
 

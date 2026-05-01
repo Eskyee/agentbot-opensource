@@ -102,7 +102,7 @@ export function BasefmTab() {
         {error && <p className="text-xs text-red-400">{error}</p>}
         <p className="text-[10px] text-zinc-600">
           Your Base wallet is the address you use to log into baseFM. Need one?{' '}
-          <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">
+          <a href="https://basefm.space" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-500 underline underline-offset-2">
             Create a free account on baseFM →
           </a>
         </p>
@@ -141,7 +141,7 @@ export function BasefmTab() {
                   href={`https://basefm.space/djs/${stats.dj.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] text-orange-400 hover:text-orange-400 uppercase tracking-widest"
+                  className="inline-flex items-center gap-1 text-[10px] text-red-500 hover:text-red-500 uppercase tracking-widest"
                 >
                   <Radio className="h-3 w-3" />
                   View DJ profile
