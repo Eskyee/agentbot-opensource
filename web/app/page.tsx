@@ -465,7 +465,7 @@ export default async function Home() {
                   href="https://basefm.space"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center bg-red-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-red-500 transition-colors"
+                  className="inline-flex items-center justify-center bg-red-500 text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-orange-500 transition-colors"
                 >
                   Launch baseFM
                 </a>

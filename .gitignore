@@ -100,3 +100,4 @@ agentbot-backend/.env.local
 btcpay-configurator/
 keys/
 .claude/scheduled_tasks.lock
+.env*.local

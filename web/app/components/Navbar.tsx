@@ -229,7 +229,7 @@ export default function Navbar() {
               <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
                 Sign in
               </Link>
-              <Link href="/signup" className="text-[11px] bg-red-500 text-white px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-red-400 transition-colors">
+              <Link href="/signup" className="text-[11px] bg-orange-500 text-white px-4 py-1.5 font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors">
                 Get Started
               </Link>
             </>
