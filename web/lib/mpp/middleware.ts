@@ -85,13 +85,17 @@ export function create402Response(
   pluginName: string,
   pricing: { amount: string; description: string }
 ): NextResponse {
+  const nonceBytes = new Uint8Array(16);
+  crypto.getRandomValues(nonceBytes);
+  const nonce = Array.from(nonceBytes, b => b.toString(16).padStart(2, '0')).join('');
+
   const challenge: MppChallenge = {
     scheme: 'Payment',
     amount: pricing.amount,
-    currency: MPP_CONFIG.defaultCurrency,  // pathUSD
+    currency: MPP_CONFIG.defaultCurrency,
     recipient: MPP_CONFIG.recipient,
     description: pricing.description,
-    nonce: generateNonce(),
+    nonce,
     expiresAt: Date.now() + (5 * 60 * 1000), // 5 min expiry
   };
 
@@ -162,13 +166,4 @@ export function getPaymentMethod(req: NextRequest): PaymentMethod {
   
   // Default to stripe (existing behavior)
   return 'stripe';
-}
-
-/**
- * Generate random nonce for MPP challenge
- */
-function generateNonce(): string {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
 }

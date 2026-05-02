@@ -147,7 +147,7 @@ export async function POST(
         )
       }
 
-      const active = getUserSession(userAddress)
+      const active = await getUserSession(userAddress)
       if (!active || active.id !== sessionId) {
         return jsonResponse(
           {
@@ -208,7 +208,7 @@ export async function POST(
       signature: '0x' as `0x${string}`,
     }
 
-    const voucherResult = processVoucher(voucher)
+    const voucherResult = await processVoucher(voucher)
     if (!voucherResult.success) {
       return jsonResponse(
         {

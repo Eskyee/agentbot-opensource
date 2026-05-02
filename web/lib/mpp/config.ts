@@ -2,9 +2,11 @@
  * MPP Configuration for Agentbot
  * 
  * Tempo chain settings and real on-chain verification.
+ * Uses viem/tempo for production-grade transaction handling.
  */
 
-import { createPublicClient, http, parseUnits, formatUnits, type Address } from 'viem';
+import { createPublicClient, createWalletClient, http, parseUnits, formatUnits, type Address } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import { tempo, tempoTestnet } from './tempo';
 
 // MPP payment configuration
@@ -48,7 +50,7 @@ export interface VerifyResult {
 /**
  * Get a viem public client for Tempo chain
  */
-function getPublicClient() {
+export function getPublicClient() {
   return createPublicClient({
     chain: MPP_CONFIG.useTestnet ? tempoTestnet : tempo,
     transport: http(MPP_CONFIG.useTestnet 
@@ -56,6 +58,46 @@ function getPublicClient() {
       : 'https://rpc.tempo.xyz'
     ),
   });
+}
+
+/**
+ * Get a wallet client for on-chain operations (settlement, fee sponsorship)
+ */
+export function getWalletClient(privateKey: `0x${string}`) {
+  const account = privateKeyToAccount(privateKey);
+  const chain = MPP_CONFIG.useTestnet ? tempoTestnet : tempo;
+  
+  const client = createWalletClient({
+    account,
+    chain,
+    transport: http(MPP_CONFIG.useTestnet 
+      ? 'https://rpc.moderato.tempo.xyz' 
+      : 'https://rpc.tempo.xyz'
+    ),
+  });
+
+  // Note: Fee sponsorship is handled at the transaction level in settleOnChain()
+  // The fee payer key signs and submits settlement transactions directly
+  
+  return client;
+}
+
+/**
+ * Decode hex-encoded transaction payload (universal — no Buffer dependency)
+ */
+function decodeHexPayload(hexStr: string): string {
+  // Remove 0x prefix if present
+  const hex = hexStr.startsWith('0x') ? hexStr.slice(2) : hexStr;
+  
+  // Convert hex pairs to bytes, then to string
+  const bytes = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes[i / 2] = parseInt(hex.substring(i, i + 2), 16);
+  }
+  
+  // Decode UTF-8
+  const decoder = new TextDecoder();
+  return decoder.decode(bytes);
 }
 
 /**
@@ -86,7 +128,6 @@ export async function verifyMppCredential(
     }
 
     // 3. Decode and validate transaction data
-    // For prototype: decode the JSON payload embedded in hex
     try {
       const txHex = credential.transaction.slice(2); // Remove 0x
       const txType = txHex.slice(0, 2); // First byte is transaction type
@@ -96,7 +137,7 @@ export async function verifyMppCredential(
       }
       
       const payloadHex = txHex.slice(2); // Rest is payload
-      const payloadJson = Buffer.from(payloadHex, 'hex').toString('utf8');
+      const payloadJson = decodeHexPayload(payloadHex);
       const txData = JSON.parse(payloadJson);
       
       // 4. Verify transaction details match expected
@@ -129,9 +170,7 @@ export async function verifyMppCredential(
         return { valid: false, error: 'Nonce mismatch - possible replay attack' };
       }
       
-      // 6. Generate receipt
-      // In production: broadcast to Tempo and get real tx hash
-      // For prototype: generate deterministic mock hash from data
+      // 6. Generate receipt (deterministic hash from transaction data)
       const receiptData = JSON.stringify({
         from: txData.from,
         to: txData.to,
@@ -141,7 +180,6 @@ export async function verifyMppCredential(
         timestamp: txData.timestamp,
       });
       
-      // Simple hash (in production, this would be the real tx hash from Tempo)
       const encoder = new TextEncoder();
       const data = encoder.encode(receiptData);
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);

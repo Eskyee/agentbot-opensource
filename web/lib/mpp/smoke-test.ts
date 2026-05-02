@@ -4,7 +4,7 @@
  * Tests the full 402 Payment Required flow:
  * 1. Send initial request → expect 402
  * 2. Parse challenge → verify structure
- * 3. Sign mock transaction → create credential
+ * 3. Sign transaction via viem/tempo (or manual fallback)
  * 4. Retry with credential → expect 200 + receipt
  * 
  * Run: npx tsx lib/mpp/smoke-test.ts
@@ -22,20 +22,19 @@ const account = privateKeyToAccount(TEST_PRIVATE_KEY);
 
 async function smokeTest() {
   console.log('🧪 MPP Smoke Test Starting...\n');
-  console.log(`Target: ${BASE_URL}/api/v1/gateway`);
+  console.log(`Target: ${GATEWAY_URL}`);
   console.log(`Plugin: ${PLUGIN}`);
   console.log(`Account: ${account.address}\n`);
 
   // Step 1: Initial request (should get 402)
   console.log('Step 1: Sending initial request...');
-  console.log(`URL: ${GATEWAY_URL}`);
   
   const initialResponse = await fetch(GATEWAY_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Plugin-Id': PLUGIN,
-      'X-Payment-Method': 'mpp', // Force MPP mode
+      'X-Payment-Method': 'mpp',
     },
     body: JSON.stringify({
       messages: [{ role: 'user', content: 'Say hello' }],
@@ -76,37 +75,82 @@ async function smokeTest() {
   console.log(`Nonce: ${challenge.nonce}`);
   console.log(`Expires: ${new Date(challenge.expiresAt).toISOString()}`);
 
-  // Also check Stripe option exists
   if (challengeData.stripe) {
     console.log(`\n✅ Stripe option available: ${challengeData.stripe.checkoutUrl}`);
   }
 
-  // Step 3: Sign mock transaction
+  // Step 3: Sign transaction via viem/tempo
   console.log('\nStep 3: Signing MPP transaction...');
   
-  const txData = {
-    chainId: 4217,
-    to: challenge.recipient,
-    token: challenge.currency,
-    amount: challenge.amount,
-    nonce: challenge.nonce,
-    from: account.address,
-    timestamp: Date.now(),
-  };
+  let transaction: string;
+  let credential: { scheme: 'Payment'; transaction: string; challengeNonce: string };
 
-  const encoder = new TextEncoder();
-  const data = encoder.encode(JSON.stringify(txData));
-  const hexArray = Array.from(new Uint8Array(data));
-  const encoded = hexArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  const transaction = `0x76${encoded}`;
+  // Try viem/tempo first
+  try {
+    const { tempoActions } = await import('viem/tempo');
+    const { createWalletClient, http } = await import('viem');
+    const { tempo } = await import('./tempo');
 
-  const credential = {
-    scheme: 'Payment' as const,
-    transaction,
-    challengeNonce: challenge.nonce,
-  };
+    const walletClient = createWalletClient({
+      account,
+      chain: tempo,
+      transport: http('https://rpc.tempo.xyz'),
+    }).extend(tempoActions as any);
 
-  console.log(`Transaction type: 0x76 (Tempo)`);
+    console.log('  Using viem/tempo for signing');
+
+    // Build TIP-20 transfer data
+    const selector = '0xa9059cbb';
+    const paddedTo = challenge.recipient.toLowerCase().replace('0x', '').padStart(64, '0');
+    const amountWei = BigInt(Math.round(parseFloat(challenge.amount) * 1e6));
+    const paddedAmount = amountWei.toString(16).padStart(64, '0');
+    const txData = `${selector}${paddedTo}${paddedAmount}` as `0x${string}`;
+
+    const txHash = await (walletClient as any).sendTransaction({
+      account,
+      chain: tempo,
+      to: challenge.currency as `0x${string}`,
+      value: 0n,
+      data: txData,
+    } as any);
+
+    console.log(`  TxHash: ${txHash}`);
+    transaction = txHash;
+
+    credential = {
+      scheme: 'Payment',
+      transaction,
+      challengeNonce: challenge.nonce,
+    };
+  } catch (err) {
+    // Fallback to manual hex encoding
+    console.log('  viem/tempo not available, using manual encoding');
+    console.log(`  Error: ${err instanceof Error ? err.message : 'Unknown'}`);
+
+    const txPayload = {
+      chainId: 4217,
+      to: challenge.recipient,
+      token: challenge.currency,
+      amount: challenge.amount,
+      nonce: challenge.nonce,
+      from: account.address,
+      timestamp: Date.now(),
+    };
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(JSON.stringify(txPayload));
+    const hexArray = Array.from(new Uint8Array(data));
+    const encoded = hexArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    transaction = `0x76${encoded}`;
+
+    credential = {
+      scheme: 'Payment',
+      transaction,
+      challengeNonce: challenge.nonce,
+    };
+  }
+
+  console.log(`Transaction: ${transaction.slice(0, 66)}...`);
   console.log(`From: ${account.address}`);
   console.log(`To: ${challenge.recipient}`);
   console.log(`Amount: ${challenge.amount}`);

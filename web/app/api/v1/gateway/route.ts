@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { GATEWAY_CONFIG } from './temp';
+
+// Force Node.js runtime — Buffer, crypto.subtle needed for MPP verification
+export const runtime = 'nodejs';
 import {
   getPaymentMethod,
   hasMppCredential,
@@ -81,8 +84,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Check session exists and has balance
-      const { getUserSession, processVoucher } = await import('@/lib/mpp/sessions');
-      const session = getUserSession(userAddress);
+      const session = await getUserSession(userAddress);
       
       if (!session || session.id !== sessionId) {
         return NextResponse.json(
@@ -125,7 +127,7 @@ export async function POST(req: NextRequest) {
         signature: '0x' as `0x${string}`, // Server-side voucher, no client sig needed
       };
 
-      const voucherResult = processVoucher(voucher);
+      const voucherResult = await processVoucher(voucher);
       if (!voucherResult.success) {
         return NextResponse.json(
           { error: 'voucher_failed', message: voucherResult.error },
@@ -190,9 +192,10 @@ export async function POST(req: NextRequest) {
     }
     if (sessionReceipt) {
       responseHeaders['Payment-Receipt'] = sessionReceipt;
-      responseHeaders['X-Session-Remaining'] = getUserSession(
+      const currentSession = await getUserSession(
         req.headers.get('X-Wallet-Address') as `0x${string}`
-      )?.remaining || '0';
+      );
+      responseHeaders['X-Session-Remaining'] = currentSession?.remaining || '0';
     }
 
     const upstreamResponse = await fetch(matchedPlugin.url, {
