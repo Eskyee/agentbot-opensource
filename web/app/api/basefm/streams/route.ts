@@ -299,6 +299,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const { tokenId: muxTokenId, tokenSecret: muxTokenSecret } = getMuxCredentials()
   const auth = await getAuthorizedActiveSession(request)
   if (auth.error) return auth.error
   if (!auth.activeSession) return NextResponse.json({ active: false, message: 'No active session.' })
@@ -308,6 +309,54 @@ export async function GET(request: NextRequest) {
     await retireSessionStreams([auth.activeSession]).catch(() => {})
     return NextResponse.json({ active: false, message: 'Session expired.' })
   }
+
+  const base = buildActiveSessionResponse(auth.activeSession)
+
+  if (!muxTokenId || !muxTokenSecret) return NextResponse.json(base)
+
+  try {
+    const muxAuth = Buffer.from(`${muxTokenId}:${muxTokenSecret}`).toString('base64')
+    const muxRes = await fetch(`https://api.mux.com/video/v1/live-streams/${auth.activeSession.mux_stream_id}`, {
+      headers: { Authorization: `Basic ${muxAuth}` },
+      cache: 'no-store',
+    })
+
+    if (muxRes.ok) {
+      const muxStream = (await muxRes.json()).data
+      const playbackId = muxStream.playback_ids?.[0]?.id || auth.activeSession.playback_id || null
+      const accessType = (auth.activeSession.metadata as Record<string, unknown>)?.accessType || 'basefm'
+
+      const session = await getAuthSession()
+
+      return NextResponse.json({
+        ...base,
+        stream: {
+          id: muxStream.id,
+          name: auth.activeSession.dj_name || 'DJ',
+          wallet: auth.activeSession.wallet,
+          streamKey: muxStream.stream_key,
+          rtmpUrl: MUX_RTMP_URL,
+          fullRtmpUrl: `${MUX_RTMP_URL}/${muxStream.stream_key}`,
+          playbackId,
+          status: muxStream.status,
+          accessGrantedBy: accessType,
+        },
+        session: {
+          ...base.session,
+          accessToken: createBasefmSessionToken({
+            sessionId: auth.activeSession.id,
+            wallet: auth.activeSession.wallet,
+            userId: session?.user?.id || auth.activeSession.user_id,
+            ttlSeconds: remaining + 3600,
+          }),
+        },
+      })
+    }
+  } catch {
+    // Fall back to base response without Mux details
+  }
+
+  return NextResponse.json(base)
   const muxStream = await getMuxLiveStream(auth.activeSession.mux_stream_id).catch(() => null)
   return NextResponse.json(buildActiveSessionResponse(auth.activeSession, muxStream))
 }

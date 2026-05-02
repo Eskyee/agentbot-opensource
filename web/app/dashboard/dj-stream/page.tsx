@@ -197,6 +197,34 @@ export default function DJStreamPage() {
   }, [])
 
   useEffect(() => {
+    let cancelled = false
+
+    const reconnectActiveSession = async () => {
+      try {
+        const res = await fetch('/api/basefm/streams', { cache: 'no-store' })
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        if (cancelled || !data?.active) return
+
+        if (data.stream) {
+          setStream(data.stream)
+          if (data.stream.name) setDjName(data.stream.name)
+        }
+        if (data.session?.accessToken) {
+          setStreamSessionToken(data.session.accessToken)
+        }
+      } catch {
+        // Auth may not be ready yet or no active session — ignore
+      }
+    }
+
+    reconnectActiveSession()
+
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (!stream || !streamSessionToken) return
     const storedToken = window.localStorage.getItem(BASEFM_SESSION_STORAGE_KEY)
     if (storedToken) {
       setStreamSessionToken(storedToken)
