@@ -539,7 +539,8 @@ function HivemindPanel({ hivemind, synthesis }: { hivemind: SoulStatus['hivemind
 
 function DiagnosticsPanel({ diag }: { diag: Diagnostics | null }) {
   if (!diag) return null;
-  const riskColor = diag.stagnation.risk_level === 'high' ? 'text-red-400' : diag.stagnation.risk_level === 'medium' ? 'text-amber-400' : 'text-emerald-400';
+  const stagnation = diag.stagnation ?? { risk_level: 'unknown', cycles_since_commit: 0, cycles_until_reset: 0 };
+  const riskColor = stagnation.risk_level === 'high' ? 'text-red-400' : stagnation.risk_level === 'medium' ? 'text-amber-400' : 'text-emerald-400';
   return (
     <Panel>
       <SectionLabel icon={<Bug className="w-3 h-3" />} label="Diagnostics" color="text-red-400" />
@@ -551,8 +552,8 @@ function DiagnosticsPanel({ diag }: { diag: Diagnostics | null }) {
         </div>
         <div>
           <div className="text-zinc-600 mb-0.5">Stagnation risk</div>
-          <div className={`font-bold uppercase ${riskColor}`}>{diag.stagnation.risk_level}</div>
-          <div className="text-zinc-600">{diag.stagnation.cycles_until_reset} cycles left</div>
+          <div className={`font-bold uppercase ${riskColor}`}>{stagnation.risk_level}</div>
+          <div className="text-zinc-600">{stagnation.cycles_until_reset} cycles left</div>
         </div>
       </div>
       {diag.capability_bottleneck && (

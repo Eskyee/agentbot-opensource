@@ -38,7 +38,8 @@ function describeFetchError(error: unknown): string {
     // AbortSignal.timeout throws a DOMException with name="TimeoutError" (Node 20+)
     // or name="AbortError". Surface a clean label instead of the platform's raw
     // "The operation was aborted due to timeout" so the status card stays readable.
-    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+    if (err.name === 'TimeoutError' || err.name === 'AbortError' ||
+        err.message?.includes('aborted') || err.message?.includes('timeout')) {
       return `timeout (${Math.round(HEALTH_CHECK_TIMEOUT_MS / 1000)}s)`;
     }
     const causeCode = err.cause?.code;
