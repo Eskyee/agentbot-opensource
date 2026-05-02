@@ -209,6 +209,8 @@ export async function POST(request: NextRequest) {
     const name = typeof body?.name === 'string' ? body.name.trim() : ''
     const city = normalizeCity(body?.city)
     const txHash = typeof body?.txHash === 'string' ? body.txHash.trim() : ''
+    const encoderMode = (typeof body?.mode === 'string' ? body.mode.trim() : 'audio') as 'audio' | 'playlist' | 'video'
+    const isAudioOnly = encoderMode !== 'video'
 
     if (!wallet) return NextResponse.json({ error: 'Wallet address required' }, { status: 400 })
 
@@ -275,18 +277,20 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         playback_policy: ['public'],
         new_asset_settings: { playback_policy: ['public'] },
+        ...(isAudioOnly ? { input_type: 'audio_only' } : {}),
         metadata: {
           dj_wallet: streamWallet,
           dj_name: name || 'DJ',
           ...(city ? { dj_city: city } : {}),
           access_type: accessType,
           tx_hash: txHash || null,
+          encoder_mode: encoderMode,
         },
       }),
     })
     if (!muxRes.ok) return NextResponse.json({ error: 'Mux creation failed' }, { status: muxRes.status })
     const stream = (await muxRes.json()).data
-    const sessionRecord = await prisma.dj_sessions.create({ data: { user_id: session?.user?.id || 'anonymous', wallet: streamWallet, dj_name: name || 'DJ', mux_stream_id: stream.id, playback_id: stream.playback_ids?.[0]?.id || null, max_duration: MAX_SESSION_SECONDS, metadata: { accessType, txHash: txHash || null, city } as any } })
+    const sessionRecord = await prisma.dj_sessions.create({ data: { user_id: session?.user?.id || 'anonymous', wallet: streamWallet, dj_name: name || 'DJ', mux_stream_id: stream.id, playback_id: stream.playback_ids?.[0]?.id || null, max_duration: MAX_SESSION_SECONDS, metadata: { accessType, txHash: txHash || null, city, encoderMode } as any } })
     const fullRtmpUrl = `${MUX_RTMP_URL}/${stream.stream_key}`
 
     return NextResponse.json({

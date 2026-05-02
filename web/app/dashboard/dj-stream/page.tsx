@@ -475,7 +475,7 @@ export default function DJStreamPage() {
       const res = await fetch('/api/basefm/streams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ wallet: streamWallet, name: djName, city: djCity.trim() || null })
+        body: JSON.stringify({ wallet: streamWallet, name: djName, city: djCity.trim() || null, mode: encoderMode })
       })
       const data = await res.json()
       if (!res.ok) {
