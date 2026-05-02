@@ -790,17 +790,17 @@ import {
 } from './middleware/permission-hook';
 
 // GET /api/permissions — list pending requests for user
-app.get('/api/permissions', authenticate, (req: Request, res: Response) => {
+app.get('/api/permissions', authenticate, async (req: Request, res: Response) => {
   const userId = req.userId || 'unknown';
   const agentId = req.query.agentId as string;
   const pending = agentId
-    ? getPendingForAgent(agentId)
-    : getPendingForUser(userId);
+    ? await getPendingForAgent(agentId)
+    : await getPendingForUser(userId);
   res.json({ pending });
 });
 
 // POST /api/permissions — submit decision
-app.post('/api/permissions', authenticate, (req: Request, res: Response) => {
+app.post('/api/permissions', authenticate, async (req: Request, res: Response) => {
   const { requestId, decision } = req.body;
   if (!requestId || !decision) {
     return res.status(400).json({ error: 'Missing requestId or decision' });
@@ -808,7 +808,7 @@ app.post('/api/permissions', authenticate, (req: Request, res: Response) => {
   if (!['approve', 'reject', 'approve_always'].includes(decision)) {
     return res.status(400).json({ error: 'Invalid decision' });
   }
-  const result = processPermissionDecision(requestId, decision);
+  const result = await processPermissionDecision(requestId, decision, req.userEmail);
   if (!result) {
     return res.status(404).json({ error: 'Request not found' });
   }

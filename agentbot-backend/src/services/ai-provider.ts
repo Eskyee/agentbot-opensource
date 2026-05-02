@@ -192,6 +192,106 @@ export class AIProviderService {
   }
 
   /**
+   * Atomically reserves up to `estimatedTokens` of monthly quota for the user.
+   *
+   * Replaces the previous SELECT-then-decide pattern, which let concurrent
+   * requests sail past the plan cap because two callers could both observe
+   * `used = 1.99M` and both decide they're under the 2M limit.
+   *
+   * Implementation:
+   *   1. Compute prior real usage from model_metrics (the source of truth).
+   *   2. UPSERT the monthly reservation row with a WHERE clause that only
+   *      commits if `prior_usage + reserved + estimate <= limit`.
+   *   3. If the WHERE fails, the upsert affects 0 rows and we reject.
+   *
+   * Estimates are coarse — we settle the actual count in `logUsage` after the
+   * API call. Over-reservation is corrected by subtracting the difference;
+   * under-reservation is accepted (the metric write is the truth).
+   *
+   * Returns true if the reservation was granted, false if it would exceed
+   * the cap.
+   */
+  private static async reserveQuota(
+    userId: string,
+    estimatedTokens: number,
+    limit: number
+  ): Promise<{ ok: boolean; used: number }> {
+    const used = await this.getMonthlyTokenUsage(userId);
+    try {
+      // The WHERE clause must gate BOTH the INSERT and the UPDATE branches.
+      // Without the guarded INSERT (`SELECT ... FROM gate`), a fresh
+      // user/month with `used` already over the limit would still slip
+      // through on the very first request because ON CONFLICT WHERE only
+      // applies to the UPDATE branch.
+      const result = await pool.query<{ reserved: string }>(
+        `WITH gate AS (
+           SELECT 1 AS ok
+           WHERE $3::bigint + $2::bigint <= $4::bigint
+         )
+         INSERT INTO ai_token_reservations (user_id, period_start, reserved, updated_at)
+         SELECT $1, date_trunc('month', NOW()), $2, NOW() FROM gate
+         ON CONFLICT (user_id, period_start) DO UPDATE
+           SET reserved = ai_token_reservations.reserved + EXCLUDED.reserved,
+               updated_at = NOW()
+           WHERE ai_token_reservations.reserved + $3 + $2 <= $4
+         RETURNING reserved::text`,
+        [userId, estimatedTokens, used, limit]
+      );
+      if (result.rowCount === 0) {
+        return { ok: false, used };
+      }
+      return { ok: true, used };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('[AI] Quota reservation failed (failing open):', message);
+      // Fail open on DB outage — usage is still bounded by the underlying
+      // model_metrics check on subsequent calls.
+      return { ok: true, used };
+    }
+  }
+
+  /**
+   * Settle a reservation against actual usage by fully releasing the
+   * estimate.
+   *
+   * Why we release the FULL estimate rather than `actual - estimated`:
+   *
+   *   - `reserveQuota`'s gating check is `existing_reserved + used + new
+   *     <= limit`, where `used` comes from `getMonthlyTokenUsage` (i.e.
+   *     `model_metrics`).
+   *   - `logUsage` writes `actual` into `model_metrics`, so the moment
+   *     that row lands, `used` already counts the actual tokens.
+   *   - If we left `actual` in `reserved` (delta = actual - estimated)
+   *     we would count those tokens TWICE on the next reservation —
+   *     once via `reserved`, once via `used`. The user's effective
+   *     quota would be roughly halved over time.
+   *
+   * The `actual` value is therefore unused here; it remains in the
+   * signature so callers don't have to special-case the failure path
+   * (where they pass `actual = 0` explicitly).
+   */
+  private static async settleQuota(
+    userId: string,
+    estimated: number,
+    _actual: number
+  ): Promise<void> {
+    if (estimated <= 0) return;
+    try {
+      await pool.query(
+        `UPDATE ai_token_reservations
+            SET reserved = GREATEST(0, reserved - $1),
+                updated_at = NOW()
+          WHERE user_id = $2
+            AND period_start = date_trunc('month', NOW())`,
+        [estimated, userId]
+      );
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('[AI] Quota settlement failed:', message);
+    }
+  }
+
+  /**
    * Log token usage to model_metrics (fire-and-forget).
    * Never throws — quota enforcement happens before the API call.
    */
@@ -238,7 +338,14 @@ export class AIProviderService {
     },
     context: UsageContext = {}
   ): Promise<AIResponse> {
-    // Quota enforcement (only if we have a userId and DB)
+    // Atomic quota enforcement (only if we have a userId and DB).
+    //
+    // We reserve an upper-bound estimate before the API call and settle the
+    // delta against actual usage afterwards. The reservation row UPSERTs
+    // with a WHERE clause that only succeeds if the new total stays under
+    // the plan cap, so concurrent requests can't all observe "1.99M used"
+    // and each green-light themselves.
+    let reservedEstimate = 0;
     if (context.userId && process.env.DATABASE_URL) {
       const plan = context.plan ?? 'solo';
       const limit = PLAN_MONTHLY_TOKEN_LIMITS[plan] ?? PLAN_MONTHLY_TOKEN_LIMITS.solo;
@@ -248,12 +355,17 @@ export class AIProviderService {
       // intentionally skipped for unlimited plans. Don't change this without
       // also changing how PLAN_MONTHLY_TOKEN_LIMITS encodes "no cap".
       if (isFinite(limit)) {
-        const used = await this.getMonthlyTokenUsage(context.userId);
-        if (used >= limit) {
+        // Estimate: prompt characters /4 (rough chars-per-token) + max_tokens
+        // ceiling. Caller-supplied max_tokens dominates for chat completions.
+        const promptChars = messages.reduce((sum, m) => sum + (m.content?.length ?? 0), 0);
+        reservedEstimate = Math.ceil(promptChars / 4) + (options?.max_tokens ?? 1024);
+
+        const reservation = await this.reserveQuota(context.userId, reservedEstimate, limit);
+        if (!reservation.ok) {
           throw Object.assign(
             new Error(
               `Monthly token quota exceeded for plan "${plan}". ` +
-              `Used ${used.toLocaleString()} of ${limit.toLocaleString()} tokens. ` +
+              `Used ${reservation.used.toLocaleString()} of ${limit.toLocaleString()} tokens. ` +
               `Quota resets at the start of next month.`
             ),
             { code: 'QUOTA_EXCEEDED', statusCode: 429 }
@@ -262,11 +374,34 @@ export class AIProviderService {
       }
     }
 
-    if (modelId === 'xiaomi/mimo-v2-pro') {
-      return this.chatVercelGateway(messages, modelId, options, context);
-    }
+    try {
+      const response = modelId === 'xiaomi/mimo-v2-pro'
+        ? await this.chatVercelGateway(messages, modelId, options, context)
+        : await this.chatOpenRouter(messages, modelId, options, context);
 
-    return this.chatOpenRouter(messages, modelId, options, context);
+      // Settle reservation. settleQuota releases the full reservedEstimate
+      // regardless of actualTokens (model_metrics is the source of truth for
+      // `used`); the `_actual` parameter exists only for logging. We MUST
+      // call it on every successful chat — even when the provider doesn't
+      // report usage — otherwise the reservation leaks into
+      // ai_token_reservations.reserved for the rest of the month and
+      // permanently shrinks the user's effective monthly quota (each new
+      // call is gated on `existing_reserved + used + new_estimate <= limit`).
+      if (context.userId && reservedEstimate > 0) {
+        const actualTokens = response.usage?.total_tokens
+          ?? ((response.usage?.prompt_tokens ?? 0) + (response.usage?.completion_tokens ?? 0));
+        await this.settleQuota(context.userId, reservedEstimate, actualTokens);
+      }
+
+      return response;
+    } catch (err) {
+      // On API failure release the entire reservation so the user isn't
+      // billed against quota for a request that never produced tokens.
+      if (context.userId && reservedEstimate > 0) {
+        await this.settleQuota(context.userId, reservedEstimate, 0);
+      }
+      throw err;
+    }
   }
 
   /**

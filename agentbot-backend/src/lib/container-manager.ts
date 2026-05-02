@@ -231,6 +231,23 @@ export async function isDockerReady(): Promise<boolean> {
 
 /**
  * Create a new OpenClaw agent service on Railway.
+ *
+ * Reliability semantics:
+ *
+ *   • IDEMPOTENT — if a service named `agentbot-agent-${userId}` already
+ *     exists, we return its current handle instead of creating a second one.
+ *     The previous behaviour was to fail with `Unique constraint` partway
+ *     through, which left the user permanently unable to reprovision because
+ *     the orphan service still owned the name slot.
+ *
+ *   • COMPENSATING — if any of the post-create steps (env vars, start
+ *     command, domain, deploy) throws, we issue a `serviceDelete` so the
+ *     half-built service is cleaned up before the error propagates. Without
+ *     this, every retry hits the idempotency branch above and returns a
+ *     handle to a broken service.
+ *
+ *   • Compensation failures are logged but never rethrown — the user-facing
+ *     error is the original provisioning failure, not the cleanup failure.
  */
 export async function createContainer(
   userId: string,
@@ -243,6 +260,32 @@ export async function createContainer(
   if (!environmentId) throw new Error('RAILWAY_ENVIRONMENT_ID not configured');
 
   const serviceName = `agentbot-agent-${userId}`;
+
+  // Idempotency: if a service with this name already exists, return its
+  // handle instead of creating a duplicate. Callers that want a clean slate
+  // should call destroyContainer first.
+  //
+  // We query Railway for the service's actual assigned domain so the URL
+  // returned to the caller is the one Railway is serving, not a guess based
+  // on naming convention. We omit `controlUiUrl` here intentionally — the
+  // gateway token is generated fresh per createContainer call and we cannot
+  // recover the existing token from Railway, so emitting a "control UI URL"
+  // without a valid token would be misleading.
+  const existingId = await getServiceIdByName(serviceName).catch(() => null);
+  if (existingId) {
+    const existingDomain = await getServiceDomain(existingId).catch(() => null);
+    const existingUrl = existingDomain
+      ? `https://${existingDomain}`
+      : `https://${serviceName}.up.railway.app`;
+    console.log(`[ContainerManager/Railway] Reusing existing service ${existingId} (${serviceName}) for ${userId} → ${existingUrl}`);
+    return {
+      container: serviceName,
+      status: 'deploying',
+      serviceId: existingId,
+      url: existingUrl,
+      startedAt: new Date().toISOString(),
+    };
+  }
 
   // 1. Create the service
   const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
@@ -259,6 +302,24 @@ export async function createContainer(
 
   const serviceId = created.serviceCreate.id;
   console.log(`[ContainerManager/Railway] Created service ${serviceId} (${serviceName}) for ${userId}`);
+
+  // Compensation helper — delete the half-built service so a retry can
+  // start clean rather than colliding on the unique service name.
+  const compensate = async (failedStep: string, err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[ContainerManager/Railway] ${failedStep} failed for ${serviceName}: ${message}; rolling back service ${serviceId}`);
+    try {
+      await railwayGql(`
+        mutation ServiceDelete($id: String!) {
+          serviceDelete(id: $id)
+        }
+      `, { id: serviceId });
+      console.log(`[ContainerManager/Railway] Compensated: deleted ${serviceId}`);
+    } catch (cleanupErr: unknown) {
+      const cleanupMessage = cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr);
+      console.error(`[ContainerManager/Railway] Compensation failed for ${serviceId}: ${cleanupMessage}`);
+    }
+  };
 
   // 2. Build openclaw.json config and inject all env vars in one shot.
   //    Config is passed as OPENCLAW_CONFIG_JSON env var so the start command
@@ -319,13 +380,18 @@ export async function createContainer(
     OPENCLAW_CONFIG_JSON: JSON.stringify(openclawConfig),
   };
 
-  await railwayGql(`
-    mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
-      variableCollectionUpsert(input: $input)
-    }
-  `, {
-    input: { projectId, environmentId, serviceId, variables },
-  });
+  try {
+    await railwayGql(`
+      mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+        variableCollectionUpsert(input: $input)
+      }
+    `, {
+      input: { projectId, environmentId, serviceId, variables },
+    });
+  } catch (err) {
+    await compensate('variableCollectionUpsert', err);
+    throw err;
+  }
 
   // 3. Set start command — reads config from env var (no heredoc quoting issues).
   //    Single-quoted sh -c body is safe because no single quotes appear inside it.
@@ -333,50 +399,66 @@ export async function createContainer(
 
   const planResources = PLAN_RESOURCES[plan] ?? PLAN_RESOURCES.solo;
 
-  // serviceId and environmentId are top-level mutation arguments, not inside input.
-  await railwayGql(`
-    mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
-      serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
-    }
-  `, {
-    serviceId,
-    environmentId,
-    input: {
-      startCommand: startCmd,
-      memoryLimitMb: planResources.memoryMB,
-      cpuLimit: planResources.cpuMillicores / 1000,
-      restartPolicyType: 'ON_FAILURE',
-      restartPolicyMaxRetries: 10,
-    },
-  });
+  try {
+    // serviceId and environmentId are top-level mutation arguments, not inside input.
+    await railwayGql(`
+      mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+        serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+      }
+    `, {
+      serviceId,
+      environmentId,
+      input: {
+        startCommand: startCmd,
+        memoryLimitMb: planResources.memoryMB,
+        cpuLimit: planResources.cpuMillicores / 1000,
+        restartPolicyType: 'ON_FAILURE',
+        restartPolicyMaxRetries: 10,
+      },
+    });
+  } catch (err) {
+    await compensate('serviceInstanceUpdate', err);
+    throw err;
+  }
   console.log(`[ContainerManager/Railway] Set startCommand + resources for ${serviceName}`);
 
   // 4. Create service domain with targetPort 18789 (routes Railway HTTP proxy to Gateway)
   //    Without this, Railway's proxy defaults to port 3000 and the Gateway is unreachable.
-  const domainRes = await railwayGql(`
-    mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
-      serviceDomainCreate(input: $input) {
-        id
-        domain
-        targetPort
+  let domainRes: { serviceDomainCreate?: { domain?: string; targetPort?: number } } | undefined;
+  try {
+    domainRes = await railwayGql<{ serviceDomainCreate: { id: string; domain: string; targetPort: number } }>(`
+      mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
+        serviceDomainCreate(input: $input) {
+          id
+          domain
+          targetPort
+        }
       }
-    }
-  `, {
-    input: {
-      serviceId,
-      environmentId,
-      targetPort: 18789,
-    },
-  });
+    `, {
+      input: {
+        serviceId,
+        environmentId,
+        targetPort: 18789,
+      },
+    });
+  } catch (err) {
+    await compensate('serviceDomainCreate', err);
+    throw err;
+  }
   const serviceDomain = domainRes?.serviceDomainCreate;
   console.log(`[ContainerManager/Railway] Created domain: ${serviceDomain?.domain} → port ${serviceDomain?.targetPort}`);
 
   // 5. Deploy
-  await railwayGql(`
-    mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
-      serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
-    }
-  `, { serviceId, environmentId });
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+        serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+      }
+    `, { serviceId, environmentId });
+  } catch (err) {
+    await compensate('serviceInstanceDeploy', err);
+    throw err;
+  }
 
   // Use the Railway-provided domain (with targetPort: 18789)
   const serviceUrl = serviceDomain?.domain
@@ -613,6 +695,55 @@ async function getServiceIdByName(name: string): Promise<string | null> {
 
     const match = data.project.services.edges.find(e => e.node.name === name);
     return match?.node.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Look up the Railway-assigned domain for an existing service.
+ *
+ * Returns the first service domain the platform has provisioned (without
+ * the protocol prefix), or null if the service has no domain yet (e.g. the
+ * domain creation step previously failed and was never retried). Callers
+ * should fall back to the naming-convention guess only when this returns
+ * null.
+ */
+async function getServiceDomain(serviceId: string): Promise<string | null> {
+  try {
+    const data = await railwayGql<{
+      service: {
+        serviceInstances: {
+          edges: Array<{
+            node: {
+              domains: {
+                serviceDomains: Array<{ domain: string }>;
+              };
+            };
+          }>;
+        };
+      };
+    }>(`
+      query ServiceDomain($id: String!) {
+        service(id: $id) {
+          serviceInstances {
+            edges {
+              node {
+                domains { serviceDomains { domain } }
+              }
+            }
+          }
+        }
+      }
+    `, { id: serviceId });
+
+    for (const edge of data.service.serviceInstances.edges) {
+      const domains = edge.node.domains?.serviceDomains ?? [];
+      if (domains.length > 0 && domains[0].domain) {
+        return domains[0].domain;
+      }
+    }
+    return null;
   } catch {
     return null;
   }
