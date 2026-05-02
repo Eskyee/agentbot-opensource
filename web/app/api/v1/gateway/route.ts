@@ -218,10 +218,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Gateway] Error:', error);
+    console.error('[Gateway] Error stack:', error?.stack);
+    console.error('[Gateway] Error name:', error?.name);
+    console.error('[Gateway] Error message:', error?.message);
     return NextResponse.json(
-      { error: 'internal', message: 'Internal server error' },
+      { error: 'internal', message: error?.message || 'Internal server error', name: error?.name },
       { status: 500, headers: cors },
     );
   }
