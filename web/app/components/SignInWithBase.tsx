@@ -101,14 +101,14 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
     <div className="space-y-4">
       {isSigningIn && (
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-red-500 border-t-transparent mb-2" />
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent mb-2" />
           <p className="text-zinc-400 text-sm">Check your wallet to sign in...</p>
         </div>
       )}
       {error && (
         <div className="text-red-400 text-sm text-center p-3 bg-red-900/20 rounded-lg border border-red-800">
           {error}
-          <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-red-500 hover:text-red-500">
+          <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-orange-500 hover:text-orange-500">
             Try again
           </button>
         </div>

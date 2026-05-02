@@ -28,7 +28,7 @@ interface Campaign {
 const STATUS_COLORS: Record<string, string> = {
   pending_payment: 'text-zinc-500',
   paid:            'text-amber-400',
-  approved:        'text-red-500',
+  approved:        'text-orange-500',
   live:            'text-green-400',
   complete:        'text-zinc-500',
   rejected:        'text-red-400',
@@ -95,9 +95,9 @@ function CampaignRow({ c, onAction }: { c: Campaign; onAction: () => void }) {
           )}
 
           <div className="grid gap-3 sm:grid-cols-2 text-xs text-zinc-500">
-            {c.advertiser_url  && <span>URL: <a href={c.advertiser_url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">{c.advertiser_url}</a></span>}
+            {c.advertiser_url  && <span>URL: <a href={c.advertiser_url} target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">{c.advertiser_url}</a></span>}
             {c.contact_handle  && <span>Handle: {c.contact_handle}</span>}
-            {c.playback_id     && <span>Playback: <a href={`https://stream.mux.com/${c.playback_id}.m3u8`} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline">Play</a></span>}
+            {c.playback_id     && <span>Playback: <a href={`https://stream.mux.com/${c.playback_id}.m3u8`} target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline">Play</a></span>}
             {c.mux_upload_id   && <span className="font-mono">Upload: {c.mux_upload_id}</span>}
             <span>Starts: {fmtDate(c.starts_at)}</span>
             <span>Ends: {fmtDate(c.ends_at)}</span>
@@ -136,7 +136,7 @@ function CampaignRow({ c, onAction }: { c: Campaign; onAction: () => void }) {
                 <button
                   onClick={() => act('reject')}
                   disabled={loading}
-                  className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300 transition-colors hover:border-red-400/60 disabled:opacity-50"
+                  className="flex items-center gap-1.5 rounded-xl border border-orange-500/30 bg-orange-500/10 px-3 py-2 text-xs text-red-300 transition-colors hover:border-orange-400/60 disabled:opacity-50"
                 >
                   <XCircle className="h-3 w-3" />
                   Reject
@@ -209,7 +209,7 @@ export default function AdminAdsPage() {
         <div className="grid gap-4 sm:grid-cols-4">
           {[
             { label: 'Awaiting Review', value: stats.paid,     color: 'text-amber-400' },
-            { label: 'Approved',        value: stats.approved, color: 'text-red-500'  },
+            { label: 'Approved',        value: stats.approved, color: 'text-orange-500'  },
             { label: 'Live Now',        value: stats.live,     color: 'text-green-400' },
             { label: 'Revenue',         value: fmt(stats.revenue), color: 'text-white' },
           ].map(({ label, value, color }) => (
@@ -242,7 +242,7 @@ export default function AdminAdsPage() {
             <Loader2 className="h-4 w-4 animate-spin" /> Loading…
           </div>
         ) : error ? (
-          <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>
+          <div className="rounded-xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-red-300">{error}</div>
         ) : visible.length === 0 ? (
           <div className="rounded-[24px] border border-dashed border-zinc-800 px-6 py-12 text-center">
             <Clock className="mx-auto h-7 w-7 text-zinc-700 mb-3" />

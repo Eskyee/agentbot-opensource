@@ -243,7 +243,7 @@ function LoginForm() {
       </div>
 
       {loginError && (
-        <div className="mt-4 p-3 border border-red-500/30 text-red-400 text-xs">
+        <div className="mt-4 p-3 border border-orange-500/30 text-red-400 text-xs">
           {loginError}
         </div>
       )}
@@ -270,7 +270,7 @@ function LoginFormFallback() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-red-500/30 font-mono">
+    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-orange-500/30 font-mono">
       <Suspense fallback={<LoginFormFallback />}>
         <LoginForm />
       </Suspense>

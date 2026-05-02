@@ -200,7 +200,7 @@ export function AgentVerificationPanel({ agentId, verified, verificationType }: 
                   onClick={() => setSelectedType(method.id as VerificationType)}
                   className={`p-3 border text-left transition-all ${
                     selectedType === method.id
-                      ? 'border-red-500 bg-red-500/10'
+                      ? 'border-orange-500 bg-orange-500/10'
                       : 'border-zinc-700 bg-zinc-900 hover:border-zinc-600'
                   }`}
                 >

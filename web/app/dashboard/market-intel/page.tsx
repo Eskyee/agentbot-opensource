@@ -137,7 +137,7 @@ export default function MarketIntelPage() {
                         <div className="px-5 pb-4 border-t border-zinc-800 pt-3">
                           <div className="flex items-center gap-2 text-xs text-zinc-400">
                             <span className="text-zinc-600">URL:</span>
-                            <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-red-500 hover:underline truncate">{c.url}</a>
+                            <a href={c.url} target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:underline truncate">{c.url}</a>
                           </div>
                           <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
                             <span className="text-zinc-600">Response:</span>

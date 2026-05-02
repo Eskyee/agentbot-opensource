@@ -62,7 +62,7 @@ export default function AgenticInfrastructurePost() {
             </div>
 
             <div className="border border-zinc-800 bg-zinc-950 p-5">
-              <div className="text-[10px] uppercase tracking-widest text-red-500 font-bold mb-2">2. Infrastructure for Building & Running Agents</div>
+              <div className="text-[10px] uppercase tracking-widest text-orange-500 font-bold mb-2">2. Infrastructure for Building & Running Agents</div>
               <p className="text-sm text-zinc-400 leading-relaxed mb-3">
                 Agent workloads are different from serverless. They need long-lived execution, multi-step orchestration, 
                 model routing, cost controls, sandboxed code execution, and abuse resistance.

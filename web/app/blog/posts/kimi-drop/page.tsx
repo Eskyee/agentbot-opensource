@@ -112,19 +112,19 @@ export default function KimiDropPost() {
  
  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
  <div className="bg-zinc-950 border border-zinc-800 p-6">
- <div className="text-4xl font-bold text-red-500 mb-2">18 hours</div>
+ <div className="text-4xl font-bold text-orange-500 mb-2">18 hours</div>
  <div className="text-zinc-400">Total development time</div>
  </div>
  <div className="bg-zinc-950 border border-zinc-800 p-6">
- <div className="text-4xl font-bold text-red-500 mb-2">7 pages</div>
+ <div className="text-4xl font-bold text-orange-500 mb-2">7 pages</div>
  <div className="text-zinc-400">New dashboard pages</div>
  </div>
  <div className="bg-zinc-950 border border-zinc-800 p-6">
- <div className="text-4xl font-bold text-red-500 mb-2">5 APIs</div>
+ <div className="text-4xl font-bold text-orange-500 mb-2">5 APIs</div>
  <div className="text-zinc-400">New API endpoints</div>
  </div>
  <div className="bg-zinc-950 border border-zinc-800 p-6">
- <div className="text-4xl font-bold text-red-500 mb-2">8 models</div>
+ <div className="text-4xl font-bold text-orange-500 mb-2">8 models</div>
  <div className="text-zinc-400">Database models added</div>
  </div>
  </div>

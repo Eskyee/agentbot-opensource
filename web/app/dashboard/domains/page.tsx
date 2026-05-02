@@ -163,7 +163,7 @@ export default function DomainsPage() {
             <button
               onClick={addDomain}
               disabled={adding || !newDomain.trim() || domains.length >= maxDomains}
-              className="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 border border-red-500/30 text-orange-400 text-xs font-bold hover:bg-red-600/20 disabled:opacity-30 transition-colors"
+              className="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 border border-orange-500/30 text-orange-400 text-xs font-bold hover:bg-red-600/20 disabled:opacity-30 transition-colors"
             >
               {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               Add
@@ -219,7 +219,7 @@ export default function DomainsPage() {
                   </div>
                   <button
                     onClick={() => removeDomain(d.domain)}
-                    className="p-1.5 text-zinc-600 hover:text-red-400 transition-colors"
+                    className="p-1.5 text-zinc-600 hover:text-orange-400 transition-colors"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>

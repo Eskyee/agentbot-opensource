@@ -235,7 +235,7 @@ export default function CostPage() {
             <div className="h-2 rounded-full bg-zinc-800 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
-                  quota.percent >= 90 ? 'bg-red-500' :
+                  quota.percent >= 90 ? 'bg-orange-500' :
                   quota.percent >= 80 ? 'bg-amber-400' :
                   'bg-green-500'
                 }`}
@@ -353,7 +353,7 @@ export default function CostPage() {
               <div key={m.model} className="flex items-center gap-4">
                 <div className="w-24 sm:w-40 text-xs font-mono text-zinc-400 truncate">{m.model}</div>
                 <div className="flex-1 bg-zinc-800 h-1.5 overflow-hidden">
-                  <div className="h-full bg-red-500" style={{ width: `${m.percent}%` }} />
+                  <div className="h-full bg-orange-500" style={{ width: `${m.percent}%` }} />
                 </div>
                 <div className="w-12 text-right text-[10px] text-zinc-500">{m.percent}%</div>
                 <div className="w-20 text-right text-xs font-mono text-green-400">${m.cost.toFixed(2)}</div>

@@ -142,7 +142,7 @@ export default function LearnPage() {
             <span className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2 block">New Operators</span>
             <h2 className="text-2xl font-bold tracking-tighter uppercase">Interactive Coaching</h2>
           </div>
-          <div className="border border-red-500/20 bg-red-500/5 p-8">
+          <div className="border border-orange-500/20 bg-orange-500/5 p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
                 <h3 className="text-xl font-bold uppercase tracking-tight text-orange-400 mb-2">Agentbot Coach</h3>
@@ -152,7 +152,7 @@ export default function LearnPage() {
               </div>
               <Link 
                 href="/dashboard/coach"
-                className="inline-flex items-center gap-2 bg-red-500 text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-red-400 transition-colors whitespace-nowrap"
+                className="inline-flex items-center gap-2 bg-orange-500 text-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors whitespace-nowrap"
               >
                 Start Coaching Module
                 <ArrowRight className="h-4 w-4" />

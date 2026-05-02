@@ -216,7 +216,7 @@ export default function MaintenancePage() {
                   <div className="flex items-center gap-1.5">
                   {health?.healthy
                     ? <CheckCircle className="h-4 w-4 text-green-500" />
-                    : <XCircle className="h-4 w-4 text-red-500" />}
+                    : <XCircle className="h-4 w-4 text-orange-500" />}
                   <span className="text-sm">{health?.healthy ? 'Live' : 'Down'}</span>
                 </div>
               </div>
@@ -309,7 +309,7 @@ export default function MaintenancePage() {
                 <button
                   onClick={deleteAgent}
                   disabled={restarting || resetting || deleting}
-                  className="border border-red-900 text-red-600 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-red-950 disabled:opacity-50 transition-colors flex items-center gap-2"
+                  className="border border-red-900 text-red-600 px-6 py-2.5 text-[10px] font-bold uppercase tracking-widest hover:bg-orange-950 disabled:opacity-50 transition-colors flex items-center gap-2"
                 >
                   {deleting ? (
                     <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Deleting…</>
@@ -382,7 +382,7 @@ export default function MaintenancePage() {
             className="w-full flex items-center justify-between p-5 hover:bg-zinc-900 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-red-500" />
+              <Activity className="h-4 w-4 text-orange-500" />
               <span className="text-xs font-bold uppercase tracking-widest">Runtime Probe Checks</span>
             </div>
             {showDocker ? <ChevronDown className="h-4 w-4 text-zinc-500" /> : <ChevronRight className="h-4 w-4 text-zinc-500" />}

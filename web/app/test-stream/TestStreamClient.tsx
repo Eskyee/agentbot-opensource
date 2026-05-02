@@ -76,7 +76,7 @@ export default function TestStreamClient() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-red-500/30 font-mono p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">🎛️ baseFM Stream Test</h1>
 
@@ -151,7 +151,7 @@ export default function TestStreamClient() {
           </div>
 
           {error && (
-            <div className="bg-red-900/50 border border-red-500 text-red-300 p-4 rounded-lg">
+            <div className="bg-red-900/50 border border-orange-500 text-red-300 p-4 rounded-lg">
               {error}
             </div>
           )}

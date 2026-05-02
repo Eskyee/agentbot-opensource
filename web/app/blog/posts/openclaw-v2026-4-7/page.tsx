@@ -10,7 +10,7 @@ export default function OpenClawV202647Post() {
     <main className="min-h-screen bg-black text-white font-mono">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-12">
-          <div className="text-[10px] uppercase tracking-widest text-red-500 mb-4">Release</div>
+          <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-4">Release</div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-6">
             OpenClaw v2026.4.7
           </h1>
@@ -31,7 +31,7 @@ export default function OpenClawV202647Post() {
           </p>
 
           <div className="bg-zinc-900 border border-zinc-800 p-6 my-8">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-red-500 mb-4">What's New</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-orange-500 mb-4">What's New</h3>
             <ul className="space-y-3 text-sm text-zinc-300">
               <li>→ Performance optimizations for concurrent tool orchestration</li>
               <li>→ Bug fixes in provider routing</li>
@@ -47,7 +47,7 @@ export default function OpenClawV202647Post() {
           </p>
 
           <p className="text-zinc-500 text-sm">
-            For self-hosting, pull the latest image: <code className="text-red-500">ghcr.io/openclaw/openclaw:2026.4.7</code>
+            For self-hosting, pull the latest image: <code className="text-orange-500">ghcr.io/openclaw/openclaw:2026.4.7</code>
           </p>
         </div>
       </article>

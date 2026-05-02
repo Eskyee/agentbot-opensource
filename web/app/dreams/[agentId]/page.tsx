@@ -14,7 +14,7 @@ async function getAgentDreams(agentId: string) {
 }
 
 const MOOD_COLORS: Record<string, string> = {
-  calm: 'text-red-500',
+  calm: 'text-orange-500',
   curious: 'text-amber-400',
   excited: 'text-green-400',
   anxious: 'text-red-400',

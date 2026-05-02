@@ -107,7 +107,7 @@ export default function FollowingOpenClawContributors() {
           <div className="border-t border-zinc-800 mt-8 pt-8">
             <p className="text-zinc-400 text-sm">
               Check out the full contributor list:{' '}
-              <a href="https://github.com/open-chat-ai/openclaw/graphs/contributors" className="text-red-500 hover:underline">
+              <a href="https://github.com/open-chat-ai/openclaw/graphs/contributors" className="text-orange-500 hover:underline">
                 github.com/open-chat-ai/openclaw/graphs/contributors
               </a>
             </p>

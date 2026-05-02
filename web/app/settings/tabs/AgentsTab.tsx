@@ -151,7 +151,7 @@ export function AgentsTab({
                 <button
                   onClick={() => deleteAgent(agent.id, agent.name)}
                   disabled={deletingId === agent.id}
-                  className="border border-zinc-700 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-red-500 hover:border-red-500 hover:bg-red-950/30 disabled:opacity-50 transition-colors"
+                  className="border border-zinc-700 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-500 hover:border-orange-500 hover:bg-orange-950/30 disabled:opacity-50 transition-colors"
                 >
                   {deletingId === agent.id ? '...' : 'Delete'}
                 </button>

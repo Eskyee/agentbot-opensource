@@ -37,8 +37,8 @@ export function StatusBar() {
         <div className="flex items-center justify-between h-10 text-[10px]">
           <div className="flex items-center gap-4 text-zinc-500 overflow-x-auto">
             <span className="flex items-center gap-2 whitespace-nowrap">
-              <span className={`w-1.5 h-1.5 rounded-full ${status.online ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className={`font-mono font-bold ${status.online ? 'text-green-500' : 'text-red-500'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${status.online ? 'bg-green-500' : 'bg-orange-500'}`} />
+              <span className={`font-mono font-bold ${status.online ? 'text-green-500' : 'text-orange-500'}`}>
                 {status.online ? 'ONLINE' : 'OFFLINE'}
               </span>
             </span>

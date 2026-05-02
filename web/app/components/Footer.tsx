@@ -135,7 +135,7 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${
                 status === 'operational' ? 'bg-green-500' :
-                status === 'down' ? 'bg-red-500' :
+                status === 'down' ? 'bg-orange-500' :
                 'bg-yellow-500 animate-pulse'
               }`} />
               <span className="text-[10px] uppercase tracking-widest text-zinc-600">

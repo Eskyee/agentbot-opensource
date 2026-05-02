@@ -94,7 +94,7 @@ export default function AdminModerationPage() {
                     <button
                       onClick={() => takeAction(report.id, targetType, targetId, `remove_${targetType}`)}
                       disabled={acting === report.id}
-                      className="px-3 py-1.5 border border-red-800 text-red-400 hover:bg-red-950/30 text-xs uppercase tracking-widest transition-colors disabled:opacity-50"
+                      className="px-3 py-1.5 border border-red-800 text-red-400 hover:bg-orange-950/30 text-xs uppercase tracking-widest transition-colors disabled:opacity-50"
                     >
                       Remove {targetType}
                     </button>

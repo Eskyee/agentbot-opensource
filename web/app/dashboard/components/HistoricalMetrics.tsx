@@ -112,7 +112,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
           <div className="text-zinc-400">Loading historical data...</div>
         </div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+        <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
             <span>⚠️</span>
             <span className="text-red-400">{error}</span>
@@ -169,7 +169,7 @@ export function HistoricalMetrics({ userId }: { userId: string }) {
               {historicalData.slice(-24).map((entry, idx) => (
                 <div
                   key={entry.timestamp}
-                  className="flex-1 bg-red-500 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
+                  className="flex-1 bg-orange-500 rounded-sm opacity-70 hover:opacity-100 transition-opacity"
                   style={{ height: `${entry.memory}%` }}
                   title={`${formatTime(entry.timestamp)}: ${entry.memory}%`}
                 />

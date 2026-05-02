@@ -68,7 +68,7 @@ export default function DailyBriefPage() {
     <DashboardShell>
       <DashboardHeader
         title="Daily Brief"
-        icon={<Sun className="h-5 w-5 text-red-500" />}
+        icon={<Sun className="h-5 w-5 text-orange-500" />}
         action={
           <button
             onClick={fetchBrief}
@@ -91,7 +91,7 @@ export default function DailyBriefPage() {
 
         {loading && !data ? (
           <div className="flex flex-col py-20 gap-4 items-center">
-            <RefreshCw className="h-6 w-6 text-red-500 animate-spin" />
+            <RefreshCw className="h-6 w-6 text-orange-500 animate-spin" />
             <p className="text-zinc-600 text-xs uppercase tracking-widest">Gathering real-time data…</p>
           </div>
         ) : (

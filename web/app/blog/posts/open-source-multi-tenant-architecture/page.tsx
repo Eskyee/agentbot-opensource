@@ -99,7 +99,7 @@ export default function OpenSourceArchitecture() {
 
           <div className="border-t border-zinc-800 mt-8 pt-8">
             <p className="text-zinc-400 text-sm">
-              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-red-500 hover:text-white">
+              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-500 hover:text-white">
                 github.com/Eskyee/agentbot-opensource →
               </a>
             </p>

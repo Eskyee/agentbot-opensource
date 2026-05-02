@@ -174,8 +174,8 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
   const getAlertColor = (type: Alert['type']) => {
     switch (type) {
       case 'warning': return 'bg-yellow-500/10 border-yellow-500/30'
-      case 'error': return 'bg-red-500/10 border-red-500/30'
-      case 'info': return 'bg-red-500/10 border-red-500/30'
+      case 'error': return 'bg-orange-500/10 border-orange-500/30'
+      case 'info': return 'bg-orange-500/10 border-orange-500/30'
     }
   }
 
@@ -213,7 +213,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
           <div className="text-zinc-400">Loading performance data...</div>
         </div>
       ) : error ? (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+        <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2">
             <span>⚠️</span>
             <span className="text-red-400">{error}</span>
@@ -226,7 +226,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className={`rounded-lg p-3 border ${
                 getThresholdStatus(currentMetrics.cpu, thresholds.cpu) === 'critical'
-                  ? 'bg-red-500/10 border-red-500/30'
+                  ? 'bg-orange-500/10 border-orange-500/30'
                   : getThresholdStatus(currentMetrics.cpu, thresholds.cpu) === 'warning'
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'
@@ -238,7 +238,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
 
               <div className={`rounded-lg p-3 border ${
                 getThresholdStatus(currentMetrics.memory, thresholds.memory) === 'critical'
-                  ? 'bg-red-500/10 border-red-500/30'
+                  ? 'bg-orange-500/10 border-orange-500/30'
                   : getThresholdStatus(currentMetrics.memory, thresholds.memory) === 'warning'
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'
@@ -250,7 +250,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
 
               <div className={`rounded-lg p-3 border ${
                 getThresholdStatus(currentMetrics.errorRate, thresholds.errorRate) === 'critical'
-                  ? 'bg-red-500/10 border-red-500/30'
+                  ? 'bg-orange-500/10 border-orange-500/30'
                   : getThresholdStatus(currentMetrics.errorRate, thresholds.errorRate) === 'warning'
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'
@@ -262,7 +262,7 @@ export function PerformanceAlerts({ userId }: { userId: string }) {
 
               <div className={`rounded-lg p-3 border ${
                 getThresholdStatus(currentMetrics.responseTime, thresholds.responseTime) === 'critical'
-                  ? 'bg-red-500/10 border-red-500/30'
+                  ? 'bg-orange-500/10 border-orange-500/30'
                   : getThresholdStatus(currentMetrics.responseTime, thresholds.responseTime) === 'warning'
                   ? 'bg-yellow-500/10 border-yellow-500/30'
                   : 'bg-green-500/10 border-green-500/30'

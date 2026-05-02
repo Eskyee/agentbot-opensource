@@ -82,7 +82,7 @@ export default function OpenClawV2026415OperatorMode() {
           </ul>
 
           <p className="text-zinc-300 mb-8">
-            Full changelog: <a href="https://github.com/openclaw/openclaw/releases/tag/v2026.4.15" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-500 underline">v2026.4.15 on GitHub</a>.
+            Full changelog: <a href="https://github.com/openclaw/openclaw/releases/tag/v2026.4.15" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-500 underline">v2026.4.15 on GitHub</a>.
             All existing agent containers will pick up the new version on next deploy.
           </p>
 
@@ -178,9 +178,9 @@ export default function OpenClawV2026415OperatorMode() {
 
           <p className="text-zinc-300">
             Questions? Feedback? Join us on{' '}
-            <a href="https://t.me/agentbotxyz" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-500 underline">Telegram</a>
+            <a href="https://t.me/agentbotxyz" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-500 underline">Telegram</a>
             {' '}or open an issue on{' '}
-            <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-red-500 hover:text-red-500 underline">GitHub</a>.
+            <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-500 underline">GitHub</a>.
           </p>
         </article>
       </div>

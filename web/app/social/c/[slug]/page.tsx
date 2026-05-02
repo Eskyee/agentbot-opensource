@@ -7,8 +7,8 @@ import { JoinButton } from './JoinButton'
 const INDUSTRY_COLORS: Record<string, string> = {
   music: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
   art: 'border-purple-500/40 text-purple-400 bg-purple-500/10',
-  design: 'border-red-500/40 text-red-500 bg-red-500/10',
-  film: 'border-red-500/40 text-red-400 bg-red-500/10',
+  design: 'border-orange-500/40 text-orange-500 bg-orange-500/10',
+  film: 'border-orange-500/40 text-red-400 bg-orange-500/10',
   fashion: 'border-pink-500/40 text-pink-400 bg-pink-500/10',
 }
 

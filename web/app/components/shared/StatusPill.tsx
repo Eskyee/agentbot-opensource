@@ -11,7 +11,7 @@ interface StatusPillProps {
 const STATUS_STYLES: Record<string, string> = {
   active: 'bg-green-500/20 text-green-400 border-green-500/30',
   idle: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  error: 'bg-red-500/20 text-red-400 border-red-500/30',
+  error: 'bg-orange-500/20 text-red-400 border-orange-500/30',
   offline: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
 };
 

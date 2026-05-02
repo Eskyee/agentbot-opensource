@@ -217,7 +217,7 @@ export default function ViewDocsPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <h3 className="font-semibold text-sm uppercase tracking-tight">{feature.title}</h3>
                   {feature.badge && (
-                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-red-500/30 px-2 py-0.5">
+                    <span className="text-[9px] uppercase tracking-widest text-orange-400 border border-orange-500/30 px-2 py-0.5">
                       {feature.badge}
                     </span>
                   )}

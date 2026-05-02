@@ -103,7 +103,7 @@ export default function DebugConsolePage() {
     <DashboardShell>
       <DashboardHeader
         title="Debug Console"
-        icon={<Terminal className="h-5 w-5 text-red-500" />}
+        icon={<Terminal className="h-5 w-5 text-orange-500" />}
         action={
           <div className="flex items-center gap-2">
             <button
@@ -132,7 +132,7 @@ export default function DebugConsolePage() {
             <select
               value={selectedCommand}
               onChange={e => setSelectedCommand(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm font-mono px-4 py-3 appearance-none cursor-pointer focus:outline-none focus:border-red-500 transition-colors"
+              className="w-full bg-zinc-900 border border-zinc-700 text-white text-sm font-mono px-4 py-3 appearance-none cursor-pointer focus:outline-none focus:border-orange-500 transition-colors"
             >
               {COMMANDS.map(cmd => (
                 <option key={cmd.value} value={cmd.value}>

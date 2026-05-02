@@ -9,7 +9,7 @@ export default function NotFound() {
   return (
     <main className="min-h-screen bg-black text-white font-mono flex flex-col items-center justify-center px-6">
       <div className="text-center max-w-lg">
-        <div className="inline-block px-3 py-1 border border-zinc-800 text-red-500 text-[10px] uppercase tracking-widest mb-8">
+        <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest mb-8">
           Error 404
         </div>
 

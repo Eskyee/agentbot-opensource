@@ -132,7 +132,7 @@ export default function SolanaDashboard() {
       <DashboardHeader
         title="Solana Tools"
         subtitle="Wallet lookup, RPC control, and Solana integration references"
-        icon={<Coins className="h-5 w-5 text-red-500" />}
+        icon={<Coins className="h-5 w-5 text-orange-500" />}
       />
       <DashboardContent className="max-w-5xl mx-auto">
       {/* Header */}
@@ -230,7 +230,7 @@ export default function SolanaDashboard() {
         </div>
 
         {walletError && (
-          <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg">
+          <div className="mt-4 bg-orange-500/10 border border-orange-500/30 text-red-400 text-sm px-4 py-3 rounded-lg">
             {walletError}
           </div>
         )}
@@ -349,7 +349,7 @@ export default function SolanaDashboard() {
             </div>
           </div>
           {rpcError && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg">
+            <div className="bg-orange-500/10 border border-orange-500/30 text-red-400 text-sm px-4 py-3 rounded-lg">
               {rpcError}
             </div>
           )}

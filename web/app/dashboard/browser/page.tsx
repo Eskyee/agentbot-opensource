@@ -96,7 +96,7 @@ export default function BrowserAutomationPage() {
     <DashboardShell>
       <DashboardHeader
         title="Browser Automation"
-        icon={<Globe className="h-5 w-5 text-red-500" />}
+        icon={<Globe className="h-5 w-5 text-orange-500" />}
         count={steps.length}
         action={
           <div className="flex items-center gap-2">
@@ -188,7 +188,7 @@ export default function BrowserAutomationPage() {
                   {i < steps.length - 1 && <ArrowRight className="h-3 w-3 text-zinc-700 flex-shrink-0" />}
                   <button
                     onClick={() => removeStep(step.id)}
-                    className="p-1.5 text-zinc-600 hover:text-red-400 transition-colors"
+                    className="p-1.5 text-zinc-600 hover:text-orange-400 transition-colors"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -197,7 +197,7 @@ export default function BrowserAutomationPage() {
               <button
                 onClick={runAutomation}
                 disabled={running}
-                className="flex items-center gap-2 w-full justify-center px-5 py-3 bg-red-600/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-600/20 disabled:opacity-30 transition-colors"
+                className="flex items-center gap-2 w-full justify-center px-5 py-3 bg-red-600/10 border border-orange-500/30 text-orange-500 text-sm font-bold hover:bg-red-600/20 disabled:opacity-30 transition-colors"
               >
                 {running ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

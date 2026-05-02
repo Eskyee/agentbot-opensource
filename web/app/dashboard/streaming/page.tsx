@@ -15,8 +15,8 @@ interface StreamingPlatform {
 
 const platforms: StreamingPlatform[] = [
   { id: 'spotify', name: 'Spotify', icon: <Music className="h-5 w-5 text-green-400" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
-  { id: 'soundcloud', name: 'SoundCloud', icon: <Headphones className="h-5 w-5 text-red-500" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
-  { id: 'bandcamp', name: 'Bandcamp', icon: <Disc3 className="h-5 w-5 text-red-500" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
+  { id: 'soundcloud', name: 'SoundCloud', icon: <Headphones className="h-5 w-5 text-orange-500" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
+  { id: 'bandcamp', name: 'Bandcamp', icon: <Disc3 className="h-5 w-5 text-orange-500" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
   { id: 'apple-music', name: 'Apple Music', icon: <Music className="h-5 w-5 text-red-400" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
   { id: 'beatport', name: 'Beatport', icon: <Radio className="h-5 w-5 text-purple-400" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
   { id: 'youtube-music', name: 'YouTube Music', icon: <Video className="h-5 w-5 text-zinc-300" />, connected: false, stats: { listeners: 0, streams: 0, revenue: '$0.00', topTrack: '-' } },
@@ -93,7 +93,7 @@ export default function StreamingPage() {
                 onClick={() => handleConnect(platform.id)}
                 className={`w-full py-3 text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   platform.connected
-                    ? 'border border-red-500/30 text-red-400 hover:border-red-500'
+                    ? 'border border-orange-500/30 text-red-400 hover:border-orange-500'
                     : 'bg-white text-black hover:bg-zinc-200'
                 }`}
               >

@@ -71,7 +71,7 @@ export default function RecipesPage() {
                 <span className={`text-[9px] uppercase tracking-widest px-2 py-0.5 border rounded ${
                   recipe.difficulty === 'Easy' ? 'border-emerald-500/30 text-emerald-400' :
                   recipe.difficulty === 'Medium' ? 'border-yellow-500/30 text-yellow-400' :
-                  'border-red-500/30 text-red-400'
+                  'border-orange-500/30 text-red-400'
                 }`}>{recipe.difficulty}</span>
               </div>
               <h3 className="text-sm font-bold text-white mb-2">{recipe.title}</h3>

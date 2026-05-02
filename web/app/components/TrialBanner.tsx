@@ -31,7 +31,7 @@ export function TrialBanner() {
         </span>
         <Link
           href="/billing"
-          className="text-white bg-red-600 hover:bg-red-500 px-3 py-1 uppercase tracking-widest font-bold transition-colors"
+          className="text-white bg-red-600 hover:bg-orange-500 px-3 py-1 uppercase tracking-widest font-bold transition-colors"
         >
           Upgrade to continue
         </Link>
@@ -49,7 +49,7 @@ export function TrialBanner() {
         : 'bg-zinc-900 border-zinc-800'
     }`}>
       <div className="flex items-center gap-2">
-        <Zap className={`h-3 w-3 ${urgent ? 'text-red-500' : 'text-purple-400'}`} />
+        <Zap className={`h-3 w-3 ${urgent ? 'text-orange-500' : 'text-purple-400'}`} />
         <span className={`uppercase tracking-widest ${urgent ? 'text-red-400' : 'text-zinc-400'}`}>
           {days === 1 ? '1 day' : `${days} days`} left in your free trial
         </span>

@@ -231,7 +231,7 @@ function DashboardContent() {
           <p className="text-xl mb-4">⚠️ {error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded"
+            className="px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 rounded"
           >
             Retry
           </button>
@@ -246,7 +246,7 @@ function DashboardContent() {
       <div className="flex min-h-screen bg-black items-center justify-center">
         <div className="text-center">
           <p className="text-zinc-400 mb-4">Please sign in to view your dashboard</p>
-          <Link href="/login" className="text-red-500 hover:underline">
+          <Link href="/login" className="text-orange-500 hover:underline">
             Sign In
           </Link>
         </div>
@@ -297,7 +297,7 @@ function DashboardContent() {
               </div>
               <div className="mt-2 h-2 bg-zinc-800 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-red-500 transition-all duration-500"
+                  className="h-full bg-orange-500 transition-all duration-500"
                   style={{ width: stats?.cpu || '0%' }}
                 />
               </div>

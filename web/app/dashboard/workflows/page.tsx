@@ -24,7 +24,7 @@ interface Workflow {
 }
 
 const NODE_TYPES = [
-  { type: 'trigger', label: 'Trigger', color: 'text-red-500' },
+  { type: 'trigger', label: 'Trigger', color: 'text-orange-500' },
   { type: 'action', label: 'Action', color: 'text-green-400' },
   { type: 'condition', label: 'Condition', color: 'text-yellow-400' },
   { type: 'output', label: 'Output', color: 'text-purple-400' },
@@ -182,7 +182,7 @@ export default function WorkflowsPage() {
 
       <DashboardContent>
         {error && (
-          <div className="mb-6 border border-red-500/30 p-3 text-red-400 text-xs">
+          <div className="mb-6 border border-orange-500/30 p-3 text-red-400 text-xs">
             {error}
           </div>
         )}
@@ -269,7 +269,7 @@ export default function WorkflowsPage() {
                     </button>
                     <button
                       onClick={() => deleteWorkflow(selectedWorkflow)}
-                      className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-red-400 transition-colors"
+                      className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-orange-400 transition-colors"
                     >
                       Delete
                     </button>

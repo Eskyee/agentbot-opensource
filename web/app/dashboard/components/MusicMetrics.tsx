@@ -72,7 +72,7 @@ export function MusicMetrics({ userId }: { userId: string }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <div className="text-sm text-zinc-500">Completed</div>
-              <div className="text-2xl font-bold text-red-500">{metrics.bookings.completed}</div>
+              <div className="text-2xl font-bold text-orange-500">{metrics.bookings.completed}</div>
             </div>
             <div>
               <div className="text-sm text-zinc-500">Pending</div>
@@ -94,7 +94,7 @@ export function MusicMetrics({ userId }: { userId: string }) {
             </div>
             <div>
               <div className="text-sm text-zinc-500">Active</div>
-              <div className="text-3xl font-bold text-red-500">{metrics.fans.active.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-orange-500">{metrics.fans.active.toLocaleString()}</div>
             </div>
           </div>
         )}
@@ -103,11 +103,11 @@ export function MusicMetrics({ userId }: { userId: string }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="text-sm text-zinc-500">Monthly Streams</div>
-              <div className="text-3xl font-bold text-red-500">{metrics.streams.monthlyStreams.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-orange-500">{metrics.streams.monthlyStreams.toLocaleString()}</div>
             </div>
             <div>
               <div className="text-sm text-zinc-500">Listeners</div>
-              <div className="text-3xl font-bold text-red-500">{metrics.streams.monthlyListeners.toLocaleString()}</div>
+              <div className="text-3xl font-bold text-orange-500">{metrics.streams.monthlyListeners.toLocaleString()}</div>
               <div className="text-xs text-zinc-500">{metrics.streams.growth}</div>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function MusicMetrics({ userId }: { userId: string }) {
         {activeTab === 'skills' && (
           <div>
             <div className="text-sm text-zinc-500">Active Skills</div>
-            <div className="text-3xl font-bold text-red-500">{metrics.skills.active} / {metrics.skills.total}</div>
+            <div className="text-3xl font-bold text-orange-500">{metrics.skills.active} / {metrics.skills.total}</div>
             <div className="text-xs text-zinc-500">{metrics.skills.growth} this week</div>
           </div>
         )}

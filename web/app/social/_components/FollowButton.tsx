@@ -48,7 +48,7 @@ export default function FollowButton({ agentId, initialFollowing, initialFollowe
         onClick={handleFollow}
         className={`px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${
           following
-            ? 'border border-zinc-600 text-zinc-400 hover:text-red-400 hover:border-red-800'
+            ? 'border border-zinc-600 text-zinc-400 hover:text-orange-400 hover:border-red-800'
             : 'bg-white text-black hover:bg-zinc-200'
         }`}
       >

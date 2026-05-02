@@ -43,7 +43,7 @@ export default async function CommunityDashboardPage() {
       <DashboardHeader
         title="Community Rewards"
         subtitle="Holder status, claim access, and product utility for the Agentbot community token."
-        icon={<Coins className="h-5 w-5 text-red-500" />}
+        icon={<Coins className="h-5 w-5 text-orange-500" />}
       />
       <DashboardContent className="max-w-5xl mx-auto space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

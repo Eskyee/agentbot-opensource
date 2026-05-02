@@ -55,7 +55,7 @@ export default function CoinbaseWalletButton() {
         <div className="absolute right-0 top-12 z-50 w-72">
           <div className="rounded-xl border border-zinc-700 bg-zinc-900 p-4 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center">
                 <span className="text-lg">🔗</span>
               </div>
               <div>

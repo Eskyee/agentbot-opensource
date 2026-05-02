@@ -123,7 +123,7 @@ export default function DevicesPage() {
     <DashboardShell>
       <DashboardHeader
         title="Device Pairing"
-        icon={<Smartphone className="h-5 w-5 text-red-500" />}
+        icon={<Smartphone className="h-5 w-5 text-orange-500" />}
         count={pending.length + approved.length}
         action={
           <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function DevicesPage() {
         {/* Pair This Device */}
         <div className="border border-zinc-800 bg-zinc-950 p-6">
           <div className="flex items-center gap-2 mb-3">
-            <QrCode className="h-4 w-4 text-red-500" />
+            <QrCode className="h-4 w-4 text-orange-500" />
             <h2 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
               Pair Your Device
             </h2>
@@ -176,7 +176,7 @@ export default function DevicesPage() {
               <button
                 onClick={pairDevice}
                 disabled={pairing}
-                className="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 border border-red-500/30 text-red-500 text-sm font-bold hover:bg-red-600/20 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 border border-orange-500/30 text-orange-500 text-sm font-bold hover:bg-red-600/20 disabled:opacity-50 transition-colors"
               >
                 {pairing ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />
@@ -258,7 +258,7 @@ export default function DevicesPage() {
                     <button
                       onClick={() => handleAction(device.id, 'deny')}
                       disabled={!!actionLoading}
-                      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-orange-500/10 border border-orange-500/30 text-red-400 hover:bg-orange-500/20 disabled:opacity-50 transition-colors"
                     >
                       {actionLoading === device.id + 'deny' ? (
                         <RefreshCw className="h-3 w-3 animate-spin" />
@@ -330,7 +330,7 @@ export default function DevicesPage() {
                       <button
                         onClick={() => handleAction(device.id, 'revoke')}
                         disabled={!!actionLoading}
-                        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 disabled:opacity-50 transition-colors"
+                        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-orange-500/10 border border-orange-500/30 text-red-400 hover:bg-orange-500/20 disabled:opacity-50 transition-colors"
                       >
                         {actionLoading === device.id + 'revoke' ? (
                           <RefreshCw className="h-3 w-3 animate-spin" />

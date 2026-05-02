@@ -115,7 +115,7 @@ function StatCard({ label, value, sub, accent }: { label: string; value: string 
   );
 }
 
-function Bar({ value, max = 1, color = 'bg-red-500' }: { value: number; max?: number; color?: string }) {
+function Bar({ value, max = 1, color = 'bg-orange-500' }: { value: number; max?: number; color?: string }) {
   const pct = Math.min((value / max) * 100, 100);
   return (
     <div className="w-full h-1.5 bg-zinc-800 overflow-hidden">
@@ -149,7 +149,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
           <span className={`text-[10px] font-mono ${trendColor}`}>{trendStr}</span>
         </div>
       </div>
-      <Bar value={fitness.total} color={totalPct >= 60 ? 'bg-emerald-500' : totalPct >= 30 ? 'bg-yellow-500' : 'bg-red-500'} />
+      <Bar value={fitness.total} color={totalPct >= 60 ? 'bg-emerald-500' : totalPct >= 30 ? 'bg-yellow-500' : 'bg-orange-500'} />
       <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
         {dims.map(d => (
           <div key={d.key}>
@@ -157,7 +157,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
               <span className="text-zinc-500">{d.label}</span>
               <span className="text-zinc-300">{(d.val * 100).toFixed(1)}%</span>
             </div>
-            <Bar value={d.val} color="bg-red-500" />
+            <Bar value={d.val} color="bg-orange-500" />
           </div>
         ))}
       </div>
@@ -181,7 +181,7 @@ function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
           <span className="text-[10px] font-mono text-zinc-500">{fe.trend}</span>
         </div>
       </div>
-      <Bar value={F} color={F < 0.3 ? 'bg-emerald-500' : F < 0.6 ? 'bg-yellow-500' : 'bg-red-500'} />
+      <Bar value={F} color={F < 0.3 ? 'bg-emerald-500' : F < 0.6 ? 'bg-yellow-500' : 'bg-orange-500'} />
       <div className="mt-3 space-y-1.5">
         {fe.components.map(c => (
           <div key={c.system} className="flex items-center gap-3 text-[10px] font-mono">
@@ -286,7 +286,7 @@ function CapabilityPanel({ profile }: { profile: SoulStatus['capability_profile'
               </div>
               <Bar
                 value={c.success_rate}
-                color={c.success_rate >= 0.8 ? 'bg-emerald-500' : c.success_rate >= 0.4 ? 'bg-yellow-500' : 'bg-red-500'}
+                color={c.success_rate >= 0.8 ? 'bg-emerald-500' : c.success_rate >= 0.4 ? 'bg-yellow-500' : 'bg-orange-500'}
               />
             </div>
           ))}

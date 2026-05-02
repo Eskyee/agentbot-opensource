@@ -122,10 +122,10 @@ function formatManagedEventLabel(type: string) {
 }
 
 const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: string }> = {
-  reddit:        { label: 'Reddit',  color: 'text-red-500' },
-  twitter:       { label: 'X',       color: 'text-red-500' },
+  reddit:        { label: 'Reddit',  color: 'text-orange-500' },
+  twitter:       { label: 'X',       color: 'text-orange-500' },
   'hacker-news': { label: 'HN',     color: 'text-yellow-400' },
-  discord:       { label: 'Discord', color: 'text-red-500' },
+  discord:       { label: 'Discord', color: 'text-orange-500' },
 };
 
 export default function SignalsPage() {
@@ -543,7 +543,7 @@ export default function SignalsPage() {
                 Use this dashboard to monitor X signals, generate drafts, approve them, and publish from a connected X account.
               </p>
             </div>
-            <Link href="/learn/developers/x-agentbot" className="text-xs uppercase tracking-widest text-red-500 hover:text-white">
+            <Link href="/learn/developers/x-agentbot" className="text-xs uppercase tracking-widest text-orange-500 hover:text-white">
               Read the X guide →
             </Link>
           </div>
@@ -633,7 +633,7 @@ export default function SignalsPage() {
                       <div className="mt-3 flex justify-end">
                         <button
                           onClick={() => deleteManagedSession(session.id)}
-                          className="border border-red-500/30 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:border-red-500 transition-colors"
+                          className="border border-orange-500/30 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:border-orange-500 transition-colors"
                         >
                           Delete
                         </button>
@@ -675,7 +675,7 @@ export default function SignalsPage() {
               </button>
             </div>
             {draftError ? (
-              <div className="mt-3 border border-red-500/30 p-3 text-red-400 text-xs">
+              <div className="mt-3 border border-orange-500/30 p-3 text-red-400 text-xs">
                 {draftError}
               </div>
             ) : null}
@@ -752,7 +752,7 @@ export default function SignalsPage() {
                   <p className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Draft</p>
                   <p className="text-sm text-zinc-300 leading-relaxed">{draft.draftText}</p>
                   {draft.scheduledFor ? (
-                    <div className="mt-3 text-[10px] uppercase tracking-widest text-red-500">
+                    <div className="mt-3 text-[10px] uppercase tracking-widest text-orange-500">
                       Scheduled: {new Date(draft.scheduledFor).toLocaleString()}
                     </div>
                   ) : null}
@@ -779,7 +779,7 @@ export default function SignalsPage() {
                       </button>
                       <button
                         onClick={() => updateDraftStatus(draft.id, 'rejected')}
-                        className="border border-red-500/30 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:border-red-500 transition-colors"
+                        className="border border-orange-500/30 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:border-orange-500 transition-colors"
                       >
                         Reject
                       </button>
@@ -819,7 +819,7 @@ export default function SignalsPage() {
               <div className="text-[10px] uppercase tracking-widest text-zinc-700">{mentions.length} mentions</div>
             </div>
             {mentionsError ? (
-              <div className="border border-red-500/30 p-3 text-red-400 text-xs mb-3">
+              <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">
                 {mentionsError}
               </div>
             ) : null}
@@ -828,7 +828,7 @@ export default function SignalsPage() {
                 <div key={mention.id} className="border border-zinc-800 bg-black p-4">
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div>
-                      <div className="text-[10px] uppercase tracking-widest text-red-500">Mention</div>
+                      <div className="text-[10px] uppercase tracking-widest text-orange-500">Mention</div>
                       <div className="mt-1 text-xs text-zinc-400 font-mono">@{mention.authorUsername}</div>
                     </div>
                     <span className="text-[10px] text-zinc-700 font-mono">{new Date(mention.createdAt).toLocaleString()}</span>
@@ -916,7 +916,7 @@ export default function SignalsPage() {
             </button>
           </div>
           {analyticsError ? (
-            <div className="border border-red-500/30 p-3 text-red-400 text-xs mb-3">{analyticsError}</div>
+            <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">{analyticsError}</div>
           ) : null}
           <div className="space-y-3">
             {(analytics?.posts || []).map((post) => (
@@ -949,7 +949,7 @@ export default function SignalsPage() {
                 href={`https://x.com/i/communities/${communityId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-red-500 hover:text-red-500 font-mono"
+                className="text-xs text-orange-500 hover:text-orange-500 font-mono"
               >
                 x.com/i/communities/{communityId}
               </a>
@@ -971,7 +971,7 @@ export default function SignalsPage() {
             </div>
           </div>
           {communityError ? (
-            <div className="border border-red-500/30 p-3 text-red-400 text-xs mb-3">{communityError}</div>
+            <div className="border border-orange-500/30 p-3 text-red-400 text-xs mb-3">{communityError}</div>
           ) : null}
           <div className="space-y-3">
             {communityPosts.map((post) => (

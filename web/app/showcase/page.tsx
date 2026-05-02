@@ -15,11 +15,11 @@ export const metadata: Metadata = {
 }
 
 const PERSONALITY_LABELS: Record<string, { label: string; color: string }> = {
-  factory:  { label: 'Factory AI',   color: 'text-red-500 border-red-900' },
+  factory:  { label: 'Factory AI',   color: 'text-orange-500 border-red-900' },
   selector: { label: 'Selector',     color: 'text-green-400 border-green-900' },
   ar:       { label: 'A&R',          color: 'text-purple-400 border-purple-900' },
   road:     { label: 'Road',         color: 'text-yellow-400 border-yellow-900' },
-  enterprise: { label: 'Enterprise', color: 'text-red-500 border-red-900' },
+  enterprise: { label: 'Enterprise', color: 'text-orange-500 border-red-900' },
 }
 
 interface ShowcaseAgent {
@@ -163,7 +163,7 @@ export default async function ShowcasePage() {
                         />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                          <Activity className="w-8 h-8 text-red-500" />
+                          <Activity className="w-8 h-8 text-orange-500" />
                         </div>
                       )}
                       <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 border border-zinc-800 text-[8px] text-zinc-500 uppercase tracking-tighter">

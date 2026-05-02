@@ -22,7 +22,7 @@ interface DiagnosticSnapshot {
 const statusColor: Record<ServiceStatus['status'], string> = {
   ok: 'bg-emerald-400',
   degraded: 'bg-amber-400',
-  down: 'bg-red-500',
+  down: 'bg-orange-500',
 }
 
 export default function SupportPlaybook() {
@@ -83,7 +83,7 @@ export default function SupportPlaybook() {
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg border border-red-500 bg-red-950/50 px-4 py-3 text-xs uppercase text-red-300">
+          <div className="mb-6 rounded-lg border border-orange-500 bg-red-950/50 px-4 py-3 text-xs uppercase text-red-300">
             {error}
           </div>
         )}

@@ -21,7 +21,7 @@ export default function VerifyError({
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-4">
-      <div className="max-w-md w-full border border-red-500/30 bg-red-500/5 p-6 space-y-4">
+      <div className="max-w-md w-full border border-orange-500/30 bg-orange-500/5 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <div className="text-2xl">⚠️</div>
           <h2 className="text-sm font-bold uppercase tracking-widest text-red-300">

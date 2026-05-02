@@ -403,7 +403,7 @@ export default function TasksPage() {
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="border border-zinc-800 hover:border-red-800 p-2 text-zinc-400 hover:text-red-400 transition-colors"
+                          className="border border-zinc-800 hover:border-red-800 p-2 text-zinc-400 hover:text-orange-400 transition-colors"
                           title="Delete task"
                         >
                           <Trash2 className="h-4 w-4" />

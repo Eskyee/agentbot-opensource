@@ -89,12 +89,12 @@ export default function MiMoBlogPost() {
               </div>
               <div className="text-sm font-bold text-white">$50/mo</div>
             </div>
-            <div className="border border-red-500/30 bg-red-500/5 p-4 flex justify-between items-center">
+            <div className="border border-orange-500/30 bg-orange-500/5 p-4 flex justify-between items-center">
               <div>
-                <div className="text-sm font-bold text-red-500">Max ⭐</div>
+                <div className="text-sm font-bold text-orange-500">Max ⭐</div>
                 <div className="text-[10px] text-zinc-500">1.6B credits · Around-the-clock usage</div>
               </div>
-              <div className="text-sm font-bold text-red-500">$100/mo</div>
+              <div className="text-sm font-bold text-orange-500">$100/mo</div>
             </div>
           </div>
 
@@ -118,7 +118,7 @@ export default function MiMoBlogPost() {
             <div className="border border-zinc-800 bg-zinc-950 p-4">
               <div className="text-xs font-bold text-white mb-2">Step 1: Subscribe</div>
               <p className="text-[10px] text-zinc-400">
-                Go to <a href="https://platform.xiaomimimo.com/#/token-plan" className="text-red-500 hover:text-red-500">platform.xiaomimimo.com</a> and choose your plan. 
+                Go to <a href="https://platform.xiaomimimo.com/#/token-plan" className="text-orange-500 hover:text-orange-500">platform.xiaomimimo.com</a> and choose your plan. 
                 First buy gets 12% off.
               </p>
             </div>
@@ -131,7 +131,7 @@ export default function MiMoBlogPost() {
             <div className="border border-zinc-800 bg-zinc-950 p-4">
               <div className="text-xs font-bold text-white mb-2">Step 3: Configure</div>
               <p className="text-[10px] text-zinc-400">
-                Add to your config: <code className="text-red-500 bg-zinc-900 px-1 rounded">baseURL: https://token-plan-ams.xiaomimimo.com/v1</code>
+                Add to your config: <code className="text-orange-500 bg-zinc-900 px-1 rounded">baseURL: https://token-plan-ams.xiaomimimo.com/v1</code>
               </p>
             </div>
           </div>

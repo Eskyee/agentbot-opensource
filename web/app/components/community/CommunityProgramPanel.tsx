@@ -107,7 +107,7 @@ export function CommunityProgramPanel({
 
         <div className="rounded-[28px] border border-zinc-800 bg-zinc-950/80 p-6">
           <div className="flex items-start gap-3">
-            <Vote className="mt-0.5 h-5 w-5 text-red-500" />
+            <Vote className="mt-0.5 h-5 w-5 text-orange-500" />
             <div>
               <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Governance Power</div>
               <div className="mt-3 text-lg font-bold uppercase tracking-tight text-white">
@@ -261,7 +261,7 @@ export function CommunityProgramPanel({
           </form>
         ) : null}
 
-        {error ? <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">{error}</div> : null}
+        {error ? <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-red-200">{error}</div> : null}
         {success ? <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">{success}</div> : null}
       </div>
     </div>

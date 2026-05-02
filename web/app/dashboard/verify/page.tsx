@@ -570,7 +570,7 @@ function VerifyContent() {
         {isMobile && selfDeeplink && (
           <a
             href={selfDeeplink}
-            className="mt-3 inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-red-500 hover:bg-red-400 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+            className="mt-3 inline-flex items-center justify-center w-full sm:w-auto gap-2 bg-orange-500 hover:bg-orange-400 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
           >
             Open in Self app
             <ExternalLink className="w-3 h-3" />
@@ -585,7 +585,7 @@ function VerifyContent() {
         )}
 
         {scriptFailed && (
-          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+          <div className="mt-3 border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-xs text-red-300">
             Couldn&apos;t load the SelfClaw embed. Check your connection or any
             script blockers and{' '}
             <button
@@ -607,12 +607,12 @@ function VerifyContent() {
         ) : null}
 
         {verificationError ? (
-          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300 flex items-start justify-between gap-3">
+          <div className="mt-3 border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-xs text-red-300 flex items-start justify-between gap-3">
             <span className="flex-1">{verificationError}</span>
             <button
               type="button"
               onClick={retryWidget}
-              className="shrink-0 border border-red-500/40 hover:border-red-400 text-red-200 hover:text-white text-[10px] font-bold uppercase tracking-widest py-1 px-2"
+              className="shrink-0 border border-orange-500/40 hover:border-orange-400 text-red-200 hover:text-white text-[10px] font-bold uppercase tracking-widest py-1 px-2"
             >
               Retry
             </button>
@@ -665,7 +665,7 @@ function VerifyContent() {
               setAgentkitRegistration(null)
             }}
             placeholder="0x..."
-            className="w-full border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-red-500"
+            className="w-full border border-zinc-800 bg-black px-3 py-2 text-sm text-white outline-none focus:border-orange-500"
           />
         </label>
 
@@ -673,7 +673,7 @@ function VerifyContent() {
           type="button"
           onClick={createAgentkitRegistration}
           disabled={agentkitRegistering}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-red-500 hover:bg-red-400 disabled:opacity-60 disabled:hover:bg-red-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-60 disabled:hover:bg-orange-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
         >
           {agentkitRegistering ? 'Creating QR...' : 'Create World App QR'}
         </button>
@@ -687,7 +687,7 @@ function VerifyContent() {
             />
             <a
               href={agentkitRegistration.connectorURI}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-red-500 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-orange-500 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
             >
               Open World App link
               <ExternalLink className="w-3 h-3" />
@@ -707,7 +707,7 @@ function VerifyContent() {
           type="button"
           onClick={() => checkAgentkitRegistration()}
           disabled={agentkitChecking}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-red-500 disabled:opacity-60 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 border border-zinc-700 hover:border-orange-500 disabled:opacity-60 text-zinc-200 hover:text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
         >
           {agentkitChecking ? 'Checking...' : 'Check AgentBook Status'}
         </button>
@@ -726,13 +726,13 @@ function VerifyContent() {
           type="button"
           onClick={markAgentkitRegistered}
           disabled={agentkitSaving}
-          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-red-500 hover:bg-red-400 disabled:opacity-60 disabled:hover:bg-red-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
+          className="mt-3 inline-flex w-full items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 disabled:opacity-60 disabled:hover:bg-orange-500 text-white text-xs font-bold uppercase tracking-widest py-2.5 px-4 transition-colors"
         >
           {agentkitSaving ? 'Saving...' : 'Mark AgentKit Registered'}
         </button>
 
         {agentkitError ? (
-          <div className="mt-3 border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+          <div className="mt-3 border border-orange-500/20 bg-orange-500/10 px-3 py-2 text-xs text-red-300">
             {agentkitError}
           </div>
         ) : null}
@@ -768,7 +768,7 @@ export default function VerifyPage() {
             href="https://selfclaw.ai"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:text-orange-400 border border-zinc-700 hover:border-red-500 px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:text-orange-400 border border-zinc-700 hover:border-orange-500 px-3 py-1.5 transition-colors"
           >
             <ExternalLink className="w-3 h-3" />
             selfclaw.ai

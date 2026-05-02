@@ -40,16 +40,16 @@ const SKILLS = [
 
 const CATEGORY_COLORS: Record<string, string> = {
   streaming:    'text-amber-400 border-amber-400/30 bg-amber-400/5',
-  development:  'text-red-500 border-red-400/30 bg-red-400/5',
+  development:  'text-orange-500 border-red-400/30 bg-red-400/5',
   channels:     'text-purple-400 border-purple-400/30 bg-purple-400/5',
   payments:     'text-green-400 border-green-400/30 bg-green-400/5',
   events:       'text-pink-400 border-pink-400/30 bg-pink-400/5',
-  productivity: 'text-red-500 border-red-400/30 bg-red-400/5',
+  productivity: 'text-orange-500 border-red-400/30 bg-red-400/5',
   finance:      'text-emerald-400 border-emerald-400/30 bg-emerald-400/5',
   music:        'text-red-400 border-red-400/30 bg-red-400/5',
-  creative:     'text-red-500 border-red-400/30 bg-red-400/5',
+  creative:     'text-orange-500 border-red-400/30 bg-red-400/5',
   marketing:    'text-yellow-400 border-yellow-400/30 bg-yellow-400/5',
-  communication:'text-red-500 border-red-400/30 bg-red-400/5',
+  communication:'text-orange-500 border-red-400/30 bg-red-400/5',
 }
 
 const CATEGORIES = ['all', ...Array.from(new Set(SKILLS.map(s => s.category))).sort()]

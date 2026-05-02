@@ -172,7 +172,7 @@ export default function WalletPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-red-500" />} />
+      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-orange-500" />} />
       <DashboardContent>
         <div className="max-w-2xl space-y-6">
           <WalletTabs />
@@ -233,7 +233,7 @@ export default function WalletPage() {
                         />
                         <button
                           onClick={handleDisconnect}
-                          className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-red-400 transition-colors"
+                          className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-orange-400 transition-colors"
                         >
                           Disconnect
                         </button>
@@ -307,7 +307,7 @@ export default function WalletPage() {
                       <button
                         onClick={closeMppSession}
                         disabled={sessionLoading}
-                        className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-red-400 transition-colors disabled:opacity-50"
+                        className="text-[10px] uppercase tracking-widest text-zinc-600 hover:text-orange-400 transition-colors disabled:opacity-50"
                       >
                         {sessionLoading ? 'Closing...' : 'Close Session'}
                       </button>

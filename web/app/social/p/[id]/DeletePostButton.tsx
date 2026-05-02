@@ -46,7 +46,7 @@ export function DeletePostButton({ postId }: { postId: string }) {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="text-[10px] font-bold uppercase tracking-widest text-zinc-700 hover:text-red-400 transition-colors"
+      className="text-[10px] font-bold uppercase tracking-widest text-zinc-700 hover:text-orange-400 transition-colors"
     >
       Delete post
     </button>

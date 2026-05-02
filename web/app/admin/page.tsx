@@ -159,7 +159,7 @@ export default function AdminPage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
-        <div className="w-12 h-12 border-2 border-red-500 border-t-transparent animate-spin mb-4" />
+        <div className="w-12 h-12 border-2 border-orange-500 border-t-transparent animate-spin mb-4" />
         <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Admin_Session...</p>
       </div>
     );
@@ -176,12 +176,12 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-black text-white font-mono selection:bg-red-500 selection:text-black">
+    <div className="min-h-screen bg-black text-white font-mono selection:bg-orange-500 selection:text-black">
       {/* ─── Admin Top Bar ─────────────────────────────────────────────────── */}
       <div className="border-b border-zinc-800 bg-zinc-950/50 sticky top-0 z-40 backdrop-blur-md">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="bg-red-500 p-1.5 rounded-sm">
+            <div className="bg-orange-500 p-1.5 rounded-sm">
               <Lock className="w-4 h-4 text-black" strokeWidth={3} />
             </div>
             <div>
@@ -192,18 +192,18 @@ export default function AdminPage() {
 
           <div className="flex items-center gap-6">
             <div className="relative group">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-red-500 transition-colors" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600 group-focus-within:text-orange-500 transition-colors" />
               <input 
                 type="text" 
                 placeholder="SEARCH_THE_MATRIX..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-zinc-900 border border-zinc-800 py-1.5 pl-9 pr-4 text-[10px] w-64 focus:outline-none focus:border-red-500/50 focus:bg-zinc-900/50 transition-all uppercase tracking-widest placeholder:text-zinc-700"
+                className="bg-zinc-900 border border-zinc-800 py-1.5 pl-9 pr-4 text-[10px] w-64 focus:outline-none focus:border-orange-500/50 focus:bg-zinc-900/50 transition-all uppercase tracking-widest placeholder:text-zinc-700"
               />
             </div>
             <button 
               onClick={fetchData}
-              className="p-2 border border-zinc-800 hover:border-red-500/40 text-zinc-500 hover:text-red-500 transition-all"
+              className="p-2 border border-zinc-800 hover:border-orange-500/40 text-zinc-500 hover:text-orange-500 transition-all"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -241,7 +241,7 @@ export default function AdminPage() {
             <div className="px-4 py-2 border border-dashed border-zinc-800 rounded-sm">
               <div className="text-[10px] text-zinc-600 uppercase mb-2">Platform_Health</div>
               <div className="flex items-center gap-2 mb-1">
-                <div className={`w-1.5 h-1.5 rounded-full ${stats?.backendStatus === 'OK' ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${stats?.backendStatus === 'OK' ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
                 <span className="text-[10px] uppercase font-bold text-zinc-400">Railway_API: {stats?.backendStatus || '...'}</span>
               </div>
               <div className="flex items-center gap-2 mb-1">
@@ -249,13 +249,13 @@ export default function AdminPage() {
                 <span className="text-[10px] uppercase font-bold text-zinc-400">Gitlawb_Node: OK</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-1.5 h-1.5 rounded-full ${dbHealth?.summary.status === 'healthy' ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                <div className={`w-1.5 h-1.5 rounded-full ${dbHealth?.summary.status === 'healthy' ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
                 <span className="text-[10px] uppercase font-bold text-zinc-400">DB_Status: {dbHealth?.summary.status === 'healthy' ? 'Synced' : 'Drift'}</span>
               </div>
             </div>
 
-            <Link href="/admin/invites" className="flex items-center gap-3 px-4 py-3 bg-zinc-900 border border-zinc-800 hover:border-red-500/40 hover:bg-zinc-900/50 transition-all group">
-              <UserPlus className="w-4 h-4 text-zinc-500 group-hover:text-red-500" />
+            <Link href="/admin/invites" className="flex items-center gap-3 px-4 py-3 bg-zinc-900 border border-zinc-800 hover:border-orange-500/40 hover:bg-zinc-900/50 transition-all group">
+              <UserPlus className="w-4 h-4 text-zinc-500 group-hover:text-orange-500" />
               <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400 group-hover:text-white">Issue_Invites</span>
             </Link>
           </div>
@@ -269,7 +269,7 @@ export default function AdminPage() {
               <div className="grid grid-cols-4 gap-4">
                 <StatCard label="Total_Agents" value={stats?.totalAgents ?? agents.length} />
                 <StatCard label="Active_Runtimes" value={agents.filter(a => a.status === 'active' || a.status === 'running').length} color="text-green-400" />
-                <StatCard label="Railway_Instances" value={stats?.count ?? 0} color="text-red-500" />
+                <StatCard label="Railway_Instances" value={stats?.count ?? 0} color="text-orange-500" />
                 <StatCard label="Backend_Health" value={stats?.backendStatus || '...'} color={stats?.backendStatus === 'OK' ? 'text-green-400' : 'text-red-400'} isString />
               </div>
 
@@ -303,7 +303,7 @@ export default function AdminPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2 text-zinc-500">
                               {agent.websocketUrl?.includes('railway.app') ? (
-                                <span className="text-red-500">RAILWAY</span>
+                                <span className="text-orange-500">RAILWAY</span>
                               ) : agent.websocketUrl ? (
                                 <span className="text-zinc-400 font-mono italic text-[9px] truncate max-w-[120px]">{agent.websocketUrl}</span>
                               ) : (
@@ -316,7 +316,7 @@ export default function AdminPage() {
                               <button className="p-2 hover:bg-zinc-800 rounded-sm text-zinc-400 hover:text-white" title="View Logs">
                                 <Terminal className="w-3.5 h-3.5" />
                               </button>
-                              <button className="p-2 hover:bg-red-950/30 rounded-sm text-zinc-400 hover:text-red-400" title="Force Shutdown">
+                              <button className="p-2 hover:bg-orange-950/30 rounded-sm text-zinc-400 hover:text-orange-400" title="Force Shutdown">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
@@ -351,7 +351,7 @@ export default function AdminPage() {
                           <div className="text-[10px] text-zinc-500 mt-0.5">{user.email}</div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`font-bold uppercase ${user.plan !== 'free' ? 'text-red-500' : 'text-zinc-600'}`}>
+                          <span className={`font-bold uppercase ${user.plan !== 'free' ? 'text-orange-500' : 'text-zinc-600'}`}>
                             {user.plan}
                           </span>
                         </td>
@@ -361,7 +361,7 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button className="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-500 border border-red-500/20 px-3 py-1 bg-red-500/5 hover:bg-red-500/10 transition-all">
+                          <button className="text-[10px] font-bold uppercase tracking-widest text-orange-500 hover:text-orange-500 border border-orange-500/20 px-3 py-1 bg-orange-500/5 hover:bg-orange-500/10 transition-all">
                             IMPERSONATE
                           </button>
                         </td>
@@ -376,9 +376,9 @@ export default function AdminPage() {
           {/* TAB: INTEGRITY */}
           {activeTab === 'integrity' && dbHealth && (
             <div className="space-y-6">
-              <div className={`p-6 border-l-4 rounded-r-sm ${dbHealth.summary.status === 'critical_drift' ? 'bg-red-950/20 border-red-500' : 'bg-green-950/20 border-green-500'}`}>
+              <div className={`p-6 border-l-4 rounded-r-sm ${dbHealth.summary.status === 'critical_drift' ? 'bg-red-950/20 border-orange-500' : 'bg-green-950/20 border-green-500'}`}>
                 <div className="flex items-start gap-4">
-                  <ShieldAlert className={`w-8 h-8 ${dbHealth.summary.status === 'critical_drift' ? 'text-red-500' : 'text-green-500'}`} />
+                  <ShieldAlert className={`w-8 h-8 ${dbHealth.summary.status === 'critical_drift' ? 'text-orange-500' : 'text-green-500'}`} />
                   <div>
                     <h3 className="font-bold uppercase tracking-widest text-white mb-2">Schema Integrity Report</h3>
                     <p className="text-zinc-400 text-sm leading-relaxed max-w-2xl">{dbHealth.recommendation}</p>
@@ -414,7 +414,7 @@ export default function AdminPage() {
                 <button 
                   onClick={performSync}
                   disabled={syncing}
-                  className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-red-500 transition-colors disabled:opacity-50"
+                  className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-orange-500 transition-colors disabled:opacity-50"
                 >
                   {syncing ? 'SYNCING...' : 'Force_Global_Sync'}
                 </button>
@@ -443,7 +443,7 @@ function TabButton({ active, onClick, icon, label, count, status }: {
       onClick={onClick}
       className={`w-full flex items-center justify-between px-4 py-3 rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all ${
         active 
-          ? 'bg-red-500 text-black shadow-[0_0_20px_rgba(239,111,46,0.2)]' 
+          ? 'bg-orange-500 text-black shadow-[0_0_20px_rgba(239,111,46,0.2)]' 
           : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800 hover:border-zinc-700'
       }`}
     >
@@ -453,7 +453,7 @@ function TabButton({ active, onClick, icon, label, count, status }: {
       </div>
       {count !== undefined && <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${active ? 'bg-black/20' : 'bg-zinc-800 text-zinc-500'}`}>{count}</span>}
       {status === 'ok' && <div className="w-1.5 h-1.5 rounded-full bg-green-500" />}
-      {status === 'drift' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+      {status === 'drift' && <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />}
     </button>
   );
 }
@@ -483,7 +483,7 @@ function DriftItem({ label, detected }: { label: string, detected: boolean }) {
     <div className="flex items-center justify-between text-[11px]">
       <span className="text-zinc-500 font-bold uppercase tracking-wider">{label}:</span>
       {detected ? (
-        <span className="text-red-500 font-bold uppercase px-1.5 bg-red-500/10">DETECTED</span>
+        <span className="text-orange-500 font-bold uppercase px-1.5 bg-orange-500/10">DETECTED</span>
       ) : (
         <span className="text-green-500 font-bold uppercase">CLEAN</span>
       )}

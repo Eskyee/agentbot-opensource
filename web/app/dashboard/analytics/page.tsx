@@ -52,7 +52,7 @@ export default function AnalyticsPage() {
   )
 
   const AnalyticsIcon = () => (
-    <svg className="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
     </svg>
   )
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
               <div key={m.label} className="flex-1 flex flex-col items-center gap-1 bg-zinc-950 py-2">
                 <div className="flex w-full h-full items-end gap-1 px-1">
                   <div
-                    className="w-full bg-red-500 min-h-[4px]"
+                    className="w-full bg-orange-500 min-h-[4px]"
                     style={{ height: `${Math.max(2, (m.deployments / maxTrendValue) * 100)}%` }}
                     title={`${m.deployments} deployments`}
                   />
@@ -173,7 +173,7 @@ export default function AnalyticsPage() {
             ))}
           </div>
           <div className="mt-3 flex items-center gap-4 text-[10px] uppercase tracking-widest text-zinc-500">
-            <span className="flex items-center gap-1"><span className="h-2 w-2 bg-red-500" /> Deployments</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 bg-orange-500" /> Deployments</span>
             <span className="flex items-center gap-1"><span className="h-2 w-2 bg-green-500" /> Skills</span>
             <span className="flex items-center gap-1"><span className="h-2 w-2 bg-yellow-500" /> Tasks</span>
           </div>

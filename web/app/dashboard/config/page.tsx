@@ -199,7 +199,7 @@ export default function ConfigEditorPage() {
     <DashboardShell>
       <DashboardHeader
         title="Config Editor"
-        icon={<Settings className="h-5 w-5 text-red-500" />}
+        icon={<Settings className="h-5 w-5 text-orange-500" />}
         action={
           <div className="flex items-center gap-2">
             {isDirty && (
@@ -271,7 +271,7 @@ export default function ConfigEditorPage() {
                     onClick={() => setShowDiff(!showDiff)}
                     className={`flex items-center gap-1 text-[10px] uppercase tracking-widest px-2 py-1 transition-colors ${
                       showDiff
-                        ? 'text-red-500 bg-red-950/30 border border-red-900/50'
+                        ? 'text-orange-500 bg-red-950/30 border border-red-900/50'
                         : 'text-zinc-600 hover:text-white'
                     }`}
                   >

@@ -119,7 +119,7 @@ export default function SupabaseSkillsPage() {
 
         <div className="flex flex-wrap gap-4">
           <a href="https://supabase.com/docs" target="_blank" rel="noopener noreferrer"
-            className="text-[10px] text-red-500 hover:text-red-500 uppercase tracking-widest">
+            className="text-[10px] text-orange-500 hover:text-orange-500 uppercase tracking-widest">
             Supabase Docs →
           </a>
           <a href="https://github.com/supabase/supabase" target="_blank" rel="noopener noreferrer"

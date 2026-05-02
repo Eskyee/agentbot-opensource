@@ -248,7 +248,7 @@ function JobCard({ job, onApply }: { job: Job; onApply: (id: string) => void }) 
             <Tag>{job.roleType}</Tag>
             <Tag>{job.seniority}</Tag>
             <Tag>{CONTRACT_TYPES[job.contractType] || job.contractType}</Tag>
-            {isExternal && <Tag className="bg-red-900/30 text-red-500">Git City</Tag>}
+            {isExternal && <Tag className="bg-red-900/30 text-orange-500">Git City</Tag>}
           </div>
           <div className="flex gap-2 mt-4">
             <button onClick={() => onApply(job.id)} className="bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase px-4 py-2">
@@ -452,7 +452,7 @@ function SponsorsSection() {
             href="https://github.com/sponsors/Eskyee"
             target="_blank"
             rel="noopener"
-            className="bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase px-6 py-3 transition-colors"
+            className="bg-red-600 hover:bg-orange-500 text-white text-xs font-bold uppercase px-6 py-3 transition-colors"
           >
             Sponsor on GitHub
           </a>

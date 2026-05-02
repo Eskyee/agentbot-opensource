@@ -435,7 +435,7 @@ export default function GitlawbNetworkPage() {
                   {idx < nodes.length - 1 && (
                     <div className="flex items-center mx-4">
                       <div className="h-0.5 w-8 bg-zinc-700"></div>
-                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      <div className="w-2 h-2 rounded-full bg-orange-500"></div>
                       <div className="h-0.5 w-8 bg-zinc-700"></div>
                     </div>
                   )}

@@ -14,7 +14,7 @@ const COACH_MODULES = [
     key: 'deploy-first-agent',
     name: 'Deploy Your First Agent',
     description: 'Get an AI agent running in under 2 minutes. No code required.',
-    icon: <Zap className="h-5 w-5 text-red-500" />,
+    icon: <Zap className="h-5 w-5 text-orange-500" />,
     steps: 4,
     href: '/onboard?mode=deploy',
     tag: 'ESSENTIAL'
@@ -23,7 +23,7 @@ const COACH_MODULES = [
     key: 'identity-verification',
     name: 'Onchain Verification',
     description: 'Link your agent to your onchain identity to prove a real human is behind it.',
-    icon: <Shield className="h-5 w-5 text-red-500" />,
+    icon: <Shield className="h-5 w-5 text-orange-500" />,
     steps: 3,
     href: '/dashboard/verify',
     tag: 'TRUST'
@@ -63,9 +63,9 @@ export default function CoachPage() {
         title="Agentbot Coach"
         subtitle="Teaching the next generation of autonomous operators. Follow the factory protocol."
         action={
-          <div className="flex items-center gap-2 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-full">
-            <GraduationCap className="h-3.5 w-3.5 text-red-500" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-red-500">OPERATOR TRAINING</span>
+          <div className="flex items-center gap-2 px-3 py-1 bg-orange-500/10 border border-orange-500/20 rounded-full">
+            <GraduationCap className="h-3.5 w-3.5 text-orange-500" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500">OPERATOR TRAINING</span>
           </div>
         }
       />
@@ -84,7 +84,7 @@ export default function CoachPage() {
               <div className="flex flex-wrap gap-4">
                 <Link 
                   href="/onboard?mode=deploy"
-                  className="bg-red-500 text-black px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-red-400 transition-colors flex items-center gap-2"
+                  className="bg-orange-500 text-black px-6 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-orange-400 transition-colors flex items-center gap-2"
                 >
                   <Play className="h-3 w-3 fill-current" />
                   Start Training
@@ -98,7 +98,7 @@ export default function CoachPage() {
               </div>
             </div>
             {/* Background Decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/5 blur-3xl rounded-full -mr-20 -mt-20" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-3xl rounded-full -mr-20 -mt-20" />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -112,7 +112,7 @@ export default function CoachPage() {
                     {module.tag}
                   </span>
                 </div>
-                <h3 className="text-sm font-bold uppercase tracking-tight mb-2 group-hover:text-red-500 transition-colors">
+                <h3 className="text-sm font-bold uppercase tracking-tight mb-2 group-hover:text-orange-500 transition-colors">
                   {module.name}
                 </h3>
                 <p className="text-xs text-zinc-500 mb-6 leading-relaxed">

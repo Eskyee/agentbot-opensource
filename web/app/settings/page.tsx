@@ -312,7 +312,7 @@ export default function SettingsPage() {
                           href={openclawInfo.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-mono text-red-500 hover:text-red-500 break-all"
+                          className="text-xs font-mono text-orange-500 hover:text-orange-500 break-all"
                         >
                           Open managed instance →
                         </a>

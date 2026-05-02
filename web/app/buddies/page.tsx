@@ -18,11 +18,11 @@ interface Buddy {
 }
 
 const BUDDY_TYPES: Record<BuddyType, { emoji: string; name: string; rarity: string; color: string; border: string; desc: string }> = {
-  crab: { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'from-orange-500 to-orange-500', border: 'border-red-500/30', desc: 'Your basic AI companion. Reliable and eager to learn.' },
+  crab: { emoji: '🤖', name: 'Agentbot Baby', rarity: 'Common', color: 'from-orange-500 to-orange-500', border: 'border-orange-500/30', desc: 'Your basic AI companion. Reliable and eager to learn.' },
   robot: { emoji: '⚡', name: 'Spark Agent', rarity: 'Uncommon', color: 'from-yellow-500 to-orange-500', border: 'border-yellow-500/30', desc: 'Charged with energy. Gains XP faster from play.' },
   ghost: { emoji: '👻', name: 'Ghost Agent', rarity: 'Rare', color: 'from-purple-500 to-pink-500', border: 'border-purple-500/30', desc: 'Mysterious and elusive. Hard to find in eggs.' },
   dragon: { emoji: '🐉', name: 'Dragon Agent', rarity: 'Epic', color: 'from-green-500 to-emerald-500', border: 'border-green-500/30', desc: 'Powerful and wise. A prized companion.' },
-  alien: { emoji: '👽', name: 'Alien Agent', rarity: 'Legendary', color: 'from-red-500 to-amber-500', border: 'border-red-500/30', desc: 'Otherworldly rare. The ultimate buddy.' },
+  alien: { emoji: '👽', name: 'Alien Agent', rarity: 'Legendary', color: 'from-red-500 to-amber-500', border: 'border-orange-500/30', desc: 'Otherworldly rare. The ultimate buddy.' },
 }
 
 const RARITY_ORDER: BuddyType[] = ['crab', 'robot', 'ghost', 'dragon', 'alien']
@@ -319,7 +319,7 @@ export default function BuddiesPage() {
             key={toast.id}
             className={`px-4 py-3 rounded-xl text-sm font-bold shadow-lg animate-bounce pointer-events-auto ${
               toast.type === 'levelup' ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-black' :
-              toast.type === 'error' ? 'bg-red-500/90 text-white' :
+              toast.type === 'error' ? 'bg-orange-500/90 text-white' :
               toast.type === 'info' ? 'bg-zinc-700 text-white' :
               'bg-green-500/90 text-white'
             }`}
@@ -431,7 +431,7 @@ export default function BuddiesPage() {
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-lg mb-6 text-center">{error}</div>
+          <div className="bg-orange-500/10 border border-orange-500/30 text-red-400 text-sm px-4 py-3 rounded-lg mb-6 text-center">{error}</div>
         )}
 
         {/* Collection Tracker */}
@@ -639,11 +639,11 @@ export default function BuddiesPage() {
                 <div className="flex items-center gap-2">
                   {confirmDelete === selectedBuddy.id ? (
                     <>
-                      <button onClick={() => deleteBuddy(selectedBuddy)} className="text-red-400 text-xs border border-red-500/30 px-2 py-1 rounded hover:bg-red-500/10">Confirm</button>
+                      <button onClick={() => deleteBuddy(selectedBuddy)} className="text-red-400 text-xs border border-orange-500/30 px-2 py-1 rounded hover:bg-orange-500/10">Confirm</button>
                       <button onClick={() => setConfirmDelete(null)} className="text-zinc-500 text-xs border border-zinc-700 px-2 py-1 rounded hover:bg-zinc-800">Cancel</button>
                     </>
                   ) : (
-                    <button onClick={() => setConfirmDelete(selectedBuddy.id)} className="text-zinc-600 hover:text-red-400 transition-colors" title="Release buddy">
+                    <button onClick={() => setConfirmDelete(selectedBuddy.id)} className="text-zinc-600 hover:text-orange-400 transition-colors" title="Release buddy">
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
@@ -697,13 +697,13 @@ export default function BuddiesPage() {
               {/* Actions */}
               <div className="grid gap-3 sm:grid-cols-3">
                 <button onClick={() => doAction(selectedBuddy, 'feed')} disabled={actionCooldown}
-                  className="bg-red-500/10 border border-red-500/30 text-red-500 py-3 rounded-xl font-bold hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-50">
+                  className="bg-orange-500/10 border border-orange-500/30 text-orange-500 py-3 rounded-xl font-bold hover:bg-orange-500/20 transition-all active:scale-95 disabled:opacity-50">
                   <div className="text-lg mb-0.5">🍕</div>
                   <div className="text-sm">Feed</div>
                   <div className="text-[10px] opacity-60">+20 energy, +10 XP</div>
                 </button>
                 <button onClick={() => doAction(selectedBuddy, 'play')} disabled={actionCooldown}
-                  className="bg-red-500/10 border border-red-500/30 text-red-500 py-3 rounded-xl font-bold hover:bg-red-500/20 transition-all active:scale-95 disabled:opacity-50">
+                  className="bg-orange-500/10 border border-orange-500/30 text-orange-500 py-3 rounded-xl font-bold hover:bg-orange-500/20 transition-all active:scale-95 disabled:opacity-50">
                   <div className="text-lg mb-0.5">🎮</div>
                   <div className="text-sm">Play</div>
                   <div className="text-[10px] opacity-60">+15 happy, +25 XP</div>

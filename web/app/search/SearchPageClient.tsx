@@ -119,7 +119,7 @@ export function SearchPageClient({ initialQuery }: { initialQuery: string }) {
                   </div>
                   <h2 className="text-sm font-bold uppercase tracking-tight text-white">{result.title}</h2>
                   <p className="mt-2 text-sm leading-6 text-zinc-400">{result.description}</p>
-                  <p className="mt-3 text-xs uppercase tracking-widest text-red-500">{result.href}</p>
+                  <p className="mt-3 text-xs uppercase tracking-widest text-orange-500">{result.href}</p>
                 </Link>
               ))}
             </div>

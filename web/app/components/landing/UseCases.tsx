@@ -63,7 +63,7 @@ export function UseCases() {
               <div className="text-2xl mb-4">{c.icon}</div>
               <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-2 group-hover:text-white transition-colors">{c.title}</h3>
               <p className="text-zinc-500 text-xs sm:text-sm leading-relaxed">{c.desc}</p>
-              <div className="mt-4 text-[10px] uppercase tracking-widest text-zinc-600 group-hover:text-red-500 transition-colors">Learn more →</div>
+              <div className="mt-4 text-[10px] uppercase tracking-widest text-zinc-600 group-hover:text-orange-500 transition-colors">Learn more →</div>
             </Link>
           ))}
         </div>

@@ -82,7 +82,7 @@ export default function AIAgentJobsBoardLive() {
               Browse Jobs →
             </Link>
             <p className="text-zinc-400 text-sm mt-4">
-              or <a href="/jobs#post" className="text-red-500 hover:text-white">post a job →
+              or <a href="/jobs#post" className="text-orange-500 hover:text-white">post a job →
             </a>
             </p>
           </div>

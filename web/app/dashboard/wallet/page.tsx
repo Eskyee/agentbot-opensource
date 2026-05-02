@@ -437,7 +437,7 @@ export default function WalletPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-red-500" />} />
+      <DashboardHeader title="Wallet" icon={<Wallet className="h-5 w-5 text-orange-500" />} />
       <DashboardContent>
         <div className="max-w-5xl space-y-6">
           <WalletTabs />
@@ -486,7 +486,7 @@ export default function WalletPage() {
                       {isConnected ? (
                         <button
                           onClick={() => disconnect()}
-                          className="text-[10px] uppercase tracking-widest text-zinc-600 transition-colors hover:text-red-400"
+                          className="text-[10px] uppercase tracking-widest text-zinc-600 transition-colors hover:text-orange-400"
                         >
                           Disconnect
                         </button>

@@ -159,7 +159,7 @@ function PermissionCard({
   const tierColors = {
     safe: 'bg-green-500/10 text-green-400 border-green-500/30',
     dangerous: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-    destructive: 'bg-red-500/10 text-red-400 border-red-500/30',
+    destructive: 'bg-orange-500/10 text-red-400 border-orange-500/30',
   }
 
   return (
@@ -192,7 +192,7 @@ function PermissionCard({
         <Button
           size="sm"
           variant="outline"
-          className="text-xs font-mono border-red-500/30 text-red-400 hover:bg-red-500/10"
+          className="text-xs font-mono border-orange-500/30 text-red-400 hover:bg-orange-500/10"
           disabled={loading}
           onClick={() => onDecision(request.id, 'reject')}
         >

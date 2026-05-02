@@ -370,7 +370,7 @@ export default function MemoryPage() {
                     </span>
                     <button
                       onClick={() => setEntries(prev => prev.filter(e => e.id !== entry.id))}
-                      className="text-zinc-600 hover:text-red-400 transition-colors"
+                      className="text-zinc-600 hover:text-orange-400 transition-colors"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>

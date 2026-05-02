@@ -539,7 +539,7 @@ function DashboardContent() {
                   </p>
                   {check.detail && <p className="text-[10px] text-zinc-500 mt-1">{check.detail}</p>}
                 </div>
-                <span className={`h-3 w-3 rounded-full ${check.status === 'ok' ? 'bg-green-400' : check.status === 'degraded' ? 'bg-yellow-400' : 'bg-red-500'}`} />
+                <span className={`h-3 w-3 rounded-full ${check.status === 'ok' ? 'bg-green-400' : check.status === 'degraded' ? 'bg-yellow-400' : 'bg-orange-500'}`} />
               </div>
             ))}
           </div>
@@ -566,7 +566,7 @@ function DashboardContent() {
                         href={`https://t.me/${instance?.botUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-red-500 hover:underline"
+                        className="text-orange-500 hover:underline"
                       >
                         @{instance?.botUsername}
                       </a>
@@ -737,7 +737,7 @@ function DashboardContent() {
                       <button
                         onClick={() => performAction('stop')}
                         disabled={!!actionLoading}
-                        className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                        className="flex items-center justify-between w-full border border-orange-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-orange-500/10 transition-colors disabled:opacity-50"
                       >
                         <span>Stop</span>
                         {actionLoading === 'stop' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>■</span>}
@@ -790,7 +790,7 @@ function DashboardContent() {
                         }
                       }}
                       disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                      className="flex items-center justify-between w-full border border-orange-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-orange-500/10 transition-colors disabled:opacity-50"
                     >
                       <div className="text-left">
                         <div>Reset Agent Memory</div>

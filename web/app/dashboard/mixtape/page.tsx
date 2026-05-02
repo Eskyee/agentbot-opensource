@@ -205,7 +205,7 @@ export default function MixtapePage() {
               )}
 
               {uploadError && (
-                <div className="flex items-start gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2.5">
+                <div className="flex items-start gap-2 rounded-xl border border-orange-500/20 bg-orange-500/10 px-3 py-2.5">
                   <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
                   <p className="text-sm text-red-300">{uploadError}</p>
                 </div>

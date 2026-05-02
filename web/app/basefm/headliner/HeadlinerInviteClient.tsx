@@ -97,12 +97,12 @@ export default function HeadlinerInviteClient() {
   }[status]
 
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-red-500/30 font-mono">
+    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono">
       <section className="border-b border-zinc-900">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-6 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>
             <div className="mb-6 flex flex-wrap items-center gap-3">
-              <span className="border border-red-500/40 bg-red-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-red-500">
+              <span className="border border-orange-500/40 bg-orange-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-orange-500">
                 baseFM Headliner
               </span>
               <span className="border border-zinc-800 px-3 py-1 text-[10px] uppercase tracking-widest text-zinc-500">
@@ -125,7 +125,7 @@ export default function HeadlinerInviteClient() {
               </Link>
               <Link
                 href="/dashboard/dj-stream"
-                className="inline-flex items-center justify-center border border-red-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-500 transition-colors hover:border-red-400 hover:text-red-400"
+                className="inline-flex items-center justify-center border border-orange-500/40 px-6 py-3 text-xs font-bold uppercase tracking-widest text-orange-500 transition-colors hover:border-orange-400 hover:text-orange-400"
               >
                 Open DJ Stream Panel
               </Link>
@@ -162,7 +162,7 @@ export default function HeadlinerInviteClient() {
           <div className="grid gap-px bg-zinc-900 sm:grid-cols-2 lg:grid-cols-4">
             {setupSteps.map((step, index) => (
               <div key={step.label} className="bg-black p-5">
-                <div className="mb-4 text-[10px] font-bold uppercase tracking-widest text-red-500">Step {index + 1}</div>
+                <div className="mb-4 text-[10px] font-bold uppercase tracking-widest text-orange-500">Step {index + 1}</div>
                 <h3 className="mb-2 text-xs font-bold uppercase tracking-widest text-white">{step.label}</h3>
                 <p className="text-xs leading-relaxed text-zinc-500">{step.body}</p>
               </div>

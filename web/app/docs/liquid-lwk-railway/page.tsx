@@ -35,7 +35,7 @@ export default function LiquidLwkRailwayPage() {
             href="https://help.blockstream.com/hc/en-us/articles/900002026026-Set-up-a-Liquid-node"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-red-500 hover:text-red-500"
+            className="inline-flex items-center gap-2 text-sm text-orange-500 hover:text-orange-500"
           >
             Set up a Liquid node →
           </a>
@@ -225,15 +225,15 @@ railway up
           </p>
           <ul className="space-y-3 text-zinc-400">
             <li className="flex items-start gap-3">
-              <span className="text-red-500">→</span>
+              <span className="text-orange-500">→</span>
               <span>Use x402 protocol for L-BTC payments</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-500">→</span>
+              <span className="text-orange-500">→</span>
               <span>Issue security tokens for fan clubs</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-red-500">→</span>
+              <span className="text-orange-500">→</span>
               <span>Automated royalty distributions via Liquid</span>
             </li>
           </ul>

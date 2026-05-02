@@ -662,8 +662,8 @@ export default function DJStreamPage() {
               description="Keep your normal Pioneer / Rekordbox muscle memory. Agentbot handles broadcast and relay control, not your deck workflow."
             />
 
-            <div className="mb-4 border border-red-500/20 bg-red-500/10 p-4">
-              <div className="text-[10px] uppercase tracking-widest text-red-500 mb-2">Do This First</div>
+            <div className="mb-4 border border-orange-500/20 bg-orange-500/10 p-4">
+              <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-2">Do This First</div>
               <div className="space-y-2 text-sm text-zinc-200">
                 <p>1. Connect your wallet.</p>
                 <p>2. Confirm your access is eligible.</p>
@@ -740,8 +740,8 @@ export default function DJStreamPage() {
                 </p>
 
                 {hasCommunityPass && claimedWallet && (
-                  <div className="mt-4 border border-red-500/20 bg-red-500/10 p-4">
-                    <p className="text-red-500 text-[10px] uppercase tracking-widest">Agentbot Claimed Wallet</p>
+                  <div className="mt-4 border border-orange-500/20 bg-orange-500/10 p-4">
+                    <p className="text-orange-500 text-[10px] uppercase tracking-widest">Agentbot Claimed Wallet</p>
                     <div className="mt-2 flex items-center gap-3">
                       <code className="text-sm text-zinc-200 font-mono">{formatAddress(claimedWallet)}</code>
                       <StatusPill status="active" label="Ready" />
@@ -765,8 +765,8 @@ export default function DJStreamPage() {
                 </div>
 
                 {hasCommunityPass && claimedWallet && claimedWallet.toLowerCase() !== address!.toLowerCase() ? (
-                  <div className="border border-red-500/20 bg-red-500/10 p-4">
-                    <p className="text-red-500 text-[10px] uppercase tracking-widest">Agentbot Claimed Wallet</p>
+                  <div className="border border-orange-500/20 bg-orange-500/10 p-4">
+                    <p className="text-orange-500 text-[10px] uppercase tracking-widest">Agentbot Claimed Wallet</p>
                     <p className="mt-2 text-sm text-zinc-300">
                       If you use the Agentbot token pass instead of the RAVE gate, the stream will mint against {formatAddress(claimedWallet)}.
                     </p>
@@ -776,7 +776,7 @@ export default function DJStreamPage() {
             )}
 
             {error && (
-              <div className="mt-4 border border-red-500/30 p-3 text-red-400 text-xs">
+              <div className="mt-4 border border-orange-500/30 p-3 text-red-400 text-xs">
                 {error}
               </div>
             )}
@@ -828,8 +828,8 @@ export default function DJStreamPage() {
                 ) : null}
 
                 {hasCommunityPass && claimedWallet && (
-                  <div className="border border-red-500/20 bg-red-500/10 p-4">
-                  <p className="text-red-500 text-xs uppercase tracking-widest">Agentbot Community Pass</p>
+                  <div className="border border-orange-500/20 bg-orange-500/10 p-4">
+                  <p className="text-orange-500 text-xs uppercase tracking-widest">Agentbot Community Pass</p>
                   <p className="mt-2 text-sm text-zinc-200">
                     Your {communityProgram?.rewards.currentTier?.label || 'claimed'} holder status unlocks a baseFM guest pass, so you can stream even without the full BASEFM gate.
                   </p>
@@ -1047,7 +1047,7 @@ export default function DJStreamPage() {
               </div>
 
               {relayActionError ? (
-                <div className="border border-red-500/30 p-3 text-red-400 text-xs">
+                <div className="border border-orange-500/30 p-3 text-red-400 text-xs">
                   {relayActionError}
                 </div>
               ) : null}
@@ -1100,7 +1100,7 @@ export default function DJStreamPage() {
                   <button
                     onClick={endCurrentStream}
                     disabled={endingStream}
-                    className="border border-red-500/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-red-400 transition-colors hover:border-red-500 disabled:border-zinc-800 disabled:text-zinc-600"
+                    className="border border-orange-500/30 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-red-400 transition-colors hover:border-orange-500 disabled:border-zinc-800 disabled:text-zinc-600"
                   >
                     {endingStream ? 'Ending Set' : 'End Set'}
                   </button>
@@ -1334,7 +1334,7 @@ export default function DJStreamPage() {
                     <p>Bill separately for the scheduled broadcast and replay retention. Stored replays should never stay live for free.</p>
                     <p>Best next step: package it as a managed service for DJs who do not want to run OBS every time.</p>
                   </div>
-                  <Link href="/learn/developers/openclaw-dashboard" className="mt-4 inline-flex text-xs uppercase tracking-widest text-red-500 hover:text-white">
+                  <Link href="/learn/developers/openclaw-dashboard" className="mt-4 inline-flex text-xs uppercase tracking-widest text-orange-500 hover:text-white">
                     Read the product flow →
                   </Link>
                 </div>
