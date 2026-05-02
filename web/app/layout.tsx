@@ -2,7 +2,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 import Providers from "./providers";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import ConditionalFooter from "./components/ConditionalFooter";
 import { StatusBar } from "./components/StatusBar";
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
@@ -166,7 +166,7 @@ export default function RootLayout({
             <main id="main-content" className="flex-1" tabIndex={-1}>
               {children}
             </main>
-            <Footer />
+            <ConditionalFooter />
             <StatusBar />
             <Toaster theme="dark" position="bottom-right" richColors closeButton />
           </DashboardDataProvider>
