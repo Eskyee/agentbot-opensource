@@ -357,8 +357,6 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json(base)
-  const muxStream = await getMuxLiveStream(auth.activeSession.mux_stream_id).catch(() => null)
-  return NextResponse.json(buildActiveSessionResponse(auth.activeSession, muxStream))
 }
 
 export async function DELETE(request: NextRequest) {
