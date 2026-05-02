@@ -22,10 +22,12 @@
     "hono": "^4.12.14",
     "@hono/node-server": "^1.19.13",
     "defu": "^6.1.5",
-    "axios": "^1.14.0",
+    "axios": "^1.15.1",
     "fast-xml-parser": "^5.7.0",
-    "follow-redirects": "^1.15.12",
-    "uuid": "^9.0.2",
+    "follow-redirects": "^1.16.0",
+    "uuid": "^9.0.1",
+    "postcss": "^8.5.10",
+    "next-auth": "4.24.12",
     "elliptic": "6.6.1",
     "ws": "8.18.0",
     "picomatch": "^4.0.2",
@@ -36,16 +38,16 @@
     "devalue": "^5.6.4",
     "bs58": "^6.0.0",
     "rpc-websockets": {
-      "uuid": "^9.0.2"
+      "uuid": "^9.0.1"
     },
     "jayson": {
-      "uuid": "^9.0.2"
+      "uuid": "^9.0.1"
     },
     "svix": {
-      "uuid": "^9.0.2"
+      "uuid": "^9.0.1"
     },
     "@metamask/utils": {
-      "uuid": "^9.0.2"
+      "uuid": "^9.0.1"
     },
     "@aws-sdk/xml-builder": {
       "fast-xml-parser": "^5.7.0"
