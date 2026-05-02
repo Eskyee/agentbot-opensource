@@ -176,6 +176,48 @@ async function getTempoBalance(address: Address): Promise<{ formatted: string; t
   };
 }
 
+export async function POST(request: Request) {
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
+  const body = await request.json().catch(() => ({}));
+
+  let userUrl: string | null = null;
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { openclawUrl: true },
+    });
+    userUrl = dbUser?.openclawUrl ?? null;
+  } catch { /* non-fatal */ }
+
+  try {
+    const { soul } = await getWorkingSoulClient(userUrl);
+    switch (action) {
+      case 'nudge': {
+        const result = await soul.nudge(String(body.message ?? ''), Number(body.priority ?? 5));
+        return NextResponse.json(result);
+      }
+      case 'model': {
+        const result = await soul.setModel(body.model ?? null);
+        return NextResponse.json(result);
+      }
+      case 'benchmark': {
+        const result = await soul.triggerBenchmark();
+        return NextResponse.json(result);
+      }
+      default:
+        return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+    }
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 502 });
+  }
+}
+
 export async function GET(request: Request) {
   const session = await getAuthSession();
   if (!session?.user?.id) {
