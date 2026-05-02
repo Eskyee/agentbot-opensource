@@ -40,31 +40,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
     }
 
-    // Idempotency guard. Stripe documents at-least-once delivery and retries on
-    // any non-2xx (and occasionally on 2xx during scaling events). Without this
-    // dedup, retries cause:
-    //   - duplicate receipt emails
-    //   - duplicate auto-provisioning of paid agents
-    //   - repeated `storageLimit: { increment: 50 }` (strictly non-idempotent)
-    // We INSERT first; on unique-violation (P2002) the event has already been
-    // processed and we short-circuit. The row is committed before any side
-    // effects run, so a crash mid-handler will not re-execute side effects on
-    // the next retry — at-most-once for paid actions is the safer default. If
-    // a side effect later fails we surface it via sendAlert below.
-    try {
-      await prisma.processedStripeEvent.create({
-        data: { eventId: event.id, type: event.type },
-      })
-    } catch (err: unknown) {
-      const code = (err as { code?: string } | null)?.code
-      if (code === 'P2002') {
-        console.log(`[Webhook] Duplicate event ${event.id} (${event.type}) — already processed, skipping`)
-        return NextResponse.json({ received: true, deduped: true })
-      }
-      // If we cannot record the event (DB outage), fail-closed with 503 so
-      // Stripe retries instead of silently dropping the event.
-      console.error('[Webhook] Failed to record event for idempotency:', err)
-      return NextResponse.json({ error: 'Idempotency store unavailable' }, { status: 503 })
+    // Idempotency guard. CHECK first — if the event was already processed,
+    // short-circuit immediately. INSERT happens AFTER all fulfillment succeeds
+    // so that Stripe retries on any mid-handler failure instead of being deduped.
+    const existingEvent = await prisma.processedStripeEvent.findUnique({
+      where: { eventId: event.id },
+    });
+    if (existingEvent) {
+      console.log(`[Webhook] Duplicate event ${event.id} (${event.type}) — already processed, skipping`)
+      return NextResponse.json({ received: true, deduped: true })
     }
 
     switch (event.type) {
@@ -239,6 +223,25 @@ export async function POST(request: Request) {
 
       default:
         console.log(`[Webhook] Unhandled event: ${event.type}`)
+    }
+
+    // Record successful fulfillment for idempotency.
+    // Inserted AFTER all side effects so Stripe retries on any mid-handler failure.
+    try {
+      await prisma.processedStripeEvent.create({
+        data: { eventId: event.id, type: event.type },
+      })
+    } catch (err: unknown) {
+      const code = (err as { code?: string } | null)?.code
+      if (code === 'P2002') {
+        // Race condition: another Stripe retry completed between our check and now.
+        console.log(`[Webhook] Event ${event.id} recorded by concurrent retry — safe`)
+      } else {
+        // DB failure after fulfillment — Stripe will retry, side effects are
+        // either idempotent (user update, email) or safe to re-run (provision).
+        console.error('[Webhook] Failed to record event for idempotency:', err)
+        return NextResponse.json({ error: 'Idempotency store unavailable' }, { status: 503 })
+      }
     }
 
     return NextResponse.json({ received: true })

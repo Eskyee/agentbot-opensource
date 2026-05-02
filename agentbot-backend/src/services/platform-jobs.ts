@@ -329,23 +329,18 @@ async function processProvisionJob(job: PlatformJobRow) {
   const payload = job.payload as unknown as QueueProvisionPayload;
   const result = await provisionOnRailway(payload.agentId, payload.plan || 'solo', payload.tailscale || null);
 
-  // Non-fatal: Railway service is deployed regardless of DB persistence success.
-  // A FK violation (user not found) or transient DB error must not re-queue
-  // the provision job — that would re-run serviceCreate and hit "already exists".
-  try {
-    await persistProvisionCompletion({
-      userId: payload.userId,
-      agentId: payload.agentId,
-      url: result.url,
-      plan: payload.plan || 'solo',
-      aiProvider: payload.aiProvider || 'openrouter',
-      agentType: payload.agentType || 'creative',
-      status: result.status,
-    });
-  } catch (dbErr: unknown) {
-    const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
-    console.warn(`[PlatformJobs] persistProvisionCompletion failed (non-fatal): ${msg}`);
-  }
+  // Persist the Agent/User state. If this fails, the job must NOT be marked
+  // completed — otherwise Railway services exist without DB records, which
+  // breaks dashboards, stats, and the source-of-truth Agent row.
+  await persistProvisionCompletion({
+    userId: payload.userId,
+    agentId: payload.agentId,
+    url: result.url,
+    plan: payload.plan || 'solo',
+    aiProvider: payload.aiProvider || 'openrouter',
+    agentType: payload.agentType || 'creative',
+    status: result.status,
+  });
 
   await completeJob(job.id, {
     ...result,
@@ -379,13 +374,33 @@ async function processGatewayChatJob(job: PlatformJobRow) {
     throw new Error('OPENCLAW_GATEWAY_TOKEN is not configured on backend');
   }
 
+  // Validate gateway URL — must be public HTTPS, not internal/metadata hosts
+  const gatewayUrl = payload.gatewayUrl?.replace(/\/\/$/, '');
+  if (!gatewayUrl) {
+    throw new Error('Gateway URL is missing from payload');
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(gatewayUrl);
+  } catch {
+    throw new Error(`Invalid gateway URL: ${gatewayUrl}`);
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error(`Gateway URL must be HTTPS, got: ${parsed.protocol}`);
+  }
+  const hostname = parsed.hostname;
+  const PRIVATE_IP = /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|\[::1\]|169\.254\.)/;
+  if (PRIVATE_IP.test(hostname) || hostname === 'metadata.google.internal') {
+    throw new Error(`Gateway URL resolves to internal host: ${hostname}`);
+  }
+
   const messages: Array<{ role: string; content: string }> = [];
   if (payload.systemPrompt?.trim()) {
     messages.push({ role: 'system', content: payload.systemPrompt.trim() });
   }
   messages.push({ role: 'user', content: payload.message });
 
-  const response = await fetch(`${payload.gatewayUrl.replace(/\/$/, '')}/v1/chat/completions`, {
+  const response = await fetch(`${gatewayUrl}/v1/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

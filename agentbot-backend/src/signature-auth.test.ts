@@ -44,6 +44,9 @@ jest.mock('child_process', () => ({
 }));
 
 // ─── App Import ──────────────────────────────────────────────────────────────
+if (!process.env.INTERNAL_API_KEY) {
+  process.env.INTERNAL_API_KEY = 'test-api-key-for-signature-auth';
+}
 import app from './index';
 
 describe('Fact-Based Identity: SignatureGuard', () => {

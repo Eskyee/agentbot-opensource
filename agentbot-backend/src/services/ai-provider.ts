@@ -433,6 +433,7 @@ export class AIProviderService {
           temperature: options?.temperature ?? 0.7,
           max_tokens: options?.max_tokens,
         }),
+        signal: AbortSignal.timeout(60_000),
       });
 
       if (!response.ok) {
@@ -496,6 +497,7 @@ export class AIProviderService {
           top_p: options?.top_p ?? 0.9,
           max_tokens: options?.max_tokens,
         }),
+        signal: AbortSignal.timeout(60_000),
       });
 
       if (!response.ok) {

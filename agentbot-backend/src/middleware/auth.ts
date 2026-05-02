@@ -19,7 +19,12 @@ import crypto from 'crypto';
  */
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-const HMAC_SECRET = process.env.HMAC_SECRET || process.env.INTERNAL_API_KEY || '';
+// HMAC_SECRET and INTERNAL_API_KEY serve different purposes:
+// - INTERNAL_API_KEY: Bearer token for outer auth gate (API access)
+// - HMAC_SECRET: HMAC signing key for user context headers (impersonation protection)
+// Falling back to INTERNAL_API_KEY conflates the two and breaks routes that
+// should be accessible without HMAC-signed headers (register-home, heartbeat).
+const HMAC_SECRET = process.env.HMAC_SECRET || '';
 
 // Extend Express Request
 declare global {

@@ -23,7 +23,7 @@ import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { timingSafeEqual, randomBytes } from 'crypto';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { Pool } from 'pg';
 import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw-version';
 import { buildHealthSummary } from './lib/health-summary';
@@ -132,6 +132,7 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests, please slow down.' },
+  keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0'),
 });
 const deployLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -139,6 +140,7 @@ const deployLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Deployment rate limit exceeded.' },
+  keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0'),
 });
 const aiChatLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -146,6 +148,7 @@ const aiChatLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'AI rate limit exceeded.' },
+  keyGenerator: (req) => ipKeyGenerator(req.ip || '0.0.0.0'),
 });
 app.use('/api/', generalLimiter);
 

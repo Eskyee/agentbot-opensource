@@ -105,6 +105,11 @@ jest.mock('child_process', () => ({
 // 4. Stop background intervals from keeping the process alive
 jest.useFakeTimers();
 
+// Ensure INTERNAL_API_KEY is set before importing index (which calls process.exit if missing)
+if (!process.env.INTERNAL_API_KEY) {
+  process.env.INTERNAL_API_KEY = 'test-api-key-for-security-audit';
+}
+
 // ─── Import after mocks ───────────────────────────────────────────────────────
 import app from './index';
 import { AgentBusService } from './services/bus';
