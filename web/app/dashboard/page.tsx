@@ -328,16 +328,8 @@ function DashboardContent() {
     }
   }
 
-  // NextAuth status handling
-  if (status === 'unauthenticated') {
-    return null 
-  }
-
-  if (status === 'loading') {
-    return <DashboardLoadingShell />
-  }
-
-  if (loading && status === 'authenticated') {
+  // Return loading shell for ALL non-ready states — prevents flash of content
+  if (status !== 'authenticated' || loading) {
     return <DashboardLoadingShell />
   }
 
