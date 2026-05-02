@@ -539,7 +539,9 @@ function HivemindPanel({ hivemind, synthesis }: { hivemind: SoulStatus['hivemind
 
 function DiagnosticsPanel({ diag }: { diag: Diagnostics | null }) {
   if (!diag) return null;
+  const overview = diag.overview ?? { success_rate: '—', completed: 0, failed: 0, total_outcomes: 0 };
   const stagnation = diag.stagnation ?? { risk_level: 'unknown', cycles_since_commit: 0, cycles_until_reset: 0 };
+  const recommendations = diag.recommendations ?? [];
   const riskColor = stagnation.risk_level === 'high' ? 'text-red-400' : stagnation.risk_level === 'medium' ? 'text-amber-400' : 'text-emerald-400';
   return (
     <Panel>
@@ -547,8 +549,8 @@ function DiagnosticsPanel({ diag }: { diag: Diagnostics | null }) {
       <div className="grid grid-cols-2 gap-3 text-[10px] font-mono mb-3">
         <div>
           <div className="text-zinc-600 mb-0.5">Outcome success</div>
-          <div className="text-white font-bold">{diag.overview.success_rate}</div>
-          <div className="text-zinc-600">{diag.overview.completed}/{diag.overview.total_outcomes}</div>
+          <div className="text-white font-bold">{overview.success_rate}</div>
+          <div className="text-zinc-600">{overview.completed}/{overview.total_outcomes}</div>
         </div>
         <div>
           <div className="text-zinc-600 mb-0.5">Stagnation risk</div>
@@ -565,9 +567,9 @@ function DiagnosticsPanel({ diag }: { diag: Diagnostics | null }) {
           <span className="text-zinc-500 ml-2">{diag.capability_bottleneck.success_rate} · {diag.capability_bottleneck.attempts} attempts</span>
         </div>
       )}
-      {diag.recommendations.length > 0 && (
+      {recommendations.length > 0 && (
         <ul className="space-y-1">
-          {diag.recommendations.map((r, i) => (
+          {recommendations.map((r, i) => (
             <li key={i} className="text-[10px] text-zinc-400 flex gap-2 leading-relaxed">
               <span className="text-zinc-700 shrink-0">→</span>{r}
             </li>
