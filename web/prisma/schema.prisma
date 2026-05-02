@@ -1,3 +1,19 @@
+// L-10: deletion semantics in this schema are intentionally split.
+//
+//   - PascalCase models (User, Agent, Skill, ...) — the App-Router-era models
+//     consistently use `onDelete: Cascade`. Deleting a User cascades through
+//     all owned rows.
+//   - snake_case models (users, agents, royalties, social_*, ...) — the legacy
+//     introspected tables consistently use `onDelete: NoAction`. Hard-deleting
+//     a parent row leaves orphans behind. These tables also have inconsistent
+//     soft-delete conventions: some set `status='destroyed'`, others
+//     hard-delete via the App-Router model.
+//
+// Don't mix the two when adding a new model — pick the side that owns the
+// canonical row (Agent vs. agents) and inherit its cascade behavior. If you
+// need to delete across both sides, do it explicitly in the route handler
+// rather than relying on cascades.
+
 generator client {
   provider = "prisma-client-js"
 }

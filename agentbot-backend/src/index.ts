@@ -106,6 +106,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// L-3: order matters here — the structured request logger above runs first
+// (so 4xx/5xx from CORS are still logged), then CORS, then per-route
+// rate limiters and authentication. Don't reorder unless you also re-check
+// that error responses still get a request id attached.
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'https://agentbot.sh,https://web-iota-hazel-25.vercel.app,https://raveculture.mintlify.app').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
   origin: (origin, callback) => {
@@ -416,6 +420,14 @@ const lockFilePath = (): string => path.join(DATA_DIR, 'ports.lock');
 /**
  * Executes a function while holding a file-based lock.
  * This ensures atomic access to ports.json across multiple provisioning requests.
+ *
+ * L-4: this lock is FILE-BASED and only protects against concurrent
+ * provisioning on the SAME host. The Railway deployment path no longer
+ * assigns local ports (services are addressed via Railway-managed domains),
+ * so on Railway this lock is effectively a no-op held over from the
+ * single-host Docker era. If you ever scale the legacy Docker path across
+ * replicas, replace this with a database-backed lock (e.g. Postgres advisory
+ * locks on `pg_advisory_lock(hashtext('agentbot-ports'))`).
  */
 const withLock = async <T>(fn: () => Promise<T>): Promise<T> => {
   const lockFile = lockFilePath();
@@ -805,7 +817,10 @@ app.post('/api/permissions', authenticate, (req: Request, res: Response) => {
 
 // Health check — includes Docker status for observability
 app.get('/health', async (req: Request, res: Response) => {
-  res.json(buildHealthSummary({ dockerAvailable }));
+  const summary = buildHealthSummary({ dockerAvailable });
+  // During the first ~500ms after boot the provisioning probe hasn't completed
+  // yet — surface that explicitly so a green dashboard isn't a false negative.
+  res.json({ ...summary, provisioningChecked });
 });
 
 // OpenAI-compatible endpoints for RAG/SDK compatibility
@@ -1250,8 +1265,12 @@ app.post('/api/subscriptions/deploy', authenticate, async (req: Request, res: Re
 // Global error handler — must be registered after all routes.
 // Prevents Express from leaking stack traces on unhandled route errors.
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
-  console.error('[Unhandled Error]', err.message, err.stack);
-  res.status(500).json({ error: 'Internal server error' });
+  // L-9: forward the requestId attached by the structured request logger so
+  // users can quote it in support tickets and operators can correlate the 500
+  // back to the structured log line.
+  const requestId = (req as Request & { requestId?: string }).requestId;
+  console.error('[Unhandled Error]', requestId ?? '-', err.message, err.stack);
+  res.status(500).json({ error: 'Internal server error', requestId });
 });
 
 // Initialize database schema on startup.
@@ -1288,8 +1307,16 @@ const checkProvisioning = async () => {
   }
 };
 
+// L-2: dockerAvailable is async — during the first ~500ms after server.listen
+// the /health endpoint may report dockerAvailable: false even when Railway is
+// reachable. Track an explicit "checked" flag so monitoring can distinguish
+// "not yet checked" from "checked and unavailable".
 let dockerAvailable = false;
-checkProvisioning().then(available => { dockerAvailable = available; });
+let provisioningChecked = false;
+checkProvisioning().then(available => {
+  dockerAvailable = available;
+  provisioningChecked = true;
+});
 
 const server = http.createServer(app);
 

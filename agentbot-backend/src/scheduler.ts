@@ -18,8 +18,24 @@
 import { Pool } from 'pg';
 import { processPlatformJobs } from './services/platform-jobs';
 
-const DATABASE_URL = process.env.DATABASE_URL || '';
-const pool = new Pool({ connectionString: DATABASE_URL });
+// L-1: pool is initialised lazily inside startScheduler() so that:
+//   1. Importing this module never throws — index.ts pulls it in even when
+//      RUN_MODE=api and we don't actually start the scheduler. A module-load
+//      throw would crash the API process and tests that import index.ts
+//      transitively.
+//   2. DATABASE_URL is still read once (when the scheduler actually boots).
+//      Rotating DATABASE_URL after that point requires a process restart.
+//      That's acceptable for agentbot's deploy model (Railway redeploys on
+//      env change), but worth knowing if you extend the scheduler with
+//      long-lived ad-hoc connections.
+let pool: Pool | null = null;
+
+function requirePool(): Pool {
+  if (!pool) {
+    throw new Error('scheduler: pool not initialised — startScheduler() must run first');
+  }
+  return pool;
+}
 
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
 let platformJobInterval: ReturnType<typeof setInterval> | null = null;
@@ -244,6 +260,17 @@ export function startScheduler(): void {
   if (schedulerInterval || platformJobInterval) {
     console.log('[Scheduler] Already running');
     return;
+  }
+
+  // Fail-closed only when we're actually being started. Module import
+  // (e.g. from RUN_MODE=api or from tests that import index.ts) never
+  // reaches this branch.
+  if (!pool) {
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error('scheduler: DATABASE_URL is not set; refusing to start');
+    }
+    pool = new Pool({ connectionString: databaseUrl });
   }
 
   console.log('[Scheduler] Starting inline task scheduler (scheduled tasks every 30s, platform jobs every 5s)');

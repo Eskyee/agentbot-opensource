@@ -77,22 +77,32 @@ export class AIService {
   private static OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
   private static OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '';
 
-  private static TIER_CONFIG: Record<ModelTier, { primary: string; fallbacks: string[] }> = {
+  // L-6: temperature is part of the tier config so adding a new tier without
+  // an explicit temperature value won't silently default to the deterministic
+  // 0.2 used by reasoning/coding/fast.
+  private static TIER_CONFIG: Record<
+    ModelTier,
+    { primary: string; fallbacks: string[]; temperature: number }
+  > = {
     reasoning: {
       primary: 'deepseek/deepseek-r1',
       fallbacks: ['meta-llama/llama-3.3-70b-instruct', 'moonshotai/kimi-k2.5'],
+      temperature: 0.2,
     },
     coding: {
       primary: 'qwen/qwen-2.5-coder-32b-instruct',
       fallbacks: ['deepseek/deepseek-r1', 'google/gemini-2.0-flash-001'],
+      temperature: 0.2,
     },
     fast: {
       primary: 'meta-llama/llama-3.3-70b-instruct',
       fallbacks: ['mistralai/mistral-7b-instruct', 'google/gemini-2.0-flash-001'],
+      temperature: 0.2,
     },
     creative: {
       primary: 'moonshotai/kimi-k2.5',
       fallbacks: ['deepseek/deepseek-r1', 'meta-llama/llama-3.3-70b-instruct'],
+      temperature: 0.7,
     },
   };
 
@@ -128,7 +138,7 @@ export class AIService {
               ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
               { role: 'user', content: prompt },
             ],
-            temperature: tier === 'creative' ? 0.7 : 0.2,
+            temperature: config.temperature,
           }),
           signal: controller.signal,
         });

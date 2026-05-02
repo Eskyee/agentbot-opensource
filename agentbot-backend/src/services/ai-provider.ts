@@ -243,6 +243,10 @@ export class AIProviderService {
       const plan = context.plan ?? 'solo';
       const limit = PLAN_MONTHLY_TOKEN_LIMITS[plan] ?? PLAN_MONTHLY_TOKEN_LIMITS.solo;
 
+      // L-5: PLAN_MONTHLY_TOKEN_LIMITS uses Infinity for the 'network' plan
+      // (unlimited). isFinite(Infinity) === false, so the quota check is
+      // intentionally skipped for unlimited plans. Don't change this without
+      // also changing how PLAN_MONTHLY_TOKEN_LIMITS encodes "no cap".
       if (isFinite(limit)) {
         const used = await this.getMonthlyTokenUsage(context.userId);
         if (used >= limit) {
