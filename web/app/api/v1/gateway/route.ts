@@ -198,14 +198,31 @@ export async function POST(req: NextRequest) {
       responseHeaders['X-Session-Remaining'] = currentSession?.remaining || '0';
     }
 
-    const upstreamResponse = await fetch(matchedPlugin.url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30_000),
-    });
+    // 4. Fetch from upstream plugin
+    let upstreamResponse: Response;
+    try {
+      upstreamResponse = await fetch(matchedPlugin.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30_000),
+      });
+    } catch (fetchError) {
+      // Upstream unreachable — return payment receipt if available
+      console.error('[Gateway] Upstream fetch failed:', matchedPlugin.url, fetchError);
+      if (mppReceipt || sessionReceipt) {
+        return NextResponse.json(
+          { success: true, message: 'Payment verified (upstream unavailable)', receipt: mppReceipt || sessionReceipt },
+          { status: 200, headers: { ...responseHeaders, 'Payment-Receipt': mppReceipt || sessionReceipt || '' } },
+        );
+      }
+      return NextResponse.json(
+        { error: 'upstream_unavailable', message: `Plugin endpoint unreachable: ${matchedPlugin.url}` },
+        { status: 502, headers: cors },
+      );
+    }
 
     const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
     const upstreamBody = await upstreamResponse.text();
@@ -218,13 +235,10 @@ export async function POST(req: NextRequest) {
       },
     });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Gateway] Error:', error);
-    console.error('[Gateway] Error stack:', error?.stack);
-    console.error('[Gateway] Error name:', error?.name);
-    console.error('[Gateway] Error message:', error?.message);
     return NextResponse.json(
-      { error: 'internal', message: error?.message || 'Internal server error', name: error?.name },
+      { error: 'internal', message: 'Internal server error' },
       { status: 500, headers: cors },
     );
   }
