@@ -1,36 +1,27 @@
 /**
- * SSE stream — pushes soul status updates to the Borg dashboard every 5s.
- * Client reconnects automatically (EventSource spec) when the 55s window closes.
+ * SSE stream — pushes soul status, diagnostics, and wallet updates to the
+ * Borg dashboard. Single in-flight poll (no overlap), 15s heartbeat keeps
+ * proxies happy, 55s self-close so EventSource auto-reconnects.
  */
 
 import { getAuthSession } from '@/app/lib/getAuthSession';
 import { prisma } from '@/app/lib/prisma';
-import { SoulClient } from '@/lib/soul';
-import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config';
+import { resolveSoulUrlFast, makeSoul } from '../_shared';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
-const BORG_0_URL = 'https://borg-0-production-7139.up.railway.app';
-
-async function resolveSoulUrl(userUrl: string | null): Promise<string> {
-  const candidates = [...new Set(
-    [userUrl, DEFAULT_SOUL_SERVICE_URL, BORG_0_URL].filter(Boolean) as string[]
-  )];
-  for (const url of candidates) {
-    try {
-      const res = await fetch(`${url}/health`, {
-        signal: AbortSignal.timeout(3000),
-        cache: 'no-store',
-      });
-      if (res.ok) return url;
-    } catch { /* try next */ }
-  }
-  return candidates[0];
-}
+const SOUL_INTERVAL_MS = 5_000;
+const DIAG_INTERVAL_MS = 30_000;
+const HEARTBEAT_MS = 15_000;
+const STREAM_LIFETIME_MS = 55_000;
 
 function enc(event: string, data: unknown): Uint8Array {
   return new TextEncoder().encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
+function encComment(text: string): Uint8Array {
+  return new TextEncoder().encode(`: ${text}\n\n`);
 }
 
 export async function GET(request: Request) {
@@ -48,46 +39,75 @@ export async function GET(request: Request) {
     userUrl = dbUser?.openclawUrl ?? null;
   } catch { /* non-fatal */ }
 
-  const soulUrl = await resolveSoulUrl(userUrl);
-  const soul = new SoulClient(soulUrl, 8000);
+  const soulUrl = await resolveSoulUrlFast(userUrl);
+  const soul = makeSoul(soulUrl, 8000);
 
   let closed = false;
-  request.signal.addEventListener('abort', () => { closed = true; });
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const cleanup = () => {
+    closed = true;
+    for (const t of timers) clearTimeout(t);
+    timers.length = 0;
+  };
+  request.signal.addEventListener('abort', cleanup);
 
   const stream = new ReadableStream({
     async start(controller) {
       const send = (event: string, data: unknown) => {
         if (closed) return;
-        try { controller.enqueue(enc(event, data)); } catch { closed = true; }
+        try { controller.enqueue(enc(event, data)); } catch { cleanup(); }
+      };
+      const heartbeat = () => {
+        if (closed) return;
+        try { controller.enqueue(encComment('keepalive')); } catch { cleanup(); }
       };
 
-      // Send source URL so client can surface it
       send('meta', { soulUrl });
 
-      const poll = async () => {
+      // Recursive single-in-flight poller — no overlap possible.
+      const pollSoul = async () => {
         if (closed) return;
         try {
           const status = await soul.getStatus();
           send('soul', status);
         } catch (e: any) {
-          send('error', { message: e.message });
+          send('error', { source: 'soul', message: e.message });
         }
+        if (closed) return;
+        timers.push(setTimeout(pollSoul, SOUL_INTERVAL_MS));
       };
 
-      await poll();
+      const pollDiagnostics = async () => {
+        if (closed) return;
+        try {
+          const diag = await soul.getDiagnostics();
+          send('diagnostics', diag);
+        } catch (e: any) {
+          send('error', { source: 'diagnostics', message: e.message });
+        }
+        if (closed) return;
+        timers.push(setTimeout(pollDiagnostics, DIAG_INTERVAL_MS));
+      };
 
-      const interval = setInterval(async () => {
-        if (closed) { clearInterval(interval); try { controller.close(); } catch {} return; }
-        await poll();
-      }, 5_000);
+      // Heartbeat — runs even when soul is failing so proxies don't drop us.
+      const beat = () => {
+        if (closed) return;
+        heartbeat();
+        timers.push(setTimeout(beat, HEARTBEAT_MS));
+      };
 
-      // Close before Vercel maxDuration so the client gets a clean EOF + reconnects
-      setTimeout(() => {
-        clearInterval(interval);
-        closed = true;
+      // Kick off all three loops in parallel.
+      pollSoul();
+      pollDiagnostics();
+      timers.push(setTimeout(beat, HEARTBEAT_MS));
+
+      // Hard close before Vercel maxDuration.
+      timers.push(setTimeout(() => {
+        cleanup();
         try { controller.close(); } catch {}
-      }, 55_000);
+      }, STREAM_LIFETIME_MS));
     },
+    cancel() { cleanup(); },
   });
 
   return new Response(stream, {

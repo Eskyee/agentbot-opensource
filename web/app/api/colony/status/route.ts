@@ -6,12 +6,34 @@
  */
 
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getAuthSession } from '@/app/lib/getAuthSession';
 import { prisma } from '@/app/lib/prisma';
 import { SoulClient } from '@/lib/soul';
 import { DEFAULT_SOUL_DASHBOARD_URL, DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config';
+import { checkUserRateLimit } from '@/lib/rate-limit-user';
 import { createPublicClient, http, formatUnits, parseAbi, type Address } from 'viem';
 import { tempo } from 'viem/chains';
+
+// ── POST validation schemas ──────────────────────────────────────────────────
+const ALLOWED_MODELS = [
+  'anthropic/claude-opus-4-5',
+  'anthropic/claude-opus-4-7',
+  'anthropic/claude-sonnet-4-5',
+  'anthropic/claude-sonnet-4-6',
+  'google/gemini-2.5-pro',
+  'openai/gpt-4o',
+  'openai/gpt-5',
+  'deepseek/deepseek-chat',
+] as const;
+
+const NudgeSchema = z.object({
+  message: z.string().trim().min(1).max(2000),
+  priority: z.number().int().min(0).max(10).default(5),
+});
+const ModelSchema = z.object({
+  model: z.union([z.null(), z.enum(ALLOWED_MODELS)]),
+});
 
 const SOUL_URL = DEFAULT_SOUL_SERVICE_URL;
 const SOUL_DASHBOARD_URL = DEFAULT_SOUL_DASHBOARD_URL;
@@ -181,15 +203,26 @@ export async function POST(request: Request) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const userId = session.user.id;
 
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
-  const body = await request.json().catch(() => ({}));
+
+  // Per-user rate limit: 10 control actions / minute, scoped per action type.
+  const rl = await checkUserRateLimit(`colony:${action}`, userId, 10, 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded', retryAfter: rl.retryAfter },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
+    );
+  }
+
+  const raw = await request.json().catch(() => ({}));
 
   let userUrl: string | null = null;
   try {
     const dbUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { openclawUrl: true },
     });
     userUrl = dbUser?.openclawUrl ?? null;
@@ -199,11 +232,19 @@ export async function POST(request: Request) {
     const { soul } = await getWorkingSoulClient(userUrl);
     switch (action) {
       case 'nudge': {
-        const result = await soul.nudge(String(body.message ?? ''), Number(body.priority ?? 5));
+        const parsed = NudgeSchema.safeParse(raw);
+        if (!parsed.success) {
+          return NextResponse.json({ error: 'Invalid input', issues: parsed.error.issues }, { status: 400 });
+        }
+        const result = await soul.nudge(parsed.data.message, parsed.data.priority);
         return NextResponse.json(result);
       }
       case 'model': {
-        const result = await soul.setModel(body.model ?? null);
+        const parsed = ModelSchema.safeParse(raw);
+        if (!parsed.success) {
+          return NextResponse.json({ error: 'Invalid model', issues: parsed.error.issues }, { status: 400 });
+        }
+        const result = await soul.setModel(parsed.data.model);
         return NextResponse.json(result);
       }
       case 'benchmark': {
@@ -214,6 +255,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
   } catch (e: any) {
+    console.error(`[colony/status POST ${action}] error:`, e?.message);
     return NextResponse.json({ error: e.message }, { status: 502 });
   }
 }

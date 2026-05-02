@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useMemo, type ReactNode } from 'react';
 import {
   RefreshCw, Zap, Brain, Target, Activity, WifiOff, ExternalLink,
   ChevronDown, ChevronUp, Wallet, Copy, Check, GitBranch, Radio,
@@ -14,94 +14,59 @@ import {
 } from '@/app/components/shared/DashboardShell';
 import StatusPill from '@/app/components/shared/StatusPill';
 import { SOUL_SERVICE_URL } from '@/app/lib/platform-urls';
+import type { SoulStatus as CoreSoulStatus, Diagnostics as CoreDiagnostics } from '@/lib/soul';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+// Canonical SoulStatus comes from lib/soul.ts (single source of truth, all
+// nested objects are nullable). The Borg dashboard receives a few extras the
+// soul service returns but the lib type doesn't yet expose — declared here
+// as optional so any drift is a compile-time issue, not a runtime crash.
 
-interface SoulStatus {
+type SoulStatus = CoreSoulStatus & {
   soulUrl?: string;
-  active: boolean;
-  dormant: boolean;
-  total_cycles: number;
-  mode: string;
-  tools_enabled?: boolean;
-  coding_enabled?: boolean;
-  fitness: {
-    total: number;
-    coordination: number;
-    economic: number;
-    evolution: number;
-    execution: number;
-    introspection: number;
-    prediction: number;
-    trend: number;
-  };
-  free_energy: {
-    F: string;
-    regime: string;
-    trend: string;
-    components: Array<{ system: string; surprise: string; contribution?: string; weight: string }>;
-  };
-  brain: { parameters: number; running_loss: number; train_steps: number };
-  transformer: { param_count: number; train_steps: number; running_loss: number; vocab_size?: number; plans_generated?: number };
-  benchmark: { elo_rating: number; elo_display: string; opus_iq: string; pass_at_1: number; problems_attempted: number };
-  goals: Array<{ id: string; description: string; status: string; priority: number; retry_count: number; success_criteria?: string }>;
-  beliefs: Array<{ id: string; subject: string; predicate: string; value: string; confidence: string; confirmation_count: number }>;
-  capability_profile: {
+  benchmark?: {
+    elo_rating: number;
+    elo_display: string;
+    opus_iq: string;
+    pass_at_1: number;
+    problems_attempted: number;
+  } | null;
+  capability_profile?: {
     overall_success_rate: number;
     strongest: string;
     weakest: string;
-    capabilities: Array<{ capability: string; display_name: string; attempts: number; successes: number; success_rate: number }>;
-  };
-  role: { colony_size: number; rank: number; self_fitness: number; psi: number; phase3_ready: boolean; can_spawn: boolean };
-  acceleration: { alpha: string; regime: string };
-  lifecycle: { phase: string; own_commits: number; lines_diverged: number; branch?: string };
-  cortex: { total_experiences: number; global_curiosity: number; emotion: { valence: number; arousal: number; drive: string; confidence?: number } };
-  // extended fields
-  cycle_health?: {
-    last_cycle_entered_code: boolean;
-    total_code_entries: number;
-    cycles_since_last_commit: number;
-    completed_plans_count: number;
-    failed_plans_count: number;
-    goals_active: number;
-  };
-  active_plan?: {
-    id: string;
-    goal_id: string;
-    current_step: number;
-    total_steps: number;
-    status: string;
-    replan_count: number;
-    current_step_type?: string;
-    context?: Record<string, string>;
+    capabilities: Array<{
+      capability: string;
+      display_name: string;
+      attempts: number;
+      successes: number;
+      success_rate: number;
+    }>;
   } | null;
-  recent_thoughts?: Array<{ type: string; content: string; created_at: number }>;
-  genesis?: {
-    templates: number;
-    generation: number;
-    total_created: number;
-    top_templates: Array<{ id: string; goal_summary: string; steps: string; fitness: string; success_rate: string }>;
-  } | null;
-  hivemind?: { total_trails: number; total_deposits: number; swarm_intel: number } | null;
-  synthesis?: { state: string; total_predictions: number; weights: { brain: string; cortex: string; genesis: string; hivemind: string } } | null;
-  evaluation?: {
-    total_records: number;
-    systems: Array<{ system: string; brier_score: string; accuracy: string; calibration: boolean }>;
-  } | null;
-}
+  acceleration?: { alpha: string; regime: string } | null;
+  // role/lifecycle extras the page renders that aren't in the canonical type
+  role: (CoreSoulStatus['role'] & {
+    self_fitness?: number;
+    psi?: number;
+    phase3_ready?: boolean;
+  }) | null;
+};
 
-interface Diagnostics {
-  overview: { total_outcomes: number; completed: number; failed: number; success_rate: string };
-  error_distribution: Array<{ category: string; count: number }>;
-  stagnation: { cycles_since_commit: number; risk_level: string; cycles_until_reset: number };
-  capability_bottleneck: { capability: string; success_rate: string; attempts: number } | null;
-  recommendations: string[];
-}
+type Diagnostics = Partial<CoreDiagnostics> & {
+  recommendations?: string[];
+};
 
-const EMPTY_FITNESS: SoulStatus['fitness'] = {
+type Goal = NonNullable<CoreSoulStatus['goals']>[number];
+type Belief = NonNullable<CoreSoulStatus['beliefs']>[number];
+type Thought = NonNullable<CoreSoulStatus['recent_thoughts']>[number];
+type Capability = NonNullable<NonNullable<SoulStatus['capability_profile']>['capabilities']>[number];
+type FEComponent = NonNullable<NonNullable<CoreSoulStatus['free_energy']>['components']>[number] & { contribution?: string };
+
+const EMPTY_FITNESS = {
   total: 0, coordination: 0, economic: 0, evolution: 0,
   execution: 0, introspection: 0, prediction: 0, trend: 0,
-};
+  measured_at: 0,
+} as const;
 
 // ─── Utilities ─────────────────────────────────────────────────────────────────
 
@@ -174,6 +139,7 @@ function StatCard({ label, value, sub, accent, delta }: {
 // ─── Fitness ──────────────────────────────────────────────────────────────────
 
 function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
+  if (!fitness) return null;
   const dims = [
     { key: 'prediction', label: 'Prediction', val: fitness.prediction },
     { key: 'introspection', label: 'Introspection', val: fitness.introspection },
@@ -216,6 +182,7 @@ function FitnessPanel({ fitness }: { fitness: SoulStatus['fitness'] }) {
 // ─── Free Energy ──────────────────────────────────────────────────────────────
 
 function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
+  if (!fe) return null;
   const F = parseFloat(fe.F);
   const regimeColor = fe.regime === 'LEARN' ? 'text-orange-400' : fe.regime === 'EXPLOIT' ? 'text-emerald-400' : 'text-amber-400';
   return (
@@ -233,7 +200,7 @@ function FreeEnergyPanel({ fe }: { fe: SoulStatus['free_energy'] }) {
       </div>
       <Bar value={F} color={F < 0.3 ? 'bg-emerald-500' : F < 0.6 ? 'bg-yellow-500' : 'bg-orange-500'} />
       <div className="mt-3 space-y-1.5">
-        {(fe.components ?? []).map(c => (
+        {((fe.components ?? []) as FEComponent[]).map(c => (
           <div key={c.system} className="flex items-center gap-3 text-[10px] font-mono">
             <span className="w-16 text-zinc-500 uppercase">{c.system}</span>
             <div className="flex-1"><Bar value={parseFloat(c.surprise)} color="bg-zinc-600" /></div>
@@ -369,6 +336,7 @@ function ThoughtStreamPanel({ thoughts }: { thoughts: SoulStatus['recent_thought
 // ─── Brain ────────────────────────────────────────────────────────────────────
 
 function BrainPanel({ brain, transformer, benchmark }: Pick<SoulStatus, 'brain' | 'transformer' | 'benchmark'>) {
+  if (!brain || !transformer || !benchmark) return null;
   return (
     <Panel>
       <SectionLabel icon={<Brain className="w-3 h-3" />} label="Cognitive Systems" color="text-orange-400" />
@@ -434,6 +402,11 @@ function GoalsPanel({ goals }: { goals: SoulStatus['goals'] }) {
 // ─── Capabilities ─────────────────────────────────────────────────────────────
 
 function CapabilityPanel({ profile }: { profile: SoulStatus['capability_profile'] }) {
+  const sortedCaps = useMemo(
+    () => (profile?.capabilities ?? []).filter(c => c.attempts > 0).sort((a, b) => b.attempts - a.attempts),
+    [profile?.capabilities],
+  );
+  if (!profile) return null;
   return (
     <Panel>
       <div className="flex items-center justify-between mb-3">
@@ -441,7 +414,7 @@ function CapabilityPanel({ profile }: { profile: SoulStatus['capability_profile'
         <span className="text-[10px] font-mono text-zinc-500">{(profile.overall_success_rate * 100).toFixed(0)}% overall</span>
       </div>
       <div className="space-y-2">
-        {(profile.capabilities ?? []).filter(c => c.attempts > 0).sort((a, b) => b.attempts - a.attempts).map(c => (
+        {sortedCaps.map(c => (
           <div key={c.capability}>
             <div className="flex justify-between text-[10px] font-mono mb-0.5">
               <span className="text-zinc-400">{c.display_name}</span>
@@ -761,10 +734,8 @@ export default function BorgDashboardPage() {
     address: string; designation: string | null; balance: { formatted: string; token: string } | null;
   } | null>(null);
 
-  // Delta tracking refs
-  const prevFitnessRef = useRef<number | undefined>(undefined);
-  const prevCyclesRef = useRef<number | undefined>(undefined);
-  const fitnessDelta = useDelta(data?.fitness?.total);
+  // Delta tracking
+  const fitnessDelta = useDelta(data?.fitness?.total ?? undefined);
   const cyclesDelta = useDelta(data?.total_cycles);
 
   // SSE with polling fallback
@@ -811,6 +782,10 @@ export default function BorgDashboardPage() {
         } catch {}
       });
 
+      es.addEventListener('diagnostics', (e) => {
+        try { setDiagnostics(JSON.parse(e.data)); } catch {}
+      });
+
       es.addEventListener('error', (e: any) => {
         try { const d = JSON.parse(e.data); setError(d.message); } catch {}
       });
@@ -843,16 +818,12 @@ export default function BorgDashboardPage() {
     };
   }, []);
 
-  // Diagnostics — fetch once on mount, refresh every 60s
+  // Diagnostics — primed once on mount; live updates arrive via SSE 'diagnostics' event.
   useEffect(() => {
-    const fetchDiag = () =>
-      fetch('/api/colony/status?action=diagnostics')
-        .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d && !d.error) setDiagnostics(d); })
-        .catch(() => {});
-    fetchDiag();
-    const id = setInterval(fetchDiag, 60_000);
-    return () => clearInterval(id);
+    fetch('/api/colony/status?action=diagnostics')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d && !d.error) setDiagnostics(d); })
+      .catch(() => {});
   }, []);
 
   // Wallet
@@ -874,6 +845,11 @@ export default function BorgDashboardPage() {
 
   const status = data?.dormant ? 'idle' : data?.active ? 'active' : 'offline';
   const fitness = data?.fitness ?? EMPTY_FITNESS;
+  // Null-safe locals so the JSX below never dereferences a missing field.
+  const role = data?.role ?? null;
+  const lifecycle = data?.lifecycle ?? null;
+  const cortex = data?.cortex ?? null;
+  const benchmark = data?.benchmark ?? null;
 
   const BorgIcon = () => (
     <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -935,11 +911,11 @@ export default function BorgDashboardPage() {
                 accent={fitness.total >= 0.6 ? 'text-emerald-400' : fitness.total >= 0.3 ? 'text-yellow-400' : 'text-red-400'}
                 delta={fitnessDelta}
               />
-              <StatCard label="IQ Score" value={data.benchmark.opus_iq} sub={`ELO ${data.benchmark.elo_rating.toFixed(0)}`} />
+              <StatCard label="IQ Score" value={benchmark?.opus_iq ?? '—'} sub={benchmark ? `ELO ${benchmark.elo_rating.toFixed(0)}` : 'no benchmark'} />
               <StatCard
                 label="Colony Ψ"
-                value={(data.role.psi ?? 0).toFixed(4)}
-                sub={`${data.role.colony_size} node${data.role.colony_size !== 1 ? 's' : ''} · phase3 ${data.role.phase3_ready ? '✓' : '✗'}`}
+                value={(role?.psi ?? 0).toFixed(4)}
+                sub={role ? `${role.colony_size} node${role.colony_size !== 1 ? 's' : ''} · phase3 ${role.phase3_ready ? '✓' : '✗'}` : 'no role'}
               />
               {data.cycle_health && (
                 <>
@@ -1029,14 +1005,18 @@ export default function BorgDashboardPage() {
 
             {/* Footer */}
             <div className="flex flex-wrap gap-4 text-[10px] font-mono text-zinc-600 border-t border-zinc-800 pt-4 mb-4">
-              <span>phase: <span className="text-zinc-400">{data.lifecycle.phase}</span></span>
-              {data.lifecycle.branch && <span>branch: <span className="text-zinc-400">{data.lifecycle.branch}</span></span>}
-              <span>commits: <span className="text-zinc-400">{data.lifecycle.own_commits}</span></span>
-              <span>diverged: <span className="text-zinc-400">{data.lifecycle.lines_diverged} lines</span></span>
+              {lifecycle && <>
+                <span>phase: <span className="text-zinc-400">{lifecycle.phase}</span></span>
+                {lifecycle.branch && <span>branch: <span className="text-zinc-400">{lifecycle.branch}</span></span>}
+                <span>commits: <span className="text-zinc-400">{lifecycle.own_commits}</span></span>
+                <span>diverged: <span className="text-zinc-400">{lifecycle.lines_diverged} lines</span></span>
+              </>}
               {data.acceleration && <span>α: <span className="text-zinc-400">{data.acceleration.alpha} ({data.acceleration.regime})</span></span>}
-              <span>emotion: <span className="text-zinc-400">v={(data.cortex.emotion.valence ?? 0).toFixed(2)} a={(data.cortex.emotion.arousal ?? 0).toFixed(2)} {data.cortex.emotion.drive}</span></span>
-              <span>curiosity: <span className="text-zinc-400">{((data.cortex.global_curiosity ?? 0) * 100).toFixed(1)}%</span></span>
-              <span>experiences: <span className="text-zinc-400">{data.cortex.total_experiences}</span></span>
+              {cortex && <>
+                <span>emotion: <span className="text-zinc-400">v={(cortex.emotion?.valence ?? 0).toFixed(2)} a={(cortex.emotion?.arousal ?? 0).toFixed(2)} {cortex.emotion?.drive ?? '—'}</span></span>
+                <span>curiosity: <span className="text-zinc-400">{((cortex.global_curiosity ?? 0) * 100).toFixed(1)}%</span></span>
+                <span>experiences: <span className="text-zinc-400">{cortex.total_experiences}</span></span>
+              </>}
               {data.tools_enabled !== undefined && <span>tools: <span className={data.tools_enabled ? 'text-emerald-400' : 'text-zinc-600'}>{data.tools_enabled ? 'on' : 'off'}</span></span>}
               {data.coding_enabled !== undefined && <span>coding: <span className={data.coding_enabled ? 'text-emerald-400' : 'text-zinc-600'}>{data.coding_enabled ? 'on' : 'off'}</span></span>}
             </div>
