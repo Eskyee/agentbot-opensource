@@ -281,38 +281,30 @@ export async function GET(request: Request) {
       installedSkillIds = installed.map(i => i.skillId)
     }
 
+    function enrichSkill(skill: typeof skills[number]) {
+      const stats = engagementStats.get(skill.id)
+      const hasUserRatings = stats && stats.ratingCount > 0
+      return {
+        ...skill,
+        rating: hasUserRatings ? (stats.rating || 0) : 0,
+        ratingCount: stats?.ratingCount || 0,
+        installs: stats?.installs || 0,
+        userRating: stats?.userRating ?? null,
+        hasDownload: Boolean(skill.code?.trim() || skill.mcpEnabled || skill.widgetUrl || skill.widgetConfig),
+        scan: scanSkillMarketplaceInput({
+          name: skill.name,
+          description: skill.description,
+          code: skill.code,
+          author: skill.author,
+          featured: skill.featured,
+        }),
+      }
+    }
+
     return NextResponse.json({
-      skills: skills.map((skill) => ({
-        ...skill,
-        rating: engagementStats.get(skill.id)?.rating || 0,
-        ratingCount: engagementStats.get(skill.id)?.ratingCount || 0,
-        installs: engagementStats.get(skill.id)?.installs || 0,
-        userRating: engagementStats.get(skill.id)?.userRating || null,
-        hasDownload: Boolean(skill.code?.trim() || skill.mcpEnabled || skill.widgetUrl || skill.widgetConfig),
-        scan: scanSkillMarketplaceInput({
-          name: skill.name,
-          description: skill.description,
-          code: skill.code,
-          author: skill.author,
-          featured: skill.featured,
-        }),
-      })),
+      skills: skills.map(enrichSkill),
       categories: categories.map(c => c.category),
-      featured: skills.filter(s => s.featured).map((skill) => ({
-        ...skill,
-        rating: engagementStats.get(skill.id)?.rating || 0,
-        ratingCount: engagementStats.get(skill.id)?.ratingCount || 0,
-        installs: engagementStats.get(skill.id)?.installs || 0,
-        userRating: engagementStats.get(skill.id)?.userRating || null,
-        hasDownload: Boolean(skill.code?.trim() || skill.mcpEnabled || skill.widgetUrl || skill.widgetConfig),
-        scan: scanSkillMarketplaceInput({
-          name: skill.name,
-          description: skill.description,
-          code: skill.code,
-          author: skill.author,
-          featured: skill.featured,
-        }),
-      })),
+      featured: skills.filter(s => s.featured).map(enrichSkill),
       installedSkillIds,
     })
   } catch (error) {

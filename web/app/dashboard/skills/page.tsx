@@ -79,7 +79,10 @@ export default function SkillsPage() {
   // Fetch agents on mount
   useEffect(() => {
     fetch('/api/agents')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('agents-fetch')
+        return r.json()
+      })
       .then((data) => {
         const agentList: Agent[] = data.agents || []
         setAgents(agentList)
@@ -92,7 +95,10 @@ export default function SkillsPage() {
       })
 
     fetch('/api/user/openclaw')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('openclaw-fetch')
+        return r.json()
+      })
       .then((data) => {
         if (!data?.openclawUrl) return
         const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '')
@@ -297,7 +303,31 @@ export default function SkillsPage() {
       return
     }
 
-    window.location.href = `/api/skills/${skill.id}/download`
+    try {
+      const res = await fetch(`/api/skills/${skill.id}/download`)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Download failed')
+      }
+
+      const blob = await res.blob()
+      const disposition = res.headers.get('Content-Disposition') || ''
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/)
+      const filename = filenameMatch?.[1] || `${skill.name.toLowerCase().replace(/\s+/g, '-')}.agentbot-skill.json`
+
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = filename
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      URL.revokeObjectURL(url)
+      toast.success(`Downloaded ${skill.name}`)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Download failed. Sign in and try again.'
+      toast.error(message)
+    }
   }, [])
 
   const handleCreateSkill = useCallback(
@@ -587,8 +617,8 @@ export default function SkillsPage() {
                     </span>
                     <div className="flex items-center gap-1" aria-label={`Rate ${skill.name}`}>
                       {[1, 2, 3, 4, 5].map((ratingValue) => {
-                        const activeRating = skill.userRating || Math.round(skill.rating)
-                        const isActive = ratingValue <= activeRating
+                        const activeRating = skill.userRating ?? (skill.rating > 0 ? Math.round(skill.rating) : 0)
+                        const isActive = activeRating > 0 && ratingValue <= activeRating
                         return (
                           <button
                             key={ratingValue}
