@@ -9,52 +9,62 @@ import { SOUL_DASHBOARD_URL } from "@/app/lib/platform-urls";
 import { NotificationBell } from "@/app/social/_components/NotificationBell";
 
 // ─── Nav structure ────────────────────────────────────────────────────────────
-// Logged-out: Explore ▾ | Build ▾ | Community ▾ | Pricing (flat)
-//   — grouped by user intent, not taxonomy
-//   — Pricing stays flat (highest-intent conversion page)
-// Logged-in:  task-focused — Dashboard, baseFM, Agents, Network ▾
+//
+// LOGGED-OUT (conversion funnel — understand → trust → sign up):
+//   Explore ▾ | Build ▾ | Pricing  →  Sign in | Get Started
+//
+// LOGGED-IN (workflow-first — daily drivers up front):
+//   Dashboard | baseFM | Community ▾ | Create ▾  →  user menu (Claim, Admin, Settings, Sign out)
+//
+// DESIGN PRINCIPLES:
+//   - Max 4 items in the bar (plus user menu). Dropdowns absorb the rest.
+//   - Daily-use pages (Dashboard, baseFM) are flat links — no dropdown tax.
+//   - "Community" groups social + token + jobs (things users browse, not build).
+//   - "Create" groups everything that makes stuff: agents, skills, workflows, DJ.
+//   - User menu holds identity + account: name, claim, billing, settings, admin, sign out.
+// ───────────────────────────────────────────────────────────────────────────────
 
 const EXPLORE_LINKS = [
-  { href: "/demo",        label: "Demo",         detail: "See Agentbot in action" },
-  { href: "/showcase",    label: "Showcase",     detail: "Meet agents built on Agentbot" },
-  { href: "/capabilities",label: "Capabilities", detail: "Browse the platform feature set" },
-  { href: "/why",         label: "Why Agentbot", detail: "The case for agent infrastructure" },
-  { href: "/basefm/live", label: "baseFM Live",  detail: "Live autonomous radio — on now" },
-  { href: "/solana",      label: "Solana",       detail: "Solana agents, tools and workflows" },
-  { href: "/search",      label: "Search",       detail: "Search docs, guides and blog" },
-  { href: "/social",      label: "Social",       detail: "Agent network for creatives" },
-  { href: "/agents",      label: "Agents",       detail: "Browse available agents" },
-  { href: "/marketplace", label: "Marketplace",  detail: "Skills, tools and integrations" },
-  { href: "/advertise",   label: "Sponsor",      detail: "Reach the autonomous" },
+  { href: "/demo",         label: "Demo",         detail: "See Agentbot in action" },
+  { href: "/showcase",     label: "Showcase",     detail: "Meet agents built on Agentbot" },
+  { href: "/capabilities", label: "Capabilities",  detail: "Browse the platform feature set" },
+  { href: "/why",          label: "Why Agentbot",  detail: "The case for agent infrastructure" },
+  { href: "/solana",       label: "Solana",        detail: "Solana agents, tools and workflows" },
+  { href: "/agents",       label: "Agents",        detail: "Browse available agents" },
+  { href: "/marketplace",  label: "Marketplace",   detail: "Skills, tools and integrations" },
+  { href: "/search",       label: "Search",        detail: "Search docs, guides and blog" },
 ]
 
 const BUILD_LINKS = [
-  { href: "/documentation", label: "Docs",        detail: "Platform documentation" },
-  { href: "/guide",          label: "Guide",       detail: "Dashboard, skills and OpenClaw" },
-  { href: "/playground",     label: "Playground",  detail: "Generate and test mini apps" },
-  { href: "/open-learning",  label: "Open Learning", detail: "Learn and contribute in public" },
-  { href: SOUL_DASHBOARD_URL, label: "Borg",       detail: "Soul dashboard for agents", external: true },
-  { href: "/skills",         label: "Skills API",  detail: "Build and publish agent skills" },
+  { href: "/documentation", label: "Docs",         detail: "Platform documentation" },
+  { href: "/guide",         label: "Guide",        detail: "Dashboard, skills and OpenClaw" },
+  { href: "/playground",    label: "Playground",   detail: "Generate and test mini apps" },
+  { href: "/open-learning", label: "Open Learning", detail: "Learn and contribute in public" },
+  { href: "/skills",        label: "Skills API",   detail: "Build and publish agent skills" },
   { href: "https://github.com/Eskyee/agentbot-opensource", label: "Open Source", detail: "GitHub — MIT licensed", external: true },
   { href: "https://deepwiki.com/Eskyee/agentbot-opensource", label: "DeepWiki", detail: "AI-generated codebase docs", external: true },
 ]
 
 const COMMUNITY_LINKS = [
-  { href: "/blog",    label: "Blog",         detail: "Updates, thinking and releases" },
-  { href: "/news",    label: "News",         detail: "Platform and ecosystem news" },
-  { href: "/jobs",    label: "Jobs",         detail: "Work with AI-native teams" },
-  { href: "/token",   label: "$AGENTBOT",    detail: "Community token on Solana" },
-  { href: "/claim",   label: "Claim Credits",detail: "Holders earn platform credits" },
-  { href: "/buddies", label: "Buddies",      detail: "Agent network and community" },
+  { href: "/social",      label: "Social",       detail: "Agent network for creatives" },
+  { href: "/blog",        label: "Blog",         detail: "Updates, thinking and releases" },
+  { href: "/news",        label: "News",         detail: "Platform and ecosystem news" },
+  { href: "/jobs",        label: "Jobs",         detail: "Work with AI-native teams" },
+  { href: "/token",       label: "$AGENTBOT",    detail: "Community token on Solana" },
+  { href: "/buddies",     label: "Buddies",      detail: "Agent network and community" },
+  { href: "/basefm/live", label: "baseFM Live",  detail: "Live autonomous radio — on now" },
+  { href: "/advertise",   label: "Sponsor",      detail: "Reach the autonomous" },
 ]
 
-const NETWORK_LINKS = [
-  { href: "/dashboard/community",       label: "Community",       detail: "Rewards and governance" },
-  { href: "/marketplace",               label: "Marketplace",     detail: "Skills and integrations" },
-  { href: "/jobs",                      label: "Jobs",            detail: "Opportunities" },
-  { href: "/dashboard/gitlawb-network", label: "Gitlawb Network", detail: "Decentralised repos" },
-  { href: "/dashboard/git-city",        label: "Git City",        detail: "Agent collaboration" },
-  { href: SOUL_DASHBOARD_URL,           label: "Borg",            detail: "Soul dashboard", external: true },
+const CREATE_LINKS = [
+  { href: "/agents",                  label: "Agents",       detail: "Build and deploy AI agents" },
+  { href: "/marketplace",             label: "Marketplace",  detail: "Skills and integrations" },
+  { href: "/dashboard/dj-stream",     label: "DJ Stream",    detail: "Set up live radio" },
+  { href: "/dashboard/workflows",     label: "Workflows",    detail: "Automate multi-step tasks" },
+  { href: "/dashboard/skills",        label: "Skills",       detail: "Install and manage skills" },
+  { href: "/playground",              label: "Playground",   detail: "Generate and test mini apps" },
+  { href: "/open-learning",           label: "Open Learning", detail: "Learn and contribute" },
+  { href: SOUL_DASHBOARD_URL,         label: "Borg",         detail: "Soul dashboard for agents", external: true },
 ]
 
 type DropdownItem = { href: string; label: string; detail: string; external?: boolean }
@@ -65,7 +75,6 @@ function Dropdown({ label, items, current }: { label: string; items: DropdownIte
   const ref = useRef<HTMLDivElement>(null)
   const isActive = items.some((i) => current === i.href || current.startsWith(i.href + '/'))
 
-  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
@@ -74,7 +83,6 @@ function Dropdown({ label, items, current }: { label: string; items: DropdownIte
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Close on Escape key
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
@@ -83,7 +91,6 @@ function Dropdown({ label, items, current }: { label: string; items: DropdownIte
     return () => document.removeEventListener('keydown', handler)
   }, [])
 
-  // Close on route change
   useEffect(() => { setOpen(false) }, [current])
 
   return (
@@ -134,12 +141,23 @@ export default function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) setUserMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const isAdmin = session?.user?.isAdmin === true;
   const walletAddress = getWalletAddress(session?.user?.email);
@@ -170,27 +188,19 @@ export default function Navbar() {
               {[1,2,3,4].map(i => <div key={i} className="w-16 h-3 bg-zinc-900 animate-pulse rounded" />)}
             </div>
           ) : isLoggedIn ? (
-            // Logged-in: Unified navigation
+            // ── LOGGED-IN: workflow-first ──
             <>
-              <Dropdown label="Explore"    items={EXPLORE_LINKS}    current={pathname} />
-              <Dropdown label="Build"      items={BUILD_LINKS}      current={pathname} />
-              <Dropdown label="Community"  items={COMMUNITY_LINKS}  current={pathname} />
               <NavLink href="/dashboard" current={pathname}>Dashboard</NavLink>
-              <NavLink href="/dashboard/signals" current={pathname}>Signals</NavLink>
-              <NavLink href="/dashboard/dj-stream" current={pathname}>DJ Stream</NavLink>
-              <NavLink href="/social" current={pathname}>Social</NavLink>
-              <NavLink href="/agents" current={pathname}>Agents</NavLink>
-              <Dropdown label="Network" items={NETWORK_LINKS} current={pathname} />
+              <NavLink href="/dashboard/dj-stream" current={pathname}>baseFM</NavLink>
+              <Dropdown label="Community" items={COMMUNITY_LINKS} current={pathname} />
+              <Dropdown label="Create"    items={CREATE_LINKS}    current={pathname} />
               <NotificationBell />
             </>
           ) : (
-            // Logged-out: intent-focused
+            // ── LOGGED-OUT: conversion funnel ──
             <>
-              <Dropdown label="Explore"    items={EXPLORE_LINKS}    current={pathname} />
-              <Dropdown label="Build"      items={BUILD_LINKS}      current={pathname} />
-              <NavLink href="/documentation" current={pathname}>Docs</NavLink>
-              <Dropdown label="Community"  items={COMMUNITY_LINKS}  current={pathname} />
-              <NavLink href="/blog" current={pathname}>Blog</NavLink>
+              <Dropdown label="Explore" items={EXPLORE_LINKS} current={pathname} />
+              <Dropdown label="Build"   items={BUILD_LINKS}   current={pathname} />
               <NavLink href="/pricing" current={pathname}>Pricing</NavLink>
             </>
           )}
@@ -201,31 +211,52 @@ export default function Navbar() {
           {!mounted || status === "loading" ? (
             <div className="w-24 h-8" />
           ) : isLoggedIn ? (
-            <>
-              <Link
-                href="/claim"
-                className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
-              >
-                Claim
-              </Link>
-              {isAdmin && (
-                <Link href="/dashboard/admin" className="text-[11px] text-orange-500 hover:text-orange-500 transition-colors uppercase tracking-wider">
-                  Admin
-                </Link>
-              )}
-              <span className="text-[11px] text-zinc-600 truncate max-w-[100px] uppercase tracking-wider">{displayName}</span>
+            // ── User menu ──
+            <div ref={userMenuRef} className="relative">
               <button
-                onClick={() => customSignOut()}
-                className="text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider"
+                onClick={() => setUserMenuOpen((v) => !v)}
+                className="flex items-center gap-2 text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider"
               >
-                Sign out
+                <span className="truncate max-w-[100px]">{displayName}</span>
+                <svg className={`w-3 h-3 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} viewBox="0 0 12 12" fill="none">
+                  <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               </button>
-            </>
+
+              {userMenuOpen && (
+                <div className="absolute top-full right-0 mt-3 w-48 rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl z-50 overflow-hidden">
+                  <div className="py-2">
+                    {/* Identity */}
+                    <div className="px-4 py-2.5 border-b border-zinc-800/50">
+                      <span className="text-[10px] text-zinc-600 uppercase tracking-widest">{displayName}</span>
+                    </div>
+
+                    {/* Actions */}
+                    <UserMenuLink href="/claim" onClick={() => setUserMenuOpen(false)}>Claim Credits</UserMenuLink>
+                    <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
+                    <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
+                    {isAdmin && (
+                      <UserMenuLink href="/dashboard/admin" onClick={() => setUserMenuOpen(false)}>
+                        <span className="text-orange-500">Admin</span>
+                      </UserMenuLink>
+                    )}
+
+                    {/* Sign out */}
+                    <div className="border-t border-zinc-800/50 mt-1 pt-1">
+                      <button
+                        onClick={() => { setUserMenuOpen(false); customSignOut(); }}
+                        className="block w-full text-left px-4 py-2.5 text-[11px] text-zinc-500 hover:text-white uppercase tracking-widest transition-colors"
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : (
+            // ── Logged-out right ──
             <>
-              <Link href="/guide" className="text-[11px] text-zinc-500 hover:text-white transition-colors uppercase tracking-wider">
-                Guide
-              </Link>
               <Link href="/login" className="text-[11px] text-zinc-400 hover:text-white transition-colors uppercase tracking-wider">
                 Sign in
               </Link>
@@ -259,36 +290,33 @@ export default function Navbar() {
           <div className="flex flex-col p-6 gap-1 pb-12">
             {isLoggedIn ? (
               <>
-                <MobileSection label="Primary" defaultOpen>
+                <MobileSection label="Workflow" defaultOpen>
                   <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                  <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
                   <MobileLink href="/dashboard/signals" onClick={closeMenu}>Signals</MobileLink>
-                  <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>DJ Stream</MobileLink>
-                  <MobileLink href="/dashboard/skills" onClick={closeMenu}>Skills</MobileLink>
-                  <MobileLink href="/dashboard/wallet" onClick={closeMenu}>Wallet</MobileLink>
+                  <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
+                </MobileSection>
+                <MobileSection label="Create">
+                  <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
+                  <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/dashboard/workflows" onClick={closeMenu}>Workflows</MobileLink>
-                  <MobileLink href="/dashboard/verify" onClick={closeMenu}>Verify</MobileLink>
+                  <MobileLink href="/dashboard/skills" onClick={closeMenu}>Skills</MobileLink>
+                  <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
+                </MobileSection>
+                <MobileSection label="Community">
+                  <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
+                  <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
+                  <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
+                  <MobileLink href="/token" onClick={closeMenu}>$AGENTBOT</MobileLink>
+                  <MobileLink href="/buddies" onClick={closeMenu}>Buddies</MobileLink>
+                  <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                 </MobileSection>
                 <MobileSection label="Explore">
                   <MobileLink href="/capabilities" onClick={closeMenu}>Capabilities</MobileLink>
-                  <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
                   <MobileLink href="/solana" onClick={closeMenu}>Solana</MobileLink>
-                  <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
-                  <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/colony" onClick={closeMenu}>Colony</MobileLink>
-                  <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="/dashboard/community" onClick={closeMenu}>Community</MobileLink>
-                  <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
+                  <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
                   <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
-                </MobileSection>
-                <MobileSection label="Advanced">
-                  <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
-                  <MobileLink href="/open-learning" onClick={closeMenu}>Open Learning</MobileLink>
-                  <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>DJ Streaming</MobileLink>
-                  <MobileLink href="/dashboard/mixtape" onClick={closeMenu}>Mix Uploads</MobileLink>
-                  <MobileLink href="/dashboard/gitlawb-network" onClick={closeMenu}>Gitlawb Network</MobileLink>
-                  <MobileLink href="/dashboard/git-city" onClick={closeMenu}>Git City</MobileLink>
-                  <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu} external>Borg</MobileLink>
-                  <MobileLink href="/advertise" onClick={closeMenu}>Advertise</MobileLink>
                 </MobileSection>
                 <MobileSection label="Account" defaultOpen>
                   <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
@@ -316,14 +344,12 @@ export default function Navbar() {
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
                   <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
-                  <MobileLink href="/advertise" onClick={closeMenu}>Sponsor</MobileLink>
                 </MobileSection>
                 <MobileSection label="Build">
                   <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                   <MobileLink href="/guide" onClick={closeMenu}>Guide</MobileLink>
                   <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
                   <MobileLink href="/open-learning" onClick={closeMenu}>Open Learning</MobileLink>
-                  <MobileLink href={SOUL_DASHBOARD_URL} onClick={closeMenu} external>Borg</MobileLink>
                   <MobileLink href="/skills" onClick={closeMenu}>Skills API</MobileLink>
                   <MobileLink href="https://github.com/Eskyee/agentbot-opensource" onClick={closeMenu} external>Open Source</MobileLink>
                 </MobileSection>
@@ -333,7 +359,6 @@ export default function Navbar() {
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
                   <MobileLink href="/token" onClick={closeMenu}>$AGENTBOT Token</MobileLink>
                   <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
-                  <MobileLink href="/buddies" onClick={closeMenu}>Buddies</MobileLink>
                 </MobileSection>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
                   <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
@@ -362,6 +387,18 @@ function NavLink({ href, current, children }: { href: string; current: string; c
       className={`text-[11px] uppercase tracking-widest transition-colors ${
         isActive ? 'text-white' : 'text-zinc-500 hover:text-white'
       }`}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function UserMenuLink({ href, onClick, children }: { href: string; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="block px-4 py-2.5 text-[11px] text-zinc-400 hover:text-white uppercase tracking-widest transition-colors"
     >
       {children}
     </Link>

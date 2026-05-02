@@ -3,9 +3,14 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
+// ─── Footer structure ────────────────────────────────────────────────────────
+// 4 columns: Product | Developers | Community | Company
+// Mirrors the navbar's intent-based grouping
+// ─────────────────────────────────────────────────────────────────────────────
+
 const COLUMNS = [
   {
-    heading: 'Platform',
+    heading: 'Product',
     links: [
       { href: '/pricing',      label: 'Pricing' },
       { href: '/demo',         label: 'Demo' },
@@ -13,40 +18,43 @@ const COLUMNS = [
       { href: '/marketplace',  label: 'Marketplace' },
       { href: '/capabilities', label: 'Capabilities' },
       { href: '/use-cases',    label: 'Use Cases' },
-      { href: '/partner',      label: 'Partner' },
-      { href: '/advertise',    label: 'Advertise' },
-    ],
-  },
-  {
-    heading: 'Music',
-    links: [
-      { href: '/basefm',                label: 'baseFM Live' },
-      { href: '/dashboard/mixtape',     label: 'DJ Mix Uploads' },
-      { href: '/advertise',             label: 'Advertise on baseFM' },
-      { href: '/solana',                label: 'Solana' },
-      { href: '/token',                 label: '$AGENTBOT' },
+      { href: '/solana',       label: 'Solana' },
     ],
   },
   {
     heading: 'Developers',
     links: [
-      { href: '/guide',                                                   label: 'Guide' },
+      { href: '/documentation', label: 'Docs' },
+      { href: '/guide',         label: 'Guide' },
+      { href: '/skills',        label: 'Skills API' },
+      { href: '/playground',    label: 'Playground' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
-      { href: 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource', label: 'Gitlawb', external: true },
       { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
       { href: 'https://dev.to/agentbot',                                  label: 'Dev.to', external: true },
-      { href: 'https://openwebui.com/u/jaieskyravecult115142e2f8',        label: 'Open WebUI', external: true },
     ],
   },
   {
     heading: 'Community',
     links: [
-      { href: '/blog',                                               label: 'Blog' },
-      { href: '/claim',                                              label: 'Claim Credits' },
-      { href: '/buddies',                                            label: 'Buddies' },
-      { href: 'https://talent.app/raveculture.base.eth',            label: 'Talent', external: true },
-      { href: '/terms',                                              label: 'Terms' },
-      { href: '/privacy',                                            label: 'Privacy' },
+      { href: '/blog',      label: 'Blog' },
+      { href: '/news',      label: 'News' },
+      { href: '/social',    label: 'Social' },
+      { href: '/jobs',      label: 'Jobs' },
+      { href: '/token',     label: '$AGENTBOT' },
+      { href: '/claim',     label: 'Claim Credits' },
+      { href: '/buddies',   label: 'Buddies' },
+      { href: '/basefm',    label: 'baseFM Live' },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { href: '/why',        label: 'Why Agentbot' },
+      { href: '/showcase',   label: 'Showcase' },
+      { href: '/partner',    label: 'Partner' },
+      { href: '/advertise',  label: 'Advertise' },
+      { href: '/terms',      label: 'Terms' },
+      { href: '/privacy',    label: 'Privacy' },
     ],
   },
 ]
