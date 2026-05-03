@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 
+// Activity feed for admin dashboard
 export async function GET() {
   try {
     const recentAgents = await prisma.agent.findMany({
