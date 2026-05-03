@@ -92,20 +92,37 @@ export async function GET() {
       select: { openclawInstanceId: true, openclawUrl: true },
     })
 
-    // Build fleet nodes from real agents
-    const nodes: FleetNode[] = agents.map((agent) => ({
-      id: agent.name || agent.id.slice(0, 12),
-      did: `did:key:${agent.id.slice(0, 16)}…${agent.id.slice(-4)}`,
-      status: mapStatus(agent.status),
-      region: getRegion(agent),
-      task: getTask(agent),
-      cpu: agent.status === 'running' ? Math.floor(Math.random() * 60 + 20) : 0,
-      mem: agent.status === 'running' ? Math.floor(Math.random() * 50 + 30) : 0,
-      p50: agent.status === 'running' ? Math.floor(Math.random() * 200 + 30) : 0,
-      model: agent.model || 'mimo-v2-pro',
-      userId: agent.userId,
-      createdAt: agent.createdAt.toISOString(),
-    }))
+    // Fetch latest container_metrics for all agent names
+    const agentNames = agents.map(a => a.name).filter(Boolean)
+    const latestMetrics = agentNames.length > 0
+      ? await prisma.container_metrics.findMany({
+          where: { container_name: { in: agentNames } },
+          orderBy: { sampled_at: 'desc' },
+          distinct: ['container_name'],
+          select: { container_name: true, cpu_percent: true, mem_percent: true },
+        })
+      : []
+    const metricsMap = new Map(
+      latestMetrics.map(m => [m.container_name, { cpu: Number(m.cpu_percent ?? 0), mem: Number(m.mem_percent ?? 0) }])
+    )
+
+    // Build fleet nodes from real agents with real metrics
+    const nodes: FleetNode[] = agents.map((agent) => {
+      const metrics = metricsMap.get(agent.name ?? '') ?? { cpu: 0, mem: 0 }
+      return {
+        id: agent.name || agent.id.slice(0, 12),
+        did: `did:key:${agent.id.slice(0, 16)}…${agent.id.slice(-4)}`,
+        status: mapStatus(agent.status),
+        region: getRegion(agent),
+        task: getTask(agent),
+        cpu: metrics.cpu,
+        mem: metrics.mem,
+        p50: 0,
+        model: agent.model || 'mimo-v2-pro',
+        userId: agent.userId,
+        createdAt: agent.createdAt.toISOString(),
+      }
+    })
 
     // Add managed runtime if present
     if (user?.openclawInstanceId && !nodes.find(n => n.id === user.openclawInstanceId)) {

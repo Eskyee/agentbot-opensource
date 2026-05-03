@@ -53,15 +53,46 @@ export async function GET(
     const task = (config?.task as string) || 'idle'
     const isRunning = agent.status === 'running' || agent.status === 'active'
 
+    // Fetch real container metrics for this agent
+    const latestMetrics = await prisma.container_metrics.findFirst({
+      where: { container_name: agent.name ?? '' },
+      orderBy: { sampled_at: 'desc' },
+      select: { cpu_percent: true, mem_percent: true },
+    })
+
+    // Fetch recent execution logs
+    const recentRuns = await prisma.execution_logs.findMany({
+      where: { agent_id: agent.id },
+      orderBy: { created_at: 'desc' },
+      take: 20,
+      select: {
+        id: true,
+        execution_type: true,
+        success: true,
+        duration_ms: true,
+        created_at: true,
+      },
+    })
+
+    // Fetch cost data from model_metrics
+    const costResult = await prisma.model_metrics.aggregate({
+      where: { agent_id: parseInt(agent.id, 10) || undefined },
+      _sum: { cost_usdc: true },
+      _count: { id: true },
+    })
+
+    const cpu = latestMetrics ? Number(latestMetrics.cpu_percent ?? 0) : 0
+    const mem = latestMetrics ? Number(latestMetrics.mem_percent ?? 0) : 0
+
     const node = {
       id: agent.name || agent.id.slice(0, 12),
       did: `did:key:${agent.id.slice(0, 16)}…${agent.id.slice(-4)}`,
       status: agent.status,
       region,
       task,
-      cpu: isRunning ? Math.floor(Math.random() * 60 + 20) : 0,
-      mem: isRunning ? Math.floor(Math.random() * 50 + 30) : 0,
-      p50: isRunning ? Math.floor(Math.random() * 200 + 30) : 0,
+      cpu,
+      mem,
+      p50: 0,
       model: agent.model || 'mimo-v2-pro',
     }
 
@@ -72,7 +103,8 @@ export async function GET(
       lastSig: isRunning ? 'just now' : 'n/a',
       guard: 'SignatureGuard',
       rotation: { inDays: 14, auto: true },
-      facts: { count: 0, leaf: '0x0000', lag: 0, lastCommit: 'n/a' },
+      facts: { count: costResult._count.id, leaf: '0x0000', lag: 0, lastCommit: 'n/a' },
+      totalCostUsdc: costResult._sum.cost_usdc ? Number(costResult._sum.cost_usdc) : 0,
     }
 
     const skills = (agent.installedSkills || []).map((s) => ({
@@ -82,7 +114,15 @@ export async function GET(
       calls24h: 0,
     }))
 
-    return NextResponse.json({ node, identity, skills, recentRuns: [] })
+    const mappedRuns = recentRuns.map((r) => ({
+      id: r.id,
+      action: r.execution_type,
+      status: r.success ? 'ok' : 'error',
+      duration_ms: r.duration_ms ?? 0,
+      timestamp: (r.created_at || new Date()).toISOString(),
+    }))
+
+    return NextResponse.json({ node, identity, skills, recentRuns: mappedRuns })
   } catch (error) {
     console.error('Agent detail error:', error)
     return NextResponse.json({ error: 'Failed to fetch agent detail' }, { status: 500 })

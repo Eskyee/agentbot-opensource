@@ -18,7 +18,10 @@ export async function POST(req: NextRequest) {
 
   const apiKey = await resolveKey(session.user.id)
   if (!apiKey) {
-    return NextResponse.json({ error: 'No Bankr API key configured', needsKey: true }, { status: 503 })
+    return NextResponse.json({
+      response: `No Bankr API key configured. Add your key in the Trading dashboard (Settings → Bankr API Key) to enable the AI Coach.\n\nYou can get a key at https://bankr.bot/api`,
+      needsKey: true,
+    })
   }
 
   try {
