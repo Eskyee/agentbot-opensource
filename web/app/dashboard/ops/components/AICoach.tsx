@@ -55,7 +55,7 @@ export function AICoach({ context }: AICoachProps) {
   }, [input, loading, context, scrollToBottom])
 
   return (
-    <div className="bg-zinc-950 border border-zinc-800 rounded-none flex flex-col h-full min-h-[400px]">
+    <div className="bg-zinc-950 border border-zinc-800 flex flex-col" style={{ height: 'min(500px, 60vh)' }}>
       <div className="px-3 py-2 border-b border-zinc-800">
         <div className="text-[10px] uppercase tracking-widest text-zinc-500">AI Coach</div>
       </div>
