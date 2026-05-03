@@ -121,9 +121,8 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersRes, agentsRes, healthRes, statsRes] = await Promise.all([
+      const [usersRes, healthRes, statsRes] = await Promise.all([
         fetch('/api/admin/users'),
-        fetch('/api/agents/showcase'), 
         fetch('/api/admin/db-health'),
         fetch('/api/admin/stats'),
       ]);
@@ -139,11 +138,6 @@ export default function AdminPage() {
         setUsers(userData.users || []);
       }
       
-      if (agentsRes.ok) {
-        const agentData = await agentsRes.json();
-        setAgents(agentData.agents || []);
-      }
-
       if (healthRes.ok) {
         const healthData = await healthRes.json();
         setDbHealth(healthData);
@@ -153,6 +147,16 @@ export default function AdminPage() {
         const statsData = await statsRes.json();
         setStats(statsData);
         if (statsData.activities) setActivities(statsData.activities);
+        if (statsData.instances) {
+          setAgents(statsData.instances.map((i: any) => ({
+            id: i.agentId || i.id,
+            userId: '',
+            name: i.name,
+            status: i.status,
+            model: i.model || null,
+            websocketUrl: null,
+          })));
+        }
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
