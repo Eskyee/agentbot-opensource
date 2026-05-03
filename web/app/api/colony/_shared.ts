@@ -5,7 +5,10 @@
 import { SoulClient } from '@/lib/soul';
 import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config';
 
-export const BORG_0_URL = 'https://borg-0-production-7139.up.railway.app';
+// borg-0-production is the live v9.3 queen; -7139 is the legacy stagnant one.
+// Probe order: user's agent → env-configured default → live queen → legacy.
+export const BORG_0_URL = 'https://borg-0-production.up.railway.app';
+export const BORG_0_LEGACY_URL = 'https://borg-0-production-7139.up.railway.app';
 
 /**
  * Race candidate URLs in parallel — first one to respond OK wins.
@@ -13,7 +16,7 @@ export const BORG_0_URL = 'https://borg-0-production-7139.up.railway.app';
  */
 export async function resolveSoulUrlFast(userUrl: string | null): Promise<string> {
   const candidates = [...new Set(
-    [userUrl, DEFAULT_SOUL_SERVICE_URL, BORG_0_URL].filter(Boolean) as string[]
+    [userUrl, DEFAULT_SOUL_SERVICE_URL, BORG_0_URL, BORG_0_LEGACY_URL].filter(Boolean) as string[]
   )];
   if (candidates.length === 0) return BORG_0_URL;
 
