@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import './marketing.css'
 
 /* ── colour tokens (matching the design prototype) ─────────────── */
 const c = {
@@ -30,7 +31,27 @@ const btnBig = `${btnDefault} text-xs px-[18px] py-[11px] tracking-[0.14em]`
 /* ════════════════════════════════════════════════════════════════ */
 export default function MarketingPage() {
   return (
-    <>
+    <div className="mk-root">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+        .mk-root {
+          --mk-bg: #1a1a2e; --mk-bg-1: #1f1f35; --mk-bg-2: #252540;
+          --mk-line: #3a3a50; --mk-line-soft: #2e2e45;
+          --mk-ink: #f0f0f5; --mk-ink-2: #b8b8c8;
+          --mk-mute: #7a7a8e; --mk-mute-2: #5a5a6e;
+          --mk-accent: #38bdf8; --mk-ok: #4ade80; --mk-warn: #fbbf24; --mk-bad: #f87171;
+          --mk-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+          font-family: var(--mk-mono); color: var(--mk-ink); background: var(--mk-bg);
+          min-height: 100vh; overflow-x: hidden; position: relative;
+        }
+        .mk-root::before {
+          content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 100;
+          background-image: linear-gradient(transparent 0, transparent calc(100% - 1px), rgba(240,240,245,0.04) 100%);
+          background-size: 100% 3px; opacity: 0.35; mix-blend-mode: overlay;
+        }
+        @keyframes mk-pulse { 0% { box-shadow: 0 0 0 0 rgba(56,189,248,0.6); } 100% { box-shadow: 0 0 0 6px transparent; } }
+        @keyframes mk-blink { 50% { opacity: 0; } }
+      `}</style>
       {/* ── Header ─────────────────────────────────────────────── */}
       <header
         className="mk-top sticky top-0 z-10 grid items-center gap-6 border-b px-9 py-[18px]"
@@ -482,7 +503,7 @@ export default function MarketingPage() {
         </div>
         <div>v04 · 2026.04.30 · MIT</div>
       </footer>
-    </>
+    </div>
   )
 }
 
