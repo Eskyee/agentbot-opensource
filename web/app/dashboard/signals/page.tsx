@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCustomSession } from '@/app/lib/useCustomSession';
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
 import StatusPill from '@/app/components/shared/StatusPill';
 import { RefreshCw } from 'lucide-react';
@@ -129,6 +130,7 @@ const PLATFORM_META: Record<Exclude<Platform, 'all'>, { label: string; color: st
 };
 
 export default function SignalsPage() {
+  const { data: session, status: sessionStatus } = useCustomSession();
   const [data, setData] = useState<SignalsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [xStatus, setXStatus] = useState<XStatusResponse | null>(null);
@@ -233,8 +235,10 @@ export default function SignalsPage() {
   }, [communityId]);
 
   useEffect(() => {
+    if (sessionStatus === 'loading') return;
+    if (sessionStatus === 'unauthenticated') return;
     loadInitialData();
-  }, [loadInitialData]);
+  }, [loadInitialData, sessionStatus]);
 
   const loadDrafts = useCallback(async () => {
     try {
@@ -342,8 +346,10 @@ export default function SignalsPage() {
   }, []);
 
   useEffect(() => {
-    loadManagedSessions();
-  }, [loadManagedSessions]);
+    if (sessionStatus === 'authenticated') {
+      loadManagedSessions();
+    }
+  }, [loadManagedSessions, sessionStatus]);
 
   const openManagedSession = async (sessionId: string) => {
     try {
