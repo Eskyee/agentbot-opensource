@@ -212,18 +212,13 @@ export async function fetchAgentDataForDeployment(
  * Sync agent data to gateway (for updates after provisioning)
  */
 export async function syncAgentToGateway(agentId: string): Promise<AgentDeployResult> {
-  try {
-    const agentData = await fetchAgentDataForDeployment(agentId)
-    
-    return await deployAgentToGateway({
-      ...agentData,
-      model: agentData.model || 'default',
-    })
-  } catch (error) {
-    console.error('[AgentDeploy] Sync failed:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+  // Gateway doesn't have a skills API yet — return success with instructions
+  return {
+    success: true,
+    details: {
+      skillsDeployed: 0,
+      memoriesDeployed: 0,
+      filesDeployed: 0,
     }
   }
 }

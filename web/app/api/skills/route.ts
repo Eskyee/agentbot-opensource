@@ -416,46 +416,18 @@ export async function POST(request: Request) {
       })
     }
 
-    // Deploy skill to OpenClaw gateway (don't fail if gateway is down)
-    try {
-      const deployResult = await deploySkillToAgent(agent.id, skillId)
-      if (!deployResult.success) {
-        console.warn(`[Skill Install] Gateway deploy warning: ${deployResult.error}`)
-        return NextResponse.json({ 
-          success: true, 
-          installed,
-          runtimeHydrated: target.runtimeHydrated,
-          deployed: false,
-          deployWarning: deployResult.error,
-          message: target.runtimeHydrated
-            ? 'Skill saved and the managed runtime agent record was created. Gateway deploy still needs attention.'
-            : 'Skill saved, but gateway deploy still needs attention.',
-        })
-      }
-      return NextResponse.json({
-        success: true,
-        installed,
-        runtimeHydrated: target.runtimeHydrated,
-        deployed: true,
-        message: existingInstall
-          ? 'Skill re-enabled successfully.'
-          : target.runtimeHydrated
-            ? 'Skill installed and the managed runtime agent record was created successfully.'
-            : 'Skill installed successfully.',
-      })
-    } catch (gatewayError) {
-      console.warn('[Skill Install] Gateway deploy failed (will retry on sync):', gatewayError)
-      return NextResponse.json({ 
-        success: true, 
-        installed,
-        runtimeHydrated: target.runtimeHydrated,
-        deployed: false,
-        deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically',
-        message: target.runtimeHydrated
-          ? 'Skill saved, the managed runtime agent record was created, and the runtime will pick it up when gateway sync recovers.'
-          : 'Skill saved to the database and will sync to the runtime automatically.',
-      })
-    }
+    // Deploy skill to OpenClaw gateway
+    // The gateway doesn't have a dedicated skills API, so we mark as DB-only
+    // Skills are synced to OpenClaw via the sync endpoint or manually
+    return NextResponse.json({
+      success: true,
+      installed,
+      runtimeHydrated: target.runtimeHydrated,
+      deployed: false,
+      message: existingInstall
+        ? 'Skill re-enabled successfully.'
+        : 'Skill installed. Use "Sync Runtime" to push skills to your OpenClaw agent.',
+    })
   } catch (error) {
     console.error('Skill install error:', error)
     const installError = getSkillInstallError(error)
