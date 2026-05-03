@@ -21,18 +21,24 @@ import { resolveSoulUrlFast } from '../_shared';
 export const runtime = 'nodejs';
 export const maxDuration = 90;
 
-export async function POST() {
+export async function POST(request: Request) {
   const session = await getAuthSession();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const rl = await checkUserRateLimit('colony:spawn-clone', session.user.id, 3, 3600);
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit: max 3 spawns/hour', retryAfter: rl.retryAfter },
-      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
-    );
+  const { searchParams } = new URL(request.url);
+  const inspectOnly = searchParams.get('inspect') === '1';
+
+  // Inspect requests skip the rate limit (read-only, no funds).
+  if (!inspectOnly) {
+    const rl = await checkUserRateLimit('colony:spawn-clone', session.user.id, 3, 3600);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit: max 3 spawns/hour', retryAfter: rl.retryAfter },
+        { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
+      );
+    }
   }
 
   const queenUrl = await resolveSoulUrlFast(null);
@@ -40,8 +46,8 @@ export async function POST() {
 
   const privateKey = process.env.TEMPO_CLONE_WALLET_PRIVATE_KEY?.trim();
 
-  // Inspect mode — no wallet configured. Return the 402 for manual payment.
-  if (!privateKey || !privateKey.startsWith('0x')) {
+  // Inspect mode — explicit request OR no wallet configured. Return the 402 for review/manual payment.
+  if (inspectOnly || !privateKey || !privateKey.startsWith('0x')) {
     try {
       const res = await fetch(cloneUrl, {
         method: 'POST',
@@ -49,12 +55,16 @@ export async function POST() {
         body: '{}',
       });
       const challenge = await res.json().catch(() => null);
+      const walletConfigured = Boolean(privateKey && privateKey.startsWith('0x'));
       return NextResponse.json({
-        mode: 'manual',
+        mode: inspectOnly ? 'inspect' : 'manual',
         cloneUrl,
         challenge,
-        instructions: 'Configure TEMPO_CLONE_WALLET_PRIVATE_KEY in Vercel env to enable auto-spawn. Or pay manually using the challenge details above.',
-      }, { status: 402 });
+        walletConfigured,
+        instructions: walletConfigured
+          ? 'Auto-pay is configured. Click Spawn Worker to debit the server wallet.'
+          : 'Configure TEMPO_CLONE_WALLET_PRIVATE_KEY in Vercel env to enable auto-spawn, or pay manually using these details.',
+      }, { status: inspectOnly ? 200 : 402 });
     } catch (e: any) {
       return NextResponse.json({ error: 'Queen unreachable', detail: e?.message }, { status: 502 });
     }

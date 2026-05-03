@@ -611,6 +611,12 @@ function CommandPanel({ soulUrl }: { soulUrl: string }) {
   const [benchmarking, setBenchmarking] = useState(false);
   const [spawning, setSpawning] = useState(false);
   const [confirmSpawn, setConfirmSpawn] = useState(false);
+  const [inspecting, setInspecting] = useState(false);
+  const [challenge, setChallenge] = useState<{
+    cloneUrl: string;
+    walletConfigured: boolean;
+    challenge: { x402Version?: number; accepts?: Array<{ scheme: string; network: string; price: string; asset: string; amount: string; payTo: string; description: string }> } | null;
+  } | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const post = async (action: string, body: Record<string, unknown>) => {
@@ -657,6 +663,25 @@ function CommandPanel({ soulUrl }: { soulUrl: string }) {
       setFeedback(`✗ ${e.message}`);
     } finally {
       setBenchmarking(false);
+    }
+  };
+
+  const inspectChallenge = async () => {
+    setInspecting(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/colony/spawn-clone?inspect=1', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const r = await res.json();
+      if (res.ok || res.status === 402) {
+        setChallenge({ cloneUrl: r.cloneUrl, walletConfigured: r.walletConfigured ?? false, challenge: r.challenge });
+        setFeedback(null);
+      } else {
+        setFeedback(`✗ ${r.detail ?? r.error ?? `HTTP ${res.status}`}`);
+      }
+    } catch (e: any) {
+      setFeedback(`✗ ${e.message}`);
+    } finally {
+      setInspecting(false);
     }
   };
 
@@ -722,27 +747,66 @@ function CommandPanel({ soulUrl }: { soulUrl: string }) {
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               onClick={runBenchmark}
               disabled={benchmarking}
-              className="border border-zinc-700 hover:border-amber-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-2 px-3 flex items-center justify-center gap-1.5 disabled:opacity-40 transition-colors"
+              className="border border-zinc-700 hover:border-amber-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-2 px-2 flex items-center justify-center gap-1 disabled:opacity-40 transition-colors"
             >
               <Flame className="w-3 h-3 text-amber-400" />
-              {benchmarking ? 'Running…' : 'Benchmark'}
+              {benchmarking ? '…' : 'Bench'}
+            </button>
+            <button
+              onClick={inspectChallenge}
+              disabled={inspecting}
+              className="border border-zinc-700 hover:border-cyan-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-2 px-2 flex items-center justify-center gap-1 disabled:opacity-40 transition-colors"
+              title="Preview the 402 challenge — read-only, no payment"
+            >
+              <Bug className="w-3 h-3 text-cyan-400" />
+              {inspecting ? '…' : 'Inspect'}
             </button>
             <button
               onClick={spawnClone}
               disabled={spawning}
-              className={`border text-[10px] font-bold uppercase tracking-widest py-2 px-3 flex items-center justify-center gap-1.5 disabled:opacity-40 transition-colors ${confirmSpawn ? 'border-red-500 text-red-300' : 'border-zinc-700 hover:border-emerald-500 text-zinc-300'}`}
+              className={`border text-[10px] font-bold uppercase tracking-widest py-2 px-2 flex items-center justify-center gap-1 disabled:opacity-40 transition-colors ${confirmSpawn ? 'border-red-500 text-red-300' : 'border-zinc-700 hover:border-emerald-500 text-zinc-300'}`}
               title="Pay $1 pathUSD to spawn a new worker via the queen's /clone endpoint"
             >
               <Sparkles className="w-3 h-3 text-emerald-400" />
-              {spawning ? 'Spawning…' : confirmSpawn ? 'Confirm $1' : 'Spawn Worker'}
+              {spawning ? '…' : confirmSpawn ? '$1?' : 'Spawn'}
             </button>
           </div>
         </div>
       </div>
+      {challenge && challenge.challenge?.accepts?.[0] && (
+        <div className="mt-3 border border-cyan-900/40 bg-cyan-950/10 p-3 text-[10px] font-mono">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-cyan-400">
+              <Bug className="w-3 h-3" /> 402 Challenge Preview
+            </div>
+            <button onClick={() => setChallenge(null)} className="text-zinc-600 hover:text-zinc-300 text-[9px] uppercase tracking-widest">close</button>
+          </div>
+          <div className="text-zinc-700 mb-2">{challenge.cloneUrl}</div>
+          {(() => {
+            const a = challenge.challenge!.accepts![0];
+            const amount = (Number(a.amount) / 1_000_000).toFixed(2);
+            return (
+              <div className="space-y-1">
+                <div className="flex justify-between"><span className="text-zinc-600">scheme</span><span className="text-zinc-300">{a.scheme}</span></div>
+                <div className="flex justify-between"><span className="text-zinc-600">network</span><span className="text-zinc-300">{a.network}</span></div>
+                <div className="flex justify-between"><span className="text-zinc-600">price</span><span className="text-zinc-300">{a.price} ({amount} pathUSD)</span></div>
+                <div className="flex justify-between gap-2"><span className="text-zinc-600 shrink-0">asset</span><span className="text-zinc-400 break-all">{a.asset}</span></div>
+                <div className="flex justify-between gap-2"><span className="text-zinc-600 shrink-0">payTo</span><span className="text-zinc-400 break-all">{a.payTo}</span></div>
+                <div className="flex justify-between"><span className="text-zinc-600">description</span><span className="text-zinc-300">{a.description}</span></div>
+              </div>
+            );
+          })()}
+          <div className={`mt-2 pt-2 border-t border-zinc-800 ${challenge.walletConfigured ? 'text-emerald-500' : 'text-amber-500'}`}>
+            {challenge.walletConfigured
+              ? '✓ Server wallet configured — Spawn will auto-pay'
+              : '⚠ Server wallet not configured — Spawn will return manual instructions'}
+          </div>
+        </div>
+      )}
       {feedback && (
         <div className={`mt-3 text-[10px] font-mono ${feedback.startsWith('✓') ? 'text-emerald-400' : feedback.startsWith('⚠') ? 'text-amber-400' : 'text-red-400'}`}>
           {feedback}
