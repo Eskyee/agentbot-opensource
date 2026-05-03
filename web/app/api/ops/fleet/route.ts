@@ -1,0 +1,106 @@
+import { NextResponse } from 'next/server'
+
+// Mock fleet data — replace with real data from soul service + Prisma
+const MOCK_FLEET = [
+  {
+    id: 'settler-12',
+    did: 'did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK',
+    status: 'running' as const,
+    region: 'fra-1',
+    task: 'exec:swap',
+    cpu: 42,
+    mem: 61,
+    p50: 87,
+    model: 'mimo-v2-pro',
+  },
+  {
+    id: 'lighthouse-01',
+    did: 'did:key:z6MkhVQvK3Hp8nGZt2LkFAkWxGMGMfUVKkC7F4sPvMG7oF2a',
+    status: 'running' as const,
+    region: 'iad-1',
+    task: 'harvest:rss',
+    cpu: 78,
+    mem: 72,
+    p50: 142,
+    model: 'mimo-v2-pro',
+  },
+  {
+    id: 'bridge-relay-03',
+    did: 'did:key:z6Mkjm3RWz8pKbFkzGmSxQtPrBvbV7YZjF3pR9GYtPvBnL3a',
+    status: 'advisory' as const,
+    region: 'sin-1',
+    task: 'bridge:relay',
+    cpu: 23,
+    mem: 45,
+    p50: 312,
+    model: 'gpt-oss-120b',
+  },
+  {
+    id: 'harvester-07',
+    did: 'did:key:z6MkrPcGiSehSQMSLkGNbVTd4CV1FvuSp4bSkS7zMJpTzqFa',
+    status: 'running' as const,
+    region: 'lhr-1',
+    task: 'ingest:twitter',
+    cpu: 55,
+    mem: 68,
+    p50: 95,
+    model: 'mimo-v2-pro',
+  },
+  {
+    id: 'treasury-ops-02',
+    did: 'did:key:z6MkseRwGkN9jLtWpFKvSJxSfGhVFmCfHEPBz7nVEGQp2Rz3',
+    status: 'idle' as const,
+    region: 'fra-1',
+    task: 'state:sync',
+    cpu: 5,
+    mem: 31,
+    p50: 22,
+    model: 'gpt-oss-120b',
+  },
+  {
+    id: 'colony-index-04',
+    did: 'did:key:z6MkoJcVTzKDCMQpGhHfjNdLFPzBfFswQEBt3RLvSGpV4K1a',
+    status: 'running' as const,
+    region: 'iad-1',
+    task: 'colony:index',
+    cpu: 67,
+    mem: 74,
+    p50: 168,
+    model: 'mimo-v2-pro',
+  },
+  {
+    id: 'vector-01',
+    did: 'did:key:z6MkdnGcyPJqHfLRFf4SFwJTMpFQVVGRSGXnMpDxe7w8j3L9',
+    status: 'error' as const,
+    region: 'sin-1',
+    task: 'vector:search',
+    cpu: 92,
+    mem: 89,
+    p50: 540,
+    model: 'mimo-v2-pro',
+  },
+  {
+    id: 'notify-bridge-05',
+    did: 'did:key:z6MkhbFGNVz7VjWv3mNpqtTwHQzGkKJFCpaRQ4VCiE3nK8ab',
+    status: 'running' as const,
+    region: 'lhr-1',
+    task: 'egress:telegram',
+    cpu: 12,
+    mem: 38,
+    p50: 45,
+    model: 'gpt-oss-120b',
+  },
+]
+
+const MOCK_STATS = {
+  running: 6,
+  total: 8,
+  throughput: { callsPerMin: 1420, p95: 312 },
+  verifiedFacts: { percent: 98.6, mirrorLag: 41 },
+  errors: { percent: 0.21, flagged: ['vector-01'] },
+  spend24h: { amount: 184, budgetPercent: 41 },
+}
+
+export async function GET() {
+  return NextResponse.json({ nodes: MOCK_FLEET, stats: MOCK_STATS })
+}
