@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import './marketing.css'
+import { HeroMetrics } from './hero-metrics'
 
 /* ── colour tokens (matching the design prototype) ─────────────── */
 const c = {
@@ -149,36 +150,7 @@ export default function MarketingPage() {
               READ SPEC
             </a>
           </div>
-          <div
-            className="mt-11 grid grid-cols-4 border"
-            style={{ background: c.line, borderColor: c.line, gap: 1 }}
-          >
-            {[
-              { v: '24', k: 'fleet · prod' },
-              { v: '98.6%', k: 'verified facts' },
-              { v: '312ms', k: 'p95 inference' },
-              { v: '41ms', k: 'mirror lag' },
-            ].map((m) => (
-              <div
-                key={m.k}
-                className="flex flex-col gap-[2px] p-[14px_16px]"
-                style={{ background: c.bg }}
-              >
-                <b
-                  className="text-xl font-medium tabular-nums"
-                  style={{ color: c.ink }}
-                >
-                  {m.v}
-                </b>
-                <span
-                  className="text-[9.5px] tracking-[0.18em] uppercase"
-                  style={{ color: c.mute }}
-                >
-                  {m.k}
-                </span>
-              </div>
-            ))}
-          </div>
+          <HeroMetrics />
         </div>
 
         {/* Right — Mini Console */}
