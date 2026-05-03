@@ -87,6 +87,9 @@ export default function AdminPage() {
   };
   const [searchTerm, setSearchTerm] = useState('')
   const [activities, setActivities] = useState<Array<{type: string; message: string; timestamp: string; status?: string}>>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [mimoLoading, setMimoLoading] = useState(false);
+  const [mimoResult, setMimoResult] = useState<any>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -123,7 +126,13 @@ export default function AdminPage() {
         fetch('/api/agents/showcase'), 
         fetch('/api/admin/db-health'),
         fetch('/api/admin/stats'),
-      ])
+      ]);
+
+      const summaryRes = await fetch('/api/admin/summary');
+      if (summaryRes.ok) {
+        const summaryData = await summaryRes.json();
+        setSummary(summaryData);
+      }
       
       if (usersRes.ok) {
         const userData = await usersRes.json();
@@ -300,6 +309,41 @@ export default function AdminPage() {
                 <StatCard label="Railway_Instances" value={stats?.count ?? 0} color="text-orange-500" />
                 <StatCard label="Backend_Health" value={stats?.backendStatus || '...'} color={stats?.backendStatus === 'OK' ? 'text-green-400' : 'text-red-400'} isString />
               </div>
+
+              {/* Service Health */}
+              {summary?.serviceHealth && (
+                <div className="grid grid-cols-3 gap-4">
+                  {summary.serviceHealth.map((s: any) => (
+                    <div key={s.name} className="bg-zinc-950 border border-zinc-800 p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-500">{s.name}</span>
+                        <div className={`w-2 h-2 rounded-full ${s.status === 'ok' ? 'bg-green-500' : s.status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                      </div>
+                      <div className="text-xs font-bold uppercase text-white">{s.status === 'ok' ? 'Operational' : s.status === 'degraded' ? 'Degraded' : 'Down'}</div>
+                      {s.detail && <div className="text-[10px] text-zinc-500 mt-1">{s.detail}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Trials */}
+              {summary?.trial && (
+                <div className="bg-zinc-950 border border-zinc-800 p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Trials</div>
+                  <div className="text-2xl font-bold text-white">{summary.trial.active ?? 0}</div>
+                  <div className="text-[10px] text-zinc-500">Active 7-day trials</div>
+                  {summary.trial.expiringSoon?.length > 0 && (
+                    <div className="mt-3 space-y-1">
+                      {summary.trial.expiringSoon.map((t: any) => (
+                        <div key={t.id} className="flex items-center justify-between text-[10px]">
+                          <span className="text-zinc-400 truncate">{t.email}</span>
+                          <span className="text-yellow-400">{t.daysLeft}d left</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="bg-zinc-950 border border-zinc-800 rounded-sm">
                 <div className="overflow-x-auto">
