@@ -80,7 +80,8 @@ async function ensureSkillsSeeded() {
         category: skill.category,
         author: skill.author,
         featured: skill.featured,
-        // Don't overwrite dynamic stats
+        rating: skill.rating,
+        downloads: skill.downloads,
       },
       create: {
         ...skill,
