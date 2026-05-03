@@ -23,7 +23,7 @@ FROM node:22.14-bookworm-slim
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /usr/local/bin/tailscale
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 
-ARG OPENCLAW_VERSION=2026.4.29
+ARG OPENCLAW_VERSION=2026.5.2
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \

@@ -6,7 +6,7 @@ set -euo pipefail
 # Configuration
 NETWORK_NAME="agentbot-net"
 DATA_DIR="${AGENTBOT_DATA_DIR:-/tmp/agentbot-data}"
-IMAGE_NAME="${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:2026.4.26}"
+IMAGE_NAME="${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:2026.5.2}"
 MAX_CONTAINERS=${MAX_CONTAINERS:-5}
 PORT_BASE=19789
 MEMORY_LIMIT="2g"

@@ -1,5 +1,5 @@
 # Agentbot - OpenClaw Agent Container (Official Image)
-FROM ghcr.io/openclaw/openclaw:2026.4.26
+FROM ghcr.io/openclaw/openclaw:2026.5.2
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscale /usr/local/bin/tailscale
 COPY --from=docker.io/tailscale/tailscale:stable /usr/local/bin/tailscaled /usr/local/bin/tailscaled
 
