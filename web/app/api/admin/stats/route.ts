@@ -60,6 +60,30 @@ export async function GET(req: NextRequest) {
     }))
     instanceCount = runningAgents
 
+    // Build activity feed
+    const activities: Array<{type: string; message: string; timestamp: string; status?: string}> = []
+    for (const agent of dbAgents.slice(0, 5)) {
+      activities.push({
+        type: 'agent_created',
+        message: `Agent "${agent.name}" (${agent.status})`,
+        timestamp: agent.createdAt.toISOString(),
+        status: agent.status,
+      })
+    }
+    const recentExecs = await prisma.execution_logs.findMany({
+      take: 5, orderBy: { created_at: 'desc' },
+      select: { execution_type: true, success: true, duration_ms: true, created_at: true },
+    }).catch(() => [])
+    for (const exec of recentExecs) {
+      activities.push({
+        type: 'execution',
+        message: `${exec.execution_type} ${exec.success ? 'ok' : 'error'} (${exec.duration_ms || 0}ms)`,
+        timestamp: exec.created_at?.toISOString() || new Date().toISOString(),
+        status: exec.success ? 'ok' : 'error',
+      })
+    }
+    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
     return NextResponse.json({
       instances,
       count: instanceCount,
@@ -67,6 +91,7 @@ export async function GET(req: NextRequest) {
       totalAgents: prismaAgentCount,
       backendStatus,
       timestamp: new Date().toISOString(),
+      activities: [],
     })
   } catch (error: any) {
     console.error('Admin stats fetch error:', error)
