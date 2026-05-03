@@ -33,6 +33,7 @@ export const navSections = [
     label: 'Agents',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '◈' },
+      { label: 'Ops Center', href: '/dashboard/ops', icon: '◈' },
       { label: 'Team', href: '/dashboard/team', icon: '⬢' },
       { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
       { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
