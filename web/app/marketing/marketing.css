@@ -17,7 +17,7 @@
   padding: 18px 36px;
   border-bottom: 1px solid var(--mk-line);
   position: sticky; top: 0; z-index: 10;
-  background: rgba(26,26,46,0.92);
+  background: rgba(0,0,0,0.92);
   backdrop-filter: blur(6px);
 }
 .mk-brand {

@@ -3,9 +3,9 @@ import './marketing.css'
 
 /* ── colour tokens (matching the design prototype) ─────────────── */
 const c = {
-  bg: '#1a1a2e',
-  bg1: '#1f1f35',
-  bg2: '#252540',
+  bg: '#000000',
+  bg1: '#0a0a0f',
+  bg2: '#111118',
   line: '#3a3a50',
   lineSoft: '#2e2e45',
   ink: '#f0f0f5',
@@ -35,7 +35,7 @@ export default function MarketingPage() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
         .mk-root {
-          --mk-bg: #1a1a2e; --mk-bg-1: #1f1f35; --mk-bg-2: #252540;
+          --mk-bg: #000000; --mk-bg-1: #0a0a0f; --mk-bg-2: #111118;
           --mk-line: #3a3a50; --mk-line-soft: #2e2e45;
           --mk-ink: #f0f0f5; --mk-ink-2: #b8b8c8;
           --mk-mute: #7a7a8e; --mk-mute-2: #5a5a6e;
@@ -58,7 +58,7 @@ export default function MarketingPage() {
         style={{
           gridTemplateColumns: 'auto 1fr auto',
           borderColor: c.line,
-          background: 'rgba(26,26,46,0.92)',
+          background: 'rgba(0,0,0,0.92)',
           backdropFilter: 'blur(6px)',
         }}
       >
