@@ -27,6 +27,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
+    const adminEmails = getAdminEmails();
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -35,13 +37,28 @@ export async function GET() {
         emailVerified: true,
         role: true,
         image: true,
+        plan: true,
+        subscriptionStatus: true,
+        subscriptionEndDate: true,
+        storageLimit: true,
+        openclawInstanceId: true,
       },
       orderBy: {
         email: 'asc',
       },
     });
 
-    return NextResponse.json({ users });
+    // Enrich with admin status and agent count
+    const enriched = await Promise.all(users.map(async (u) => {
+      const agentCount = await prisma.agent.count({ where: { userId: u.id } });
+      return {
+        ...u,
+        isAdmin: adminEmails.includes(u.email?.toLowerCase() || ''),
+        agentCount,
+      };
+    }));
+
+    return NextResponse.json({ users: enriched });
   } catch (error) {
     console.error('Admin API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

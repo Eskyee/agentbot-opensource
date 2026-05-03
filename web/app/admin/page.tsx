@@ -26,6 +26,9 @@ interface User {
   role: string;
   plan: string;
   subscriptionStatus: string;
+  subscriptionEndDate: string | null;
+  isAdmin: boolean;
+  agentCount: number;
 }
 
 interface AgentInstance {
@@ -423,8 +426,14 @@ export default function AdminPage() {
                     {filteredUsers.map((user) => (
                       <tr key={user.id} className="hover:bg-zinc-900/40 group transition-colors">
                         <td className="px-6 py-4">
-                          <div className="font-bold text-white uppercase">{user.name || 'ANON_USER'}</div>
+                          <div className="flex items-center gap-2">
+                            <div className="font-bold text-white uppercase">{user.name || 'ANON_USER'}</div>
+                            {user.isAdmin && (
+                              <span className="px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/40 text-orange-500 text-[8px] font-bold uppercase">ADMIN</span>
+                            )}
+                          </div>
                           <div className="text-[10px] text-zinc-500 mt-0.5">{user.email}</div>
+                          <div className="text-[9px] text-zinc-700 mt-0.5">{user.agentCount} agent{user.agentCount === 1 ? '' : 's'}</div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`font-bold uppercase ${user.plan !== 'free' ? 'text-orange-500' : 'text-zinc-600'}`}>
