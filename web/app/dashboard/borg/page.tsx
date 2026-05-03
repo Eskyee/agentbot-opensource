@@ -609,6 +609,8 @@ function CommandPanel({ soulUrl }: { soulUrl: string }) {
   const [model, setModel] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [benchmarking, setBenchmarking] = useState(false);
+  const [spawning, setSpawning] = useState(false);
+  const [confirmSpawn, setConfirmSpawn] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const post = async (action: string, body: Record<string, unknown>) => {
@@ -658,6 +660,29 @@ function CommandPanel({ soulUrl }: { soulUrl: string }) {
     }
   };
 
+  const spawnClone = async () => {
+    if (!confirmSpawn) { setConfirmSpawn(true); setFeedback('Click again to confirm — costs $1 pathUSD'); return; }
+    setSpawning(true);
+    setConfirmSpawn(false);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/colony/spawn-clone', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      const r = await res.json();
+      if (res.ok) {
+        setFeedback(`✓ Worker spawned${r.clone?.url ? ` at ${r.clone.url}` : ''} · receipt ${r.receipt ?? '—'}`);
+      } else if (res.status === 402 && r.mode === 'manual') {
+        const c = r.challenge?.accepts?.[0];
+        setFeedback(`⚠ Server wallet not configured. Pay ${c?.price ?? '$1.00'} pathUSD to ${c?.payTo?.slice(0, 10) ?? '?'}… on Tempo (chain ${c?.network ?? 'eip155:42431'})`);
+      } else {
+        setFeedback(`✗ ${r.detail ?? r.error ?? `HTTP ${res.status}`}`);
+      }
+    } catch (e: any) {
+      setFeedback(`✗ ${e.message}`);
+    } finally {
+      setSpawning(false);
+    }
+  };
+
   return (
     <Panel className="mt-4">
       <SectionLabel icon={<MessageSquare className="w-3 h-3" />} label="Command Surface" color="text-orange-400" />
@@ -697,18 +722,29 @@ function CommandPanel({ soulUrl }: { soulUrl: string }) {
               ))}
             </select>
           </div>
-          <button
-            onClick={runBenchmark}
-            disabled={benchmarking}
-            className="border border-zinc-700 hover:border-amber-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-2 px-3 flex items-center justify-center gap-1.5 disabled:opacity-40 transition-colors"
-          >
-            <Flame className="w-3 h-3 text-amber-400" />
-            {benchmarking ? 'Running…' : 'Run Benchmark'}
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={runBenchmark}
+              disabled={benchmarking}
+              className="border border-zinc-700 hover:border-amber-500 text-zinc-300 text-[10px] font-bold uppercase tracking-widest py-2 px-3 flex items-center justify-center gap-1.5 disabled:opacity-40 transition-colors"
+            >
+              <Flame className="w-3 h-3 text-amber-400" />
+              {benchmarking ? 'Running…' : 'Benchmark'}
+            </button>
+            <button
+              onClick={spawnClone}
+              disabled={spawning}
+              className={`border text-[10px] font-bold uppercase tracking-widest py-2 px-3 flex items-center justify-center gap-1.5 disabled:opacity-40 transition-colors ${confirmSpawn ? 'border-red-500 text-red-300' : 'border-zinc-700 hover:border-emerald-500 text-zinc-300'}`}
+              title="Pay $1 pathUSD to spawn a new worker via the queen's /clone endpoint"
+            >
+              <Sparkles className="w-3 h-3 text-emerald-400" />
+              {spawning ? 'Spawning…' : confirmSpawn ? 'Confirm $1' : 'Spawn Worker'}
+            </button>
+          </div>
         </div>
       </div>
       {feedback && (
-        <div className={`mt-3 text-[10px] font-mono ${feedback.startsWith('✓') ? 'text-emerald-400' : 'text-red-400'}`}>
+        <div className={`mt-3 text-[10px] font-mono ${feedback.startsWith('✓') ? 'text-emerald-400' : feedback.startsWith('⚠') ? 'text-amber-400' : 'text-red-400'}`}>
           {feedback}
         </div>
       )}
