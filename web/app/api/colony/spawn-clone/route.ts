@@ -5,8 +5,9 @@
  * returns the resulting clone metadata.
  *
  * Modes:
- *   1. Auto-pay  — TEMPO_CLONE_WALLET_PRIVATE_KEY is set → server signs and submits
- *   2. Inspect   — env var missing → returns the 402 challenge so the dashboard
+ *   1. Auto-pay  — TEMPO_FEE_PAYER_KEY (or MPP_FEE_PAYER_KEY / TEMPO_CLONE_WALLET_PRIVATE_KEY
+ *                  fallbacks) is set → server signs and submits
+ *   2. Inspect   — no key configured → returns the 402 challenge so the dashboard
  *                  can render a manual-payment prompt
  *
  * Auth: requires session. Rate limit: 3 spawns / hour / user.
@@ -44,7 +45,14 @@ export async function POST(request: Request) {
   const queenUrl = await resolveSoulUrlFast(null);
   const cloneUrl = `${queenUrl}/clone`;
 
-  const privateKey = process.env.TEMPO_CLONE_WALLET_PRIVATE_KEY?.trim();
+  // Reuse the existing Tempo fee-payer wallet (same one node-wallet-monitor and
+  // /api/fee-payer use). Fallbacks kept for backward compat.
+  const privateKey = (
+    process.env.TEMPO_FEE_PAYER_KEY ||
+    process.env.MPP_FEE_PAYER_KEY ||
+    process.env.TEMPO_CLONE_WALLET_PRIVATE_KEY ||
+    ''
+  ).trim();
 
   // Inspect mode — explicit request OR no wallet configured. Return the 402 for review/manual payment.
   if (inspectOnly || !privateKey || !privateKey.startsWith('0x')) {
@@ -63,7 +71,7 @@ export async function POST(request: Request) {
         walletConfigured,
         instructions: walletConfigured
           ? 'Auto-pay is configured. Click Spawn Worker to debit the server wallet.'
-          : 'Configure TEMPO_CLONE_WALLET_PRIVATE_KEY in Vercel env to enable auto-spawn, or pay manually using these details.',
+          : 'Set TEMPO_FEE_PAYER_KEY in Vercel env to enable auto-spawn, or pay manually using these details.',
       }, { status: inspectOnly ? 200 : 402 });
     } catch (e: any) {
       return NextResponse.json({ error: 'Queen unreachable', detail: e?.message }, { status: 502 });
