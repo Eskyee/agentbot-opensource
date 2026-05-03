@@ -31,36 +31,34 @@ export async function GET(req: NextRequest) {
     let instances: any[] = []
     let instanceCount = 0
     
+    // Check backend health
     try {
-      const response = await fetch(`${BACKEND_API_URL}/api/openclaw/instances`, {
-        headers: {
-          Authorization: `Bearer ${INTERNAL_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        signal: AbortSignal.timeout(5000),
-      })
+      const healthRes = await fetch(`${BACKEND_API_URL}/health`, { signal: AbortSignal.timeout(5000) })
+      if (healthRes.ok) backendStatus = 'OK'
+    } catch {}
 
-      if (response.ok) {
-        const data = await response.json()
-        instances = data.instances || []
-        instanceCount = data.count || 0
-        backendStatus = 'OK'
-      } else {
-        // Backend is reachable but instances endpoint fails — still mark as OK
-        backendStatus = 'OK'
-      }
-    } catch {
-      // Backend unreachable — check health endpoint as fallback
-      try {
-        const healthRes = await fetch(`${BACKEND_API_URL}/health`, { signal: AbortSignal.timeout(3000) })
-        if (healthRes.ok) backendStatus = 'OK'
-      } catch {}
-    }
-
-    const [prismaUserCount, prismaAgentCount] = await Promise.all([
+    // Get agents from our database as the source of truth
+    const [prismaUserCount, prismaAgentCount, runningAgents, activeAgents] = await Promise.all([
       prisma.user.count(),
       prisma.agent.count(),
+      prisma.agent.count({ where: { status: 'running' } }),
+      prisma.agent.count({ where: { status: { in: ['running', 'active'] } } }),
     ])
+
+    // Build instance list from database agents
+    const dbAgents = await prisma.agent.findMany({
+      select: { id: true, name: true, status: true, model: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    })
+    instances = dbAgents.map(a => ({
+      agentId: a.id,
+      name: a.name,
+      status: a.status,
+      model: a.model,
+      createdAt: a.createdAt,
+      source: 'database',
+    }))
+    instanceCount = runningAgents
 
     return NextResponse.json({
       instances,

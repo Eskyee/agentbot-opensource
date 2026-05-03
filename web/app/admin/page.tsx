@@ -85,7 +85,8 @@ export default function AdminPage() {
       setActiveTab(tab);
     });
   };
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activities, setActivities] = useState<Array<{type: string; message: string; timestamp: string; status?: string}>>([]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -117,12 +118,13 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersRes, agentsRes, healthRes, statsRes] = await Promise.all([
+      const [usersRes, agentsRes, healthRes, statsRes, activityRes] = await Promise.all([
         fetch('/api/admin/users'),
         fetch('/api/agents/showcase'), 
         fetch('/api/admin/db-health'),
-        fetch('/api/admin/stats')
-      ]);
+        fetch('/api/admin/stats'),
+        fetch('/api/admin/activity'),
+      ])
       
       if (usersRes.ok) {
         const userData = await usersRes.json();
@@ -142,6 +144,11 @@ export default function AdminPage() {
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
+      }
+
+      if (activityRes.ok) {
+        const actData = await activityRes.json();
+        setActivities(actData.activities || []);
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
@@ -258,6 +265,32 @@ export default function AdminPage() {
               <UserPlus className="w-4 h-4 text-zinc-500 group-hover:text-orange-500" />
               <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400 group-hover:text-white">Issue_Invites</span>
             </Link>
+
+            {/* Activity Feed */}
+            <div className="px-4 py-3 border border-dashed border-zinc-800 rounded-sm">
+              <div className="text-[10px] text-zinc-600 uppercase mb-3">Recent_Activity</div>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {activities.length === 0 ? (
+                  <div className="text-[10px] text-zinc-700">No activity yet</div>
+                ) : (
+                  activities.slice(0, 8).map((act, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${
+                        act.type === 'agent_created' ? 'bg-green-500' :
+                        act.type === 'user_signup' ? 'bg-blue-500' :
+                        act.status === 'ok' ? 'bg-green-500' :
+                        act.status === 'error' ? 'bg-red-500' :
+                        'bg-zinc-600'
+                      }`} />
+                      <div className="min-w-0">
+                        <div className="text-[10px] text-zinc-400 truncate">{act.message}</div>
+                        <div className="text-[9px] text-zinc-700">{new Date(act.timestamp).toLocaleString()}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
         {/* ─── Main Content Area ─────────────────────────────────────────────── */}
