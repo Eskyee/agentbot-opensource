@@ -27,44 +27,54 @@ export async function GET(req: NextRequest) {
     const BACKEND_API_URL = getBackendApiUrl();
     const INTERNAL_API_KEY = getInternalApiKey();
 
-    const response = await fetch(`${BACKEND_API_URL}/api/openclaw/instances`, {
-      headers: {
-        Authorization: `Bearer ${INTERNAL_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    let backendStatus = 'DOWN'
+    let instances: any[] = []
+    let instanceCount = 0
+    
+    try {
+      const response = await fetch(`${BACKEND_API_URL}/api/openclaw/instances`, {
+        headers: {
+          Authorization: `Bearer ${INTERNAL_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        signal: AbortSignal.timeout(5000),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        instances = data.instances || []
+        instanceCount = data.count || 0
+        backendStatus = 'OK'
+      } else {
+        // Backend is reachable but instances endpoint fails — still mark as OK
+        backendStatus = 'OK'
+      }
+    } catch {
+      // Backend unreachable — check health endpoint as fallback
+      try {
+        const healthRes = await fetch(`${BACKEND_API_URL}/health`, { signal: AbortSignal.timeout(3000) })
+        if (healthRes.ok) backendStatus = 'OK'
+      } catch {}
+    }
 
     const [prismaUserCount, prismaAgentCount] = await Promise.all([
       prisma.user.count(),
       prisma.agent.count(),
-    ]);
-
-    if (!response.ok) {
-      return NextResponse.json({
-        instances: [],
-        count: 0,
-        userBase: prismaUserCount,
-        totalAgents: prismaAgentCount,
-        backendStatus: 'DOWN',
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    const data = await response.json();
+    ])
 
     return NextResponse.json({
-      instances: data.instances || [],
-      count: data.count || 0,
+      instances,
+      count: instanceCount,
       userBase: prismaUserCount,
       totalAgents: prismaAgentCount,
-      backendStatus: 'OK',
+      backendStatus,
       timestamp: new Date().toISOString(),
-    });
+    })
   } catch (error: any) {
-    console.error('Admin stats fetch error:', error);
+    console.error('Admin stats fetch error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch platform stats', instances: [], count: 0 },
       { status: 500 }
-    );
+    )
   }
 }

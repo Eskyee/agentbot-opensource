@@ -249,8 +249,8 @@ export default function AdminPage() {
                 <span className="text-[10px] uppercase font-bold text-zinc-400">Gitlawb_Node: OK</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-1.5 h-1.5 rounded-full ${dbHealth?.summary.status === 'healthy' ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
-                <span className="text-[10px] uppercase font-bold text-zinc-400">DB_Status: {dbHealth?.summary.status === 'healthy' ? 'Synced' : 'Drift'}</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${dbHealth?.summary.status === 'healthy' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                <span className="text-[10px] uppercase font-bold text-zinc-400">DB_Status: {dbHealth?.summary.status === 'healthy' ? 'Synced' : dbHealth?.summary.status === 'legacy_present' ? 'Legacy OK' : 'Drift'}</span>
               </div>
             </div>
 
@@ -376,7 +376,7 @@ export default function AdminPage() {
           {/* TAB: INTEGRITY */}
           {activeTab === 'integrity' && dbHealth && (
             <div className="space-y-6">
-              <div className={`p-6 border-l-4 rounded-r-sm ${dbHealth.summary.status === 'critical_drift' ? 'bg-red-950/20 border-orange-500' : 'bg-green-950/20 border-green-500'}`}>
+              <div className={`p-6 border-l-4 rounded-r-sm ${dbHealth.summary.status === 'critical_drift' ? 'bg-red-950/20 border-orange-500' : dbHealth.summary.status === 'legacy_present' ? 'bg-yellow-950/20 border-yellow-500' : 'bg-green-950/20 border-green-500'}`}>
                 <div className="flex items-start gap-4">
                   <ShieldAlert className={`w-8 h-8 ${dbHealth.summary.status === 'critical_drift' ? 'text-orange-500' : 'text-green-500'}`} />
                   <div>
