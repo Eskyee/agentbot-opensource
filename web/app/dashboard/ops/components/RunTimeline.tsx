@@ -101,7 +101,7 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
           {/* Content */}
           {activeTab === 'TIMELINE' && run && (
             <div className="space-y-0.5">
-              {run.steps.map((step, i) => (
+              {(run.steps || []).map((step, i) => (
                 <div
                   key={i}
                   className="flex items-start gap-3 px-2 py-1 bg-zinc-900/50 hover:bg-zinc-900 transition-colors"
@@ -119,7 +119,7 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
 
           {activeTab === 'LOG' && run && (
             <div className="space-y-0.5">
-              {run.steps.map((step, i) => (
+              {(run.steps || []).map((step, i) => (
                 <div key={i} className="text-[10px] font-mono text-zinc-400 px-2 py-0.5">
                   <span className="text-zinc-600">{step.ts}</span>{' '}
                   <span className={getDurationColor(step.durationMs)}>{step.name}</span>{' '}
@@ -134,7 +134,7 @@ export function RunTimeline({ runs, agentId }: RunTimelineProps) {
               <div className="text-[10px] font-mono text-zinc-500 px-2">
                 Facts committed during this run:
               </div>
-              {run.steps
+              {(run.steps || [])
                 .filter((s) => s.name === 'state.commit' || s.name === 'audit.emit')
                 .map((step, i) => (
                   <div key={i} className="flex items-center gap-2 px-2 py-1 bg-zinc-900/50">

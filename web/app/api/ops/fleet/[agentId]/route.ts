@@ -116,10 +116,11 @@ export async function GET(
 
     const mappedRuns = recentRuns.map((r) => ({
       id: r.id,
-      action: r.execution_type,
+      workflow: r.execution_type,
+      startedAt: (r.created_at || new Date()).toISOString(),
+      durationMs: r.duration_ms ?? 0,
       status: r.success ? 'ok' : 'error',
-      duration_ms: r.duration_ms ?? 0,
-      timestamp: (r.created_at || new Date()).toISOString(),
+      steps: [],
     }))
 
     return NextResponse.json({ node, identity, skills, recentRuns: mappedRuns })
