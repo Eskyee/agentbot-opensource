@@ -68,6 +68,7 @@ export const navSections = [
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Tempo DEX', href: '/dashboard/tempo-dex', icon: '💱' },
       { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
+      { label: 'ClawBank', href: '/dashboard/clawbank', icon: '🏦' },
     ],
   },
   {
