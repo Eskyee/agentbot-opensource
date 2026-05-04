@@ -7,6 +7,7 @@ import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 import { acquireWorkloadSlot, releaseWorkloadSlot, type WorkloadTicket } from '@/app/lib/workload-gate'
 import { signedFetch } from '@/app/lib/backend-client'
 import { isAdminEmail } from '@/app/lib/admin'
+import { sendAlert } from '@/app/lib/alerts'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
@@ -155,8 +156,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const legacyPayload = {
-      userId: agentId,
+    // M-20: build the payload with the correct userId from the session up
+    // front. The previous code seeded `userId: agentId` and relied on a
+    // second spread to override it, which silently broke if anyone tidied
+    // the duplicate key.
+    const provisionPayload = {
+      userId,
       email: userEmail,
       agentId,
       aiProvider: aiProvider || 'openrouter',
@@ -167,19 +172,62 @@ export async function POST(request: NextRequest) {
       tailscale: resolveTailscaleChoice(tailscale, remoteAccess),
     }
 
-    const enqueueRes = await signedFetch('/api/platform-jobs/provision', {
-      method: 'POST',
-      headers: {
-        'X-User-Email': userEmail,
-        'X-User-Plan': plan || 'solo',
-        'X-Stripe-Subscription-Id': stripeSubscriptionId || '',
-      },
-      body: JSON.stringify({
-        ...legacyPayload,
-        userId,
-      }),
-      signal: AbortSignal.timeout(15_000),
-    })
+    // M-21: bounded retry. The backend can briefly 5xx during a deploy or
+    // when the platform-jobs DB is reconnecting. Without a retry the user
+    // pays (Stripe webhook fires before this) and then sees a hard error
+    // with no recovery path. We retry transient failures up to 3 times,
+    // then fall through to the existing error path AND raise an alert so
+    // an operator can manually re-trigger.
+    const maxAttempts = 3
+    let enqueueRes: Response | null = null
+    let lastError: string | null = null
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        enqueueRes = await signedFetch('/api/platform-jobs/provision', {
+          method: 'POST',
+          headers: {
+            'X-User-Email': userEmail,
+            'X-User-Plan': plan || 'solo',
+            'X-Stripe-Subscription-Id': stripeSubscriptionId || '',
+          },
+          body: JSON.stringify(provisionPayload),
+          signal: AbortSignal.timeout(15_000),
+        })
+        if (enqueueRes.ok) break
+        if (enqueueRes.status < 500 && enqueueRes.status !== 408 && enqueueRes.status !== 429) break
+        lastError = `HTTP ${enqueueRes.status}`
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err)
+        const transient = /AbortError|timeout|ETIMEDOUT|ECONNRESET|ENOTFOUND|fetch failed/i.test(lastError)
+        // Always reset enqueueRes when a network-level error fires.
+        // Otherwise an earlier-attempt 5xx response would still be live in
+        // the loop variable; the post-loop `if (!enqueueRes)` alert path
+        // would be skipped, the operator would never be notified, and the
+        // user would get the stale 5xx body instead of the intended
+        // 503 "Backend unavailable" message.
+        enqueueRes = null
+        if (!transient) {
+          break
+        }
+      }
+      if (attempt < maxAttempts) {
+        await new Promise((r) => setTimeout(r, 250 * Math.pow(3, attempt - 1)))
+      }
+    }
+
+    if (!enqueueRes) {
+      console.error('[Provision] Backend unreachable after retries:', lastError)
+      await sendAlert({
+        title: 'Provision enqueue failed',
+        message: `User ${userId} (${userEmail}) could not enqueue a provision job; backend unreachable after ${maxAttempts} attempts. Operator action required.`,
+        severity: 'critical',
+        fields: { UserId: userId, Plan: plan || 'solo', Attempts: String(maxAttempts), Error: lastError ?? 'unknown' },
+      }).catch(() => null)
+      return NextResponse.json(
+        { success: false, error: 'Backend unavailable, please try again in a moment.' },
+        { status: 503 }
+      )
+    }
 
     const contentType = enqueueRes.headers.get('content-type') || ''
     let data: Record<string, unknown>
