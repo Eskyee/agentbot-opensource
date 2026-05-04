@@ -1,3 +1,4 @@
+import './lib/sentry';
 import express, { Request, Response, NextFunction } from 'express';
 import { initDatabase } from './services/db-init';
 import inviteRouter from './invite';
@@ -972,6 +973,17 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   // back to the structured log line.
   const requestId = (req as Request & { requestId?: string }).requestId;
   console.error('[Unhandled Error]', requestId ?? '-', err.message, err.stack);
+
+  // Report to Sentry if configured
+  try {
+    const { Sentry } = require('./lib/sentry');
+    Sentry.captureException(err, {
+      extra: { requestId, path: req.path, method: req.method },
+    });
+  } catch {
+    // Sentry not available — continue without it
+  }
+
   res.status(500).json({ error: 'Internal server error', requestId });
 });
 
