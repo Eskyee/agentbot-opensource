@@ -1,9 +1,32 @@
 /**
  * Smoke tests for /api/webhooks/stripe.
  *
- * Exercises the high-level signature-verification branch and the
- * happy-path checkout.session.completed update.
+ * Verifies:
+ *   - Signature-verification rejects bad signatures with 400.
+ *   - Idempotency-first: a duplicate event returns 200 without re-running side effects.
+ *   - 200 is returned to Stripe before deferred side effects run, and the
+ *     side effects are scheduled via next/server's `after()`.
+ *   - The deferred handler updates the user on checkout.session.completed.
  */
+
+const afterCallbacks: Array<() => unknown | Promise<unknown>> = []
+
+jest.mock('next/server', () => {
+  const actual = jest.requireActual('next/server')
+  return {
+    ...actual,
+    after: (callback: () => unknown | Promise<unknown>) => {
+      afterCallbacks.push(callback)
+    },
+  }
+})
+
+const flushAfter = async () => {
+  while (afterCallbacks.length > 0) {
+    const cb = afterCallbacks.shift()!
+    await cb()
+  }
+}
 
 jest.mock('@/app/lib/stripe', () => {
   const constructEvent = jest.fn()
@@ -68,6 +91,7 @@ describe('POST /api/webhooks/stripe', () => {
   })
 
   beforeEach(() => {
+    afterCallbacks.length = 0
     constructEventMock.mockReset()
     mockedPrisma.processedStripeEvent.findUnique.mockReset()
     mockedPrisma.processedStripeEvent.create.mockReset()
@@ -89,10 +113,36 @@ describe('POST /api/webhooks/stripe', () => {
 
     expect(response.status).toBe(400)
     expect(body).toMatchObject({ error: 'Invalid signature' })
+    expect(mockedPrisma.processedStripeEvent.create).not.toHaveBeenCalled()
   })
 
-  test('updates user subscription on checkout.session.completed', async () => {
-    mockedPrisma.processedStripeEvent.findUnique.mockResolvedValue(null)
+  test('returns 200 fast, deferring side effects to after() — duplicate events short-circuit', async () => {
+    // Simulate the Prisma unique-constraint violation that Stripe retries hit.
+    mockedPrisma.processedStripeEvent.create.mockRejectedValue(
+      Object.assign(new Error('duplicate'), { code: 'P2002' }),
+    )
+    constructEventMock.mockReturnValue({
+      id: 'evt_dup',
+      type: 'checkout.session.completed',
+      data: { object: { metadata: { userId: 'user-1', plan: 'solo' } } },
+    })
+
+    const request = new Request('http://localhost/api/webhooks/stripe', {
+      method: 'POST',
+      body: 'raw',
+    })
+
+    const response = await POST(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toMatchObject({ received: true, deduped: true })
+    // Critical: deduped events must NOT schedule any side-effect work.
+    expect(afterCallbacks).toHaveLength(0)
+    expect(mockedPrisma.user.update).not.toHaveBeenCalled()
+  })
+
+  test('claims the event before responding 200, and defers user update to after()', async () => {
     mockedPrisma.processedStripeEvent.create.mockResolvedValue({})
     mockedPrisma.user.update.mockResolvedValue({})
 
@@ -117,7 +167,18 @@ describe('POST /api/webhooks/stripe', () => {
     })
 
     const response = await POST(request)
+
+    // 200 returned BEFORE any side effect runs.
     expect(response.status).toBe(200)
+    expect(mockedPrisma.processedStripeEvent.create).toHaveBeenCalledWith({
+      data: { eventId: 'evt_1', type: 'checkout.session.completed' },
+    })
+    expect(mockedPrisma.user.update).not.toHaveBeenCalled()
+    expect(afterCallbacks).toHaveLength(1)
+
+    // Now flush the deferred work and confirm the user got updated.
+    await flushAfter()
+
     expect(mockedPrisma.user.update).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'user-1' },
@@ -127,7 +188,7 @@ describe('POST /api/webhooks/stripe', () => {
           stripeSubscriptionId: 'sub_1',
           subscriptionStatus: 'active',
         }),
-      })
+      }),
     )
   })
 })
