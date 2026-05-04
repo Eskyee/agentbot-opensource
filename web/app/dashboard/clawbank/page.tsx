@@ -11,6 +11,7 @@ interface ClawBankStatus {
   wallets?: Array<{ id: string; chain: string; address: string }>
   balance?: { amount: string; currency: string }
   error?: string
+  mcp?: { ok: boolean; error?: string }
 }
 
 export default function ClawBankPage() {
@@ -186,6 +187,19 @@ export default function ClawBankPage() {
                         {w.chain}: {w.address.slice(0, 6)}…{w.address.slice(-4)}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {status.mcp?.ok && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="h-2 w-2 rounded-full bg-green-400" />
+                    <span className="text-xs text-green-400">Agent connected — banking tools active</span>
+                  </div>
+                )}
+                {status.mcp && !status.mcp.ok && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                    <span className="text-xs text-yellow-400">Key saved — agent connection pending ({status.mcp.error || 'deploy agent first'})</span>
                   </div>
                 )}
 

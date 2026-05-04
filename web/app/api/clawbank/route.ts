@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { encryptToken, decryptToken } from '@/app/lib/token-encryption'
+import { injectClawBankMcp, removeClawBankMcp } from '@/app/lib/clawbank-mcp'
 
 const CLAWBANK_SETTING_KEY = 'clawbank_api_key'
 const CLAWBANK_MCP_URL = 'https://app.clawbank.co/mcp'
@@ -198,7 +199,10 @@ export async function POST(req: NextRequest) {
       update: { value: encrypted },
     })
 
-    return NextResponse.json({ success: true, status })
+    // Inject MCP server into user's agent config
+    const mcpResult = await injectClawBankMcp(session.user.id)
+
+    return NextResponse.json({ success: true, status, mcp: mcpResult })
   } catch (error) {
     console.error('[ClawBank POST] Error:', error)
     return NextResponse.json({ error: 'Failed to save ClawBank key' }, { status: 500 })
@@ -212,6 +216,9 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
+    // Remove MCP server from agent config first
+    await removeClawBankMcp(session.user.id)
+
     await prisma.userSetting.deleteMany({
       where: { userId: session.user.id, key: CLAWBANK_SETTING_KEY },
     })
