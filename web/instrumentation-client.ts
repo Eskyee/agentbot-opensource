@@ -1,0 +1,54 @@
+/**
+ * Sentry client-runtime configuration. Next.js 15+ loads this automatically in
+ * the browser bundle when present.
+ *
+ * NEXT_PUBLIC_SENTRY_DSN must be set in the environment for this to do
+ * anything. If empty, `Sentry.init` is a safe no-op.
+ */
+import * as Sentry from '@sentry/nextjs'
+
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+
+    // Browser performance: 10% of page loads in prod, everything in dev.
+    // Overridable via NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE.
+    tracesSampleRate: process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE
+      ? Number(process.env.NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE)
+      : process.env.NODE_ENV === 'production'
+        ? 0.1
+        : 1.0,
+
+    // Session replay: only 10% of normal sessions, but 100% of sessions with
+    // errors so we can see what the user did before it broke.
+    replaysSessionSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
+    replaysOnErrorSampleRate: 1.0,
+
+    environment:
+      process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ||
+      process.env.NEXT_PUBLIC_VERCEL_ENV ||
+      process.env.NODE_ENV,
+
+    integrations: [
+      Sentry.replayIntegration({
+        maskAllText: true,
+        blockAllMedia: true,
+      }),
+    ],
+
+    // Filter out noise that isn't actionable.
+    ignoreErrors: [
+      // Browser extensions and ad-blockers commonly throw these.
+      'top.GLOBALS',
+      'ResizeObserver loop limit exceeded',
+      'ResizeObserver loop completed with undelivered notifications',
+      // User aborted a fetch (closed tab, navigated away).
+      'AbortError',
+      // Common pattern in console scripts.
+      "Can't find variable: ZiteReader",
+    ],
+  })
+}
+
+// Required for Next.js navigation instrumentation.
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart

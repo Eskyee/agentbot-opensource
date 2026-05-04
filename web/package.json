@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "build": "node_modules/.bin/prisma generate && next build --webpack",
+    "build": "node_modules/.bin/prisma generate && NODE_OPTIONS=\"--max-old-space-size=8192\" next build --webpack",
     "start": "node .next/standalone/server.js",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 100",
     "test": "playwright test",
@@ -28,6 +28,7 @@
     "@prisma/client": "^5.22.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@sentry/nextjs": "^10.51.0",
     "@tanstack/react-query": "^5.90.21",
     "@types/pg": "^8.20.0",
     "@types/three": "^0.183.1",
