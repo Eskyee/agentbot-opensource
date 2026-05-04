@@ -121,11 +121,15 @@ export async function probeOpenClawRuntime(url: string): Promise<OpenClawRuntime
           ? healthPayload.runtime.ffmpeg.version
           : null
 
+    // If agent is healthy but no explicit FFmpeg data (older OpenClaw without /api/status),
+    // assume FFmpeg is available — it's included in the standard OpenClaw Docker image.
     const ffmpeg = {
       available:
         typeof statusPayload?.runtime?.ffmpeg?.available === 'boolean'
           ? statusPayload.runtime.ffmpeg.available
-          : healthFfmpegAvailable === true,
+          : healthFfmpegAvailable === true
+            ? true
+            : healthOk && readyOk,
       version: typeof statusPayload?.runtime?.ffmpeg?.version === 'string'
         ? statusPayload.runtime.ffmpeg.version
         : healthFfmpegVersion,

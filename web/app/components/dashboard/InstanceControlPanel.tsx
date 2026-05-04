@@ -567,16 +567,12 @@ export function InstanceControlPanel({
                 value={
                   instance.ffmpegAvailable
                     ? 'Ready'
-                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
-                      ? 'Not Installed'
-                      : 'Unknown'
+                    : 'Unavailable'
                 }
                 detail={
                   instance.ffmpegAvailable
-                    ? (instance.ffmpegVersion || 'Installed')
-                    : instance.probeChecks?.find((c) => c.path === '/api/status')?.ok
-                      ? 'Upgrade your runtime to install — needed for baseFM broadcasting'
-                      : 'Status unavailable — runtime not fully reachable'
+                    ? (instance.ffmpegVersion || 'Included in standard image')
+                    : 'FFmpeg not detected — check runtime logs'
                 }
               />
             </div>
