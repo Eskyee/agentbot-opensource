@@ -106,7 +106,6 @@ dirs.forEach(dir => {
 
 log.section('3. Configuration Files');
 const configFiles = [
-  'render.yaml',
   'web/vercel.json',
   'web/.env.example',
   'agentbot-backend/Dockerfile',
@@ -205,17 +204,11 @@ try {
   failures++;
 }
 
-log.section('9. Render Configuration');
-try {
-  const renderYaml = fs.readFileSync(path.join(__dirname, '..', 'render.yaml'), 'utf8');
-  check(renderYaml.includes('agentbot-api'), 'Render backend service defined');
-  check(renderYaml.includes('databases'), 'Render database service defined');
-  check(renderYaml.includes('healthCheckPath'), 'Render has health check path');
-  check(renderYaml.includes('autoDeploy'), 'Render has auto-deploy enabled');
-} catch (error) {
-  log.error('Failed to parse render.yaml');
-  failures++;
-}
+log.section('9. Backend Hosting Configuration (Railway)');
+// The backend is deployed on Railway. Configuration lives in the Railway
+// dashboard (env vars, autoscale, healthcheck) rather than a checked-in
+// service blueprint, so there is no static file to validate here.
+log.info('Backend host: Railway (https://railway.app/dashboard) — see docs/CURRENT_PLATFORM_STATE.md');
 
 log.section('10. Test Coverage');
 const testFiles = tsFiles.filter(file => {
@@ -286,11 +279,11 @@ if (failures > 0) {
 } else {
   log.success('Deployment FULLY READY - All checks passed');
   console.log('\nNext steps:');
-  console.log('1. Ensure all secrets are configured in Vercel/Render dashboards');
+  console.log('1. Ensure all secrets are configured in Vercel/Railway dashboards');
   console.log('2. Verify DATABASE_URL is injected correctly');
   console.log('3. Test health check endpoint: GET /health');
   console.log('4. Push to main branch to trigger deployment');
-  console.log('5. Monitor deployment via GitHub Actions and Render/Vercel dashboards\n');
+  console.log('5. Monitor deployment via GitHub Actions and Railway/Vercel dashboards\n');
 }
 
 process.exit(failures > 0 ? 1 : 0);
