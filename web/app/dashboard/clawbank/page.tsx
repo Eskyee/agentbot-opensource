@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
 import { useDashboardData } from '@/app/dashboard/DashboardDataProvider'
 
 interface ClawBankWallet {
@@ -35,7 +34,6 @@ export default function ClawBankPage() {
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [error, setError] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [copied, setCopied] = useState('')
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -117,20 +115,7 @@ export default function ClawBankPage() {
   const isConnected = status?.connected
 
   return (
-    <div className="flex min-h-screen bg-black text-white">
-      <DashboardSidebar
-        credits={0}
-        plan={data.plan}
-        runtimeUrl={data.openclawUrl}
-        runtimeGatewayToken={data.gatewayToken}
-        runtimeInstanceId={data.openclawInstanceId}
-        isAdmin={false}
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-      />
-
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
-        <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl">
           {/* Header */}
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
@@ -398,8 +383,6 @@ export default function ClawBankPage() {
               {error}
             </div>
           )}
-        </div>
-      </main>
     </div>
   )
 }
