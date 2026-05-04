@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   description: 'Watch Agentbot deploy a fully autonomous agent in 60 seconds. Connected to Telegram, powered by your API key, running 24/7.',
 }
 
+// Page renders dynamically (Prisma is not available at build time), but the
+// underlying public-stats helper caches its DB calls via `unstable_cache` so
+// repeat requests are served without hitting the DB.
+export const dynamic = 'force-dynamic'
 
 const demoTemplateCount = 4
 

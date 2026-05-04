@@ -1,23 +1,39 @@
 import { NextResponse } from 'next/server'
+import { unstable_cache } from 'next/cache'
 import { prisma } from '@/app/lib/prisma'
 
 // Public endpoint — no auth required. Marketing page only.
-export async function GET() {
-  try {
+//
+// Stats are cached for 60s via unstable_cache and the response is sent with
+// `Cache-Control: public, s-maxage=60, stale-while-revalidate=120` so the CDN
+// can serve them without a function invocation. With ~5 Prisma counts +
+// 2 raw queries per uncached call, this is the highest-impact cache target
+// in the API surface.
+//
+// We deliberately do NOT use `export const revalidate` here — it would tell
+// Next.js to prerender the route at build time, which fails because Prisma
+// has no DATABASE_URL during the build. The unstable_cache + Cache-Control
+// header give us the same effect for runtime requests.
+export const dynamic = 'force-dynamic'
+
+const PUBLIC_STATS_TAG = 'ops-public-stats'
+
+const fetchPublicStats = unstable_cache(
+  async () => {
     const now = new Date()
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
     // Agent count
-    const totalAgents = await prisma.agent.count()
+    const totalAgents = await prisma.agent.count().catch(() => 0)
 
     // Throughput: execution_logs in last 24h
-    const executionCount = await prisma.execution_logs.count({
-      where: { created_at: { gte: twentyFourHoursAgo } },
-    }).catch(() => 0)
+    const executionCount = await prisma.execution_logs
+      .count({
+        where: { created_at: { gte: twentyFourHoursAgo } },
+      })
+      .catch(() => 0)
 
-    const callsPerMin = executionCount > 0
-      ? Math.round((executionCount / 1440) * 100) / 100
-      : 0
+    const callsPerMin = executionCount > 0 ? Math.round((executionCount / 1440) * 100) / 100 : 0
 
     // p95 latency from usage_logs
     const p95Result = await prisma.$queryRaw<{ p95: number }[]>`
@@ -39,21 +55,32 @@ export async function GET() {
 
     // Verified facts: count of successful executions / total
     const totalExecs = await prisma.execution_logs.count().catch(() => 0)
-    const successExecs = await prisma.execution_logs.count({
-      where: { success: true },
-    }).catch(() => 0)
-    const verifiedFacts = totalExecs > 0
-      ? Math.round((successExecs / totalExecs) * 1000) / 10
-      : 0
+    const successExecs = await prisma.execution_logs
+      .count({ where: { success: true } })
+      .catch(() => 0)
+    const verifiedFacts = totalExecs > 0 ? Math.round((successExecs / totalExecs) * 1000) / 10 : 0
 
-    return NextResponse.json({
+    return {
       fleetSize: totalAgents,
       callsPerMin,
       p95,
       mirrorLag,
       verifiedFacts,
+    }
+  },
+  ['ops:public-stats'],
+  { revalidate: 60, tags: [PUBLIC_STATS_TAG] },
+)
+
+export async function GET() {
+  try {
+    const stats = await fetchPublicStats()
+    return NextResponse.json(stats, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+      },
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json({
       fleetSize: 0,
       callsPerMin: 0,

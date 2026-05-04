@@ -8,6 +8,9 @@ jest.mock('@/app/lib/prisma', () => ({
       findFirst: jest.fn(),
       findUnique: jest.fn(),
     },
+    agent: {
+      findFirst: jest.fn(),
+    },
   },
 }))
 
@@ -28,12 +31,19 @@ describe('instance admin access', () => {
     findFirst: jest.Mock
     findUnique: jest.Mock
   }
+  const mockedAgent = prisma.agent as unknown as {
+    findFirst: jest.Mock
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
     mockedIsAdminEmail.mockReset()
     mockedUser.findFirst.mockReset()
     mockedUser.findUnique.mockReset()
+    mockedAgent.findFirst.mockReset()
+    // Default: no agent row, getOwnedOpenClawUser returns user with
+    // runtimeServiceId === undefined.
+    mockedAgent.findFirst.mockResolvedValue(null)
   })
 
   test('allows admins to verify ownership by target instance id', async () => {
