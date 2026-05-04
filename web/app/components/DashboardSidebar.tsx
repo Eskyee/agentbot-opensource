@@ -54,7 +54,6 @@ export const navSections = [
     items: [
       { label: 'Verify Agent', href: '/dashboard/verify', icon: '🛡' },
       { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
-      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
       { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
       { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '⇄' },
     ],
@@ -65,6 +64,7 @@ export const navSections = [
     items: [
       { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
       { label: 'Solana', href: '/dashboard/solana', icon: '◑' },
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
       { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
       { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
       { label: 'ClawBank', href: '/dashboard/clawbank', icon: '🏦' },
