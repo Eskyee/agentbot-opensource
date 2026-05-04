@@ -1,5 +1,6 @@
 const path = require('path');
 const { withWorkflow } = require('workflow/next');
+const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -133,4 +134,26 @@ const nextConfig = {
   },
 };
 
-module.exports = withWorkflow(nextConfig);
+// Sentry wraps the config to:
+//   - Upload sourcemaps at build time (when SENTRY_AUTH_TOKEN + SENTRY_ORG +
+//     SENTRY_PROJECT are set; otherwise this step is silently skipped).
+//   - Inject a tunnel route (/monitoring) so events bypass ad-blockers.
+//   - Tree-shake unused Sentry features.
+//
+// `silent: !process.env.CI` keeps the local build quiet and only logs progress
+// in CI so you can see what's happening when sourcemaps upload.
+module.exports = withSentryConfig(withWorkflow(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  tunnelRoute: '/monitoring',
+  disableLogger: true,
+  automaticVercelMonitors: true,
+
+  // Don't fail the build if sourcemap upload fails — the SDK still works
+  // without uploaded sourcemaps, you just see minified stack traces.
+  errorHandler: () => {},
+});
