@@ -53,22 +53,6 @@ interface DashboardBootstrapData {
   openclawUrl?: string | null
   openclawInstanceId?: string | null
   gatewayToken?: string | null
-  communityRewards?: {
-    connected: boolean
-    walletAddress: string | null
-    claimed: boolean
-    currentTier: {
-      id: string
-      label: string
-      credits: number
-      minBalance: number
-    } | null
-    balanceUi: number | null
-    creditsClaimed: number
-    claimedAt?: string | null
-    availability?: 'live' | 'degraded'
-    detail?: string | null
-  }
 }
 
 type ConfirmAction = {
@@ -438,36 +422,6 @@ function DashboardContent() {
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
 
-          {bootstrap?.communityRewards && (
-            <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4 sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">Community Rewards</div>
-                  {bootstrap.communityRewards.connected ? (
-                    <p className="mt-2 text-sm text-zinc-300">
-                      {bootstrap.communityRewards.currentTier
-                        ? `${bootstrap.communityRewards.currentTier.label} tier · ${bootstrap.communityRewards.balanceUi?.toLocaleString()} tokens`
-                        : `${bootstrap.communityRewards.balanceUi?.toLocaleString()} tokens connected`}
-                      {bootstrap.communityRewards.claimed
-                        ? ` · ${bootstrap.communityRewards.creditsClaimed} credits claimed`
-                        : ' · claim available if eligible'}
-                    </p>
-                  ) : (
-                    <p className="mt-2 text-sm text-zinc-300">
-                      Connect your Solana holder wallet to unlock Agentbot community rewards.
-                    </p>
-                  )}
-                </div>
-                <Link
-                  href="/claim"
-                  className="inline-flex items-center justify-center rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 hover:border-zinc-500 hover:text-white"
-                >
-                  {bootstrap.communityRewards.claimed ? 'View claim' : 'Claim credits'}
-                </Link>
-              </div>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {statusChecks.map((check) => (
               <div key={check.name} className="border border-zinc-800 bg-zinc-950 p-4 flex items-center justify-between rounded-lg">
@@ -505,7 +459,6 @@ function DashboardContent() {
             onAction={performAction}
             skillsManagerUrl={skillsManagerUrl}
             configManagerUrl={configManagerUrl}
-            communityRewards={bootstrap?.communityRewards || null}
           />
         </div>
         </main>

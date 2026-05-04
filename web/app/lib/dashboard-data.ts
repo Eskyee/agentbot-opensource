@@ -7,7 +7,6 @@
 
 import { unstable_cache as cache } from 'next/cache'
 import type { OpenClawProbeCheck } from './openclaw-runtime-probe'
-import type { CommunityRewardStatus } from './solanaRewards'
 
 export interface DashboardStats {
   cpu: string
@@ -30,7 +29,6 @@ export interface DashboardData {
   gatewayToken?: string
   instance?: InstanceData
   stats?: DashboardStats
-  communityRewards?: CommunityRewardStatus
   health?: HealthStatus
 }
 

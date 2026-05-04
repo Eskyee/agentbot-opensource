@@ -147,18 +147,6 @@ export default function GuidePage() {
           </Q>
         </Section>
 
-        <Section title="Community Rewards and Solana">
-          <Q q="What are community rewards?">
-            Holding Agentbot tokens on Solana unlocks platform credits, baseFM access, and exclusive perks. The more you hold, the higher your tier and the more credits you earn.
-          </Q>
-          <Q q="How do I claim my community rewards?">
-            Click <strong className="text-zinc-300">Claim Credits</strong> at the top of your dashboard, or go to the <Link href="/claim" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">Claim</Link> page. Connect your Solana wallet and verify your token balance. Credits are added to your account automatically.
-          </Q>
-          <Q q="What is the Agentbot token?">
-            The Agentbot token is a Solana SPL token. Holders get baseFM streaming access, platform credits, and community governance perks. Find the token address and buy link on the <Link href="/dashboard/solana" className="text-orange-400 hover:text-orange-400 underline underline-offset-2">Solana</Link> page.
-          </Q>
-        </Section>
-
         <div className="flex flex-wrap gap-4 pt-4">
           <Link
             href="/dashboard"

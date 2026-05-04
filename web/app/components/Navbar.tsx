@@ -232,7 +232,6 @@ export default function Navbar() {
                     </div>
 
                     {/* Actions */}
-                    <UserMenuLink href="/claim" onClick={() => setUserMenuOpen(false)}>Claim Credits</UserMenuLink>
                     <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
                     <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
                     {isAdmin && (
@@ -319,7 +318,6 @@ export default function Navbar() {
                   <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
                 </MobileSection>
                 <MobileSection label="Account" defaultOpen>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                   {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
@@ -358,7 +356,6 @@ export default function Navbar() {
                   <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
                   <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
                   <MobileLink href="/token" onClick={closeMenu}>$AGENTBOT Token</MobileLink>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
                 </MobileSection>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
                   <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">

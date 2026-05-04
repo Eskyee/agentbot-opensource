@@ -65,22 +65,6 @@ interface InstanceControlPanelProps {
   onAction: (action: RuntimeAction) => void
   skillsManagerUrl: string
   configManagerUrl: string
-  communityRewards: {
-    connected: boolean
-    walletAddress: string | null
-    claimed: boolean
-    currentTier: {
-      id: string
-      label: string
-      credits: number
-      minBalance: number
-    } | null
-    balanceUi: number | null
-    creditsClaimed: number
-    claimedAt?: string | null
-    availability?: 'live' | 'degraded'
-    detail?: string | null
-  } | null
 }
 
 interface TrialStatus {
@@ -261,7 +245,7 @@ export function InstanceControlPanel({
   onAction,
   skillsManagerUrl,
   configManagerUrl,
-  communityRewards,
+  // communityRewards removed
 }: InstanceControlPanelProps) {
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null)
   const [basefmActionLoading, setBasefmActionLoading] = useState(false)
@@ -289,11 +273,12 @@ export function InstanceControlPanel({
   const lifecycleTelemetry = stats?.telemetry?.lifecycleMetricsAvailable ?? false
   const runtimeHealth = stats?.health === 'healthy' ? 'healthy' : stats?.health || 'checking'
   const managedSpecs = getManagedSpecs(instance.plan, instance.subscriptionStatus)
-  const canLaunchBasefm = Boolean(communityRewards?.claimed && communityRewards?.walletAddress)
+  const [basefmWallet, setBasefmWallet] = useState('')
+  const canLaunchBasefm = Boolean(basefmWallet.trim())
 
   const createBasefmStream = async () => {
-    if (!communityRewards?.walletAddress) {
-      setBasefmError('Claim your Agentbot token perks first so the control panel has a verified wallet to use.')
+    if (!basefmWallet.trim()) {
+      setBasefmError('Enter a Solana wallet address to launch a baseFM stream.')
       return
     }
 
@@ -305,7 +290,7 @@ export function InstanceControlPanel({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          wallet: communityRewards.walletAddress,
+          wallet: basefmWallet.trim(),
           name: `${instanceName} Live`,
         }),
       })
@@ -317,7 +302,7 @@ export function InstanceControlPanel({
 
       setBasefmLaunch({
         name: data.stream?.name || `${instanceName} Live`,
-        wallet: data.stream?.wallet || communityRewards.walletAddress,
+        wallet: data.stream?.wallet || basefmWallet.trim(),
         fullRtmpUrl: data.stream?.fullRtmpUrl,
         playbackId: data.stream?.playbackId || null,
         ffmpeg: data.ffmpeg || null,
@@ -492,8 +477,8 @@ export function InstanceControlPanel({
               <ActionButton
                 label="Create baseFM Stream"
                 detail={canLaunchBasefm
-                  ? 'Use your claimed Agentbot token wallet to mint RTMP credentials and an ffmpeg broadcaster command.'
-                  : 'Claim Agentbot token perks first, then launch a baseFM stream in one click.'}
+                  ? 'Mint RTMP credentials and an ffmpeg broadcaster command for baseFM.'
+                  : 'Enter a Solana wallet address above, then launch a baseFM stream.'}
                 icon={Music2}
                 tone="primary"
                 loading={basefmActionLoading}
@@ -560,6 +545,17 @@ export function InstanceControlPanel({
               </div>
             </div>
 
+            <div className="mt-4">
+              <label className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-1.5 block">Solana Wallet (for baseFM streams)</label>
+              <input
+                type="text"
+                value={basefmWallet}
+                onChange={(e) => setBasefmWallet(e.target.value)}
+                placeholder="Enter Solana wallet address"
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none font-mono"
+              />
+            </div>
+
             {basefmError ? (
               <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-red-200">
                 {basefmError}
@@ -568,7 +564,7 @@ export function InstanceControlPanel({
 
             {!canLaunchBasefm ? (
               <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-orange-500">
-                Agentbot token perks work like the baseFM token here. Claim your Solana Agentbot holder status, then this panel can launch a stream with that verified wallet.
+                Enter your Solana wallet address above to launch a baseFM stream.
               </div>
             ) : null}
 

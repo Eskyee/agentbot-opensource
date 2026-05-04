@@ -11,7 +11,6 @@ import { prisma } from '@/app/lib/prisma'
 import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
 import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
-import { getUserCommunityRewardStatus, getEmptyCommunityRewardStatus } from '@/app/lib/solanaRewards'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
 import { resolveUserMode } from '@/app/lib/operator-routing'
 import { getTrialCountdown } from '@/app/lib/trial-utils'
@@ -44,7 +43,6 @@ export async function GET(req: NextRequest) {
       userData,
       agentData,
       registration,
-      communityRewards,
       mode
     ] = await Promise.all([
       prisma.user.findUnique({
@@ -75,12 +73,6 @@ export async function GET(req: NextRequest) {
       prisma.$queryRaw<{ gateway_token: string | null, registered_at: Date | null, last_seen: Date | null, status: string | null }[]>`
         SELECT gateway_token, registered_at, last_seen, status FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
       `,
-      getUserCommunityRewardStatus(userId).catch(() =>
-        getEmptyCommunityRewardStatus({
-          availability: 'degraded',
-          detail: 'Community reward status is temporarily unavailable.',
-        })
-      ),
       resolveUserMode(userId, userEmail).catch((err) => {
         console.warn('[Dashboard Data] resolveUserMode failed:', err)
         return 'advanced' as const
@@ -126,7 +118,6 @@ export async function GET(req: NextRequest) {
         daysLeft: countdown.daysLeft,
         endsAt: countdown.endsAt,
       } : null,
-      communityRewards,
       instance: {
         userId: instanceId,
         status: runtime.status,

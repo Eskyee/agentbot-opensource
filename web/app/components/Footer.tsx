@@ -42,7 +42,6 @@ const COLUMNS = [
       { href: '/social',    label: 'Social' },
       { href: '/jobs',      label: 'Jobs' },
       { href: '/token',     label: '$AGENTBOT' },
-      { href: '/claim',     label: 'Claim Credits' },
       { href: '/buddies',   label: 'Buddies' },
       { href: '/basefm',    label: 'baseFM Live' },
     ],
