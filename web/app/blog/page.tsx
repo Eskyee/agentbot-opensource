@@ -4,6 +4,8 @@ import { BlogIndexClient } from './BlogIndexClient'
 import { blogPosts } from './blogPosts'
 import { listAutoBlogPosts } from '@/app/lib/auto-blog'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Blog - Agentbot Shipping Log',
   description:
