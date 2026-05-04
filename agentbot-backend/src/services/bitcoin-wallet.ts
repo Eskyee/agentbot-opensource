@@ -1,9 +1,5 @@
 import CryptoJS from 'crypto-js';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+import { pool } from '../lib/db';
 
 type BitcoinWalletRow = {
   id: number;

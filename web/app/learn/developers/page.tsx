@@ -282,7 +282,7 @@ export default function LearnDevelopersPage() {
           <div className="grid gap-px bg-zinc-800 sm:grid-cols-2 lg:grid-cols-4">
             {[
               { label: 'Runtime', value: 'OpenClaw 2026.4.26' },
-              { label: 'Frontend', value: 'Next.js 14 + React 19' },
+              { label: 'Frontend', value: 'Next.js 16 + React 19' },
               { label: 'Backend', value: 'Express + Prisma' },
               { label: 'Database', value: 'Neon Postgres' },
               { label: 'Cache', value: 'Upstash Redis' },

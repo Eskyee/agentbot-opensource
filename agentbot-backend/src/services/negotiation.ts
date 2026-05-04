@@ -1,13 +1,9 @@
 import { AgentBusService, AgentMessage } from './bus';
-import { Pool } from 'pg';
 import { WalletService } from './wallet';
 import dotenv from 'dotenv';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 export class NegotiationService {
   /**

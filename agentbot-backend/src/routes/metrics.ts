@@ -12,12 +12,11 @@
 import express, { Request, Response } from 'express';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Pool } from 'pg';
 import { authenticate } from '../middleware/auth';
 import { runCommand } from '../utils';
+import { pool } from '../lib/db';
 
 const router = express.Router();
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 interface MetricPoint {
   timestamp: string;

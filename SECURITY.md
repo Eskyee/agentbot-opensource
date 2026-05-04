@@ -80,9 +80,9 @@ Users provide their own AI API keys (BYOK). Agentbot does not store or access th
 
 ## Best Practices for Deployers
 
-1. **Never commit secrets** — use environment variables via Render/Vercel dashboards
+1. **Never commit secrets** — use environment variables via Railway/Vercel dashboards
 2. **Rotate keys regularly** — especially after team member offboarding
-3. **Enable 2FA** on all service accounts (GitHub, Render, Vercel, Stripe)
+3. **Enable 2FA** on all service accounts (GitHub, Railway, Vercel, Stripe)
 4. **Review RLS policies** after every schema migration
 5. **Monitor access logs** for unusual patterns
 6. **Keep ADMIN_EMAILS minimal** — grant admin access only to those who need it

@@ -4,10 +4,8 @@
  * Consolidates duplicated metric functions from index.ts and routes/metrics.ts.
  * Used by both the metrics router and inline endpoints in index.ts.
  */
-import { Pool } from 'pg';
 import { runCommand } from '../utils';
-
-const metricsPool = new Pool({ connectionString: process.env.DATABASE_URL });
+import { pool as metricsPool } from '../lib/db';
 
 export interface MetricPoint {
   timestamp: string;

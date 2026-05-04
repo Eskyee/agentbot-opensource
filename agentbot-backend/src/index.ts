@@ -22,9 +22,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { timingSafeEqual, randomBytes } from 'crypto';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { Pool } from 'pg';
 import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw-version';
 import { buildHealthSummary } from './lib/health-summary';
+import { getPoolStats } from './lib/db';
 import { signatureGuard } from './middleware/signature';
 import { snapshotAgentState } from './services/gitlawb';
 import { authenticate } from './middleware/authenticate';
@@ -575,7 +575,9 @@ app.get('/health', async (req: Request, res: Response) => {
   const summary = buildHealthSummary({ dockerAvailable });
   // During the first ~500ms after boot the provisioning probe hasn't completed
   // yet — surface that explicitly so a green dashboard isn't a false negative.
-  res.json({ ...summary, provisioningChecked });
+  // db: shared pg pool stats (totalCount/idleCount/waitingCount) — surfaces
+  // connection-pool saturation without any new dependencies.
+  res.json({ ...summary, provisioningChecked, db: getPoolStats() });
 });
 
 // OpenAI-compatible endpoints (/v1/models, /v1/models/:model, /v1/embeddings)
