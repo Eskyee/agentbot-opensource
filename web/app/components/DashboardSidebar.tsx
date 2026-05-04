@@ -76,8 +76,6 @@ export const navSections = [
     items: [
       { label: 'Community', href: '/dashboard/community', icon: '✦' },
       { label: 'Buddies', href: '/buddies', icon: '🐚' },
-      { label: 'Dreams', href: '/dashboard/dreams', icon: '☾' },
-      { label: 'Character QA', href: '/dashboard/character-qa', icon: '♫' },
       { label: 'Git City', href: '/dashboard/git-city', icon: '⌂' },
       { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
       { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '⏵' },
