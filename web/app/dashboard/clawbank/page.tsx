@@ -35,6 +35,10 @@ export default function ClawBankPage() {
   const [testing, setTesting] = useState(false)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState('')
+  const [activeTool, setActiveTool] = useState<string | null>(null)
+  const [toolResult, setToolResult] = useState<unknown>(null)
+  const [toolLoading, setToolLoading] = useState(false)
+  const [toolError, setToolError] = useState('')
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const fetchStatus = useCallback(async () => {
@@ -104,6 +108,33 @@ export default function ClawBankPage() {
       setStatus(null)
       setApiKey('')
     } catch {}
+  }, [])
+
+  const invokeTool = useCallback(async (toolName: string, args?: Record<string, unknown>) => {
+    setActiveTool(toolName)
+    setToolLoading(true)
+    setToolError('')
+    setToolResult(null)
+    try {
+      const res = await fetch('/api/clawbank/invoke', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tool: toolName, arguments: args }),
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'Tool call failed')
+      setToolResult(d.result)
+    } catch (e) {
+      setToolError(e instanceof Error ? e.message : 'Tool call failed')
+    } finally {
+      setToolLoading(false)
+    }
+  }, [])
+
+  const closeTool = useCallback(() => {
+    setActiveTool(null)
+    setToolResult(null)
+    setToolError('')
   }, [])
 
   const copyAddr = (addr: string) => {
@@ -227,33 +258,67 @@ export default function ClawBankPage() {
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { name: 'Get Balance', icon: '💰' },
-                    { name: 'List Wallets', icon: '◎' },
-                    { name: 'Deposit Instructions', icon: '📋' },
-                    { name: 'Send USDC', icon: '⇄' },
-                    { name: 'Formation Guide', icon: '🏢' },
-                    { name: 'List Jurisdictions', icon: '🌍' },
-                    { name: 'Start Checkout', icon: '💳' },
-                    { name: 'Order History', icon: '📊' },
+                    { name: 'Get Balance', icon: '💰', tool: 'get_balance' },
+                    { name: 'List Wallets', icon: '◎', tool: 'list_wallets' },
+                    { name: 'Deposit Instructions', icon: '📋', tool: 'get_deposit_instructions' },
+                    { name: 'Send USDC', icon: '⇄', tool: 'create_usdc_transfer', needsInput: true },
+                    { name: 'Formation Guide', icon: '🏢', tool: 'clawbank_formation_guide' },
+                    { name: 'List Jurisdictions', icon: '🌍', tool: 'list_formation_jurisdictions' },
+                    { name: 'Start Checkout', icon: '💳', tool: 'start_formation_checkout', needsInput: true },
+                    { name: 'Order History', icon: '📊', tool: 'list_formation_orders' },
                   ].map((tool) => (
-                    <div
+                    <button
                       key={tool.name}
-                      className="border border-zinc-800 bg-zinc-950 px-3 py-2 text-center"
+                      onClick={() => !tool.needsInput && invokeTool(tool.tool)}
+                      disabled={toolLoading || tool.needsInput}
+                      className={`border border-zinc-800 bg-zinc-950 px-3 py-2 text-center transition-colors ${
+                        tool.needsInput
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:border-zinc-600 hover:bg-zinc-900 cursor-pointer'
+                      } ${activeTool === tool.tool ? 'border-orange-500/50 bg-orange-500/5' : ''}`}
                     >
                       <div className="text-sm mb-0.5">{tool.icon}</div>
                       <div className="text-[9px] uppercase tracking-[0.14em] text-zinc-400">
                         {tool.name}
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
                 <p className="text-[10px] text-zinc-600 mt-3">
-                  All 19 ClawBank tools available to your agent via MCP.
+                  Click any tool to run it live. 19 tools total — some require parameters and run via your agent.
                   {status.mcp?.ok
-                    ? ' Tools are live and ready.'
+                    ? ' Agent tools active.'
                     : ` Agent MCP: ${status.mcp?.error || 'pending — deploy agent first'}`}
                 </p>
               </div>
+
+              {/* Tool Result Panel */}
+              {activeTool && (
+                <div className="mb-6 rounded-2xl border border-zinc-800 bg-zinc-950/80 p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-zinc-600">
+                      {activeTool.replace(/_/g, ' ')} — Result
+                    </div>
+                    <button
+                      onClick={closeTool}
+                      className="text-zinc-600 hover:text-white text-xs"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {toolLoading ? (
+                    <div className="text-sm text-zinc-500 py-4 text-center">Running…</div>
+                  ) : toolError ? (
+                    <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                      {toolError}
+                    </div>
+                  ) : toolResult ? (
+                    <pre className="text-xs text-zinc-300 font-mono whitespace-pre-wrap break-all bg-zinc-950 border border-zinc-800 rounded-lg p-4 max-h-80 overflow-y-auto">
+                      {JSON.stringify(toolResult, null, 2)}
+                    </pre>
+                  ) : null}
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex flex-wrap gap-2 mb-6">
