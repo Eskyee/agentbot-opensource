@@ -74,8 +74,8 @@ async function testClawBankConnection(apiKey: string) {
       }
     }
 
-    // Get balance
-    let balance: { amount: string; currency: string } | undefined
+    // Get balance (with wallet info)
+    let balance: { amount: string; currency: string; amountCents?: number } | undefined
     const balRes = await fetch(CLAWBANK_MCP_URL, {
       method: 'POST',
       headers: {
@@ -97,7 +97,13 @@ async function testClawBankConnection(apiKey: string) {
         try {
           const text = balData.result.content[0]?.text || ''
           const parsed = JSON.parse(text)
-          if (parsed.balance) balance = parsed.balance
+          if (parsed.balance) {
+            balance = {
+              amount: (parsed.balance.amount_cents / 100).toFixed(2),
+              currency: parsed.balance.currency || 'USD',
+              amountCents: parsed.balance.amount_cents,
+            }
+          }
         } catch {}
       }
     }
@@ -130,11 +136,47 @@ async function testClawBankConnection(apiKey: string) {
       }
     }
 
+    // Get deposit instructions
+    let depositInfo: { routing: string; account: string; bank: string } | undefined
+    const depRes = await fetch(CLAWBANK_MCP_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json, text/event-stream',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 5,
+        method: 'tools/call',
+        params: { name: 'get_deposit_instructions', arguments: {} },
+      }),
+    })
+
+    if (depRes.ok) {
+      const depData = await depRes.json()
+      if (depData.result?.content) {
+        try {
+          const text = depData.result.content[0]?.text || ''
+          const parsed = JSON.parse(text)
+          if (parsed.routing_number) {
+            depositInfo = {
+              routing: parsed.routing_number,
+              account: parsed.account_number || '—',
+              bank: parsed.bank_name || 'Bridge',
+            }
+          }
+        } catch {}
+      }
+    }
+
     return {
       connected: true,
       email,
+      kycApproved: true,
       balance,
       wallets,
+      depositInfo,
     }
   } catch (e) {
     return {
