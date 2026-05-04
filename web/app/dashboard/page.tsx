@@ -361,6 +361,11 @@ function DashboardContent() {
 
   if (!instance) return null
 
+  const instanceName = instance.userId
+    ? `Agentbot Agent ${instance.userId.slice(0, 12)}`
+    : 'Agentbot Agent'
+  const runtimeHealth = instance.status === 'running' ? 'healthy' : instance.status
+
   const skillsManagerUrl = buildOpenClawControlUrl({
     view: 'skills',
     gatewayUrl: instance.url,
@@ -421,6 +426,90 @@ function DashboardContent() {
           <div className="p-4 sm:p-6 lg:p-8">
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
+
+          {/* Hero Header */}
+          <div className="mb-6 rounded-2xl border-b border-zinc-800 bg-[radial-gradient(circle_at_top_left,_rgba(232,93,38,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(0,24,27,0.92),_rgba(9,9,11,0.96))] px-5 py-5 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Agentbot Runtime</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                    {instanceName}
+                  </h2>
+                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
+                    instance.status === 'running'
+                      ? 'border-green-500/30 bg-green-500/10 text-green-400'
+                      : instance.status === 'stopped'
+                        ? 'border-zinc-600/30 bg-zinc-600/20 text-zinc-400'
+                        : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+                  }`}>
+                    <span className={`h-2 w-2 rounded-full ${
+                      instance.status === 'running' ? 'bg-green-400' : instance.status === 'stopped' ? 'bg-zinc-500' : 'bg-yellow-400'
+                    }`} />
+                    {instance.status === 'running' ? 'Running' : instance.status === 'stopped' ? 'Stopped' : instance.status}
+                  </span>
+                  {runtimeHealth === 'healthy' && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
+                      <span className="h-2 w-2 rounded-full bg-green-400" />
+                      Healthy
+                    </span>
+                  )}
+                </div>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+                  Clean controls for your Agentbot instance, with runtime actions and machine facts in one place.
+                </p>
+              </div>
+              {instance.controlUiUrl && (
+                <a
+                  href={instance.controlUiUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
+                >
+                  Open
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  </svg>
+                </a>
+              )}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                1 vCPU, 2 GB RAM
+              </span>
+              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                10 GB SSD
+              </span>
+              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                {instance.plan || 'Solo'}
+              </span>
+              {instance.openclawVersion && (
+                <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                  v{instance.openclawVersion}
+                </span>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href="/expert-setup"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                Book setup
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                </svg>
+              </Link>
+              <Link
+                href="/billing"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                Manage billing
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {statusChecks.map((check) => (

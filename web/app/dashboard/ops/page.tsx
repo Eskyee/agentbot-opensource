@@ -10,6 +10,7 @@ import { SkillsPanel } from './components/SkillsPanel'
 import { BottomBar } from './components/BottomBar'
 import { AICoach } from './components/AICoach'
 import { AIPalette } from './components/AIPalette'
+import { AgentDrawer } from './components/AgentDrawer'
 
 interface FleetStats {
   running: number
@@ -55,6 +56,7 @@ interface Skill {
 
 export default function OpsPage() {
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null)
+  const [drawerAgentId, setDrawerAgentId] = useState<string | null>(null)
   const [stats, setStats] = useState<FleetStats | null>(null)
   const [agentDetail, setAgentDetail] = useState<{
     identity: IdentityData | null
@@ -143,7 +145,10 @@ export default function OpsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Left column — Fleet Nodes */}
           <div className="lg:col-span-1">
-            <FleetStatus onSelect={setSelectedAgent} selected={selectedAgent} />
+            <FleetStatus
+            onSelect={(id) => { setSelectedAgent(id); setDrawerAgentId(id) }}
+            selected={selectedAgent}
+          />
           </div>
 
           {/* Right column — Run Timeline + Identity + Skills + AI Coach */}
@@ -168,6 +173,14 @@ export default function OpsPage() {
         uplinkOk={true}
         advisoryCount={selectedAgent ? 0 : 1}
       />
+
+      {/* Agent Drawer — opens when an agent card is clicked */}
+      {drawerAgentId && (
+        <AgentDrawer
+          agentId={drawerAgentId}
+          onClose={() => setDrawerAgentId(null)}
+        />
+      )}
     </DashboardShell>
   )
 }
