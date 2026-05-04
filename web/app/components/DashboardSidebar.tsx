@@ -43,6 +43,17 @@ export const navSections = [
     ],
   },
   {
+    label: 'Chain',
+    items: [
+      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
+      { label: 'Solana', href: '/dashboard/solana', icon: '◑' },
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
+      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
+      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
+      { label: 'ClawBank', href: '/dashboard/clawbank', icon: '🏦' },
+    ],
+  },
+  {
     label: 'Education',
     items: [
       { label: 'Coach', href: '/dashboard/coach', icon: '🎓' },
@@ -59,18 +70,7 @@ export const navSections = [
       { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '⇄' },
     ],
   },
-  // SECONDARY: Chain, network, operations — power-user features
-  {
-    label: 'Chain',
-    items: [
-      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
-      { label: 'Solana', href: '/dashboard/solana', icon: '◑' },
-      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
-      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
-      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
-      { label: 'ClawBank', href: '/dashboard/clawbank', icon: '🏦' },
-    ],
-  },
+  // SECONDARY: network, operations — power-user features
   {
     label: 'Network',
     items: [
