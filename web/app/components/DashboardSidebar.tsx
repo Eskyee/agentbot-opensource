@@ -39,6 +39,7 @@ export const navSections = [
       { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
       { label: 'Borg Soul', href: '/dashboard/borg', icon: '◭' },
+      { label: 'Signals', href: '/dashboard/signals', icon: '⌁' },
     ],
   },
   {
@@ -85,7 +86,6 @@ export const navSections = [
   {
     label: 'Operations',
     items: [
-      { label: 'Signals', href: '/dashboard/signals', icon: '⌁' },
       { label: 'Paid Tools', href: '/dashboard/tools', icon: '◫' },
       { label: 'ClawMerchants', href: '/dashboard/market-intel', icon: '▣' },
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '☼' },
