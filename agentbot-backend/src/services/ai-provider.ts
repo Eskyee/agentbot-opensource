@@ -11,11 +11,9 @@
  */
 
 import dotenv from 'dotenv';
-import { Pool } from 'pg';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Per-plan monthly input+output token budgets.
 // Set to Infinity to disable enforcement for a plan tier.

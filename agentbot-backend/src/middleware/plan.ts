@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Pool } from 'pg';
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+import { pool } from '../lib/db';
 
 // Plan definitions — ordered cheapest to most expensive
 // Matches pricing page: Solo £29, Collective £69, Label £149, Network £499

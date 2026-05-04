@@ -6,6 +6,20 @@
  */
 
 import { unstable_cache as cache } from 'next/cache'
+import type { OpenClawProbeCheck } from './openclaw-runtime-probe'
+import type { CommunityRewardStatus } from './solanaRewards'
+
+export interface DashboardStats {
+  cpu: string
+  memory: string
+  uptime: string
+  health: string
+  telemetry: {
+    resourceMetricsAvailable: boolean
+    lifecycleMetricsAvailable: boolean
+    messageMetricsAvailable: boolean
+  }
+}
 
 export interface DashboardData {
   userId: string
@@ -15,8 +29,8 @@ export interface DashboardData {
   openclawInstanceId?: string
   gatewayToken?: string
   instance?: InstanceData
-  stats?: any
-  communityRewards?: any
+  stats?: DashboardStats
+  communityRewards?: CommunityRewardStatus
   health?: HealthStatus
 }
 
@@ -24,7 +38,7 @@ export interface InstanceData {
   userId: string
   status: string
   statusReason?: string | null
-  probeChecks?: any[]
+  probeChecks?: OpenClawProbeCheck[]
   subdomain?: string
   url: string
   plan: string
