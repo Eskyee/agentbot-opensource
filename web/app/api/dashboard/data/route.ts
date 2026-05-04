@@ -12,6 +12,7 @@ import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sy
 import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 import { isOperatorModeEnabledForUser } from '@/app/lib/feature-flags'
+import { getAgentDeploymentInfo } from '@/app/lib/railway-deployments'
 import { resolveUserMode } from '@/app/lib/operator-routing'
 import { getTrialCountdown } from '@/app/lib/trial-utils'
 
@@ -90,6 +91,11 @@ export async function GET(req: NextRequest) {
     // Probe runtime status
     const runtime = await probeOpenClawRuntime(persistedUrl)
 
+    // Fetch deployment history from Railway for restart/exit info
+    const deploymentInfo = await getAgentDeploymentInfo(instanceId).catch(() => ({
+      restartCount: 0, lastExitCode: null, lastExitAt: null, lastDeployAt: null, currentStatus: null,
+    }))
+
     // Safe ISO coercion — $queryRaw may return Dates as strings on serverless drivers
     const toIso = (v: unknown): string | null => {
       if (!v) return null
@@ -132,6 +138,10 @@ export async function GET(req: NextRequest) {
         lastSeenAt: toIso(registration[0]?.last_seen),
         gatewayProcessStatus: registration[0]?.status || null,
         subscriptionStatus: userData?.subscriptionStatus || null,
+        restartCount: deploymentInfo.restartCount,
+        lastExitCode: deploymentInfo.lastExitCode,
+        lastExitAt: deploymentInfo.lastExitAt,
+        lastDeployAt: deploymentInfo.lastDeployAt,
       },
       stats: {
         cpu: '0%',

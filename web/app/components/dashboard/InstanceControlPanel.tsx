@@ -44,6 +44,10 @@ interface InstanceControlPanelProps {
     lastSeenAt?: string | null
     gatewayProcessStatus?: string | null
     subscriptionStatus?: string | null
+    restartCount?: number
+    lastExitCode?: number | null
+    lastExitAt?: string | null
+    lastDeployAt?: string | null
   }
   stats: {
     health?: string | null
@@ -558,8 +562,28 @@ export function InstanceControlPanel({
                 value={lifecycleTelemetry && stats?.uptime ? stats.uptime : 'Live checks only'}
                 detail="Detailed lifecycle telemetry is not exposed yet"
               />
-              <SummaryCard label="Restarts" value="—" detail="Not exposed by the runtime API yet" />
-              <SummaryCard label="Last Exit" value="—" detail="Not exposed by the runtime API yet" />
+              <SummaryCard
+                label="Restarts"
+                value={typeof instance.restartCount === 'number' ? String(instance.restartCount) : '—'}
+                detail={
+                  instance.restartCount !== undefined && instance.restartCount > 0
+                    ? `${instance.restartCount} deployment failures recorded`
+                    : instance.restartCount === 0
+                      ? 'No crashes recorded'
+                      : 'Deployment history unavailable'
+                }
+              />
+              <SummaryCard
+                label="Last Exit"
+                value={instance.lastExitCode != null ? `Code ${instance.lastExitCode}` : '—'}
+                detail={
+                  instance.lastExitAt
+                    ? `${new Date(instance.lastExitAt).toLocaleDateString()} · ${instance.lastExitCode === 137 ? 'OOM/SIGKILL' : 'Process exit'}`
+                    : instance.restartCount === 0
+                      ? 'Clean history'
+                      : 'Not available'
+                }
+              />
               <SummaryCard label="Provisioned" value={formatRelativeTime(instance.provisionedAt)} detail={instance.subdomain} />
               <SummaryCard label="Version" value={instance.openclawVersion || 'unknown'} detail={instance.userId} />
               <SummaryCard

@@ -563,7 +563,12 @@ export async function getContainerStatus(userId: string): Promise<ContainerResul
           serviceInstances {
             edges {
               node {
-                latestDeployment { id status url }
+                latestDeployment { id status url createdAt }
+                deployments(first: 20) {
+                  edges {
+                    node { id status createdAt }
+                  }
+                }
               }
             }
           }
@@ -583,11 +588,22 @@ export async function getContainerStatus(userId: string): Promise<ContainerResul
     else if (deployStatus === 'sleeping')          status = 'suspended';
     else                                           status = deployStatus;
 
+    // Calculate restart count and last exit from deployment history
+    const allDeployments = instance?.deployments?.edges?.map((e: { node: { id: string; status: string; createdAt: string } }) => e.node) || [];
+    const restartCount = allDeployments.filter((d: { status: string }) => d.status === 'CRASHED' || d.status === 'FAILED').length;
+    const lastCrash = allDeployments.find((d: { status: string }) => d.status === 'CRASHED' || d.status === 'FAILED');
+    const lastExitCode = lastCrash ? (lastCrash.status === 'CRASHED' ? 137 : 1) : null;
+    const lastExitAt = lastCrash?.createdAt || null;
+
     return {
       container: data.service.name,
       status,
       serviceId,
       url: deployment?.url,
+      restartCount,
+      lastExitCode,
+      lastExitAt,
+      lastDeployAt: deployment?.createdAt || null,
     };
   } catch {
     return { container: `agentbot-agent-${userId}`, status: 'error', serviceId };
