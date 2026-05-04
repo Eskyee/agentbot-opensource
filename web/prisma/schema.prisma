@@ -76,6 +76,10 @@ model User {
   preferences          UserPreference[]
   templateLaunches     TemplateLaunch[]
   tutorialProgress     TutorialProgress[]
+
+  // Stripe webhook hot path: updateMany({ where: { stripeCustomerId } })
+  // for invoice.payment_succeeded / payment_failed / subscription.deleted.
+  @@index([stripeCustomerId])
 }
 
 model Account {
