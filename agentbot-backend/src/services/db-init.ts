@@ -63,6 +63,12 @@ CREATE TABLE IF NOT EXISTS bitcoin_wallets (
   network TEXT NOT NULL DEFAULT 'btc',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+-- M-6: track whether NBXplorer accepted the derivation. 'tracked' is the
+-- happy path; 'pending_explorer' means we persisted locally but the explorer
+-- registration failed and needs to be reattempted before balances/addresses
+-- become available.
+ALTER TABLE bitcoin_wallets ADD COLUMN IF NOT EXISTS backend_status TEXT NOT NULL DEFAULT 'tracked';
+ALTER TABLE bitcoin_wallets ADD COLUMN IF NOT EXISTS backend_error TEXT;
 
 -- Events & Treasury
 CREATE TABLE IF NOT EXISTS events (

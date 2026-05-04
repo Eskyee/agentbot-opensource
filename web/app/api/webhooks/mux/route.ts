@@ -28,10 +28,18 @@ function verifyMuxSignature(body: string, signature: string): boolean {
 
   if (!timestamp || !sig) return false
 
-  // Verify timestamp is within 5 minutes to prevent replay attacks
-  const webhookAge = Date.now() - parseInt(timestamp) * 1000
-  if (webhookAge > 5 * 60 * 1000) {
-    console.error('[SECURITY] Mux webhook timestamp too old, possible replay attack')
+  // M-22: parseInt('foo') is NaN, and NaN comparisons are always false, so a
+  // malformed timestamp would pass the freshness check and rely on HMAC alone.
+  // We now reject NaN explicitly and treat negative ages (clock skew the
+  // wrong way) as freshness failures too.
+  const tsSeconds = parseInt(timestamp, 10)
+  if (!Number.isFinite(tsSeconds) || tsSeconds <= 0) {
+    console.error('[SECURITY] Mux webhook has malformed timestamp; rejecting')
+    return false
+  }
+  const webhookAge = Date.now() - tsSeconds * 1000
+  if (webhookAge > 5 * 60 * 1000 || webhookAge < -60 * 1000) {
+    console.error('[SECURITY] Mux webhook timestamp out of window, possible replay attack')
     return false
   }
 
