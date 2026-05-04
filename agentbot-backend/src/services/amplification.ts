@@ -32,7 +32,8 @@ export class AmplificationService {
     // NOTE: deliverMessage requires a valid Ed25519/ECDSA wallet signature.
     // broadcastCampaign currently sends unsigned messages (walletAddress: '', signature: ''),
     // which means ALL deliveries are silently rejected by the bus signature check.
-    // TODO: wire up a platform signing key (CDP account or local key) before using this in production.
+    // TODO(P1): wire up a platform signing key (CDP account or local key) before using this
+    // in production — without it the feature is non-functional, not just degraded.
     console.warn('[Amplification] broadcastCampaign: messages are unsigned — deliveries will be rejected by bus. Requires signing key integration.');
 
     // SECURITY: Verify the campaign belongs to the calling user before broadcasting.

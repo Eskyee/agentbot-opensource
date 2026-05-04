@@ -53,9 +53,10 @@ router.post('/batch', async (req: Request, res: Response) => {
         ...stats,
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Orchestration]', error)
-    return res.status(500).json({ error: error.message || 'Internal error' })
+    const message = error instanceof Error ? error.message : 'Internal error'
+    return res.status(500).json({ error: message })
   }
 })
 
@@ -77,9 +78,10 @@ router.post('/partition', async (req: Request, res: Response) => {
     const stats = getPartitionStats(batches)
 
     return res.json({ batches, stats })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[Orchestration Partition]', error)
-    return res.status(500).json({ error: error.message || 'Internal error' })
+    const message = error instanceof Error ? error.message : 'Internal error'
+    return res.status(500).json({ error: message })
   }
 })
 

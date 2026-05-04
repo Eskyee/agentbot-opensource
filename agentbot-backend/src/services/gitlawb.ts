@@ -20,7 +20,7 @@ const GITLAWB_REMOTE = process.env.GITLAWB_REMOTE;
  * @param agentId Unique identifier for the agent
  * @param state The state object to snapshot (JSON)
  */
-export async function snapshotAgentState(agentId: string, state: any) {
+export async function snapshotAgentState(agentId: string, state: Record<string, unknown>) {
   try {
     // 1. Ensure the facts repository exists
     await fs.mkdir(GITLAWB_REPO_PATH, { recursive: true });
@@ -61,12 +61,14 @@ export async function snapshotAgentState(agentId: string, state: any) {
       if (GITLAWB_REMOTE) {
         try {
           await runCommand('git', ['push', 'origin', 'main'], { cwd: GITLAWB_REPO_PATH });
-        } catch (pushError: any) {
-          console.warn(`[Gitlawb] Remote push failed: ${pushError.message}`);
+        } catch (pushError: unknown) {
+          const message = pushError instanceof Error ? pushError.message : String(pushError);
+          console.warn(`[Gitlawb] Remote push failed: ${message}`);
         }
       }
     }
-  } catch (error: any) {
-    console.error(`[Gitlawb] Failed to record state fact: ${error.message}`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`[Gitlawb] Failed to record state fact: ${message}`);
   }
 }

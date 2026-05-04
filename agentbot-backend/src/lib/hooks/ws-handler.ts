@@ -106,7 +106,9 @@ function handleClientMessage(client: WSClient, msg: { type: string; data: Record
       // Forward decision to permission handler
       const { requestId, decision } = msg.data
       if (requestId && decision) {
-        // TODO: Call processPermissionDecision from permission-hook.ts
+        // TODO(P1): Call processPermissionDecision from permission-hook.ts
+        // The HTTP POST /api/permissions path works, but pushing decisions
+        // over the WebSocket avoids a round-trip on the dashboard hot path.
         // processPermissionDecision(requestId as string, decision as string)
 
         // Acknowledge

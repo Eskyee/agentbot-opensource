@@ -1,21 +1,11 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-
-function getAdminEmails(): string[] {
-  const adminEmails = process.env.ADMIN_EMAILS;
-  if (!adminEmails) return [];
-  return adminEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-}
-
-async function isAdmin(email: string | null | undefined): Promise<boolean> {
-  if (!email) return false;
-  return getAdminEmails().includes(email.toLowerCase());
-}
+import { isAdminEmail } from '@/app/lib/admin'
 
 export async function GET() {
   // Require admin authentication
   const session = await getAuthSession();
-  if (!session?.user?.email || !(await isAdmin(session.user.email))) {
+  if (!isAdminEmail(session?.user?.email)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
   
