@@ -145,8 +145,9 @@ const generateRealMetrics = async (userId: string, timeRange: string): Promise<M
           errors: parseInt(row.errors, 10) || 0,
         }));
       }
-    } catch (err: any) {
-      console.error(`[Metrics] DB query failed for ${userId}:`, err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[Metrics] DB query failed for ${userId}:`, message);
     }
   }
 

@@ -26,6 +26,8 @@ export function getGlobalFlags() {
     newUserOperatorDefault: env('NEW_USER_OPERATOR_DEFAULT'),
     /** Show subtle "Powered by OpenClaw" badge in operator UI */
     showOpenclawBadgeInOperator: env('SHOW_OPENCLAW_BADGE_IN_OPERATOR'),
+    /** Are admin-gated /api/debug-* and /api/test-env routes mounted? */
+    debugRoutesEnabled: env('DEBUG_ROUTES_ENABLED'),
   }
 }
 

@@ -438,13 +438,14 @@ export async function initDatabase(): Promise<void> {
     console.log('[DB] Initializing database schema...');
     await pool.query(SCHEMA);
     console.log('[DB] Schema initialized successfully');
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const e = error as { message?: string; code?: string; detail?: string; address?: string; port?: string | number }
     const errorInfo = {
-      message: error.message || '(empty)',
-      code: error.code || '(no code)',
-      detail: error.detail || '(no detail)',
-      host: error.address || '(unknown)',
-      port: error.port || '(unknown)',
+      message: e.message || '(empty)',
+      code: e.code || '(no code)',
+      detail: e.detail || '(no detail)',
+      host: e.address || '(unknown)',
+      port: e.port || '(unknown)',
     };
     console.error('[DB] Schema initialization failed:', JSON.stringify(errorInfo));
     // Re-throw so callers can decide whether to abort startup

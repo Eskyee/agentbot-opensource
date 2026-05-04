@@ -26,6 +26,7 @@ import {
   fetchAgentDataForDeployment,
 } from '@/app/lib/agent-deploy'
 import { ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
+import { isAdminEmail } from '@/app/lib/admin'
 
 
 // Types
@@ -133,8 +134,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Admin bypass helper
-    const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-    const isAdmin = adminEmails.includes((session.user.email || '').toLowerCase());
+    const isAdmin = isAdminEmail(session.user.email);
 
     // Check subscription tier
     const user = await prisma.user.findUnique({

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { buildAppUrl } from '@/app/lib/app-url'
 import crypto from 'crypto'
@@ -14,15 +15,10 @@ interface Invite {
   status: 'active' | 'used' | 'expired'
 }
 
-function isAdmin(email?: string | null) {
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-  return !!email && adminEmails.includes(email.toLowerCase())
-}
-
 export async function GET() {
   const session = await getAuthSession()
   const adminEmail = session?.user?.email
-  if (!isAdmin(adminEmail)) {
+  if (!isAdminEmail(adminEmail)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
   try {
@@ -57,7 +53,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await getAuthSession()
   const adminEmail = session?.user?.email
-  if (!isAdmin(adminEmail)) {
+  if (!isAdminEmail(adminEmail)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
   try {

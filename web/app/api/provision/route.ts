@@ -6,6 +6,7 @@ import { isTrialActive } from '@/app/lib/trial-utils'
 import { getClientIP, isRateLimited } from '@/app/lib/security-middleware'
 import { acquireWorkloadSlot, releaseWorkloadSlot, type WorkloadTicket } from '@/app/lib/workload-gate'
 import { signedFetch } from '@/app/lib/backend-client'
+import { isAdminEmail } from '@/app/lib/admin'
 
 /**
  * Provision route — creates an OpenClaw agent container for the authenticated user.
@@ -73,20 +74,11 @@ export async function POST(request: NextRequest) {
 
     // 1. Require an authenticated session — NEVER trust body email for auth
     let session = await getAuthSession()
-    const adminEmails = (process.env.ADMIN_EMAILS || '')
-      .split(',')
-      .map(e => e.trim().toLowerCase())
-      .filter(Boolean)
-
-    // Hardcoded admin fallback — env var encoding can break on Vercel
-    const HARDCODED_ADMINS = ['eskyjunglelab@gmail.com', 'admin@agentbot.sh', 'rbasefm@icloud.com']
-    const allAdmins = [...new Set([...adminEmails, ...HARDCODED_ADMINS])]
 
     // Admin check — session email ONLY, never body email
-    let isAdmin = false
     const sessionEmail = (session?.user?.email || '').toLowerCase()
-    if (sessionEmail && allAdmins.includes(sessionEmail)) {
-      isAdmin = true
+    const isAdmin = isAdminEmail(sessionEmail)
+    if (isAdmin) {
       console.log(`[Provision] Admin detected: ${sessionEmail}`)
     }
 
@@ -125,18 +117,18 @@ export async function POST(request: NextRequest) {
 
     // 3. DB subscription check — admins bypass, everyone else must have active subscription
     if (!isAdmin && userId !== 'admin') {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { subscriptionStatus: true, trialEndsAt: true },
-    })
-    const trialActive = isTrialActive(user?.trialEndsAt)
-    if (!trialActive && user?.subscriptionStatus !== 'active') {
-      return NextResponse.json({
-        success: false,
-        error: 'Active subscription required. Please purchase a plan to deploy.',
-      }, { status: 403 })
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { subscriptionStatus: true, trialEndsAt: true },
+      })
+      const trialActive = isTrialActive(user?.trialEndsAt)
+      if (!trialActive && user?.subscriptionStatus !== 'active') {
+        return NextResponse.json({
+          success: false,
+          error: 'Active subscription required. Please purchase a plan to deploy.',
+        }, { status: 403 })
+      }
     }
-  }
 
     // OpenClaw-only deployments (autoProvision or agentType=business) skip channel token requirement
     const isOpenClawDeploy = autoProvision === true || agentType === 'business'

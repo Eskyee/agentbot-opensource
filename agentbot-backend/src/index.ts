@@ -15,11 +15,9 @@ import railwayProvisionRouter from './routes/railway-provision';
 import platformJobsRouter from './routes/platform-jobs';
 import http from 'http';
 import { generateRealMetrics, calculateAverages, getPerformanceData } from './services/metrics-core';
-import AIProviderService from './services/ai-provider';
 import { startScheduler, stopScheduler } from './scheduler';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { spawn } from 'child_process';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { timingSafeEqual, randomBytes } from 'crypto';
@@ -29,6 +27,10 @@ import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw
 import { buildHealthSummary } from './lib/health-summary';
 import { signatureGuard } from './middleware/signature';
 import { snapshotAgentState } from './services/gitlawb';
+import { authenticate } from './middleware/authenticate';
+import { runCommand, runShellCommand } from './utils/run-command';
+import { createOpenClawConfig } from './lib/openclaw-config';
+import openaiCompatRouter from './routes/openai-compat';
 
 dotenv.config();
 
@@ -166,7 +168,6 @@ const DATA_DIR = process.env.DATA_DIR || '/opt/agentbot/data';
 const AGENTS_DOMAIN = process.env.AGENTS_DOMAIN || 'agents.localhost';
 const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
 const BASE_PORT = Number(process.env.AGENTS_BASE_PORT || '19000');
-const DEFAULT_MODEL = process.env.DEFAULT_MODEL || 'google/gemini-2.0-flash';
 const UPDATE_BACKUP_DIR = path.join(DATA_DIR, 'backups', 'openclaw-updates');
 const DOCKER_IMAGE_REGEX = /^(?:(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*(?::[0-9]{2,5})?)\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(?:\/[a-z0-9]+(?:[._-][a-z0-9]+)*)*(?::[\w][\w.-]{0,127})?(?:@sha256:[A-Fa-f0-9]{64})?$/;
 const DOCKER_VOLUME_NAME_REGEX = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
@@ -217,45 +218,7 @@ type ContainerInspect = {
   };
 };
 
-/**
- * Executes a command with arguments using child_process.spawn.
- * Mitigates shell injection by avoiding the shell entirely.
- */
-const runCommand = (cmd: string, args: string[] = []): Promise<{ stdout: string; stderr: string }> => {
-  return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args);
-    let stdout = '';
-    let stderr = '';
-
-    child.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    child.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    child.on('close', (code) => {
-      if (code !== 0) {
-        reject(new Error(stderr.trim() || `Command failed with exit code ${code}`));
-        return;
-      }
-      resolve({ stdout: stdout.trim(), stderr: stderr.trim() });
-    });
-
-    child.on('error', (err) => {
-      reject(err);
-    });
-  });
-};
-
-/**
- * Helper to run complex shell commands (pipes, redirects) securely.
- * Still uses a shell but encapsulates the sh -c pattern.
- */
-const runShellCommand = (shellCommand: string): Promise<{ stdout: string; stderr: string }> => {
-  return runCommand('sh', ['-c', shellCommand]);
-};
+// runCommand and runShellCommand extracted to ./utils/run-command
 
 const LEGACY_MODEL_MAP: Record<string, string> = {
   'openrouter/google/gemini-2.0-flash-exp:free': 'openrouter/openai/gpt-4o-mini',
@@ -551,218 +514,7 @@ const containerStatus = async (containerName: string): Promise<{ status: string;
   }
 };
 
-const createOpenClawConfig = (
-  telegramToken: string,
-  aiProvider: string,
-  ownerIds?: string[],
-  discordToken?: string,
-  whatsappEnabled?: boolean,
-  userTimezone?: string,
-  plan?: string,
-): Record<string, unknown> => {
-  let model = DEFAULT_MODEL;
-  let fallbacks = ['openai/gpt-4o-mini'];
-  const provider = aiProvider || 'openrouter';
-
-  if (provider === 'gemini' || provider === 'google') {
-    model = 'google/gemini-2.0-flash';
-    fallbacks = ['openrouter/anthropic/claude-sonnet-4-5'];
-  } else if (provider === 'groq') {
-    model = 'groq/gemma2-9b-it';
-    fallbacks = ['openai/gpt-4o-mini'];
-  } else if (provider === 'anthropic') {
-    model = 'anthropic/claude-sonnet-4-5';
-    fallbacks = ['openai/gpt-4o'];
-  } else if (provider === 'openai') {
-    model = 'openai/gpt-4o';
-    fallbacks = ['openai/gpt-4o-mini'];
-  } else if (provider === 'openrouter') {
-    model = 'moonshotai/kimi-k2.5';
-    fallbacks = ['openrouter/openai/gpt-4o-mini'];
-  } else {
-    throw new Error(`Unsupported aiProvider: ${provider}`);
-  }
-
-  // Generate unique gateway auth token per agent
-  const gatewayToken = randomBytes(24).toString('hex');
-
-  // Tool profile per plan — solo gets messaging, others get coding
-  const toolProfile = (plan === 'solo') ? 'messaging' : 'coding';
-
-  const channels: Record<string, unknown> = {
-    defaults: {
-      groupPolicy: 'allowlist',
-      heartbeat: { showOk: false, showAlerts: true, useIndicator: true },
-    },
-  };
-
-  // Telegram channel
-  if (telegramToken) {
-    channels.telegram = {
-      enabled: true,
-      botToken: telegramToken,
-      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
-      allowFrom: ownerIds || [],
-      groups: { '*': { requireMention: true } },
-      historyLimit: 50,
-      replyToMode: 'first',
-      streaming: 'partial',
-      retry: { attempts: 3, minDelayMs: 400, maxDelayMs: 30000, jitter: 0.1 },
-    };
-  }
-
-  // Discord channel
-  if (discordToken) {
-    channels.discord = {
-      enabled: true,
-      token: discordToken,
-      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
-      allowFrom: ownerIds || [],
-      dm: { enabled: true, groupEnabled: false },
-      guilds: {},
-      historyLimit: 20,
-      streaming: 'partial',
-      retry: { attempts: 3, minDelayMs: 500, maxDelayMs: 30000, jitter: 0.1 },
-    };
-  }
-
-  // WhatsApp channel
-  if (whatsappEnabled) {
-    channels.whatsapp = {
-      dmPolicy: ownerIds && ownerIds.length > 0 ? 'allowlist' : 'pairing',
-      allowFrom: ownerIds || [],
-      groups: { '*': { requireMention: true } },
-      sendReadReceipts: true,
-    };
-  }
-
-  const config: Record<string, unknown> = {
-    agents: {
-      defaults: {
-        workspace: OPENCLAW_WORKSPACE_DIR,
-        model: { primary: model, fallbacks },
-        imageMaxDimensionPx: 1200,
-        userTimezone: userTimezone || 'Europe/London',
-        timeFormat: '24h',
-        groupChat: {
-          mentionPatterns: ['@agent', 'agent'],
-        },
-        compaction: {
-          maxMessages: 200,
-          keepLastN: 20,
-        },
-        heartbeat: {
-          every: '30m',
-        },
-        skipBootstrap: false,
-        bootstrapMaxChars: 4000,
-      },
-    },
-    channels,
-    update: {
-      channel: 'stable',
-      auto: {
-        enabled: true,
-        stableDelayHours: 6,
-        stableJitterHours: 12,
-        betaCheckIntervalHours: 1,
-      },
-    },
-    gateway: {
-      mode: 'local',
-      port: 18789,
-      bind: 'lan', // Required for Docker — listen on all interfaces, not just loopback
-      auth: {
-        mode: 'token',
-        token: gatewayToken,
-        allowTailscale: true,
-        rateLimit: {
-          maxAttempts: 10,
-          windowMs: 60000,
-          lockoutMs: 300000,
-          exemptLoopback: true,
-        },
-      },
-      channelHealthCheckMinutes: 5,
-      channelStaleEventThresholdMinutes: 30,
-      channelMaxRestartsPerHour: 10,
-      controlUi: {
-        enabled: true,
-      },
-    },
-    tools: {
-      profile: toolProfile,
-      deny: ['browser', 'canvas'], // No browser/canvas in containers
-      exec: {
-        allowedCommands: [
-          'ls', 'cat', 'grep', 'find', 'curl', 'wget', 'git', 'npm', 'node',
-          'python3', 'pip', 'mkdir', 'cp', 'mv', 'rm', 'echo', 'date', 'whoami',
-          'chmod', 'chown', 'touch', 'head', 'tail', 'wc', 'sort', 'uniq',
-          'awk', 'sed', 'tar', 'zip', 'unzip', 'docker', 'ps', 'df', 'du',
-        ],
-        allowedPaths: [
-          OPENCLAW_WORKSPACE_DIR,
-          '/tmp',
-          '/root',
-        ],
-        denyPaths: [
-          '/etc/shadow',
-          '/etc/passwd',
-          '/proc',
-          '/sys',
-        ],
-      },
-      web: {
-        maxChars: 50000,
-      },
-      loopDetection: {
-        maxIterations: 20,
-        windowMinutes: 5,
-      },
-    },
-    session: {
-      maxTokens: 100000,
-      compaction: {
-        strategy: 'auto',
-        triggerAtPercent: 80,
-      },
-    },
-    plugins: {
-      entries: {},
-    },
-  };
-
-  // Enable plugins based on channels
-  if (telegramToken) {
-    (config.plugins as { entries: Record<string, unknown> }).entries.telegram = { enabled: true };
-  }
-  if (discordToken) {
-    (config.plugins as { entries: Record<string, unknown> }).entries.discord = { enabled: true };
-  }
-
-  return config;
-};
-
-// Auth middleware — timing-safe to prevent key-enumeration attacks
-const authenticate = (req: Request, res: Response, next: NextFunction) => {
-  // Identity is a Fact: If signatureGuard already verified the request, 
-  // we proceed directly.
-  if (req.userId && req.userRole === 'agent') {
-    return next();
-  }
-
-  const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-  const token = auth.substring(7);
-  const tokenBuf = Buffer.from(token);
-  const keyBuf = Buffer.from(API_KEY);
-  if (tokenBuf.length !== keyBuf.length || !timingSafeEqual(tokenBuf, keyBuf)) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  next();
-};
+// createOpenClawConfig and authenticate moved to ./lib/openclaw-config and ./middleware/authenticate
 
 // Mount sub-routers
 app.use('/api/invite', inviteRouter);
@@ -826,64 +578,9 @@ app.get('/health', async (req: Request, res: Response) => {
   res.json({ ...summary, provisioningChecked });
 });
 
-// OpenAI-compatible endpoints for RAG/SDK compatibility
-app.get('/v1/models', async (_req: Request, res: Response) => {
-  try {
-    const models = await AIProviderService.getAllModels();
-    res.json({
-      object: 'list',
-      data: models.map((m: { id: string; name: string; provider: string }) => ({
-        id: m.id,
-        object: 'model',
-        created: Math.floor(Date.now() / 1000),
-        owned_by: m.provider || 'agentbot',
-      })),
-    });
-  } catch {
-    res.status(500).json({ error: { message: 'Failed to fetch models', type: 'server_error' } });
-  }
-});
-
-app.get('/v1/models/:model', async (req: Request, res: Response) => {
-  try {
-    const models = await AIProviderService.getAllModels();
-    const model = models.find((m: { id: string }) => m.id === req.params.model);
-    if (!model) {
-      return res.status(404).json({ error: { message: `Model ${req.params.model} not found`, type: 'invalid_request_error' } });
-    }
-    res.json({
-      id: model.id,
-      object: 'model',
-      created: Math.floor(Date.now() / 1000),
-      owned_by: model.provider || 'agentbot',
-    });
-  } catch {
-    res.status(500).json({ error: { message: 'Failed to fetch model', type: 'server_error' } });
-  }
-});
-
-app.post('/v1/embeddings', authenticate, async (req: Request, res: Response) => {
-  const { input, model } = req.body as { input?: string | string[]; model?: string };
-  if (!input) {
-    return res.status(400).json({ error: { message: 'input is required', type: 'invalid_request_error' } });
-  }
-  // Proxy to OpenRouter embeddings
-  try {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      return res.status(503).json({ error: { message: 'Embeddings not configured', type: 'server_error' } });
-    }
-    const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input, model: model || 'openai/text-embedding-3-small' }),
-    });
-    const data = await response.json() as Record<string, unknown>;
-    res.json(data);
-  } catch {
-    res.status(500).json({ error: { message: 'Embeddings request failed', type: 'server_error' } });
-  }
-});
+// OpenAI-compatible endpoints (/v1/models, /v1/models/:model, /v1/embeddings)
+// extracted to ./routes/openai-compat
+app.use(openaiCompatRouter);
 
 // Install script endpoints
 app.get('/install', (req: Request, res: Response) => {
@@ -1385,7 +1082,19 @@ if (require.main === module) {
 process.on('SIGTERM', () => {
   console.log('[API] Shutting down...');
   stopScheduler();
-  process.exit(0);
+  if (serverStarted) {
+    server.close(() => {
+      console.log('[API] All connections drained. Exiting.');
+      process.exit(0);
+    });
+    // Force exit after 10 seconds if connections don't drain
+    setTimeout(() => {
+      console.warn('[API] Forced shutdown after timeout.');
+      process.exit(1);
+    }, 10_000).unref();
+  } else {
+    process.exit(0);
+  }
 });
 
 export { server, permissionWss };

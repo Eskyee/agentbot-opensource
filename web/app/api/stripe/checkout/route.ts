@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import Stripe from 'stripe'
 
 const PLAN_PRICES: Record<string, { amount: number; name: string }> = {
@@ -28,8 +29,7 @@ export async function GET(request: NextRequest) {
   const userEmail = session?.user?.email || ''
 
   // Admin bypass — skip Stripe, go straight to onboard
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-  if (userEmail && adminEmails.includes(userEmail.toLowerCase())) {
+  if (isAdminEmail(userEmail)) {
     console.log(`[StripeCheckout] Admin bypass for ${userEmail}`);
     return NextResponse.redirect(new URL(`/onboard?plan=${plan}&paid=1&admin=1`, origin), 303)
   }
