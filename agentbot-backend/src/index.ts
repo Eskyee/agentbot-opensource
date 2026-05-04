@@ -1,3 +1,8 @@
+// IMPORTANT: Sentry must be initialised before other modules so that the SDK
+// can patch outgoing http/fetch and Express request handlers. Importing for
+// side effects only — the module is a no-op when SENTRY_DSN is not set.
+import './lib/sentry';
+import { Sentry } from './lib/sentry';
 import express, { Request, Response, NextFunction } from 'express';
 import { initDatabase } from './services/db-init';
 import inviteRouter from './invite';
@@ -970,6 +975,13 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   // back to the structured log line.
   const requestId = (req as Request & { requestId?: string }).requestId;
   console.error('[Unhandled Error]', requestId ?? '-', err.message, err.stack);
+
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err, {
+      extra: { requestId, path: req.path, method: req.method },
+    });
+  }
+
   res.status(500).json({ error: 'Internal server error', requestId });
 });
 

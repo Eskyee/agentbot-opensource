@@ -8,7 +8,10 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'https://agentbot.sh',
+    // Run against the local dev/build server by default. CI sets BASE_URL to
+    // point at the just-built `next start` instance; production smoke runs
+    // (manual) can override BASE_URL=https://agentbot.sh.
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
   },
   projects: [
