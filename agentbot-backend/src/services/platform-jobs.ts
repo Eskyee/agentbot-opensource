@@ -1,9 +1,7 @@
 import { randomBytes } from 'crypto';
-import { Pool } from 'pg';
 import { provisionOnRailway, type TailscaleProvisionOptions } from '../routes/railway-provision';
 import { snapshotAgentState } from './gitlawb';
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+import { pool } from '../lib/db';
 
 export type PlatformJobStatus = 'queued' | 'running' | 'completed' | 'failed';
 export type PlatformJobType = 'provision_managed_runtime' | 'gateway_chat_completion' | 'runtime_sync' | 'retry_repair';

@@ -9,9 +9,7 @@
  * Usage: Call from daily-brief endpoint or scheduler to detect trends.
  */
 
-import { Pool } from 'pg';
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+import { pool } from './db';
 
 export interface TrendAnalysis {
   metric: string;

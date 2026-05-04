@@ -1,8 +1,4 @@
-// IMPORTANT: Sentry must be initialised before other modules so that the SDK
-// can patch outgoing http/fetch and Express request handlers. Importing for
-// side effects only — the module is a no-op when SENTRY_DSN is not set.
 import './lib/sentry';
-import { Sentry } from './lib/sentry';
 import express, { Request, Response, NextFunction } from 'express';
 import { initDatabase } from './services/db-init';
 import inviteRouter from './invite';
@@ -27,9 +23,9 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { timingSafeEqual, randomBytes } from 'crypto';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
-import { Pool } from 'pg';
 import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION } from './lib/openclaw-version';
 import { buildHealthSummary } from './lib/health-summary';
+import { getPoolStats } from './lib/db';
 import { signatureGuard } from './middleware/signature';
 import { snapshotAgentState } from './services/gitlawb';
 import { authenticate } from './middleware/authenticate';
@@ -580,7 +576,9 @@ app.get('/health', async (req: Request, res: Response) => {
   const summary = buildHealthSummary({ dockerAvailable });
   // During the first ~500ms after boot the provisioning probe hasn't completed
   // yet — surface that explicitly so a green dashboard isn't a false negative.
-  res.json({ ...summary, provisioningChecked });
+  // db: shared pg pool stats (totalCount/idleCount/waitingCount) — surfaces
+  // connection-pool saturation without any new dependencies.
+  res.json({ ...summary, provisioningChecked, db: getPoolStats() });
 });
 
 // OpenAI-compatible endpoints (/v1/models, /v1/models/:model, /v1/embeddings)
@@ -976,10 +974,14 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   const requestId = (req as Request & { requestId?: string }).requestId;
   console.error('[Unhandled Error]', requestId ?? '-', err.message, err.stack);
 
-  if (process.env.SENTRY_DSN) {
+  // Report to Sentry if configured
+  try {
+    const { Sentry } = require('./lib/sentry');
     Sentry.captureException(err, {
       extra: { requestId, path: req.path, method: req.method },
     });
+  } catch {
+    // Sentry not available — continue without it
   }
 
   res.status(500).json({ error: 'Internal server error', requestId });

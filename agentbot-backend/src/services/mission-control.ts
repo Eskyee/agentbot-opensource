@@ -1,11 +1,7 @@
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 export interface AgentNode {
   id: string;

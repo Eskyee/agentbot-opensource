@@ -1,11 +1,8 @@
 import { randomBytes, timingSafeEqual } from 'crypto';
 import { Router, Request, Response } from 'express';
-import { Pool } from 'pg';
+import { pool } from './lib/db';
 
 const router = Router();
-
-// Persistent DB-backed invite code store (survives restarts)
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Internal auth middleware — only internal callers may generate codes
 const requireInternalAuth = (req: Request, res: Response, next: any) => {

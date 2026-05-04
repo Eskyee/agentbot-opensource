@@ -12,10 +12,10 @@ import { randomBytes } from 'crypto';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
-import { Pool } from 'pg';
 import { runCommand } from '../utils';
 import { authenticate } from '../middleware/auth';
 import { DEFAULT_OPENCLAW_IMAGE, OPENCLAW_RUNTIME_VERSION, deriveOpenClawVersionFromImage } from '../lib/openclaw-version';
+import { getAgentCount } from '../lib/agent-queries';
 
 const router = Router();
 
@@ -109,19 +109,6 @@ async function assertOwnership(req: Request, res: Response, agentId: string): Pr
     return null;
   }
   return metadata;
-}
-
-// DB-backed agent count
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-/** Returns the number of active agents for this email from the DB. */
-async function getAgentCount(email: string): Promise<number> {
-  const result = await pool.query(
-    `SELECT COUNT(*) AS cnt FROM agent_registrations
-     WHERE user_id = $1 AND status = 'active'`,
-    [email]
-  );
-  return parseInt(result.rows[0]?.cnt ?? '0', 10);
 }
 
 // --- Helpers ---

@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 import { authenticate } from '../middleware/auth';
 import { createContainer } from '../lib/container-manager';
 import type { PlanType } from '../lib/container-manager';
-import { Pool } from 'pg';
+import { getAgentCount } from '../lib/agent-queries';
 
 /**
  * BASEFM Provision Endpoint
@@ -27,19 +27,6 @@ const PLAN_LIMITS: Record<string, { agents: number; stripeRequired: boolean }> =
   label: { agents: 10, stripeRequired: true },
   network: { agents: 999999, stripeRequired: true }, // unlimited
 };
-
-// DB-backed agent count — survives restarts and horizontal scaling
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-/** Returns the number of active agents for this email from the DB. */
-async function getAgentCount(email: string): Promise<number> {
-  const result = await pool.query(
-    `SELECT COUNT(*) AS cnt FROM agent_registrations
-     WHERE user_id = $1 AND status = 'active'`,
-    [email]
-  );
-  return parseInt(result.rows[0]?.cnt ?? '0', 10);
-}
 
 // Simple in-memory Mux mock (in production, would use real Mux API)
 const generateMuxCredentials = async () => {

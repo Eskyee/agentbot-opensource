@@ -22,15 +22,11 @@
 
 import { Request, Response, NextFunction } from 'express'
 import { randomBytes } from 'crypto'
-import { Pool } from 'pg'
 import dotenv from 'dotenv'
 import { classifyToolCall } from '../lib/permissions'
+import { pool } from '../lib/db'
 
 dotenv.config()
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-})
 
 export interface PendingRequest {
   id: string
