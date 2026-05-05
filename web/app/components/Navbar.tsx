@@ -317,14 +317,20 @@ export default function Navbar() {
             ) : (
               <>
                 <MobileSection label="Explore" defaultOpen>
-                  {EXPLORE_LINKS.slice(0, 5).map((l) => (
-                    <MobileLink key={l.href} href={l.href} onClick={closeMenu} external={(l as Record<string, unknown>).external === true}>{l.label}</MobileLink>
-                  ))}
+                  <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
+                  <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
+                  <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
+                  <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
+                  <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
+                  <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
                 </MobileSection>
                 <MobileSection label="Build">
-                  {BUILD_LINKS.map((l) => (
-                    <MobileLink key={l.href} href={l.href} onClick={closeMenu} external={(l as Record<string, unknown>).external === true}>{l.label}</MobileLink>
-                  ))}
+                  <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
+                  <MobileLink href="/guide" onClick={closeMenu}>Guide</MobileLink>
+                  <MobileLink href="/open-learning" onClick={closeMenu}>Open Learning</MobileLink>
+                  <MobileLink href="/skills" onClick={closeMenu}>Skills API</MobileLink>
+                  <MobileLink href="/marketing" onClick={closeMenu}>Marketing</MobileLink>
+                  <MobileLink href="https://github.com/Eskyee/agentbot-opensource" onClick={closeMenu} external>Open Source</MobileLink>
                 </MobileSection>
                 <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
