@@ -1080,13 +1080,22 @@ export default function DJStreamPage() {
               <div className="border border-zinc-800 bg-black p-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Optional X (Twitter) Live</div>
                 <div className="mb-3 border border-zinc-700/30 bg-zinc-900/50 p-3">
-                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Stream Settings</div>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">X Studio Stream Settings</div>
                   <div className="space-y-1 text-xs text-zinc-400">
                     <p>RTMP URL: <code className="text-zinc-300">rtmp://ie.pscp.tv:80/x</code></p>
                     <p>RTMPS URL: <code className="text-zinc-300">rtmps://ie.pscp.tv:443/x</code></p>
                     <p>Region: <span className="text-zinc-300">EU (Ireland)</span></p>
                     <p>Recommended: <span className="text-zinc-300">1080p30, 9Mbps video, 128kbps AAC, keyframe every 3s</span></p>
                     <p>Get your stream key from <a href="https://studio.twitter.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">studio.twitter.com → Go Live</a></p>
+                  </div>
+                </div>
+                <div className="mb-3 border border-orange-500/20 bg-orange-500/10 p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-2">How Simulcasting Works</div>
+                  <div className="space-y-2 text-xs text-zinc-300">
+                    <p>Agentbot sends your feed to Mux (baseFM). To also go live on X, you need to configure a second RTMP output in OBS.</p>
+                    <p className="text-zinc-400">Option A: Use the <strong className="text-zinc-200">OBS Multiple RTMP Outputs</strong> plugin — add X as a second output target with the RTMP URL and stream key from X Studio.</p>
+                    <p className="text-zinc-400">Option B: Run a local <strong className="text-zinc-200">nginx-rtmp</strong> relay that forwards your single encoder output to both Mux and X simultaneously.</p>
+                    <p className="text-zinc-500">This panel saves your X live URL for health tracking. The actual stream routing happens in OBS or your relay server.</p>
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1107,7 +1116,7 @@ export default function DJStreamPage() {
                 </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="text-xs text-zinc-500">
-                    Save the viewer/probe destination here. Enter your X stream key directly in OBS using the RTMP server and stream key from X Studio.
+                    Save your X live URL for health tracking. Configure the RTMP stream key directly in OBS.
                   </p>
                   <button
                     onClick={saveXRelay}
@@ -1117,6 +1126,11 @@ export default function DJStreamPage() {
                     {savingXRelay ? 'Saving' : 'Save X Relay'}
                   </button>
                 </div>
+                {relayActionError ? (
+                  <div className="mt-3 border border-orange-500/30 p-3 text-red-400 text-xs">
+                    {relayActionError}
+                  </div>
+                ) : null}
               </div>
 
               <div className="border border-zinc-800 bg-black p-4">
