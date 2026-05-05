@@ -165,6 +165,9 @@ export default function DJStreamPage() {
   const [youtubeViewerUrl, setYoutubeViewerUrl] = useState('')
   const [youtubeProbeUrl, setYoutubeProbeUrl] = useState('')
   const [savingYoutubeRelay, setSavingYoutubeRelay] = useState(false)
+  const [xViewerUrl, setXViewerUrl] = useState('')
+  const [xProbeUrl, setXProbeUrl] = useState('')
+  const [savingXRelay, setSavingXRelay] = useState(false)
   const [endingStream, setEndingStream] = useState(false)
   const [archivingStream, setArchivingStream] = useState(false)
   const [streamActionMessage, setStreamActionMessage] = useState('')
@@ -429,6 +432,38 @@ export default function DJStreamPage() {
       setRelayActionError(err instanceof Error ? err.message : 'Relay probe failed')
     } finally {
       setProbingRelayKey(null)
+    }
+  }
+
+  const saveXRelay = async () => {
+    setSavingXRelay(true)
+    setRelayActionError('')
+    try {
+      const res = await fetch('/api/basefm/relays', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'x-live',
+          name: 'X (Twitter) Live',
+          type: 'twitter',
+          required: false,
+          enabled: true,
+          viewerUrl: xViewerUrl.trim() || null,
+          probeUrl: xProbeUrl.trim() || xViewerUrl.trim() || null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to save X relay')
+      }
+
+      const relaysRes = await fetch('/api/basefm/relays', { cache: 'no-store' })
+      const relaysData = await relaysRes.json()
+      setRelays(Array.isArray(relaysData?.relays) ? relaysData.relays : [])
+    } catch (err) {
+      setRelayActionError(err instanceof Error ? err.message : 'Failed to save X relay')
+    } finally {
+      setSavingXRelay(false)
     }
   }
 
@@ -1039,6 +1074,48 @@ export default function DJStreamPage() {
                       No relay destinations configured yet.
                     </div>
                   ) : null}
+                </div>
+              </div>
+
+              <div className="border border-zinc-800 bg-black p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Optional X (Twitter) Live</div>
+                <div className="mb-3 border border-zinc-700/30 bg-zinc-900/50 p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Stream Settings</div>
+                  <div className="space-y-1 text-xs text-zinc-400">
+                    <p>RTMP URL: <code className="text-zinc-300">rtmp://ie.pscp.tv:80/x</code></p>
+                    <p>RTMPS URL: <code className="text-zinc-300">rtmps://ie.pscp.tv:443/x</code></p>
+                    <p>Region: <span className="text-zinc-300">EU (Ireland)</span></p>
+                    <p>Recommended: <span className="text-zinc-300">1080p30, 9Mbps video, 128kbps AAC, keyframe every 3s</span></p>
+                    <p>Get your stream key from <a href="https://studio.twitter.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">studio.twitter.com → Go Live</a></p>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    value={xViewerUrl}
+                    onChange={(e) => setXViewerUrl(e.target.value)}
+                    placeholder="https://x.com/yourhandle/live"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                  <input
+                    type="text"
+                    value={xProbeUrl}
+                    onChange={(e) => setXProbeUrl(e.target.value)}
+                    placeholder="Optional custom probe URL"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="text-xs text-zinc-500">
+                    Save the viewer/probe destination here. Enter your X stream key directly in OBS using the RTMP server and stream key from X Studio.
+                  </p>
+                  <button
+                    onClick={saveXRelay}
+                    disabled={savingXRelay || !xViewerUrl.trim()}
+                    className="border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:border-zinc-800 disabled:text-zinc-600"
+                  >
+                    {savingXRelay ? 'Saving' : 'Save X Relay'}
+                  </button>
                 </div>
               </div>
 
