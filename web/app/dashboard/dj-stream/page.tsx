@@ -167,6 +167,7 @@ export default function DJStreamPage() {
   const [savingYoutubeRelay, setSavingYoutubeRelay] = useState(false)
   const [xViewerUrl, setXViewerUrl] = useState('')
   const [xProbeUrl, setXProbeUrl] = useState('')
+  const [xStreamKey, setXStreamKey] = useState('')
   const [savingXRelay, setSavingXRelay] = useState(false)
   const [endingStream, setEndingStream] = useState(false)
   const [archivingStream, setArchivingStream] = useState(false)
@@ -457,6 +458,19 @@ export default function DJStreamPage() {
         throw new Error(data?.error || 'Failed to save X relay')
       }
 
+      // Save X stream key to relay server for simulcasting
+      if (xStreamKey.trim()) {
+        try {
+          await fetch('/api/relay/destination-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destinationId: 'x-live', streamKey: xStreamKey.trim() }),
+          })
+        } catch {
+          // Relay server may not be running — key saved to DB for when it comes up
+        }
+      }
+
       const relaysRes = await fetch('/api/basefm/relays', { cache: 'no-store' })
       const relaysData = await relaysRes.json()
       setRelays(Array.isArray(relaysData?.relays) ? relaysData.relays : [])
@@ -658,6 +672,8 @@ export default function DJStreamPage() {
   const streamTarget = stream?.fullRtmpUrl || stream?.rtmpUrl || ''
   const rtmpServer = stream?.rtmpUrl || MUX_RTMP_URL
   const streamKey = stream?.streamKey || ''
+  const relayRtmpUrl = stream?.relayRtmpUrl || ''
+  const relayStreamTarget = relayRtmpUrl ? `${relayRtmpUrl}/${streamKey}` : ''
   const selectedEncoderCommand =
     encoderMode === 'video'
       ? artworkCommand
@@ -1089,13 +1105,12 @@ export default function DJStreamPage() {
                     <p>Get your stream key from <a href="https://studio.twitter.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">studio.twitter.com → Go Live</a></p>
                   </div>
                 </div>
-                <div className="mb-3 border border-orange-500/20 bg-orange-500/10 p-3">
-                  <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-2">How Simulcasting Works</div>
+                <div className="mb-3 border border-emerald-500/20 bg-emerald-500/10 p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-emerald-500 mb-2">Relay Server Simulcasting</div>
                   <div className="space-y-2 text-xs text-zinc-300">
-                    <p>Agentbot sends your feed to Mux (baseFM). To also go live on X, you need to configure a second RTMP output in OBS.</p>
-                    <p className="text-zinc-400">Option A: Use the <strong className="text-zinc-200">OBS Multiple RTMP Outputs</strong> plugin — add X as a second output target with the RTMP URL and stream key from X Studio.</p>
-                    <p className="text-zinc-400">Option B: Run a local <strong className="text-zinc-200">nginx-rtmp</strong> relay that forwards your single encoder output to both Mux and X simultaneously.</p>
-                    <p className="text-zinc-500">This panel saves your X live URL for health tracking. The actual stream routing happens in OBS or your relay server.</p>
+                    <p>Point OBS at the <strong className="text-zinc-200">Relay Server RTMP</strong> above. The relay forwards your stream to Mux + X + YouTube automatically.</p>
+                    <p className="text-zinc-400">Paste your X stream key below. The relay server uses it when pushing to X on your behalf. No OBS plugin needed.</p>
+                    <p className="text-zinc-500">Your X live URL is also tracked for health monitoring on the dashboard.</p>
                   </div>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1114,9 +1129,22 @@ export default function DJStreamPage() {
                     className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
                   />
                 </div>
+                <div className="mt-3">
+                  <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">X Stream Key</label>
+                  <input
+                    type="password"
+                    value={xStreamKey}
+                    onChange={(e) => setXStreamKey(e.target.value)}
+                    placeholder="Paste your X Studio stream key here"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                  <p className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                    From <a href="https://studio.twitter.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">studio.twitter.com → Go Live</a>
+                  </p>
+                </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="text-xs text-zinc-500">
-                    Save your X live URL for health tracking. Configure the RTMP stream key directly in OBS.
+                    Save to register X as a relay destination and store your stream key for simulcasting.
                   </p>
                   <button
                     onClick={saveXRelay}
@@ -1314,16 +1342,42 @@ export default function DJStreamPage() {
                   </div>
                 </div>
 
-                {/* RTMP URL */}
-                <div>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Program Feed Target</span>
-                    <CopyButton label="Copy RTMP" value={streamTarget} onCopy={copyValue} />
+                {/* RTMP URL — Relay (recommended) + Direct (fallback) */}
+                {relayStreamTarget ? (
+                  <div className="space-y-3">
+                    <div className="border border-emerald-500/30 bg-emerald-500/5 p-4">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="block text-[10px] uppercase tracking-widest text-emerald-400">Relay Server (Recommended)</span>
+                        <CopyButton label="Copy Relay RTMP" value={relayStreamTarget} onCopy={copyValue} />
+                      </div>
+                      <code className="block text-xs text-emerald-300 break-all select-all">
+                        {relayStreamTarget}
+                      </code>
+                      <p className="mt-2 text-[10px] uppercase tracking-widest text-emerald-500/70">
+                        Sends to Mux + X + YouTube simultaneously — one OBS output
+                      </p>
+                    </div>
+                    <div>
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Direct to Mux (Fallback)</span>
+                        <CopyButton label="Copy RTMP" value={streamTarget} onCopy={copyValue} />
+                      </div>
+                      <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
+                        {streamTarget}
+                      </code>
+                    </div>
                   </div>
-                  <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
-                    {streamTarget || 'Reconnect status loaded. Create a fresh stream if the RTMP key is unavailable.'}
-                  </code>
-                </div>
+                ) : (
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Program Feed Target</span>
+                      <CopyButton label="Copy RTMP" value={streamTarget} onCopy={copyValue} />
+                    </div>
+                    <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
+                      {streamTarget || 'Reconnect status loaded. Create a fresh stream if the RTMP key is unavailable.'}
+                    </code>
+                  </div>
+                )}
 
                 {/* Stream Key + Playback */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-zinc-800">

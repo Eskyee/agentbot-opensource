@@ -15,6 +15,7 @@ const COOLDOWN_MS = COOLDOWN_HOURS * 60 * 60 * 1000
 const PAID_SESSION_FEE_USDC = 5
 
 const MUX_RTMP_URL = 'rtmp://global-live.mux.com:5222/app'
+const RELAY_RTMP_URL = process.env.RELAY_RTMP_URL || ''
 
 const BASEFM_TOKEN_ADDRESS = '0x9a4376bab717ac0a3901eeed8308a420c59c0ba3'
 const BASEFM_TOKEN_THRESHOLD = BigInt('2500000000000000000000000') // 2,500,000 BASEFM
@@ -253,7 +254,7 @@ export async function POST(request: NextRequest) {
             const fullRtmpUrl = `${MUX_RTMP_URL}/${stream.stream_key}`
             return NextResponse.json({
               success: true, reconnected: true,
-              stream: { id: stream.id, name: stream.metadata?.dj_name || blocking.dj_name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, fullRtmpUrl, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
+              stream: { id: stream.id, name: stream.metadata?.dj_name || blocking.dj_name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, fullRtmpUrl, relayRtmpUrl: RELAY_RTMP_URL || null, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
               ffmpeg: buildBasefmFfmpegCommandTemplates(fullRtmpUrl),
               session: { id: blocking.id, wallet: streamWallet, maxDuration: MAX_SESSION_SECONDS, remaining: getSessionRemainingSeconds(blocking), expiresAt: new Date(blocking.started_at.getTime() + MAX_SESSION_SECONDS * 1000).toISOString(), accessToken: createBasefmSessionToken({ sessionId: blocking.id, wallet: streamWallet, userId: session!.user.id, ttlSeconds: getSessionRemainingSeconds(blocking) + 3600 }) }
             })
@@ -290,12 +291,12 @@ export async function POST(request: NextRequest) {
     })
     if (!muxRes.ok) return NextResponse.json({ error: 'Mux creation failed' }, { status: muxRes.status })
     const stream = (await muxRes.json()).data
-    const sessionRecord = await prisma.dj_sessions.create({ data: { user_id: session?.user?.id || 'anonymous', wallet: streamWallet, dj_name: name || 'DJ', mux_stream_id: stream.id, playback_id: stream.playback_ids?.[0]?.id || null, max_duration: MAX_SESSION_SECONDS, metadata: { accessType, txHash: txHash || null, city, encoderMode } as any } })
+    const sessionRecord = await prisma.dj_sessions.create({ data: { user_id: session?.user?.id || 'anonymous', wallet: streamWallet, dj_name: name || 'DJ', mux_stream_id: stream.id, playback_id: stream.playback_ids?.[0]?.id || null, max_duration: MAX_SESSION_SECONDS, metadata: { accessType, txHash: txHash || null, city, encoderMode, streamKey: stream.stream_key } as any } })
     const fullRtmpUrl = `${MUX_RTMP_URL}/${stream.stream_key}`
 
     return NextResponse.json({
       success: true,
-      stream: { id: stream.id, name: name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, fullRtmpUrl, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
+      stream: { id: stream.id, name: name || 'DJ', wallet: streamWallet, streamKey: stream.stream_key, rtmpUrl: MUX_RTMP_URL, fullRtmpUrl, relayRtmpUrl: RELAY_RTMP_URL || null, playbackId: stream.playback_ids?.[0]?.id || null, status: stream.status },
       session: { id: sessionRecord.id, wallet: streamWallet, maxDuration: MAX_SESSION_SECONDS, remaining: MAX_SESSION_SECONDS, expiresAt: new Date(Date.now() + MAX_SESSION_SECONDS * 1000).toISOString(), accessToken: createBasefmSessionToken({ sessionId: sessionRecord.id, wallet: streamWallet, userId: session?.user?.id || null, ttlSeconds: MAX_SESSION_SECONDS + 3600 }) },
       ffmpeg: buildBasefmFfmpegCommandTemplates(fullRtmpUrl)
     })
