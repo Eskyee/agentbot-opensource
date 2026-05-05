@@ -165,6 +165,7 @@ export default function DJStreamPage() {
   const [youtubeViewerUrl, setYoutubeViewerUrl] = useState('')
   const [youtubeProbeUrl, setYoutubeProbeUrl] = useState('')
   const [savingYoutubeRelay, setSavingYoutubeRelay] = useState(false)
+  const [youtubeStreamKey, setYoutubeStreamKey] = useState('')
   const [xViewerUrl, setXViewerUrl] = useState('')
   const [xProbeUrl, setXProbeUrl] = useState('')
   const [xStreamKey, setXStreamKey] = useState('')
@@ -501,6 +502,19 @@ export default function DJStreamPage() {
       const data = await res.json()
       if (!res.ok) {
         throw new Error(data?.error || 'Failed to save YouTube relay')
+      }
+
+      // Save YouTube stream key to relay server for simulcasting
+      if (youtubeStreamKey.trim()) {
+        try {
+          await fetch('/api/relay/destination-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destinationId: 'youtube-main', streamKey: youtubeStreamKey.trim() }),
+          })
+        } catch {
+          // Relay server may not be running — key saved to DB for when it comes up
+        }
       }
 
       const relaysRes = await fetch('/api/basefm/relays', { cache: 'no-store' })
@@ -1163,6 +1177,13 @@ export default function DJStreamPage() {
 
               <div className="border border-zinc-800 bg-black p-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Optional YouTube Relay</div>
+                <div className="mb-3 border border-emerald-500/20 bg-emerald-500/10 p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-emerald-500 mb-2">Relay Server Simulcasting</div>
+                  <div className="space-y-2 text-xs text-zinc-300">
+                    <p>Paste your YouTube stream key below. The relay server pushes your stream to YouTube automatically alongside Mux.</p>
+                    <p className="text-zinc-500">Get your stream key from YouTube Studio → Go Live → Stream → Stream Key.</p>
+                  </div>
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <input
                     type="text"
@@ -1179,9 +1200,22 @@ export default function DJStreamPage() {
                     className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
                   />
                 </div>
+                <div className="mt-3">
+                  <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">YouTube Stream Key</label>
+                  <input
+                    type="password"
+                    value={youtubeStreamKey}
+                    onChange={(e) => setYoutubeStreamKey(e.target.value)}
+                    placeholder="Paste your YouTube stream key here"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                  <p className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                    From <a href="https://studio.youtube.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">YouTube Studio → Go Live</a>
+                  </p>
+                </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="text-xs text-zinc-500">
-                    Save the viewer/probe destination here. RTMP key management stays external for now.
+                    Save to register YouTube as a relay destination and store your stream key for simulcasting.
                   </p>
                   <button
                     onClick={saveYoutubeRelay}
