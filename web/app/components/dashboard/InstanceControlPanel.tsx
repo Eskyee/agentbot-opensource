@@ -8,7 +8,6 @@ import {
   Copy,
   ExternalLink,
   Loader2,
-  Music2,
   Power,
   RefreshCw,
   ShieldCheck,
@@ -252,18 +251,7 @@ export function InstanceControlPanel({
   // communityRewards removed
 }: InstanceControlPanelProps) {
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null)
-  const [basefmActionLoading, setBasefmActionLoading] = useState(false)
-  const [basefmLaunch, setBasefmLaunch] = useState<null | {
-    name: string
-    wallet: string
-    fullRtmpUrl: string
-    playbackId: string | null
-    ffmpeg?: {
-      command: string
-      inputHint?: string
-    } | null
-  }>(null)
-  const [basefmError, setBasefmError] = useState('')
+
 
   useEffect(() => {
     fetch('/api/trial')
@@ -277,47 +265,6 @@ export function InstanceControlPanel({
   const lifecycleTelemetry = stats?.telemetry?.lifecycleMetricsAvailable ?? false
   const runtimeHealth = stats?.health === 'healthy' ? 'healthy' : stats?.health || 'checking'
   const managedSpecs = getManagedSpecs(instance.plan, instance.subscriptionStatus)
-  const [basefmWallet, setBasefmWallet] = useState('')
-  const canLaunchBasefm = Boolean(basefmWallet.trim())
-
-  const createBasefmStream = async () => {
-    if (!basefmWallet.trim()) {
-      setBasefmError('Enter a Solana wallet address to launch a baseFM stream.')
-      return
-    }
-
-    setBasefmActionLoading(true)
-    setBasefmError('')
-
-    try {
-      const res = await fetch('/api/basefm/streams', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          wallet: basefmWallet.trim(),
-          name: `${instanceName} Live`,
-        }),
-      })
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to create baseFM stream')
-      }
-
-      setBasefmLaunch({
-        name: data.stream?.name || `${instanceName} Live`,
-        wallet: data.stream?.wallet || basefmWallet.trim(),
-        fullRtmpUrl: data.stream?.fullRtmpUrl,
-        playbackId: data.stream?.playbackId || null,
-        ffmpeg: data.ffmpeg || null,
-      })
-    } catch (error) {
-      setBasefmError(error instanceof Error ? error.message : 'Failed to create baseFM stream')
-    } finally {
-      setBasefmActionLoading(false)
-    }
-  }
-
   const quickLinks = [
     { label: 'Open Agentbot', href: instance.controlUiUrl || instance.url, external: true },
     { label: 'Skills Manager', href: skillsManagerUrl, external: true },
@@ -414,17 +361,6 @@ export function InstanceControlPanel({
                 onClick={() => onAction('repair')}
               />
               <ActionButton
-                label="Create baseFM Stream"
-                detail={canLaunchBasefm
-                  ? 'Mint RTMP credentials and an ffmpeg broadcaster command for baseFM.'
-                  : 'Enter a Solana wallet address above, then launch a baseFM stream.'}
-                icon={Music2}
-                tone="primary"
-                loading={basefmActionLoading}
-                disabled={basefmActionLoading}
-                onClick={createBasefmStream}
-              />
-              <ActionButton
                 label={isRunning ? 'Stop Machine' : 'Standby'}
                 detail={isRunning ? 'Take this instance offline until restarted.' : 'This instance is already offline.'}
                 icon={Power}
@@ -484,74 +420,6 @@ export function InstanceControlPanel({
               </div>
             </div>
 
-            <div className="mt-4">
-              <label className="text-[10px] uppercase tracking-[0.18em] text-zinc-600 mb-1.5 block">Solana Wallet (for baseFM streams)</label>
-              <input
-                type="text"
-                value={basefmWallet}
-                onChange={(e) => setBasefmWallet(e.target.value)}
-                placeholder="Enter Solana wallet address"
-                className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none font-mono"
-              />
-            </div>
-
-            {basefmError ? (
-              <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-red-200">
-                {basefmError}
-              </div>
-            ) : null}
-
-            {!canLaunchBasefm ? (
-              <div className="mt-4 rounded-2xl border border-orange-500/20 bg-orange-500/10 px-4 py-3 text-sm text-orange-500">
-                Enter your Solana wallet address above to launch a baseFM stream.
-              </div>
-            ) : null}
-
-            {basefmLaunch ? (
-              <div className="mt-4 rounded-[24px] border border-zinc-800 bg-black p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-500">baseFM Broadcast Ready</p>
-                    <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-white">{basefmLaunch.name}</p>
-                  </div>
-                  <Link
-                    href="/basefm/live"
-                    className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white"
-                  >
-                    Play Live
-                    <ArrowUpRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Wallet</p>
-                    <p className="mt-2 break-all text-xs text-zinc-300">{basefmLaunch.wallet}</p>
-                  </div>
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">Playback</p>
-                    <p className="mt-2 break-all text-xs text-zinc-300">{basefmLaunch.playbackId || 'Pending'}</p>
-                  </div>
-                </div>
-
-                <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">RTMP Target</p>
-                  <code className="mt-2 block break-all text-xs text-zinc-300">{basefmLaunch.fullRtmpUrl}</code>
-                </div>
-
-                {basefmLaunch.ffmpeg?.command ? (
-                  <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-                    <p className="text-[10px] uppercase tracking-[0.16em] text-zinc-500">ffmpeg Broadcaster Path</p>
-                    <code className="mt-2 block whitespace-pre-wrap break-all text-xs text-zinc-300">
-                      {basefmLaunch.ffmpeg.command}
-                    </code>
-                    {basefmLaunch.ffmpeg.inputHint ? (
-                      <p className="mt-2 text-xs text-zinc-500">{basefmLaunch.ffmpeg.inputHint}</p>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
           </div>
 
           <div className="space-y-4">
