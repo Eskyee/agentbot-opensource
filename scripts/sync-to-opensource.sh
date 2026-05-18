@@ -47,6 +47,10 @@ info "Syncing files..."
 rsync -a --delete \
   --exclude='.git' \
   --exclude='.claude/' \
+  --exclude='.codex/' \
+  --exclude='.deepsec/' \
+  --exclude='.omx/' \
+  --exclude='.turbo/' \
   --exclude='node_modules' \
   --exclude='.next' \
   --exclude='.env' \
@@ -87,7 +91,8 @@ remove_internal 'CODE_REVIEW.md'
 remove_internal '*.docx'
 remove_internal 'dashboard.html'
 remove_internal 'CLAUDE.md'
-rm -rf "$TEMP_DIR/memory" "$TEMP_DIR/.claire" 2>/dev/null || true
+rm -rf "$TEMP_DIR/memory" "$TEMP_DIR/.claire" "$TEMP_DIR/.codex" \
+  "$TEMP_DIR/.deepsec" "$TEMP_DIR/.omx" "$TEMP_DIR/.turbo" 2>/dev/null || true
 
 # ── 4. Strip secrets globally ────────────────────────────────────────────────
 info "Stripping secrets..."
