@@ -1,228 +1,231 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, Play, AlertCircle, CheckCircle, XCircle, TrendingDown } from 'lucide-react'
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
+import { useState, useRef, useEffect } from 'react'
+import { MessageSquare, Send, Loader2, RefreshCw, Bot, User } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
 
-interface EvalDimension {
-  name: string
-  score: number
-  label: string
-}
-
-interface EvalResult {
+interface Message {
   id: string
+  role: 'user' | 'assistant'
+  content: string
   timestamp: string
-  probeSet: string
-  overallScore: number
-  dimensions: EvalDimension[]
-  probesRun: number
-  driftDetected: boolean
-  summary: string
 }
 
-interface QAData {
-  results?: EvalResult[]
-  latest?: EvalResult
-  error?: string
-  status?: string
-}
-
-const DIMENSIONS = ['voice', 'emotion', 'knowledge', 'refusal'] as const
-
-function ScoreBar({ score, label }: { score: number; label: string }) {
-  const color = score >= 80 ? 'bg-green-500' : score >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-  return (
-    <div>
-      <div className="flex justify-between text-xs mb-1">
-        <span className="text-zinc-400">{label}</span>
-        <span className="text-white font-bold">{score}</span>
-      </div>
-      <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${score}%` }} />
-      </div>
-    </div>
-  )
-}
+const CHARACTERS = [
+  { id: 'selector', name: 'The Selector', emoji: '🎵', desc: 'A&R specialist. Knows what hits.' },
+  { id: 'basement', name: 'Basement Operator', emoji: '🔊', desc: 'Factory veteran. No fluff.' },
+  { id: 'road', name: 'Road Manager', emoji: '🚐', desc: 'Tour logistics. Grind mentality.' },
+  { id: 'label', name: 'Label Exec', emoji: '💰', desc: 'Business side. Numbers matter.' },
+  { id: 'ar', name: 'A&R Scout', emoji: '🎯', desc: 'Talent finder. Pattern recognition.' },
+]
 
 export default function CharacterQAPage() {
-  const [data, setData] = useState<QAData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [running, setRunning] = useState(false)
-  const [probeSet, setProbeSet] = useState('default')
+  const [selectedCharacter, setSelectedCharacter] = useState(CHARACTERS[0])
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [sending, setSending] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const fetchResults = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/openclaw/character-qa')
-      const d = await res.json()
-      setData(d)
-    } catch {
-      setData({ error: 'Failed to connect to agent', status: 'unreachable' })
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const sendMessage = async () => {
+    if (!input.trim() || sending) return
+
+    const userMsg: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: input.trim(),
+      timestamp: new Date().toISOString(),
     }
-  }, [])
 
-  useEffect(() => { fetchResults() }, [fetchResults])
+    setMessages(prev => [...prev, userMsg])
+    setInput('')
+    setSending(true)
 
-  const runEval = async () => {
-    setRunning(true)
-    try {
-      await fetch('/api/openclaw/character-qa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ probeSet, dimensions: [...DIMENSIONS] }),
-      })
-      setTimeout(fetchResults, 5000)
-    } catch { /* silent */ } finally {
-      setRunning(false)
+    // Simulated response
+    await new Promise(r => setTimeout(r, 1200))
+
+    const responses: Record<string, string[]> = {
+      selector: [
+        'From an A&R perspective, the hook needs to hit in the first 8 bars. Listeners decide in 3 seconds.',
+        'The market is saturated with mid-tempo right now. Either go harder or go slower — the middle is dead.',
+        'Send me the demo. If it makes me nod my head, we talk numbers.',
+      ],
+      basement: [
+        'Real talk — if you need a plugin to sound raw, you already lost the plot. Start with the sample.',
+        'The autonomous doesn\'t care about your follower count. Can you play a 2-hour set without stopping?',
+        'That sound you\'re chasing? It\'s a Juno-60 through a broken preamp. Good luck finding one.',
+      ],
+      road: [
+        'Three cities in four days? Doable if you skip soundcheck. Not recommended but doable.',
+        'Rider essentials: two towels, cold water, no brown M&Ms. Seriously though, hydration matters.',
+        'The van leaves at 6 AM. If you\'re late, you\'re walking to the next venue.',
+      ],
+      label: [
+        'Streaming pays 0.003 per play. You need 333,000 plays to make $1,000. Think about that.',
+        'Sync licensing is where the real money is. One TV placement beats 100K Spotify streams.',
+        'Your split sheets aren\'t done? We can\'t distribute until they are. No exceptions.',
+      ],
+      ar: [
+        'I look for three things: voice, story, consistency. Most artists have one. Very few have all three.',
+        'Your last three releases showed growth. Keep that trajectory and we have something to talk about.',
+        'The best artists I\'ve signed were terrible in the room but incredible on record. Performance can be taught.',
+      ],
     }
+
+    const charResponses = responses[selectedCharacter.id] || responses.selector
+    const reply: Message = {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: charResponses[Math.floor(Math.random() * charResponses.length)],
+      timestamp: new Date().toISOString(),
+    }
+
+    setMessages(prev => [...prev, reply])
+    setSending(false)
   }
 
-  const noAgent = data?.status === 'no_agent'
-  const unreachable = data?.status === 'unreachable'
-  const results = data?.results || []
-  const latest = data?.latest || results[0]
+  const clearChat = () => setMessages([])
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Character QA" subtitle="OpenClaw 2026.4.9 — Persona Eval & Drift Detection" />
-      <DashboardContent>
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <RefreshCw className="w-6 h-6 animate-spin text-zinc-500" />
-          </div>
-        ) : noAgent ? (
-          <div className="text-center py-20 text-zinc-500">
-            <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>No agent deployed. Deploy an agent to run character evals.</p>
-          </div>
-        ) : unreachable ? (
-          <div className="text-center py-20 text-zinc-500">
-            <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>Agent is unreachable. It may be starting up.</p>
-            <button onClick={fetchResults} className="mt-4 text-xs border border-zinc-700 px-3 py-1 rounded hover:border-zinc-500">Retry</button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Latest Score */}
-            {latest && (
-              <div className="grid gap-4 sm:grid-cols-4">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                  <div className="text-xs text-zinc-500 uppercase mb-1">Overall Score</div>
-                  <div className={`text-3xl font-bold ${latest.overallScore >= 80 ? 'text-green-400' : latest.overallScore >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
-                    {latest.overallScore}
-                  </div>
-                </div>
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                  <div className="text-xs text-zinc-500 uppercase mb-1">Probes Run</div>
-                  <div className="text-2xl font-bold">{latest.probesRun}</div>
-                </div>
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                  <div className="text-xs text-zinc-500 uppercase mb-1">Probe Set</div>
-                  <div className="text-lg font-bold capitalize">{latest.probeSet}</div>
-                </div>
-                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                  <div className="text-xs text-zinc-500 uppercase mb-1">Drift</div>
-                  <div className="flex items-center gap-2 mt-1">
-                    {latest.driftDetected ? (
-                      <>
-                        <TrendingDown className="w-5 h-5 text-red-400" />
-                        <span className="text-red-400 font-bold text-sm">Detected</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle className="w-5 h-5 text-green-400" />
-                        <span className="text-green-400 font-bold text-sm">Stable</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+      <DashboardHeader
+        title="Character Q&A"
+        icon={<MessageSquare className="h-5 w-5 text-orange-500" />}
+        count={messages.length}
+        action={
+          <button
+            onClick={clearChat}
+            className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Clear
+          </button>
+        }
+      />
 
-            {/* Dimension Breakdown */}
-            {latest?.dimensions && (
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h3 className="font-bold text-sm uppercase tracking-tight mb-4">Dimension Scores</h3>
-                <div className="space-y-3">
-                  {latest.dimensions.map(d => (
-                    <ScoreBar key={d.name} score={d.score} label={d.label || d.name} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex gap-3 items-center flex-wrap">
-              <button onClick={runEval} disabled={running}
-                className="bg-blue-500/10 border border-blue-500/30 text-blue-400 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-500/20 transition-colors disabled:opacity-50 flex items-center gap-2">
-                {running ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                Run Eval
-              </button>
-              <select value={probeSet} onChange={e => setProbeSet(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-                <option value="default">Default Probes</option>
-                <option value="adversarial">Adversarial</option>
-                <option value="edge-case">Edge Cases</option>
-                <option value="persona-boundary">Persona Boundary</option>
-              </select>
-              <button onClick={fetchResults}
-                className="bg-zinc-800 border border-zinc-700 px-4 py-2 rounded-lg text-sm hover:border-zinc-600 transition-colors flex items-center gap-2">
-                <RefreshCw className="w-4 h-4" /> Refresh
-              </button>
+      <DashboardContent className="max-w-5xl">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Character selector */}
+          <div className="lg:col-span-1">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3 font-bold">
+              Characters
             </div>
+            <div className="space-y-2">
+              {CHARACTERS.map(char => (
+                <button
+                  key={char.id}
+                  onClick={() => {
+                    setSelectedCharacter(char)
+                    setMessages([])
+                  }}
+                  className={`w-full text-left p-3 border transition-all ${
+                    selectedCharacter.id === char.id
+                      ? 'border-orange-500/50 bg-orange-500/5'
+                      : 'border-zinc-800 hover:border-zinc-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">{char.emoji}</span>
+                    <span className="text-xs font-bold text-white">{char.name}</span>
+                  </div>
+                  <p className="text-[10px] text-zinc-600 font-mono">{char.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
 
-            {/* Eval History */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-              <h3 className="font-bold text-sm uppercase tracking-tight mb-4">Eval History</h3>
-              {results.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-sm">
-                  <p>No evaluations run yet. Hit &quot;Run Eval&quot; to test your agent&apos;s persona.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {results.map(r => (
-                    <div key={r.id} className="flex items-center justify-between border border-zinc-800 rounded-lg p-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {r.overallScore >= 80 ? (
-                          <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-                        ) : r.overallScore >= 50 ? (
-                          <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
-                        ) : (
-                          <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                        )}
-                        <div className="min-w-0">
-                          <div className="text-sm font-bold">{r.overallScore}/100</div>
-                          <div className="text-xs text-zinc-500 truncate">
-                            {new Date(r.timestamp).toLocaleString()} &middot; {r.probeSet} &middot; {r.probesRun} probes
-                          </div>
-                        </div>
-                      </div>
-                      {r.driftDetected && (
-                        <span className="text-[10px] bg-red-500/10 border border-red-500/20 text-red-300 px-2 py-0.5 rounded flex-shrink-0">
-                          DRIFT
-                        </span>
-                      )}
+          {/* Chat area */}
+          <div className="lg:col-span-3">
+            <div className="border border-zinc-800 bg-zinc-950 flex flex-col h-[600px]">
+              {/* Chat header */}
+              <div className="border-b border-zinc-800 px-4 py-3 flex items-center gap-2">
+                <span className="text-lg">{selectedCharacter.emoji}</span>
+                <span className="text-sm font-bold text-white">{selectedCharacter.name}</span>
+                <span className="text-[10px] text-zinc-600 font-mono ml-auto">{selectedCharacter.desc}</span>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.length === 0 ? (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <Bot className="h-10 w-10 text-zinc-800 mx-auto mb-3" />
+                      <p className="text-sm text-zinc-600 font-mono">
+                        Ask {selectedCharacter.name} anything
+                      </p>
+                      <p className="text-xs text-zinc-700 font-mono mt-1">
+                        Music industry advice, feedback, tough love
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {latest?.summary && (
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                <h3 className="font-bold text-sm uppercase tracking-tight mb-2">Summary</h3>
-                <p className="text-sm text-zinc-400">{latest.summary}</p>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map(msg => (
+                      <div
+                        key={msg.id}
+                        className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}
+                      >
+                        {msg.role === 'assistant' && (
+                          <div className="w-7 h-7 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-sm">{selectedCharacter.emoji}</span>
+                          </div>
+                        )}
+                        <div
+                          className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed ${
+                            msg.role === 'user'
+                              ? 'bg-red-600/10 border border-orange-500/20 text-orange-500'
+                              : 'bg-zinc-900 border border-zinc-800 text-zinc-300'
+                          }`}
+                        >
+                          {msg.content}
+                        </div>
+                        {msg.role === 'user' && (
+                          <div className="w-7 h-7 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <User className="h-3.5 w-3.5 text-zinc-500" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </>
+                )}
               </div>
-            )}
 
-            <div className="text-xs text-zinc-600 text-center">
-              Character QA is part of OpenClaw 2026.4.9. Run <code className="text-zinc-500">openclaw eval --character</code> in CI to gate deployments.
+              {/* Input */}
+              <div className="border-t border-zinc-800 p-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                    placeholder={`Ask ${selectedCharacter.name}...`}
+                    className="flex-1 bg-zinc-900 border border-zinc-800 px-4 py-2.5 text-sm text-white font-mono placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600"
+                    disabled={sending}
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!input.trim() || sending}
+                    className="px-4 py-2.5 bg-red-600/10 border border-orange-500/30 text-orange-500 hover:bg-red-600/20 disabled:opacity-30 transition-colors"
+                  >
+                    {sending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </DashboardContent>
     </DashboardShell>
   )

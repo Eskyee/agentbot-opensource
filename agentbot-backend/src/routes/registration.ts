@@ -5,12 +5,9 @@
 import { Router, Request, Response } from 'express';
 import { createHash } from 'crypto';
 import { authenticate } from '../middleware/auth';
-import { Pool } from 'pg';
+import { pool } from '../lib/db';
 
 const router = Router();
-
-// DB-backed registration store — survives restarts
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /**
  * POST /api/validate-key
@@ -98,7 +95,7 @@ router.post('/register-home', authenticate, async (req: Request, res: Response) 
   res.json({
     success: true,
     message: 'Home installation registered',
-    dashboardUrl: `https://agentbot.raveculture.xyz/dashboard`,
+    dashboardUrl: `https://agentbot.sh/dashboard`,
   });
 });
 
@@ -133,7 +130,7 @@ router.post('/register-link', authenticate, async (req: Request, res: Response) 
   res.json({
     success: true,
     message: 'OpenClaw instance linked',
-    dashboardUrl: `https://agentbot.raveculture.xyz/dashboard`,
+    dashboardUrl: `https://agentbot.sh/dashboard`,
   });
 });
 

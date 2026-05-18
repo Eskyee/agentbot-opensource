@@ -19,7 +19,12 @@ import crypto from 'crypto';
  */
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-const HMAC_SECRET = process.env.HMAC_SECRET || process.env.INTERNAL_API_KEY || '';
+// HMAC_SECRET and INTERNAL_API_KEY serve different purposes:
+// - INTERNAL_API_KEY: Bearer token for outer auth gate (API access)
+// - HMAC_SECRET: HMAC signing key for user context headers (impersonation protection)
+// Falling back to INTERNAL_API_KEY conflates the two and breaks routes that
+// should be accessible without HMAC-signed headers (register-home, heartbeat).
+const HMAC_SECRET = process.env.HMAC_SECRET || '';
 
 // Extend Express Request
 declare global {
@@ -32,18 +37,35 @@ declare global {
   }
 }
 
+// Signed-header replay window. We accept signatures issued within this window
+// of "now" (clock skew + in-flight latency). Anything older is rejected to
+// prevent replay of captured headers across long-lived sessions.
+const SIGNATURE_WINDOW_MS = 5 * 60 * 1000;
+
 /**
  * Verify HMAC signature on user context headers.
- * The frontend signs: userId:userEmail:userRole with the shared secret.
+ *
+ * Old format: HMAC(userId:userEmail:userRole)
+ *   — signature was identical for every request, so a captured signature
+ *     could be replayed forever and across every endpoint.
+ *
+ * New format: HMAC(METHOD:PATH:userId:userEmail:userRole:timestamp)
+ *   — binds the signature to a specific endpoint + a 5-minute window, so
+ *     captured signatures expire and can't be reused on a different route.
+ *
+ * `timestamp` is sent in the `x-user-signature-timestamp` header (Unix ms).
  */
 function verifyUserSignature(
+  method: string,
+  path: string,
   userId: string,
   userEmail: string,
   userRole: string,
+  timestamp: string,
   signature: string
 ): boolean {
   if (!HMAC_SECRET || !signature) return false;
-  const payload = `${userId}:${userEmail}:${userRole}`;
+  const payload = `${method.toUpperCase()}:${path}:${userId}:${userEmail}:${userRole}:${timestamp}`;
   const expected = crypto
     .createHmac('sha256', HMAC_SECRET)
     .update(payload)
@@ -59,23 +81,33 @@ function verifyUserSignature(
 
 /**
  * Extracts and attaches user context from frontend headers.
- * Verifies HMAC signature to prevent header forgery.
+ * Verifies HMAC signature to prevent header forgery and replay.
  */
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   const userEmail = (req.headers['x-user-email'] as string) || '';
   const userId = (req.headers['x-user-id'] as string) || '';
   const userRole = (req.headers['x-user-role'] as string) || 'user';
   const signature = (req.headers['x-user-signature'] as string) || '';
+  const tsHeader = (req.headers['x-user-signature-timestamp'] as string) || '';
 
-  // If HMAC_SECRET is configured, require valid signature
+  // If HMAC_SECRET is configured, require a valid timestamped signature.
   if (HMAC_SECRET) {
-    if (!signature) {
+    if (!signature || !tsHeader) {
       return res.status(401).json({
-        error: 'Missing x-user-signature header',
+        error: 'Missing x-user-signature or x-user-signature-timestamp header',
         code: 'SIGNATURE_REQUIRED',
       });
     }
-    if (!verifyUserSignature(userId, userEmail, userRole, signature)) {
+
+    const ts = Number(tsHeader);
+    if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > SIGNATURE_WINDOW_MS) {
+      return res.status(401).json({
+        error: 'Signature timestamp outside replay window',
+        code: 'SIGNATURE_EXPIRED',
+      });
+    }
+
+    if (!verifyUserSignature(req.method, req.path, userId, userEmail, userRole, tsHeader, signature)) {
       return res.status(401).json({
         error: 'Invalid user signature',
         code: 'INVALID_SIGNATURE',

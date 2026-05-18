@@ -1,8 +1,7 @@
 import { randomBytes } from 'crypto';
-import { Pool } from 'pg';
-import { provisionOnRailway } from '../routes/railway-provision';
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+import { provisionOnRailway, type TailscaleProvisionOptions } from '../routes/railway-provision';
+import { snapshotAgentState } from './gitlawb';
+import { pool } from '../lib/db';
 
 export type PlatformJobStatus = 'queued' | 'running' | 'completed' | 'failed';
 export type PlatformJobType = 'provision_managed_runtime' | 'gateway_chat_completion' | 'runtime_sync' | 'retry_repair';
@@ -38,6 +37,7 @@ type QueueProvisionPayload = {
   agentType?: string;
   autoProvision?: boolean;
   stripeSubscriptionId?: string | null;
+  tailscale?: TailscaleProvisionOptions | null;
 };
 
 type QueueChatPayload = {
@@ -68,39 +68,65 @@ async function persistProvisionCompletion(params: {
     openclawUrl: managedAgentUrl,
   };
 
-  await pool.query(
-    `UPDATE "User"
-     SET "openclawUrl" = $2,
-         "openclawInstanceId" = $3
-     WHERE "id" = $1`,
-    [params.userId, managedAgentUrl, params.agentId]
-  );
+  // Wrap both updates in a transaction — if Agent upsert fails, User is not left
+  // pointing at a URL that has no corresponding Agent record.
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
 
-  await pool.query(
-    `INSERT INTO "Agent"
-      ("id", "userId", "name", "model", "status", "websocketUrl", "config", "createdAt", "updatedAt", "tier", "showcaseOptIn", "showcaseDescription")
-     VALUES
-      ($1, $2, $3, $4, $5, $6, $7::jsonb, NOW(), NOW(), $8, FALSE, '')
-     ON CONFLICT ("id") DO UPDATE
-     SET
-      "name" = EXCLUDED."name",
-      "model" = EXCLUDED."model",
-      "status" = EXCLUDED."status",
-      "websocketUrl" = EXCLUDED."websocketUrl",
-      "tier" = EXCLUDED."tier",
-      "config" = COALESCE("Agent"."config", '{}'::jsonb) || EXCLUDED."config",
-      "updatedAt" = NOW()`,
-    [
-      params.agentId,
-      params.userId,
+    await client.query(
+      `UPDATE "User"
+       SET "openclawUrl" = $2,
+           "openclawInstanceId" = $3
+       WHERE "id" = $1`,
+      [params.userId, managedAgentUrl, params.agentId]
+    );
+
+    await client.query(
+      `INSERT INTO "Agent"
+        ("id", "userId", "name", "model", "status", "websocketUrl", "config", "createdAt", "updatedAt", "tier", "showcaseOptIn", "showcaseDescription")
+       VALUES
+        ($1, $2, $3, $4, $5, $6, $7::jsonb, NOW(), NOW(), $8, FALSE, '')
+       ON CONFLICT ("id") DO UPDATE
+       SET
+        "name" = EXCLUDED."name",
+        "model" = EXCLUDED."model",
+        "status" = EXCLUDED."status",
+        "websocketUrl" = EXCLUDED."websocketUrl",
+        "tier" = EXCLUDED."tier",
+        "config" = COALESCE("Agent"."config", '{}'::jsonb) || EXCLUDED."config",
+        "updatedAt" = NOW()`,
+      [
+        params.agentId,
+        params.userId,
+        name,
+        params.aiProvider,
+        params.status,
+        managedAgentUrl,
+        JSON.stringify(config),
+        params.plan,
+      ]
+    );
+
+    await client.query('COMMIT');
+
+    // State is a Fact: Snapshot the final agent state to gitlawb
+    await snapshotAgentState(params.agentId, {
+      id: params.agentId,
+      userId: params.userId,
       name,
-      params.aiProvider,
-      params.status,
-      managedAgentUrl,
-      JSON.stringify(config),
-      params.plan,
-    ]
-  );
+      model: params.aiProvider,
+      status: params.status,
+      websocketUrl: managedAgentUrl,
+      config,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 function makeJobId(): string {
@@ -109,6 +135,10 @@ function makeJobId(): string {
 
 function sanitizeJob(row: PlatformJobRow) {
   const payload = row.payload || {};
+  const tailscalePayload =
+    payload.tailscale && typeof payload.tailscale === 'object'
+      ? payload.tailscale as Record<string, unknown>
+      : null;
   const safePayload = {
     userId: typeof payload.userId === 'string' ? payload.userId : row.user_id,
     agentId: typeof payload.agentId === 'string' ? payload.agentId : row.agent_id,
@@ -116,6 +146,16 @@ function sanitizeJob(row: PlatformJobRow) {
     aiProvider: typeof payload.aiProvider === 'string' ? payload.aiProvider : null,
     agentType: typeof payload.agentType === 'string' ? payload.agentType : null,
     autoProvision: payload.autoProvision === true,
+    tailscale: tailscalePayload?.enabled === true
+      ? {
+          enabled: true,
+          mode: typeof tailscalePayload.mode === 'string' ? tailscalePayload.mode : 'serve',
+          hostname: typeof tailscalePayload.hostname === 'string' ? tailscalePayload.hostname : null,
+          tags: Array.isArray(tailscalePayload.tags) ? tailscalePayload.tags : [],
+          acceptRoutes: tailscalePayload.acceptRoutes !== false,
+          resetOnExit: tailscalePayload.resetOnExit === true,
+        }
+      : null,
   };
 
   return {
@@ -251,8 +291,34 @@ async function completeJob(jobId: string, resultPayload: Record<string, unknown>
   );
 }
 
-async function failJob(job: PlatformJobRow, errorMessage: string) {
-  const shouldRetry = job.attempts < job.max_attempts;
+/**
+ * Marker error for permanent failures. The outer dispatch loop catches
+ * this and forwards `permanent=true` to failJob so the job is failed
+ * immediately instead of burning the remaining retry budget.
+ */
+class PermanentJobError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PermanentJobError';
+  }
+}
+
+/**
+ * Mark a job as failed.
+ *
+ * If `permanent` is true, the job goes straight to the terminal `failed`
+ * status and never retries — used for errors we know up-front are not
+ * transient (malformed payload, invalid URL, missing token, etc.).
+ *
+ * Otherwise the job is requeued with backoff while attempts remain, and
+ * only flips to `failed` once attempts have been exhausted.
+ */
+async function failJob(
+  job: PlatformJobRow,
+  errorMessage: string,
+  permanent = false
+) {
+  const shouldRetry = !permanent && job.attempts < job.max_attempts;
 
   if (shouldRetry) {
     const retryDelaySeconds = Math.min(30 * job.attempts, 300);
@@ -285,11 +351,15 @@ async function failJob(job: PlatformJobRow, errorMessage: string) {
 
 async function processProvisionJob(job: PlatformJobRow) {
   const payload = job.payload as unknown as QueueProvisionPayload;
-  const result = await provisionOnRailway(payload.agentId, payload.plan || 'solo');
+  const result = await provisionOnRailway(payload.agentId, payload.plan || 'solo', payload.tailscale || null);
 
-  // Non-fatal: Railway service is deployed regardless of DB persistence success.
-  // A FK violation (user not found) or transient DB error must not re-queue
-  // the provision job — that would re-run serviceCreate and hit "already exists".
+  // M-9: persist the Agent/User state. The Railway service is already up by
+  // this point, so a persist failure does NOT entitle us to retry — that
+  // would re-deploy a duplicate Railway service and we'd never reconcile it
+  // back to the User. Instead, capture the failure, log a treasury_transactions
+  // row of type='orphan_railway_service', and complete the job so an operator
+  // can reconcile manually.
+  let persistFailure: string | null = null;
   try {
     await persistProvisionCompletion({
       userId: payload.userId,
@@ -300,9 +370,38 @@ async function processProvisionJob(job: PlatformJobRow) {
       agentType: payload.agentType || 'creative',
       status: result.status,
     });
-  } catch (dbErr: unknown) {
-    const msg = dbErr instanceof Error ? dbErr.message : String(dbErr);
-    console.warn(`[PlatformJobs] persistProvisionCompletion failed (non-fatal): ${msg}`);
+  } catch (err) {
+    persistFailure = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[Platform-jobs] Persist failed for ${payload.agentId} (Railway service is live at ${result.url}); recording orphan_railway_service for manual reconciliation:`,
+      persistFailure
+    );
+    await pool.query(
+      `INSERT INTO treasury_transactions (type, category, action, description, status, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6::jsonb)`,
+      [
+        'orphan_railway_service',
+        'provision',
+        'persist_failed',
+        `Railway service deployed for agent ${payload.agentId} but DB persist failed: ${persistFailure}`,
+        'needs_reconciliation',
+        JSON.stringify({
+          agentId: payload.agentId,
+          userId: payload.userId,
+          railwayUrl: result.url,
+          plan: payload.plan || 'solo',
+          aiProvider: payload.aiProvider || 'openrouter',
+          agentType: payload.agentType || 'creative',
+          provisionStatus: result.status,
+          jobId: job.id,
+          persistError: persistFailure,
+        }),
+      ]
+    ).catch((logErr: Error) => {
+      // If even the orphan log fails, fall back to a console-error breadcrumb
+      // so an operator at least sees something in the logs.
+      console.error('[Platform-jobs] Failed to log orphan_railway_service:', logErr.message);
+    });
   }
 
   await completeJob(job.id, {
@@ -312,10 +411,15 @@ async function processProvisionJob(job: PlatformJobRow) {
     agentType: payload.agentType || 'creative',
     queuedUserId: payload.userId,
     agentId: payload.agentId,
+    persistFailure,
   });
 }
 
 async function requeueStaleRunningJobs(): Promise<void> {
+  // M-11: tighten stale-running window from 10 minutes to 3 minutes for
+  // chat/gateway lanes (which complete in < 60s on the happy path) while
+  // keeping a longer window for provision (Railway can legitimately take 5
+  // minutes to spin up a new service).
   await pool.query(
     `UPDATE platform_jobs
      SET
@@ -326,7 +430,12 @@ async function requeueStaleRunningJobs(): Promise<void> {
        error = COALESCE(error, 'Recovered after stale worker lock')
      WHERE status = 'running'
        AND locked_at IS NOT NULL
-       AND locked_at < NOW() - INTERVAL '10 minutes'`
+       AND (
+         (job_type = 'gateway_chat_completion' AND locked_at < NOW() - INTERVAL '3 minutes')
+         OR (job_type = 'provision_managed_runtime' AND locked_at < NOW() - INTERVAL '10 minutes')
+         OR (job_type NOT IN ('gateway_chat_completion', 'provision_managed_runtime')
+             AND locked_at < NOW() - INTERVAL '5 minutes')
+       )`
   );
 }
 
@@ -334,7 +443,50 @@ async function processGatewayChatJob(job: PlatformJobRow) {
   const payload = job.payload as unknown as QueueChatPayload;
   const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN?.trim();
   if (!gatewayToken) {
-    throw new Error('OPENCLAW_GATEWAY_TOKEN is not configured on backend');
+    // Configuration errors don't resolve themselves between retries — fail
+    // permanently so we don't burn the 3-attempt budget on a guaranteed
+    // failure.
+    throw new PermanentJobError('OPENCLAW_GATEWAY_TOKEN is not configured on backend');
+  }
+
+  // M-10: Validate the gateway URL shape before retrying. A malformed URL
+  // would otherwise burn all 3 attempts on something we know up-front cannot
+  // succeed. We allow only https URLs with a non-empty host.
+  let gatewayBase: string;
+  try {
+    const parsed = new URL(payload.gatewayUrl);
+    if (parsed.protocol !== 'https:' || !parsed.host) {
+      throw new Error(`unsupported gatewayUrl protocol/host: ${payload.gatewayUrl}`);
+    }
+    gatewayBase = `${parsed.protocol}//${parsed.host}${parsed.pathname.replace(/\/$/, '')}`;
+  } catch (urlErr: unknown) {
+    const msg = urlErr instanceof Error ? urlErr.message : String(urlErr);
+    // Fail fast — don't waste retry budget on garbage input. We intentionally
+    // throw so the job is marked failed by the outer retry handler with a
+    // clear error rather than burning attempts.
+    throw new PermanentJobError(
+      `Gateway URL invalid (${msg}); job will not be retried`
+    );
+  }
+
+  // Validate gateway URL — must be public HTTPS, not internal/metadata hosts
+  const gatewayUrl = payload.gatewayUrl?.replace(/\/\/$/, '');
+  if (!gatewayUrl) {
+    throw new Error('Gateway URL is missing from payload');
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(gatewayUrl);
+  } catch {
+    throw new Error(`Invalid gateway URL: ${gatewayUrl}`);
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error(`Gateway URL must be HTTPS, got: ${parsed.protocol}`);
+  }
+  const hostname = parsed.hostname;
+  const PRIVATE_IP = /^(127\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|0\.|localhost|\[::1\]|169\.254\.)/;
+  if (PRIVATE_IP.test(hostname) || hostname === 'metadata.google.internal') {
+    throw new Error(`Gateway URL resolves to internal host: ${hostname}`);
   }
 
   const messages: Array<{ role: string; content: string }> = [];
@@ -343,7 +495,7 @@ async function processGatewayChatJob(job: PlatformJobRow) {
   }
   messages.push({ role: 'user', content: payload.message });
 
-  const response = await fetch(`${payload.gatewayUrl.replace(/\/$/, '')}/v1/chat/completions`, {
+  const response = await fetch(`${gatewayUrl}/v1/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -393,12 +545,20 @@ export async function processPlatformJobs(maxJobs = 2): Promise<void> {
           await processGatewayChatJob(job);
           break;
         default:
-          await failJob(job, `Unsupported job type: ${job.job_type}`);
+          // Unknown job_type is permanent: another build/version of the
+          // worker has to ship before we can process it, so retrying
+          // helps no one.
+          await failJob(job, `Unsupported job type: ${job.job_type}`, true);
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown platform job error';
-      console.error('[PlatformJobs] Job failed:', job.id, message);
-      await failJob(job, message);
+      const permanent = error instanceof PermanentJobError;
+      console.error(
+        `[PlatformJobs] Job failed${permanent ? ' (permanent)' : ''}:`,
+        job.id,
+        message
+      );
+      await failJob(job, message, permanent);
     }
   }
 }

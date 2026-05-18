@@ -3,10 +3,66 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
+// ─── Footer structure ────────────────────────────────────────────────────────
+// 4 columns: Product | Developers | Community | Company
+// Mirrors the navbar's intent-based grouping
+// ─────────────────────────────────────────────────────────────────────────────
+
+const COLUMNS = [
+  {
+    heading: 'Product',
+    links: [
+      { href: '/pricing',      label: 'Pricing' },
+      { href: '/marketing',    label: 'Marketing' },
+      { href: '/demo',         label: 'Demo' },
+      { href: '/agents',       label: 'Agents' },
+      { href: '/marketplace',  label: 'Marketplace' },
+      { href: '/capabilities', label: 'Capabilities' },
+      { href: '/use-cases',    label: 'Use Cases' },
+      { href: '/solana',       label: 'Solana' },
+    ],
+  },
+  {
+    heading: 'Developers',
+    links: [
+      { href: '/documentation', label: 'Docs' },
+      { href: '/guide',         label: 'Guide' },
+      { href: '/skills',        label: 'Skills API' },
+      { href: '/playground',    label: 'Playground' },
+      { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
+      { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
+      { href: 'https://dev.to/agentbot',                                  label: 'Dev.to', external: true },
+    ],
+  },
+  {
+    heading: 'Community',
+    links: [
+      { href: '/blog',      label: 'Blog' },
+      { href: '/news',      label: 'News' },
+      { href: '/social',    label: 'Social' },
+      { href: '/jobs',      label: 'Jobs' },
+      { href: '/token',     label: '$AGENTBOT' },
+      { href: '/buddies',   label: 'Buddies' },
+      { href: '/basefm',    label: 'baseFM Live' },
+    ],
+  },
+  {
+    heading: 'Company',
+    links: [
+      { href: '/why',        label: 'Why Agentbot' },
+      { href: '/showcase',   label: 'Showcase' },
+      { href: '/partner',    label: 'Partner' },
+      { href: '/advertise',  label: 'Advertise' },
+      { href: '/terms',      label: 'Terms' },
+      { href: '/privacy',    label: 'Privacy' },
+    ],
+  },
+]
+
 export default function Footer() {
   const [status, setStatus] = useState<'checking' | 'operational' | 'down'>('checking');
   const [version, setVersion] = useState<string>('v0.0.0');
-  const [openClawVersion, setOpenClawVersion] = useState<string>('loading...');
+  const [openClawVersion, setOpenClawVersion] = useState<string>('2026.4.27');
 
   useEffect(() => {
     async function checkStatus() {
@@ -18,7 +74,7 @@ export default function Footer() {
       }
     }
     checkStatus();
-    const interval = setInterval(checkStatus, 300000); // Every 5 min (was 60s)
+    const interval = setInterval(checkStatus, 300000);
     return () => clearInterval(interval);
   }, []);
 
@@ -45,66 +101,68 @@ export default function Footer() {
   return (
     <footer className="w-full border-t border-zinc-900 bg-black font-mono">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex flex-col md:flex-row justify-between gap-8">
-          <div className="flex flex-col gap-3">
-            <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
-              &copy; 2026 Agentbot &middot; Zero Human Company
+
+        {/* 4-column grid */}
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 mb-12">
+          {COLUMNS.map((col) => (
+            <div key={col.heading}>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-4">
+                {col.heading}
+              </p>
+              <ul className="space-y-2.5">
+                {col.links.map((link) => {
+                  const cls = "text-zinc-600 text-[11px] hover:text-white transition-colors"
+                  if ('external' in link && link.external) {
+                    return (
+                      <li key={link.href}>
+                        <a href={link.href} target="_blank" rel="noopener noreferrer" className={cls}>
+                          {link.label}
+                        </a>
+                      </li>
+                    )
+                  }
+                  return (
+                    <li key={link.href}>
+                      <Link href={link.href} className={cls}>
+                        {link.label}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  status === 'operational' ? 'bg-green-500' :
-                  status === 'down' ? 'bg-red-500' :
-                  'bg-yellow-500 animate-pulse'
-                }`} />
-                <span className="text-[10px] uppercase tracking-widest text-zinc-600">
-                  {status === 'operational' ? 'Systems Operational' :
-                   status === 'down' ? 'Systems Degraded' :
-                   'Checking Status'}
-                </span>
-              </div>
-              <span className="text-zinc-800 text-[10px]">|</span>
-              <span className="text-[10px] uppercase tracking-widest text-zinc-700">
-                Agentbot {version}
-              </span>
-              <span className="text-zinc-800 text-[10px]">|</span>
-              <span className="text-[10px] uppercase tracking-widest text-zinc-700">
-                OpenClaw {openClawVersion}
-              </span>
-            </div>
+          ))}
+        </div>
+
+        {/* Bottom bar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-t border-zinc-900 pt-6">
+          <div className="text-zinc-700 text-[10px] uppercase tracking-[0.2em]">
+            &copy; 2026 Agentbot &middot; Zero Human Company
           </div>
-          <div className="flex flex-wrap gap-6">
-            {[
-              { href: '/partner', label: 'Partner' },
-              { href: '/token', label: '$AGENTBOT' },
-              { href: '/solana', label: 'Solana' },
-              { href: '/buddies', label: 'Buddies' },
-              { href: 'https://github.com/Eskyee/agentbot-opensource', label: 'GitHub' },
-              { href: 'https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource', label: 'Gitlawb' },
-              { href: 'https://deepwiki.com/Eskyee/agentbot-opensource', label: 'DeepWiki' },
-              { href: 'https://dev.to/agentbot', label: 'Dev.to' },
-              { href: 'https://talent.app/raveculture.base.eth', label: 'Talent' },
-              { href: 'https://openwebui.com/u/jaieskyravecult115142e2f8', label: 'Open WebUI' },
-              { href: '/terms', label: 'Terms' },
-              { href: '/privacy', label: 'Privacy' },
-            ].map((link) => {
-              const isExternal = link.href.startsWith('http')
-              const cls = "text-zinc-600 text-[10px] uppercase tracking-widest hover:text-white transition-colors"
-              if (isExternal) {
-                return (
-                  <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" className={cls}>
-                    {link.label}
-                  </a>
-                )
-              }
-              return (
-                <Link key={link.href} href={link.href} className={cls}>
-                  {link.label}
-                </Link>
-              )
-            })}
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                status === 'operational' ? 'bg-green-500' :
+                status === 'down' ? 'bg-orange-500' :
+                'bg-yellow-500 animate-pulse'
+              }`} />
+              <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+                {status === 'operational' ? 'Systems Operational' :
+                 status === 'down' ? 'Systems Degraded' :
+                 'Checking Status'}
+              </span>
+            </div>
+            <span className="text-zinc-800 text-[10px]">|</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-700">
+              Agentbot {version}
+            </span>
+            <span className="text-zinc-800 text-[10px]">|</span>
+            <span className="text-[10px] uppercase tracking-widest text-zinc-700">
+              OpenClaw {openClawVersion}
+            </span>
           </div>
         </div>
+
       </div>
     </footer>
   );

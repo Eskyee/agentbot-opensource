@@ -4,6 +4,93 @@ import { syncAgentToGateway } from '@/app/lib/agent-deploy'
 
 type AgentConfig = Record<string, unknown> & {
   pendingGatewaySync?: boolean
+  runtimeUrl?: string
+}
+
+function normalizeUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  return String(url).trim().replace(/\/$/, '')
+}
+
+function extractInstanceIdFromRuntimeUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  try {
+    const host = new URL(url).host
+    const match = host.match(/^agentbot-agent-([a-z0-9]+)-production\.up\.railway\.app$/i)
+    return match?.[1] || null
+  } catch {
+    return null
+  }
+}
+
+async function maybeAutoLinkManagedRuntimeForUser(userId: string): Promise<{
+  linked: boolean
+  reason?: string
+}> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { openclawUrl: true, openclawInstanceId: true },
+  })
+
+  const hasLinkedRuntime = Boolean(user?.openclawUrl && user?.openclawInstanceId)
+  if (hasLinkedRuntime) {
+    return { linked: false, reason: 'already_linked' }
+  }
+
+  const latestAgent = await prisma.agent.findFirst({
+    where: { 
+      userId,
+      // Prioritize agents explicitly marked as managed or with a Railway URL
+      OR: [
+        { config: { path: ['managed'], equals: true } },
+        { websocketUrl: { contains: 'railway.app' } },
+      ]
+    },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, websocketUrl: true, config: true },
+  }) || await prisma.agent.findFirst({
+    // Fallback to any latest agent if no managed one is found
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, websocketUrl: true, config: true },
+  })
+
+  if (!latestAgent) {
+    return { linked: false, reason: 'no_agent' }
+  }
+
+  const config = (latestAgent.config as AgentConfig | null) || {}
+  const runtimeUrl = normalizeUrl(latestAgent.websocketUrl || config.runtimeUrl || null)
+  const runtimeInstanceId =
+    extractInstanceIdFromRuntimeUrl(runtimeUrl) ||
+    (/^[a-f0-9]{16}$/i.test(latestAgent.id) ? latestAgent.id : null)
+
+  if (!runtimeUrl && !runtimeInstanceId) {
+    return { linked: false, reason: 'no_runtime_data' }
+  }
+
+  if (runtimeInstanceId) {
+    const ownedByOtherUser = await prisma.user.findFirst({
+      where: {
+        openclawInstanceId: runtimeInstanceId,
+        id: { not: userId },
+      },
+      select: { id: true },
+    })
+    if (ownedByOtherUser) {
+      return { linked: false, reason: 'instance_owned_elsewhere' }
+    }
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      ...(runtimeUrl ? { openclawUrl: runtimeUrl } : {}),
+      ...(runtimeInstanceId ? { openclawInstanceId: runtimeInstanceId } : {}),
+    },
+  })
+
+  return { linked: true }
 }
 
 export async function maybeAutoSyncManagedRuntimeForUser(userId: string): Promise<{
@@ -11,6 +98,8 @@ export async function maybeAutoSyncManagedRuntimeForUser(userId: string): Promis
   synced: boolean
   reason?: string
 }> {
+  const linkResult = await maybeAutoLinkManagedRuntimeForUser(userId)
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -23,7 +112,11 @@ export async function maybeAutoSyncManagedRuntimeForUser(userId: string): Promis
   const runtimeId = user?.openclawInstanceId
 
   if (!runtimeUrl || !runtimeId) {
-    return { attempted: false, synced: false, reason: 'no_runtime' }
+    return {
+      attempted: false,
+      synced: false,
+      reason: linkResult.linked ? 'runtime_linked_retry' : (linkResult.reason || 'no_runtime'),
+    }
   }
 
   const agent = await prisma.agent.findFirst({

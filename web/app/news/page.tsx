@@ -3,6 +3,30 @@ import Link from 'next/link';
 const communityUpdates = [
   {
     source: 'Agentbot',
+    date: '11 April 2026',
+    title: 'Dual-Chain Token: Base + Solana 🪙',
+    excerpt: 'Agentbot now supports community tokens on two chains. Base = official engine. Solana = community crowd. Two tokens, one platform. This is our genesis stamp — no future tokens will ever be created.',
+    url: '/token',
+    type: 'feature',
+  },
+  {
+    source: 'Agentbot',
+    date: '11 April 2026',
+    title: 'Genesis Stamp — Two Tokens. Forever. 🔒',
+    excerpt: 'Agentbot commits to never producing another token. Base $AGENTBOT and Solana $AGENTBOT are the only two. No dilution. No forks. Community holders today hold the original.',
+    url: '/token',
+    type: 'release',
+  },
+  {
+    source: 'baseFM',
+    date: '9 April 2026',
+    title: 'baseFM Goes Open Source 📻',
+    excerpt: 'Onchain radio platform now open source on GitHub. Live DJs, crypto tipping, token-gated events. Fork it, build it, own the signal.',
+    url: 'https://github.com/Eskyee/baseFM',
+    type: 'open-source',
+  },
+  {
+    source: 'Agentbot',
     date: '7 April 2026',
     title: 'Platform Beta — Try It Free',
     excerpt: 'AI agent platform in beta. 40+ skills, Jobs Board, GitHub Sponsors. Deploy agents in 60 seconds.',
@@ -148,6 +172,8 @@ const communityUpdates = [
 ];
 
 const trendingTopics = [
+  { tag: 'Dual-Chain Token', count: 489 },
+  { tag: 'Genesis Stamp', count: 421 },
   { tag: 'Jobs Board', count: 312 },
   { tag: 'Agent Swarms', count: 247 },
   { tag: 'x402 Payments', count: 183 },
@@ -218,11 +244,11 @@ const globalNews = [
 
 const TYPE_COLOR: Record<string, string> = {
   release: 'text-green-400 border-green-500/30',
-  community: 'text-blue-400 border-blue-500/30',
-  feature: 'text-blue-400 border-blue-500/30',
-  security: 'text-red-400 border-red-500/30',
-  blog: 'text-orange-400 border-orange-500/30',
-  ecosystem: 'text-cyan-400 border-cyan-500/30',
+  community: 'text-orange-500 border-orange-500/30',
+  feature: 'text-orange-500 border-orange-500/30',
+  security: 'text-red-400 border-orange-500/30',
+  blog: 'text-orange-500 border-orange-500/30',
+  ecosystem: 'text-orange-500 border-orange-500/30',
   integration: 'text-purple-400 border-purple-500/30',
 };
 

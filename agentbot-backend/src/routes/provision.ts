@@ -3,7 +3,7 @@ import { randomBytes } from 'crypto';
 import { authenticate } from '../middleware/auth';
 import { createContainer } from '../lib/container-manager';
 import type { PlanType } from '../lib/container-manager';
-import { Pool } from 'pg';
+import { getAgentCount } from '../lib/agent-queries';
 
 /**
  * BASEFM Provision Endpoint
@@ -28,31 +28,21 @@ const PLAN_LIMITS: Record<string, { agents: number; stripeRequired: boolean }> =
   network: { agents: 999999, stripeRequired: true }, // unlimited
 };
 
-// DB-backed agent count — survives restarts and horizontal scaling
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-
-/** Returns the number of active agents for this email from the DB. */
-async function getAgentCount(email: string): Promise<number> {
-  const result = await pool.query(
-    `SELECT COUNT(*) AS cnt FROM agent_registrations
-     WHERE user_id = $1 AND status = 'active'`,
-    [email]
-  );
-  return parseInt(result.rows[0]?.cnt ?? '0', 10);
-}
-
 // Simple in-memory Mux mock (in production, would use real Mux API)
 const generateMuxCredentials = async () => {
   const MUX_TOKEN_ID = process.env.MUX_TOKEN_ID;
   const MUX_TOKEN_SECRET = process.env.MUX_TOKEN_SECRET;
   
   if (!MUX_TOKEN_ID || !MUX_TOKEN_SECRET) {
-    // Fallback to placeholder if Mux not configured
+    // Dev-only fallback — Mux not configured, generate placeholder credentials
+    // Use randomBytes instead of Math.random for unpredictable placeholder values
+    const seg = () => randomBytes(3).toString('hex');
+    const id = () => randomBytes(6).toString('hex');
     return {
-      streamKey: `sk-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 6)}`,
-      liveStreamId: Math.random().toString(36).substring(2, 12),
+      streamKey: `sk-${seg()}-${seg()}-${seg()}`,
+      liveStreamId: id(),
       rtmpServer: 'rtmps://live.mux.com/app',
-      playbackUrl: `https://image.mux.com/${Math.random().toString(36).substring(2, 12)}/playlist.m3u8`,
+      playbackUrl: `https://image.mux.com/${id()}/playlist.m3u8`,
     };
   }
   
@@ -182,7 +172,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
     // Generate cryptographically secure unique IDs (Math.random is NOT secure)
     const userId = randomBytes(6).toString('hex');
     const muxCreds = await generateMuxCredentials();
-    const subdomain = `dj-${userId}.agentbot.raveculture.xyz`;
+    const subdomain = `dj-${userId}.agentbot.sh`;
 
     // In production, you would:
     // 1. Store agent config in database
@@ -246,7 +236,7 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
         name: containerInfo.container,
         status: containerInfo.status,
         serviceId: containerInfo.serviceId,
-        renderUrl: containerInfo.url,
+        railwayUrl: containerInfo.url,
         // Control UI auto-connect URL (token in #fragment, never sent to server)
         controlUiUrl: containerInfo.controlUiUrl,
       };

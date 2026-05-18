@@ -1,30 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma';
 
-export const dynamic = 'force-dynamic';
-
-// Admin emails from environment variable (comma-separated)
-function getAdminEmails(): string[] {
-  const adminEmails = process.env.ADMIN_EMAILS;
-  if (!adminEmails) {
-    console.warn('ADMIN_EMAILS not configured - no admins will have access');
-    return [];
-  }
-  return adminEmails.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-}
-
-async function isAdmin(email: string | null | undefined): Promise<boolean> {
-  if (!email) return false;
-  return getAdminEmails().includes(email.toLowerCase());
-}
 
 // GET - List all users
 export async function GET() {
   try {
     const session = await getAuthSession();
-    
-    if (!session?.user?.email || !(await isAdmin(session.user.email))) {
+
+    if (!isAdminEmail(session?.user?.email)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -36,13 +21,28 @@ export async function GET() {
         emailVerified: true,
         role: true,
         image: true,
+        plan: true,
+        subscriptionStatus: true,
+        subscriptionEndDate: true,
+        storageLimit: true,
+        openclawInstanceId: true,
       },
       orderBy: {
         email: 'asc',
       },
     });
 
-    return NextResponse.json({ users });
+    // Enrich with admin status and agent count
+    const enriched = await Promise.all(users.map(async (u) => {
+      const agentCount = await prisma.agent.count({ where: { userId: u.id } });
+      return {
+        ...u,
+        isAdmin: isAdminEmail(u.email),
+        agentCount,
+      };
+    }));
+
+    return NextResponse.json({ users: enriched });
   } catch (error) {
     console.error('Admin API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -53,8 +53,8 @@ export async function GET() {
 export async function DELETE(request: Request) {
   try {
     const session = await getAuthSession();
-    
-    if (!session?.user?.email || !(await isAdmin(session.user.email))) {
+
+    if (!isAdminEmail(session?.user?.email)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -70,7 +70,7 @@ export async function DELETE(request: Request) {
       select: { email: true, role: true },
     });
 
-    if (userToDelete?.email === session.user.email) {
+    if (userToDelete?.email && userToDelete.email === session?.user?.email) {
       return NextResponse.json({ error: 'Cannot delete yourself' }, { status: 400 });
     }
 

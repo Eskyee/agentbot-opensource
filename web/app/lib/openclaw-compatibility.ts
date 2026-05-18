@@ -1,12 +1,14 @@
 /**
- * openclaw-compatibility.ts - OpenClaw 2026.4.2 Compatibility Layer
- * 
- * Handles breaking changes and migrations for OpenClaw 2026.4.2:
- * - Plugin config path migrations (x_search, web_fetch)
- * - Task Flow integration
- * - Gateway/exec loopback fixes
- * - Agent/subagent pairing fixes
- * - Provider routing updates
+ * openclaw-compatibility.ts - OpenClaw 2026.4.15 Compatibility Layer
+ *
+ * Handles the current managed-runtime compatibility baseline:
+ * - Plugin-owned config path migrations
+ * - Task Flow / managed workflow defaults
+ * - Gateway / exec loopback and pairing fixes
+ * - Agent/subagent pairing scope
+ * - Centralized provider routing metadata
+ * - Bundled channel/plugin packaging expectations
+ * - WhatsApp gateway-owned action path expectations
  */
 
 import { prisma } from './prisma'
@@ -19,6 +21,9 @@ export interface CompatibilityConfig {
     pluginOwnedConfig: boolean
     execYoloMode: boolean
     centralizedProviders: boolean
+    bundledChannelSidecars: boolean
+    whatsappGatewayActions: boolean
+    structuredWebchatMedia: boolean
   }
 }
 
@@ -29,9 +34,9 @@ export interface Migration {
   appliedAt?: Date
 }
 
-// OpenClaw 2026.4.2 configuration paths
+// OpenClaw 2026.4.x configuration paths
 export const PLUGIN_CONFIG_PATHS = {
-  // New plugin-owned paths (2026.4.2+)
+  // New plugin-owned paths (2026.4.x+)
   xai: {
     xSearch: 'plugins.entries.xai.config.xSearch',
     webSearch: 'plugins.entries.xai.config.webSearch.apiKey'
@@ -39,7 +44,7 @@ export const PLUGIN_CONFIG_PATHS = {
   firecrawl: {
     webFetch: 'plugins.entries.firecrawl.config.webFetch'
   },
-  // Legacy paths (pre-2026.4.2)
+  // Legacy paths (pre-2026.4.x)
   legacy: {
     xSearch: 'core.tools.web.x_search',
     firecrawl: 'core.tools.web.fetch.firecrawl'
@@ -53,7 +58,7 @@ export function isVersionCompatible(version: string): {
   compatible: boolean
   missingFeatures: string[]
 } {
-  const minVersion = '2026.4.2'
+  const minVersion = '2026.4.15'
   const versionParts = version.split('.').map(Number)
   const minParts = minVersion.split('.').map(Number)
   
@@ -67,7 +72,10 @@ export function isVersionCompatible(version: string): {
       'Task Flow managed mode',
       'Plugin-owned config paths',
       'Exec YOLO mode defaults',
-      'Centralized provider routing'
+      'Centralized provider routing',
+      'Bundled channel sidecars',
+      'WhatsApp gateway-owned actions',
+      'Structured webchat media replies'
     )
   }
   
@@ -152,7 +160,7 @@ export async function migratePluginConfig(userId: string): Promise<{
 }
 
 /**
- * Configure exec defaults for YOLO mode (OpenClaw 2026.4.2+)
+ * Configure exec defaults for YOLO mode (OpenClaw 2026.4.x+)
  * security=full with ask=off
  */
 export function getExecDefaults(): {
@@ -168,8 +176,8 @@ export function getExecDefaults(): {
 }
 
 /**
- * Build OpenClaw Control URL with proper session and token
- * Updated for 2026.4.2 pairing fixes
+ * Build OpenClaw Control URL with proper session and token.
+ * Keeps the pairing/session shape compatible with the current 2026.4.x line.
  */
 export function buildOpenClawControlUrl(options: {
   gatewayUrl: string
@@ -183,7 +191,7 @@ export function buildOpenClawControlUrl(options: {
   const baseUrl = gatewayUrl.replace(/\/$/, '')
   const params = new URLSearchParams()
   
-  // Session key for 2026.4.2+ routing
+  // Session key for current routing / pairing semantics
   params.set('session', `agent:${session}:${session}`)
   
   // Token in hash fragment (never sent to server)
@@ -205,7 +213,7 @@ export function buildOpenClawControlUrl(options: {
 }
 
 /**
- * Handle Task Flow integration (2026.4.2+)
+ * Handle Task Flow integration (2026.4.15 baseline)
  */
 export interface TaskFlowConfig {
   mode: 'managed' | 'mirrored'
@@ -222,7 +230,7 @@ export function getTaskFlowDefaults(): TaskFlowConfig {
 }
 
 /**
- * Provider routing configuration (centralized in 2026.4.2)
+ * Provider routing configuration (centralized in 2026.4.x)
  */
 export const PROVIDER_ROUTES = {
   // Native endpoints (get full features)
@@ -246,7 +254,7 @@ export function classifyProviderEndpoint(url: string): 'native' | 'proxy' {
 }
 
 /**
- * Fix agent/subagent pairing scope (2026.4.2 fix)
+ * Fix agent/subagent pairing scope for current managed runtime compatibility.
  * Ensures sessions_spawn doesn't fail with "pairing required"
  */
 export async function fixAgentPairingScope(agentId: string): Promise<{
@@ -272,7 +280,7 @@ export async function fixAgentPairingScope(agentId: string): Promise<{
     
     return {
       fixed: true,
-      message: 'Agent pairing scope updated for 2026.4.2 compatibility'
+      message: 'Agent pairing scope updated for OpenClaw 2026.4.15 compatibility'
     }
   } catch (error) {
     return {
@@ -313,7 +321,7 @@ export async function ensureCompatibility(userId: string): Promise<{
   const { getOrCreateUserGatewayToken } = await import('./token-manager')
   const tokenResult = await getOrCreateUserGatewayToken(userId)
   if (tokenResult?.isNew) {
-    fixes.push('Generated new gateway token for 2026.4.2 compatibility')
+    fixes.push('Generated new gateway token for OpenClaw 2026.4.15 compatibility')
   }
   
   return {

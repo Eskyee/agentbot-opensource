@@ -15,6 +15,99 @@ import { DEFAULT_OPENCLAW_IMAGE } from './openclaw-version';
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2';
 const OPENCLAW_IMAGE = DEFAULT_OPENCLAW_IMAGE;
+const OPENCLAW_HOME_DIR = '/root/.openclaw';
+const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`;
+const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`;
+const CONTROL_UI_ALLOWED_ORIGINS = [
+  process.env.CONTROL_UI_ORIGIN || process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh',
+  process.env.CONTROL_UI_COMPAT_ORIGIN,
+].filter(Boolean);
+
+export interface TailscaleProvisionOptions {
+  enabled?: boolean;
+  mode?: 'serve' | 'funnel' | 'tailnet';
+  authKey?: string;
+  hostname?: string;
+  tags?: string[];
+  acceptRoutes?: boolean;
+  password?: string;
+  resetOnExit?: boolean;
+}
+
+type NormalizedTailscaleOptions = Required<Pick<TailscaleProvisionOptions, 'enabled' | 'mode' | 'authKey' | 'acceptRoutes'>> &
+  Pick<TailscaleProvisionOptions, 'hostname' | 'tags' | 'password' | 'resetOnExit'>;
+
+function normalizeTailscaleOptions(options?: TailscaleProvisionOptions | null): NormalizedTailscaleOptions | null {
+  if (!options?.enabled) return null;
+  const authKey = options.authKey?.trim();
+  if (!authKey) {
+    throw new Error('Tailscale auth key is required when Tailscale is enabled');
+  }
+  const mode = options.mode === 'funnel' || options.mode === 'tailnet' ? options.mode : 'serve';
+  const password = options.password?.trim();
+  if (mode === 'funnel' && !password) {
+    throw new Error('Tailscale Funnel requires a gateway password');
+  }
+
+  return {
+    enabled: true,
+    mode,
+    authKey,
+    hostname: options.hostname?.trim() || undefined,
+    tags: Array.isArray(options.tags)
+      ? options.tags.map((tag) => tag.trim()).filter(Boolean)
+      : undefined,
+    acceptRoutes: options.acceptRoutes !== false,
+    password,
+    resetOnExit: options.resetOnExit === true,
+  };
+}
+
+function buildGatewayTailscaleConfig(gatewayToken: string, options?: TailscaleProvisionOptions | null) {
+  const tailscale = normalizeTailscaleOptions(options);
+  if (!tailscale) {
+    return {
+      bind: 'lan',
+      auth: { mode: 'token', token: gatewayToken },
+    };
+  }
+
+  if (tailscale.mode === 'tailnet') {
+    return {
+      bind: 'tailnet',
+      auth: { mode: 'token', token: gatewayToken },
+    };
+  }
+
+  return {
+    bind: 'loopback',
+    tailscale: {
+      mode: tailscale.mode,
+      resetOnExit: tailscale.resetOnExit,
+    },
+    auth: tailscale.mode === 'funnel'
+      ? { mode: 'password' }
+      : { mode: 'token', token: gatewayToken, allowTailscale: true },
+  };
+}
+
+function getTailscaleEnvVars(agentId: string, options?: TailscaleProvisionOptions | null): Record<string, string> {
+  const tailscale = normalizeTailscaleOptions(options);
+  if (!tailscale) return {};
+
+  return {
+    OPENCLAW_TAILSCALE_MODE: tailscale.mode,
+    TAILSCALE_AUTHKEY: tailscale.authKey || '',
+    TAILSCALE_HOSTNAME: tailscale.hostname || `agentbot-${agentId}`,
+    TAILSCALE_TAGS: tailscale.tags?.join(',') || '',
+    TAILSCALE_ACCEPT_ROUTES: String(tailscale.acceptRoutes !== false),
+    TAILSCALE_STATE_DIR: '/data/tailscale',
+    TAILSCALE_SOCKS5_SERVER: '127.0.0.1:1055',
+    TAILSCALE_OUTBOUND_HTTP_PROXY_LISTEN: '127.0.0.1:1055',
+    AGENTBOT_TAILSCALE_PROXY: 'socks5://127.0.0.1:1055',
+    ...(tailscale.password ? { OPENCLAW_GATEWAY_PASSWORD: tailscale.password } : {}),
+  };
+}
 
 // Plan → CPU (millicores) + Memory (MB)
 const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }> = {
@@ -25,7 +118,12 @@ const PLAN_RESOURCES: Record<string, { cpuMillicores: number; memoryMB: number }
 };
 
 // Env vars to inject into each agent container
-function getAgentEnvVars(userId: string, plan: string, agentId?: string): Record<string, string> {
+function getAgentEnvVars(
+  userId: string,
+  plan: string,
+  agentId?: string,
+  tailscaleOptions?: TailscaleProvisionOptions | null
+): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
     OPENCLAW_GATEWAY_URL:   process.env.OPENCLAW_GATEWAY_URL   || '',
@@ -45,6 +143,7 @@ function getAgentEnvVars(userId: string, plan: string, agentId?: string): Record
     // Permission hooks — tiered command classification
     AGENTBOT_HOOK_ENABLED:  'true',
     AGENTBOT_PERMISSION_MODE: plan === 'solo' ? 'permissive' : 'strict',
+    ...getTailscaleEnvVars(agentId || userId, tailscaleOptions),
   };
 }
 
@@ -71,16 +170,32 @@ function getApiKey(): string {
   return key;
 }
 
+function getRailwayTokenType(): 'project' | 'workspace' | 'account' | 'oauth' {
+  const raw = (process.env.RAILWAY_TOKEN_TYPE || 'account').trim().toLowerCase();
+  if (raw === 'project' || raw === 'workspace' || raw === 'account' || raw === 'oauth') {
+    return raw;
+  }
+  return 'account';
+}
+
 async function railwayGql<T = any>(
   query: string,
   variables: Record<string, unknown> = {}
 ): Promise<T> {
+  const key = getApiKey();
+  const headers = getRailwayTokenType() === 'project'
+    ? {
+        'Project-Access-Token': key,
+        'Content-Type': 'application/json',
+      }
+    : {
+        'Authorization': `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      };
+
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${getApiKey()}`,
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30000),
   });
@@ -116,10 +231,28 @@ export async function isDockerReady(): Promise<boolean> {
 
 /**
  * Create a new OpenClaw agent service on Railway.
+ *
+ * Reliability semantics:
+ *
+ *   • IDEMPOTENT — if a service named `agentbot-agent-${userId}` already
+ *     exists, we return its current handle instead of creating a second one.
+ *     The previous behaviour was to fail with `Unique constraint` partway
+ *     through, which left the user permanently unable to reprovision because
+ *     the orphan service still owned the name slot.
+ *
+ *   • COMPENSATING — if any of the post-create steps (env vars, start
+ *     command, domain, deploy) throws, we issue a `serviceDelete` so the
+ *     half-built service is cleaned up before the error propagates. Without
+ *     this, every retry hits the idempotency branch above and returns a
+ *     handle to a broken service.
+ *
+ *   • Compensation failures are logged but never rethrown — the user-facing
+ *     error is the original provisioning failure, not the cleanup failure.
  */
 export async function createContainer(
   userId: string,
-  plan: PlanType = 'solo'
+  plan: PlanType = 'solo',
+  tailscaleOptions?: TailscaleProvisionOptions | null
 ): Promise<ContainerResult> {
   const projectId     = process.env.RAILWAY_PROJECT_ID;
   const environmentId = process.env.RAILWAY_ENVIRONMENT_ID;
@@ -127,6 +260,32 @@ export async function createContainer(
   if (!environmentId) throw new Error('RAILWAY_ENVIRONMENT_ID not configured');
 
   const serviceName = `agentbot-agent-${userId}`;
+
+  // Idempotency: if a service with this name already exists, return its
+  // handle instead of creating a duplicate. Callers that want a clean slate
+  // should call destroyContainer first.
+  //
+  // We query Railway for the service's actual assigned domain so the URL
+  // returned to the caller is the one Railway is serving, not a guess based
+  // on naming convention. We omit `controlUiUrl` here intentionally — the
+  // gateway token is generated fresh per createContainer call and we cannot
+  // recover the existing token from Railway, so emitting a "control UI URL"
+  // without a valid token would be misleading.
+  const existingId = await getServiceIdByName(serviceName).catch(() => null);
+  if (existingId) {
+    const existingDomain = await getServiceDomain(existingId).catch(() => null);
+    const existingUrl = existingDomain
+      ? `https://${existingDomain}`
+      : `https://${serviceName}YOUR_SERVICE_URL`;
+    console.log(`[ContainerManager/Railway] Reusing existing service ${existingId} (${serviceName}) for ${userId} → ${existingUrl}`);
+    return {
+      container: serviceName,
+      status: 'deploying',
+      serviceId: existingId,
+      url: existingUrl,
+      startedAt: new Date().toISOString(),
+    };
+  }
 
   // 1. Create the service
   const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
@@ -144,28 +303,46 @@ export async function createContainer(
   const serviceId = created.serviceCreate.id;
   console.log(`[ContainerManager/Railway] Created service ${serviceId} (${serviceName}) for ${userId}`);
 
+  // Compensation helper — delete the half-built service so a retry can
+  // start clean rather than colliding on the unique service name.
+  const compensate = async (failedStep: string, err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[ContainerManager/Railway] ${failedStep} failed for ${serviceName}: ${message}; rolling back service ${serviceId}`);
+    try {
+      await railwayGql(`
+        mutation ServiceDelete($id: String!) {
+          serviceDelete(id: $id)
+        }
+      `, { id: serviceId });
+      console.log(`[ContainerManager/Railway] Compensated: deleted ${serviceId}`);
+    } catch (cleanupErr: unknown) {
+      const cleanupMessage = cleanupErr instanceof Error ? cleanupErr.message : String(cleanupErr);
+      console.error(`[ContainerManager/Railway] Compensation failed for ${serviceId}: ${cleanupMessage}`);
+    }
+  };
+
   // 2. Build openclaw.json config and inject all env vars in one shot.
   //    Config is passed as OPENCLAW_CONFIG_JSON env var so the start command
   //    can write it without shell heredoc quoting issues.
   // Generate a unique token for each agent - don't use shared platform token
   const gatewayToken = crypto.randomBytes(32).toString('hex')
+  const gatewayTailscaleConfig = buildGatewayTailscaleConfig(gatewayToken, tailscaleOptions)
   const openclawConfig = {
     env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
     gateway: {
       mode: 'local',
-      bind: 'lan',
-      auth: { mode: 'token', token: gatewayToken },
+      ...gatewayTailscaleConfig,
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
-        allowedOrigins: ['*'],
-        dangerouslyDisableDeviceAuth: true,
-        dangerouslyAllowHostHeaderOriginFallback: true,
+        allowedOrigins: CONTROL_UI_ALLOWED_ORIGINS,
+        dangerouslyDisableDeviceAuth: false,
+        dangerouslyAllowHostHeaderOriginFallback: false,
       },
       http: { endpoints: { chatCompletions: { enabled: true } } },
     },
     agents: {
       defaults: {
-        workspace: '/home/node/.openclaw/workspace',
+        workspace: OPENCLAW_WORKSPACE_DIR,
         model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
@@ -177,6 +354,15 @@ export async function createContainer(
       webchat:  { enabled: true },
     },
     cron:    { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     session: {
       scope: 'per-sender',
       reset: { mode: 'daily', atHour: 4 },
@@ -190,68 +376,89 @@ export async function createContainer(
   };
 
   const variables = {
-    ...getAgentEnvVars(userId, plan),
+    ...getAgentEnvVars(userId, plan, userId, tailscaleOptions),
     OPENCLAW_CONFIG_JSON: JSON.stringify(openclawConfig),
   };
 
-  await railwayGql(`
-    mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
-      variableCollectionUpsert(input: $input)
-    }
-  `, {
-    input: { projectId, environmentId, serviceId, variables },
-  });
+  try {
+    await railwayGql(`
+      mutation VariableCollectionUpsert($input: VariableCollectionUpsertInput!) {
+        variableCollectionUpsert(input: $input)
+      }
+    `, {
+      input: { projectId, environmentId, serviceId, variables },
+    });
+  } catch (err) {
+    await compensate('variableCollectionUpsert', err);
+    throw err;
+  }
 
   // 3. Set start command — reads config from env var (no heredoc quoting issues).
   //    Single-quoted sh -c body is safe because no single quotes appear inside it.
-  const startCmd = `sh -c 'mkdir -p /home/node/.openclaw && printf "%s" "$OPENCLAW_CONFIG_JSON" > /home/node/.openclaw/openclaw.json && exec openclaw gateway'`;
+  const startCmd = `sh -c 'if [ -n "$TAILSCALE_AUTHKEY$TS_AUTHKEY" ]; then if command -v agentbot-tailscale-start >/dev/null 2>&1; then agentbot-tailscale-start; else echo "TAILSCALE_AUTHKEY set but this runtime image does not include Tailscale support" >&2; exit 1; fi; fi; mkdir -p ${OPENCLAW_HOME_DIR} && printf "%s" "$OPENCLAW_CONFIG_JSON" > ${OPENCLAW_CONFIG_PATH} && (openclaw doctor || true); if [ -n "$OPENCLAW_TAILSCALE_MODE" ] && [ "$OPENCLAW_TAILSCALE_MODE" != "tailnet" ]; then exec openclaw gateway --tailscale "$OPENCLAW_TAILSCALE_MODE"; fi; exec openclaw gateway'`;
 
   const planResources = PLAN_RESOURCES[plan] ?? PLAN_RESOURCES.solo;
 
-  // serviceId and environmentId are top-level mutation arguments, not inside input.
-  await railwayGql(`
-    mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
-      serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
-    }
-  `, {
-    serviceId,
-    environmentId,
-    input: {
-      startCommand: startCmd,
-      memoryLimitMb: planResources.memoryMB,
-      cpuLimit: planResources.cpuMillicores / 1000,
-      restartPolicyType: 'ON_FAILURE',
-      restartPolicyMaxRetries: 10,
-    },
-  });
+  try {
+    // serviceId and environmentId are top-level mutation arguments, not inside input.
+    await railwayGql(`
+      mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
+        serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
+      }
+    `, {
+      serviceId,
+      environmentId,
+      input: {
+        startCommand: startCmd,
+        memoryLimitMb: planResources.memoryMB,
+        cpuLimit: planResources.cpuMillicores / 1000,
+        restartPolicyType: 'ON_FAILURE',
+        restartPolicyMaxRetries: 10,
+      },
+    });
+  } catch (err) {
+    await compensate('serviceInstanceUpdate', err);
+    throw err;
+  }
   console.log(`[ContainerManager/Railway] Set startCommand + resources for ${serviceName}`);
 
   // 4. Create service domain with targetPort 18789 (routes Railway HTTP proxy to Gateway)
   //    Without this, Railway's proxy defaults to port 3000 and the Gateway is unreachable.
-  const domainRes = await railwayGql(`
-    mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
-      serviceDomainCreate(input: $input) {
-        id
-        domain
-        targetPort
+  let domainRes: { serviceDomainCreate?: { domain?: string; targetPort?: number } } | undefined;
+  try {
+    domainRes = await railwayGql<{ serviceDomainCreate: { id: string; domain: string; targetPort: number } }>(`
+      mutation ServiceDomainCreate($input: ServiceDomainCreateInput!) {
+        serviceDomainCreate(input: $input) {
+          id
+          domain
+          targetPort
+        }
       }
-    }
-  `, {
-    input: {
-      serviceId,
-      environmentId,
-      targetPort: 18789,
-    },
-  });
+    `, {
+      input: {
+        serviceId,
+        environmentId,
+        targetPort: 18789,
+      },
+    });
+  } catch (err) {
+    await compensate('serviceDomainCreate', err);
+    throw err;
+  }
   const serviceDomain = domainRes?.serviceDomainCreate;
   console.log(`[ContainerManager/Railway] Created domain: ${serviceDomain?.domain} → port ${serviceDomain?.targetPort}`);
 
   // 5. Deploy
-  await railwayGql(`
-    mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
-      serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
-    }
-  `, { serviceId, environmentId });
+  try {
+    await railwayGql(`
+      mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
+        serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
+      }
+    `, { serviceId, environmentId });
+  } catch (err) {
+    await compensate('serviceInstanceDeploy', err);
+    throw err;
+  }
 
   // Use the Railway-provided domain (with targetPort: 18789)
   const serviceUrl = serviceDomain?.domain
@@ -356,7 +563,12 @@ export async function getContainerStatus(userId: string): Promise<ContainerResul
           serviceInstances {
             edges {
               node {
-                latestDeployment { id status url }
+                latestDeployment { id status url createdAt }
+                deployments(first: 20) {
+                  edges {
+                    node { id status createdAt }
+                  }
+                }
               }
             }
           }
@@ -376,11 +588,22 @@ export async function getContainerStatus(userId: string): Promise<ContainerResul
     else if (deployStatus === 'sleeping')          status = 'suspended';
     else                                           status = deployStatus;
 
+    // Calculate restart count and last exit from deployment history
+    const allDeployments = instance?.deployments?.edges?.map((e: { node: { id: string; status: string; createdAt: string } }) => e.node) || [];
+    const restartCount = allDeployments.filter((d: { status: string }) => d.status === 'CRASHED' || d.status === 'FAILED').length;
+    const lastCrash = allDeployments.find((d: { status: string }) => d.status === 'CRASHED' || d.status === 'FAILED');
+    const lastExitCode = lastCrash ? (lastCrash.status === 'CRASHED' ? 137 : 1) : null;
+    const lastExitAt = lastCrash?.createdAt || null;
+
     return {
       container: data.service.name,
       status,
       serviceId,
       url: deployment?.url,
+      restartCount,
+      lastExitCode,
+      lastExitAt,
+      lastDeployAt: deployment?.createdAt || null,
     };
   } catch {
     return { container: `agentbot-agent-${userId}`, status: 'error', serviceId };
@@ -488,6 +711,55 @@ async function getServiceIdByName(name: string): Promise<string | null> {
 
     const match = data.project.services.edges.find(e => e.node.name === name);
     return match?.node.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Look up the Railway-assigned domain for an existing service.
+ *
+ * Returns the first service domain the platform has provisioned (without
+ * the protocol prefix), or null if the service has no domain yet (e.g. the
+ * domain creation step previously failed and was never retried). Callers
+ * should fall back to the naming-convention guess only when this returns
+ * null.
+ */
+async function getServiceDomain(serviceId: string): Promise<string | null> {
+  try {
+    const data = await railwayGql<{
+      service: {
+        serviceInstances: {
+          edges: Array<{
+            node: {
+              domains: {
+                serviceDomains: Array<{ domain: string }>;
+              };
+            };
+          }>;
+        };
+      };
+    }>(`
+      query ServiceDomain($id: String!) {
+        service(id: $id) {
+          serviceInstances {
+            edges {
+              node {
+                domains { serviceDomains { domain } }
+              }
+            }
+          }
+        }
+      }
+    `, { id: serviceId });
+
+    for (const edge of data.service.serviceInstances.edges) {
+      const domains = edge.node.domains?.serviceDomains ?? [];
+      if (domains.length > 0 && domains[0].domain) {
+        return domains[0].domain;
+      }
+    }
+    return null;
   } catch {
     return null;
   }

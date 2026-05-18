@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 interface Track {
   id: string;
@@ -46,6 +47,8 @@ function calculateSimilarity(track1: Track, track2: Track): number {
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('track-archaeologist');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { 
@@ -141,6 +144,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('track-archaeologist');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'track-archaeologist',
     name: 'Track Archaeologist',

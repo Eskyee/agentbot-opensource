@@ -55,10 +55,10 @@ function badgeColor(badge: string): string {
   switch (badge) {
     case 'PDF': return 'bg-red-900/50 text-red-400 border-red-800'
     case 'MP3': case 'WAV': case 'FLAC': return 'bg-purple-900/50 text-purple-400 border-purple-800'
-    case 'MP4': return 'bg-blue-900/50 text-blue-400 border-blue-800'
+    case 'MP4': return 'bg-red-900/50 text-orange-500 border-red-800'
     case 'PNG': case 'JPG': case 'GIF': case 'WEBP': case 'IMG': return 'bg-green-900/50 text-green-400 border-green-800'
     case 'JSON': case 'TXT': case 'CSV': return 'bg-yellow-900/50 text-yellow-400 border-yellow-800'
-    case 'ZIP': return 'bg-orange-900/50 text-orange-400 border-orange-800'
+    case 'ZIP': return 'bg-red-900/50 text-orange-500 border-red-800'
     default: return 'bg-zinc-800 text-zinc-400 border-zinc-700'
   }
 }
@@ -221,7 +221,7 @@ export default function FilesPage() {
   const usedGB = (totalSize / (1024 * 1024 * 1024)).toFixed(2)
 
   const FileIcon = () => (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
     </svg>
   )
@@ -324,7 +324,7 @@ export default function FilesPage() {
               {storageLimit === 10 && (
                 <button
                   onClick={upgradeStorage}
-                  className="text-[10px] text-blue-400 mt-1 hover:text-blue-300 uppercase tracking-widest font-bold"
+                  className="text-[10px] text-orange-500 mt-1 hover:text-orange-500 uppercase tracking-widest font-bold"
                 >
                   Upgrade Storage (+50GB)
                 </button>

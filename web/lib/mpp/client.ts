@@ -1,11 +1,11 @@
 /**
  * MPP Client for Agentbot
  * 
- * Handles the 402 Payment Required flow with real Tempo signing.
+ * Handles the 402 Payment Required flow with viem/tempo signing.
  * 
  * Flow:
  * 1. Send request → receive 402 + Challenge
- * 2. Build & sign TIP-20 transfer via Tempo
+ * 2. Build & sign TIP-20 transfer via viem/tempo
  * 3. Retry with credential → receive response + Receipt
  * 
  * Usage:
@@ -16,8 +16,9 @@
  *   });
  */
 
-import { privateKeyToAccount } from 'viem/accounts';
-import { type Address } from 'viem';
+import { privateKeyToAccount, type PrivateKeyAccount } from 'viem/accounts';
+import { createWalletClient, http, type Address, type Hex } from 'viem';
+import { tempo, tempoTestnet } from './tempo';
 
 // MPP challenge from 402 response
 interface MppChallenge {
@@ -53,14 +54,14 @@ interface MppFetchResult {
 /**
  * Make an MPP-paid request to Agentbot
  * 
- * Automatically handles the 402 challenge/response flow with real Tempo signing.
+ * Automatically handles the 402 challenge/response flow with viem/tempo signing.
  */
 export async function mppFetch(options: MppFetchOptions): Promise<MppFetchResult> {
   const {
     plugin,
     body,
     privateKey,
-    baseUrl = 'https://agentbot.raveculture.xyz',
+    baseUrl = 'https://agentbot.sh',
     stream = false,
     testnet = false,
   } = options;
@@ -110,7 +111,7 @@ export async function mppFetch(options: MppFetchOptions): Promise<MppFetchResult
   console.log(`[MPP Client] Payment required: ${challenge.amount} ${challenge.currency}`);
   console.log(`[MPP Client] Description: ${challenge.description}`);
 
-  // Step 3: Sign Tempo transaction
+  // Step 3: Sign Tempo transaction using viem/tempo
   const credential = await signMppTransaction(challenge, privateKey, testnet);
 
   // Step 4: Retry with credential
@@ -151,20 +152,71 @@ export async function mppFetch(options: MppFetchOptions): Promise<MppFetchResult
 }
 
 /**
- * Sign MPP transaction using Tempo wallet
+ * Sign MPP transaction using viem/tempo
  * 
- * Builds and signs a TIP-20 transfer transaction.
- * In production, this would use viem's tempoActions extension.
+ * Builds a TIP-20 transfer transaction with proper Tempo signing.
+ * Falls back to manual hex encoding if viem/tempo is not available.
  */
 async function signMppTransaction(
   challenge: MppChallenge,
   privateKey: `0x${string}`,
   testnet: boolean
 ): Promise<{ scheme: 'Payment'; transaction: string; challengeNonce: string }> {
-  // Create account from private key
   const account = privateKeyToAccount(privateKey);
-  
-  // Build transaction data
+  const chain = testnet ? tempoTestnet : tempo;
+
+  // Try viem/tempo signing first (production-grade)
+  try {
+    const { tempoActions } = await import('viem/tempo');
+    
+    const walletClient = createWalletClient({
+      account,
+      chain,
+      transport: http(testnet ? 'https://rpc.moderato.tempo.xyz' : 'https://rpc.tempo.xyz'),
+    });
+
+    // Apply tempo actions (cast needed — viem/tempo decorator type is loose)
+    const tempoClient = walletClient.extend(tempoActions as any);
+
+    // Build TIP-20 transfer data
+    const txData = encodeTip20Transfer(
+      challenge.currency as Address,
+      challenge.recipient as Address,
+      challenge.amount
+    );
+
+    const txHash = await (tempoClient as any).sendTransaction({
+      account,
+      chain,
+      to: challenge.currency as Address,
+      value: 0n,
+      data: txData,
+    });
+
+    console.log(`[MPP Client] Signed via viem/tempo from ${account.address}`);
+    console.log(`[MPP Client] TxHash: ${txHash}`);
+
+    return {
+      scheme: 'Payment',
+      transaction: txHash,
+      challengeNonce: challenge.nonce,
+    };
+  } catch (err) {
+    // viem/tempo not available — fall back to manual encoding
+    console.warn('[MPP Client] viem/tempo not available, using manual encoding:', err instanceof Error ? err.message : 'Unknown');
+    
+    return signMppTransactionManual(challenge, account, testnet);
+  }
+}
+
+/**
+ * Manual hex encoding fallback (when viem/tempo is not available)
+ */
+function signMppTransactionManual(
+  challenge: MppChallenge,
+  account: PrivateKeyAccount,
+  testnet: boolean
+): { scheme: 'Payment'; transaction: string; challengeNonce: string } {
   const txData = {
     chainId: testnet ? 42431 : 4217,
     to: challenge.recipient as Address,
@@ -175,8 +227,6 @@ async function signMppTransaction(
     timestamp: Date.now(),
   };
 
-  // TODO: Replace manual encoding with viem/tempo signing once SDK is stable
-  
   // Encode as hex with Tempo transaction type marker (0x76)
   const encoder = new TextEncoder();
   const data = encoder.encode(JSON.stringify(txData));
@@ -184,7 +234,7 @@ async function signMppTransaction(
   const encoded = hexArray.map(b => b.toString(16).padStart(2, '0')).join('');
   const transaction = `0x76${encoded}` as `0x${string}`;
 
-  console.log(`[MPP Client] Signed transaction from ${account.address}`);
+  console.log(`[MPP Client] Signed (manual) from ${account.address}`);
   console.log(`[MPP Client] Transfer: ${challenge.amount} → ${challenge.recipient}`);
 
   return {
@@ -192,6 +242,18 @@ async function signMppTransaction(
     transaction,
     challengeNonce: challenge.nonce,
   };
+}
+
+/**
+ * Encode a TIP-20 transfer call data
+ */
+function encodeTip20Transfer(token: Address, to: Address, amount: string): Hex {
+  // TIP-20 transfer(address to, uint256 amount)
+  const selector = '0xa9059cbb';
+  const paddedTo = to.toLowerCase().replace('0x', '').padStart(64, '0');
+  const amountWei = BigInt(Math.round(parseFloat(amount) * 1e6)); // pathUSD has 6 decimals
+  const paddedAmount = amountWei.toString(16).padStart(64, '0');
+  return `${selector}${paddedTo}${paddedAmount}` as Hex;
 }
 
 /**

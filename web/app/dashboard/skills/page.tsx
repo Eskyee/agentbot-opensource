@@ -7,6 +7,7 @@ import {
   Download,
   CheckCircle,
   AlertCircle,
+  RefreshCw,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -38,7 +39,11 @@ interface Skill {
   description: string
   category: string
   rating: number
+  ratingCount: number
+  installs: number
+  userRating: number | null
   downloads: number
+  hasDownload: boolean
   author: string
   featured?: boolean
 }
@@ -65,13 +70,19 @@ export default function SkillsPage() {
   const [newSkillDescription, setNewSkillDescription] = useState('')
   const [newSkillCategory, setNewSkillCategory] = useState('')
   const [creatingSkill, setCreatingSkill] = useState(false)
+  const [syncingRuntime, setSyncingRuntime] = useState(false)
+  const [runtimeSyncMessage, setRuntimeSyncMessage] = useState<string | null>(null)
+  const [ratingSkillId, setRatingSkillId] = useState<string | null>(null)
   const [openclawSkillsUrl, setOpenclawSkillsUrl] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
   // Fetch agents on mount
   useEffect(() => {
     fetch('/api/agents')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('agents-fetch')
+        return r.json()
+      })
       .then((data) => {
         const agentList: Agent[] = data.agents || []
         setAgents(agentList)
@@ -84,7 +95,10 @@ export default function SkillsPage() {
       })
 
     fetch('/api/user/openclaw')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('openclaw-fetch')
+        return r.json()
+      })
       .then((data) => {
         if (!data?.openclawUrl) return
         const normalizedUrl = String(data.openclawUrl).replace(/\/$/, '')
@@ -168,22 +182,42 @@ export default function SkillsPage() {
         const data = await res.json().catch(() => ({}))
 
         if (!res.ok) {
+          if (data.code === 'already_installed') {
+            setInstalledSkillIds((prev) => new Set(prev).add(skillId))
+            toast.info(data.error || 'This skill is already installed')
+            return
+          }
           if (data.deployWarning?.includes('Gateway unreachable')) {
             throw new Error('Agent offline. Install your agent first, then retry installing skills.')
           }
-          throw new Error(data.error || 'Failed to install skill')
+          throw new Error(data.error || 'Skill install failed. Refresh and try again.')
         }
 
         setInstalledSkillIds((prev) => new Set(prev).add(skillId))
+
+        if (data.alreadyInstalled) {
+          toast.info(data.message || 'This skill is already installed')
+          return
+        }
         
         if (data.deployed) {
-          toast.success('Skill installed!')
+          setRuntimeSyncMessage('Runtime synced. This skill is active on the selected agent.')
+          toast.success(
+            data.message || (data.runtimeHydrated
+              ? 'Skill installed and runtime agent prepared.'
+              : 'Skill installed!')
+          )
         } else {
-          toast.success('Skill saved! It will sync to your agent automatically.')
+          setRuntimeSyncMessage('Skill saved. Runtime sync is pending; use Sync Runtime if it is not active yet.')
+          toast.warning(
+            data.message || (data.runtimeHydrated
+              ? 'Skill saved, but runtime sync still needs attention.'
+              : 'Skill saved, but runtime sync still needs attention.')
+          )
         }
       } catch (err: unknown) {
         const message =
-          err instanceof Error ? err.message : 'Failed to install skill'
+          err instanceof Error ? err.message : 'Skill install failed. Refresh and try again.'
         toast.error(message)
       } finally {
         setInstallingId(null)
@@ -191,6 +225,110 @@ export default function SkillsPage() {
     },
     [selectedAgentId, installedSkillIds]
   )
+
+  const syncRuntime = useCallback(async () => {
+    if (!selectedAgentId) {
+      toast.error('Select an agent before syncing skills')
+      return
+    }
+
+    setSyncingRuntime(true)
+    try {
+      const res = await fetch(`/api/agents/${selectedAgentId}/sync`, {
+        method: 'POST',
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(data.details || data.error || 'Runtime sync failed. Check the agent is online and try again.')
+      }
+
+      const deployedCount = data.details?.skillsDeployed
+      const message =
+        typeof deployedCount === 'number'
+          ? `Runtime synced with ${deployedCount} installed skill${deployedCount === 1 ? '' : 's'}.`
+          : 'Runtime synced with installed skills.'
+      setRuntimeSyncMessage(message)
+      toast.success(message)
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Runtime sync failed. Check the agent is online and try again.'
+      setRuntimeSyncMessage(message)
+      toast.error(message)
+    } finally {
+      setSyncingRuntime(false)
+    }
+  }, [selectedAgentId])
+
+  const rateSkill = useCallback(async (skillId: string, rating: number) => {
+    setRatingSkillId(skillId)
+    try {
+      const res = await fetch(`/api/skills/${skillId}/rating`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rating }),
+      })
+      const data = await res.json().catch(() => ({}))
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Rating failed. Sign in and try again.')
+      }
+
+      setSkills((prev) =>
+        prev.map((skill) =>
+          skill.id === skillId
+            ? {
+                ...skill,
+                rating: data.rating,
+                ratingCount: data.ratingCount,
+                userRating: data.userRating,
+              }
+            : skill
+        )
+      )
+      toast.success(`Rated ${rating} star${rating === 1 ? '' : 's'}`)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Rating failed. Sign in and try again.'
+      toast.error(message)
+    } finally {
+      setRatingSkillId(null)
+    }
+  }, [])
+
+  const downloadSkill = useCallback(async (skill: Skill) => {
+    if (!skill.hasDownload) {
+      toast.info('This skill syncs directly to your runtime and has no downloadable package yet.')
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/skills/${skill.id}/download`)
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Download failed')
+      }
+
+      const blob = await res.blob()
+      const disposition = res.headers.get('Content-Disposition') || ''
+      const filenameMatch = disposition.match(/filename="?([^"]+)"?/)
+      const filename = filenameMatch?.[1] || `${skill.name.toLowerCase().replace(/\s+/g, '-')}.agentbot-skill.json`
+
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = filename
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      URL.revokeObjectURL(url)
+      toast.success(`Downloaded ${skill.name}`)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Download failed. Sign in and try again.'
+      toast.error(message)
+    }
+  }, [])
 
   const handleCreateSkill = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
@@ -243,7 +381,7 @@ export default function SkillsPage() {
     <DashboardShell>
       <DashboardHeader
         title="Skill Marketplace"
-        icon={<Wrench className="h-5 w-5 text-blue-400" />}
+        icon={<Wrench className="h-5 w-5 text-orange-500" />}
         action={
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger>
@@ -326,21 +464,37 @@ export default function SkillsPage() {
 
       <DashboardContent className="max-w-7xl space-y-6">
         {openclawSkillsUrl && (
-          <div className="flex items-center justify-between gap-4 rounded-lg border border-blue-500/30 bg-blue-500/5 px-4 py-3">
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-orange-500/30 bg-orange-500/5 px-4 py-3">
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Runtime Skills Manager</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-orange-500">Runtime Skills Manager</div>
               <p className="mt-1 text-sm text-zinc-300">
                 Open the real OpenClaw skills manager for this agent through the managed control UI, using your paired runtime session.
               </p>
+              {runtimeSyncMessage && (
+                <p className="mt-2 text-xs text-zinc-400">{runtimeSyncMessage}</p>
+              )}
             </div>
-            <a
-              href={openclawSkillsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 border border-blue-500/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-blue-300 hover:border-blue-400 hover:text-white"
-            >
-              Open Skills Manager
-            </a>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={syncRuntime}
+                disabled={!selectedAgentId || syncingRuntime}
+                className="border-orange-500/40 text-[10px] font-bold uppercase tracking-widest text-orange-500 hover:border-orange-400 hover:text-white"
+              >
+                <RefreshCw className={`mr-2 h-3 w-3 ${syncingRuntime ? 'animate-spin' : ''}`} />
+                {syncingRuntime ? 'Syncing' : 'Sync Runtime'}
+              </Button>
+              <a
+                href={openclawSkillsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-orange-500/40 px-3 py-2 text-center text-[10px] font-bold uppercase tracking-widest text-orange-500 hover:border-orange-400 hover:text-white"
+              >
+                Open Skills Manager
+              </a>
+            </div>
           </div>
         )}
 
@@ -367,7 +521,7 @@ export default function SkillsPage() {
               id="agent-select"
               value={selectedAgentId}
               onChange={(e) => setSelectedAgentId(e.target.value)}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-white focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-red-500"
             >
               {agents.map((agent) => (
                 <option key={agent.id} value={agent.id}>
@@ -426,7 +580,7 @@ export default function SkillsPage() {
                     {skill.featured && (
                       <Badge
                         variant="outline"
-                        className="border-blue-500/30 text-blue-400 text-[10px] uppercase tracking-widest"
+                        className="border-orange-500/30 text-orange-500 text-[10px] uppercase tracking-widest"
                       >
                         Featured
                       </Badge>
@@ -447,12 +601,40 @@ export default function SkillsPage() {
                   </p>
                   <div className="flex items-center gap-4 text-xs text-zinc-500 mb-4">
                     <span className="flex items-center gap-1">
-                      <Star className="h-3 w-3" /> {skill.rating}
+                      <Star className="h-3 w-3" />
+                      {skill.ratingCount > 0 ? skill.rating.toFixed(1) : 'No ratings'}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Download className="h-3 w-3" /> {skill.downloads}
+                      <Download className="h-3 w-3" /> {skill.installs} installs
                     </span>
                     <span>by {skill.author}</span>
+                  </div>
+                  <div className="mb-4 flex items-center justify-between gap-3 border border-zinc-800 bg-black px-3 py-2">
+                    <span className="text-[10px] uppercase tracking-widest text-zinc-600">
+                      {skill.ratingCount > 0
+                        ? `${skill.ratingCount} rating${skill.ratingCount === 1 ? '' : 's'}`
+                        : 'Be first to rate'}
+                    </span>
+                    <div className="flex items-center gap-1" aria-label={`Rate ${skill.name}`}>
+                      {[1, 2, 3, 4, 5].map((ratingValue) => {
+                        const activeRating = skill.userRating ?? (skill.rating > 0 ? Math.round(skill.rating) : 0)
+                        const isActive = activeRating > 0 && ratingValue <= activeRating
+                        return (
+                          <button
+                            key={ratingValue}
+                            type="button"
+                            onClick={() => rateSkill(skill.id, ratingValue)}
+                            disabled={ratingSkillId === skill.id}
+                            className="p-1 text-zinc-600 transition-colors hover:text-orange-400 disabled:cursor-wait disabled:opacity-60"
+                            aria-label={`Rate ${skill.name} ${ratingValue} star${ratingValue === 1 ? '' : 's'}`}
+                          >
+                            <Star
+                              className={`h-4 w-4 ${isActive ? 'fill-orange-400 text-orange-500' : ''}`}
+                            />
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
                   <Button
                     className="w-full bg-white text-black hover:bg-zinc-200 text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed"
@@ -464,6 +646,16 @@ export default function SkillsPage() {
                       : isInstalled
                         ? 'Installed'
                         : 'Install'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-2 w-full border-zinc-800 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white disabled:opacity-50"
+                    disabled={!skill.hasDownload}
+                    onClick={() => downloadSkill(skill)}
+                  >
+                    <Download className="mr-2 h-3 w-3" />
+                    {skill.hasDownload ? 'Download Skill' : 'No Package Yet'}
                   </Button>
                   {openclawSkillsUrl && (
                     <a

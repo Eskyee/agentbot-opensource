@@ -8,13 +8,34 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { initDeep, InitDeepOptions } from '@/app/lib/init-deep'
+
+/**
+ * Admin-only — init-deep walks the project tree and writes AGENTS.md files.
+ * Ordinary authenticated users must not be able to trigger filesystem writes
+ * into arbitrary subdirectories.
+ */
+async function requireAdmin() {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return { ok: false as const, status: 401, error: 'Unauthorized' }
+  }
+  // Authoritative check via env-backed allowlist only — matches the
+  // established pattern in /api/admin/summary, /api/wallet-monitor/status,
+  // etc. The JWT `isAdmin` claim is cached for up to 30 days, so OR-ing
+  // with it would keep removed admins privileged until token expiry.
+  if (!isAdminEmail(session.user.email)) {
+    return { ok: false as const, status: 403, error: 'Forbidden' }
+  }
+  return { ok: true as const, session }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getAuthSession()
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const gate = await requireAdmin()
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status })
     }
 
     const body = await req.json().catch(() => ({}))
@@ -63,6 +84,11 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
+    const gate = await requireAdmin()
+    if (!gate.ok) {
+      return NextResponse.json({ error: gate.error }, { status: gate.status })
+    }
+
     const { searchParams } = new URL(req.url)
     const targetPath = searchParams.get('path') || process.cwd()
 

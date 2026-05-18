@@ -11,11 +11,9 @@
 
 import type { Request, Response } from 'express';
 import dotenv from 'dotenv';
-import { Pool } from 'pg';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 export interface StreamOptions {
   model?: string;

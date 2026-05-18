@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { fetchRecentXSignals } from '@/app/lib/xApi'
 
 interface Signal {
   id: string
@@ -125,13 +126,24 @@ async function fetchRedditSignals(): Promise<Signal[]> {
 }
 
 export async function GET() {
-  const [hnSignals, redditSignals] = await Promise.all([
+  const xQuery =
+    process.env.X_API_SIGNAL_QUERY ||
+    '(agentbot OR openclaw OR basefm OR x402 OR "ai agents" OR "social agents") lang:en -is:retweet'
+
+  const [hnSignals, redditSignals, xSignals] = await Promise.all([
     fetchHNSignals(),
     fetchRedditSignals(),
+    fetchRecentXSignals(xQuery).catch((e) => {
+      console.error('X fetch failed:', e)
+      return []
+    }),
   ])
 
+  // Tag X signals with platform to conform to Signal shape
+  const xSignalsTagged: Signal[] = xSignals.map((s) => ({ ...s, platform: 'twitter' as const }))
+
   // Deduplicate by content similarity
-  const all = [...hnSignals, ...redditSignals]
+  const all: Signal[] = [...hnSignals, ...redditSignals, ...xSignalsTagged]
   const seen = new Set<string>()
   const unique: Signal[] = []
   for (const sig of all) {
@@ -147,7 +159,7 @@ export async function GET() {
 
   return NextResponse.json({
     generatedAt: new Date().toISOString(),
-    sources: ['hacker-news', 'reddit'],
+    sources: ['hacker-news', 'reddit', ...(xSignals.length ? ['twitter'] : [])],
     total: unique.length,
     signals: unique.slice(0, 20),
   })

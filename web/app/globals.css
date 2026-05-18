@@ -60,7 +60,7 @@
 
   html {
     color-scheme: dark;
-    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     @apply font-sans;
   }
 
@@ -222,4 +222,3 @@ a {
 .animate-ticker:hover {
   animation-play-state: paused;
 }
-

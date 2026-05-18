@@ -4,6 +4,8 @@ import path from 'path'
 import { APP_URL } from '@/app/lib/app-url'
 import { listAutoBlogPosts } from '@/app/lib/auto-blog'
 
+export const dynamic = 'force-dynamic'
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Auto-discover blog posts from directory
   const postsDir = path.join(process.cwd(), 'app', 'blog', 'posts')

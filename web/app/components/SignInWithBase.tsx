@@ -101,14 +101,14 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
     <div className="space-y-4">
       {isSigningIn && (
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent mb-2" />
+          <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-orange-500 border-t-transparent mb-2" />
           <p className="text-zinc-400 text-sm">Check your wallet to sign in...</p>
         </div>
       )}
       {error && (
         <div className="text-red-400 text-sm text-center p-3 bg-red-900/20 rounded-lg border border-red-800">
           {error}
-          <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-blue-400 hover:text-blue-300">
+          <button onClick={() => { hasSignedRef.current = false; handleSignIn(); }} className="block mx-auto mt-2 text-xs text-orange-500 hover:text-orange-500">
             Try again
           </button>
         </div>
@@ -118,7 +118,7 @@ export default function SignInWithBase({ callbackUrl = '/dashboard', onError }: 
         disabled={isSigningIn || !provider}
         className="w-full bg-white hover:bg-zinc-100 text-black font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
-        <div className="w-4 h-4 bg-blue-600 rounded-sm" />
+        <div className="w-4 h-4 bg-red-600 rounded-sm" />
         Sign in with Base
       </button>
     </div>

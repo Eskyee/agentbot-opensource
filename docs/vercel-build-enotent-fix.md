@@ -41,7 +41,7 @@ git rm vercel.json
 
 After fixing:
 1. `npx tsc --noEmit` in `web/` — must pass
-2. `curl -s -o /dev/null -w "%{http_code}" https://agentbot.raveculture.xyz` — must return 200
+2. `curl -s -o /dev/null -w "%{http_code}" https://agentbot.sh` — must return 200
 3. Check Vercel deployment log — install should succeed without ENOENT
 
 ## Prevention

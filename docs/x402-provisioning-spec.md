@@ -38,8 +38,8 @@
 
 ### External Dependencies Already Live
 
-- Borg / soul health is served by the configured soul service host.
-- x402 payment gateway health is served by `x402-gateway-production`.
+- Borg / soul health is served by `YOUR_SOUL_SERVICE`.
+- x402 payment gateway health is served by `YOUR_X402_SERVICE`.
 - Agentbot already links these services in the dashboard and API layer.
 
 ## What Is Not Finished

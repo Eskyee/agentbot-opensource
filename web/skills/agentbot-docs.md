@@ -1,20 +1,20 @@
 # Agentbot Documentation
 
 ## Overview
-Access Agentbot platform documentation at https://agentbot.raveculture.xyz/docs
+Access Agentbot platform documentation at https://agentbot.sh/docs
 
 ## MCP Server
-- **URL:** https://agentbot.raveculture.xyz/docs/mcp
-- **Documentation:** https://agentbot.raveculture.xyz/docs
+- **URL:** https://agentbot.sh/docs/mcp
+- **Documentation:** https://agentbot.sh/docs
 
 ## Usage
 
 ```bash
 # Add as skill to agent
-npx skills add https://agentbot.raveculture.xyz/docs
+npx skills add https://agentbot.sh/docs
 
 # Search docs via MCP
-curl -X POST https://agentbot.raveculture.xyz/api/docs/search \
+curl -X POST https://agentbot.sh/api/docs/search \
   -H "Content-Type: application/json" \
   -d '{"query": "your question"}'
 ```

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { controlsDisabledResponse, getOwnedOpenClawUser, OPENCLAW_CONTROLS_ENABLED } from '@/app/api/instance/_runtime'
 import { DEFAULT_OPENCLAW_IMAGE, DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
-import { getRailwayEnvironmentId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { deployRailwayServiceImage, getRailwayEnvironmentId, resolveRailwayService } from '@/app/lib/railway-service'
 
 
 export async function POST(
@@ -18,35 +18,25 @@ export async function POST(
     return owned.error
   }
   const { user } = owned
-  const environmentId = getRailwayEnvironmentId()
-  const railwayService = await resolveRailwayService({
-    agentId: user.openclawInstanceId,
-    openclawUrl: user.openclawUrl,
-  })
+  let environmentId: string
+  let railwayService: Awaited<ReturnType<typeof resolveRailwayService>>
+  try {
+    environmentId = getRailwayEnvironmentId()
+    railwayService = await resolveRailwayService({
+      agentId: user.openclawInstanceId,
+      openclawUrl: user.openclawUrl,
+      serviceId: user.runtimeServiceId,
+    })
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 503 })
+  }
 
   try {
-    await railwayGql(
-      `mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
-        serviceInstanceUpdate(serviceId: $serviceId, environmentId: $environmentId, input: $input)
-      }`,
-      {
-        serviceId: railwayService.id,
-        environmentId,
-        input: {
-          source: { image: DEFAULT_OPENCLAW_IMAGE },
-        },
-      }
-    )
-
-    await railwayGql(
-      `mutation ServiceInstanceDeploy($serviceId: String!, $environmentId: String!) {
-        serviceInstanceDeploy(serviceId: $serviceId, environmentId: $environmentId)
-      }`,
-      {
-        serviceId: railwayService.id,
-        environmentId,
-      }
-    )
+    await deployRailwayServiceImage({
+      serviceId: railwayService.id,
+      environmentId,
+      image: DEFAULT_OPENCLAW_IMAGE,
+    })
 
     return NextResponse.json({
       success: true,
@@ -59,5 +49,3 @@ export async function POST(
   }
 }
 
-
-export const dynamic = 'force-dynamic';

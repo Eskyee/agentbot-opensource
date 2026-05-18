@@ -2,6 +2,7 @@
 
 import { Heart, Coffee, Pizza, Code, Rocket, Building, Star, ExternalLink, Check, Bitcoin } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   DashboardShell,
   DashboardHeader,
@@ -63,6 +64,21 @@ export default function SponsorPage() {
 
       <DashboardContent>
         <div className="max-w-4xl mx-auto">
+          {/* Solana Claim Banner */}
+          <div className="border border-purple-900 bg-purple-900/20 p-6 mb-12 text-center">
+            <h3 className="text-white font-bold text-lg mb-2">🐋 Solana Agentbot Holders — Claim Free Credits</h3>
+            <p className="text-zinc-400 text-sm mb-4">
+              Hold Solana Agentbot tokens? Claim free agent credits every month.
+              Three tiers based on your holdings — up to 500 credits/mo for Whales.
+            </p>
+            <Link
+              href="/claim"
+              className="inline-block bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm px-6 py-3 transition-colors"
+            >
+              Claim Your Credits →
+            </Link>
+          </div>
+
           {/* Hero */}
           <div className="text-center mb-12">
             <h2 className="text-2xl font-bold text-white mb-4">Support Open Source Development</h2>
@@ -74,6 +90,21 @@ export default function SponsorPage() {
               🎯 Goal: 5 monthly sponsors ($500/mo)
             </div>
           </div>
+
+          <figure className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 mb-12">
+            <Image
+              src="https://indigo-decent-condor-546.mypinata.cloud/ipfs/bafkreifxvsch4xaqgxwu5u4lumddvvgh4gky2ocfvkg7i7gk64uaa4vpsy"
+              alt="Support Agentbot artwork"
+              width={1600}
+              height={900}
+              className="h-auto w-full object-cover"
+              priority
+              unoptimized
+            />
+            <figcaption className="border-t border-zinc-800 px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-zinc-500">
+              Community support keeps Agentbot shipping
+            </figcaption>
+          </figure>
 
           {/* Payment Options */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
@@ -104,13 +135,13 @@ export default function SponsorPage() {
             {/* Bitcoin */}
             <a
               href="#bitcoin"
-              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-orange-600 transition-all text-center"
+              className="border border-zinc-800 bg-zinc-900/50 p-6 hover:border-red-600 transition-all text-center"
               onClick={(e) => {
                 e.preventDefault()
                 document.getElementById('bitcoin-section')?.scrollIntoView({ behavior: 'smooth' })
               }}
             >
-              <Bitcoin className="h-8 w-8 text-orange-400 mx-auto mb-3" />
+              <Bitcoin className="h-8 w-8 text-orange-500 mx-auto mb-3" />
               <h3 className="text-white font-bold mb-2">Bitcoin</h3>
               <p className="text-zinc-500 text-xs">On-chain or Lightning</p>
             </a>
@@ -141,13 +172,19 @@ export default function SponsorPage() {
               >
                 Self-Host Guide
               </a>
+              <a
+                href="/claim"
+                className="border border-red-700 hover:border-red-600 text-orange-500 font-bold text-sm px-6 py-3"
+              >
+                Claim Holder Credits
+              </a>
             </div>
           </div>
 
           {/* Blockstream Green Integration */}
-          <div className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
+          <div className="border border-red-900 bg-red-900/20 p-6 mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Bitcoin className="h-6 w-6 text-orange-400" />
+              <Bitcoin className="h-6 w-6 text-orange-500" />
               <h3 className="text-white font-bold text-lg">Use Your Blockstream Green Wallet</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
@@ -197,21 +234,32 @@ export default function SponsorPage() {
           </div>
 
           {/* Bitcoin Section */}
-          <div id="bitcoin-section" className="border border-orange-900 bg-orange-900/20 p-6 mb-12">
+          <div id="bitcoin-section" className="border border-red-900 bg-red-900/20 p-6 mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <Bitcoin className="h-6 w-6 text-orange-400" />
+              <Bitcoin className="h-6 w-6 text-orange-500" />
               <h3 className="text-white font-bold text-lg">Bitcoin Donations</h3>
             </div>
             <p className="text-zinc-400 text-sm mb-4">
               Send Bitcoin (on-chain or Lightning) to support agentbot development.
             </p>
-            <div className="bg-black p-4 border border-zinc-800">
-              <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
-              <code className="text-orange-400 text-sm break-all">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</code>
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="bg-black p-4 border border-zinc-800">
+                <p className="text-zinc-500 text-xs uppercase mb-2">On-chain BTC</p>
+                <code className="text-orange-500 text-sm break-all">bc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr</code>
+              </div>
+              <div className="bg-black p-4 border border-zinc-800 flex flex-col items-center justify-center">
+                <p className="text-zinc-500 text-xs uppercase mb-3">Scan To Donate</p>
+                <img
+                  src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=bitcoin%3Abc1qnmy6mxwxktnda3095tnpn48z6gx2443uhta8fr"
+                  alt="QR code for the Agentbot Bitcoin donation address"
+                  className="h-[180px] w-[180px] border border-zinc-800 bg-white p-2"
+                  loading="lazy"
+                />
+              </div>
             </div>
             <div className="mt-4 bg-black p-4 border border-zinc-800">
               <p className="text-zinc-500 text-xs uppercase mb-2">Lightning (LNURL)</p>
-              <code className="text-orange-400 text-sm break-all">LNURL1DP68GURN8GHJ7MR9VAJKUEPWD9XZ7PHVEFNVEMN6RPJCMN8DDKGDR3A8K6T</code>
+              <code className="text-orange-500 text-sm break-all">LNURL1DP68GURN8GHJ7MR9VAJKUEPWD9XZ7PHVEFNVEMN6RPJCMN8DDKGDR3A8K6T</code>
             </div>
             <p className="text-zinc-500 text-xs mt-4">
               ⚡ For larger amounts, ask for an invoice via esky33@proton.me
@@ -273,7 +321,7 @@ export default function SponsorPage() {
           <div className="text-center text-zinc-500 text-sm">
             <p>Questions? Email esky33@proton.me</p>
             <div className="flex justify-center gap-4 mt-4">
-              <a href="https://github.com/Eskyee/agentbot" target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-white">
+              <a href="https://github.com/Eskyee/agentbot-opensource" target="_blank" rel="noopener" className="flex items-center gap-1 hover:text-white">
                 <ExternalLink className="h-3 w-3" /> GitHub
               </a>
               <Link href="/jobs" className="hover:text-white">Jobs Board</Link>

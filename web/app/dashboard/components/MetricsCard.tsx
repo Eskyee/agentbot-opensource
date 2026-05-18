@@ -127,7 +127,7 @@ export function MetricsCard({ userId }: { userId?: string }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-zinc-800 rounded-xl p-4">
               <div className="text-xs text-zinc-500 mb-1">Completed</div>
-              <div className="text-2xl font-bold text-blue-400">{metrics.bookings.completed}</div>
+              <div className="text-2xl font-bold text-orange-500">{metrics.bookings.completed}</div>
             </div>
             <div className="bg-zinc-800 rounded-xl p-4">
               <div className="text-xs text-zinc-500 mb-1">Pending</div>
@@ -150,17 +150,17 @@ export function MetricsCard({ userId }: { userId?: string }) {
               </div>
               <div className="bg-zinc-800 rounded-xl p-4">
                 <div className="text-xs text-zinc-500 mb-1">Active</div>
-                <div className="text-3xl font-bold text-blue-400">{metrics.fans.active.toLocaleString()}</div>
+                <div className="text-3xl font-bold text-orange-500">{metrics.fans.active.toLocaleString()}</div>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-zinc-800 rounded-xl p-3 text-center">
                 <div className="text-xs text-zinc-500">Superfans</div>
-                <div className="text-lg font-bold text-blue-300">{metrics.fans.segmentation.superfans}</div>
+                <div className="text-lg font-bold text-orange-500">{metrics.fans.segmentation.superfans}</div>
               </div>
               <div className="bg-zinc-800 rounded-xl p-3 text-center">
                 <div className="text-xs text-zinc-500">Casual</div>
-                <div className="text-lg font-bold text-blue-300">{metrics.fans.segmentation.casual}</div>
+                <div className="text-lg font-bold text-orange-500">{metrics.fans.segmentation.casual}</div>
               </div>
               <div className="bg-zinc-800 rounded-xl p-3 text-center">
                 <div className="text-xs text-zinc-500">New</div>
@@ -174,11 +174,11 @@ export function MetricsCard({ userId }: { userId?: string }) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-zinc-800 rounded-xl p-4">
               <div className="text-xs text-zinc-500 mb-1">Monthly Streams</div>
-              <div className="text-2xl font-bold text-orange-400">{metrics.streams.monthlyStreams.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-orange-500">{metrics.streams.monthlyStreams.toLocaleString()}</div>
             </div>
             <div className="bg-zinc-800 rounded-xl p-4">
               <div className="text-xs text-zinc-500 mb-1">Listeners</div>
-              <div className="text-2xl font-bold text-blue-400">{metrics.streams.monthlyListeners.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-orange-500">{metrics.streams.monthlyListeners.toLocaleString()}</div>
             </div>
             <div className="bg-zinc-800 rounded-xl p-4">
               <div className="text-xs text-zinc-500 mb-1">Growth</div>
@@ -194,7 +194,7 @@ export function MetricsCard({ userId }: { userId?: string }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-zinc-800 rounded-xl p-4">
                 <div className="text-xs text-zinc-500 mb-1">Active Skills</div>
-                <div className="text-3xl font-bold text-blue-400">{metrics.skills.active}</div>
+                <div className="text-3xl font-bold text-orange-500">{metrics.skills.active}</div>
               </div>
               <div className="bg-zinc-800 rounded-xl p-4">
                 <div className="text-xs text-zinc-500 mb-1">Total Available</div>

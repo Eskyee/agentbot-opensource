@@ -45,7 +45,7 @@ export function ConfirmDialog({
   }
 
   const btnColor = variant === 'danger'
-    ? 'bg-red-500 hover:bg-red-600 text-white'
+    ? 'bg-orange-500 hover:bg-red-600 text-white'
     : variant === 'warning'
       ? 'bg-yellow-500 hover:bg-yellow-600 text-black'
       : 'bg-white hover:bg-zinc-200 text-black'
@@ -56,7 +56,7 @@ export function ConfirmDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             {variant === 'danger' && (
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500/10">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10">
                 <AlertTriangle className="h-5 w-5 text-red-400" />
               </div>
             )}

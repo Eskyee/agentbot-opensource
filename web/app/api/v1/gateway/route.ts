@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { GATEWAY_CONFIG } from './temp';
+
+// Force Node.js runtime — Buffer, crypto.subtle needed for MPP verification
+export const runtime = 'nodejs';
 import {
   getPaymentMethod,
   hasMppCredential,
@@ -14,7 +17,6 @@ import {
   type Voucher,
 } from '@/lib/mpp/sessions';
 
-export const dynamic = 'force-dynamic';
 
 // Helper to get CORS headers
 function getCorsHeaders(): Record<string, string> {
@@ -82,8 +84,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Check session exists and has balance
-      const { getUserSession, processVoucher } = await import('@/lib/mpp/sessions');
-      const session = getUserSession(userAddress);
+      const session = await getUserSession(userAddress);
       
       if (!session || session.id !== sessionId) {
         return NextResponse.json(
@@ -126,7 +127,7 @@ export async function POST(req: NextRequest) {
         signature: '0x' as `0x${string}`, // Server-side voucher, no client sig needed
       };
 
-      const voucherResult = processVoucher(voucher);
+      const voucherResult = await processVoucher(voucher);
       if (!voucherResult.success) {
         return NextResponse.json(
           { error: 'voucher_failed', message: voucherResult.error },
@@ -179,18 +180,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 6. Forward request to plugin
-    // For now, return a mock response (in production, forward to actual plugin)
-    const responseData = {
-      plugin: matchedPlugin.id,
-      message: `Request processed by ${matchedPlugin.id} plugin`,
-      timestamp: new Date().toISOString(),
-      payment: {
-        method: paymentMethod,
-        receipt: mppReceipt || sessionReceipt || null,
-      },
-    };
-
     // Build response headers
     const responseHeaders: Record<string, string> = {
       ...cors,
@@ -203,14 +192,47 @@ export async function POST(req: NextRequest) {
     }
     if (sessionReceipt) {
       responseHeaders['Payment-Receipt'] = sessionReceipt;
-      responseHeaders['X-Session-Remaining'] = getUserSession(
+      const currentSession = await getUserSession(
         req.headers.get('X-Wallet-Address') as `0x${string}`
-      )?.remaining || '0';
+      );
+      responseHeaders['X-Session-Remaining'] = currentSession?.remaining || '0';
     }
 
-    return NextResponse.json(responseData, {
-      status: 200,
-      headers: responseHeaders,
+    // 4. Fetch from upstream plugin
+    let upstreamResponse: Response;
+    try {
+      upstreamResponse = await fetch(matchedPlugin.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(30_000),
+      });
+    } catch (fetchError) {
+      // Upstream unreachable — return payment receipt if available
+      console.error('[Gateway] Upstream fetch failed:', matchedPlugin.url, fetchError);
+      if (mppReceipt || sessionReceipt) {
+        return NextResponse.json(
+          { success: true, message: 'Payment verified (upstream unavailable)', receipt: mppReceipt || sessionReceipt },
+          { status: 200, headers: { ...responseHeaders, 'Payment-Receipt': mppReceipt || sessionReceipt || '' } },
+        );
+      }
+      return NextResponse.json(
+        { error: 'upstream_unavailable', message: `Plugin endpoint unreachable: ${matchedPlugin.url}` },
+        { status: 502, headers: cors },
+      );
+    }
+
+    const contentType = upstreamResponse.headers.get('content-type') || 'application/json';
+    const upstreamBody = await upstreamResponse.text();
+
+    return new NextResponse(upstreamBody, {
+      status: upstreamResponse.status,
+      headers: {
+        ...responseHeaders,
+        'Content-Type': contentType,
+      },
     });
 
   } catch (error) {

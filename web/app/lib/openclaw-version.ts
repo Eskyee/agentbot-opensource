@@ -1,5 +1,9 @@
+export const MANAGED_OPENCLAW_VERSION = '2026.4.27'
+
 export const DEFAULT_OPENCLAW_IMAGE =
-  process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:latest'
+  process.env.OPENCLAW_IMAGE || `ghcr.io/openclaw/openclaw:${MANAGED_OPENCLAW_VERSION}`
 
 export const DEFAULT_OPENCLAW_VERSION =
-  DEFAULT_OPENCLAW_IMAGE.split(':').pop() || 'unknown'
+  DEFAULT_OPENCLAW_IMAGE.split(':').pop() === 'latest'
+    ? MANAGED_OPENCLAW_VERSION
+    : DEFAULT_OPENCLAW_IMAGE.split(':').pop() || 'unknown'

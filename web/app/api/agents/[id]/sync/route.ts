@@ -8,8 +8,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { syncAgentToGateway } from '@/app/lib/agent-deploy'
+import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: NextRequest,
@@ -24,8 +24,13 @@ export async function POST(
     const { id: agentId } = await params
     const userId = session.user.id
 
-    // Verify agent belongs to user (would need prisma import - skipping for now)
-    // In production, verify ownership before syncing
+    const ownedAgent = await prisma.agent.findFirst({
+      where: { id: agentId, userId },
+      select: { id: true },
+    })
+    if (!ownedAgent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
 
     console.log(`[Agent Sync] User ${userId} syncing agent ${agentId}`)
 

@@ -9,7 +9,6 @@ import {
   makeMPPRequest,
 } from '@/lib/mpp';
 
-export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   const authSession = await getAuthSession();

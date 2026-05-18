@@ -15,7 +15,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession';
 import { fullTextSearch, vectorSearch, hybridSearch, generateEmbedding } from '@/lib/search';
 
-export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {

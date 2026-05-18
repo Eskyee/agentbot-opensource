@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     }
 
     // Process voucher (off-chain debit)
-    const result = processVoucher(voucher)
+    const result = await processVoucher(voucher)
     if (!result.success) {
       return NextResponse.json(
         { error: result.error },

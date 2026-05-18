@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Agentbot: Trials Live, Showcase Open, The Future is Deployed',
     description: '7-day free trials, public agent showcase, Stripe payments. Built in a month from a Mac mini in London.',
-    url: 'https://agentbot.raveculture.xyz/blog/agentbot-showcase-trials-live',
+    url: 'https://agentbot.sh/blog/agentbot-showcase-trials-live',
   },
 }
 
@@ -27,7 +27,7 @@ export default function ShowcaseTrialsLive() {
               Trials Live, Showcase Open,<br />The Future is Deployed
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Launch</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Launch</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Trials</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Showcase</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>
@@ -61,8 +61,8 @@ export default function ShowcaseTrialsLive() {
           </h2>
           <p className="text-zinc-300 mb-4">
             Our agent showcase is now live at{' '}
-            <a href="https://agentbot.raveculture.xyz/showcase" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
-              agentbot.raveculture.xyz/showcase
+            <a href="https://agentbot.sh/showcase" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+              agentbot.sh/showcase
             </a>. Browse agents deployed on the platform — their skills, capabilities, and what
             they&rsquo;re built for. Toggle your agent&rsquo;s visibility from dashboard settings.
           </p>
@@ -132,8 +132,8 @@ export default function ShowcaseTrialsLive() {
           <div className="border-t border-zinc-800 pt-8 mt-8">
             <p className="text-zinc-300 mb-4">
               <strong className="text-white">Try it now:</strong>{' '}
-              <a href="https://agentbot.raveculture.xyz" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
-                agentbot.raveculture.xyz
+              <a href="https://agentbot.sh" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+                agentbot.sh
               </a>
             </p>
             <p className="text-zinc-500 text-sm">
@@ -142,8 +142,8 @@ export default function ShowcaseTrialsLive() {
                 github.com/Eskyee/agentbot-opensource
               </a>{' '}
               · Docs:{' '}
-              <a href="https://docs.agentbot.raveculture.xyz" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
-                docs.agentbot.raveculture.xyz
+              <a href="https://agentbot.sh/documentation" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">
+                agentbot.sh/documentation
               </a>{' '}
               · Discord:{' '}
               <a href="https://discord.gg/vTPG4vdV6D" className="text-purple-400 hover:text-purple-300" target="_blank" rel="noopener noreferrer">

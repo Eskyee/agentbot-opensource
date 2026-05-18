@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthSession } from '@/app/lib/getAuthSession'
+import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
-const DEFAULT_RPC = 'https://api.mainnet-beta.solana.com'
+const SETTING_KEY = 'solana_rpc_url'
+const DEFAULT_RPC = process.env.SOLANA_RPC_URL_DEFAULT?.trim() || 'https://api.mainnet-beta.solana.com'
 const LAMPORTS_PER_SOL = 1_000_000_000
 
 const KNOWN_MINTS: Record<string, { symbol: string; decimals: number }> = {
@@ -33,15 +35,26 @@ function isValidSolanaAddress(address: string): boolean {
 }
 
 export async function GET(req: NextRequest) {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const { searchParams } = new URL(req.url)
   const address = searchParams.get('address')
-  const rpcUrl = searchParams.get('rpc') || DEFAULT_RPC
 
   if (!address || !isValidSolanaAddress(address)) {
     return NextResponse.json({ error: 'Invalid Solana address' }, { status: 400 })
   }
 
   try {
+    // Use the user's saved RPC URL or the server default — never accept
+    // an arbitrary URL from the request to avoid SSRF.
+    const setting = await prisma.userSetting.findUnique({
+      where: { userId_key: { userId: session.user.id, key: SETTING_KEY } },
+    })
+    const rpcUrl = setting?.value || DEFAULT_RPC
+
     const [balanceResult, tokenResult, accountResult] = await Promise.all([
       rpcCall(rpcUrl, 'getBalance', [address]),
       rpcCall(rpcUrl, 'getTokenAccountsByOwner', [

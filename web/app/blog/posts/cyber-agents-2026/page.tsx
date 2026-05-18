@@ -10,7 +10,7 @@ export default function BlogPost() {
     <main className="min-h-screen bg-black text-white font-mono">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-12">
-          <div className="text-[10px] uppercase tracking-widest text-blue-400 mb-4">Security</div>
+          <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-4">Security</div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-6">
             Cybersecurity in the Age of AI
           </h1>
@@ -41,7 +41,7 @@ export default function BlogPost() {
           </p>
 
           <div className="bg-zinc-900 border border-zinc-800 p-6 my-8">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-blue-400 mb-4">Key Findings</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-orange-500 mb-4">Key Findings</h3>
             <ul className="space-y-4 text-sm text-zinc-300">
               <li>
                 <span className="text-white font-bold">27-year-old vulnerability</span> in OpenBSD—used to run firewalls and critical infrastructure—allowing remote crash with just a network connection
@@ -62,7 +62,7 @@ export default function BlogPost() {
           </p>
 
           <p className="text-zinc-400 mb-6">
-            <span className="text-blue-400 font-bold">Project Glasswing</span> is an important step toward giving defenders a durable advantage in the coming AI-driven era of cybersecurity. Major partners including Cisco, AWS, Microsoft, CrowdStrike, Google, Palo Alto Networks, and JPMorganChase are participating.
+            <span className="text-orange-500 font-bold">Project Glasswing</span> is an important step toward giving defenders a durable advantage in the coming AI-driven era of cybersecurity. Major partners including Cisco, AWS, Microsoft, CrowdStrike, Google, Palo Alto Networks, and JPMorganChase are participating.
           </p>
 
           <h2 className="text-2xl font-bold text-white mt-12 mb-4">What This Means for Agentbot</h2>
@@ -73,19 +73,19 @@ export default function BlogPost() {
 
           <ul className="space-y-4 text-zinc-300 mb-8">
             <li className="flex items-start gap-3">
-              <span className="text-blue-400">01</span>
+              <span className="text-orange-500">01</span>
               <span><strong className="text-white">Proactive vulnerability scanning</strong> — Our agents can continuously audit codebases for known vulnerability patterns</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-blue-400">02</span>
+              <span className="text-orange-500">02</span>
               <span><strong className="text-white">Secure-by-default generation</strong> — AI agents writing code should produce secure code by default, not insecure code that needs patching later</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-blue-400">03</span>
+              <span className="text-orange-500">03</span>
               <span><strong className="text-white">Rapid patch response</strong> — When vulnerabilities are disclosed, agents can help identify affected systems and apply fixes at scale</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-blue-400">04</span>
+              <span className="text-orange-500">04</span>
               <span><strong className="text-white">Defense-first AI</strong> — We support initiatives like Project Glasswing that prioritize getting powerful AI capabilities into defenders' hands</span>
             </li>
           </ul>
@@ -113,7 +113,7 @@ export default function BlogPost() {
 
           <div className="border-t border-zinc-800 pt-8 mt-12">
             <p className="text-zinc-500 text-sm">
-              This post synthesizes findings from Anthropic's Project Glasswing announcement. For technical details, see the <a href="https://www.anthropic.com/engineering" target="_blank" rel="noopener" className="text-blue-400 hover:underline">Anthropic Frontier Red Team blog</a>.
+              This post synthesizes findings from Anthropic's Project Glasswing announcement. For technical details, see the <a href="https://www.anthropic.com/engineering" target="_blank" rel="noopener" className="text-orange-500 hover:underline">Anthropic Frontier Red Team blog</a>.
             </p>
           </div>
         </div>

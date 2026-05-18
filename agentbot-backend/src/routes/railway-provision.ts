@@ -17,30 +17,122 @@ import { authenticate } from '../middleware/auth'
 import * as crypto from 'crypto'
 
 const RAILWAY_API = 'https://backboard.railway.app/graphql/v2'
+type RailwayTokenType = 'project' | 'workspace' | 'account' | 'oauth'
+const OPENCLAW_HOME_DIR = '/root/.openclaw'
+const OPENCLAW_WORKSPACE_DIR = `${OPENCLAW_HOME_DIR}/workspace`
+const OPENCLAW_CONFIG_PATH = `${OPENCLAW_HOME_DIR}/openclaw.json`
+const CONTROL_UI_ALLOWED_ORIGINS = [
+  process.env.CONTROL_UI_ORIGIN || process.env.NEXT_PUBLIC_APP_URL || 'https://agentbot.sh',
+  process.env.CONTROL_UI_COMPAT_ORIGIN,
+].filter(Boolean)
 
-function buildOpenClawConfig(): string {
+export interface TailscaleProvisionOptions {
+  enabled?: boolean
+  mode?: 'serve' | 'funnel' | 'tailnet'
+  authKey?: string
+  hostname?: string
+  tags?: string[]
+  acceptRoutes?: boolean
+  password?: string
+  resetOnExit?: boolean
+}
+
+type NormalizedTailscaleOptions = Required<Pick<TailscaleProvisionOptions, 'enabled' | 'mode' | 'authKey' | 'acceptRoutes'>> &
+  Pick<TailscaleProvisionOptions, 'hostname' | 'tags' | 'password' | 'resetOnExit'>
+
+function normalizeTailscaleOptions(options?: TailscaleProvisionOptions | null): NormalizedTailscaleOptions | null {
+  if (!options?.enabled) return null
+  const authKey = options.authKey?.trim()
+  if (!authKey) {
+    throw new Error('Tailscale auth key is required when Tailscale is enabled')
+  }
+  const mode = options.mode === 'funnel' || options.mode === 'tailnet' ? options.mode : 'serve'
+  const password = options.password?.trim()
+  if (mode === 'funnel' && !password) {
+    throw new Error('Tailscale Funnel requires a gateway password')
+  }
+
+  return {
+    enabled: true,
+    mode,
+    authKey,
+    hostname: options.hostname?.trim() || undefined,
+    tags: Array.isArray(options.tags)
+      ? options.tags.map((tag) => tag.trim()).filter(Boolean)
+      : undefined,
+    acceptRoutes: options.acceptRoutes !== false,
+    password,
+    resetOnExit: options.resetOnExit === true,
+  }
+}
+
+function buildGatewayTailscaleConfig(gatewayToken: string, options?: TailscaleProvisionOptions | null) {
+  const tailscale = normalizeTailscaleOptions(options)
+  if (!tailscale) {
+    return {
+      bind: 'lan',
+      auth: { mode: 'token', token: gatewayToken },
+    }
+  }
+
+  if (tailscale.mode === 'tailnet') {
+    return {
+      bind: 'tailnet',
+      auth: { mode: 'token', token: gatewayToken },
+    }
+  }
+
+  return {
+    bind: 'loopback',
+    tailscale: {
+      mode: tailscale.mode,
+      resetOnExit: tailscale.resetOnExit,
+    },
+    auth: tailscale.mode === 'funnel'
+      ? { mode: 'password' }
+      : { mode: 'token', token: gatewayToken, allowTailscale: true },
+  }
+}
+
+function getTailscaleEnvVars(agentId: string, options?: TailscaleProvisionOptions | null): Record<string, string> {
+  const tailscale = normalizeTailscaleOptions(options)
+  if (!tailscale) return {}
+
+  return {
+    OPENCLAW_TAILSCALE_MODE: tailscale.mode,
+    TAILSCALE_AUTHKEY: tailscale.authKey || '',
+    TAILSCALE_HOSTNAME: tailscale.hostname || `agentbot-${agentId}`,
+    TAILSCALE_TAGS: tailscale.tags?.join(',') || '',
+    TAILSCALE_ACCEPT_ROUTES: String(tailscale.acceptRoutes !== false),
+    TAILSCALE_STATE_DIR: '/data/tailscale',
+    TAILSCALE_SOCKS5_SERVER: '127.0.0.1:1055',
+    TAILSCALE_OUTBOUND_HTTP_PROXY_LISTEN: '127.0.0.1:1055',
+    AGENTBOT_TAILSCALE_PROXY: 'socks5://127.0.0.1:1055',
+    ...(tailscale.password ? { OPENCLAW_GATEWAY_PASSWORD: tailscale.password } : {}),
+  }
+}
+
+function buildOpenClawConfig(tailscaleOptions?: TailscaleProvisionOptions | null): string {
   // Each user's agent needs its own unique token
   const gatewayToken = crypto.randomBytes(32).toString('hex')
+  const gatewayTailscaleConfig = buildGatewayTailscaleConfig(gatewayToken, tailscaleOptions)
   const config = {
     env: { OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '' },
     gateway: {
       mode: 'local',
-      // 'lan' binds to 0.0.0.0 so Railway's external reverse proxy can reach port 18789.
-      // 'loopback' (the default) binds to 127.0.0.1 and causes 502 from Railway proxy.
-      bind: 'lan',
-      auth: { mode: 'token', token: gatewayToken },
+      ...gatewayTailscaleConfig,
       // Trust Railway's internal network ranges so forwarded-for headers are honoured.
       trustedProxies: ['127.0.0.1', '10.0.0.0/8', '100.64.0.0/10', '172.16.0.0/12', '192.168.0.0/16'],
       controlUi: {
-        allowedOrigins: ['*'],
-        dangerouslyDisableDeviceAuth: true,
-        dangerouslyAllowHostHeaderOriginFallback: true,
+        allowedOrigins: CONTROL_UI_ALLOWED_ORIGINS,
+        dangerouslyDisableDeviceAuth: false,
+        dangerouslyAllowHostHeaderOriginFallback: false,
       },
       http: { endpoints: { chatCompletions: { enabled: true } } },
     },
     agents: {
       defaults: {
-        workspace: '/home/node/.openclaw/workspace',
+        workspace: OPENCLAW_WORKSPACE_DIR,
         model: { primary: 'openrouter/xiaomi/mimo-v2-pro' },
         heartbeat: { every: '30m', lightContext: true, isolatedSession: true },
       },
@@ -51,6 +143,15 @@ function buildOpenClawConfig(): string {
       whatsapp: { enabled: false, dmPolicy: 'pairing' },
     },
     cron:    { enabled: true, maxConcurrentRuns: 2, sessionRetention: '24h' },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
+    },
     session: {
       scope: 'per-sender',
       reset: { mode: 'daily', atHour: 4 },
@@ -65,7 +166,7 @@ function buildOpenClawConfig(): string {
   return JSON.stringify(config)
 }
 
-function getAgentEnvVars(agentId: string, plan: string): Record<string, string> {
+function getAgentEnvVars(agentId: string, plan: string, tailscaleOptions?: TailscaleProvisionOptions | null): Record<string, string> {
   return {
     OPENCLAW_GATEWAY_TOKEN: process.env.OPENCLAW_GATEWAY_TOKEN || '',
     OPENCLAW_GATEWAY_URL: process.env.OPENCLAW_GATEWAY_URL || 'https://YOUR_SERVICE_URL',
@@ -82,7 +183,8 @@ function getAgentEnvVars(agentId: string, plan: string): Record<string, string> 
     PORT: '18789',
     // Full openclaw config — start command writes this to disk before launching gateway.
     // This is the only reliable way to set gateway.bind=lan (CLI args / env vars don't work).
-    OPENCLAW_CONFIG_JSON: buildOpenClawConfig(),
+    OPENCLAW_CONFIG_JSON: buildOpenClawConfig(tailscaleOptions),
+    ...getTailscaleEnvVars(agentId, tailscaleOptions),
   }
 }
 
@@ -92,14 +194,23 @@ async function railwayGql<T = unknown>(
 ): Promise<T> {
   const key = process.env.RAILWAY_API_KEY
   if (!key) throw new Error('RAILWAY_API_KEY not configured')
+  const tokenType = ((process.env.RAILWAY_TOKEN_TYPE || 'account').trim().toLowerCase()) as RailwayTokenType
+  const headers =
+    tokenType === 'project'
+      ? {
+          'Project-Access-Token': key,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      : {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
 
   const res = await fetch(RAILWAY_API, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
+    headers,
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30_000),
   })
@@ -124,7 +235,11 @@ const PLAN_LIMITS: Record<string, { memoryLimitMb: number; cpuLimit: number }> =
   network: { memoryLimitMb: 16384, cpuLimit: 4 },
 }
 
-export async function provisionOnRailway(agentId: string, plan: string = 'solo') {
+export async function provisionOnRailway(
+  agentId: string,
+  plan: string = 'solo',
+  tailscaleOptions?: TailscaleProvisionOptions | null,
+) {
   const projectId = process.env.RAILWAY_PROJECT_ID?.trim()
   const environmentId = process.env.RAILWAY_ENVIRONMENT_ID?.trim()
 
@@ -135,8 +250,8 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
 
   // 1. Create service — idempotent: if it already exists, look up its ID
   let serviceId: string
-  // Public official openclaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
-  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:latest'
+  // Public official OpenClaw image — ghcr.io/openclaw/openclaw is public, no registry auth required
+  const openclawImage = process.env.OPENCLAW_IMAGE || 'ghcr.io/openclaw/openclaw:2026.4.27'
 
   try {
     const created = await railwayGql<{ serviceCreate: { id: string; name: string } }>(`
@@ -169,8 +284,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
   // Without this openclaw binds to loopback (127.0.0.1) and Railway proxy gets 502.
   // Sent as its own mutation so resource-limit failures don't block it.
   // Single-quoted sh -c body is safe: no single quotes appear inside it.
-  // Use $HOME (not hardcoded /home/node) so the config lands where openclaw looks for it.
-  const startCmd = `sh -c 'mkdir -p "$HOME/.openclaw" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "$HOME/.openclaw/openclaw.json" && exec openclaw gateway'`
+  const startCmd = `sh -c 'if [ -n "$TAILSCALE_AUTHKEY$TS_AUTHKEY" ]; then if command -v agentbot-tailscale-start >/dev/null 2>&1; then agentbot-tailscale-start; else echo "TAILSCALE_AUTHKEY set but this runtime image does not include Tailscale support" >&2; exit 1; fi; fi; mkdir -p "${OPENCLAW_HOME_DIR}" && printf "%s" "$OPENCLAW_CONFIG_JSON" > "${OPENCLAW_CONFIG_PATH}" && (openclaw doctor || true); if [ -n "$OPENCLAW_TAILSCALE_MODE" ] && [ "$OPENCLAW_TAILSCALE_MODE" != "tailnet" ]; then exec openclaw gateway --tailscale "$OPENCLAW_TAILSCALE_MODE"; fi; exec openclaw gateway'`
   try {
     await railwayGql(`
       mutation ServiceInstanceUpdate($serviceId: String!, $environmentId: String!, $input: ServiceInstanceUpdateInput!) {
@@ -223,7 +337,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
   }
 
   // 3. Inject env vars — retry once on failure (Railway occasionally rejects first upsert)
-  const variables = getAgentEnvVars(agentId, plan)
+  const variables = getAgentEnvVars(agentId, plan, tailscaleOptions)
   let varsSet = false
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -276,7 +390,7 @@ export async function provisionOnRailway(agentId: string, plan: string = 'solo')
 const router = Router()
 
 router.post('/provision', authenticate, async (req: Request, res: Response) => {
-  const { agentId, plan } = req.body
+  const { agentId, plan, tailscale } = req.body
 
   if (!agentId || typeof agentId !== 'string') {
     return res.status(400).json({ success: false, error: 'agentId required' })
@@ -294,7 +408,7 @@ router.post('/provision', authenticate, async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await provisionOnRailway(agentId, planStr)
+    const result = await provisionOnRailway(agentId, planStr, tailscale)
     return res.json({ success: true, ...result })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Railway provision failed'

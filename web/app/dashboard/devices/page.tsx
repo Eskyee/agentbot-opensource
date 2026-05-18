@@ -1,201 +1,351 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw, Smartphone, Unplug, Bell, AlertCircle, QrCode, Wifi, WifiOff } from 'lucide-react'
-import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell'
+import { Smartphone, Check, X, Shield, ShieldOff, Clock, Globe, RefreshCw, QrCode, Link2, Copy } from 'lucide-react'
+import {
+  DashboardShell,
+  DashboardHeader,
+  DashboardContent,
+} from '@/app/components/shared/DashboardShell'
 
 interface Device {
   id: string
   name: string
-  platform: string
-  paired: boolean
+  ip: string
+  firstSeen: string
   lastSeen: string
-  pushEnabled: boolean
+  status: string
 }
 
-interface DeviceData {
-  devices?: Device[]
-  error?: string
-  status?: string
+const formatTime = (iso: string) => {
+  return new Date(iso).toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+const timeAgo = (iso: string) => {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
 }
 
 export default function DevicesPage() {
-  const [data, setData] = useState<DeviceData | null>(null)
+  const [pending, setPending] = useState<Device[]>([])
+  const [approved, setApproved] = useState<Device[]>([])
   const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [pairing, setPairing] = useState(false)
-  const [actionId, setActionId] = useState<string | null>(null)
+  const [pairResult, setPairResult] = useState<{ id: string; name: string } | null>(null)
+  const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
 
   const fetchDevices = useCallback(async () => {
-    setLoading(true)
     try {
-      const res = await fetch('/api/openclaw/devices')
-      const d = await res.json()
-      setData(d)
+      const res = await fetch('/api/devices')
+      const data = await res.json()
+      setPending(data.pending || [])
+      setApproved(data.approved || [])
+      setError('')
     } catch {
-      setData({ error: 'Failed to connect to agent', status: 'unreachable' })
+      setError('Failed to fetch devices')
     } finally {
       setLoading(false)
     }
   }, [])
 
-  useEffect(() => { fetchDevices() }, [fetchDevices])
+  useEffect(() => {
+    fetchDevices()
+    const interval = setInterval(fetchDevices, 30_000)
+    return () => clearInterval(interval)
+  }, [fetchDevices])
 
-  const pair = async () => {
-    setPairing(true)
+  const handleAction = async (deviceId: string, action: 'approve' | 'deny' | 'revoke') => {
+    setActionLoading(deviceId + action)
     try {
-      await fetch('/api/openclaw/devices', {
+      const res = await fetch('/api/devices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'pair' }),
+        body: JSON.stringify({ deviceId, action }),
       })
-      setTimeout(fetchDevices, 2000)
-    } catch { /* silent */ } finally {
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Action failed')
+        return
+      }
+      setPending(data.pending || [])
+      setApproved(data.approved || [])
+      setError('')
+    } catch {
+      setError('Network error')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const pairDevice = async () => {
+    setPairing(true)
+    setError('')
+    try {
+      const res = await fetch('/api/devices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'pair', name: 'My iPhone' }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Pairing failed')
+        return
+      }
+      setPairResult({ id: data.device.id, name: data.device.name })
+      fetchDevices()
+    } catch {
+      setError('Network error')
+    } finally {
       setPairing(false)
     }
   }
 
-  const unpair = async (deviceId: string) => {
-    setActionId(deviceId)
-    try {
-      await fetch('/api/openclaw/devices', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'unpair', deviceId }),
-      })
-      setTimeout(fetchDevices, 1000)
-    } catch { /* silent */ } finally {
-      setActionId(null)
-    }
+  const copyPairLink = () => {
+    const url = `${window.location.origin}/dashboard/devices`
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
   }
-
-  const testPush = async (deviceId: string) => {
-    setActionId(deviceId)
-    try {
-      await fetch('/api/openclaw/devices', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'test-push', deviceId }),
-      })
-    } catch { /* silent */ } finally {
-      setTimeout(() => setActionId(null), 1000)
-    }
-  }
-
-  const noAgent = data?.status === 'no_agent'
-  const unreachable = data?.status === 'unreachable'
-  const devices = data?.devices || []
-  const paired = devices.filter(d => d.paired)
-  const online = paired.filter(d => {
-    const seen = new Date(d.lastSeen).getTime()
-    return Date.now() - seen < 5 * 60 * 1000
-  })
 
   return (
     <DashboardShell>
-      <DashboardHeader title="Devices" subtitle="OpenClaw 2026.4.9 — Android Pairing & Push Notifications" />
-      <DashboardContent>
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <RefreshCw className="w-6 h-6 animate-spin text-zinc-500" />
+      <DashboardHeader
+        title="Device Pairing"
+        icon={<Smartphone className="h-5 w-5 text-orange-500" />}
+        count={pending.length + approved.length}
+        action={
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-zinc-600 font-mono">
+              Auto-refresh 30s
+            </span>
+            <button
+              onClick={fetchDevices}
+              disabled={loading}
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+            >
+              <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
           </div>
-        ) : noAgent ? (
-          <div className="text-center py-20 text-zinc-500">
-            <Smartphone className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>No agent deployed. Deploy an agent to pair devices.</p>
-          </div>
-        ) : unreachable ? (
-          <div className="text-center py-20 text-zinc-500">
-            <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p>Agent is unreachable. It may be starting up.</p>
-            <button onClick={fetchDevices} className="mt-4 text-xs border border-zinc-700 px-3 py-1 rounded hover:border-zinc-500">Retry</button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Stats */}
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="text-xs text-zinc-500 uppercase mb-1">Paired Devices</div>
-                <div className="text-2xl font-bold">{paired.length}</div>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="text-xs text-zinc-500 uppercase mb-1">Online Now</div>
-                <div className="text-2xl font-bold text-green-400">{online.length}</div>
-              </div>
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-                <div className="text-xs text-zinc-500 uppercase mb-1">Push Enabled</div>
-                <div className="text-2xl font-bold">{paired.filter(d => d.pushEnabled).length}</div>
-              </div>
-            </div>
+        }
+      />
 
-            {/* Actions */}
-            <div className="flex gap-3">
-              <button onClick={pair} disabled={pairing}
-                className="bg-green-500/10 border border-green-500/30 text-green-400 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-500/20 transition-colors disabled:opacity-50 flex items-center gap-2">
-                {pairing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
-                Pair New Device
-              </button>
-              <button onClick={fetchDevices}
-                className="bg-zinc-800 border border-zinc-700 px-4 py-2 rounded-lg text-sm hover:border-zinc-600 transition-colors flex items-center gap-2">
-                <RefreshCw className="w-4 h-4" /> Refresh
-              </button>
-            </div>
-
-            {/* Device List */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-              <h3 className="font-bold text-sm uppercase tracking-tight mb-4 flex items-center gap-2">
-                <Smartphone className="w-4 h-4 text-green-400" /> Paired Devices
-              </h3>
-              {paired.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-sm">
-                  <Smartphone className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p>No devices paired. Tap &quot;Pair New Device&quot; to scan a QR code from your phone.</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {paired.map(device => {
-                    const isOnline = Date.now() - new Date(device.lastSeen).getTime() < 5 * 60 * 1000
-                    const busy = actionId === device.id
-                    return (
-                      <div key={device.id} className="flex items-center justify-between border border-zinc-800 rounded-lg p-4">
-                        <div className="flex items-center gap-3 min-w-0">
-                          {isOnline ? (
-                            <Wifi className="w-5 h-5 text-green-400 flex-shrink-0" />
-                          ) : (
-                            <WifiOff className="w-5 h-5 text-zinc-600 flex-shrink-0" />
-                          )}
-                          <div className="min-w-0">
-                            <div className="text-sm font-bold truncate">{device.name}</div>
-                            <div className="text-xs text-zinc-500">
-                              {device.platform} &middot; Last seen {new Date(device.lastSeen).toLocaleString()}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          {device.pushEnabled && (
-                            <button onClick={() => testPush(device.id)} disabled={busy}
-                              className="text-xs border border-zinc-700 px-2 py-1 rounded hover:border-zinc-500 disabled:opacity-50 flex items-center gap-1">
-                              {busy ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Bell className="w-3 h-3" />}
-                              Test Push
-                            </button>
-                          )}
-                          <button onClick={() => unpair(device.id)} disabled={busy}
-                            className="text-xs border border-red-500/30 text-red-400 px-2 py-1 rounded hover:border-red-500/50 disabled:opacity-50 flex items-center gap-1">
-                            {busy ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Unplug className="w-3 h-3" />}
-                            Unpair
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="text-xs text-zinc-600 text-center">
-              Device pairing uses QR-first flow with WebSocket heartbeat. Push notifications bridge to Android even when the app is closed.
-            </div>
+      <DashboardContent className="max-w-5xl space-y-8">
+        {error && (
+          <div className="border border-red-900/50 bg-red-950/30 px-4 py-3 text-xs font-mono text-red-400">
+            {error}
           </div>
         )}
+
+        {/* Pair This Device */}
+        <div className="border border-zinc-800 bg-zinc-950 p-6">
+          <div className="flex items-center gap-2 mb-3">
+            <QrCode className="h-4 w-4 text-orange-500" />
+            <h2 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
+              Pair Your Device
+            </h2>
+          </div>
+          <p className="text-sm text-zinc-400 mb-4">
+            Pair your iPhone or other device to receive push notifications and control your agent remotely.
+          </p>
+
+          {pairResult ? (
+            <div className="border border-emerald-500/30 bg-emerald-500/5 p-4 rounded">
+              <div className="flex items-center gap-2 mb-2">
+                <Check className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-bold text-emerald-300">{pairResult.name} paired!</span>
+              </div>
+              <p className="text-xs text-zinc-400">
+                Your device is now connected. Open the Agentbot app on your iPhone to complete setup.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={pairDevice}
+                disabled={pairing}
+                className="flex items-center gap-2 px-5 py-2.5 bg-red-600/10 border border-orange-500/30 text-orange-500 text-sm font-bold hover:bg-red-600/20 disabled:opacity-50 transition-colors"
+              >
+                {pairing ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Smartphone className="h-4 w-4" />
+                )}
+                {pairing ? 'Pairing...' : 'Pair My iPhone'}
+              </button>
+              <button
+                onClick={copyPairLink}
+                className="flex items-center gap-2 px-5 py-2.5 border border-zinc-800 text-zinc-400 text-sm hover:border-zinc-600 hover:text-white transition-colors"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-emerald-400" />
+                ) : (
+                  <Link2 className="h-4 w-4" />
+                )}
+                {copied ? 'Copied!' : 'Copy Pairing Link'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Pending requests */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Clock className="h-4 w-4 text-yellow-400" />
+            <h2 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
+              Pending Requests
+            </h2>
+            {pending.length > 0 && (
+              <span className="text-[10px] text-yellow-400 bg-yellow-900/20 border border-yellow-800 rounded-full px-2 py-0.5 font-mono">
+                {pending.length}
+              </span>
+            )}
+          </div>
+
+          {pending.length === 0 ? (
+            <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
+              <Shield className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
+              <p className="text-sm text-zinc-600 font-mono">No pending requests</p>
+              <p className="text-[10px] text-zinc-700 font-mono mt-1">
+                New device connections will appear here
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-px bg-zinc-800">
+              {pending.map(device => (
+                <div
+                  key={device.id}
+                  className="bg-zinc-950 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-mono font-bold text-white mb-1 truncate">
+                      {device.name}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-600">
+                      <span className="flex items-center gap-1">
+                        <Globe className="h-3 w-3" />
+                        {device.ip}
+                      </span>
+                      <span>First seen: {formatTime(device.firstSeen)}</span>
+                      <span>Last seen: {timeAgo(device.lastSeen)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleAction(device.id, 'approve')}
+                      disabled={!!actionLoading}
+                      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 transition-colors"
+                    >
+                      {actionLoading === device.id + 'approve' ? (
+                        <RefreshCw className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Check className="h-3 w-3" />
+                      )}
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleAction(device.id, 'deny')}
+                      disabled={!!actionLoading}
+                      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-orange-500/10 border border-orange-500/30 text-red-400 hover:bg-orange-500/20 disabled:opacity-50 transition-colors"
+                    >
+                      {actionLoading === device.id + 'deny' ? (
+                        <RefreshCw className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <X className="h-3 w-3" />
+                      )}
+                      Deny
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Approved devices */}
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="h-4 w-4 text-emerald-400" />
+            <h2 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold">
+              Paired Devices
+            </h2>
+            {approved.length > 0 && (
+              <span className="text-[10px] text-emerald-400 bg-emerald-900/20 border border-emerald-800 rounded-full px-2 py-0.5 font-mono">
+                {approved.length}
+              </span>
+            )}
+          </div>
+
+          {approved.length === 0 ? (
+            <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
+              <ShieldOff className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
+              <p className="text-sm text-zinc-600 font-mono">No paired devices</p>
+              <p className="text-[10px] text-zinc-700 font-mono mt-1">
+                Click &quot;Pair My iPhone&quot; above to get started
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-px bg-zinc-800">
+              {approved.map(device => {
+                const isOnline = Date.now() - new Date(device.lastSeen).getTime() < 5 * 60 * 1000
+                return (
+                  <div
+                    key={device.id}
+                    className="bg-zinc-950 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isOnline ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                        <span className="text-sm font-mono font-bold text-white truncate">
+                          {device.name}
+                        </span>
+                        {isOnline && (
+                          <span className="text-[9px] text-emerald-400 bg-emerald-900/20 border border-emerald-800/50 px-1.5 py-0.5 rounded font-mono">
+                            ONLINE
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-600">
+                        <span className="flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          {device.ip}
+                        </span>
+                        <span>First seen: {formatTime(device.firstSeen)}</span>
+                        <span>Last seen: {timeAgo(device.lastSeen)}</span>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <button
+                        onClick={() => handleAction(device.id, 'revoke')}
+                        disabled={!!actionLoading}
+                        className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-orange-500/10 border border-orange-500/30 text-red-400 hover:bg-orange-500/20 disabled:opacity-50 transition-colors"
+                      >
+                        {actionLoading === device.id + 'revoke' ? (
+                          <RefreshCw className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <ShieldOff className="h-3 w-3" />
+                        )}
+                        Unpair
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </DashboardContent>
     </DashboardShell>
   )

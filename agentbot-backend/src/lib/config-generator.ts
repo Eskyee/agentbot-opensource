@@ -50,7 +50,7 @@ export function generateConfig(config: AgentConfig): { config: object; authToken
       // SECURITY: CORS must never be wildcard — restrict to the known dashboard origin.
       // Wildcard would allow any website to communicate with this agent's gateway.
       cors: {
-        origin: process.env.GATEWAY_ALLOWED_ORIGIN || 'https://agentbot.raveculture.xyz',
+        origin: process.env.GATEWAY_ALLOWED_ORIGIN || 'https://agentbot.sh',
         credentials: true,
       },
       controlUi: true,
@@ -74,6 +74,15 @@ export function generateConfig(config: AgentConfig): { config: object; authToken
     },
     heartbeat: {
       intervalMinutes: 15,
+    },
+    update: {
+      channel: 'stable',
+      auto: {
+        enabled: true,
+        stableDelayHours: 6,
+        stableJitterHours: 12,
+        betaCheckIntervalHours: 1,
+      },
     },
     timezone: 'Europe/London',
   };

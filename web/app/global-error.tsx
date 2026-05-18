@@ -1,6 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
+import { logGlobalError } from '@/app/actions/reporting';
 
 export default function GlobalError({
   error,
@@ -9,6 +12,17 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    // Always forward to Sentry — the SDK is a no-op when NEXT_PUBLIC_SENTRY_DSN
+    // is unset, so this is safe in dev too.
+    Sentry.captureException(error);
+
+    // Existing internal logger only fires in prod to keep dev noise down.
+    if (process.env.NODE_ENV === 'production') {
+      logGlobalError(error.message, error.digest).catch(() => {});
+    }
+  }, [error]);
+
   return (
     <html>
       <body className="bg-black text-white font-mono">

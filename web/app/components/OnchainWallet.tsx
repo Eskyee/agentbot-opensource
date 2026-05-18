@@ -61,7 +61,7 @@ export default function OnchainWallet() {
               <div className="p-4 border-b border-zinc-800">
                 <div className="text-xs text-zinc-500 mb-1">Wallet</div>
                 <div 
-                  className="font-mono text-sm text-white cursor-pointer hover:text-blue-400"
+                  className="font-mono text-sm text-white cursor-pointer hover:text-orange-500"
                   onClick={copyAddress}
                 >
                   {address}
@@ -96,7 +96,7 @@ export default function OnchainWallet() {
 
               <button
                 onClick={() => disconnect()}
-                className="w-full text-left px-4 py-3 text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                className="w-full text-left px-4 py-3 text-red-400 hover:bg-orange-500/10 transition-colors flex items-center gap-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

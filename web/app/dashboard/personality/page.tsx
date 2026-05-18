@@ -16,7 +16,7 @@ interface Agent {
 }
 
 const PERSONALITIES = [
-  { id: 'basement', name: 'Basement', tone: 'dark & hypnotic', icon: Radio, description: 'Underground techno energy. Minimal, hypnotic, warehouse vibes.' },
+  { id: 'basement', name: 'Basement', tone: 'dark & hypnotic', icon: Radio, description: 'Factory techno energy. Minimal, hypnotic, warehouse vibes.' },
   { id: 'selector', name: 'Selector', tone: 'DJ & curation', icon: Music, description: 'Track recommendations, setlists, BPM matching. Always reading the room.' },
   { id: 'ar', name: 'A&R', tone: 'industry & discovery', icon: Mic, description: 'Finding the next hits. Connecting artists, labels, and opportunities.' },
   { id: 'road', name: 'Road', tone: 'logistics & touring', icon: Truck, description: 'Buses, venues, rider requirements. Making sure the show goes on.' },
@@ -106,7 +106,7 @@ export default function PersonalityPage() {
       <DashboardShell>
         <DashboardHeader
           title="Agent Personality"
-          icon={<User className="h-5 w-5 text-blue-400" />}
+          icon={<User className="h-5 w-5 text-orange-500" />}
         />
         <DashboardContent className="space-y-6">
           <div className="text-zinc-500 text-sm">Loading agents...</div>
@@ -120,7 +120,7 @@ export default function PersonalityPage() {
       <DashboardShell>
         <DashboardHeader
           title="Agent Personality"
-          icon={<User className="h-5 w-5 text-blue-400" />}
+          icon={<User className="h-5 w-5 text-orange-500" />}
         />
         <DashboardContent className="space-y-6">
           <div className="border border-zinc-800 bg-zinc-950 p-8 text-center">
@@ -141,7 +141,7 @@ export default function PersonalityPage() {
     <DashboardShell>
       <DashboardHeader
         title="Agent Personality"
-        icon={<User className="h-5 w-5 text-blue-400" />}
+        icon={<User className="h-5 w-5 text-orange-500" />}
       />
 
       <DashboardContent className="space-y-6">

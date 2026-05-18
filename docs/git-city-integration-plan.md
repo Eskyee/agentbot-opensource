@@ -162,7 +162,7 @@ Run git-city as microservice, share Supabase, embed in Agentbot.
 ```
 
 ### Steps:
-1. Deploy git-city to Vercel (git-city.agentbot.raveculture.xyz)
+1. Deploy git-city to Vercel (git-city.agentbot.sh)
 2. Configure shared Supabase (add git-city tables to Agentbot's DB)
 3. Iframe git-city into Agentbot dashboard
 4. Link auth between platforms

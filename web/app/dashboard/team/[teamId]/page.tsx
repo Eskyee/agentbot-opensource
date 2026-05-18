@@ -80,7 +80,7 @@ function TeamDetailContent() {
                     <div className={`w-2 h-2 rounded-full ${
                       agent.status === 'running' ? 'bg-emerald-500' :
                       agent.status === 'provisioning' ? 'bg-yellow-500 animate-pulse' :
-                      agent.status === 'failed' ? 'bg-red-500' : 'bg-zinc-600'
+                      agent.status === 'failed' ? 'bg-orange-500' : 'bg-zinc-600'
                     }`} />
                     <div>
                       <div className="text-sm font-bold uppercase tracking-wider">{agent.role}</div>

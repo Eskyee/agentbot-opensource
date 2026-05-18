@@ -11,6 +11,11 @@ const SignInWithBase = dynamic(() => import("@/app/components/SignInWithBase"), 
   loading: () => <div className="h-11 w-44 bg-zinc-800 animate-pulse" />,
 });
 
+const SignInWithTempo = dynamic(() => import("@/app/components/SignInWithTempo"), {
+  ssr: false,
+  loading: () => <div className="h-11 w-44 bg-zinc-800 animate-pulse" />,
+});
+
 function LoginForm() {
   const { data: session, status } = useCustomSession()
   const searchParams = useSearchParams()
@@ -156,8 +161,9 @@ function LoginForm() {
         <p className="text-zinc-500 text-xs mt-2">One click to sign in</p>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 space-y-3">
         <SignInWithBase callbackUrl="/dashboard" />
+        <SignInWithTempo callbackUrl="/dashboard" />
       </div>
 
       <div className="flex flex-col gap-3">
@@ -237,7 +243,7 @@ function LoginForm() {
       </div>
 
       {loginError && (
-        <div className="mt-4 p-3 border border-red-500/30 text-red-400 text-xs">
+        <div className="mt-4 p-3 border border-orange-500/30 text-red-400 text-xs">
           {loginError}
         </div>
       )}
@@ -264,7 +270,7 @@ function LoginFormFallback() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-blue-500/30 font-mono">
+    <main className="min-h-screen flex items-center justify-center bg-black text-white selection:bg-orange-500/30 font-mono">
       <Suspense fallback={<LoginFormFallback />}>
         <LoginForm />
       </Suspense>

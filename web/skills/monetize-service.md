@@ -64,10 +64,10 @@ export async function GET(req: NextRequest) {
 
 ```bash
 # Should return 402 without payment
-curl https://agentbot.raveculture.xyz/api/your-endpoint
+curl https://agentbot.sh/api/your-endpoint
 
 # Pay and retry with x-payments header
-npx awal x402 pay https://agentbot.raveculture.xyz/api/your-endpoint
+npx awal x402 pay https://agentbot.sh/api/your-endpoint
 ```
 
 ## Environment Variables

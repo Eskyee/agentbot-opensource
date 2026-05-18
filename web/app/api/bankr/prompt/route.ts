@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { getBankrApiKey } from '@/app/api/user/bankr-key/route'
 
-export const dynamic = 'force-dynamic';
 
 const BANKR_API_URL = process.env.BANKR_API_URL || 'https://api.bankr.bot';
 

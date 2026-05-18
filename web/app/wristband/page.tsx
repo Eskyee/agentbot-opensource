@@ -10,12 +10,12 @@ const WalletProvider = dynamic(() => import('@/app/components/WalletProvider'))
  */
 export default function WristbandPage() {
   return (
-    <main className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono">
+    <main className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono">
       <div className="max-w-7xl mx-auto px-6 py-24 md:py-32">
         {/* Hero Section */}
         <div className="flex flex-col md:flex-row gap-16 items-center">
           <div className="flex-1 space-y-8">
-            <div className="inline-block px-3 py-1 border border-zinc-800 text-blue-500 text-[10px] uppercase tracking-widest animate-pulse">
+            <div className="inline-block px-3 py-1 border border-zinc-800 text-orange-500 text-[10px] uppercase tracking-widest animate-pulse">
               Onchain Access Protocol
             </div>
             
@@ -25,7 +25,7 @@ export default function WristbandPage() {
             </h1>
             
             <p className="text-zinc-400 text-sm md:text-base max-w-xl leading-relaxed">
-              Unlock the future of underground radio. Your Digital Wristband is a permanent onchain 
+              Unlock the future of autonomous radio. Your Digital Wristband is a permanent onchain 
               proof of affiliation with baseFM. It grants lifetime access to high-definition 
               live streams, token-gated community channels, and exclusive artist drops.
             </p>
@@ -54,9 +54,9 @@ export default function WristbandPage() {
             &copy; 2026 baseFM x RaveCulture
           </div>
           <div className="flex gap-8 text-zinc-500 text-[10px] uppercase tracking-widest">
-            <a href="#" className="hover:text-blue-500 transition-colors">Smart Contract</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">OnchainKit Spec</a>
-            <a href="#" className="hover:text-blue-500 transition-colors">Docs</a>
+            <a href="#" className="hover:text-orange-500 transition-colors">Smart Contract</a>
+            <a href="#" className="hover:text-orange-500 transition-colors">OnchainKit Spec</a>
+            <a href="#" className="hover:text-orange-500 transition-colors">Docs</a>
           </div>
         </div>
       </div>

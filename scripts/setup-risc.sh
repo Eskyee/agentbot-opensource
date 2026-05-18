@@ -60,7 +60,7 @@ echo "✅ Token generated"
 # Register the endpoint
 echo ""
 echo "📡 Registering RISC endpoint..."
-RECEIVER_URL="https://agentbot.raveculture.xyz/api/security/risc"
+RECEIVER_URL="https://agentbot.sh/api/security/risc"
 
 curl -s -X POST "https://risc.googleapis.com/v1beta/stream:update" \
   -H "Authorization: Bearer $AUTH_TOKEN" \

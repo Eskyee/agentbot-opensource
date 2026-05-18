@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { DEFAULT_SOUL_SERVICE_URL, DEFAULT_SOUL_DASHBOARD_URL } from '@/app/lib/openclaw-config'
 
-export const dynamic = 'force-dynamic';
 
 function normalizeNodeStatus(raw: unknown): 'active' | 'idle' | 'offline' {
   const value = String(raw ?? '').toLowerCase();

@@ -38,11 +38,10 @@ This file is the current operational reference for platform ownership, deploymen
   - Platform: Railway
   - Project: `motivated-comfort`
   - Service: `Ollama`
-- Bitcoin / NBXplorer:
-  - Platform: Railway
-  - Project: `motivated-comfort`
-  - Services: `bitcoind-mainnet`, `bitcoin-backend-mainnet`, `Postgres`
-  - Health URL: `https://YOUR_SERVICE_URL/health`
+- Bitcoin / public node mode:
+  - Platform: Public explorer APIs + read-only web dashboard
+  - Mode: public/read-only
+  - Notes: watch-only wallet registration and NBXplorer-specific features are no longer part of the active production path
 - GitHub repos:
   - Private production repo: `Eskyee/agentbot`
   - Public mirror: `Eskyee/agentbot-opensource`
@@ -56,9 +55,8 @@ This file is the current operational reference for platform ownership, deploymen
 - OpenClaw status responded `running: true` on 2026-04-04.
 - `OPENCLAW_VERSION` on Railway was set to `latest` on 2026-04-04.
 - x402 gateway health is still expected at `https://YOUR_SERVICE_URL/health`.
-- Bitcoin / NBXplorer now points at the mainnet stack on Railway as of 2026-04-05.
-- `agentbot-backend` now reads `BTC_BACKEND_NBXPLORER_URL=https://YOUR_SERVICE_URL`.
-- The older testnet services (`bitcoind`, `bitcoin-backend`) were taken down and now have `NO DEPLOYMENT` in Railway.
+- Bitcoin now defaults to the public-node/read-only path in the web product.
+- Older NBXplorer and dedicated backend references should be treated as historical unless explicitly re-enabled and re-verified.
 
 ## Dashboard Status Notes (2026-04-04)
 
@@ -99,4 +97,4 @@ The following docs contain stale or mixed-era infra guidance and should be treat
 - Device auth is re-enabled and `dangerouslyAllowHostHeaderOriginFallback` is disabled to close the DNS-rebinding attack vector the previous config exposed.
 - The `gateway/openclaw.json` file is now written with `chmod 600` and the workspace directory uses `chmod 700` so the non-root `node` user is the only one who can read configuration or secrets.
 - A new readiness helper in `gateway/entrypoint.sh` waits for `${AGENTBOT_API_URL}/health` (configurable via `SERVICE_HEALTH_URL`) before launching `openclaw gateway`. Set `SKIP_SERVICE_READINESS=true` to skip the wait during emergency restarts.
-- The current managed runtime host is `https://YOUR_SERVICE_URL`. Prefer explicit environment overrides for control UI routing and avoid reintroducing old `openclaw-gw-ui-production` defaults.
+- The current managed runtime host is `https://YOUR_SERVICE_URL`. Prefer explicit environment overrides for control UI routing and avoid reintroducing old `YOUR_OPENCLAW_UI_SERVICE` defaults.

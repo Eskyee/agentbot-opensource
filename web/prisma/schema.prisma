@@ -1,3 +1,19 @@
+// L-10: deletion semantics in this schema are intentionally split.
+//
+//   - PascalCase models (User, Agent, Skill, ...) — the App-Router-era models
+//     consistently use `onDelete: Cascade`. Deleting a User cascades through
+//     all owned rows.
+//   - snake_case models (users, agents, royalties, social_*, ...) — the legacy
+//     introspected tables consistently use `onDelete: NoAction`. Hard-deleting
+//     a parent row leaves orphans behind. These tables also have inconsistent
+//     soft-delete conventions: some set `status='destroyed'`, others
+//     hard-delete via the App-Router model.
+//
+// Don't mix the two when adding a new model — pick the side that owns the
+// canonical row (Agent vs. agents) and inherit its cascade behavior. If you
+// need to delete across both sides, do it explicitly in the route handler
+// rather than relying on cascades.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,46 +24,62 @@ datasource db {
 }
 
 model User {
-  id                    String           @id @default(cuid())
+  id                    String    @id @default(cuid())
   name                  String?
-  email                 String?          @unique
+  email                 String?   @unique
   emailVerified         DateTime?
   image                 String?
   password              String?
-  role                  String           @default("user")
-  storageLimit          Int              @default(10)
-  plan                  String           @default("free")
+  role                  String    @default("user")
+  storageLimit          Int       @default(10)
+  plan                  String    @default("free")
   stripeCustomerId      String?
   stripeSubscriptionId  String?
   subscriptionEndDate   DateTime?
   subscriptionStartDate DateTime?
-  subscriptionStatus    String           @default("inactive")
+  subscriptionStatus    String    @default("inactive")
   openclawUrl           String?
   openclawInstanceId    String?
-  referralCode          String?          @unique
-  referralCredits       Int              @default(0)
+  vaultId               String?   @unique
+  referralCode          String?   @unique
+  referralCredits       Int       @default(0)
   referredBy            String?
   trialEndsAt           DateTime?
-  accounts              Account[]
-  agents                Agent[]
-  agentFiles            AgentFile[]
-  agentMemories         AgentMemory[]
-  agentSwarms           AgentSwarm[]
-  apiKeys               ApiKey[]
-  calendarToken         CalendarToken?
-  installedSkills       InstalledSkill[]
-  pairedDevices         PairedDevice[]
-  userSettings          UserSetting[]
-  referredByUser        Referral?        @relation("Referred")
-  referrals             Referral[]       @relation("Referrer")
-  scheduledTasks        ScheduledTask[]
-  sessions              Session[]
-  wallets               Wallet[]
-  workflows             Workflow[]
-  passkeyCredentials    PasskeyCredential[]
-  passkeyChallenges     PasskeyChallenge[]
-  notifications         Notification[]
-  buddies               Buddy[]
+
+  // Greenlight Credentials
+  greenlightCertPem String? @db.Text
+  greenlightKeyPem  String? @db.Text
+
+  accounts             Account[]
+  agents               Agent[]
+  agentFiles           AgentFile[]
+  agentMemories        AgentMemory[]
+  agentSwarms          AgentSwarm[]
+  apiKeys              ApiKey[]
+  calendarToken        CalendarToken?
+  installedSkills      InstalledSkill[]
+  skillRatings         SkillRating[]
+  pairedDevices        PairedDevice[]
+  userSettings         UserSetting[]
+  managedAgentSessions ManagedAgentSession[]
+  referredByUser       Referral?                 @relation("Referred")
+  referrals            Referral[]                @relation("Referrer")
+  scheduledTasks       ScheduledTask[]
+  sessions             Session[]
+  wallets              Wallet[]
+  workflows            Workflow[]
+  passkeyCredentials   PasskeyCredential[]
+  passkeyChallenges    PasskeyChallenge[]
+  notifications        Notification[]
+  buddies              Buddy[]
+  greenlightRequests   GreenlightAccessRequest[]
+  preferences          UserPreference[]
+  templateLaunches     TemplateLaunch[]
+  tutorialProgress     TutorialProgress[]
+
+  // Stripe webhook hot path: updateMany({ where: { stripeCustomerId } })
+  // for invoice.payment_succeeded / payment_failed / subscription.deleted.
+  @@index([stripeCustomerId])
 }
 
 model Account {
@@ -85,21 +117,25 @@ model VerificationToken {
 }
 
 model Agent {
-  id              String           @id @default(cuid())
-  userId          String
-  name            String
-  model           String?
-  status          String           @default("pending")
-  websocketUrl    String?
-  config          Json?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  tier            String           @default("free")
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  files           AgentFile[]
-  memories        AgentMemory[]
-  installedSkills InstalledSkill[]
-  scheduledTasks  ScheduledTask[]
+  id           String  @id @default(cuid())
+  userId       String
+  name         String
+  model        String?
+  status       String  @default("pending")
+  websocketUrl String?
+  config       Json?
+
+  // Bitcoin configuration
+  bitcoinXpub String? @db.Text
+
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  tier                String           @default("free")
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files               AgentFile[]
+  memories            AgentMemory[]
+  installedSkills     InstalledSkill[]
+  scheduledTasks      ScheduledTask[]
   showcaseOptIn       Boolean          @default(false)
   showcaseDescription String           @default("")
 
@@ -165,7 +201,7 @@ model AgentFile {
 
 model Skill {
   id              String           @id @default(cuid())
-  name            String
+  name            String           @unique
   description     String
   category        String
   code            String
@@ -173,15 +209,33 @@ model Skill {
   downloads       Int              @default(0)
   rating          Float            @default(0)
   featured        Boolean          @default(false)
-  mcpConfig       Json?            // MCP (Model Context Protocol) configuration
+  mcpConfig       Json? // MCP (Model Context Protocol) configuration
   mcpEnabled      Boolean          @default(false)
+  widgetUrl       String? // Interactive widget URL
+  widgetConfig    Json? // Widget configuration
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   installedSkills InstalledSkill[]
+  ratings         SkillRating[]
 
   @@index([category])
   @@index([featured])
   @@index([mcpEnabled])
+}
+
+model SkillRating {
+  id        String   @id @default(cuid())
+  userId    String
+  skillId   String
+  rating    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@index([skillId])
+  @@index([userId])
 }
 
 model InstalledSkill {
@@ -243,6 +297,23 @@ model AgentSwarm {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model GreenlightAccessRequest {
+  id                   String   @id @default(cuid())
+  userId               String
+  accessType           String
+  network              String
+  status               String   @default("pending")
+  notes                String?
+  planSnapshot         String?
+  subscriptionSnapshot String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }
 
 model WorkflowNode {
@@ -314,16 +385,16 @@ model ApiKey {
 }
 
 model CalendarToken {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  accessToken  String   // AES-256-GCM encrypted
-  refreshToken String   // AES-256-GCM encrypted
-  calendarId   String   @default("primary")
-  timezone     String   @default("UTC")
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  accessToken  String // AES-256-GCM encrypted
+  refreshToken String // AES-256-GCM encrypted
+  calendarId   String    @default("primary")
+  timezone     String    @default("UTC")
   expiresAt    DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -331,11 +402,11 @@ model CalendarToken {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // achievement | badge | referral | system | agent | message | billing
+  type      String // achievement | badge | referral | system | agent | message | billing
   title     String
   message   String
   read      Boolean  @default(false)
-  data      Json?    // Additional data (badge info, referral details, etc.)
+  data      Json? // Additional data (badge info, referral details, etc.)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -365,7 +436,7 @@ model UserSetting {
   id        String   @id @default(cuid())
   userId    String
   key       String
-  value     String   // AES-256-GCM encrypted
+  value     String // AES-256-GCM encrypted
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -374,11 +445,42 @@ model UserSetting {
   @@index([userId])
 }
 
+model ManagedAgentSession {
+  id                String              @id
+  userId            String
+  type              String
+  title             String
+  workflowRunId     String?             @unique
+  providerSessionId String?
+  agentId           String?
+  environmentId     String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events            ManagedAgentEvent[]
+
+  @@index([userId, updatedAt])
+  @@index([type])
+}
+
+model ManagedAgentEvent {
+  id          String              @id @default(cuid())
+  sessionId   String
+  eventId     String              @unique
+  type        String
+  payload     Json
+  occurredAt  DateTime
+  processedAt DateTime            @default(now())
+  session     ManagedAgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, occurredAt])
+}
+
 model Buddy {
   id         String   @id @default(cuid())
   userId     String
   name       String
-  type       String   // crab | robot | ghost | dragon | alien
+  type       String // crab | robot | ghost | dragon | alien
   level      Int      @default(1)
   xp         Int      @default(0)
   energy     Int      @default(100)
@@ -500,11 +602,15 @@ model events {
 
 model invite_codes {
   code       String    @id
+  email      String?
+  audience   String    @default("headliner")
   used       Boolean   @default(false)
   used_at    DateTime? @db.Timestamptz(6)
   created_by String?
   created_at DateTime? @default(now()) @db.Timestamptz(6)
+  expires_at DateTime? @db.Timestamptz(6)
 
+  @@index([audience], map: "idx_invite_codes_audience")
   @@index([used], map: "idx_invite_codes_used")
 }
 
@@ -600,6 +706,8 @@ model users {
   email                  String                  @unique
   plan                   String?                 @default("solo")
   stripe_subscription_id String?
+  basefm_wallet          String? // Base wallet address for baseFM DJ identity
+  x_handle               String? // X/Twitter handle (without @)
   created_at             DateTime?               @default(now()) @db.Timestamptz(6)
   updated_at             DateTime?               @default(now()) @db.Timestamptz(6)
   agents                 agents[]
@@ -625,7 +733,7 @@ model wallets {
 // Agent-to-Agent Bridge — private message bus for Atlas coordination
 model bridge_messages {
   id         String   @id @default(cuid())
-  sender     String   // "atlas-main", "atlas-agentbot", "eskyee"
+  sender     String // "atlas-main", "atlas-agentbot", "eskyee"
   channel    String   @default("general") // general, tasks, alerts
   content    String   @db.Text
   priority   String   @default("normal") // normal, urgent, fyi
@@ -657,39 +765,39 @@ model JobCompany {
 }
 
 model JobListing {
-  id              String        @id @default(cuid())
-  companyId       String
-  title           String
-  description     String        @db.Text
-  salaryMin       Int
-  salaryMax       Int
-  salaryCurrency  String        @default("USD")
-  roleType        String
-  techStack       String[]
-  seniority       String
-  contractType    String
-  webType         String        @default("both")
-  applyUrl        String
-  language        String        @default("en")
-  languagePtBr   String?
-  badgeResponseGuaranteed Boolean @default(false)
-  badgeNoAiScreening      Boolean @default(false)
-  status          String        @default("draft")
-  tier            String        @default("standard")
-  rejectionReason String?
-  stripeSessionId String?
-  stripePaymentIntent String?
-  viewCount       Int           @default(0)
-  applyCount      Int           @default(0)
-  profileCount   Int           @default(0)
-  publishedAt     DateTime?
-  expiresAt       DateTime?
-  filledAt        DateTime?
-  pausedAt        DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  company         JobCompany    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  applications    JobApplication[]
+  id                      String           @id @default(cuid())
+  companyId               String
+  title                   String
+  description             String           @db.Text
+  salaryMin               Int
+  salaryMax               Int
+  salaryCurrency          String           @default("USD")
+  roleType                String
+  techStack               String[]
+  seniority               String
+  contractType            String
+  webType                 String           @default("both")
+  applyUrl                String
+  language                String           @default("en")
+  languagePtBr            String?
+  badgeResponseGuaranteed Boolean          @default(false)
+  badgeNoAiScreening      Boolean          @default(false)
+  status                  String           @default("draft")
+  tier                    String           @default("standard")
+  rejectionReason         String?
+  stripeSessionId         String?
+  stripePaymentIntent     String?
+  viewCount               Int              @default(0)
+  applyCount              Int              @default(0)
+  profileCount            Int              @default(0)
+  publishedAt             DateTime?
+  expiresAt               DateTime?
+  filledAt                DateTime?
+  pausedAt                DateTime?
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
+  company                 JobCompany       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  applications            JobApplication[]
 
   @@index([companyId])
   @@index([status])
@@ -720,12 +828,12 @@ model CareerProfile {
 }
 
 model JobApplication {
-  id          String      @id @default(cuid())
-  listingId   String
-  userId      String
-  hasProfile  Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  listing     JobListing? @relation(fields: [listingId], references: [id])
+  id         String      @id @default(cuid())
+  listingId  String
+  userId     String
+  hasProfile Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  listing    JobListing? @relation(fields: [listingId], references: [id])
 
   @@unique([listingId, userId])
   @@index([listingId])
@@ -733,13 +841,13 @@ model JobApplication {
 }
 
 model JobAlert {
-  id         String   @id @default(cuid())
-  email      String
-  skills     String[]
-  seniority  String[]
-  webType    String   @default("both")
-  createdAt  DateTime @default(now())
-  verified   Boolean  @default(false)
+  id          String   @id @default(cuid())
+  email       String
+  skills      String[]
+  seniority   String[]
+  webType     String   @default("both")
+  createdAt   DateTime @default(now())
+  verified    Boolean  @default(false)
   verifyToken String?
 
   @@index([email])
@@ -765,4 +873,605 @@ model usage_logs {
   @@index([created_at], map: "idx_usage_logs_created_at")
   @@index([user_id, created_at], map: "idx_usage_logs_user_created")
   @@index([agent_id, created_at], map: "idx_usage_logs_agent_created")
+}
+
+model execution_logs {
+  id             Int       @id @default(autoincrement())
+  user_id        String
+  agent_id       String?
+  workflow_id    String?
+  execution_type String
+  success        Boolean   @default(true)
+  error_message  String?
+  duration_ms    Int?
+  created_at     DateTime? @default(now())
+
+  @@index([user_id], map: "idx_execution_logs_user_id")
+  @@index([agent_id], map: "idx_execution_logs_agent_id")
+  @@index([created_at], map: "idx_execution_logs_created_at")
+  @@index([user_id, created_at], map: "idx_execution_logs_user_created_at")
+}
+
+model credit_claims {
+  id             String   @id
+  user_id        String
+  wallet_address String   @unique
+  token_address  String
+  tier           String
+  credits        Int
+  balance_raw    String
+  balance_ui     Decimal  @db.Decimal(20, 6)
+  claim_source   String   @default("solana-community")
+  tx_signature   String?
+  created_at     DateTime @default(now())
+
+  @@index([wallet_address], map: "idx_credit_claims_wallet")
+  @@index([user_id], map: "idx_credit_claims_user")
+  @@index([created_at], map: "idx_credit_claims_created")
+}
+
+model community_badges {
+  id             String   @id
+  user_id        String
+  wallet_address String?
+  badge_key      String
+  title          String
+  detail         String?
+  status         String   @default("active")
+  created_at     DateTime @default(now())
+
+  @@unique([user_id, badge_key], map: "uniq_community_badges_user_key")
+  @@index([user_id], map: "idx_community_badges_user")
+  @@index([badge_key], map: "idx_community_badges_key")
+}
+
+model community_governance_proposals {
+  id         String    @id
+  slug       String    @unique
+  title      String
+  summary    String
+  details    String?
+  status     String    @default("draft")
+  starts_at  DateTime  @default(now())
+  ends_at    DateTime?
+  created_by String?
+  created_at DateTime  @default(now())
+
+  @@index([status], map: "idx_community_proposals_status")
+}
+
+model community_governance_votes {
+  id             String   @id
+  proposal_id    String
+  user_id        String
+  wallet_address String?
+  choice         String
+  voting_power   Int      @default(1)
+  created_at     DateTime @default(now())
+
+  @@unique([proposal_id, user_id], map: "uniq_community_votes_proposal_user")
+  @@index([proposal_id], map: "idx_community_votes_proposal")
+  @@index([user_id], map: "idx_community_votes_user")
+}
+
+model dj_sessions {
+  id            Int       @id @default(autoincrement())
+  user_id       String
+  wallet        String
+  dj_name       String?
+  mux_stream_id String    @unique
+  playback_id   String?
+  started_at    DateTime  @default(now())
+  ended_at      DateTime?
+  max_duration  Int       @default(3600) // 1 hour in seconds
+  status        String    @default("active") // active, ended, auto-ended
+  metadata      Json?     @default("{}") // Store accessType, txHash etc
+
+  @@index([user_id], map: "idx_dj_sessions_user")
+  @@index([wallet], map: "idx_dj_sessions_wallet")
+  @@index([status], map: "idx_dj_sessions_status")
+  @@index([started_at], map: "idx_dj_sessions_started")
+}
+
+model basefm_relay_destinations {
+  id                 Int       @id @default(autoincrement())
+  key                String    @unique
+  name               String
+  type               String
+  required           Boolean   @default(false)
+  enabled            Boolean   @default(true)
+  viewer_url         String?
+  probe_url          String?
+  status             String    @default("pending")
+  last_healthy_at    DateTime?
+  last_error_at      DateTime?
+  last_error_message String?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+
+  @@index([enabled], map: "idx_basefm_relays_enabled")
+  @@index([status], map: "idx_basefm_relays_status")
+}
+
+model mixtapes {
+  id              String    @id @default(cuid())
+  user_id         String
+  title           String
+  artist_name     String?
+  mux_upload_id   String    @unique
+  mux_asset_id    String?
+  playback_id     String?
+  duration_secs   Int?
+  status          String    @default("pending") // pending, ready, scheduled, broadcasting, done, failed
+  scheduled_at    DateTime?
+  broadcast_at    DateTime?
+  ended_at        DateTime?
+  file_size_bytes BigInt?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  @@index([user_id], map: "idx_mixtapes_user")
+  @@index([status], map: "idx_mixtapes_status")
+  @@index([scheduled_at], map: "idx_mixtapes_scheduled")
+}
+
+model ad_campaigns {
+  id                String    @id @default(cuid())
+  // Advertiser info
+  advertiser_name   String
+  advertiser_email  String
+  advertiser_url    String?
+  contact_handle    String? // X/Twitter handle, etc.
+  // Campaign
+  title             String
+  description       String?
+  category          String    @default("general") // ai-tech, dj, music, events, promoter, general
+  slot_type         String    @default("spot") // spot (30s), feature (60s), campaign (60s x4wk)
+  // Audio
+  mux_upload_id     String?   @unique
+  mux_asset_id      String?
+  playback_id       String?
+  duration_secs     Int?
+  // Scheduling
+  scheduled_slots   Int       @default(1) // how many broadcast slots purchased
+  broadcasts_done   Int       @default(0)
+  starts_at         DateTime?
+  ends_at           DateTime?
+  // Payment
+  stripe_session_id String?   @unique
+  stripe_payment_id String?
+  amount_pence      Int? // what they paid (GBP pence)
+  currency          String    @default("gbp")
+  // Status
+  status            String    @default("pending_payment") // pending_payment, paid, approved, live, complete, rejected, refunded
+  admin_notes       String?
+  // Timestamps
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  @@index([advertiser_email], map: "idx_ad_campaigns_email")
+  @@index([status], map: "idx_ad_campaigns_status")
+  @@index([category], map: "idx_ad_campaigns_category")
+  @@index([starts_at], map: "idx_ad_campaigns_starts")
+}
+
+model platform_outcomes {
+  id           Int      @id @default(autoincrement())
+  user_id      Int?
+  agent_id     Int?
+  outcome_type String // negotiation_complete, amplification_complete, deal_closed, broadcast_complete
+  title        String
+  description  String?
+  value_usd    Decimal? @db.Decimal // estimated value of the outcome if known
+  metadata     Json? // any extra context (deal ID, partner agent, etc.)
+  created_at   DateTime @default(now())
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_platform_outcomes_user")
+  @@index([outcome_type], map: "idx_platform_outcomes_type")
+}
+
+// ─── Social Layer Models ────────────────────────────────────────────
+
+model SocialUser {
+  id             String   @id @default(cuid())
+  agentbotUserId String   @unique @map("agentbot_user_id")
+  username       String?  @unique
+  displayName    String?  @map("display_name")
+  bio            String?
+  avatarUrl      String?  @map("avatar_url")
+  xHandle        String?  @map("x_handle")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  ownedAgents    SocialAgent[]
+  claims         AgentClaim[]
+  communities    CommunityMembership[]
+  votes          SocialVote[]
+  follows        SocialFollow[]        @relation("FollowerUser")
+  reports        SocialReport[]
+  moderationActs ModerationAction[]
+  notifications  SocialNotification[]
+
+  @@map("social_users")
+}
+
+model SocialAgent {
+  id                 String   @id @default(cuid())
+  agentbotAgentId    String   @unique @map("agentbot_agent_id")
+  slug               String   @unique
+  name               String
+  bio                String?
+  avatarUrl          String?  @map("avatar_url")
+  bannerUrl          String?  @map("banner_url")
+  websiteUrl         String?  @map("website_url")
+  status             String   @default("active")
+  verificationStatus String   @default("unverified") @map("verification_status")
+  trustScore         Int      @default(0) @map("trust_score")
+  ownerUserId        String?  @map("owner_user_id")
+  primaryCommunityId String?  @map("primary_community_id")
+  industry           String   @default("music")
+  specialisms        String[] @default([])
+  metadata           Json     @default("{}")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  owner        SocialUser?           @relation(fields: [ownerUserId], references: [id])
+  claims       AgentClaim[]
+  posts        Post[]
+  comments     Comment[]
+  memberships  CommunityMembership[]
+  votes        SocialVote[]
+  asFollower   SocialFollow[]        @relation("FollowerAgent")
+  asFollowed   SocialFollow[]        @relation("FollowedAgent")
+  reports      SocialReport[]        @relation("ReportedAgent")
+  actorEvents  ActivityEvent[]
+  dmThreadsAsA DMThread[]            @relation("DMThreadA")
+  dmThreadsAsB DMThread[]            @relation("DMThreadB")
+  sentMessages DirectMessage[]       @relation("DMSender")
+
+  @@map("social_agents")
+}
+
+model AgentClaim {
+  id             String    @id @default(cuid())
+  agentId        String    @map("agent_id")
+  userId         String    @map("user_id")
+  status         String    @default("owner_linked")
+  claimToken     String    @unique @map("claim_token")
+  xChallengeCode String?   @map("x_challenge_code")
+  claimedVia     String    @default("x") @map("claimed_via")
+  verifiedAt     DateTime? @map("verified_at")
+  expiresAt      DateTime? @map("expires_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  agent SocialAgent @relation(fields: [agentId], references: [id])
+  user  SocialUser  @relation(fields: [userId], references: [id])
+
+  @@unique([agentId, userId])
+  @@map("agent_claims")
+}
+
+model Community {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String?
+  avatarUrl       String?  @map("avatar_url")
+  bannerUrl       String?  @map("banner_url")
+  visibility      String   @default("public")
+  postingPolicy   String   @default("members") @map("posting_policy")
+  industry        String   @default("music")
+  createdByUserId String?  @map("created_by_user_id")
+  memberCount     Int      @default(0) @map("member_count")
+  postCount       Int      @default(0) @map("post_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  memberships CommunityMembership[]
+  posts       Post[]
+  followers   SocialFollow[]
+
+  @@map("communities")
+}
+
+model CommunityMembership {
+  id          String   @id @default(cuid())
+  communityId String   @map("community_id")
+  userId      String?  @map("user_id")
+  agentId     String?  @map("agent_id")
+  role        String   @default("member")
+  status      String   @default("active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  community Community    @relation(fields: [communityId], references: [id])
+  user      SocialUser?  @relation(fields: [userId], references: [id])
+  agent     SocialAgent? @relation(fields: [agentId], references: [id])
+
+  @@unique([communityId, userId])
+  @@map("community_memberships")
+}
+
+model Post {
+  id            String   @id @default(cuid())
+  authorAgentId String   @map("author_agent_id")
+  communityId   String?  @map("community_id")
+  kind          String   @default("post")
+  body          String
+  bodyHtml      String?  @map("body_html")
+  status        String   @default("published")
+  visibility    String   @default("public")
+  replyCount    Int      @default(0) @map("reply_count")
+  voteCount     Int      @default(0) @map("vote_count")
+  score         Decimal  @default(0) @db.Decimal(12, 4)
+  postedAt      DateTime @default(now()) @map("posted_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  author    SocialAgent    @relation(fields: [authorAgentId], references: [id])
+  community Community?     @relation(fields: [communityId], references: [id])
+  comments  Comment[]
+  votes     SocialVote[]
+  reports   SocialReport[]
+
+  @@index([authorAgentId])
+  @@index([communityId])
+  @@index([status, postedAt(sort: Desc)])
+  @@map("posts")
+}
+
+model Comment {
+  id              String   @id @default(cuid())
+  postId          String   @map("post_id")
+  parentCommentId String?  @map("parent_comment_id")
+  authorAgentId   String   @map("author_agent_id")
+  body            String
+  status          String   @default("published")
+  replyCount      Int      @default(0) @map("reply_count")
+  voteCount       Int      @default(0) @map("vote_count")
+  score           Decimal  @default(0) @db.Decimal(12, 4)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  post    Post           @relation(fields: [postId], references: [id])
+  parent  Comment?       @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  replies Comment[]      @relation("CommentReplies")
+  author  SocialAgent    @relation(fields: [authorAgentId], references: [id])
+  votes   SocialVote[]
+  reports SocialReport[]
+
+  @@index([postId])
+  @@index([parentCommentId])
+  @@index([authorAgentId])
+  @@map("comments")
+}
+
+model SocialVote {
+  id        String   @id @default(cuid())
+  postId    String?  @map("post_id")
+  commentId String?  @map("comment_id")
+  userId    String?  @map("user_id")
+  agentId   String?  @map("agent_id")
+  value     Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post    Post?        @relation(fields: [postId], references: [id])
+  comment Comment?     @relation(fields: [commentId], references: [id])
+  user    SocialUser?  @relation(fields: [userId], references: [id])
+  agent   SocialAgent? @relation(fields: [agentId], references: [id])
+
+  @@unique([postId, userId])
+  @@unique([postId, agentId])
+  @@unique([commentId, userId])
+  @@unique([commentId, agentId])
+  @@index([postId])
+  @@index([commentId])
+  @@index([userId])
+  @@index([agentId])
+  @@map("social_votes")
+}
+
+model SocialFollow {
+  id                  String   @id @default(cuid())
+  followerUserId      String?  @map("follower_user_id")
+  followerAgentId     String?  @map("follower_agent_id")
+  followedAgentId     String?  @map("followed_agent_id")
+  followedUserId      String?  @map("followed_user_id")
+  followedCommunityId String?  @map("followed_community_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  followerUser      SocialUser?  @relation("FollowerUser", fields: [followerUserId], references: [id])
+  followerAgent     SocialAgent? @relation("FollowerAgent", fields: [followerAgentId], references: [id])
+  followedAgent     SocialAgent? @relation("FollowedAgent", fields: [followedAgentId], references: [id])
+  followedCommunity Community?   @relation(fields: [followedCommunityId], references: [id])
+
+  @@index([followerUserId])
+  @@index([followerAgentId])
+  @@index([followedAgentId])
+  @@index([followedCommunityId])
+  @@map("social_follows")
+}
+
+model SocialReport {
+  id              String   @id @default(cuid())
+  reporterUserId  String?  @map("reporter_user_id")
+  reporterAgentId String?  @map("reporter_agent_id")
+  postId          String?  @map("post_id")
+  commentId       String?  @map("comment_id")
+  reportedAgentId String?  @map("reported_agent_id")
+  reason          String
+  details         String?
+  status          String   @default("open")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  reporterUser  SocialUser?  @relation(fields: [reporterUserId], references: [id])
+  reporterAgent SocialAgent? @relation("ReportedAgent", fields: [reporterAgentId], references: [id])
+  post          Post?        @relation(fields: [postId], references: [id])
+  comment       Comment?     @relation(fields: [commentId], references: [id])
+
+  @@index([status])
+  @@map("social_reports")
+}
+
+model ModerationAction {
+  id          String   @id @default(cuid())
+  adminUserId String   @map("admin_user_id")
+  targetType  String   @map("target_type")
+  targetId    String   @map("target_id")
+  action      String
+  reason      String?
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  adminUser SocialUser @relation(fields: [adminUserId], references: [id])
+
+  @@index([adminUserId])
+  @@map("moderation_actions")
+}
+
+model ActivityEvent {
+  id           String   @id @default(cuid())
+  entityType   String   @map("entity_type")
+  entityId     String   @map("entity_id")
+  actorAgentId String?  @map("actor_agent_id")
+  actorUserId  String?  @map("actor_user_id")
+  eventType    String   @map("event_type")
+  payload      Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  actorAgent SocialAgent? @relation(fields: [actorAgentId], references: [id])
+
+  @@index([entityId])
+  @@index([actorAgentId])
+  @@index([actorUserId])
+  @@index([createdAt(sort: Desc)])
+  @@map("activity_events")
+}
+
+model SocialNotification {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  type      String
+  payload   Json      @default("{}")
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user SocialUser @relation(fields: [userId], references: [id])
+
+  @@index([userId, readAt])
+  @@index([createdAt(sort: Desc)])
+  @@map("social_notifications")
+}
+
+model DMThread {
+  id        String   @id @default(cuid())
+  agentAId  String   @map("agent_a_id")
+  agentBId  String   @map("agent_b_id")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  agentA   SocialAgent     @relation("DMThreadA", fields: [agentAId], references: [id])
+  agentB   SocialAgent     @relation("DMThreadB", fields: [agentBId], references: [id])
+  messages DirectMessage[]
+
+  @@unique([agentAId, agentBId])
+  @@map("dm_threads")
+}
+
+model DirectMessage {
+  id            String   @id @default(cuid())
+  threadId      String   @map("thread_id")
+  senderAgentId String   @map("sender_agent_id")
+  body          String
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  thread DMThread    @relation(fields: [threadId], references: [id])
+  sender SocialAgent @relation("DMSender", fields: [senderAgentId], references: [id])
+
+  @@map("direct_messages")
+}
+
+// ─── Machine-to-Machine Job Board ──────────────────────────────────────────────
+
+model M2MJob {
+  id               String    @id @default(cuid())
+  title            String
+  description      String
+  rewardUsd        Float     @map("reward_usd")
+  state            String    @default("open") // open | claimed | delivered | approved | paid | disputed | cancelled
+  requesterAgentId String?   @map("requester_agent_id")
+  claimerAgentId   String?   @map("claimer_agent_id")
+  deliveryNotes    String?   @map("delivery_notes")
+  disputeReason    String?   @map("dispute_reason")
+  claimedAt        DateTime? @map("claimed_at")
+  deliveredAt      DateTime? @map("delivered_at")
+  approvedAt       DateTime? @map("approved_at")
+  paidAt           DateTime? @map("paid_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([state])
+  @@index([requesterAgentId])
+  @@index([claimerAgentId])
+  @@map("m2m_jobs")
+}
+
+// ─── Stripe Webhook Idempotency ─────────────────────────────────────────────
+// Records every Stripe event ID we have processed so retried/duplicate
+// deliveries can be detected and short-circuited at the top of the handler.
+// Without this, retries cause duplicate receipts, duplicate auto-provisioning,
+// and (worst) repeated +50GB storage grants.
+
+model ProcessedStripeEvent {
+  eventId     String   @id @map("event_id")
+  type        String
+  processedAt DateTime @default(now()) @map("processed_at")
+
+  @@index([processedAt])
+  @@map("processed_stripe_events")
+}
+
+model UserPreference {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+model TemplateLaunch {
+  id          String   @id @default(cuid())
+  userId      String
+  templateKey String
+  workflowId  String?
+  agentId     String?
+  status      String   @default("pending")
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([templateKey])
+}
+
+model TutorialProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  tutorialKey String
+  status      String    @default("not_started")
+  stepIndex   Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tutorialKey])
+  @@index([userId])
 }

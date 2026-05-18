@@ -202,7 +202,7 @@ export default function TasksPage() {
   }
 
   const ClockIcon = () => (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <svg className="h-5 w-5 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="square" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   )
@@ -303,7 +303,7 @@ export default function TasksPage() {
                     </label>
                     <button
                       onClick={() => setUseNatural(!useNatural)}
-                      className="flex items-center gap-1 text-xs text-blue-400 hover:underline"
+                      className="flex items-center gap-1 text-xs text-orange-400 hover:underline"
                     >
                       {useNatural ? (
                         <><Terminal className="h-3 w-3" /> Use cron syntax</>
@@ -403,7 +403,7 @@ export default function TasksPage() {
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
-                          className="border border-zinc-800 hover:border-red-800 p-2 text-zinc-400 hover:text-red-400 transition-colors"
+                          className="border border-zinc-800 hover:border-red-800 p-2 text-zinc-400 hover:text-orange-400 transition-colors"
                           title="Delete task"
                         >
                           <Trash2 className="h-4 w-4" />

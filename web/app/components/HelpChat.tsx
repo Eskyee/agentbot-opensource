@@ -76,7 +76,7 @@ export default memo(function HelpChat() {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 w-14 h-14 bg-blue-600 hover:bg-blue-500 rounded-full flex items-center justify-center text-white shadow-lg transition-all hover:scale-110 z-50"
+        className="fixed bottom-4 right-4 w-14 h-14 bg-red-600 hover:bg-orange-500 rounded-full flex items-center justify-center text-white shadow-lg transition-all hover:scale-110 z-50"
       >
         {isOpen ? (
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +93,7 @@ export default memo(function HelpChat() {
       {isOpen && (
         <div className="fixed bottom-20 right-4 w-80 h-96 bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl flex flex-col z-50">
           {/* Header */}
-          <div className="bg-blue-600 px-4 py-3 rounded-t-2xl flex items-center gap-2">
+          <div className="bg-red-600 px-4 py-3 rounded-t-2xl flex items-center gap-2">
             <span className="text-lg">🤖</span>
             <span className="font-bold text-white">Agentbot Helper</span>
           </div>
@@ -104,7 +104,7 @@ export default memo(function HelpChat() {
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] rounded-2xl px-3 py-2 ${
                   msg.role === 'user' 
-                    ? 'bg-blue-600 text-white' 
+                    ? 'bg-red-600 text-white' 
                     : 'bg-zinc-800 text-zinc-100'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -135,13 +135,13 @@ export default memo(function HelpChat() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask for help..."
-              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500"
+              className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500"
               disabled={loading}
             />
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-500 disabled:opacity-50"
+              className="px-3 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-orange-500 disabled:opacity-50"
             >
               →
             </button>

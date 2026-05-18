@@ -42,6 +42,6 @@ export function buildHealthSummary(params: {
         ? 'docker'
         : 'none',
     project: env.RAILWAY_PROJECT_NAME?.trim() || env.RAILWAY_PROJECT_ID?.trim() || null,
-    service: env.RAILWAY_SERVICE_NAME?.trim() || env.RENDER_SERVICE_NAME?.trim() || null,
+    service: env.RAILWAY_SERVICE_NAME?.trim() || null,
   }
 }

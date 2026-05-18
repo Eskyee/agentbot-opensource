@@ -331,8 +331,8 @@ runtime on Railway infrastructure.
           <div className="border-t border-zinc-800 pt-8 mt-8">
             <p className="text-zinc-500 text-sm">
               Agentbot is open source at{' '}
-              <a href="https://github.com/Eskyee/agentbot" className="text-white underline hover:text-zinc-300">
-                github.com/Eskyee/agentbot
+              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-white underline hover:text-zinc-300">
+                github.com/Eskyee/agentbot-opensource
               </a>
               . Our custom droids are in the repo under <code className="text-zinc-400">.factory/droids/</code>.
               Try Factory Droid at{' '}

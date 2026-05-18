@@ -10,4 +10,4 @@ npx prisma db execute --stdin <<SQL
 UPDATE "User" SET role = 'admin' WHERE email = 'YOUR_ADMIN_EMAIL_2';
 SQL
 
-echo "Done! Check https://agentbot.raveculture.xyz/admin"
+echo "Done! Check https://agentbot.sh/admin"

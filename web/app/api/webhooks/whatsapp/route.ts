@@ -5,7 +5,7 @@ import { buildAppUrl } from '@/app/lib/app-url'
 /**
  * WhatsApp Cloud API Webhook Handler
  *
- * SECURITY PATTERNS APPLIED (underground.ts / mux.ts templates):
+ * SECURITY PATTERNS APPLIED (autonomous.ts / mux.ts templates):
  *
  *  1. Fail closed: if WHATSAPP_WEBHOOK_SECRET is not configured ALL POST requests
  *     are rejected — the previous code allowed unauthenticated processing when the

@@ -36,8 +36,10 @@ const unused = 42
 
   test('reads file with hashes', () => {
     const lines = readWithHashes(TEST_FILE)
-    
-    expect(lines).toHaveLength(6)
+
+    // The fixture has 7 logical lines plus a trailing newline, which the
+    // reader keeps as an 8th empty line.
+    expect(lines).toHaveLength(8)
     expect(lines[0].lineNumber).toBe(1)
     expect(lines[0].hash).toHaveLength(2)
     expect(lines[0].content).toBe("import { x } from 'y'")
@@ -65,8 +67,11 @@ const unused = 42
   })
 
   test('detects stale line errors', () => {
-    const result = applyEdit(TEST_FILE, '1#ZZ', 'invalid')
-    
+    // Use a syntactically valid hash that does not match any line in the
+    // fixture. `parseHashReference` requires hex chars, so `ZZ` would be
+    // rejected by format validation before stale-line detection ran.
+    const result = applyEdit(TEST_FILE, '1#FF', 'invalid')
+
     expect(result.success).toBe(false)
     expect(result.error).toContain('not found')
   })
@@ -91,9 +96,9 @@ const unused = 42
 
   test('provides file stats', () => {
     const stats = getFileStats(TEST_FILE)
-    
-    expect(stats.totalLines).toBe(6)
-    expect(stats.blankLines).toBe(1)
+
+    expect(stats.totalLines).toBe(8)
+    expect(stats.blankLines).toBe(3)
     expect(stats.uniqueHashes).toBeGreaterThan(0)
   })
 })

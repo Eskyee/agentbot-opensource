@@ -99,6 +99,7 @@ strip_all() {
   local dir="${3:-$TEMP_DIR}"
   find "$dir" -type f \
     \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \
+       -o -name "*.json" \
        -o -name "*.sh" -o -name "*.yml" -o -name "*.yaml" \
        -o -name "*.md" -o -name ".env.example" \) \
     ! -path "*/node_modules/*" ! -path "*/.next/*" ! -path "*/.git/*" \
@@ -115,13 +116,18 @@ strip_all 'djescaba@icloud\.com'               'YOUR_ADMIN_EMAIL_5'
 # Private infrastructure URLs — strip ALL *YOUR_SERVICE_URL hostnames
 strip_all 'https://[a-zA-Z0-9_-]*\.up\.railway\.app' 'https://YOUR_SERVICE_URL'
 strip_all '[a-zA-Z0-9_-]*\.up\.railway\.app'          'YOUR_SERVICE_URL'
+strip_all 'YOUR_BACKEND_SERVICE'                  'YOUR_BACKEND_SERVICE'
+strip_all 'borg-[0-9][0-9]*-production-[0-9][0-9]*'   'YOUR_SOUL_SERVICE'
+strip_all 'borg-[0-9][0-9]*-production'               'YOUR_SOUL_SERVICE'
+strip_all 'YOUR_X402_SERVICE'                   'YOUR_X402_SERVICE'
+strip_all 'YOUR_OPENCLAW_UI_SERVICE'                 'YOUR_OPENCLAW_UI_SERVICE'
 
 # Telegram bot tokens (real tokens match \d{8,}:AA[A-Za-z0-9_-]{30,})
 strip_all '[0-9]\{8,\}:AA[A-Za-z0-9_-]\{30,\}' 'YOUR_TELEGRAM_BOT_TOKEN'
 
 # Personal payment wallet address (global — catches skills/monetize-service.md etc.)
-strip_all '0xd8fd0e1dce89beaab924ac68098ddb17613db56f' '0xYOUR_WALLET_ADDRESS_HERE'
-strip_all '0xD8FD0E1DCE89BEAAB924AC68098DDB17613DB56F' '0xYOUR_WALLET_ADDRESS_HERE'
+strip_all '0xYOUR_WALLET_ADDRESS_HERE' '0xYOUR_WALLET_ADDRESS_HERE'
+strip_all '0xYOUR_WALLET_ADDRESS_HERE' '0xYOUR_WALLET_ADDRESS_HERE'
 
 # Personal payment wallet in .env.example only
 ENV_EXAMPLE="$TEMP_DIR/web/.env.example"

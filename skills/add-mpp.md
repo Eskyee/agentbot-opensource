@@ -47,7 +47,7 @@ MPP_AGENT_WALLETS=[]
 #### Create Wallet for Agent
 
 ```bash
-curl -X POST https://agentbot.raveculture.xyz/api/agent/mpp \
+curl -X POST https://agentbot.sh/api/agent/mpp \
   -H "Content-Type: application/json" \
   -d '{
     "action": "create-wallet",
@@ -71,7 +71,7 @@ Response:
 #### Register Existing Wallet
 
 ```bash
-curl -X POST https://agentbot.raveculture.xyz/api/agent/mpp \
+curl -X POST https://agentbot.sh/api/agent/mpp \
   -H "Content-Type: application/json" \
   -d '{
     "action": "register-wallet",
@@ -84,25 +84,25 @@ curl -X POST https://agentbot.raveculture.xyz/api/agent/mpp \
 #### Get Wallet Address
 
 ```bash
-curl "https://agentbot.raveculture.xyz/api/agent/mpp?action=get-wallet&agentId=agent-123"
+curl "https://agentbot.sh/api/agent/mpp?action=get-wallet&agentId=agent-123"
 ```
 
 #### Get Balance
 
 ```bash
-curl "https://agentbot.raveculture.xyz/api/agent/mpp?action=get-balance&agentId=agent-123"
+curl "https://agentbot.sh/api/agent/mpp?action=get-balance&agentId=agent-123"
 ```
 
 #### List All Wallets
 
 ```bash
-curl "https://agentbot.raveculture.xyz/api/agent/mpp?action=list-wallets"
+curl "https://agentbot.sh/api/agent/mpp?action=list-wallets"
 ```
 
 #### Make Payment
 
 ```bash
-curl -X POST https://agentbot.raveculture.xyz/api/agent/mpp \
+curl -X POST https://agentbot.sh/api/agent/mpp \
   -H "Content-Type: application/json" \
   -d '{
     "action": "make-payment",

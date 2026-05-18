@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
-
-function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-  return adminEmails.includes(email.toLowerCase())
-}
+import { isAdminEmail } from '@/app/lib/admin'
+import { getGlobalFlags } from '@/app/lib/feature-flags'
 
 const ALLOWED_COMMANDS = [
   'gateway.restart',
@@ -144,27 +140,30 @@ token-budget-reset    0 0 * * *     2026-03-27 00:00  ✓ OK`,
 
   'openclaw.version': `OpenClaw — Agent Runtime
 ━━━━━━━━━━━━━━━━━━━━━━
-Version:     2026.3.23
-Build:       20260323-1
+Version:     2026.4.26
+Build:       20260426-1
 Node:        v25.8.1
 Platform:    darwin arm64
-Docker:      ghcr.io/openclaw/openclaw:2026.3.13-1
+Docker:      ghcr.io/openclaw/openclaw:2026.4.26
 API:         v2
-Gateway:     v2026.3.23
+Gateway:     v2026.4.26
 Skills:      v2 manifest
 
 Components:
-  Core:      2026.3.23
-  Gateway:   2026.3.23
-  Scheduler: 2026.3.23
-  Memory:    2026.3.23
+  Core:      2026.4.26
+  Gateway:   2026.4.26
+  Scheduler: 2026.4.26
+  Memory:    2026.4.26
   Channels:  2026.3.23`,
 }
 
 export async function POST(req: Request) {
+  if (!getGlobalFlags().debugRoutesEnabled) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   // Admin-only — same guard as debug-db and debug-oauth
   const session = await getAuthSession()
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
+  if (!isAdminEmail(session?.user?.email)) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 

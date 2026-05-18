@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { Pool } from 'pg';
+import rateLimit from 'express-rate-limit';
 import { WalletService } from './services/wallet';
 import { BitcoinWalletService } from './services/bitcoin-wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
@@ -7,13 +7,11 @@ import { NegotiationService } from './services/negotiation'; // Added
 import { AmplificationService } from './services/amplification'; // Added
 import dotenv from 'dotenv';
 import { timingSafeEqual } from 'crypto';
+import { pool } from './lib/db';
 
 dotenv.config();
 
 const router = express.Router();
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 // Middleware to verify internal API key + extract user context — timing-safe to prevent enumeration
 const authenticate = (req: Request, res: Response, next: any) => {
@@ -38,17 +36,72 @@ const authenticate = (req: Request, res: Response, next: any) => {
  * --- AGENT-TO-AGENT BUS ---
  */
 
-// Dispatch a message from one agent to another
-router.post('/bus/send', async (req: Request, res: Response) => {
-  const message: AgentMessage = req.body;
+// Per-wallet rate limit on /bus/send. Public endpoint (signature is the auth
+// boundary), so we protect it from a single compromised wallet flooding the
+// bus or its recipients. Keyed on the claimed walletAddress, but verified by
+// signature later — abuse from a forged claim still gets caught upstream.
+const busSendLimiter = rateLimit({
+  windowMs: 60 * 1000,                 // 1-minute window
+  max: 60,                              // 60 messages/min per wallet
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request): string => {
+    const wallet = (req.body as Partial<AgentMessage> | undefined)?.from?.walletAddress;
+    if (typeof wallet === 'string' && wallet.length > 0) {
+      return `bus:${wallet.toLowerCase()}`;
+    }
+    // Fall back to IP for unparsable bodies — express-rate-limit's default.
+    return `bus:ip:${req.ip ?? 'unknown'}`;
+  },
+  message: { error: 'Bus rate limit exceeded for this wallet' },
+});
 
-  // 1. Verify authenticity
-  const isValid = await AgentBusService.verifyMessage(message);
-  if (!isValid) {
-    return res.status(401).json({ error: 'Invalid message signature' });
+// Dispatch a message from one agent to another.
+//
+// Hardened against replay/forgery:
+//   1. Body shape is validated up-front (bad shapes return 400, not 500).
+//   2. Signature is verified with a 5-minute timestamp window so captured
+//      signed messages cannot be replayed forever.
+//   3. messageId is recorded in agent_message_nonces — duplicates inside the
+//      window return 200 with deduped:true (idempotent), not re-dispatched.
+//   4. Rate limited per claimed walletAddress (signature is verified after
+//      the rate-limit decision; this is intentional — we want to rate-limit
+//      bad-signature spam too).
+router.post('/bus/send', busSendLimiter, async (req: Request, res: Response) => {
+  const message = req.body as AgentMessage | undefined;
+
+  // 1. Validate shape before doing crypto work or touching the DB.
+  if (
+    !message ||
+    typeof message.messageId !== 'string' ||
+    typeof message.timestamp !== 'string' ||
+    typeof message.action !== 'string' ||
+    typeof message.from?.walletAddress !== 'string' ||
+    typeof message.from?.signature !== 'string' ||
+    typeof message.to?.agentId !== 'string'
+  ) {
+    return res.status(400).json({ error: 'Malformed agent message' });
   }
 
-  // 2. Handle specific Underground logic based on action type
+  // 2. Verify signature + replay window in a single call.
+  const verification = await AgentBusService.verifyMessageDetailed(message, { enforceTimestamp: true });
+  if (!verification.ok) {
+    const code =
+      verification.reason === 'expired' || verification.reason === 'invalid_timestamp'
+        ? 'TIMESTAMP_EXPIRED'
+        : 'INVALID_SIGNATURE';
+    return res.status(401).json({ error: 'Invalid message', code });
+  }
+
+  // 3. Dedup inside the window. If we've already processed this messageId,
+  // short-circuit so retries from the sender don't re-trigger negotiation /
+  // amplification side effects.
+  const fresh = await AgentBusService.claimNonce(message.messageId, message.from.walletAddress);
+  if (!fresh) {
+    return res.status(200).json({ success: true, messageId: message.messageId, deduped: true });
+  }
+
+  // 4. Handle specific Underground logic based on action type.
   try {
     if (message.action.startsWith('BOOKING_')) {
       await NegotiationService.handleBookingMessage(message);
@@ -56,11 +109,12 @@ router.post('/bus/send', async (req: Request, res: Response) => {
       await AmplificationService.handleAmplificationMessage(message);
     }
 
-    // 3. Deliver to recipient agent webhook
+    // 5. Deliver to recipient agent webhook (with retry/backoff inside).
     await AgentBusService.deliverMessage(message);
     res.json({ success: true, messageId: message.messageId });
-  } catch (error: any) {
-    console.error('[Bus] Send error:', error.message);
+  } catch (error: unknown) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error('[Bus] Send error:', detail);
     res.status(500).json({ error: 'Failed to send message' });
   }
 });
@@ -133,6 +187,7 @@ router.post('/wallets', authenticate, async (req: Request, res: Response) => {
     const wallet = await WalletService.createAgentWallet(userId, agentId);
     res.status(201).json(wallet);
   } catch (error: any) {
+    console.error('[Wallets] Create error:', { userId, agentId, message: error?.message });
     res.status(500).json({ error: 'Failed to create wallet' });
   }
 });
@@ -147,6 +202,7 @@ router.get('/wallets/:address/balance', authenticate, async (req: Request, res: 
     const balance = await WalletService.getBalance(Number(userId), address);
     res.json({ address, balance_usdc: balance });
   } catch (error: any) {
+    console.error('[Wallets] Balance error:', { userId, address, message: error?.message });
     res.status(500).json({ error: 'Failed to fetch balance' });
   }
 });
@@ -162,6 +218,27 @@ router.get('/bitcoin/backend/info', authenticate, async (_req: Request, res: Res
   } catch (error: any) {
     console.error('[Bitcoin] Backend info error:', error.message);
     res.status(502).json({ error: 'Failed to fetch Bitcoin backend info' });
+  }
+});
+
+router.get('/bitcoin/liquid/info', authenticate, async (_req: Request, res: Response) => {
+  try {
+    const info = await BitcoinWalletService.getLiquidInfo();
+    res.json(info);
+  } catch (error: any) {
+    console.error('[Liquid] Info error:', error.message);
+    res.status(502).json({ error: 'Failed to fetch Liquid info' });
+  }
+});
+
+router.get('/bitcoin/greenlight/status', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = String((req as any).userId || '');
+    const info = await BitcoinWalletService.getGreenlightStatus(userId);
+    res.json(info);
+  } catch (error: any) {
+    console.error('[Greenlight] Status error:', error.message);
+    res.status(502).json({ error: 'Failed to fetch Greenlight status' });
   }
 });
 
@@ -214,6 +291,7 @@ router.get('/bitcoin/wallets/:walletId/address/unused', authenticate, async (req
     res.json(address);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    if (status !== 404) console.error('[Bitcoin] Unused address error:', { userId, walletId, message: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to derive Bitcoin address' });
   }
 });
@@ -231,6 +309,7 @@ router.get('/bitcoin/wallets/:walletId/balance', authenticate, async (req: Reque
     res.json(balance);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    if (status !== 404) console.error('[Bitcoin] Balance error:', { userId, walletId, message: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin balance' });
   }
 });
@@ -248,6 +327,7 @@ router.get('/bitcoin/wallets/:walletId/transactions', authenticate, async (req: 
     res.json(transactions);
   } catch (error: any) {
     const status = error.message === 'Bitcoin wallet not found' ? 404 : 502;
+    if (status !== 404) console.error('[Bitcoin] Transactions error:', { userId, walletId, message: error?.message });
     res.status(status).json({ error: status === 404 ? error.message : 'Failed to fetch Bitcoin transactions' });
   }
 });
@@ -291,38 +371,47 @@ router.post('/splits', authenticate, async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Agent not found or not owned by you' });
     }
 
-    // 1. Record split in DB
-    const splitResult = await pool.query(
-      'INSERT INTO royalty_splits (agent_id, name, total_amount_usdc, status) VALUES ($1, $2, $3, $4) RETURNING id',
-      [agentId, name, totalAmount, 'pending']
-    );
-    const splitId = splitResult.rows[0].id;
-
-    // 2. Add recipients to DB
-    for (const recipient of recipients) {
-      await pool.query(
-        'INSERT INTO royalty_recipients (split_id, wallet_address, percentage, paid) VALUES ($1, $2, $3, FALSE)',
-        [splitId, recipient.address, recipient.share]
-      );
-    }
-
-    // 3. Execute split directly (no queue needed for pre-launch volume)
+    // Wrap split creation + recipients + status in a single transaction.
+    // Prevents orphaned splits or partial recipient lists if any step fails.
+    const client = await pool.connect();
+    let splitId: number;
     try {
-      await pool.query(
+      await client.query('BEGIN');
+
+      // 1. Record split in DB
+      const splitResult = await client.query(
+        'INSERT INTO royalty_splits (agent_id, name, total_amount_usdc, status) VALUES ($1, $2, $3, $4) RETURNING id',
+        [agentId, name, totalAmount, 'pending']
+      );
+      splitId = splitResult.rows[0].id;
+
+      // 2. Add recipients to DB
+      for (const recipient of recipients) {
+        await client.query(
+          'INSERT INTO royalty_recipients (split_id, wallet_address, percentage, paid) VALUES ($1, $2, $3, FALSE)',
+          [splitId, recipient.address, recipient.share]
+        );
+      }
+
+      // 3. Mark completed — all-or-nothing with the inserts above
+      await client.query(
         'UPDATE royalty_splits SET status = $1, executed_at = NOW() WHERE id = $2',
         ['completed', splitId]
       );
+
+      await client.query('COMMIT');
       console.log(`[Splits] Split ${splitId} executed for agent ${agentId}`);
     } catch (execErr: any) {
-      console.error(`[Splits] Split ${splitId} execution error:`, execErr.message);
-      await pool.query(
-        'UPDATE royalty_splits SET status = $1 WHERE id = $2',
-        ['failed', splitId]
-      ).catch(() => {});
+      await client.query('ROLLBACK');
+      console.error(`[Splits] Split execution error:`, execErr.message);
+      throw execErr;
+    } finally {
+      client.release();
     }
 
     res.json({ success: true, splitId, status: 'completed' });
   } catch (error: any) {
+    console.error('[Splits] Create error:', { userId, message: error?.message });
     res.status(500).json({ error: 'Failed to create split' });
   }
 });

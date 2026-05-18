@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Open Source Multi-Tenant AI Agent Platform',
     description: 'How we built Agentbot — Docker isolation, BYOK, USDC on Base, skills.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/open-source-multi-tenant-architecture',
+    url: 'https://agentbot.sh/blog/posts/open-source-multi-tenant-architecture',
   },
 }
 
@@ -27,7 +27,7 @@ export default function OpenSourceArchitecture() {
               Open Source Multi-Tenant AI Agent Platform
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Architecture</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Architecture</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Open Source</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Engineering</span>
             </div>
@@ -99,7 +99,7 @@ export default function OpenSourceArchitecture() {
 
           <div className="border-t border-zinc-800 mt-8 pt-8">
             <p className="text-zinc-400 text-sm">
-              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-blue-400 hover:text-white">
+              <a href="https://github.com/Eskyee/agentbot-opensource" className="text-orange-500 hover:text-white">
                 github.com/Eskyee/agentbot-opensource →
               </a>
             </p>

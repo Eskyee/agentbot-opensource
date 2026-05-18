@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()
@@ -21,6 +20,36 @@ export async function GET() {
   })
 }
 
+// Generate a pairing code for self-pairing
+export async function PUT(req: Request) {
+  const session = await getAuthSession()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { searchParams } = new URL(req.url)
+  const name = searchParams.get('name') || 'My Device'
+
+  // Generate a 6-digit pairing code
+  const pairingCode = Math.random().toString(36).substring(2, 8).toUpperCase()
+
+  const device = await prisma.pairedDevice.create({
+    data: {
+      userId: session.user.id,
+      name,
+      ip: req.headers.get('x-forwarded-for') || 'self',
+      status: 'pending',
+    },
+  })
+
+  return NextResponse.json({
+    success: true,
+    deviceId: device.id,
+    pairingCode,
+    pairingUrl: `/dashboard/devices?pair=${pairingCode}&id=${device.id}`,
+  })
+}
+
 export async function POST(req: Request) {
   const session = await getAuthSession()
   if (!session?.user?.id) {
@@ -31,6 +60,23 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { deviceId, action } = body
 
+    // Self-pair: auto-approve a new device for the current user
+    if (action === 'pair') {
+      const deviceName = body.name || 'My Device'
+      const device = await prisma.pairedDevice.create({
+        data: {
+          userId: session.user.id,
+          name: deviceName,
+          ip: req.headers.get('x-forwarded-for') || 'self-pair',
+          status: 'approved',
+        },
+      })
+      return NextResponse.json({
+        success: true,
+        device: { id: device.id, name: device.name, status: device.status },
+      })
+    }
+
     if (!deviceId || !action) {
       return NextResponse.json(
         { error: 'Missing required fields: deviceId, action' },
@@ -40,7 +86,7 @@ export async function POST(req: Request) {
 
     if (!['approve', 'deny', 'revoke'].includes(action)) {
       return NextResponse.json(
-        { error: 'Invalid action. Must be: approve, deny, or revoke' },
+        { error: 'Invalid action. Must be: pair, approve, deny, or revoke' },
         { status: 400 }
       )
     }

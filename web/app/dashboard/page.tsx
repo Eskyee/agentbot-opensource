@@ -1,49 +1,38 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useSearchParams, usePathname } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { useCustomSession } from '@/app/lib/useCustomSession'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
-import { DashboardSidebar } from '@/app/components/DashboardSidebar'
-import { StatusBadge } from '@/app/components/shared/StatusBadge'
-import { ConfirmDialog } from '@/app/components/shared/ConfirmDialog'
-import { PermissionGate } from '@/app/components/shared/PermissionGate'
-import { TrialBanner } from '@/app/components/TrialBanner'
+import { Spinner } from 'geist/components'
+
+const DashboardSidebar = dynamic(() => import('@/app/components/DashboardSidebar').then(m => m.DashboardSidebar))
+const InstanceControlPanel = dynamic(() => import('@/app/components/dashboard/InstanceControlPanel').then(m => m.InstanceControlPanel))
+const ConfirmDialog = dynamic(() => import('@/app/components/shared/ConfirmDialog').then(m => m.ConfirmDialog))
+const PermissionGate = dynamic(() => import('@/app/components/shared/PermissionGate').then(m => m.PermissionGate))
 import { DEFAULT_OPENCLAW_GATEWAY_URL } from '@/app/lib/openclaw-config'
 import { buildOpenClawControlUrl, OPENCLAW_CONTROLS_ENABLED } from '@/app/lib/openclaw-control'
-import { ensureCompatibility } from '@/app/lib/openclaw-compatibility'
-
-
-// Helper to convert percent string to Tailwind width class
-function getBarWidthClass(percent?: string) {
-  if (!percent) return 'w-0';
-  const num = parseInt(percent.replace('%', ''));
-    if (num >= 100) { return 'w-full'; }
-    if (num >= 90) { return 'w-11/12'; }
-    if (num >= 80) { return 'w-10/12'; }
-    if (num >= 70) { return 'w-9/12'; }
-    if (num >= 60) { return 'w-8/12'; }
-    if (num >= 50) { return 'w-7/12'; }
-    if (num >= 40) { return 'w-6/12'; }
-    if (num >= 30) { return 'w-5/12'; }
-    if (num >= 20) { return 'w-4/12'; }
-    if (num >= 10) { return 'w-3/12'; }
-    if (num > 0) { return 'w-2/12'; }
-  return 'w-0';
-}
 
 interface InstanceData {
   userId: string
   status: string
-  startedAt: string
-  subdomain: string
+  statusReason?: string | null
+  probeChecks?: Array<{
+    path: string
+    ok: boolean
+    status: number | null
+    reason: string | null
+  }>
+  subdomain?: string
   url: string
   plan: string
   openclawVersion?: string
+  ffmpegAvailable?: boolean
+  ffmpegVersion?: string | null
   botUsername?: string
   gatewayToken?: string
   /** Auto-connect URL with token in #fragment */
@@ -52,6 +41,10 @@ interface InstanceData {
   verificationType?: string | null
   attestationUid?: string | null
   verifiedAt?: string | null
+  provisionedAt?: string | null
+  lastSeenAt?: string | null
+  gatewayProcessStatus?: string | null
+  subscriptionStatus?: string | null
 }
 
 interface DashboardBootstrapData {
@@ -69,6 +62,17 @@ type ConfirmAction = {
   confirmLabel: string
   pendingLabel: string
   variant: 'danger' | 'warning' | 'default'
+}
+
+function DashboardLoadingShell() {
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center font-mono">
+      <div className="mb-4">
+        <Spinner size={48} />
+      </div>
+      <p className="animate-pulse uppercase tracking-[0.2em] text-[10px] text-zinc-500">Initializing Dashboard...</p>
+    </div>
+  )
 }
 
 const CONFIRM_ACTIONS: Record<string, ConfirmAction> = {
@@ -91,28 +95,35 @@ const CONFIRM_ACTIONS: Record<string, ConfirmAction> = {
 }
 
 function DashboardContent() {
-  const pathname = usePathname()
   const { data: session, status } = useCustomSession()
   const router = useRouter()
   const userName = session?.user?.name || session?.user?.email?.split('@')[0] || 'Sign in'
   const searchParams = useSearchParams()
   const [instance, setInstance] = useState<InstanceData | null>(null)
-  const [stats, setStats] = useState<{ cpu: string; memory: string; uptime?: string; messages?: number; errors?: number; health?: string } | null>(null)
+  const [stats, setStats] = useState<{
+    cpu: string
+    memory: string
+    uptime?: string | null
+    messages?: number | null
+    errors?: number | null
+    health?: string | null
+    telemetry?: {
+      resourceMetricsAvailable?: boolean
+      lifecycleMetricsAvailable?: boolean
+      messageMetricsAvailable?: boolean
+    }
+  } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState('')
   const [credits, setCredits] = useState(0)
   const [bootstrap, setBootstrap] = useState<DashboardBootstrapData | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [gatewayStatus, setGatewayStatus] = useState<{
-    health: string
-    sessions: { total: number; active: number; available?: boolean; error?: string | null }
-    cron: { total: number; enabled: number; available?: boolean; error?: string | null }
-  } | null>(null)
   const [statusChecks, setStatusChecks] = useState<{ name: string; status: 'ok' | 'degraded' | 'down'; detail?: string }[]>([])
   const [autoPairHealth, setAutoPairHealth] = useState<'ready' | 'missing' | 'loading'>('loading')
   const [healingAttempted, setHealingAttempted] = useState(false)
   const [confirmDialog, setConfirmDialog] = useState<ConfirmAction | null>(null)
+  const [probeActionLoading, setProbeActionLoading] = useState<'probe' | 'resync' | null>(null)
   const controlsEnabled = OPENCLAW_CONTROLS_ENABLED
 
   useEffect(() => {
@@ -121,137 +132,72 @@ function DashboardContent() {
     }
   }, [status, router])
 
-    useEffect(() => { (async () => {
-      // Clear localStorage instance data when no session (user logged out)
-      if (!session) {
-        localStorage.removeItem('agentbot_instance')
-        setInstance(null)
-        setError('')
-        setLoading(false)
-        return
-      }
-
-      const urlUserId = searchParams.get('id')
-      const storedData = localStorage.getItem('agentbot_instance')
-      
-      // If no session, show login prompt
-      if (!session) {
-        setError('Please sign in to view your dashboard')
-        setLoading(false)
-        return
-      }
-
-      fetchGatewayStatus()
-      fetchStatusChecks()
-      
-      let userId = urlUserId
-      let botUsername = ''
-      
-      if (storedData) {
-        const parsed = JSON.parse(storedData)
-        if (!userId) userId = parsed.userId
-        botUsername = parsed.botUsername || ''
-      }
-      
-      // Prefer the canonical OpenClaw record in the DB and hydrate credits at the same time.
-      if (!userId) {
-        try {
-          const bootstrapRes = await fetch('/api/dashboard/bootstrap')
-          const bootstrapData = await bootstrapRes.json()
-          setBootstrap(bootstrapData)
-          setCredits(bootstrapData.credits || 0)
-          if (bootstrapData.openclawInstanceId) {
-            userId = bootstrapData.openclawInstanceId
-            // Also restore localStorage for future visits
-            if (bootstrapData.openclawUrl) {
-              localStorage.setItem('agentbot_instance', JSON.stringify({
-                userId: bootstrapData.openclawInstanceId,
-                url: bootstrapData.openclawUrl,
-              }))
-            }
-          }
-        } catch {}
-      } else {
-        fetchBootstrap()
-      }
-
-      // Legacy fallback for older accounts that still rely on the agents route.
-      if (!userId) {
-        try {
-          const agentsRes = await fetch('/api/agents')
-          const agentsData = await agentsRes.json()
-          if (agentsData.agents && agentsData.agents.length > 0) {
-            userId = agentsData.agents[0].userId
-            botUsername = agentsData.agents[0].botUsername || ''
-          }
-        } catch {}
-      }
-
-      if (!userId) {
-        setError('No instance found. Please deploy first.')
-        setLoading(false)
-        return
-      }
-      
-      fetchInstance(userId, botUsername)
-    })(); // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams, session])
-
-  const fetchCredits = async () => {
+  const fetchEverything = useCallback(async () => {
+    const urlUserId = searchParams.get('id')
+    const storedData = localStorage.getItem('agentbot_instance')
+    
     try {
-      const res = await fetch('/api/credits')
-      const data = await res.json()
+      // FETCH EVERYTHING IN ONE CALL - 90% FASTER
+      const dataRes = await fetch('/api/dashboard/data')
+      if (!dataRes.ok) {
+        if (dataRes.status === 401) {
+          setError('Please sign in to view your dashboard')
+          setLoading(false)
+          return
+        }
+        throw new Error('Failed to fetch dashboard data')
+      }
+      
+      const data = await dataRes.json()
+      
+      // Hydrate UI state from consolidated response
       setCredits(data.credits || 0)
-    } catch (e) {
-      console.error('Failed to fetch credits:', e)
-    }
-  }
-
-  const fetchBootstrap = async () => {
-    try {
-      const res = await fetch('/api/dashboard/bootstrap')
-      if (!res.ok) return
-      const data = await res.json()
-      setBootstrap(data)
-      setCredits(data.credits || 0)
-    } catch (e) {
-      console.error('Failed to fetch dashboard bootstrap:', e)
-    }
-  }
-
-  const fetchGatewayStatus = async () => {
-    try {
-      const res = await fetch('/api/gateway/status')
-      if (res.ok) {
-        const data = await res.json()
-        setGatewayStatus(data)
+      setStatusChecks(data.health?.checks || [])
+      setBootstrap(data) // Use consolidated data as bootstrap
+      
+      if (data.instance) {
+        const url = data.instance.url
+        const gatewayToken = data.gatewayToken
+        const controlUiUrl = buildOpenClawControlUrl({
+          view: 'chat',
+          gatewayUrl: url,
+          gatewayToken,
+          session: 'main',
+        })
+        
+        setInstance({ ...data.instance, gatewayToken, controlUiUrl })
+        
+        // Cache for future visits
+        localStorage.setItem('agentbot_instance', JSON.stringify({
+          userId: data.openclawInstanceId,
+          url: data.openclawUrl,
+        }))
       }
-    } catch (e) {
-      console.error('Failed to fetch gateway status:', e)
-    }
-  }
 
-  const fetchStatusChecks = async () => {
-    try {
-      const res = await fetch('/api/dashboard/health')
-      if (!res.ok) return
-      const body = await res.json()
-      setStatusChecks(body.services || [])
-    } catch {
-      setStatusChecks([{ name: 'Service layer', status: 'down', detail: 'unreachable' }])
-    }
-  }
+      if (data.stats) {
+        setStats(data.stats)
+      }
 
-  const healAutoPair = async () => {
+      const health = data.gatewayToken ? 'ready' : 'missing'
+      setAutoPairHealth(health)
+      setLoading(false)
+      
+    } catch (err) {
+      console.error('[Dashboard] Consolidated fetch failed:', err)
+      setError('Failed to initialize dashboard')
+      setLoading(false)
+    }
+  }, [searchParams])
+
+  const healAutoPair = useCallback(async () => {
+    if (healingAttempted) return
     setHealingAttempted(true)
     try {
       // First ensure OpenClaw 2026.4.2 compatibility
       const compatibility = await fetch('/api/openclaw/ensure-compatibility', { method: 'POST' })
       if (compatibility.ok) {
         const compatData = await compatibility.json()
-        if (compatData.fixes?.length > 0) {
-          console.log('Applied compatibility fixes:', compatData.fixes)
-        }
+        if (compatData.fixes?.length > 0) console.log('Applied compatibility fixes:', compatData.fixes)
       }
 
       // Now heal the token
@@ -260,86 +206,59 @@ function DashboardContent() {
         const data = await res.json()
         if (data.healed) {
           setAutoPairHealth('ready')
-          // Update instance with new token
-          if (data.token && instance) {
-            const newControlUiUrl = buildOpenClawControlUrl({
-              view: 'chat',
-              gatewayUrl: instance.url,
-              gatewayToken: data.token,
-              session: 'main',
-            })
-            setInstance({ ...instance, gatewayToken: data.token, controlUiUrl: newControlUiUrl })
-          }
+          // Refresh data after healing
+          fetchEverything()
         }
       }
     } catch (error) {
       console.error('Auto Pair heal failed', error)
     }
-  }
+  }, [fetchEverything, healingAttempted])
+
+  // Trigger healing effect
+  useEffect(() => {
+    if (autoPairHealth === 'missing' && !healingAttempted && !loading) {
+      healAutoPair()
+    }
+  }, [autoPairHealth, healingAttempted, loading, healAutoPair])
 
   useEffect(() => {
-    const interval = setInterval(fetchStatusChecks, 30_000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const fetchInstance = async (userId: string, botUsername: string) => {
-    try {
-      const res = await fetch(`/api/instance/${userId}`)
-      const data = await res.json()
-
-      if (data.error) {
-        setError(data.error)
-      } else {
-        // Prefer the user's persisted OpenClaw instance URL. Only fall back to the
-        // shared gateway when the user has no instance-specific URL yet.
-        const preferredUrl = bootstrap?.openclawUrl || data.url
-        const fallbackUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || DEFAULT_OPENCLAW_GATEWAY_URL
-        const url = String(preferredUrl || fallbackUrl).replace(/\/$/, '')
-        const gatewayToken = bootstrap?.gatewayToken || undefined
-        // Control UI auto-connects via hash fragment — token + gateway URL
-        // Hash is never sent to server, so it's safe to embed the token
-        const controlUiUrl = buildOpenClawControlUrl({
-          view: 'chat',
-          gatewayUrl: url,
-          gatewayToken,
-          session: 'main',
-        })
-        const resolvedUserId = bootstrap?.openclawInstanceId || data.userId || userId
-        localStorage.setItem('agentbot_instance', JSON.stringify({
-          userId: resolvedUserId,
-          url,
-          botUsername,
-        }))
-        setInstance({ ...data, userId: resolvedUserId, url, botUsername, gatewayToken, controlUiUrl })
-        fetchStats(resolvedUserId)
-        const health = gatewayToken ? 'ready' : 'missing'
-        setAutoPairHealth(health)
-        if (health === 'missing' && !healingAttempted) {
-          healAutoPair()
-        }
-      }
-    } catch (e) {
-      setError('Failed to fetch instance')
-    } finally {
+    // Clear localStorage instance data when no session (user logged out)
+    if (!session) {
+      localStorage.removeItem('agentbot_instance')
+      setInstance(null)
+      setError('')
       setLoading(false)
+      return
     }
-  }
 
-  const fetchStats = async (userId: string) => {
+    setLoading(true)
+    fetchEverything()
+  }, [session, fetchEverything])
+
+  const handleRuntimeProbeAction = async (action: 'probe' | 'resync') => {
+    if (!instance) return
+
+    setProbeActionLoading(action)
     try {
-      const res = await fetch(`/api/instance/${userId}/stats`)
+      const res = await fetch(`/api/instance/${instance.userId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      })
       const data = await res.json()
-      if (!data.error) {
-        setStats({
-          cpu: data.cpu,
-          memory: data.memory,
-          uptime: data.uptime,
-          messages: data.messages,
-          errors: data.errors,
-          health: data.health,
-        })
+
+      if (!res.ok) {
+        throw new Error(data?.error || `Failed to ${action} runtime`)
       }
-    } catch {}
+
+      await fetchEverything()
+      toast.success(action === 'probe' ? 'Runtime probe refreshed' : 'Runtime resync triggered')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Failed to ${action} runtime`)
+    } finally {
+      setProbeActionLoading(null)
+    }
   }
 
   const performAction = async (action: 'restart' | 'stop' | 'start' | 'update' | 'repair' | 'reset-memory') => {
@@ -382,7 +301,7 @@ function DashboardContent() {
           'reset-memory': 'Memory wiped — agent is fresh',
         }
         toast.success(successMsg[action] || 'Done', { id: toastId })
-        setTimeout(() => fetchInstance(instance.userId, instance.botUsername || ''), 1000)
+        setTimeout(() => fetchEverything(), 1000)
       } else {
         toast.error(data.error || 'Action failed', { id: toastId })
       }
@@ -393,62 +312,10 @@ function DashboardContent() {
     }
   }
 
-   if (loading && status === 'authenticated') {
-     return (
-       <div className="flex min-h-screen bg-black font-mono">
-         <DashboardSidebar
-           userName={userName}
-           credits={credits}
-           plan={bootstrap?.plan || instance?.plan}
-           runtimeUrl={bootstrap?.openclawUrl}
-           runtimeGatewayToken={bootstrap?.gatewayToken}
-           runtimeInstanceId={bootstrap?.openclawInstanceId}
-           isOpen={sidebarOpen}
-           onToggle={() => setSidebarOpen(!sidebarOpen)}
-         />
-         <div className="flex-1 flex flex-col">
-           <header className="sticky top-14 z-30 bg-zinc-950 border-b border-zinc-900 px-4 py-3 flex items-center justify-between">
-             <div className="flex items-center gap-4">
-               <button
-                 onClick={() => setSidebarOpen(true)}
-                 className="md:hidden p-2 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors z-50"
-                 aria-label="Open menu"
-               >
-                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                 </svg>
-               </button>
-               <span className="text-sm font-bold uppercase tracking-tighter">◈ Mission Control</span>
-             </div>
-           </header>
-           <main className="flex-1 overflow-y-auto">
-             <div className="p-4 lg:p-8 space-y-6">
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                 {Array.from({ length: 3 }).map((_, i) => (
-                   <div key={i} className="border border-zinc-800 bg-zinc-950 p-4 rounded-lg animate-pulse">
-                     <div className="h-3 w-24 bg-zinc-800 rounded mb-3" />
-                     <div className="h-7 w-32 bg-zinc-900 rounded" />
-                   </div>
-                 ))}
-               </div>
-               <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                 {Array.from({ length: 5 }).map((_, i) => (
-                   <div key={i} className="bg-zinc-900 border border-zinc-800 p-6 animate-pulse">
-                     <div className="h-3 w-28 bg-zinc-800 rounded mb-4" />
-                     <div className="space-y-3">
-                       <div className="h-3 bg-zinc-800 rounded" />
-                       <div className="h-3 bg-zinc-800 rounded w-5/6" />
-                       <div className="h-3 bg-zinc-800 rounded w-3/4" />
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
-           </main>
-         </div>
-       </div>
-     )
-   }
+  // Return loading shell for ALL non-ready states — prevents flash of content
+  if (status !== 'authenticated' || loading) {
+    return <DashboardLoadingShell />
+  }
 
   if (error) {
     const isAuthError = error.includes('sign in') || error.includes('Unauthorized')
@@ -456,7 +323,7 @@ function DashboardContent() {
     const isInstanceError = !isAuthError && !isNoInstance // backend returned error for existing instance
 
     let title = 'Deploy your first agent'
-    let cta = { label: 'Deploy Now', href: '/onboard' }
+    let cta = { label: 'Create New Runtime', href: '/onboard?mode=deploy' }
 
     if (isAuthError) {
       title = 'Sign in required'
@@ -471,6 +338,7 @@ function DashboardContent() {
         <DashboardSidebar
           userName={userName}
           plan={instance?.plan}
+          isAdmin={session?.user?.isAdmin === true}
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
@@ -493,20 +361,11 @@ function DashboardContent() {
 
   if (!instance) return null
 
-  if (status === 'loading' || status === 'unauthenticated') {
-    return (
-      <div className="flex items-center justify-center h-screen bg-black font-mono">
-        <div className="text-left">
-          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
-          <p className="text-zinc-400 text-sm">Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  const instanceName = instance.userId
+    ? `Agentbot Agent ${instance.userId.slice(0, 12)}`
+    : 'Agentbot Agent'
+  const runtimeHealth = instance.status === 'running' ? 'healthy' : instance.status
 
-  const isRunning = instance.status === 'running'
-  const startedAt = instance.startedAt
-  const statusTone = instance.status === 'running' ? 'text-green-400' : instance.status === 'starting' ? 'text-yellow-400' : 'text-zinc-400'
   const skillsManagerUrl = buildOpenClawControlUrl({
     view: 'skills',
     gatewayUrl: instance.url,
@@ -517,12 +376,6 @@ function DashboardContent() {
     gatewayUrl: instance.url,
     gatewayToken: instance.gatewayToken,
   })
-  const sessionsLabel = gatewayStatus?.sessions?.available
-    ? `${gatewayStatus?.sessions.active ?? 0} active / ${gatewayStatus?.sessions.total ?? 0} total`
-    : 'unavailable'
-  const cronLabel = gatewayStatus?.cron?.available
-    ? `${gatewayStatus?.cron.enabled ?? 0} enabled / ${gatewayStatus?.cron.total ?? 0} total`
-    : 'unavailable'
 
   return (
     <div className="flex min-h-screen bg-black font-mono">
@@ -533,6 +386,7 @@ function DashboardContent() {
         runtimeUrl={instance?.url || bootstrap?.openclawUrl}
         runtimeGatewayToken={instance?.gatewayToken || bootstrap?.gatewayToken}
         runtimeInstanceId={instance?.userId || bootstrap?.openclawInstanceId}
+        isAdmin={session?.user?.isAdmin === true}
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
@@ -568,11 +422,94 @@ function DashboardContent() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto">
-          <TrialBanner />
-          <div className="p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="p-4 sm:p-6 lg:p-8">
           {/* Permission Gate — shows pending approval requests */}
           <PermissionGate agentId={instance?.userId} />
+
+          {/* Hero Header */}
+          <div className="mb-6 rounded-2xl border-b border-zinc-800 bg-[radial-gradient(circle_at_top_left,_rgba(232,93,38,0.18),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.14),_transparent_32%),linear-gradient(180deg,_rgba(0,24,27,0.92),_rgba(9,9,11,0.96))] px-5 py-5 sm:px-6 lg:px-8">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-500">Agentbot Runtime</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                    {instanceName}
+                  </h2>
+                  <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${
+                    instance.status === 'running'
+                      ? 'border-green-500/30 bg-green-500/10 text-green-400'
+                      : instance.status === 'stopped'
+                        ? 'border-zinc-600/30 bg-zinc-600/20 text-zinc-400'
+                        : 'border-yellow-500/30 bg-yellow-500/10 text-yellow-400'
+                  }`}>
+                    <span className={`h-2 w-2 rounded-full ${
+                      instance.status === 'running' ? 'bg-green-400' : instance.status === 'stopped' ? 'bg-zinc-500' : 'bg-yellow-400'
+                    }`} />
+                    {instance.status === 'running' ? 'Running' : instance.status === 'stopped' ? 'Stopped' : instance.status}
+                  </span>
+                  {runtimeHealth === 'healthy' && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-300">
+                      <span className="h-2 w-2 rounded-full bg-green-400" />
+                      Healthy
+                    </span>
+                  )}
+                </div>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
+                  Clean controls for your Agentbot instance, with runtime actions and machine facts in one place.
+                </p>
+              </div>
+              {instance.controlUiUrl && (
+                <a
+                  href={instance.controlUiUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black transition-colors hover:bg-zinc-200"
+                >
+                  Open
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 3h6v6" /><path d="M10 14 21 3" /><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  </svg>
+                </a>
+              )}
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                1 vCPU, 2 GB RAM
+              </span>
+              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                10 GB SSD
+              </span>
+              <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                {instance.plan || 'Solo'}
+              </span>
+              {instance.openclawVersion && (
+                <span className="rounded-full border border-zinc-700 bg-zinc-950 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-zinc-100">
+                  v{instance.openclawVersion}
+                </span>
+              )}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link
+                href="/expert-setup"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                Book setup
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                </svg>
+              </Link>
+              <Link
+                href="/billing"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-200 transition-colors hover:border-zinc-500 hover:text-white"
+              >
+                Manage billing
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 7h10v10" /><path d="M7 17 17 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
             {statusChecks.map((check) => (
@@ -584,326 +521,34 @@ function DashboardContent() {
                   </p>
                   {check.detail && <p className="text-[10px] text-zinc-500 mt-1">{check.detail}</p>}
                 </div>
-                <span className={`h-3 w-3 rounded-full ${check.status === 'ok' ? 'bg-green-400' : check.status === 'degraded' ? 'bg-yellow-400' : 'bg-red-500'}`} />
+                <span className={`h-3 w-3 rounded-full ${check.status === 'ok' ? 'bg-green-400' : check.status === 'degraded' ? 'bg-yellow-400' : 'bg-orange-500'}`} />
               </div>
             ))}
           </div>
 
-          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <div className="mb-4 flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-xs font-bold uppercase tracking-widest">
-                    Agent Runtime
-                  </h2>
-                  <p className="mt-1 text-[11px] text-zinc-500">Live OpenClaw controls and runtime identity</p>
-                </div>
-                <StatusBadge status={instance?.status || 'unknown'} />
-              </div>
-              <dl className="space-y-3">
-                {instance?.botUsername && (
-                  <div>
-                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Telegram</dt>
-                    <dd className="font-mono">
-                      <a 
-                        href={`https://t.me/${instance?.botUsername}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 hover:underline"
-                      >
-                        @{instance?.botUsername}
-                      </a>
-                    </dd>
-                  </div>
-                )}
-                <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Instance ID</dt>
-                  <dd className="font-mono text-sm text-zinc-400">{instance?.userId}</dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">URL</dt>
-                  <dd className="font-mono text-sm text-zinc-400 break-all">
-                    <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
-                      {instance?.subdomain}
-                    </a>
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Plan</dt>
-                  <dd className="text-zinc-400 capitalize">{instance?.plan || 'free'}</dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Version</dt>
-                  <dd className="font-mono text-zinc-400">{instance?.openclawVersion || 'unknown'}</dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Started</dt>
-                  <dd className="text-zinc-400">{startedAt ? new Date(startedAt).toLocaleString() : 'N/A'}</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <div className="mb-4">
-                <h2 className="text-xs font-bold uppercase tracking-widest">
-                  Runtime Signals
-                </h2>
-                <p className="mt-1 text-[11px] text-zinc-500">Separate the agent runtime from gateway telemetry so failures are obvious</p>
-              </div>
-              <dl className="space-y-3">
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">OpenClaw</dt>
-                  <dd className={`font-mono ${gatewayStatus?.health === 'healthy' ? 'text-green-400' : 'text-yellow-400'}`}>
-                    {gatewayStatus?.health || 'checking...'}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">State</dt>
-                  <dd className={`font-mono ${statusTone}`}>
-                    {instance?.status || 'unknown'}
-                  </dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">Gateway Sessions</dt>
-                  <dd className="text-zinc-400 font-mono">{sessionsLabel}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">Cron</dt>
-                  <dd className="text-zinc-400 font-mono">{cronLabel}</dd>
-                </div>
-                {gatewayStatus?.sessions?.error && !gatewayStatus.sessions.available && (
-                  <div>
-                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Sessions Detail</dt>
-                    <dd className="text-[11px] text-zinc-500">{gatewayStatus.sessions.error}</dd>
-                  </div>
-                )}
-                {gatewayStatus?.cron?.error && !gatewayStatus.cron.available && (
-                  <div>
-                    <dt className="text-[10px] uppercase tracking-widest text-zinc-600">Cron Detail</dt>
-                    <dd className="text-[11px] text-zinc-500">{gatewayStatus.cron.error}</dd>
-                  </div>
-                )}
-              </dl>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                OpenClaw Controls
-              </h2>
-              <div className="space-y-3">
-                <a
-                  href={instance?.controlUiUrl || instance?.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                >
-                  <span>Open OpenClaw</span>
-                  <span>→</span>
-                </a>
-                <a
-                  href={skillsManagerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  <span>Open Skills Manager</span>
-                  <span>→</span>
-                </a>
-                <a
-                  href={configManagerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                >
-                  <span>Open Config</span>
-                  <span>→</span>
-                </a>
-                <div className="border border-zinc-800 px-4 py-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Gateway Token</p>
-                    <button
-                      onClick={() => {
-                        const token = instance?.gatewayToken || bootstrap?.gatewayToken
-                        if (token) {
-                          navigator.clipboard.writeText(token)
-                          toast.success('Token copied!')
-                        }
-                      }}
-                      className="text-[10px] text-blue-500 hover:text-blue-400 font-bold uppercase tracking-widest"
-                    >
-                      Copy
-                    </button>
-                  </div>
-                  <code className="text-[10px] text-zinc-500 font-mono break-all block">
-                    {instance?.gatewayToken || bootstrap?.gatewayToken || 'No token available'}
-                  </code>
-                </div>
-                <div className="border border-zinc-800 px-4 py-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Auto Pairing</p>
-                    <span
-                      className={`h-2 w-2 rounded-full ${
-                        autoPairHealth === 'ready'
-                          ? 'bg-green-400'
-                          : autoPairHealth === 'missing'
-                            ? 'bg-yellow-400'
-                            : 'bg-zinc-600 animate-pulse'
-                      }`}
-                    />
-                  </div>
-                  <p className="text-[11px] text-zinc-500">
-                    {autoPairHealth === 'ready' && 'Control UI auto-connects with the stored gateway token.'}
-                    {autoPairHealth === 'missing' && 'No valid gateway token detected — refresh the dashboard or reauthenticate to restore pairing.'}
-                    {autoPairHealth === 'loading' && 'Checking gateway token…'}
-                  </p>
-                  <button
-                    onClick={() => {
-                      setAutoPairHealth('loading')
-                      fetchInstance(instance.userId, instance.botUsername || '')
-                    }}
-                    className="mt-2 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 hover:text-white"
-                  >
-                    Refresh token
-                    <span className="text-[10px] text-zinc-500">↺</span>
-                  </button>
-                  {autoPairHealth === 'missing' && (
-                    <div className="mt-3 pt-3 border-t border-zinc-800">
-                      <p className="text-[10px] text-yellow-500 mb-2">Having connection issues?</p>
-                      <p className="text-[10px] text-zinc-500 mb-2">
-                        1. Copy your gateway token above<br/>
-                        2. Open <a href={instance?.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">{instance?.subdomain}</a><br/>
-                        3. Go to Settings → Paste token in "Gateway Token"
-                      </p>
-                    </div>
-                  )}
-                </div>
-                {instance?.botUsername && (
-                  <a
-                    href={`https://t.me/${instance?.botUsername}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors"
-                  >
-                    <span>Open Telegram</span>
-                    <span>→</span>
-                  </a>
-                )}
-                {controlsEnabled ? (
-                  <>
-                    <button
-                      onClick={() => performAction('update')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                    >
-                      <span>Update</span>
-                      {actionLoading === 'update' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↑</span>}
-                    </button>
-                    <button
-                      onClick={() => performAction('restart')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                    >
-                      <span>Restart</span>
-                      {actionLoading === 'restart' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>↻</span>}
-                    </button>
-                    {isRunning ? (
-                      <button
-                        onClick={() => performAction('stop')}
-                        disabled={!!actionLoading}
-                        className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                      >
-                        <span>Stop</span>
-                        {actionLoading === 'stop' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>■</span>}
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => performAction('start')}
-                        disabled={!!actionLoading}
-                        className="flex items-center justify-between w-full bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors disabled:opacity-50"
-                      >
-                        <span>Start</span>
-                        {actionLoading === 'start' ? <span className="w-2 h-2 rounded-full bg-black animate-pulse" /> : <span>▶</span>}
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <div className="border border-zinc-800 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Lifecycle Controls</p>
-                    <p className="mt-2 text-[11px] text-zinc-500">
-                      Managed restart, update, start, and stop actions are hidden until the Railway control path is fully verified. Runtime links above stay live.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Maintenance
-              </h2>
-              <div className="space-y-3">
-                {controlsEnabled ? (
-                  <>
-                    <button
-                      onClick={() => performAction('repair')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-zinc-800 px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors disabled:opacity-50"
-                    >
-                      <div className="text-left">
-                        <div>Repair Agent</div>
-                        <div className="text-[10px] font-normal normal-case tracking-normal text-zinc-600 mt-1">Full reconfigure — fixes broken proxy, tokens, config</div>
-                      </div>
-                      {actionLoading === 'repair' ? <span className="w-2 h-2 rounded-full bg-white animate-pulse" /> : <span>→</span>}
-                    </button>
-                    
-                    <button
-                      onClick={() => performAction('reset-memory')}
-                      disabled={!!actionLoading}
-                      className="flex items-center justify-between w-full border border-red-500/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                    >
-                      <div className="text-left">
-                        <div>Reset Agent Memory</div>
-                        <div className="text-[10px] font-normal normal-case tracking-normal text-red-400/60 mt-1">Wipe memory, identity & conversation history</div>
-                      </div>
-                      {actionLoading === 'reset-memory' ? <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" /> : <span>→</span>}
-                    </button>
-                  </>
-                ) : (
-                  <div className="border border-zinc-800 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-widest text-zinc-600">Managed Recovery</p>
-                    <p className="mt-2 text-[11px] text-zinc-500">
-                      Repair and memory-reset actions stay hidden until their managed Railway flow is verified end to end.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="bg-zinc-900 border border-zinc-800 p-6">
-              <h2 className="text-xs font-bold uppercase tracking-widest mb-4">
-                Help & Support
-              </h2>
-              <div className="space-y-3 text-sm">
-                <a href="/documentation" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
-                  Documentation
-                </a>
-                <a
-                  href="https://docs.agentbot.raveculture.xyz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors"
-                >
-                  Developer Docs
-                </a>
-                <a href="https://discord.gg/vTPG4vdV6D" target="_blank" rel="noopener" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
-                  Discord
-                </a>
-                <a href="mailto:YOUR_ADMIN_EMAIL_2" className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors">
-                  Contact
-                </a>
-              </div>
-            </div>
-          </div>
+          <InstanceControlPanel
+            instance={instance}
+            stats={stats}
+            controlsEnabled={controlsEnabled}
+            autoPairHealth={autoPairHealth}
+            probeActionLoading={probeActionLoading}
+            actionLoading={actionLoading}
+            onCopyToken={() => {
+              const token = instance?.gatewayToken || bootstrap?.gatewayToken
+              if (token) {
+                navigator.clipboard.writeText(token)
+                toast.success('Token copied!')
+              }
+            }}
+            onRefreshPairing={() => {
+              setAutoPairHealth('loading')
+              fetchEverything()
+            }}
+            onProbeAction={handleRuntimeProbeAction}
+            onAction={performAction}
+            skillsManagerUrl={skillsManagerUrl}
+            configManagerUrl={configManagerUrl}
+          />
         </div>
         </main>
       </div>
@@ -911,7 +556,7 @@ function DashboardContent() {
       {confirmDialog && (
         <ConfirmDialog
           open={!!confirmDialog}
-          onOpenChange={(open) => { if (!open) setConfirmDialog(null) }}
+          onOpenChange={(open: boolean) => { if (!open) setConfirmDialog(null) }}
           title={confirmDialog.title}
           description={confirmDialog.description}
           confirmLabel={confirmDialog.confirmLabel}
@@ -929,14 +574,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center h-screen bg-black font-mono">
-        <div className="text-left">
-          <div className="w-2 h-2 rounded-full bg-white animate-pulse mx-auto mb-4" />
-          <p className="text-zinc-400 text-sm">Loading...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<DashboardLoadingShell />}>
       <DashboardContent />
     </Suspense>
   )

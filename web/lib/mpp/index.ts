@@ -1,13 +1,26 @@
 /**
  * MPP (Machine Payments Protocol) Library for Agentbot
  * 
- * Dual payment layer: Stripe (existing) + Tempo MPP (new additive)
+ * Triple payment layer: Stripe (existing) + Tempo MPP + Payment Sessions
  * 
  * Exports:
+ * - config: Tempo chain settings, verification, wallet clients
  * - middleware: Server-side MPP verification and 402 response handling
  * - client: Client-side MPP request flow (402 → sign → retry)
- * - config: Tempo chain settings and verification logic
+ * - sessions: Off-chain billing with Redis-backed storage
+ * - session-fetch: Client session-aware fetch wrapper
  */
+
+// Configuration + verification
+export {
+  MPP_CONFIG,
+  getPublicClient,
+  getWalletClient,
+  verifyMppCredential,
+  formatChallengeHeader,
+  type VerifyOptions,
+  type VerifyResult,
+} from './config';
 
 // Server-side (middleware)
 export {
@@ -22,17 +35,21 @@ export {
   type MppCredential,
 } from './middleware';
 
-// Configuration
-export {
-  MPP_CONFIG,
-  verifyMppCredential,
-  formatChallengeHeader,
-  type VerifyOptions,
-  type VerifyResult,
-} from './config';
-
 // Client-side
 export {
   mppFetch,
   checkMppSupport,
 } from './client';
+
+// Sessions (off-chain billing)
+export {
+  createSession,
+  getSession,
+  getUserSession,
+  processVoucher,
+  settleSession,
+  closeSession,
+  listUserSessions,
+  type Session,
+  type Voucher,
+} from './sessions';

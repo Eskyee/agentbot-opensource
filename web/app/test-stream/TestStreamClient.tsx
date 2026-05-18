@@ -6,8 +6,10 @@ export default function TestStreamClient() {
   const [wallet, setWallet] = useState('')
   const [name, setName] = useState('')
   const [result, setResult] = useState<any>(null)
+  const [sessionToken, setSessionToken] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [archiveMode, setArchiveMode] = useState(false)
 
   const createStream = async () => {
     if (!wallet) {
@@ -26,6 +28,9 @@ export default function TestStreamClient() {
       })
       const data = await res.json()
       setResult(data)
+      if (data?.session?.accessToken) {
+        setSessionToken(data.session.accessToken)
+      }
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -48,8 +53,30 @@ export default function TestStreamClient() {
     }
   }
 
+  const endStream = async () => {
+    setLoading(true)
+    setError('')
+    setResult(null)
+    try {
+      const res = await fetch('/api/basefm/streams', {
+        method: 'DELETE',
+        headers: {
+          ...(sessionToken ? { 'x-basefm-session': sessionToken } : {}),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ archive: archiveMode }),
+      })
+      const data = await res.json()
+      setResult(data)
+    } catch (e: any) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono p-8">
+    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">🎛️ baseFM Stream Test</h1>
 
@@ -83,7 +110,7 @@ export default function TestStreamClient() {
               <button
                 onClick={createStream}
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
               >
                 {loading ? 'Creating...' : 'Create Stream'}
               </button>
@@ -92,17 +119,39 @@ export default function TestStreamClient() {
 
           <div className="bg-zinc-800 p-6 rounded-xl">
             <h2 className="text-xl font-semibold mb-4">Check Live DJs</h2>
-            <button
-              onClick={checkLive}
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
-            >
-              {loading ? 'Loading...' : 'Get Live DJs'}
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={checkLive}
+                disabled={loading}
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+              >
+                {loading ? 'Loading...' : 'Get Live DJs'}
+              </button>
+              <button
+                onClick={endStream}
+                disabled={loading}
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 rounded-lg py-3 font-semibold"
+              >
+                {loading ? 'Ending...' : archiveMode ? 'End Set and Save Replay' : 'End Set'}
+              </button>
+              <label className="flex items-center gap-2 text-sm text-zinc-400">
+                <input
+                  type="checkbox"
+                  checked={archiveMode}
+                  onChange={(e) => setArchiveMode(e.target.checked)}
+                />
+                Keep the replay instead of deleting it if archive credits are configured
+              </label>
+              {sessionToken ? (
+                <p className="text-xs text-zinc-400 break-all">
+                  Session token captured for teardown
+                </p>
+              ) : null}
+            </div>
           </div>
 
           {error && (
-            <div className="bg-red-900/50 border border-red-500 text-red-300 p-4 rounded-lg">
+            <div className="bg-red-900/50 border border-orange-500 text-red-300 p-4 rounded-lg">
               {error}
             </div>
           )}

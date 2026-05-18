@@ -24,9 +24,10 @@ import { setupRoutes } from './routes/setup.js';
 import { apiRoutes } from './routes/api.js';
 import { proxyMiddleware } from './middleware/proxy.js';
 import { requestLogger } from './middleware/logger.js';
-import { requireAdminAuth, setAuthCookie, clearAuthCookie } from './middleware/auth.js';
+import { requireAdminAuth, setAuthCookie, clearAuthCookie, verifyAdminPassword } from './middleware/auth.js';
 import { ensureDataDir } from './utils/fs.js';
 import { log } from './utils/log.js';
+import { probeRuntimeCapabilities } from './services/runtimeProbe.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -41,8 +42,26 @@ async function main() {
     process.exit(1);
   }
 
+  const runtimeCapabilities = probeRuntimeCapabilities();
+  if (!runtimeCapabilities.ffmpeg.available) {
+    log.warn('⚠️ `ffmpeg` is not available in the managed runtime image.');
+    log.warn('   Autonomous baseFM DJ output will not work until the image includes ffmpeg.');
+  }
+
   // 1. Ensure all required directories exist on the volume
   await ensureDataDir();
+
+  // 1b. If no config file on disk but OPENCLAW_CONFIG env var is set, write it
+  // This handles ephemeral containers (no volume) where config is passed via env
+  if (!(await config.isAlreadyConfigured()) && process.env.OPENCLAW_CONFIG) {
+    try {
+      const envConfig = JSON.parse(process.env.OPENCLAW_CONFIG);
+      await config.writeConfig(envConfig);
+      log.info('Wrote OPENCLAW_CONFIG env var to disk');
+    } catch (e) {
+      log.warn('Failed to parse OPENCLAW_CONFIG env var: ' + e.message);
+    }
+  }
 
   const app = express();
   const httpServer = createServer(app);
@@ -108,7 +127,19 @@ async function main() {
 
   // Login page
   app.get('/login', (req, res) => {
-    if (!config.WRAPPER_ADMIN_PASSWORD) return res.redirect('/admin');
+    // Previously: no password configured → bypass login entirely.
+    // That made every deploy without WRAPPER_ADMIN_PASSWORD publicly writable.
+    // Now we render an explicit 503 so the gateway refuses to serve until
+    // the env var is set.
+    if (!config.WRAPPER_ADMIN_PASSWORD) {
+      return res
+        .status(503)
+        .type('text/plain')
+        .send(
+          'WRAPPER_ADMIN_PASSWORD is not configured on this gateway. ' +
+            'Set it in the environment and redeploy.'
+        );
+    }
     const returnTo = req.query.returnTo || '/admin';
     res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8">
 <title>OpenClaw Login</title>
@@ -138,8 +169,19 @@ ${req.query.err ? '<p class="err">Incorrect password</p>' : ''}
 
   app.post('/login', express.urlencoded({ extended: false }), (req, res) => {
     const { password, returnTo = '/admin' } = req.body;
-    if (!config.WRAPPER_ADMIN_PASSWORD || password === config.WRAPPER_ADMIN_PASSWORD) {
-      setAuthCookie(res, password);
+    // Fail-closed: refuse login entirely when no password is configured.
+    // The previous `!WRAPPER_ADMIN_PASSWORD` short-circuit bypassed auth.
+    if (!config.WRAPPER_ADMIN_PASSWORD) {
+      return res
+        .status(503)
+        .type('text/plain')
+        .send(
+          'WRAPPER_ADMIN_PASSWORD is not configured on this gateway. ' +
+            'Set it in the environment and redeploy.'
+        );
+    }
+    if (verifyAdminPassword(password)) {
+      setAuthCookie(res);
       return res.redirect(returnTo);
     }
     const r = encodeURIComponent(returnTo);

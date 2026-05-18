@@ -10,7 +10,7 @@ export default function BlogPost() {
     <main className="min-h-screen bg-black text-white font-mono">
       <article className="max-w-3xl mx-auto px-6 py-16">
         <header className="mb-12">
-          <div className="text-[10px] uppercase tracking-widest text-blue-400 mb-4">Update</div>
+          <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-4">Update</div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-6">
             April 8, 2026
           </h1>
@@ -54,7 +54,7 @@ export default function BlogPost() {
           </div>
 
           <p className="text-zinc-400 mb-6">
-            <a href="https://agentbot.sh/token" className="text-blue-400 hover:underline">View the token page →</a> now lists both the Base ($AGENTBOT on Uniswap) and Solana (pump.fun) tokens.
+            <a href="https://agentbot.sh/token" className="text-orange-500 hover:underline">View the token page →</a> now lists both the Base ($AGENTBOT on Uniswap) and Solana (pump.fun) tokens.
           </p>
 
           <h2 className="text-2xl font-bold text-white mt-12 mb-4">🔧 Turborepo 2.9</h2>

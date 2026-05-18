@@ -47,9 +47,18 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      if (invite.expires_at && invite.expires_at.getTime() <= Date.now()) {
+        return NextResponse.json(
+          { error: 'Invite has expired' },
+          { status: 410 }
+        )
+      }
+
       return NextResponse.json({
         valid: true,
-        plan: 'solo',
+        plan: invite.audience === 'headliner' ? 'headliner' : 'solo',
+        audience: invite.audience,
+        email: invite.email,
       })
     } catch {
       // invite_codes table may not exist — accept valid hex tokens

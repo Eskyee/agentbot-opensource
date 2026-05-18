@@ -9,17 +9,14 @@
  */
 
 import { Router } from 'express'
-import { Pool } from 'pg'
 import { authenticate } from '../middleware/auth'
 import { provisionTeam, TEAM_TEMPLATES, TEMPLATE_CATEGORIES, PLAN_AGENT_LIMITS, generateTeamYAML, type TeamConfig } from '../lib/team-provisioning'
+import { pool } from '../lib/db'
 
 const router = Router()
 
 // Admin emails (bypass Stripe)
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-
-// DB-backed agent count — survives restarts and horizontal scaling
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 /** Returns the number of active agents for this email from the DB. */
 async function getAgentCount(email: string): Promise<number> {
@@ -91,11 +88,10 @@ router.post('/', authenticate, async (req, res) => {
       })),
       yaml_config: generateTeamYAML(result.template),
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('[TeamProvision] Error:', err)
-    res.status(500).json({
-      error: err.message || 'Team provisioning failed',
-    })
+    const message = err instanceof Error ? err.message : 'Team provisioning failed'
+    res.status(500).json({ error: message })
   }
 })
 

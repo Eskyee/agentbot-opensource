@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 const CDP_API_KEY_ID = process.env.CDP_API_KEY_ID;
 const CDP_API_KEY_SECRET = process.env.CDP_API_KEY_SECRET;
@@ -102,6 +103,8 @@ async function executeUSDCTransfer(
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('instant-split');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action, splitId, splits, threshold } = body;
@@ -225,6 +228,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('instant-split');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'instant-split',
     name: 'Instant Split Agent',

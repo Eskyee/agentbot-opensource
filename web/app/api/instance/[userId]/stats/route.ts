@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { gatewayHealthcheck } from '@/app/lib/gateway-proxy'
 import { DEFAULT_OPENCLAW_VERSION } from '@/app/lib/openclaw-version'
 import { getOwnedOpenClawUser } from '@/app/api/instance/_runtime'
+import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 
 /**
  * GET /api/instance/[userId]/stats
@@ -18,33 +18,30 @@ export async function GET(
   }
   const { user } = owned
 
-  // Check the user's actual OpenClaw instance first, not just the shared gateway.
-  const health = await gatewayHealthcheck(user.openclawUrl || undefined)
-
-  if (health.ok) {
-    return NextResponse.json({
-      userId,
-      status: 'running',
-      health: 'healthy',
-      cpu: '0%',       // Gateway doesn't expose CPU — placeholder
-      memory: '0MB',    // Gateway doesn't expose memory — placeholder
-      uptime: 'active',
-      messages: null,
-      errors: null,
-      openclawVersion: DEFAULT_OPENCLAW_VERSION,
-    })
-  }
+  const runtimeUrl = user.openclawUrl || `https://agentbot-agent-${userId}YOUR_SERVICE_URL`
+  const runtime = await probeOpenClawRuntime(runtimeUrl)
+  const status = runtime.status === 'healthy' ? 'running' : runtime.status
+  const health = runtime.status === 'running' || runtime.status === 'healthy'
+    ? 'healthy'
+    : runtime.status
 
   return NextResponse.json({
     userId,
-    status: 'unreachable',
-    health: 'unreachable',
+    status,
+    health,
     cpu: '0%',
     memory: '0MB',
-    uptime: 'unknown',
+    uptime: runtime.uptime || (status === 'running' ? 'active' : 'unknown'),
     messages: null,
     errors: null,
+    openclawVersion: runtime.openclawVersion || DEFAULT_OPENCLAW_VERSION,
+    statusReason: runtime.reason || null,
+    probeChecks: runtime.checks || [],
+    telemetry: {
+      resourceMetricsAvailable: false,
+      lifecycleMetricsAvailable: false,
+      messageMetricsAvailable: false,
+    },
   })
 }
 
-export const dynamic = 'force-dynamic'

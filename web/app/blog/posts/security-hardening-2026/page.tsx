@@ -277,7 +277,7 @@ export default function SecurityHardeningPost() {
 
  <p className="text-zinc-400 text-sm">
  Questions? Check our{' '}
- <a href="https://docs.agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white">documentation</a>
+ <a href="https://agentbot.sh/documentation" className="text-zinc-400 hover:text-white">documentation</a>
  {' '}or reach out on{' '}
  <a href="https://discord.gg/vTPG4vdV6D" className="text-zinc-400 hover:text-white">Discord</a>.
  </p>

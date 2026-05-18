@@ -21,7 +21,7 @@ export function OpenLearning() {
         {/* Global Community Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900 mb-10 sm:mb-16">
           <div className="bg-black p-6 sm:p-8">
-            <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-3">Africa</div>
+            <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">Africa</div>
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3">
               Young Builders Welcome
             </h3>
@@ -33,7 +33,7 @@ export function OpenLearning() {
           </div>
 
           <div className="bg-black p-6 sm:p-8">
-            <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-3">Caribbean</div>
+            <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">Caribbean</div>
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3">
               Nerds & Creatives
             </h3>
@@ -45,7 +45,7 @@ export function OpenLearning() {
           </div>
 
           <div className="bg-black p-6 sm:p-8">
-            <div className="text-[10px] uppercase tracking-widest text-blue-500 mb-3">Global</div>
+            <div className="text-[10px] uppercase tracking-widest text-orange-500 mb-3">Global</div>
             <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider mb-3">
               Research & Explore
             </h3>

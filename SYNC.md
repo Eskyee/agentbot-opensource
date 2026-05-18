@@ -75,7 +75,7 @@ It checks for:
 | Personal domain emails | `rbasefm@`, `eskyjunglelab@` |
 | Real 40-char wallet addresses | `0x...` (filters obvious placeholders) |
 | Railway private URLs | `*YOUR_SERVICE_URL` |
-| Private subdomain patterns | `borg-0-production` |
+| Private subdomain patterns | `YOUR_SOUL_SERVICE` |
 | Real Resend API keys | `re_XXXX` |
 | Real OpenAI keys | `sk-XXXX` |
 

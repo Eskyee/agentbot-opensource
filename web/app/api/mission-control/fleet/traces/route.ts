@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { DEFAULT_SOUL_SERVICE_URL } from '@/app/lib/openclaw-config'
 
-export const dynamic = 'force-dynamic';
 
 // Known borg-0 public URL — always included as fallback even if env var is stale
 const BORG_0_URL = 'https://YOUR_SERVICE_URL'

@@ -13,7 +13,7 @@ Use this skill when the user wants to provision, spawn, or birth a new OpenClaw 
 2. **Instance Creation:**
    - Call the `infra/scripts/provision.sh` script to allocate a port and spin up the Docker container.
 3. **Verification Hook:**
-   - Ping the new instance at `https://<USER_ID>.agents.agentbot.raveculture.xyz/api/health`.
+   - Ping the new instance at `https://<USER_ID>.agents.agentbot.sh/api/health`.
    - Wait for a 200 OK.
 4. **Handoff:**
    - Return the `userId`, `subdomain`, and `url` to the requester.

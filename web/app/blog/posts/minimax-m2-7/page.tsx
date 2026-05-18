@@ -80,7 +80,7 @@ export default function Post() {
  </ol>
 
  <pre className="bg-zinc-950 p-4 text-zinc-300 mb-4 overflow-x-auto">
-{`curl -X POST https://agentbot.raveculture.xyz/api/chat \\
+{`curl -X POST https://agentbot.sh/api/chat \\
  -H "Content-Type: application/json" \\
  -d '{"model": "minimax/minimax-m2.7", "message": "Build me a trading bot"}'`}
  </pre>
@@ -97,7 +97,7 @@ export default function Post() {
  <p className="text-zinc-300 mb-4">This aligns perfectly with Agentbot&apos;s mission: <strong>autonomous agents that work while you sleep</strong>.</p>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Get Started</h2>
- <p className="text-zinc-300 mb-4"><a href="https://agentbot.raveculture.xyz" className="text-zinc-400 hover:text-white">Sign up now</a> and select MiniMax M2.7 as your AI model.</p>
+ <p className="text-zinc-300 mb-4"><a href="https://agentbot.sh" className="text-zinc-400 hover:text-white">Sign up now</a> and select MiniMax M2.7 as your AI model.</p>
 
  <div className="mt-12 pt-8 border-t border-zinc-800">
  <p className="text-zinc-500">Available now on OpenRouter. Standard OpenRouter rates apply.</p>

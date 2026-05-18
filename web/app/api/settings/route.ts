@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
+import { checkUserRateLimit } from '@/lib/rate-limit-user'
 
 export async function GET(req: NextRequest) {
   const session = await getAuthSession()
@@ -81,24 +82,17 @@ export async function POST(req: NextRequest) {
   try {
     const { name, email } = await req.json()
 
-    // Validate email format if provided
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
-    }
-
-    // Check email uniqueness before updating
     if (email && email !== session.user.email) {
-      const emailTaken = await prisma.user.findUnique({ where: { email } })
-      if (emailTaken) {
-        return NextResponse.json({ error: 'Email already in use' }, { status: 409 })
-      }
+      return NextResponse.json(
+        { error: 'Email changes must go through /api/settings/email (requires current password + email confirmation)' },
+        { status: 400 },
+      )
     }
 
     const user = await prisma.user.update({
       where: { email: session.user.email },
       data: {
         ...(name && { name }),
-        ...(email && email !== session.user.email && { email })
       }
     })
 
@@ -122,4 +116,3 @@ export async function POST(req: NextRequest) {
 }
 
 
-export const dynamic = 'force-dynamic';

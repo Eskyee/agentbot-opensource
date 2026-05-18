@@ -22,11 +22,13 @@ import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import { execFileSync } from 'child_process';
 import { config } from '../config/index.js';
 import { OPENCLAW_GATEWAY_TOKEN } from '../config/index.js';
 import { gatewayManager } from '../services/gatewayManager.js';
 import { pairingService } from '../services/pairingService.js';
 import { getActiveSessionCount } from '../services/terminalService.js';
+import { probeRuntimeCapabilities } from '../services/runtimeProbe.js';
 import { requireAdminAuth } from '../middleware/auth.js';
 import { log } from '../utils/log.js';
 
@@ -45,16 +47,28 @@ apiRoutes.get('/status', async (req, res) => {
       aiProvider = cfg.agents.defaults.model.primary;
     }
   } catch {}
+  const runtime = probeRuntimeCapabilities();
   res.json({
     state: gatewayManager.getState(),
     running: gatewayManager.isRunning(),
     configured: true,
     uptime: process.uptime(),
     terminalSessions: getActiveSessionCount(),
-    gatewayToken: OPENCLAW_GATEWAY_TOKEN || null,
+    gatewayToken: OPENCLAW_GATEWAY_TOKEN ? '[set]' : null,
     aiProvider,
+    runtime,
     ts: new Date().toISOString(),
   });
+});
+
+// Public version endpoint — reads actual OpenClaw binary version
+apiRoutes.get('/version', (req, res) => {
+  try {
+    const version = execFileSync('openclaw', ['--version'], { encoding: 'utf8', timeout: 5000 }).trim();
+    res.json({ openclawVersion: version, ts: new Date().toISOString() });
+  } catch {
+    res.json({ openclawVersion: 'unknown', ts: new Date().toISOString() });
+  }
 });
 
 // ── Protected routes — everything below requires admin auth ────────

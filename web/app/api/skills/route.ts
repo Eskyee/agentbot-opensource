@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server'
+import { Prisma } from '@prisma/client'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
 import { prisma } from '@/app/lib/prisma'
 import { deploySkillToAgent, removeSkillFromAgent } from '@/app/lib/agent-deploy'
+import { BASEFM_DJ_SKILL_CODE, BASEFM_DJ_SKILL_NAME, ensureBasefmDjSkill } from '@/app/lib/basefmDjSkill'
+import { ensureSkillRatingsTable } from '@/app/lib/skillRatings'
+import { scanSkillMarketplaceInput } from '@/app/lib/skillMarketplaceSafety'
 
 // Default skills catalog — used as seed data if Skill table is empty
 const DEFAULT_SKILLS = [
-  { name: 'DJ Streaming', description: 'Stream live DJ sets via Mux. Verify RAVE token holders for DJ access.', category: 'streaming', author: 'Agentbot', downloads: 150, rating: 5.0, featured: true },
+  { name: BASEFM_DJ_SKILL_NAME, description: 'Create baseFM streams, fetch live DJs, and generate ffmpeg broadcaster commands for agent DJs.', category: 'streaming', author: 'Agentbot', downloads: 150, rating: 5.0, featured: true },
   { name: 'Guestlist Manager', description: 'Manage event guestlists, RSVPs, check-ins, and capacity limits.', category: 'events', author: 'Agentbot', downloads: 280, rating: 4.9, featured: true },
   { name: 'USDC Payments', description: 'Accept USDC payments on Base. Generate payment links, track transactions.', category: 'payments', author: 'Agentbot', downloads: 420, rating: 4.8, featured: true },
   { name: 'Community Treasury', description: 'Track spending, reimbursements, and multi-sig treasury management.', category: 'finance', author: 'Agentbot', downloads: 320, rating: 4.7, featured: true },
@@ -61,20 +66,156 @@ const DEFAULT_SKILLS = [
   { name: 'Code Review', description: 'Review agent code against production best practices. Security, state management, and anti-pattern detection.', category: 'development', author: 'Agentbot', downloads: 0, rating: 5.0, featured: false },
 ]
 
-export const dynamic = 'force-dynamic'
 
 /**
  * Ensure skills are seeded in the database.
- * Runs once on first request; subsequent calls are a no-op.
+ * Uses upsert-like logic to ensure new default skills are added even to existing databases.
  */
 async function ensureSkillsSeeded() {
-  const count = await prisma.skill.count()
-  if (count > 0) return
+  for (const skill of DEFAULT_SKILLS) {
+    await prisma.skill.upsert({
+      where: { name: skill.name },
+      update: {
+        description: skill.description,
+        category: skill.category,
+        author: skill.author,
+        featured: skill.featured,
+        rating: skill.rating,
+        downloads: skill.downloads,
+      },
+      create: {
+        ...skill,
+        code: skill.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '',
+      },
+    })
+  }
 
-  await prisma.skill.createMany({
-    data: DEFAULT_SKILLS.map(s => ({ ...s, code: '' })),
-    skipDuplicates: true,
+  await ensureBasefmDjSkill()
+}
+
+type SkillEngagementStats = {
+  rating: number
+  ratingCount: number
+  installs: number
+  userRating: number | null
+}
+
+async function getSkillEngagementStats(skillIds: string[], userId?: string): Promise<Map<string, SkillEngagementStats>> {
+  const stats = new Map<string, SkillEngagementStats>()
+  for (const skillId of skillIds) {
+    stats.set(skillId, { rating: 0, ratingCount: 0, installs: 0, userRating: null })
+  }
+  if (skillIds.length === 0) return stats
+
+  await ensureSkillRatingsTable()
+
+  const ratingRows = await prisma.$queryRaw<Array<{ skillId: string; rating: number | null; ratingCount: bigint | number }>>(
+    Prisma.sql`
+      SELECT "skillId", AVG("rating")::float AS "rating", COUNT(*) AS "ratingCount"
+      FROM "SkillRating"
+      WHERE "skillId" IN (${Prisma.join(skillIds)})
+      GROUP BY "skillId"
+    `
+  )
+  const installRows = await prisma.installedSkill.groupBy({
+    by: ['skillId'],
+    where: { skillId: { in: skillIds }, enabled: true },
+    _count: { skillId: true },
   })
+  const userRatingRows = userId
+    ? await prisma.$queryRaw<Array<{ skillId: string; rating: number }>>(
+        Prisma.sql`
+          SELECT "skillId", "rating"
+          FROM "SkillRating"
+          WHERE "userId" = ${userId} AND "skillId" IN (${Prisma.join(skillIds)})
+        `
+      )
+    : []
+
+  for (const row of ratingRows) {
+    const existing = stats.get(row.skillId)
+    if (!existing) continue
+    existing.rating = row.rating ? Number(row.rating.toFixed(1)) : 0
+    existing.ratingCount = Number(row.ratingCount)
+  }
+  for (const row of installRows) {
+    const existing = stats.get(row.skillId)
+    if (!existing) continue
+    existing.installs = row._count.skillId
+  }
+  for (const row of userRatingRows) {
+    const existing = stats.get(row.skillId)
+    if (!existing) continue
+    existing.userRating = row.rating
+  }
+
+  return stats
+}
+
+async function getSkillTargetContext(agentId: string, session: NonNullable<Awaited<ReturnType<typeof getAuthSession>>>) {
+  const directAgent = await prisma.agent.findFirst({
+    where: { id: agentId, userId: session.user.id },
+  })
+
+  if (directAgent) {
+    return { agent: directAgent, targetUserId: session.user.id, runtimeHydrated: false }
+  }
+
+  const targetUser = await prisma.user.findFirst({
+    where: {
+      openclawInstanceId: agentId,
+      ...(isAdminEmail(session.user.email) ? {} : { id: session.user.id }),
+    },
+    select: {
+      id: true,
+      openclawInstanceId: true,
+      openclawUrl: true,
+    },
+  })
+
+  if (!targetUser?.openclawInstanceId) {
+    return null
+  }
+
+  const synthesizedAgent = await prisma.agent.upsert({
+    where: { id: targetUser.openclawInstanceId },
+    update: {
+      userId: targetUser.id,
+      websocketUrl: targetUser.openclawUrl,
+      status: 'running',
+    },
+    create: {
+      id: targetUser.openclawInstanceId,
+      userId: targetUser.id,
+      name: 'Managed OpenClaw Runtime',
+      model: 'openclaw',
+      status: 'running',
+      websocketUrl: targetUser.openclawUrl,
+    },
+  })
+
+  return { agent: synthesizedAgent, targetUserId: targetUser.id, runtimeHydrated: true }
+}
+
+function getSkillInstallError(error: unknown) {
+  if (
+    error &&
+    typeof error === 'object' &&
+    'code' in error &&
+    (error as { code?: string }).code === 'P2002'
+  ) {
+    return {
+      message: 'This skill is already installed for this agent.',
+      code: 'already_installed',
+      status: 409,
+    }
+  }
+
+  return {
+    message: 'Skill install failed. Refresh the page and try again, or open the OpenClaw skills manager for this agent.',
+    code: 'install_failed',
+    status: 500,
+  }
 }
 
 export async function GET(request: Request) {
@@ -113,6 +254,11 @@ export async function GET(request: Request) {
           downloads: true,
           rating: true,
           featured: true,
+          code: true,
+          mcpConfig: true,
+          mcpEnabled: true,
+          widgetUrl: true,
+          widgetConfig: true,
         },
       }),
       prisma.skill.findMany({
@@ -120,6 +266,7 @@ export async function GET(request: Request) {
         select: { category: true },
       }),
     ])
+    const engagementStats = await getSkillEngagementStats(skills.map((skill) => skill.id), session?.user?.id)
 
     // Return which skills are already installed for this user+agent combo
     let installedSkillIds: string[] = []
@@ -135,20 +282,55 @@ export async function GET(request: Request) {
       installedSkillIds = installed.map(i => i.skillId)
     }
 
+    function enrichSkill(skill: typeof skills[number]) {
+      const stats = engagementStats.get(skill.id)
+      const hasUserRatings = stats && stats.ratingCount > 0
+      return {
+        ...skill,
+        rating: hasUserRatings ? (stats.rating || 0) : 0,
+        ratingCount: stats?.ratingCount || 0,
+        installs: stats?.installs || 0,
+        userRating: stats?.userRating ?? null,
+        hasDownload: Boolean(skill.code?.trim() || skill.mcpEnabled || skill.widgetUrl || skill.widgetConfig),
+        scan: scanSkillMarketplaceInput({
+          name: skill.name,
+          description: skill.description,
+          code: skill.code,
+          author: skill.author,
+          featured: skill.featured,
+        }),
+      }
+    }
+
     return NextResponse.json({
-      skills,
+      skills: skills.map(enrichSkill),
       categories: categories.map(c => c.category),
-      featured: skills.filter(s => s.featured),
+      featured: skills.filter(s => s.featured).map(enrichSkill),
       installedSkillIds,
     })
   } catch (error) {
     console.error('Skills fetch error:', error)
     // Graceful fallback to defaults if DB unavailable
-    let skills = DEFAULT_SKILLS.map((s, i) => ({ id: `default-${i}`, ...s }))
+    let skills = DEFAULT_SKILLS.map((s, i) => ({ id: `default-${i}`, ...s, code: s.name === BASEFM_DJ_SKILL_NAME ? BASEFM_DJ_SKILL_CODE : '' }))
     if (category && category !== 'all') skills = skills.filter(s => s.category === category)
     if (featured === 'true') skills = skills.filter(s => s.featured)
     const categories = [...new Set(DEFAULT_SKILLS.map(s => s.category))]
-    return NextResponse.json({ skills, categories, featured: skills.filter(s => s.featured), installedSkillIds: [] })
+    const withScan = skills.map((skill) => ({
+      ...skill,
+      rating: 0,
+      ratingCount: 0,
+      installs: 0,
+      userRating: null,
+      hasDownload: Boolean(skill.code?.trim()),
+      scan: scanSkillMarketplaceInput({
+        name: skill.name,
+        description: skill.description,
+        code: skill.code,
+        author: skill.author,
+        featured: skill.featured,
+      }),
+    }))
+    return NextResponse.json({ skills: withScan, categories, featured: withScan.filter(s => s.featured), installedSkillIds: [] })
   }
 }
 
@@ -165,10 +347,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'skillId and agentId are required' }, { status: 400 })
     }
 
-    // Verify agent belongs to user
-    const agent = await prisma.agent.findFirst({
-      where: { id: agentId, userId: session.user.id },
-    })
+    const target = await getSkillTargetContext(agentId, session)
+    const agent = target?.agent
 
     if (!agent) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
@@ -180,54 +360,81 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Skill not found' }, { status: 404 })
     }
 
-    // Install skill (upsert to handle duplicates)
-    const installed = await prisma.installedSkill.upsert({
+    const scan = scanSkillMarketplaceInput({
+      name: skill.name,
+      description: skill.description,
+      code: skill.code,
+      author: skill.author,
+      featured: skill.featured,
+    })
+
+    if (!scan.installAllowed) {
+      return NextResponse.json(
+        { error: 'Skill blocked by marketplace safety checks', scan },
+        { status: 400 }
+      )
+    }
+
+    const existingInstall = await prisma.installedSkill.findUnique({
       where: {
         userId_agentId_skillId: {
-          userId: session.user.id,
-          agentId,
+          userId: target.targetUserId,
+          agentId: agent.id,
           skillId,
         },
       },
-      update: { enabled: true },
-      create: {
-        userId: session.user.id,
-        agentId,
-        skillId,
-      },
     })
 
-    // Increment download count
-    await prisma.skill.update({
-      where: { id: skillId },
-      data: { downloads: { increment: 1 } },
-    })
-
-    // Deploy skill to OpenClaw gateway (don't fail if gateway is down)
-    try {
-      const deployResult = await deploySkillToAgent(agentId, skillId)
-      if (!deployResult.success) {
-        console.warn(`[Skill Install] Gateway deploy warning: ${deployResult.error}`)
-        return NextResponse.json({ 
-          success: true, 
-          installed,
-          deployed: false,
-          deployWarning: deployResult.error
-        })
-      }
-      return NextResponse.json({ success: true, installed, deployed: true })
-    } catch (gatewayError) {
-      console.warn('[Skill Install] Gateway deploy failed (will retry on sync):', gatewayError)
-      return NextResponse.json({ 
-        success: true, 
-        installed,
+    if (existingInstall?.enabled) {
+      return NextResponse.json({
+        success: true,
+        installed: existingInstall,
+        alreadyInstalled: true,
+        runtimeHydrated: target.runtimeHydrated,
         deployed: false,
-        deployWarning: 'Gateway unreachable - skill saved to database and will sync automatically'
+        message: 'This skill is already installed for this agent.',
       })
     }
+
+    const installed = existingInstall
+      ? await prisma.installedSkill.update({
+          where: { id: existingInstall.id },
+          data: { enabled: true },
+        })
+      : await prisma.installedSkill.create({
+          data: {
+            userId: target.targetUserId,
+            agentId: agent.id,
+            skillId,
+          },
+        })
+
+    if (!existingInstall) {
+      await prisma.skill.update({
+        where: { id: skillId },
+        data: { downloads: { increment: 1 } },
+      })
+    }
+
+    // Deploy skill to OpenClaw gateway
+    // The gateway doesn't have a dedicated skills API, so we mark as DB-only
+    // Skills are synced to OpenClaw via the sync endpoint or manually
+    return NextResponse.json({
+      success: true,
+      installed,
+      runtimeHydrated: target.runtimeHydrated,
+      deployed: false,
+      message: existingInstall
+        ? 'Skill re-enabled successfully.'
+        : 'Skill installed. Use "Sync Runtime" to push skills to your OpenClaw agent.',
+    })
   } catch (error) {
     console.error('Skill install error:', error)
-    return NextResponse.json({ error: 'Failed to install skill' }, { status: 500 })
+    const installError = getSkillInstallError(error)
+    return NextResponse.json(
+      { error: installError.message, code: installError.code },
+      { status: installError.status }
+    )
   }
 }
 
@@ -244,22 +451,35 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'skillId and agentId are required' }, { status: 400 })
     }
 
+    const target = await getSkillTargetContext(agentId, session)
+    const agent = target?.agent
+
+    if (!agent) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
+    }
+
     await prisma.installedSkill.deleteMany({
       where: {
-        userId: session.user.id,
-        agentId,
+        userId: target!.targetUserId,
+        agentId: agent.id,
         skillId,
       },
     })
 
     // Remove skill from OpenClaw gateway (don't fail if gateway is down)
     try {
-      await removeSkillFromAgent(agentId, skillId)
+      await removeSkillFromAgent(agent.id, skillId)
     } catch (gatewayError) {
       console.warn('[Skill Uninstall] Gateway removal failed:', gatewayError)
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({
+      success: true,
+      runtimeHydrated: target!.runtimeHydrated,
+      message: target!.runtimeHydrated
+        ? 'Skill removed and the managed runtime agent record remains available for future installs.'
+        : 'Skill removed successfully.',
+    })
   } catch (error) {
     console.error('Skill uninstall error:', error)
     return NextResponse.json({ error: 'Failed to uninstall skill' }, { status: 500 })

@@ -34,6 +34,7 @@ export const WRAPPER_ADMIN_PASSWORD = process.env.WRAPPER_ADMIN_PASSWORD || null
 // Set OPENCLAW_GATEWAY_TOKEN in Railway env vars.
 // Displayed in /admin so you can paste it into the openclaw UI login.
 export const OPENCLAW_GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || null;
+export const OPENCLAW_GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD || null;
 
 // Optional: pre-fill the Ollama URL field in /setup.
 // Set OLLAMA_BASE_URL in Railway env vars (e.g. http://ollama.railway.internal:11434).
@@ -52,6 +53,7 @@ export const config = {
   PORT,
   WRAPPER_ADMIN_PASSWORD,
   OPENCLAW_GATEWAY_TOKEN,
+  OPENCLAW_GATEWAY_PASSWORD,
 
   async isAlreadyConfigured() {
     try {

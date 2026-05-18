@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { getAgentEnvVars } from '@/app/lib/railway-provision'
-import { getRailwayEnvironmentId, getRailwayProjectId, railwayGql, resolveRailwayService } from '@/app/lib/railway-service'
+import { getRailwayEnvironmentId, getRailwayProjectId, railwayGql, resolveRailwayService, restartRailwayService } from '@/app/lib/railway-service'
 import { DEFAULT_OPENCLAW_IMAGE } from '@/app/lib/openclaw-version'
+import { probeOpenClawRuntime } from '@/app/lib/openclaw-runtime-probe'
 import { OPENCLAW_CONTROLS_ENABLED, controlsDisabledResponse } from '@/app/api/instance/_runtime'
 
-export const dynamic = 'force-dynamic'
 
 const KNOWN_GOOD_IMAGE = DEFAULT_OPENCLAW_IMAGE
 
@@ -36,39 +36,19 @@ export async function GET() {
   const instanceId = info.openclawInstanceId
   const railwayUrl = info.openclawUrl || `https://agentbot-agent-${instanceId}YOUR_SERVICE_URL`
 
-  const result = {
+  const runtime = await probeOpenClawRuntime(railwayUrl)
+
+  return NextResponse.json({
     instanceId,
     railwayUrl,
-    healthy: false,
-    ready: false,
-    version: null as string | null,
-    uptime: null as string | null,
-    status: 'unknown' as string,
-  }
-
-  // Check /healthz
-  try {
-    const r = await fetch(`${railwayUrl}/healthz`, { signal: AbortSignal.timeout(5000) })
-    const d = await r.json().catch(() => ({}))
-    result.healthy = r.ok && (d?.ok === true || r.ok)
-    result.version = d?.version || null
-    result.uptime = d?.uptime || null
-  } catch {
-    result.healthy = false
-  }
-
-  // Check /readyz
-  try {
-    const r = await fetch(`${railwayUrl}/readyz`, { signal: AbortSignal.timeout(4000) })
-    const d = await r.json().catch(() => ({}))
-    result.ready = r.ok && (d?.ready === true || r.ok)
-  } catch {
-    result.ready = false
-  }
-
-  result.status = result.healthy && result.ready ? 'healthy' : result.healthy ? 'starting' : 'unreachable'
-
-  return NextResponse.json(result)
+    healthy: runtime.healthy,
+    ready: runtime.ready,
+    version: runtime.openclawVersion,
+    uptime: runtime.uptime,
+    status: runtime.status === 'running' ? 'healthy' : runtime.status,
+    statusReason: runtime.reason,
+    checks: runtime.checks,
+  })
 }
 
 /**
@@ -101,6 +81,13 @@ export async function POST(request: Request) {
     // no body = restart
   }
 
+  const latestAgent = await prisma.agent.findFirst({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: 'desc' },
+    select: { config: true },
+  })
+  const runtimeServiceId = (latestAgent?.config as Record<string, unknown> | null)?.runtimeServiceId as string | null | undefined
+
   let environmentId: string
   let projectId: string
   let railwayService: Awaited<ReturnType<typeof resolveRailwayService>>
@@ -110,6 +97,7 @@ export async function POST(request: Request) {
     railwayService = await resolveRailwayService({
       agentId: info.openclawInstanceId,
       openclawUrl: info.openclawUrl,
+      serviceId: runtimeServiceId,
     })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Railway configuration error'
@@ -163,15 +151,7 @@ export async function POST(request: Request) {
       })
     }
 
-    await railwayGql(
-      `mutation ServiceInstanceRestart($serviceId: String!, $environmentId: String!) {
-        serviceInstanceRestart(serviceId: $serviceId, environmentId: $environmentId)
-      }`,
-      {
-        serviceId: railwayService.id,
-        environmentId,
-      }
-    )
+    await restartRailwayService(railwayService.id, environmentId)
 
     return NextResponse.json({
       success: true,

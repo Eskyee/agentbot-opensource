@@ -225,8 +225,8 @@ export default function PlaygroundPage() {
 
           <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-900/30 rounded-lg">
-                <Code className="h-5 w-5 text-blue-400" />
+              <div className="p-2 bg-red-900/30 rounded-lg">
+                <Code className="h-5 w-5 text-orange-500" />
               </div>
               <h3 className="font-bold">Instant Code</h3>
             </div>

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Following the OpenClaw Contributors',
     description: 'We followed all 102 OpenClaw contributors. Here\'s why.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/following-openclaw-contributors',
+    url: 'https://agentbot.sh/blog/posts/following-openclaw-contributors',
   },
 }
 
@@ -27,7 +27,7 @@ export default function FollowingOpenClawContributors() {
               Following the OpenClaw Contributors
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Community</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Community</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Contributors</span>
             </div>
@@ -107,7 +107,7 @@ export default function FollowingOpenClawContributors() {
           <div className="border-t border-zinc-800 mt-8 pt-8">
             <p className="text-zinc-400 text-sm">
               Check out the full contributor list:{' '}
-              <a href="https://github.com/open-chat-ai/openclaw/graphs/contributors" className="text-blue-400 hover:underline">
+              <a href="https://github.com/open-chat-ai/openclaw/graphs/contributors" className="text-orange-500 hover:underline">
                 github.com/open-chat-ai/openclaw/graphs/contributors
               </a>
             </p>

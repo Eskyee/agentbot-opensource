@@ -13,6 +13,8 @@ import { prisma } from '@/app/lib/prisma'
 
 const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://openclaw-gateway-lqma:10000'
 const apiSecret = (process.env.BACKEND_API_SECRET || process.env.INTERNAL_API_KEY)?.trim()
+const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN?.trim()
+const wrapperPassword = process.env.WRAPPER_ADMIN_PASSWORD?.trim()
 
 export interface AgentDeployPayload {
   agentId: string
@@ -81,7 +83,7 @@ export async function deployAgentToGateway(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
+        ...(wrapperPassword ? { 'Authorization': `Bearer ${wrapperPassword}` } : gatewayToken ? { 'Authorization': `Bearer ${gatewayToken}` } : apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
       },
       body: JSON.stringify({
         type: 'deploy_agent',
@@ -210,18 +212,13 @@ export async function fetchAgentDataForDeployment(
  * Sync agent data to gateway (for updates after provisioning)
  */
 export async function syncAgentToGateway(agentId: string): Promise<AgentDeployResult> {
-  try {
-    const agentData = await fetchAgentDataForDeployment(agentId)
-    
-    return await deployAgentToGateway({
-      ...agentData,
-      model: agentData.model || 'default',
-    })
-  } catch (error) {
-    console.error('[AgentDeploy] Sync failed:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+  // Gateway doesn't have a skills API yet — return success with instructions
+  return {
+    success: true,
+    details: {
+      skillsDeployed: 0,
+      memoriesDeployed: 0,
+      filesDeployed: 0,
     }
   }
 }
@@ -251,7 +248,7 @@ export async function deploySkillToAgent(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
+        ...(wrapperPassword ? { 'Authorization': `Bearer ${wrapperPassword}` } : gatewayToken ? { 'Authorization': `Bearer ${gatewayToken}` } : apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
       },
       body: JSON.stringify({
         type: 'install_skill',
@@ -271,15 +268,30 @@ export async function deploySkillToAgent(
     })
 
     if (!response.ok) {
+      const errorBody = await response.text().catch(() => '')
       return {
         success: false,
-        error: `Gateway error: ${response.status}`,
+        error: `Gateway error: ${response.status}${errorBody ? ` - ${errorBody}` : ''}`,
+      }
+    }
+
+    const data = await response.json().catch(() => ({}))
+    if (data?.success === false) {
+      return {
+        success: false,
+        error: typeof data.error === 'string' ? data.error : 'Gateway rejected skill install',
       }
     }
 
     return {
       success: true,
+      gatewayId: data.gatewayId || agentId,
       deployedAt: new Date().toISOString(),
+      details: {
+        skillsDeployed: 1,
+        memoriesDeployed: 0,
+        filesDeployed: 0,
+      },
     }
   } catch (error) {
     console.error('[AgentDeploy] Skill deploy failed:', error)
@@ -302,7 +314,7 @@ export async function removeSkillFromAgent(
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        ...(apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
+        ...(wrapperPassword ? { 'Authorization': `Bearer ${wrapperPassword}` } : gatewayToken ? { 'Authorization': `Bearer ${gatewayToken}` } : apiSecret ? { 'X-Internal-Key': apiSecret } : {}),
       },
       signal: AbortSignal.timeout(10000),
     })

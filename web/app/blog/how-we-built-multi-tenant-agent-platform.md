@@ -26,6 +26,6 @@ Building in the open builds trust. Contributors see the architecture, users see 
 
 ## Links
 
-- **Live Platform:** [agentbot.raveculture.xyz](https://agentbot.raveculture.xyz)
+- **Live Platform:** [agentbot.sh](https://agentbot.sh)
 - **Open Source:** [github.com/Eskyee/agentbot-opensource](https://github.com/Eskyee/agentbot-opensource)
 - **Docs:** [raveculture.mintlify.app](https://raveculture.mintlify.app)

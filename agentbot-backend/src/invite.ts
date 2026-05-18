@@ -1,11 +1,8 @@
 import { randomBytes, timingSafeEqual } from 'crypto';
 import { Router, Request, Response } from 'express';
-import { Pool } from 'pg';
+import { pool } from './lib/db';
 
 const router = Router();
-
-// Persistent DB-backed invite code store (survives restarts)
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Internal auth middleware — only internal callers may generate codes
 const requireInternalAuth = (req: Request, res: Response, next: any) => {
@@ -29,7 +26,7 @@ router.post('/generate', requireInternalAuth, async (req: Request, res: Response
   const code = randomBytes(6).toString('hex');
   try {
     await pool.query(
-      'INSERT INTO invite_codes (code, used, created_at) VALUES ($1, FALSE, NOW())',
+      "INSERT INTO invite_codes (code, used, created_at, expires_at) VALUES ($1, FALSE, NOW(), NOW() + INTERVAL '30 days')",
       [code]
     );
     res.json({ code });
@@ -52,6 +49,7 @@ router.post('/validate', async (req: Request, res: Response) => {
       `UPDATE invite_codes
          SET used = TRUE, used_at = NOW()
        WHERE code = $1 AND used = FALSE
+         AND (expires_at IS NULL OR expires_at > NOW())
        RETURNING code`,
       [code]
     );

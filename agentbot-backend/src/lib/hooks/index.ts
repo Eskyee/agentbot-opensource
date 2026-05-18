@@ -11,7 +11,7 @@
  * Integration:
  *   docker agent run agent-template.yaml \
  *     --hook-pre-tool-use ./pre-tool-use.sh \
- *     --env AGENTBOT_API_URL=https://agentbot.raveculture.xyz \
+ *     --env AGENTBOT_API_URL=https://agentbot.sh \
  *     --env AGENTBOT_USER_ID=user_123 \
  *     --env INTERNAL_API_KEY=...
  */

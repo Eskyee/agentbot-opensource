@@ -1,7 +1,20 @@
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
-  .split(',')
-  .map((email) => email.trim().toLowerCase())
-  .filter(Boolean)
+function parseEmails(value: string | undefined) {
+  return (value || '')
+    .split(',')
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+const ADMIN_EMAILS = Array.from(
+  new Set([
+    'YOUR_ADMIN_EMAIL_1',
+    'admin@agentbot.sh',
+    'YOUR_ADMIN_EMAIL_2',
+    'YOUR_ADMIN_EMAIL_5',
+    ...parseEmails(process.env.ADMIN_EMAILS),
+    ...parseEmails(process.env.OPERATOR_ADMIN_EMAILS),
+  ])
+)
 
 export function isAdminEmail(email?: string | null) {
   if (!email) return false

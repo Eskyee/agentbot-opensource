@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
+import { isAdminEmail } from '@/app/lib/admin'
+import { getGlobalFlags } from '@/app/lib/feature-flags'
 import { prisma } from '@/app/lib/prisma'
 
-function isAdmin(email: string | null | undefined): boolean {
-  if (!email) return false
-  const adminEmails = (process.env.ADMIN_EMAILS || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-  return adminEmails.includes(email.toLowerCase())
-}
-
 export async function GET() {
+  if (!getGlobalFlags().debugRoutesEnabled) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   // Admin-only — blocked in production for non-admins
   const session = await getAuthSession()
-  if (!session?.user?.email || !isAdmin(session.user.email)) {
+  if (!isAdminEmail(session?.user?.email)) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
@@ -36,4 +35,3 @@ export async function GET() {
 }
 
 
-export const dynamic = 'force-dynamic';

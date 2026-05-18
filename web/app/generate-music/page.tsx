@@ -59,7 +59,7 @@ export default function MusicGenerator() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-blue-500/30 font-mono px-6 py-32">
+    <div className="min-h-screen bg-black text-white selection:bg-orange-500/30 font-mono px-6 py-32">
       <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl md:text-4xl font-bold tracking-tighter uppercase mb-6">AI Music Generator</h1>
       <p className="text-zinc-400 mb-8">Create original music with Google Lyria or MiniMax. Powered by OpenClaw v2026.4.5</p>
@@ -117,7 +117,7 @@ export default function MusicGenerator() {
       </div>
 
       {error && (
-        <div className="border border-red-500/30 text-red-500 px-4 py-3 rounded-lg mb-4 text-sm">
+        <div className="border border-orange-500/30 text-orange-500 px-4 py-3 rounded-lg mb-4 text-sm">
           {error}
         </div>
       )}

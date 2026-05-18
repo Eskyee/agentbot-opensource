@@ -7,7 +7,6 @@ const API_VERSION = '1.0.0';
 const AGENTBOT_VERSION = '2026.3.1';
 
 // Force dynamic — uses getServerSession at runtime
-export const dynamic = 'force-dynamic';
 
 // NOTE: In-memory session storage — state is lost on Vercel cold starts.
 // For production, persist session metadata to the database via Prisma.

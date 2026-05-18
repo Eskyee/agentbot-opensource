@@ -10,8 +10,11 @@ function CheckoutSuccessContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [subscription, setSubscription] = useState<{ plan?: string; nextBilling?: string } | null>(null)
 
-  const [provisionStatus, setProvisionStatus] = useState<'idle' | 'provisioning' | 'done' | 'failed'>('idle')
+  type ProvisionStatus = 'idle' | 'submitting' | 'queued' | 'running' | 'done' | 'failed'
+  const [provisionStatus, setProvisionStatus] = useState<ProvisionStatus>('idle')
   const [provisionJobId, setProvisionJobId] = useState<string | null>(null)
+  const [provisionAttempts, setProvisionAttempts] = useState(0)
+  const [provisionError, setProvisionError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!sessionId) {
@@ -54,8 +57,19 @@ function CheckoutSuccessContent() {
           }
 
           const job = data.job
+          if (typeof job?.attempts === 'number') {
+            setProvisionAttempts(job.attempts)
+          }
+
+          if (job?.status === 'queued') {
+            setProvisionStatus('queued')
+          } else if (job?.status === 'running') {
+            setProvisionStatus('running')
+          }
+
           if (job?.status === 'failed') {
             setProvisionStatus('failed')
+            setProvisionError(typeof job.error === 'string' ? job.error : null)
             return
           }
 
@@ -84,7 +98,8 @@ function CheckoutSuccessContent() {
   }, [provisionJobId])
 
   const autoProvisionOpenClaw = async (plan: string) => {
-    setProvisionStatus('provisioning')
+    setProvisionStatus('submitting')
+    setProvisionError(null)
     try {
       const res = await fetch('/api/provision', {
         method: 'POST',
@@ -100,6 +115,9 @@ function CheckoutSuccessContent() {
       const data = await res.json()
       if (data.success) {
         if (data.jobId) {
+          // Treat the initial job as queued; the poller will refine it to
+          // running/completed/failed as the backend progresses.
+          setProvisionStatus(data.status === 'running' ? 'running' : 'queued')
           setProvisionJobId(data.jobId)
         } else {
           setProvisionStatus('done')
@@ -111,6 +129,7 @@ function CheckoutSuccessContent() {
         }
       } else {
         setProvisionStatus('failed')
+        setProvisionError(typeof data.error === 'string' ? data.error : null)
       }
     } catch {
       setProvisionStatus('failed')
@@ -183,19 +202,43 @@ function CheckoutSuccessContent() {
           </div>
         </div>
 
-        <div className="border border-zinc-900 p-4">
-          {provisionStatus === 'provisioning' && (
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 border border-zinc-600 border-t-white animate-spin" />
-              <p className="text-xs text-zinc-400">Deploying your OpenClaw instance...</p>
-            </div>
+        <div className="border border-zinc-900 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-[10px] uppercase tracking-widest text-zinc-600">Deployment</div>
+            {(provisionStatus === 'submitting' || provisionStatus === 'queued' || provisionStatus === 'running') && (
+              <div className="w-3 h-3 border border-zinc-600 border-t-white animate-spin" aria-hidden />
+            )}
+          </div>
+
+          <ol className="space-y-1 text-[10px] uppercase tracking-widest">
+            <li className={provisionStatus === 'submitting' ? 'text-white' : 'text-zinc-700'}>
+              {provisionStatus === 'submitting' ? '› ' : '  '}Submitting
+            </li>
+            <li className={provisionStatus === 'queued' ? 'text-white' : 'text-zinc-700'}>
+              {provisionStatus === 'queued' ? '› ' : '  '}Queued
+            </li>
+            <li className={provisionStatus === 'running' ? 'text-white' : 'text-zinc-700'}>
+              {provisionStatus === 'running' ? '› ' : '  '}Provisioning runtime
+            </li>
+            <li className={provisionStatus === 'done' ? 'text-green-400' : 'text-zinc-700'}>
+              {provisionStatus === 'done' ? '✓ ' : '  '}Ready
+            </li>
+          </ol>
+
+          {provisionStatus === 'queued' && (
+            <p className="text-xs text-zinc-500">Queued — typically picked up in under 30 seconds.</p>
+          )}
+          {provisionStatus === 'running' && (
+            <p className="text-xs text-zinc-500">
+              Provisioning your OpenClaw runtime{provisionAttempts > 1 ? ` (attempt ${provisionAttempts})` : ''}...
+            </p>
           )}
           {provisionStatus === 'done' && (
             <p className="text-xs text-green-400">OpenClaw deployed successfully. Head to your dashboard to configure.</p>
           )}
           {provisionStatus === 'failed' && (
             <p className="text-xs text-zinc-500">
-              Auto-deploy didn&apos;t complete. You can deploy manually from{' '}
+              Auto-deploy didn&apos;t complete{provisionError ? `: ${provisionError}` : ''}. You can deploy manually from{' '}
               <a href="/onboard?mode=deploy" className="text-white underline">the onboard page</a>.
             </p>
           )}
@@ -222,7 +265,7 @@ function CheckoutSuccessContent() {
         </div>
 
         <p className="text-left text-zinc-700 text-[10px] uppercase tracking-widest">
-          Need help? support@agentbot.raveculture.xyz
+          Need help? support@agentbot.sh
         </p>
       </div>
     </main>

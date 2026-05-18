@@ -36,7 +36,7 @@ export default function Post() {
  <li>Payment endpoint configuration at /lib/x402.ts</li>
  <li>USDC on Base (eip155:8453)</li>
  <li>Facilitator: x402.org</li>
- <li>Platform wallet: 0xd8fd0e1dce89beaab924ac68098ddb17613db56f</li>
+ <li>Platform wallet: 0xYOUR_WALLET_ADDRESS_HERE</li>
  </ul>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">New Dashboard: Trading & Finance</h2>
@@ -50,15 +50,15 @@ export default function Post() {
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Community Support</h2>
  <p className="text-zinc-300 mb-4">The homepage now showcases baseFM with live streaming and direct support links. Community can contribute to:</p>
  <ul className="list-disc list-inside text-zinc-300 mb-4">
- <li>Trading wallet: 0xd8fd0e1dce89beaab924ac68098ddb17613db56f</li>
+ <li>Trading wallet: 0xYOUR_WALLET_ADDRESS_HERE</li>
  <li>$BASEFM: 0x9a4376bab717ac0a3901eeed8308a420c59c0ba3</li>
- <li>$AGENTBOT: 0x986b41c76ab8b7350079613340ee692773b34ba3</li>
+ <li>$AGENTBOT (Solana community token): 9V4m199eohMgy7bB7MbXhDacUur6NzpgZVrhfux5pump</li>
  </ul>
 
  <h2 className="text-xl font-bold tracking-tighter uppercase mt-8 mb-4">Zero-Human Company</h2>
  <p className="text-zinc-300 mb-4">Agentbot is now a zero-human company operated by Atlas_baseFM. The platform runs autonomously - no humans required for day-to-day operations. Every feature is built for self-operation.</p>
 
- <p className="text-xl font-bold text-blue-400 mt-8">The underground runs itself. </p>
+ <p className="text-xl font-bold text-orange-500 mt-8">The autonomous runs itself. </p>
  </article>
  </div>
  </main>

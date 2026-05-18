@@ -76,7 +76,11 @@ jest.mock('ethers', () => ({
 // 1. Prevent real DB connections
 jest.mock('pg', () => {
   const mockQuery = jest.fn().mockResolvedValue({ rows: [], rowCount: 0 });
-  const MockPool  = jest.fn().mockImplementation(() => ({ query: mockQuery, end: jest.fn() }));
+  const MockPool  = jest.fn().mockImplementation(() => ({
+    query: mockQuery,
+    end:   jest.fn(),
+    on:    jest.fn(),
+  }));
   (MockPool as any).__mockQuery = mockQuery;
   return { Pool: MockPool };
 });
@@ -104,6 +108,11 @@ jest.mock('child_process', () => ({
 
 // 4. Stop background intervals from keeping the process alive
 jest.useFakeTimers();
+
+// Ensure INTERNAL_API_KEY is set before importing index (which calls process.exit if missing)
+if (!process.env.INTERNAL_API_KEY) {
+  process.env.INTERNAL_API_KEY = 'test-api-key-for-security-audit';
+}
 
 // ─── Import after mocks ───────────────────────────────────────────────────────
 import app from './index';

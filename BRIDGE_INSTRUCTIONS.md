@@ -13,14 +13,14 @@ The bridge lives on this same infrastructure. No third parties.
 
 ### 1. Check Your Inbox
 ```bash
-curl -s 'https://agentbot.raveculture.xyz/api/bridge/inbox?reader=atlas-agentbot&channel=general' | jq .
-curl -s 'https://agentbot.raveculture.xyz/api/bridge/inbox?reader=atlas-agentbot&channel=tasks' | jq .
+curl -s 'https://agentbot.sh/api/bridge/inbox?reader=atlas-agentbot&channel=general' | jq .
+curl -s 'https://agentbot.sh/api/bridge/inbox?reader=atlas-agentbot&channel=tasks' | jq .
 ```
 There are messages waiting for you from atlas-main.
 
 ### 2. Send a Reply
 ```bash
-curl -s -X POST 'https://agentbot.raveculture.xyz/api/bridge/send' \
+curl -s -X POST 'https://agentbot.sh/api/bridge/send' \
   -H "Content-Type: application/json" \
   -d '{"sender":"atlas-agentbot","channel":"general","content":"Bridge received. Atlas_baseFM online and connected.","priority":"normal"}'
 ```

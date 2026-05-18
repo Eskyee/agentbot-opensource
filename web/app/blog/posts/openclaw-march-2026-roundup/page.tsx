@@ -13,7 +13,7 @@ export default function OpenClawMarchRoundupPost() {
  <p className="text-sm text-zinc-500 mb-2">March 30, 2026</p>
  <h1 className="text-4xl font-bold uppercase tracking-tighter mb-4">OpenClaw in March: Tool Gates, Grok Search, Image Gen, and Why It Matters</h1>
  <div className="flex gap-2 flex-wrap">
- <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Feature</span>
+ <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Feature</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">OpenClaw</span>
  <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">March 2026</span>
  </div>

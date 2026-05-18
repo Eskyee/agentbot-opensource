@@ -14,12 +14,43 @@
     "clean": "turbo run clean"
   },
   "devDependencies": {
-    "turbo": "^2.9.0"
+    "turbo": "^2.9.0",
+    "bs58": "^6.0.0"
   },
   "packageManager": "npm@10.8.2",
   "overrides": {
-    "hono": "^4.12.12",
+    "hono": "^4.12.14",
     "@hono/node-server": "^1.19.13",
-    "defu": "^6.1.5"
+    "defu": "^6.1.5",
+    "axios": "^1.15.1",
+    "fast-xml-parser": "^5.7.0",
+    "follow-redirects": "^1.16.0",
+    "uuid": "^9.0.1",
+    "postcss": "^8.5.10",
+    "next-auth": "4.24.12",
+    "elliptic": "6.6.1",
+    "ws": "8.18.0",
+    "picomatch": "^4.0.2",
+    "brace-expansion": "^5.0.5",
+    "handlebars": "^4.7.9",
+    "@openzeppelin/contracts": "4.9.6",
+    "undici": "^7.24.5",
+    "devalue": "^5.6.4",
+    "bs58": "^6.0.0",
+    "rpc-websockets": {
+      "uuid": "^9.0.1"
+    },
+    "jayson": {
+      "uuid": "^9.0.1"
+    },
+    "svix": {
+      "uuid": "^9.0.1"
+    },
+    "@metamask/utils": {
+      "uuid": "^9.0.1"
+    },
+    "@aws-sdk/xml-builder": {
+      "fast-xml-parser": "^5.7.0"
+    }
   }
 }

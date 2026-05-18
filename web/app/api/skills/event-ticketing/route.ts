@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 const VALID_TIERS = ['general', 'vip', 'early-bird', 'student'];
 const VALID_STATUS = ['pending', 'confirmed', 'cancelled', 'refunded'];
@@ -26,6 +27,8 @@ function sanitizeEmail(email: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('event-ticketing');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action, ...data } = body;
@@ -82,7 +85,7 @@ export async function POST(request: NextRequest) {
       tickets.set(id, ticket);
 
       // x402 USDC payment on Base
-      const paymentAddress = '0xd8fd0e1dce89beaab924ac68098ddb17613db56f';
+      const paymentAddress = '0xYOUR_WALLET_ADDRESS_HERE';
       
       return NextResponse.json({
         success: true,
@@ -137,6 +140,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('event-ticketing');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'event-ticketing',
     name: 'Event Ticketing',

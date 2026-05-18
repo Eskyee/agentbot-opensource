@@ -123,7 +123,7 @@ export default function WelcomeOpenClawUsersPost() {
  <Link href="/signup" className="inline-block border border-zinc-800 px-6 py-2.5 text-xs font-bold uppercase tracking-widest hover:border-zinc-600 transition-colors">
  Get Started Free
  </Link>
- <Link href="https://docs.agentbot.raveculture.xyz" className="inline-block border border-zinc-500 text-zinc-300 px-6 py-2.5 font-medium hover:border-zinc-300 transition-colors">
+ <Link href="https://agentbot.sh/documentation" className="inline-block border border-zinc-500 text-zinc-300 px-6 py-2.5 font-medium hover:border-zinc-300 transition-colors">
  Read Docs
  </Link>
  </div>
@@ -133,9 +133,9 @@ export default function WelcomeOpenClawUsersPost() {
  <h3 className="text-lg font-semibold text-white mb-3">Stay Updated</h3>
  <p className="text-zinc-300">Follow us for meetup announcements, feature updates, and community showcases.</p>
  <div className="flex gap-3 mt-4">
- <a href="https://twitter.com" className="text-blue-400 hover:text-blue-300 text-sm font-medium">Twitter</a>
- <a href="https://discord.com" className="text-blue-400 hover:text-blue-300 text-sm font-medium">Discord</a>
- <a href="https://github.com" className="text-blue-400 hover:text-blue-300 text-sm font-medium">GitHub</a>
+ <a href="https://twitter.com" className="text-orange-500 hover:text-orange-500 text-sm font-medium">Twitter</a>
+ <a href="https://discord.com" className="text-orange-500 hover:text-orange-500 text-sm font-medium">Discord</a>
+ <a href="https://github.com" className="text-orange-500 hover:text-orange-500 text-sm font-medium">GitHub</a>
  </div>
  </div>
  </div>

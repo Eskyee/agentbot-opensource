@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 interface Festival {
   id: string;
@@ -31,6 +32,8 @@ const VALID_GENRES = ['techno', 'house', 'edm', 'trance', 'dnb', 'hardcore', 'ro
 const VALID_COUNTRIES = ['UK', 'Netherlands', 'Spain', 'Belgium', 'USA', 'Germany', 'France', 'Italy'];
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('festival-finder');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action, ...data } = body;
@@ -172,6 +175,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('festival-finder');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'festival-finder',
     name: 'Festival Finder',

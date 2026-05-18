@@ -39,7 +39,7 @@ export default function SecurityPatchApr92026() {
  <span className="font-bold">defu &le;6.1.4</span>
  </div>
  <p className="text-zinc-400 text-sm mb-1">Prototype pollution via <code>__proto__</code> key in defaults argument</p>
- <p className="text-zinc-500 text-sm">Fixed: <span className="text-green-400">6.1.7</span> &mdash; <a href="https://github.com/advisories/GHSA-737v-mqg7-c878" className="text-blue-400 hover:underline">GHSA-737v-mqg7-c878</a></p>
+ <p className="text-zinc-500 text-sm">Fixed: <span className="text-green-400">6.1.7</span> &mdash; <a href="https://github.com/advisories/GHSA-737v-mqg7-c878" className="text-orange-500 hover:underline">GHSA-737v-mqg7-c878</a></p>
  </div>
 
  <div className="bg-zinc-950/50 border border-zinc-800 p-5">

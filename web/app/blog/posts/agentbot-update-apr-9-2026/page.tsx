@@ -45,7 +45,7 @@ export default function BlogPost() {
             <li>/dashboard/solana with wallet lookup & RPC config</li>
             <li>Competitor analysis: solana-clawd, cobotgg, RefundYourSOL</li>
           </ul>
-          <a href="/solana" className="text-blue-400 hover:underline mb-8 block">View Solana integrations →</a>
+          <a href="/solana" className="text-orange-500 hover:underline mb-8 block">View Solana integrations →</a>
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Blockchain Buddies 🦀🤖👻🐉👽</h2>
           <p className="text-zinc-400 mb-4">
@@ -58,7 +58,7 @@ export default function BlogPost() {
             <li>Unicode animations showcase</li>
             <li>Voice mode toggle</li>
           </ul>
-          <a href="/buddies" className="text-blue-400 hover:underline mb-8 block">Meet your buddies →</a>
+          <a href="/buddies" className="text-orange-500 hover:underline mb-8 block">Meet your buddies →</a>
 
           <h2 className="text-2xl font-bold mt-12 mb-4">Liquid Wallet Kit Docs</h2>
           <p className="text-zinc-400 mb-4">
@@ -71,7 +71,7 @@ export default function BlogPost() {
             <li>Asset issuance on Liquid</li>
             <li>Agentbot integration notes</li>
           </ul>
-          <a href="/docs/liquid-lwk-railway" className="text-blue-400 hover:underline mb-8 block">Read the guide →</a>
+          <a href="/docs/liquid-lwk-railway" className="text-orange-500 hover:underline mb-8 block">Read the guide →</a>
 
           <h2 className="text-2xl font-bold mt-12 mb-4">What's Competitive</h2>
           <p className="text-zinc-400 mb-4">

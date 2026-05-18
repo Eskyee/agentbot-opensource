@@ -4,7 +4,7 @@ import { timingSafeEqual } from 'crypto';
 /**
  * Outbound Discord message sender — accepts requests from internal services.
  *
- * SECURITY PATTERN (underground.ts template):
+ * SECURITY PATTERN (autonomous.ts template):
  *  - API key is compared with timingSafeEqual() to prevent timing-oracle attacks.
  *    A plain `===` comparison leaks information about how many characters match
  *    because JavaScript short-circuits on the first mismatch.

@@ -78,20 +78,6 @@ Agentbot uses git-backed collaboration (via gitlawb):
 | Identity | did:key + HTTP Signatures |
 | Storage | Vercel + Railway + gitlawb |
 
-## Public API Surface
-
-The open-source repo exposes a narrow integration layer that is safe to build against publicly:
-
-- `GET /health`
-- `GET /api/agents`
-- `GET /api/agents/:id`
-- `POST /api/agents`
-- `PUT /api/agents/:id`
-- `DELETE /api/agents/:id`
-- `POST /api/provision`
-
-The starter SDK in [`../sdk/agentbot`](../sdk/agentbot) is a typed wrapper around those endpoints.
-
 ## Self-Hosted from Day One
 
 Agentbot follows gitlawb's philosophy:
@@ -109,32 +95,35 @@ Agentbot already:
 - ⏳ P2P networking (future)
 - ⏳ Trust score system (future)
 
+## Core Design Principles: Fact-Based Backend
+
+Agentbot has shifted from legacy "Web 2.0" patterns (shared secrets and mutable state) to a **Fact-Based Architecture**. This ensures the platform is decentralized, verifiable, and resilient.
+
+### 1. Identity as a Fact (Signature Layer)
+Authentication is no longer based on leakable API keys or session cookies. Instead, it is a **cryptographic fact**.
+- **DID-Native:** Every request from an agent or the frontend must be signed by an Ethereum-compatible private key.
+- **SignatureGuard:** The backend verifies these signatures (`x-agent-signature`, `x-agent-address`) using `ethers.verifyMessage`.
+- **Stateless Trust:** The server doesn't need to "log you in"—it simply verifies that the holder of a specific identity authorized the action.
+
+### 2. Execution as a Fact (Durable Workflow Layer)
+Long-running orchestration (like provisioning containers on Railway) is no longer a stateless Express route. It is a **verifiable execution log**.
+- **Durable Workflows:** Using Vercel Workflow DevKit, complex tasks are broken into replayable steps.
+- **Resilience:** If a serverless function times out or the backend restarts, the workflow automatically resumes from its last successful "Fact" of execution.
+- **Single Source of Truth:** The workflow run history *is* the state, removing reliance on "pending/running" columns in a database.
+
+### 3. State as a Fact (Gitlawb Mirror Layer)
+The PostgreSQL database is used for "Hot Storage" (UI speed), but the **Gitlawb** node is the "Warm Storage" tier for **Immutable Truth**.
+- **State Mirroring:** Every time an agent's configuration is updated, the backend mirrors that change as a signed JSON commit to a Git repository.
+- **Verifiable Audit Trail:** Any agent or external auditor can clone the `gitlawb` repo to prove exactly what an agent did and when, backed by content-addressing.
+
+---
+
+## Infrastructure: Railway-Only
+
+Agentbot is 100% unified on **Railway** for its managed runtime layer. 
+- **GraphQL Provisioning:** The backend orchestrates agent containers directly via the Railway GraphQL API.
+- **Zero Render usage:** Legacy "Render" infrastructure has been removed to simplify the networking profile and reduce latency.
+
 ---
 
 *Architecture inspired by gitlawb — decentralized git for AI agents*
-
-## A2A Protocol Layer
-
-The Agent-to-Agent bus enables autonomous coordination between agents:
-
-```
-┌─────────────────┐     A2A Bus      ┌─────────────────┐
-│   Agent A       │ ←─────────────→  │   Agent B       │
-│  (Booking)      │  Ed25519 signed   │  (Venue)        │
-└────────┬────────┘  SSRF-protected  └────────┬────────┘
-         │                                    │
-         └──────────── Settlement ────────────┘
-                    USDC on Base (CDP)
-```
-
-See [A2A_PROTOCOL.md](./A2A_PROTOCOL.md) for full spec.
-
-## Underground Network Layer
-
-baseFM integration turns every Agentbot agent into a potential broadcaster:
-
-- Agents schedule and push content to baseFM autonomously
-- Co-DJ feature enables cross-agent coordination for live shows  
-- On-chain settlement means DJs get paid without intermediaries
-
-See [UNDERGROUND_NETWORK.md](./UNDERGROUND_NETWORK.md) for full spec.

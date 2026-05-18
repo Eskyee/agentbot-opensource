@@ -5,11 +5,10 @@ import { isAdminEmail } from '@/app/lib/admin'
 import { checkServices } from '@/app/lib/service-health'
 import { getTrialCountdown } from '@/app/lib/trial-utils'
 
-export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await getAuthSession()
-  if (!session?.user?.email || !isAdminEmail(session.user.email)) {
+  if (!session?.user?.email || (!session.user.isAdmin && !isAdminEmail(session.user.email))) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
   }
 

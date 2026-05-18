@@ -45,7 +45,19 @@ export async function POST(request: NextRequest) {
           const data = await res.json() as any
           return NextResponse.json(data)
         } catch (error) {
-          return NextResponse.json({ success: true, score: 50, tier: 'new', details: null })
+          // Compute real fitness from execution_logs
+          let score = 50
+          let tier = 'new'
+          try {
+            const { prisma } = await import('@/app/lib/prisma')
+            const totalExecs = await prisma.execution_logs.count()
+            const successExecs = await prisma.execution_logs.count({ where: { success: true } })
+            if (totalExecs > 0) {
+              score = Math.round((successExecs / totalExecs) * 100)
+              tier = score >= 90 ? 'elite' : score >= 70 ? 'established' : score >= 50 ? 'active' : 'new'
+            }
+          } catch {}
+          return NextResponse.json({ success: true, score, tier, details: null })
         }
       }
 
@@ -58,10 +70,25 @@ export async function POST(request: NextRequest) {
           const data = await res.json() as any
           return NextResponse.json(data)
         } catch (error) {
+          // Compute real pricing from model_metrics
+          let rate = 0.01
+          let tier = 'basic'
+          let score = 50
+          try {
+            const { prisma } = await import('@/app/lib/prisma')
+            const totalCost = await prisma.model_metrics.aggregate({ _sum: { cost_usdc: true } })
+            const totalExecs = await prisma.execution_logs.count()
+            const successExecs = await prisma.execution_logs.count({ where: { success: true } })
+            if (totalExecs > 0) {
+              score = Math.round((successExecs / totalExecs) * 100)
+              tier = score >= 90 ? 'elite' : score >= 70 ? 'established' : 'active'
+              rate = score >= 90 ? 0.05 : score >= 70 ? 0.02 : 0.01
+            }
+          } catch {}
           return NextResponse.json({
-            success: true, agentId: id, tier: 'basic',
-            pricing: { rate: 0.01, discount: 0 },
-            fitness: { score: 50, tier: 'new' }
+            success: true, agentId: id, tier,
+            pricing: { rate, discount: 0 },
+            fitness: { score, tier }
           })
         }
       }
@@ -165,18 +192,32 @@ export async function GET(request: NextRequest) {
     })
 
     const data = await res.json() as any
+
+    // Get real agent count from our database
+    let agentCount = 0
+    let colonyCount = 0
+    try {
+      const { prisma } = await import('@/app/lib/prisma')
+      agentCount = await prisma.agent.count()
+      // Count colonies from swarm model or agent groups
+      colonyCount = await prisma.agentSwarm.count().catch(() => 0)
+    } catch {}
+
     return NextResponse.json({
       gateway: X402_GATEWAY_URL,
-      ...data
+      ...data,
+      agents: agentCount,
+      colonies: colonyCount,
     })
   } catch (error: unknown) {
     return NextResponse.json({
       gateway: X402_GATEWAY_URL,
       status: 'unreachable',
+      agents: 0,
+      colonies: 0,
       error: error instanceof Error ? error.message : 'Connection failed'
     }, { status: 503 })
   }
 }
 
 
-export const dynamic = 'force-dynamic';

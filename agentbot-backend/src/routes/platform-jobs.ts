@@ -13,6 +13,7 @@ router.post('/provision', async (req: Request, res: Response) => {
     agentType = 'creative',
     autoProvision = false,
     stripeSubscriptionId = null,
+    tailscale = null,
   } = req.body || {};
 
   if (!userId || typeof userId !== 'string') {
@@ -35,6 +36,7 @@ router.post('/provision', async (req: Request, res: Response) => {
       agentType,
       autoProvision,
       stripeSubscriptionId,
+      tailscale,
     });
 
     return res.status(202).json({

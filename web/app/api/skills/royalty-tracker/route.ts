@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rejectDemoRouteInProduction } from '../_demoGuard';
 
 const mockRoyalties = [
   { id: 'r1', track: 'Midnight Systems', stream: 15420, rate: 0.003, platform: 'Spotify', date: '2026-02' },
@@ -8,6 +9,8 @@ const mockRoyalties = [
 ];
 
 export async function POST(request: NextRequest) {
+  const disabled = rejectDemoRouteInProduction('royalty-tracker');
+  if (disabled) return disabled;
   try {
     const body = await request.json();
     const { action } = body;
@@ -28,6 +31,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  const disabled = rejectDemoRouteInProduction('royalty-tracker');
+  if (disabled) return disabled;
   return NextResponse.json({
     skill: 'royalty-tracker',
     name: 'Royalty Tracker',

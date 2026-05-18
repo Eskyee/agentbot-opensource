@@ -1,5 +1,7 @@
 "use step"
 
+import { signedFetch } from '@/app/lib/backend-client';
+
 interface ProvisionAgentInput {
   userId: string;
   email: string;
@@ -7,25 +9,10 @@ interface ProvisionAgentInput {
 }
 
 export async function provisionAgentStep({ userId, email, plan = "free" }: ProvisionAgentInput) {
-  const backendUrl = process.env.BACKEND_API_URL || process.env.AGENTBOT_BACKEND_URL;
-  const apiSecret = process.env.BACKEND_API_SECRET || process.env.API_SECRET;
-  
-  if (!backendUrl) {
-    console.log("BACKEND_API_URL not set, skipping agent provisioning");
-    return { success: false, error: "BACKEND_API_URL not set" };
-  }
-
-  if (!apiSecret) {
-    console.log("API_SECRET not set, skipping agent provisioning");
-    return { success: false, error: "API_SECRET not set" };
-  }
-
   try {
-    const response = await fetch(`${backendUrl}/provision`, {
+    const response = await signedFetch('/provision', {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiSecret}`,
         "X-User-Id": userId,
         "X-User-Email": email,
       },

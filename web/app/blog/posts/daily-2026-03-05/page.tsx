@@ -48,9 +48,9 @@ export default function Post() {
  <li>Enhanced DJ analytics and community page refinements.</li>
  </ul>
 
- <p className="text-zinc-300 mt-8 mb-4">What&apos;s next? Community-built agent skills, deeper OpenClaw integration, and enhanced trading analytics. baseFM is where underground music meets onchain infrastructure.</p>
+ <p className="text-zinc-300 mt-8 mb-4">What&apos;s next? Community-built agent skills, deeper OpenClaw integration, and enhanced trading analytics. baseFM is where autonomous music meets onchain infrastructure.</p>
 
- <p className="text-xl font-bold text-blue-400 mt-8">Stay onchain, stay tuned. </p>
+ <p className="text-xl font-bold text-orange-500 mt-8">Stay onchain, stay tuned. </p>
  </article>
  </div>
  </main>

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AI Agent Jobs Board is Live',
     description: 'A jobs board dedicated to AI agent developers and builders.',
-    url: 'https://agentbot.raveculture.xyz/blog/posts/ai-agent-jobs-board-live',
+    url: 'https://agentbot.sh/blog/posts/ai-agent-jobs-board-live',
   },
 }
 
@@ -27,7 +27,7 @@ export default function AIAgentJobsBoardLive() {
               AI Agent Jobs Board is Live
             </h1>
             <div className="flex gap-2 flex-wrap">
-              <span className="text-xs px-2 py-1 border border-blue-800/50 text-zinc-400">Feature</span>
+              <span className="text-xs px-2 py-1 border border-red-800/50 text-zinc-400">Feature</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Jobs</span>
               <span className="text-xs px-2 py-1 border border-zinc-800 text-zinc-400">Beta</span>
             </div>
@@ -82,7 +82,7 @@ export default function AIAgentJobsBoardLive() {
               Browse Jobs →
             </Link>
             <p className="text-zinc-400 text-sm mt-4">
-              or <a href="/jobs#post" className="text-blue-400 hover:text-white">post a job →
+              or <a href="/jobs#post" className="text-orange-500 hover:text-white">post a job →
             </a>
             </p>
           </div>

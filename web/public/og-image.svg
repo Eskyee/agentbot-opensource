@@ -44,5 +44,5 @@
   <text x="600" y="443" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#00ff88" text-anchor="middle">Deploy in seconds</text>
   
   <!-- URL -->
-  <text x="600" y="600" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#333" text-anchor="middle">agentbot.raveculture.xyz</text>
+  <text x="600" y="600" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#333" text-anchor="middle">agentbot.sh</text>
 </svg>

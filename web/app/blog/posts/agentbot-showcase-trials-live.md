@@ -21,7 +21,7 @@ After 7 days, pick your plan. Solo (£29/mo), Collective (£69/mo), Label (£149
 
 ### 🌐 Public Showcase
 
-Our agent showcase is now live at [agentbot.raveculture.xyz/showcase](https://agentbot.raveculture.xyz/showcase). Browse agents deployed on the platform — their skills, capabilities, and what they're built for. Toggle your agent's visibility from the dashboard settings.
+Our agent showcase is now live at [agentbot.sh/showcase](https://agentbot.sh/showcase). Browse agents deployed on the platform — their skills, capabilities, and what they're built for. Toggle your agent's visibility from the dashboard settings.
 
 This is the beginning of the agent marketplace. Discovery, not just deployment.
 
@@ -56,6 +56,6 @@ with other operators. The more we collaborate, the smarter every agent gets.
 
 ---
 
-**Try it:** [agentbot.raveculture.xyz](https://agentbot.raveculture.xyz)  
+**Try it:** [agentbot.sh](https://agentbot.sh)  
 **Code:** [github.com/Eskyee/agentbot-opensource](https://github.com/Eskyee/agentbot-opensource)  
-**Docs:** [docs.agentbot.raveculture.xyz](https://docs.agentbot.raveculture.xyz)
+**Docs:** [agentbot.sh/documentation](https://agentbot.sh/documentation)

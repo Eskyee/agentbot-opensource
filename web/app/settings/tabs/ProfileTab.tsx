@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ProfileTabProps {
   displayName: string
@@ -17,7 +17,18 @@ export function ProfileTab({
   basename,
   onDisplayNameChange,
 }: ProfileTabProps) {
-  const [saving, setSaving] = useState(false)
+  const [saving, setSaving]       = useState(false)
+  const [xHandle, setXHandle]     = useState('')
+  const [xSaving, setXSaving]     = useState(false)
+  const [xSaved, setXSaved]       = useState(false)
+  const [xError, setXError]       = useState('')
+
+  useEffect(() => {
+    fetch('/api/user/x-handle')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d?.handle) setXHandle(d.handle) })
+      .catch(() => null)
+  }, [])
 
   const saveProfile = async () => {
     setSaving(true)
@@ -36,6 +47,26 @@ export function ProfileTab({
     } finally {
       setSaving(false)
     }
+  }
+
+  const saveXHandle = async () => {
+    setXError('')
+    setXSaving(true)
+    const clean = xHandle.trim().replace(/^@/, '')
+    const res = await fetch('/api/user/x-handle', {
+      method:  'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ handle: clean || null }),
+    })
+    setXSaving(false)
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      setXError(d.error || 'Save failed')
+      return
+    }
+    setXHandle(clean)
+    setXSaved(true)
+    setTimeout(() => setXSaved(false), 2000)
   }
 
   return (
@@ -77,8 +108,8 @@ export function ProfileTab({
             </div>
             {basename ? (
               <p className="mt-2 flex items-center gap-2 text-sm">
-                <span className="inline-block w-4 h-4 rounded-full bg-blue-500" aria-hidden="true" />
-                <span className="text-blue-400 font-medium">{basename}</span>
+                <span className="inline-block w-4 h-4 rounded-full bg-orange-500" aria-hidden="true" />
+                <span className="text-orange-400 font-medium">{basename}</span>
                 <span className="text-zinc-500">· Base Name</span>
               </p>
             ) : (
@@ -88,7 +119,7 @@ export function ProfileTab({
                   href="https://www.base.org/names"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline"
+                  className="text-orange-400 hover:underline"
                 >
                   Get one free →
                 </a>
@@ -96,6 +127,34 @@ export function ProfileTab({
             )}
           </div>
         )}
+
+        {/* X / Twitter handle */}
+        <div>
+          <label className="block text-sm font-medium mb-2">X (Twitter) Handle</label>
+          <div className="flex gap-2 sm:max-w-md">
+            <div className="flex flex-1 items-center border border-zinc-700 bg-zinc-800 focus-within:border-zinc-500">
+              <span className="pl-3 text-zinc-500 text-sm select-none">@</span>
+              <input
+                type="text"
+                value={xHandle}
+                onChange={(e) => setXHandle(e.target.value.replace(/^@/, ''))}
+                placeholder="yourhandle"
+                className="flex-1 bg-transparent px-2 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none"
+              />
+            </div>
+            <button
+              onClick={saveXHandle}
+              disabled={xSaving}
+              className="bg-zinc-800 border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white hover:border-zinc-500 disabled:opacity-50 transition-colors"
+            >
+              {xSaving ? '…' : xSaved ? '✓' : 'Save'}
+            </button>
+          </div>
+          {xError && <p className="mt-1 text-xs text-red-400">{xError}</p>}
+          <p className="mt-1 text-xs text-zinc-500">
+            Used by your agent to mention you, credit content, and surface your posts.
+          </p>
+        </div>
 
         <div>
           <p className="text-sm text-zinc-500">Member since Feb 2026</p>

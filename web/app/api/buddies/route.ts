@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 
-export const dynamic = 'force-dynamic'
 
 const VALID_TYPES = ['crab', 'robot', 'ghost', 'dragon', 'alien']
 const MAX_BUDDIES = 20

@@ -22,7 +22,7 @@ export async function sendWelcomeEmailStep({ email, name }: SendWelcomeEmailInpu
     html: `
       <h1>Welcome to Agentbot, ${name}!</h1>
       <p>Thanks for signing up. You can now deploy your first AI agent in 60 seconds.</p>
-      <p>Get started at: <a href="https://agentbot.raveculture.xyz/onboard">https://agentbot.raveculture.xyz/onboard</a></p>
+      <p>Get started at: <a href="https://agentbot.sh/onboard">https://agentbot.sh/onboard</a></p>
       <hr />
       <p>Best,<br>The Agentbot Team</p>
     `,

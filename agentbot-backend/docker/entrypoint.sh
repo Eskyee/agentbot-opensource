@@ -1,12 +1,19 @@
 #!/bin/sh
 # Agentbot OpenClaw Agent Container Entrypoint (Official Image)
-# Uses ghcr.io/openclaw/openclaw:latest
+# Uses ghcr.io/openclaw/openclaw:2026.5.2
 # Runs openclaw onboard --non-interactive for proper setup
 set -e
 
 USER_ID="${AGENTBOT_USER_ID:-unknown}"
 PLAN="${AGENTBOT_PLAN:-solo}"
 GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
+TAILSCALE_MODE="${OPENCLAW_TAILSCALE_MODE:-off}"
+GATEWAY_BIND="${OPENCLAW_GATEWAY_BIND:-lan}"
+if [ "$TAILSCALE_MODE" = "serve" ] || [ "$TAILSCALE_MODE" = "funnel" ]; then
+  GATEWAY_BIND="loopback"
+elif [ "$TAILSCALE_MODE" = "tailnet" ]; then
+  GATEWAY_BIND="tailnet"
+fi
 AI_PROVIDER="${AGENTBOT_AI_PROVIDER:-anthropic}"
 API_KEY="${AGENTBOT_API_KEY:-}"
 
@@ -19,6 +26,8 @@ echo "  OpenClaw: $(openclaw --version 2>/dev/null || echo 'unknown')"
 
 # Performance: ensure compile cache directory exists
 mkdir -p "${NODE_COMPILE_CACHE:-/var/tmp/openclaw-compile-cache}"
+
+agentbot-tailscale-start
 
 # Map provider to onboard auth flag
 case "$AI_PROVIDER" in
@@ -55,7 +64,7 @@ set -- openclaw onboard --non-interactive \
   --auth-choice "$AUTH_CHOICE" \
   --secret-input-mode plaintext \
   --gateway-port "$GATEWAY_PORT" \
-  --gateway-bind lan \
+  --gateway-bind "$GATEWAY_BIND" \
   --skip-skills
 
 # Add provider-specific flags
@@ -92,9 +101,10 @@ fi
     mkdir -p "${HOME}/.openclaw"
     cat > "${HOME}/.openclaw/openclaw.json" << EOF
 {
-  "gateway": { "port": ${GATEWAY_PORT}, "bind": "lan", "trustedProxies": ["127.0.0.1", "10.0.0.0/8", "100.64.0.0/10", "172.16.0.0/12", "192.168.0.0/16"], "controlUi": { "allowedOrigins": ["*"], "dangerouslyDisableDeviceAuth": true, "dangerouslyAllowHostHeaderOriginFallback": true } },
+  "gateway": { "port": ${GATEWAY_PORT}, "bind": "${GATEWAY_BIND}", "trustedProxies": ["127.0.0.1", "10.0.0.0/8", "100.64.0.0/10", "172.16.0.0/12", "192.168.0.0/16"], "controlUi": { "allowedOrigins": ["*"], "dangerouslyDisableDeviceAuth": true, "dangerouslyAllowHostHeaderOriginFallback": true } },
   "auth": { "method": "token", "token": "${GATEWAY_TOKEN}" },
-  "agents": { "defaults": { "model": { "primary": "openrouter/xiaomi/mimo-v2-pro" } } }
+  "agents": { "defaults": { "model": { "primary": "openrouter/xiaomi/mimo-v2-pro" } } },
+  "update": { "channel": "stable", "auto": { "enabled": true, "stableDelayHours": 6, "stableJitterHours": 12, "betaCheckIntervalHours": 1 } }
 }
 EOF
   }
@@ -112,7 +122,7 @@ if [ ! -f "${WORKSPACE}/AGENTS.md" ]; then
 # IDENTITY.md
 - Name: Agentbot-${USER_ID}
 - Plan: ${PLAN}
-- Platform: Agentbot (agentbot.raveculture.xyz)
+- Platform: Agentbot (agentbot.sh)
 EOF
 
   cat > "${WORKSPACE}/USER.md" << EOF
@@ -146,4 +156,8 @@ fi
 echo "[$(date)] Starting gateway..."
 
 # Run gateway
-exec node dist/index.js gateway --bind lan --port "${GATEWAY_PORT}"
+if [ "$TAILSCALE_MODE" = "serve" ] || [ "$TAILSCALE_MODE" = "funnel" ]; then
+  exec node dist/index.js gateway --bind "$GATEWAY_BIND" --port "${GATEWAY_PORT}" --tailscale "$TAILSCALE_MODE"
+fi
+
+exec node dist/index.js gateway --bind "$GATEWAY_BIND" --port "${GATEWAY_PORT}"

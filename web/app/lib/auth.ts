@@ -9,10 +9,21 @@ import { SiweMessage } from "siwe";
 import { createPublicClient, http } from "viem";
 import { base } from "viem/chains";
 import { consumeWalletNonce } from "@/app/lib/wallet-nonce";
+import { isAdminEmail } from "@/app/lib/admin";
 
 function getNextAuthSecret(): string {
-  const secret = process.env.NEXTAUTH_SECRET
+  const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
   if (secret) return secret
+
+  const isPreviewLikeBuild =
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.VERCEL_ENV === 'preview' ||
+    process.env.CI === 'true' ||
+    process.env.GITHUB_ACTIONS === 'true'
+
+  if (isPreviewLikeBuild) {
+    return 'build-placeholder'
+  }
 
   if (process.env.NODE_ENV === 'production') {
     throw new Error('NEXTAUTH_SECRET must be set in production')
@@ -44,6 +55,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }) as unknown as ReturnType<typeof CredentialsProvider>
   );
 }
@@ -268,10 +280,11 @@ export const authOptions: AuthOptions = {
               // Override the user id so JWT gets the existing user, not a new one
               user.id = existingUser.id;
               user.name = existingUser.name || user.name;
+              user.email = existingUser.email; // Ensure email is from DB
             }
           } catch (error) {
             console.error(`[Auth] Account linking error for ${account.provider}:`, error);
-            // Still allow sign-in even if linking fails
+            // DO NOT throw error, let NextAuth continue
           }
         }
         return true;
@@ -282,10 +295,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.sub = user.id;
         token.email = user.email;
-        // Set admin flag from ADMIN_EMAILS env var - re-evaluated on every sign-in
-        const adminEmails = (process.env.ADMIN_EMAILS || '')
-          .split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
-        token.isAdmin = adminEmails.includes((user.email || '').toLowerCase());
+        token.isAdmin = isAdminEmail(user.email);
       }
       return token;
     },

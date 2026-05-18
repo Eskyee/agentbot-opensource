@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from "@/app/lib/prisma";
+import { checkUserRateLimit } from "@/lib/rate-limit-user";
 
-export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   const session = await getAuthSession()
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const rl = await checkUserRateLimit('ref', session.user.id, 10, 3600);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many referral attempts. Try again later." },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfter) } },
+    );
   }
 
   const { referralCode } = await request.json();
