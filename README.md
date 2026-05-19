@@ -11,7 +11,7 @@
 [![Docs](https://img.shields.io/badge/docs-live-EF6F2E)](https://agentbot.sh/documentation)
 [![Discord](https://img.shields.io/badge/Discord-Join%20chat-5865F2?logo=discord&logoColor=white)](https://discord.gg/vTPG4vdV6D)
 
-[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource)
+[**Website**](https://agentbot.sh) · [**Documentation**](https://agentbot.sh/documentation) · [**Discord**](https://discord.gg/vTPG4vdV6D) · [**Open Source Repo**](https://github.com/Eskyee/agentbot-opensource) · [**gitlawb Mirror**](https://gitlawb.com/node/repos/z6MkpUq1/agentbot-opensource)
 
 </div>
 
