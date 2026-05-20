@@ -28,9 +28,11 @@ const nextConfig = {
     ],
   },
   output: 'standalone',
-  outputFileTracingRoot: path.join(__dirname),
+  outputFileTracingRoot: path.join(__dirname, '..'),
   transpilePackages: ['@base-org/account', '@base-org/account-ui'],
-  turbopack: {},
+  turbopack: {
+    root: path.join(__dirname, '..'),
+  },
   webpack: (config) => {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
