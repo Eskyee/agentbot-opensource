@@ -27,7 +27,6 @@ import { NotificationBell } from "@/app/social/_components/NotificationBell";
 const EXPLORE_LINKS = [
   { href: "/demo",         label: "Demo",         detail: "See Agentbot in action" },
   { href: "/showcase",     label: "Showcase",     detail: "Meet agents built on Agentbot" },
-  { href: "/capabilities", label: "Capabilities",  detail: "Browse the platform feature set" },
   { href: "/why",          label: "Why Agentbot",  detail: "The case for agent infrastructure" },
   { href: "/solana",       label: "Solana",        detail: "Solana agents, tools and workflows" },
   { href: "/agents",       label: "Agents",        detail: "Browse available agents" },

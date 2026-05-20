@@ -325,6 +325,7 @@ export default function PlaygroundPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
   const [isRefreshingPublish, setIsRefreshingPublish] = useState(false)
+  const [isPushingGitlawb, setIsPushingGitlawb] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [publishError, setPublishError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState('LOCAL')
@@ -611,6 +612,42 @@ export default function PlaygroundPage() {
     }
   }
 
+  async function pushProjectToGitlawb() {
+    if (!activeProject) return
+    if (!activeProject.generation) {
+      setPublishError('Generate files before pushing this project to GitLawb.')
+      setView('publish')
+      return
+    }
+
+    setIsPushingGitlawb(true)
+    setPublishError(null)
+    setView('publish')
+
+    try {
+      const response = await fetch(`/api/playground/projects/${encodeURIComponent(activeProject.id)}/gitlawb`, {
+        method: 'POST',
+      })
+
+      const body = await response.json()
+      if (!response.ok) {
+        throw new Error(body?.error || 'GitLawb push failed')
+      }
+
+      const pushed = body?.project as PlaygroundProject | undefined
+      if (pushed) {
+        setStorage('server')
+        setProjects((current) => current.map((project) => (
+          project.id === pushed.id ? { ...project, ...pushed } : project
+        )))
+      }
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : 'GitLawb push failed')
+    } finally {
+      setIsPushingGitlawb(false)
+    }
+  }
+
   async function submit(nextPrompt = prompt) {
     const cleanPrompt = nextPrompt.trim()
     if (!cleanPrompt || isGenerating || !activeProject) return
@@ -706,9 +743,11 @@ export default function PlaygroundPage() {
         <PublishView
           project={activeProject}
           onPublish={publishProject}
+          onGitlawbPush={pushProjectToGitlawb}
           onRefresh={refreshPublishedProject}
           onOpen={() => setView('builder')}
           isPublishing={isPublishing}
+          isPushingGitlawb={isPushingGitlawb}
           isRefreshing={isRefreshingPublish}
           publishError={publishError}
         />
@@ -1250,17 +1289,21 @@ function AppsView({
 function PublishView({
   project,
   onPublish,
+  onGitlawbPush,
   onRefresh,
   onOpen,
   isPublishing,
+  isPushingGitlawb,
   isRefreshing,
   publishError,
 }: {
   project: PlaygroundProject | undefined
   onPublish: () => Promise<void>
+  onGitlawbPush: () => Promise<void>
   onRefresh: () => Promise<void>
   onOpen: () => void
   isPublishing: boolean
+  isPushingGitlawb: boolean
   isRefreshing: boolean
   publishError: string | null
 }) {
@@ -1272,7 +1315,7 @@ function PublishView({
         <div className="text-[10px] uppercase tracking-widest text-zinc-600">Playground / Publish</div>
         <h1 className="mt-3 text-3xl font-bold uppercase tracking-tighter">Publish project</h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-500">
-          Publish the generated Vite app as a Vercel preview when credentials are configured. Local development records a preview URL without pushing.
+          Publish the generated Vite app as a Vercel preview, or push the source to a GitLawb node as a real git repo.
         </p>
       </div>
 
@@ -1313,7 +1356,7 @@ function PublishView({
               <span className="text-zinc-300">{project?.generation?.files.length ?? 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span>Deploy</span>
+              <span>Target</span>
               <span className="text-zinc-300">{project?.deploymentProvider ?? 'vercel-ready'}</span>
             </div>
             <div className="flex items-center justify-between">
@@ -1329,6 +1372,14 @@ function PublishView({
             className="mt-6 w-full bg-white px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-black hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isPublishing ? 'Publishing' : 'Publish'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void onGitlawbPush()}
+            disabled={!canPublish || isPushingGitlawb}
+            className="mt-2 w-full border border-orange-500/50 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-orange-400 hover:border-orange-400 hover:text-orange-300 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isPushingGitlawb ? 'Pushing to GitLawb' : 'Push to GitLawb node'}
           </button>
           <button
             type="button"

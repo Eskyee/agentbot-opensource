@@ -214,11 +214,6 @@ export default async function Home() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px bg-zinc-900">
             {[
               {
-                href: '/capabilities',
-                label: 'Capabilities',
-                body: 'The platform feature overview with the major product surfaces in one place.',
-              },
-              {
                 href: '/solana',
                 label: 'Solana',
                 body: 'Solana agent workflows, integrations, and MCP tool coverage.',
@@ -603,7 +598,6 @@ export default async function Home() {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {[
               { href: '/use-cases', label: 'Use Cases' },
-              { href: '/capabilities', label: 'Capabilities' },
               { href: '/demo', label: 'Demo' },
               { href: '/marketplace', label: 'Marketplace' },
               { href: '/open-learning', label: 'Open Learning' },

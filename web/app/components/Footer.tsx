@@ -17,7 +17,6 @@ const COLUMNS = [
       { href: '/demo',         label: 'Demo' },
       { href: '/agents',       label: 'Agents' },
       { href: '/marketplace',  label: 'Marketplace' },
-      { href: '/capabilities', label: 'Capabilities' },
       { href: '/use-cases',    label: 'Use Cases' },
       { href: '/solana',       label: 'Solana' },
     ],
