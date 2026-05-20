@@ -3,7 +3,11 @@ import request from 'supertest';
 
 jest.mock('pg', () => {
   const mockQuery = jest.fn();
-  const MockPool = jest.fn().mockImplementation(() => ({ query: mockQuery }));
+  const MockPool = jest.fn().mockImplementation(() => ({
+    query: mockQuery,
+    end:   jest.fn(),
+    on:    jest.fn(),
+  }));
   (MockPool as any).__mockQuery = mockQuery;
   return { Pool: MockPool };
 });

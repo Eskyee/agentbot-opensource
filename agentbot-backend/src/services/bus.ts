@@ -1,12 +1,8 @@
 import { keccak256, toUtf8Bytes, verifyMessage as ethersVerifyMessage } from 'ethers';
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 // Replay window for /bus/send messages — same 5-minute skew as signature.ts.
 // Captured signed messages older than this are rejected outright; messages

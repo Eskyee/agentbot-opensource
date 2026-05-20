@@ -36,20 +36,20 @@ console.log(`${COLORS.yellow}1. NEXTAUTH_SECRET (Vercel):${COLORS.reset}`);
 console.log(`   ${nextauthSecret}`);
 console.log(`${COLORS.blue}   → Add to Vercel → Environment Variables${COLORS.reset}\n`);
 
-console.log(`${COLORS.yellow}2. JWT_SECRET (Render - Backend):${COLORS.reset}`);
+console.log(`${COLORS.yellow}2. JWT_SECRET (Railway - Backend):${COLORS.reset}`);
 console.log(`   ${jwtSecret}`);
-console.log(`${COLORS.blue}   → Add to Render → agentbot-api → Environment${COLORS.reset}`);
-console.log(`${COLORS.blue}   → Or use "Generate value" in Render dashboard${COLORS.reset}\n`);
+console.log(`${COLORS.blue}   → Add to Railway → agentbot-backend → Variables${COLORS.reset}`);
+console.log(`${COLORS.blue}   → Or use "Generate value" in Railway dashboard${COLORS.reset}\n`);
 
-console.log(`${COLORS.yellow}3. INTERNAL_API_KEY (Render - Backend):${COLORS.reset}`);
+console.log(`${COLORS.yellow}3. INTERNAL_API_KEY (Railway - Backend):${COLORS.reset}`);
 console.log(`   ${internalApiKey}`);
-console.log(`${COLORS.blue}   → Add to Render → agentbot-api → Environment${COLORS.reset}`);
-console.log(`${COLORS.blue}   → Or use "Generate value" in Render dashboard${COLORS.reset}\n`);
+console.log(`${COLORS.blue}   → Add to Railway → agentbot-backend → Variables${COLORS.reset}`);
+console.log(`${COLORS.blue}   → Or use "Generate value" in Railway dashboard${COLORS.reset}\n`);
 
-console.log(`${COLORS.yellow}4. WALLET_ENCRYPTION_KEY (Render - Backend):${COLORS.reset}`);
+console.log(`${COLORS.yellow}4. WALLET_ENCRYPTION_KEY (Railway - Backend):${COLORS.reset}`);
 console.log(`   ${walletEncryptionKey}`);
-console.log(`${COLORS.blue}   → Add to Render → agentbot-api → Environment${COLORS.reset}`);
-console.log(`${COLORS.blue}   → Or use "Generate value" in Render dashboard${COLORS.reset}\n`);
+console.log(`${COLORS.blue}   → Add to Railway → agentbot-backend → Variables${COLORS.reset}`);
+console.log(`${COLORS.blue}   → Or use "Generate value" in Railway dashboard${COLORS.reset}\n`);
 
 console.log('─'.repeat(60));
 console.log(`${COLORS.bright}✅ Instructions:${COLORS.reset}\n`);
@@ -60,9 +60,9 @@ console.log('   - Select your agentbot project');
 console.log('   - Settings → Environment Variables');
 console.log('   - Add: NEXTAUTH_SECRET (use value above)\n');
 
-console.log('2. ${COLORS.green}Render${COLORS.reset}:');
-console.log('   - Go to: https://dashboard.render.com');
-console.log('   - Services → agentbot-api → Environment');
+console.log('2. ${COLORS.green}Railway${COLORS.reset}:');
+console.log('   - Go to: https://railway.app/dashboard');
+console.log('   - Project → agentbot-backend → Variables');
 console.log('   - Add secrets OR use "Generate value" for auto-generated ones\n');
 
 console.log('3. ${COLORS.green}IMPORTANT:${COLORS.reset}');

@@ -75,8 +75,9 @@ export async function handlePreToolUse(
   
   pendingRequests.set(requestId, request)
   
-  // TODO: Send notification to dashboard via WebSocket/SSE
+  // TODO(P2): Send notification to dashboard via WebSocket/SSE
   // notifyDashboard(userId, request)
+  // Today the dashboard polls /api/permissions; push delivery is a UX nicety.
   
   // For now, block and wait for dashboard response
   // In production, this would be async with WebSocket
@@ -98,7 +99,7 @@ export function processDecision(decision: PermissionDecision): PermissionRequest
   
   // If approve_always, add to user's auto-approve list
   if (decision.decision === 'approve_always') {
-    // TODO: Persist to user settings
+    // TODO(P2): Persist auto-approve list to user settings (currently in-memory only)
     // addToAutoApprove(request.userId, request.command)
   }
   

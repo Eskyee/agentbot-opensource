@@ -165,6 +165,11 @@ export default function DJStreamPage() {
   const [youtubeViewerUrl, setYoutubeViewerUrl] = useState('')
   const [youtubeProbeUrl, setYoutubeProbeUrl] = useState('')
   const [savingYoutubeRelay, setSavingYoutubeRelay] = useState(false)
+  const [youtubeStreamKey, setYoutubeStreamKey] = useState('')
+  const [xViewerUrl, setXViewerUrl] = useState('')
+  const [xProbeUrl, setXProbeUrl] = useState('')
+  const [xStreamKey, setXStreamKey] = useState('')
+  const [savingXRelay, setSavingXRelay] = useState(false)
   const [endingStream, setEndingStream] = useState(false)
   const [archivingStream, setArchivingStream] = useState(false)
   const [streamActionMessage, setStreamActionMessage] = useState('')
@@ -432,6 +437,51 @@ export default function DJStreamPage() {
     }
   }
 
+  const saveXRelay = async () => {
+    setSavingXRelay(true)
+    setRelayActionError('')
+    try {
+      const res = await fetch('/api/basefm/relays', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          key: 'x-live',
+          name: 'X (Twitter) Live',
+          type: 'twitter',
+          required: false,
+          enabled: true,
+          viewerUrl: xViewerUrl.trim() || null,
+          probeUrl: xProbeUrl.trim() || xViewerUrl.trim() || null,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to save X relay')
+      }
+
+      // Save X stream key to relay server for simulcasting
+      if (xStreamKey.trim()) {
+        try {
+          await fetch('/api/relay/destination-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destinationId: 'x-live', streamKey: xStreamKey.trim() }),
+          })
+        } catch {
+          // Relay server may not be running — key saved to DB for when it comes up
+        }
+      }
+
+      const relaysRes = await fetch('/api/basefm/relays', { cache: 'no-store' })
+      const relaysData = await relaysRes.json()
+      setRelays(Array.isArray(relaysData?.relays) ? relaysData.relays : [])
+    } catch (err) {
+      setRelayActionError(err instanceof Error ? err.message : 'Failed to save X relay')
+    } finally {
+      setSavingXRelay(false)
+    }
+  }
+
   const saveYoutubeRelay = async () => {
     setSavingYoutubeRelay(true)
     setRelayActionError('')
@@ -452,6 +502,19 @@ export default function DJStreamPage() {
       const data = await res.json()
       if (!res.ok) {
         throw new Error(data?.error || 'Failed to save YouTube relay')
+      }
+
+      // Save YouTube stream key to relay server for simulcasting
+      if (youtubeStreamKey.trim()) {
+        try {
+          await fetch('/api/relay/destination-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ destinationId: 'youtube-main', streamKey: youtubeStreamKey.trim() }),
+          })
+        } catch {
+          // Relay server may not be running — key saved to DB for when it comes up
+        }
       }
 
       const relaysRes = await fetch('/api/basefm/relays', { cache: 'no-store' })
@@ -623,6 +686,8 @@ export default function DJStreamPage() {
   const streamTarget = stream?.fullRtmpUrl || stream?.rtmpUrl || ''
   const rtmpServer = stream?.rtmpUrl || MUX_RTMP_URL
   const streamKey = stream?.streamKey || ''
+  const relayRtmpUrl = stream?.relayRtmpUrl || ''
+  const relayStreamTarget = relayRtmpUrl ? `${relayRtmpUrl}/${streamKey}` : ''
   const selectedEncoderCommand =
     encoderMode === 'video'
       ? artworkCommand
@@ -1043,7 +1108,82 @@ export default function DJStreamPage() {
               </div>
 
               <div className="border border-zinc-800 bg-black p-4">
+                <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Optional X (Twitter) Live</div>
+                <div className="mb-3 border border-zinc-700/30 bg-zinc-900/50 p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">X Studio Stream Settings</div>
+                  <div className="space-y-1 text-xs text-zinc-400">
+                    <p>RTMP URL: <code className="text-zinc-300">rtmp://ie.pscp.tv:80/x</code></p>
+                    <p>RTMPS URL: <code className="text-zinc-300">rtmps://ie.pscp.tv:443/x</code></p>
+                    <p>Region: <span className="text-zinc-300">EU (Ireland)</span></p>
+                    <p>Recommended: <span className="text-zinc-300">1080p30, 9Mbps video, 128kbps AAC, keyframe every 3s</span></p>
+                    <p>Get your stream key from <a href="https://studio.twitter.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">studio.twitter.com → Go Live</a></p>
+                  </div>
+                </div>
+                <div className="mb-3 border border-emerald-500/20 bg-emerald-500/10 p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-emerald-500 mb-2">Relay Server Simulcasting</div>
+                  <div className="space-y-2 text-xs text-zinc-300">
+                    <p>Point OBS at the <strong className="text-zinc-200">Relay Server RTMP</strong> above. The relay forwards your stream to Mux + X + YouTube automatically.</p>
+                    <p className="text-zinc-400">Paste your X stream key below. The relay server uses it when pushing to X on your behalf. No OBS plugin needed.</p>
+                    <p className="text-zinc-500">Your X live URL is also tracked for health monitoring on the dashboard.</p>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    value={xViewerUrl}
+                    onChange={(e) => setXViewerUrl(e.target.value)}
+                    placeholder="https://x.com/yourhandle/live"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                  <input
+                    type="text"
+                    value={xProbeUrl}
+                    onChange={(e) => setXProbeUrl(e.target.value)}
+                    placeholder="Optional custom probe URL"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                </div>
+                <div className="mt-3">
+                  <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">X Stream Key</label>
+                  <input
+                    type="password"
+                    value={xStreamKey}
+                    onChange={(e) => setXStreamKey(e.target.value)}
+                    placeholder="Paste your X Studio stream key here"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                  <p className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                    From <a href="https://studio.twitter.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">studio.twitter.com → Go Live</a>
+                  </p>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="text-xs text-zinc-500">
+                    Save to register X as a relay destination and store your stream key for simulcasting.
+                  </p>
+                  <button
+                    onClick={saveXRelay}
+                    disabled={savingXRelay || !xViewerUrl.trim()}
+                    className="border border-zinc-700 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-300 transition-colors hover:border-zinc-500 hover:text-white disabled:border-zinc-800 disabled:text-zinc-600"
+                  >
+                    {savingXRelay ? 'Saving' : 'Save X Relay'}
+                  </button>
+                </div>
+                {relayActionError ? (
+                  <div className="mt-3 border border-orange-500/30 p-3 text-red-400 text-xs">
+                    {relayActionError}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="border border-zinc-800 bg-black p-4">
                 <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-4">Optional YouTube Relay</div>
+                <div className="mb-3 border border-emerald-500/20 bg-emerald-500/10 p-3">
+                  <div className="text-[10px] uppercase tracking-widest text-emerald-500 mb-2">Relay Server Simulcasting</div>
+                  <div className="space-y-2 text-xs text-zinc-300">
+                    <p>Paste your YouTube stream key below. The relay server pushes your stream to YouTube automatically alongside Mux.</p>
+                    <p className="text-zinc-500">Get your stream key from YouTube Studio → Go Live → Stream → Stream Key.</p>
+                  </div>
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <input
                     type="text"
@@ -1060,9 +1200,22 @@ export default function DJStreamPage() {
                     className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
                   />
                 </div>
+                <div className="mt-3">
+                  <label className="block text-[10px] uppercase tracking-widest text-zinc-600 mb-2">YouTube Stream Key</label>
+                  <input
+                    type="password"
+                    value={youtubeStreamKey}
+                    onChange={(e) => setYoutubeStreamKey(e.target.value)}
+                    placeholder="Paste your YouTube stream key here"
+                    className="w-full bg-zinc-950 border border-zinc-800 px-4 py-3 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 font-mono"
+                  />
+                  <p className="mt-1 text-[10px] uppercase tracking-widest text-zinc-600">
+                    From <a href="https://studio.youtube.com" target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-white">YouTube Studio → Go Live</a>
+                  </p>
+                </div>
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <p className="text-xs text-zinc-500">
-                    Save the viewer/probe destination here. RTMP key management stays external for now.
+                    Save to register YouTube as a relay destination and store your stream key for simulcasting.
                   </p>
                   <button
                     onClick={saveYoutubeRelay}
@@ -1223,16 +1376,42 @@ export default function DJStreamPage() {
                   </div>
                 </div>
 
-                {/* RTMP URL */}
-                <div>
-                  <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Program Feed Target</span>
-                    <CopyButton label="Copy RTMP" value={streamTarget} onCopy={copyValue} />
+                {/* RTMP URL — Relay (recommended) + Direct (fallback) */}
+                {relayStreamTarget ? (
+                  <div className="space-y-3">
+                    <div className="border border-emerald-500/30 bg-emerald-500/5 p-4">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="block text-[10px] uppercase tracking-widest text-emerald-400">Relay Server (Recommended)</span>
+                        <CopyButton label="Copy Relay RTMP" value={relayStreamTarget} onCopy={copyValue} />
+                      </div>
+                      <code className="block text-xs text-emerald-300 break-all select-all">
+                        {relayStreamTarget}
+                      </code>
+                      <p className="mt-2 text-[10px] uppercase tracking-widest text-emerald-500/70">
+                        Sends to Mux + X + YouTube simultaneously — one OBS output
+                      </p>
+                    </div>
+                    <div>
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Direct to Mux (Fallback)</span>
+                        <CopyButton label="Copy RTMP" value={streamTarget} onCopy={copyValue} />
+                      </div>
+                      <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
+                        {streamTarget}
+                      </code>
+                    </div>
                   </div>
-                  <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
-                    {streamTarget || 'Reconnect status loaded. Create a fresh stream if the RTMP key is unavailable.'}
-                  </code>
-                </div>
+                ) : (
+                  <div>
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="block text-[10px] uppercase tracking-widest text-zinc-600">Program Feed Target</span>
+                      <CopyButton label="Copy RTMP" value={streamTarget} onCopy={copyValue} />
+                    </div>
+                    <code className="block bg-black border border-zinc-800 p-3 text-xs text-zinc-400 break-all select-all">
+                      {streamTarget || 'Reconnect status loaded. Create a fresh stream if the RTMP key is unavailable.'}
+                    </code>
+                  </div>
+                )}
 
                 {/* Stream Key + Playback */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-zinc-800">

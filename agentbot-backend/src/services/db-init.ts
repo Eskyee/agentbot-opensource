@@ -1,19 +1,7 @@
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 10,                      // max connections in pool
-  idleTimeoutMillis: 30000,     // close idle clients after 30s
-  connectionTimeoutMillis: 10000, // fail fast if can't connect in 10s
-});
-
-// Catch idle client errors — don't crash, pool reconnects automatically
-pool.on('error', (err) => {
-  console.error('[DB] Idle client error (non-fatal):', err.message);
-});
 
 const SCHEMA = `
 -- Users table
@@ -75,6 +63,12 @@ CREATE TABLE IF NOT EXISTS bitcoin_wallets (
   network TEXT NOT NULL DEFAULT 'btc',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+-- M-6: track whether NBXplorer accepted the derivation. 'tracked' is the
+-- happy path; 'pending_explorer' means we persisted locally but the explorer
+-- registration failed and needs to be reattempted before balances/addresses
+-- become available.
+ALTER TABLE bitcoin_wallets ADD COLUMN IF NOT EXISTS backend_status TEXT NOT NULL DEFAULT 'tracked';
+ALTER TABLE bitcoin_wallets ADD COLUMN IF NOT EXISTS backend_error TEXT;
 
 -- Events & Treasury
 CREATE TABLE IF NOT EXISTS events (
@@ -438,13 +432,14 @@ export async function initDatabase(): Promise<void> {
     console.log('[DB] Initializing database schema...');
     await pool.query(SCHEMA);
     console.log('[DB] Schema initialized successfully');
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const e = error as { message?: string; code?: string; detail?: string; address?: string; port?: string | number }
     const errorInfo = {
-      message: error.message || '(empty)',
-      code: error.code || '(no code)',
-      detail: error.detail || '(no detail)',
-      host: error.address || '(unknown)',
-      port: error.port || '(unknown)',
+      message: e.message || '(empty)',
+      code: e.code || '(no code)',
+      detail: e.detail || '(no detail)',
+      host: e.address || '(unknown)',
+      port: e.port || '(unknown)',
     };
     console.error('[DB] Schema initialization failed:', JSON.stringify(errorInfo));
     // Re-throw so callers can decide whether to abort startup

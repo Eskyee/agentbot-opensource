@@ -11,11 +11,9 @@
  */
 
 import dotenv from 'dotenv';
-import { Pool } from 'pg';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 // Per-plan monthly input+output token budgets.
 // Set to Infinity to disable enforcement for a plan tier.
@@ -35,7 +33,7 @@ export interface AIMessage {
 export interface AIResponse {
   id: string;
   model: string;
-  provider: 'openrouter' | 'anthropic' | 'openai' | 'groq';
+  provider: 'openrouter' | 'anthropic' | 'openai' | 'groq' | 'vercel-gateway';
   message: {
     role: 'assistant';
     content: string;
@@ -185,8 +183,9 @@ export class AIProviderService {
         [userId]
       );
       return parseInt(result.rows[0]?.total ?? '0', 10);
-    } catch (err: any) {
-      console.warn('[AI] Monthly token usage query failed:', err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('[AI] Monthly token usage query failed:', message);
       return 0; // fail open
     }
   }
@@ -301,14 +300,18 @@ export class AIProviderService {
     inputTokens: number,
     outputTokens: number,
     latencyMs: number,
-    success: boolean
+    success: boolean,
+    source: 'openrouter' | 'vercel-gateway' = 'openrouter'
   ): void {
+    // M-16: `source` was previously hardcoded to 'openrouter' even when called
+    // from chatVercelGateway, which corrupts cost-attribution dashboards.
+    // The caller now passes the correct source.
     if (!process.env.DATABASE_URL) return;
 
     pool.query(
       `INSERT INTO model_metrics
          (model, user_id, agent_id, input_tokens, output_tokens, latency_ms, success, source, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'openrouter', NOW())`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
       [
         modelId,
         context.userId ?? null,
@@ -317,6 +320,7 @@ export class AIProviderService {
         outputTokens,
         latencyMs,
         success,
+        source,
       ]
     ).catch((err: Error) => console.error('[AI] Usage logging failed:', err.message));
   }
@@ -421,6 +425,9 @@ export class AIProviderService {
     let success = false;
 
     try {
+      // M-14: bound the upstream call so a slow gateway doesn't pin the
+      // request until the platform layer (Vercel: 30s, Railway: 300s) kills
+      // it. 30s matches the tier-fallback path in services/ai.ts.
       const response = await fetch(`${this.VERCEL_AI_GATEWAY_URL}/chat/completions`, {
         method: 'POST',
         headers: {
@@ -447,12 +454,15 @@ export class AIProviderService {
       const inputTokens = data.usage?.prompt_tokens ?? 0;
       const outputTokens = data.usage?.completion_tokens ?? 0;
 
-      this.logUsage(context, modelId, inputTokens, outputTokens, latencyMs, true);
+      // M-15/M-16: tag both AIResponse.provider and the model_metrics source
+      // as 'vercel-gateway' so observability dashboards and cost attribution
+      // stop double-counting it as groq/openrouter usage.
+      this.logUsage(context, modelId, inputTokens, outputTokens, latencyMs, true, 'vercel-gateway');
 
       return {
         id: data.id || `vercel-${Date.now()}`,
         model: modelId,
-        provider: 'groq', // mimicking groq-like response speed through gateway
+        provider: 'vercel-gateway',
         message: {
           role: 'assistant',
           content: data.choices?.[0]?.message?.content || '',
@@ -462,7 +472,7 @@ export class AIProviderService {
       };
     } finally {
       if (!success) {
-        this.logUsage(context, modelId, 0, 0, Date.now() - startMs, false);
+        this.logUsage(context, modelId, 0, 0, Date.now() - startMs, false, 'vercel-gateway');
       }
     }
   }
@@ -484,6 +494,7 @@ export class AIProviderService {
     let success = false;
 
     try {
+      // M-14: bound the upstream call (see chatVercelGateway for rationale).
       const response = await fetch(`${this.OPENROUTER_BASE_URL}/chat/completions`, {
         method: 'POST',
         headers: {

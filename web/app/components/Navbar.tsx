@@ -232,7 +232,6 @@ export default function Navbar() {
                     </div>
 
                     {/* Actions */}
-                    <UserMenuLink href="/claim" onClick={() => setUserMenuOpen(false)}>Claim Credits</UserMenuLink>
                     <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
                     <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
                     {isAdmin && (
@@ -290,82 +289,56 @@ export default function Navbar() {
           <div className="flex flex-col p-6 gap-1 pb-12">
             {isLoggedIn ? (
               <>
-                <MobileSection label="Workflow" defaultOpen>
-                  <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
-                  <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
-                  <MobileLink href="/dashboard/signals" onClick={closeMenu}>Signals</MobileLink>
-                  <MobileLink href="/social" onClick={closeMenu}>Social</MobileLink>
+                <MobileLink href="/dashboard" onClick={closeMenu}>Dashboard</MobileLink>
+                <MobileLink href="/dashboard/dj-stream" onClick={closeMenu}>baseFM</MobileLink>
+                <MobileSection label="Community">
+                  {COMMUNITY_LINKS.map((l) => (
+                    <MobileLink key={l.href} href={l.href} onClick={closeMenu} external={(l as Record<string, unknown>).external === true}>{l.label}</MobileLink>
+                  ))}
                 </MobileSection>
                 <MobileSection label="Create">
-                  <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
-                  <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="/dashboard/workflows" onClick={closeMenu}>Workflows</MobileLink>
-                  <MobileLink href="/dashboard/skills" onClick={closeMenu}>Skills</MobileLink>
-                  <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
+                  {CREATE_LINKS.map((l) => (
+                    <MobileLink key={l.href} href={l.href} onClick={closeMenu} external={(l as Record<string, unknown>).external === true}>{l.label}</MobileLink>
+                  ))}
                 </MobileSection>
-                <MobileSection label="Community">
-                  <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
-                  <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
-                  <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
-                  <MobileLink href="/token" onClick={closeMenu}>$AGENTBOT</MobileLink>
-                  <MobileLink href="/buddies" onClick={closeMenu}>Buddies</MobileLink>
-                  <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
-                </MobileSection>
-                <MobileSection label="Explore">
-                  <MobileLink href="/capabilities" onClick={closeMenu}>Capabilities</MobileLink>
-                  <MobileLink href="/solana" onClick={closeMenu}>Solana</MobileLink>
-                  <MobileLink href="/colony" onClick={closeMenu}>Colony</MobileLink>
-                  <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
-                  <MobileLink href="/search" onClick={closeMenu}>Search</MobileLink>
-                </MobileSection>
-                <MobileSection label="Account" defaultOpen>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
+                <div className="border-t border-zinc-900 mt-4 pt-4">
+                  {displayName && <div className="text-[10px] text-zinc-600 px-3 pb-2 uppercase tracking-widest">{displayName}</div>}
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                   {isAdmin && <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink>}
-                  {displayName && <div className="text-[10px] text-zinc-600 px-3 py-2 uppercase tracking-widest">{displayName}</div>}
                   <button
                     onClick={() => { closeMenu(); customSignOut(); }}
                     className="text-left text-xs py-2.5 px-3 text-zinc-500 hover:text-white w-full uppercase tracking-wider"
                   >
                     Sign out
                   </button>
-                </MobileSection>
+                </div>
               </>
             ) : (
               <>
                 <MobileSection label="Explore" defaultOpen>
                   <MobileLink href="/demo" onClick={closeMenu}>Demo</MobileLink>
                   <MobileLink href="/showcase" onClick={closeMenu}>Showcase</MobileLink>
-                  <MobileLink href="/capabilities" onClick={closeMenu}>Capabilities</MobileLink>
                   <MobileLink href="/why" onClick={closeMenu}>Why Agentbot</MobileLink>
-                  <MobileLink href="/basefm/live" onClick={closeMenu}>baseFM Live</MobileLink>
-                  <MobileLink href="/solana" onClick={closeMenu}>Solana</MobileLink>
                   <MobileLink href="/agents" onClick={closeMenu}>Agents</MobileLink>
                   <MobileLink href="/marketplace" onClick={closeMenu}>Marketplace</MobileLink>
-                  <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
+                  <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
                 </MobileSection>
                 <MobileSection label="Build">
                   <MobileLink href="/documentation" onClick={closeMenu}>Docs</MobileLink>
                   <MobileLink href="/guide" onClick={closeMenu}>Guide</MobileLink>
-                  <MobileLink href="/playground" onClick={closeMenu}>Playground</MobileLink>
                   <MobileLink href="/open-learning" onClick={closeMenu}>Open Learning</MobileLink>
                   <MobileLink href="/skills" onClick={closeMenu}>Skills API</MobileLink>
+                  <MobileLink href="/marketing" onClick={closeMenu}>Marketing</MobileLink>
                   <MobileLink href="https://github.com/Eskyee/agentbot-opensource" onClick={closeMenu} external>Open Source</MobileLink>
                 </MobileSection>
-                <MobileSection label="Community">
-                  <MobileLink href="/blog" onClick={closeMenu}>Blog</MobileLink>
-                  <MobileLink href="/news" onClick={closeMenu}>News</MobileLink>
-                  <MobileLink href="/jobs" onClick={closeMenu}>Jobs</MobileLink>
-                  <MobileLink href="/token" onClick={closeMenu}>$AGENTBOT Token</MobileLink>
-                  <MobileLink href="/claim" onClick={closeMenu}>Claim Credits</MobileLink>
-                </MobileSection>
+                <MobileLink href="/pricing" onClick={closeMenu}>Pricing</MobileLink>
                 <div className="border-t border-zinc-900 mt-4 pt-6 flex flex-col gap-3">
                   <Link href="/login" onClick={closeMenu} className="block text-center py-3 text-zinc-400 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-zinc-600 transition-colors">
                     Sign in
                   </Link>
                   <Link href="/signup" onClick={closeMenu} className="block text-center py-3 bg-white text-black text-xs font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors">
-                    Get Started Free
+                    Get Started
                   </Link>
                 </div>
               </>

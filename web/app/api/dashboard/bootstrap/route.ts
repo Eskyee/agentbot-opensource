@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { getAuthSession } from '@/app/lib/getAuthSession'
 import { prisma } from '@/app/lib/prisma'
 import { maybeAutoSyncManagedRuntimeForUser } from '@/app/lib/managed-runtime-sync'
-import { getEmptyCommunityRewardStatus, getUserCommunityRewardStatus } from '@/app/lib/solanaRewards'
 
 export async function GET() {
   const session = await getAuthSession()
@@ -14,7 +13,7 @@ export async function GET() {
 
   await maybeAutoSyncManagedRuntimeForUser(userId).catch(() => {})
 
-  const [user, openclawUser, registration, communityRewards] = await Promise.all([
+  const [user, openclawUser, registration] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -35,12 +34,6 @@ export async function GET() {
     prisma.$queryRaw<{ gateway_token: string | null }[]>`
       SELECT gateway_token FROM agent_registrations WHERE user_id = ${userId} LIMIT 1
     `,
-    getUserCommunityRewardStatus(userId).catch(() =>
-      getEmptyCommunityRewardStatus({
-        availability: 'degraded',
-        detail: 'Community reward status is temporarily unavailable.',
-      })
-    ),
   ])
 
   // Use user's specific token, fallback to shared token only if needed
@@ -78,7 +71,6 @@ export async function GET() {
     openclawUrl: effectiveOpenclawUrl,
     openclawInstanceId: effectiveOpenclawInstanceId,
     gatewayToken: userToken || null,
-    communityRewards,
   })
 }
 

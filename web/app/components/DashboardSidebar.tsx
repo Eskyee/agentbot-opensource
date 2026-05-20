@@ -33,11 +33,24 @@ export const navSections = [
     label: 'Agents',
     items: [
       { label: 'Dashboard', href: '/dashboard', icon: '◈' },
+      { label: 'Ops Center', href: '/dashboard/ops', icon: '◈' },
       { label: 'Team', href: '/dashboard/team', icon: '⬢' },
       { label: 'Fleet', href: '/dashboard/fleet', icon: '⬡' },
       { label: 'Colony', href: '/dashboard/colony', icon: '◆' },
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
       { label: 'Borg Soul', href: '/dashboard/borg', icon: '◭' },
+      { label: 'Signals', href: '/dashboard/signals', icon: '⌁' },
+    ],
+  },
+  {
+    label: 'Chain',
+    items: [
+      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
+      { label: 'Solana', href: '/dashboard/solana', icon: '◑' },
+      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
+      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
+      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
+      { label: 'ClawBank', href: '/dashboard/clawbank', icon: '🏦' },
     ],
   },
   {
@@ -53,29 +66,16 @@ export const navSections = [
     items: [
       { label: 'Verify Agent', href: '/dashboard/verify', icon: '🛡' },
       { label: 'Maintenance', href: '/dashboard/maintenance', icon: '✦' },
-      { label: 'Wallet', href: '/dashboard/wallet', icon: '◎' },
       { label: 'Workflows', href: '/dashboard/workflows', icon: '⊞' },
       { label: 'Daily Brief', href: '/dashboard/daily-brief', icon: '⇄' },
     ],
   },
-  // SECONDARY: Chain, network, operations — power-user features
-  {
-    label: 'Chain',
-    items: [
-      { label: 'Bitcoin', href: '/dashboard/bitcoin', icon: '₿' },
-      { label: 'Solana', href: '/dashboard/solana', icon: '◑' },
-      { label: 'X402 Gateway', href: '/dashboard/x402', icon: '⟡' },
-      { label: 'Tempo DEX', href: '/dashboard/tempo-dex', icon: '💱' },
-      { label: 'Bankr', href: '/dashboard/trading', icon: '◇' },
-    ],
-  },
+  // SECONDARY: network, operations — power-user features
   {
     label: 'Network',
     items: [
       { label: 'Community', href: '/dashboard/community', icon: '✦' },
       { label: 'Buddies', href: '/buddies', icon: '🐚' },
-      { label: 'Dreams', href: '/dashboard/dreams', icon: '☾' },
-      { label: 'Character QA', href: '/dashboard/character-qa', icon: '♫' },
       { label: 'Git City', href: '/dashboard/git-city', icon: '⌂' },
       { label: 'Gitlawb Network', href: '/dashboard/gitlawb-network', icon: '◉' },
       { label: 'DJ Stream', href: '/dashboard/dj-stream', icon: '⏵' },
@@ -86,11 +86,8 @@ export const navSections = [
   {
     label: 'Operations',
     items: [
-      { label: 'Signals', href: '/dashboard/signals', icon: '⌁' },
       { label: 'Paid Tools', href: '/dashboard/tools', icon: '◫' },
       { label: 'ClawMerchants', href: '/dashboard/market-intel', icon: '▣' },
-      { label: 'Metrics', href: '/dashboard/analytics', icon: '◌' },
-      { label: 'Usage & Spend', href: '/dashboard/cost', icon: '⬡' },
       { label: 'System Pulse', href: '/dashboard/system-pulse', icon: '☼' },
       { label: 'Devices', href: '/dashboard/devices', icon: '▪' },
       { label: 'Browser', href: '/dashboard/browser', icon: '🌐' },

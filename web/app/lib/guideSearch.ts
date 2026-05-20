@@ -76,14 +76,6 @@ const GUIDE_SEARCH_INDEX: GuideSearchRecord[] = [
     keywords: ['basefm', 'dj', 'stream', 'mux', 'obs', 'ffmpeg', 'replay'],
   },
   {
-    id: 'community',
-    title: 'Community Rewards',
-    description: 'Connect a Solana holder wallet, claim credits, and unlock Agentbot perks and baseFM access.',
-    href: '/dashboard/community',
-    category: 'dashboard',
-    keywords: ['community', 'wallet', 'claim credits', 'solana', 'rewards'],
-  },
-  {
     id: 'verify',
     title: 'Verify with SelfClaw',
     description: 'Verify with Self.xyz passport and hydrate your existing verified state inside Agentbot.',

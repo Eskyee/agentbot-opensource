@@ -46,9 +46,12 @@ export async function GET() {
     const hasLegacyUsers = tableNames.includes('users'); // plural vs singular User
     const hasLegacyAgents = tableNames.includes('agents');
 
+    // Legacy tables are expected in a mature DB — only flag if BOTH exist
+    const status = (hasLegacyUsers && hasLegacyAgents) ? 'legacy_present' : 'healthy'
+
     return NextResponse.json({
       summary: {
-        status: (hasLegacyUsers && hasLegacyAgents) ? 'critical_drift' : 'healthy',
+        status,
         databaseEngine: 'PostgreSQL',
         totalTables: tableNames.length,
       },

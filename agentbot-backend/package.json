@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Agentbot Backend API for Agent Management",
   "main": "src/index.ts",
-  "workspaces": ["."],
+  "workspaces": [
+    "."
+  ],
   "scripts": {
     "dev": "ts-node-dev --respawn src/index.ts",
     "build": "tsc",
@@ -14,6 +16,7 @@
   "dependencies": {
     "@coinbase/cdp-sdk": "^1.48.1",
     "@openrouter/sdk": "^0.10.2",
+    "@sentry/node": "^10.51.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",

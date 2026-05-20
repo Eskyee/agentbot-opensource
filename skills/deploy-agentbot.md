@@ -1,6 +1,6 @@
 ---
 name: deploy-agentbot
-description: Deploy Agentbot to production. Use when user wants to deploy their agent to production - on Render, Railway, Vercel, or self-hosted. Triggers on "deploy agentbot", "production deploy", "go live".
+description: Deploy Agentbot to production. Use when user wants to deploy their agent to production - on Railway, Vercel, or self-hosted. Triggers on "deploy agentbot", "production deploy", "go live".
 ---
 
 # Deploy Agentbot to Production
@@ -20,11 +20,11 @@ Configure in Vercel Dashboard:
 - Environment variables from `.env.example`
 - Framework: Next.js
 
-### Backend (Render or Railway)
-Recommended: Use Render for backend
+### Backend (Railway)
+Recommended: Use Railway for backend
 
 1. Push code to GitHub
-2. Connect GitHub repo to Render
+2. Connect GitHub repo to Railway
 3. Set environment variables:
    - `OPENROUTER_API_KEY`
    - `TELEGRAM_BOT_TOKEN` (if using)

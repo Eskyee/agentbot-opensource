@@ -10,6 +10,7 @@ const ADMIN_EMAILS = Array.from(
     'eskyjunglelab@gmail.com',
     'admin@agentbot.sh',
     'rbasefm@icloud.com',
+    'djescaba@icloud.com',
     ...parseEmails(process.env.ADMIN_EMAILS),
     ...parseEmails(process.env.OPERATOR_ADMIN_EMAILS),
   ])

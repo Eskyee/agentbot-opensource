@@ -26,6 +26,9 @@ interface User {
   role: string;
   plan: string;
   subscriptionStatus: string;
+  subscriptionEndDate: string | null;
+  isAdmin: boolean;
+  agentCount: number;
 }
 
 interface AgentInstance {
@@ -85,7 +88,11 @@ export default function AdminPage() {
       setActiveTab(tab);
     });
   };
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activities, setActivities] = useState<Array<{type: string; message: string; timestamp: string; status?: string}>>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [mimoLoading, setMimoLoading] = useState(false);
+  const [mimoResult, setMimoResult] = useState<any>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -117,23 +124,23 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersRes, agentsRes, healthRes, statsRes] = await Promise.all([
+      const [usersRes, healthRes, statsRes] = await Promise.all([
         fetch('/api/admin/users'),
-        fetch('/api/agents/showcase'), 
         fetch('/api/admin/db-health'),
-        fetch('/api/admin/stats')
+        fetch('/api/admin/stats'),
       ]);
+
+      const summaryRes = await fetch('/api/admin/summary');
+      if (summaryRes.ok) {
+        const summaryData = await summaryRes.json();
+        setSummary(summaryData);
+      }
       
       if (usersRes.ok) {
         const userData = await usersRes.json();
         setUsers(userData.users || []);
       }
       
-      if (agentsRes.ok) {
-        const agentData = await agentsRes.json();
-        setAgents(agentData.agents || []);
-      }
-
       if (healthRes.ok) {
         const healthData = await healthRes.json();
         setDbHealth(healthData);
@@ -142,6 +149,17 @@ export default function AdminPage() {
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
+        if (statsData.activities) setActivities(statsData.activities);
+        if (statsData.instances) {
+          setAgents(statsData.instances.map((i: any) => ({
+            id: i.agentId || i.id,
+            userId: '',
+            name: i.name,
+            status: i.status,
+            model: i.model || null,
+            websocketUrl: null,
+          })));
+        }
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error);
@@ -249,8 +267,8 @@ export default function AdminPage() {
                 <span className="text-[10px] uppercase font-bold text-zinc-400">Gitlawb_Node: OK</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className={`w-1.5 h-1.5 rounded-full ${dbHealth?.summary.status === 'healthy' ? 'bg-green-500' : 'bg-orange-500 animate-pulse'}`} />
-                <span className="text-[10px] uppercase font-bold text-zinc-400">DB_Status: {dbHealth?.summary.status === 'healthy' ? 'Synced' : 'Drift'}</span>
+                <div className={`w-1.5 h-1.5 rounded-full ${dbHealth?.summary.status === 'healthy' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                <span className="text-[10px] uppercase font-bold text-zinc-400">DB_Status: {dbHealth?.summary.status === 'healthy' ? 'Synced' : dbHealth?.summary.status === 'legacy_present' ? 'Legacy OK' : 'Drift'}</span>
               </div>
             </div>
 
@@ -258,6 +276,32 @@ export default function AdminPage() {
               <UserPlus className="w-4 h-4 text-zinc-500 group-hover:text-orange-500" />
               <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400 group-hover:text-white">Issue_Invites</span>
             </Link>
+
+            {/* Activity Feed */}
+            <div className="px-4 py-3 border border-dashed border-zinc-800 rounded-sm">
+              <div className="text-[10px] text-zinc-600 uppercase mb-3">Recent_Activity</div>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {activities.length === 0 ? (
+                  <div className="text-[10px] text-zinc-700">No activity yet</div>
+                ) : (
+                  activities.slice(0, 8).map((act, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full mt-1 shrink-0 ${
+                        act.type === 'agent_created' ? 'bg-green-500' :
+                        act.type === 'user_signup' ? 'bg-blue-500' :
+                        act.status === 'ok' ? 'bg-green-500' :
+                        act.status === 'error' ? 'bg-red-500' :
+                        'bg-zinc-600'
+                      }`} />
+                      <div className="min-w-0">
+                        <div className="text-[10px] text-zinc-400 truncate">{act.message}</div>
+                        <div className="text-[9px] text-zinc-700">{new Date(act.timestamp).toLocaleString()}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
         {/* ─── Main Content Area ─────────────────────────────────────────────── */}
@@ -272,6 +316,41 @@ export default function AdminPage() {
                 <StatCard label="Railway_Instances" value={stats?.count ?? 0} color="text-orange-500" />
                 <StatCard label="Backend_Health" value={stats?.backendStatus || '...'} color={stats?.backendStatus === 'OK' ? 'text-green-400' : 'text-red-400'} isString />
               </div>
+
+              {/* Service Health */}
+              {summary?.serviceHealth && (
+                <div className="grid grid-cols-3 gap-4">
+                  {summary.serviceHealth.map((s: any) => (
+                    <div key={s.name} className="bg-zinc-950 border border-zinc-800 p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-500">{s.name}</span>
+                        <div className={`w-2 h-2 rounded-full ${s.status === 'ok' ? 'bg-green-500' : s.status === 'degraded' ? 'bg-yellow-500' : 'bg-red-500'}`} />
+                      </div>
+                      <div className="text-xs font-bold uppercase text-white">{s.status === 'ok' ? 'Operational' : s.status === 'degraded' ? 'Degraded' : 'Down'}</div>
+                      {s.detail && <div className="text-[10px] text-zinc-500 mt-1">{s.detail}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Trials */}
+              {summary?.trial && (
+                <div className="bg-zinc-950 border border-zinc-800 p-4">
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Trials</div>
+                  <div className="text-2xl font-bold text-white">{summary.trial.active ?? 0}</div>
+                  <div className="text-[10px] text-zinc-500">Active 7-day trials</div>
+                  {summary.trial.expiringSoon?.length > 0 && (
+                    <div className="mt-3 space-y-1">
+                      {summary.trial.expiringSoon.map((t: any) => (
+                        <div key={t.id} className="flex items-center justify-between text-[10px]">
+                          <span className="text-zinc-400 truncate">{t.email}</span>
+                          <span className="text-yellow-400">{t.daysLeft}d left</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="bg-zinc-950 border border-zinc-800 rounded-sm">
                 <div className="overflow-x-auto">
@@ -347,8 +426,14 @@ export default function AdminPage() {
                     {filteredUsers.map((user) => (
                       <tr key={user.id} className="hover:bg-zinc-900/40 group transition-colors">
                         <td className="px-6 py-4">
-                          <div className="font-bold text-white uppercase">{user.name || 'ANON_USER'}</div>
+                          <div className="flex items-center gap-2">
+                            <div className="font-bold text-white uppercase">{user.name || 'ANON_USER'}</div>
+                            {user.isAdmin && (
+                              <span className="px-1.5 py-0.5 bg-orange-500/20 border border-orange-500/40 text-orange-500 text-[8px] font-bold uppercase">ADMIN</span>
+                            )}
+                          </div>
                           <div className="text-[10px] text-zinc-500 mt-0.5">{user.email}</div>
+                          <div className="text-[9px] text-zinc-700 mt-0.5">{user.agentCount} agent{user.agentCount === 1 ? '' : 's'}</div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`font-bold uppercase ${user.plan !== 'free' ? 'text-orange-500' : 'text-zinc-600'}`}>
@@ -376,7 +461,7 @@ export default function AdminPage() {
           {/* TAB: INTEGRITY */}
           {activeTab === 'integrity' && dbHealth && (
             <div className="space-y-6">
-              <div className={`p-6 border-l-4 rounded-r-sm ${dbHealth.summary.status === 'critical_drift' ? 'bg-red-950/20 border-orange-500' : 'bg-green-950/20 border-green-500'}`}>
+              <div className={`p-6 border-l-4 rounded-r-sm ${dbHealth.summary.status === 'critical_drift' ? 'bg-red-950/20 border-orange-500' : dbHealth.summary.status === 'legacy_present' ? 'bg-yellow-950/20 border-yellow-500' : 'bg-green-950/20 border-green-500'}`}>
                 <div className="flex items-start gap-4">
                   <ShieldAlert className={`w-8 h-8 ${dbHealth.summary.status === 'critical_drift' ? 'text-orange-500' : 'text-green-500'}`} />
                   <div>

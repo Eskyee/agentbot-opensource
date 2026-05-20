@@ -226,7 +226,6 @@ export function BasefmLivePageClient({
             basefm.space <ExternalLink className="w-3 h-3" />
           </a>
           <a href="/basefm" className="text-zinc-500 text-xs hover:text-white">$BASEFM Token</a>
-          <a href="/claim" className="text-zinc-500 text-xs hover:text-white">Claim Credits</a>
           <a href="/dashboard/dj-stream" className="text-zinc-500 text-xs hover:text-white">DJ Dashboard</a>
         </div>
       </div>

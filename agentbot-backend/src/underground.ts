@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
-import { Pool } from 'pg';
 import { WalletService } from './services/wallet';
 import { BitcoinWalletService } from './services/bitcoin-wallet';
 import { AgentBusService, AgentMessage } from './services/bus';
@@ -8,13 +7,11 @@ import { NegotiationService } from './services/negotiation'; // Added
 import { AmplificationService } from './services/amplification'; // Added
 import dotenv from 'dotenv';
 import { timingSafeEqual } from 'crypto';
+import { pool } from './lib/db';
 
 dotenv.config();
 
 const router = express.Router();
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 // Middleware to verify internal API key + extract user context — timing-safe to prevent enumeration
 const authenticate = (req: Request, res: Response, next: any) => {

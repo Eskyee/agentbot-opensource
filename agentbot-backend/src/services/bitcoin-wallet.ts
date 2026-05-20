@@ -1,9 +1,5 @@
 import CryptoJS from 'crypto-js';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+import { pool } from '../lib/db';
 
 type BitcoinWalletRow = {
   id: number;
@@ -87,23 +83,31 @@ export class BitcoinWalletService {
     try {
       return await this.requestExplorer<Record<string, unknown>>('/v1/cryptos/btc/status');
     } catch (error) {
-      console.warn('[Bitcoin] NBXplorer unreachable, falling back to public blockstream explorer');
-      
-      // Fetch real chain height from Blockstream
+      // M-5: When NBXplorer is unreachable we fall back to a public block
+      // explorer for chain height. The fallback CANNOT confirm derivations
+      // are tracked, so we explicitly report `isFullySynched: false` and
+      // `degraded: true` instead of pretending everything is fine. The UI
+      // can use these flags to surface the degraded state to operators
+      // ("NBXplorer unavailable, balances will be stale").
+      console.warn('[Bitcoin] NBXplorer unreachable, falling back to public blockstream explorer (degraded mode)');
       try {
-        const res = await fetch('https://blockstream.info/api/blocks/tip/height');
+        const res = await fetch('https://blockstream.info/api/blocks/tip/height', {
+          signal: AbortSignal.timeout(8000),
+        });
         const height = await res.text();
         return {
           chainHeight: parseInt(height, 10),
-          isFullySynched: true,
+          isFullySynched: false,
+          degraded: true,
+          degradedReason: 'NBXplorer unreachable; chain height from public explorer only',
           networkType: 'mainnet',
           backendMode: 'public',
           provider: 'blockstream',
           capabilities: {
             watchOnlyRegistration: false,
             addressDerivation: false,
-            balanceLookup: true,
-            transactionHistory: true,
+            balanceLookup: false,
+            transactionHistory: false,
           }
         };
       } catch (blockstreamError) {
@@ -112,22 +116,56 @@ export class BitcoinWalletService {
     }
   }
 
+  /**
+   * M-4: Liquid sync status.
+   *
+   * Previously this method returned a hardcoded `status: 'synced'` with a
+   * fixed block height of 210540 — the exact "fake success state" that
+   * AGENTS.md flags as a review priority. The dashboard reported "synced"
+   * regardless of reality.
+   *
+   * We now query the public Blockstream Liquid endpoint for the current tip
+   * height. If that fails we return `status: 'unknown'` (NOT 'synced') so the
+   * UI can render an honest "sync status unavailable" state instead of a
+   * green check.
+   */
   static async getLiquidInfo(): Promise<Record<string, unknown>> {
     try {
-      // Switched to Liquid Mainnet
+      const res = await fetch('https://blockstream.info/liquid/api/blocks/tip/height', {
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) {
+        throw new Error(`liquid tip height: HTTP ${res.status}`);
+      }
+      const heightText = (await res.text()).trim();
+      const height = parseInt(heightText, 10);
+      if (!Number.isFinite(height) || height <= 0) {
+        throw new Error(`liquid tip height: unparseable response "${heightText}"`);
+      }
       return {
         status: 'synced',
         chain: 'liquidv1',
-        blocks: 210540,
-        headers: 210540,
+        blocks: height,
+        headers: height,
         pruned: false,
         verificationProgress: 1.0,
         isSynched: true,
-        provider: 'elements-mainnet',
-        mode: 'public'
+        provider: 'blockstream-liquid',
+        mode: 'public',
       };
-    } catch {
-      return { status: 'unreachable', blocks: 0, verificationProgress: 0 };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.warn('[Bitcoin] Liquid sync status lookup failed:', message);
+      return {
+        status: 'unknown',
+        chain: 'liquidv1',
+        blocks: 0,
+        headers: 0,
+        verificationProgress: 0,
+        isSynched: false,
+        degraded: true,
+        degradedReason: message,
+      };
     }
   }
 
@@ -171,28 +209,46 @@ export class BitcoinWalletService {
     agentId: string,
     derivationScheme: string,
     label?: string
-  ): Promise<{ id: number; agentId: string; label: string | null; network: string }> {
+  ): Promise<{
+    id: number;
+    agentId: string;
+    label: string | null;
+    network: string;
+    backendStatus: 'tracked' | 'pending_explorer';
+    backendError: string | null;
+  }> {
     const trimmed = derivationScheme.trim();
     if (!trimmed) {
       throw new Error('derivationScheme is required');
     }
 
-    // Make the backend validate and start tracking the scheme before persisting locally.
+    // M-6: Persist a `backend_status` flag so callers can tell whether the
+    // explorer actually accepted the derivation. Previously a failed
+    // requestExplorer call would silently fall through to the INSERT, leaving
+    // a wallet row that NBXplorer doesn't track — every subsequent balance /
+    // address call would 5xx with no clue why.
+    let backendStatus: 'tracked' | 'pending_explorer' = 'tracked';
+    let backendError: string | null = null;
     try {
       await this.requestExplorer('/v1/cryptos/btc/derivations', {
         method: 'POST',
         body: JSON.stringify({ derivationScheme: trimmed }),
       });
-    } catch (e) {
-      console.warn('[Bitcoin] Failed to register derivation with NBXplorer (offline/public mode), persisting locally only.');
+    } catch (e: unknown) {
+      backendStatus = 'pending_explorer';
+      backendError = e instanceof Error ? e.message : String(e);
+      console.warn(
+        `[Bitcoin] Failed to register derivation with NBXplorer (${backendError}); persisting locally with backend_status='pending_explorer'.`
+      );
     }
 
     const encryptedScheme = this.encrypt(trimmed);
     const result = await pool.query(
-      `INSERT INTO bitcoin_wallets (user_id, agent_id, label, derivation_scheme_encrypted, network)
-       VALUES ($1, $2, $3, $4, 'btc')
-       RETURNING id, agent_id, label, network`,
-      [userId, agentId, label || null, encryptedScheme]
+      `INSERT INTO bitcoin_wallets
+         (user_id, agent_id, label, derivation_scheme_encrypted, network, backend_status, backend_error)
+       VALUES ($1, $2, $3, $4, 'btc', $5, $6)
+       RETURNING id, agent_id, label, network, backend_status`,
+      [userId, agentId, label || null, encryptedScheme, backendStatus, backendError]
     );
 
     return {
@@ -200,6 +256,12 @@ export class BitcoinWalletService {
       agentId: result.rows[0].agent_id,
       label: result.rows[0].label,
       network: result.rows[0].network,
+      // Surface the explorer-registration outcome so HTTP callers (e.g.
+      // POST /api/underground/bitcoin/wallets) can show the operator a
+      // clear "your wallet exists but NBXplorer hasn't picked it up yet"
+      // state instead of failing the next balance call with no context.
+      backendStatus: result.rows[0].backend_status,
+      backendError,
     };
   }
 

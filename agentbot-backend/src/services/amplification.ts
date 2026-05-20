@@ -1,12 +1,8 @@
-import { AgentBusService, AgentMessage } from './bus';
-import { Pool } from 'pg';
+import { AgentMessage } from './bus';
 import dotenv from 'dotenv';
+import { pool } from '../lib/db';
 
 dotenv.config();
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 export class AmplificationService {
   /**
@@ -26,59 +22,23 @@ export class AmplificationService {
 
   /**
    * Triggers a global campaign across partner agents on the bus.
-   * Delivers in parallel batches of 20 to avoid overwhelming the host.
+   *
+   * DISABLED: deliverMessage requires a valid Ed25519/ECDSA wallet signature,
+   * but this method has no signing key wired up — it would send unsigned
+   * messages (walletAddress: '', signature: '') that the bus rejects 100% of
+   * the time. The previous implementation logged a warning and silently
+   * dropped every delivery, which made the feature look like it worked.
+   *
+   * Throwing here makes the failure explicit: any caller will get a clear
+   * error instead of believing the campaign was sent. Re-enable by integrating
+   * a platform signing key (CDP account or local key) and constructing
+   * properly signed AgentMessage payloads — see amplification.ts in git
+   * history for the previous send loop.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static async broadcastCampaign(campaignId: number, userId: number): Promise<void> {
-    // NOTE: deliverMessage requires a valid Ed25519/ECDSA wallet signature.
-    // broadcastCampaign currently sends unsigned messages (walletAddress: '', signature: ''),
-    // which means ALL deliveries are silently rejected by the bus signature check.
-    // TODO: wire up a platform signing key (CDP account or local key) before using this in production.
-    console.warn('[Amplification] broadcastCampaign: messages are unsigned — deliveries will be rejected by bus. Requires signing key integration.');
-
-    // SECURITY: Verify the campaign belongs to the calling user before broadcasting.
-    // Without this check any authenticated user could broadcast another user's campaign.
-    const campaign = await pool.query(
-      'SELECT * FROM social_campaigns WHERE id = $1 AND user_id = $2',
-      [campaignId, userId]
+    throw new Error(
+      'broadcastCampaign is disabled: requires signing key integration (see TODO P1)'
     );
-    if (campaign.rows.length === 0) throw new Error('Campaign not found or not owned by caller');
-
-    // Fetch all active "Amplifier" agents on the platform
-    const partners = await pool.query(
-      "SELECT id, config->>'subdomain' as subdomain FROM agents WHERE user_id != $1",
-      [userId]
-    );
-
-    const CONCURRENCY = 20;
-    const rows = partners.rows;
-
-    for (let i = 0; i < rows.length; i += CONCURRENCY) {
-      const batch = rows.slice(i, i + CONCURRENCY);
-      await Promise.allSettled(batch.map((partner) => {
-        const message: AgentMessage = {
-          version: '1.0',
-          messageId: `amp-${Date.now()}-${partner.id}`,
-          timestamp: new Date().toISOString(),
-          from: {
-            agentId: campaign.rows[0].agent_id.toString(),
-            agentType: 'promoter',
-            walletAddress: '', // To be filled by signer
-            signature: ''
-          },
-          to: {
-            agentId: partner.subdomain,
-            agentType: 'amplifier'
-          },
-          action: 'AMPLIFY_REQUEST',
-          payload: {
-            content: campaign.rows[0].content,
-            reward: 5.00 // Fixed reward for sharing
-          }
-        };
-        return AgentBusService.deliverMessage(message).catch((err) => {
-          console.error(`[Amplification] Failed to deliver to agent ${partner.id}:`, err);
-        });
-      }));
-    }
   }
 }

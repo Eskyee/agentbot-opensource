@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { Wallet, ArrowUpDown, Send, RefreshCw, Loader2, Sparkles, Key, Eye, EyeOff, Trash2, CheckCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Wallet, ArrowUpDown, Send, RefreshCw, Loader2, Sparkles, Key, Eye, EyeOff, Trash2, CheckCircle, User, ExternalLink, Edit3, Plus, AlertCircle } from 'lucide-react';
 import { DashboardShell, DashboardHeader, DashboardContent } from '@/app/components/shared/DashboardShell';
 
 interface Balance {
@@ -19,11 +19,33 @@ interface Job {
   response?: string;
 }
 
+interface AgentProfile {
+  id?: string;
+  projectName?: string;
+  tokenAddress?: string;
+  description?: string;
+  twitter?: string;
+  approved?: boolean;
+  slug?: string;
+  updates?: Array<{ id?: string; title?: string; content?: string; createdAt?: string }>;
+}
+
 export default function TradingPage() {
+  const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState('');
   const [threadId, setThreadId] = useState<string>('');
   const [jobId, setJobId] = useState<string>('');
   const [result, setResult] = useState<string>('');
+
+  // Profile state
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const [createFields, setCreateFields] = useState({ projectName: '', tokenAddress: '', description: '', twitter: '' });
+  const [editFields, setEditFields] = useState({ description: '', twitter: '' });
+  const [updateFields, setUpdateFields] = useState({ title: '', content: '' });
 
   // API key management
   const [keyConfigured, setKeyConfigured] = useState<boolean | null>(null);
@@ -42,6 +64,107 @@ export default function TradingPage() {
       })
       .catch(() => setKeyConfigured(false))
   }, [])
+
+  // Profile queries
+  const { data: profile, isLoading: profileLoading } = useQuery<AgentProfile | null>({
+    queryKey: ['bankr-profile'],
+    queryFn: async () => {
+      const res = await fetch('/api/bankr/profile');
+      const data = await res.json();
+      if (data.needsKey) return null;
+      return data.profile ?? data ?? null;
+    },
+    enabled: keyConfigured === true,
+  });
+
+  const createProfile = useMutation({
+    mutationFn: async (fields: typeof createFields) => {
+      const res = await fetch('/api/bankr/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.error) {
+        setProfileError(data.error);
+        return;
+      }
+      setProfileSuccess('Profile created successfully');
+      setProfileError(null);
+      setShowCreateForm(false);
+      setCreateFields({ projectName: '', tokenAddress: '', description: '', twitter: '' });
+      queryClient.invalidateQueries({ queryKey: ['bankr-profile'] });
+      setTimeout(() => setProfileSuccess(null), 3000);
+    },
+    onError: () => setProfileError('Failed to create profile'),
+  });
+
+  const updateProfile = useMutation({
+    mutationFn: async (fields: typeof editFields) => {
+      const res = await fetch('/api/bankr/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.error) {
+        setProfileError(data.error);
+        return;
+      }
+      setProfileSuccess('Profile updated');
+      setProfileError(null);
+      setShowEditForm(false);
+      queryClient.invalidateQueries({ queryKey: ['bankr-profile'] });
+      setTimeout(() => setProfileSuccess(null), 3000);
+    },
+    onError: () => setProfileError('Failed to update profile'),
+  });
+
+  const deleteProfile = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/bankr/profile', { method: 'DELETE' });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.error) {
+        setProfileError(data.error);
+        return;
+      }
+      setProfileSuccess('Profile deleted');
+      setProfileError(null);
+      queryClient.invalidateQueries({ queryKey: ['bankr-profile'] });
+      setTimeout(() => setProfileSuccess(null), 3000);
+    },
+    onError: () => setProfileError('Failed to delete profile'),
+  });
+
+  const postUpdate = useMutation({
+    mutationFn: async (fields: typeof updateFields) => {
+      const res = await fetch('/api/bankr/profile/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.error) {
+        setProfileError(data.error);
+        return;
+      }
+      setProfileSuccess('Update posted');
+      setProfileError(null);
+      setShowUpdateForm(false);
+      setUpdateFields({ title: '', content: '' });
+      queryClient.invalidateQueries({ queryKey: ['bankr-profile'] });
+      setTimeout(() => setProfileSuccess(null), 3000);
+    },
+    onError: () => setProfileError('Failed to post update'),
+  });
 
   const saveKey = async () => {
     if (!apiKeyInput.trim()) return
@@ -254,71 +377,297 @@ export default function TradingPage() {
               <div className="bg-zinc-950 border border-zinc-800 p-6">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">Bankr Agent Profiles</div>
-                    <h2 className="text-sm font-bold tracking-tight uppercase">Public Profile And Project Feed</h2>
-                    <p className="text-[11px] text-zinc-500 mt-2 max-w-2xl leading-relaxed">
-                      Agent Profiles live at <span className="font-mono text-zinc-300">bankr.bot/agents</span>. They showcase your project, token, team, shipped products, fee revenue, and update feed. Creation and approval happen on Bankr today, not inside Agentbot.
-                    </p>
-                  </div>
-                  <div className="shrink-0">
-                    <CheckCircle className="h-5 w-5 text-orange-500" />
+                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 flex items-center gap-2">
+                      <User className="h-3.5 w-3.5 text-orange-500" />
+                      Agent Profile
+                    </div>
+                    <h2 className="text-sm font-bold tracking-tight uppercase">Manage Your Agent Profile</h2>
                   </div>
                 </div>
 
-                <div className="grid gap-px bg-zinc-800 sm:grid-cols-3 mb-4">
-                  <div className="bg-zinc-950 p-4">
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Step 1</div>
-                    <div className="text-xs font-bold uppercase tracking-tight">Save Your Bankr API Key</div>
-                    <div className="text-[11px] text-zinc-500 mt-2">Your key is now stored per-user and used for balances plus Bankr agent actions.</div>
+                {/* Feedback */}
+                {profileError && (
+                  <div className="border border-red-800 bg-zinc-950 p-3 mb-4 flex items-center gap-2">
+                    <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                    <span className="text-[11px] text-red-400">{profileError}</span>
                   </div>
-                  <div className="bg-zinc-950 p-4">
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Step 2</div>
-                    <div className="text-xs font-bold uppercase tracking-tight">Create Your Profile On Bankr</div>
-                    <div className="text-[11px] text-zinc-500 mt-2">Profiles are created via Bankr CLI, REST API, or your OpenClaw agent with the Bankr skill installed.</div>
+                )}
+                {profileSuccess && (
+                  <div className="border border-green-800 bg-zinc-950 p-3 mb-4 flex items-center gap-2">
+                    <CheckCircle className="h-3.5 w-3.5 text-green-400 shrink-0" />
+                    <span className="text-[11px] text-green-400">{profileSuccess}</span>
                   </div>
-                  <div className="bg-zinc-950 p-4">
-                    <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-2">Step 3</div>
-                    <div className="text-xs font-bold uppercase tracking-tight">Wait For Approval</div>
-                    <div className="text-[11px] text-zinc-500 mt-2">Public listing, market cap, and fee-revenue refresh happen after Bankr admin review.</div>
-                  </div>
-                </div>
+                )}
 
-                <div className="flex flex-wrap gap-2">
-                  {keyConfigured && (
-                    <a
-                      href="https://bankr.bot/agents"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                    >
-                      Open Agent Profiles
-                    </a>
-                  )}
-                  <a
-                    href="https://bankr.bot/api"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="border border-zinc-700 hover:border-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors"
-                  >
-                    Open Bankr API
-                  </a>
-                  <a
-                    href="https://bankr.bot/agents"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="border border-zinc-700 hover:border-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors"
-                  >
-                    Browse Profiles
-                  </a>
-                  <a
-                    href="https://github.com/BankrBot/skills/tree/main/bankr"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="border border-zinc-700 hover:border-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors"
-                  >
-                    Install Bankr Skill
-                  </a>
-                </div>
+                {/* Loading state */}
+                {profileLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-zinc-500" />
+                  </div>
+                ) : !profile ? (
+                  /* No profile — create form or create button */
+                  <>
+                    {showCreateForm ? (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Project Name *</label>
+                          <input
+                            type="text"
+                            value={createFields.projectName}
+                            onChange={e => setCreateFields(f => ({ ...f, projectName: e.target.value }))}
+                            placeholder="My Agent"
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Token Address *</label>
+                          <input
+                            type="text"
+                            value={createFields.tokenAddress}
+                            onChange={e => setCreateFields(f => ({ ...f, tokenAddress: e.target.value }))}
+                            placeholder="0x..."
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs font-mono"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Description</label>
+                          <textarea
+                            value={createFields.description}
+                            onChange={e => setCreateFields(f => ({ ...f, description: e.target.value }))}
+                            placeholder="Describe your agent..."
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs h-20 resize-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Twitter (optional)</label>
+                          <input
+                            type="text"
+                            value={createFields.twitter}
+                            onChange={e => setCreateFields(f => ({ ...f, twitter: e.target.value }))}
+                            placeholder="@handle"
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => createProfile.mutate(createFields)}
+                            disabled={createProfile.isPending || !createFields.projectName || !createFields.tokenAddress}
+                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                          >
+                            {createProfile.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                            Create Profile
+                          </button>
+                          <button
+                            onClick={() => { setShowCreateForm(false); setProfileError(null); }}
+                            className="border border-zinc-700 hover:border-zinc-500 px-4 py-2 text-[10px] uppercase tracking-widest transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-zinc-600">You must have deployed a token through Bankr (Doppler/Clanker) or be a fee beneficiary.</p>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6">
+                        <User className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
+                        <p className="text-xs text-zinc-500 mb-4">No agent profile found. Create one to get listed on Bankr.</p>
+                        <button
+                          onClick={() => setShowCreateForm(true)}
+                          className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2 mx-auto"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          Create Your Agent Profile
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* Profile exists — show profile card */
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold tracking-tight uppercase">{profile.projectName || 'Untitled'}</h3>
+                        {profile.tokenAddress && (
+                          <a
+                            href={`https://basescan.org/address/${profile.tokenAddress}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] text-zinc-500 hover:text-zinc-300 font-mono flex items-center gap-1 mt-1"
+                          >
+                            {profile.tokenAddress}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {profile.approved !== undefined && (
+                          <span className={`text-[10px] uppercase tracking-widest px-2 py-1 border ${profile.approved ? 'border-green-800 text-green-400' : 'border-yellow-800 text-yellow-400'}`}>
+                            {profile.approved ? 'Approved' : 'Pending'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {profile.description && (
+                      <p className="text-[11px] text-zinc-400 leading-relaxed">{profile.description}</p>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      {profile.twitter && (
+                        <a
+                          href={`https://x.com/${profile.twitter.replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-zinc-500 hover:text-white flex items-center gap-1"
+                        >
+                          @{profile.twitter.replace('@', '')}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                      {profile.slug && (
+                        <a
+                          href={`https://bankr.bot/agents/${profile.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-orange-500 hover:text-orange-400 flex items-center gap-1"
+                        >
+                          bankr.bot/agents/{profile.slug}
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-zinc-800">
+                      <button
+                        onClick={() => {
+                          setEditFields({ description: profile.description || '', twitter: profile.twitter || '' });
+                          setShowEditForm(true);
+                        }}
+                        className="border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5"
+                      >
+                        <Edit3 className="h-3 w-3" /> Edit
+                      </button>
+                      <button
+                        onClick={() => setShowUpdateForm(v => !v)}
+                        className="border border-zinc-700 hover:border-zinc-500 px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5"
+                      >
+                        <Plus className="h-3 w-3" /> Post Update
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Delete your agent profile? This cannot be undone.')) {
+                            deleteProfile.mutate();
+                          }
+                        }}
+                        disabled={deleteProfile.isPending}
+                        className="border border-red-800 hover:border-red-600 text-red-400 px-3 py-1.5 text-[10px] uppercase tracking-widest transition-colors flex items-center gap-1.5"
+                      >
+                        {deleteProfile.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                        Delete
+                      </button>
+                    </div>
+
+                    {/* Edit form */}
+                    {showEditForm && (
+                      <div className="border border-zinc-800 p-4 space-y-3">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600">Edit Profile</div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Description</label>
+                          <textarea
+                            value={editFields.description}
+                            onChange={e => setEditFields(f => ({ ...f, description: e.target.value }))}
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs h-20 resize-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Twitter</label>
+                          <input
+                            type="text"
+                            value={editFields.twitter}
+                            onChange={e => setEditFields(f => ({ ...f, twitter: e.target.value }))}
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => updateProfile.mutate(editFields)}
+                            disabled={updateProfile.isPending}
+                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                          >
+                            {updateProfile.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
+                            Save
+                          </button>
+                          <button
+                            onClick={() => { setShowEditForm(false); setProfileError(null); }}
+                            className="border border-zinc-700 hover:border-zinc-500 px-4 py-2 text-[10px] uppercase tracking-widest transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Post update form */}
+                    {showUpdateForm && (
+                      <div className="border border-zinc-800 p-4 space-y-3">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600">Post Project Update</div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Title *</label>
+                          <input
+                            type="text"
+                            value={updateFields.title}
+                            onChange={e => setUpdateFields(f => ({ ...f, title: e.target.value }))}
+                            placeholder="v2 Launch"
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1 block">Content *</label>
+                          <textarea
+                            value={updateFields.content}
+                            onChange={e => setUpdateFields(f => ({ ...f, content: e.target.value }))}
+                            placeholder="What did you ship?"
+                            className="w-full bg-black border border-zinc-700 focus:border-zinc-500 focus:outline-none px-3 py-2 text-xs h-20 resize-none"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => postUpdate.mutate(updateFields)}
+                            disabled={postUpdate.isPending || !updateFields.title || !updateFields.content}
+                            className="bg-white text-black px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-200 disabled:bg-zinc-800 disabled:text-zinc-600 transition-colors flex items-center gap-2"
+                          >
+                            {postUpdate.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                            Publish Update
+                          </button>
+                          <button
+                            onClick={() => { setShowUpdateForm(false); setProfileError(null); }}
+                            className="border border-zinc-700 hover:border-zinc-500 px-4 py-2 text-[10px] uppercase tracking-widest transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Recent updates */}
+                    {profile.updates && profile.updates.length > 0 && (
+                      <div className="pt-3 border-t border-zinc-800">
+                        <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-3">Recent Updates</div>
+                        <div className="space-y-px">
+                          {profile.updates.map((u, i) => (
+                            <div key={u.id || i} className="bg-zinc-950 border border-zinc-800 p-3">
+                              <div className="text-xs font-bold uppercase tracking-tight">{u.title}</div>
+                              <div className="text-[11px] text-zinc-500 mt-1">{u.content}</div>
+                              {u.createdAt && (
+                                <div className="text-[10px] text-zinc-700 mt-2">{new Date(u.createdAt).toLocaleDateString()}</div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Portfolio */}

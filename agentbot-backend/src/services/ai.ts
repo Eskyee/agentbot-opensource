@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import { pool } from '../lib/db';
 
 dotenv.config();
 
@@ -56,10 +56,6 @@ export function buildSystemPrompt(basePrompt: string = '', algorithmMode: boolea
   return parts.join('\n\n');
 }
 // ─────────────────────────────────────────────────────────────────────────────
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 export type ModelTier = 'reasoning' | 'coding' | 'fast' | 'creative';
 

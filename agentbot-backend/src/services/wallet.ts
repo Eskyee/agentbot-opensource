@@ -1,9 +1,9 @@
 import CryptoJS from 'crypto-js';
 import { CdpClient } from '@coinbase/cdp-sdk';
-import { Pool } from 'pg';
 import dotenv from 'dotenv';
 import { parseUnits, formatUnits } from 'viem';
 import { randomUUID } from 'crypto';
+import { pool } from '../lib/db';
 
 dotenv.config();
 
@@ -20,9 +20,6 @@ function getEncryptionKey(): string {
   }
   return key;
 }
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 // USDC has 6 decimal places on Base mainnet.
 const USDC_DECIMALS = 6;
