@@ -22,22 +22,36 @@ ensureManifest(nextDir);
 if (process.env.VERCEL) {
   const nestedProjectDir = path.join(projectDir, path.basename(projectDir));
   const nestedNextDir = path.join(nestedProjectDir, '.next');
+  const nestedNodeModulesDir = path.join(nestedProjectDir, 'node_modules');
+  const nodeModulesDir = [path.join(projectDir, 'node_modules'), path.join(projectDir, '..', 'node_modules')].find((dir) =>
+    fs.existsSync(path.join(dir, 'next')),
+  );
 
   fs.mkdirSync(nestedProjectDir, { recursive: true });
 
-  try {
-    const current = fs.lstatSync(nestedNextDir);
-    if (!current.isSymbolicLink()) {
-      fs.rmSync(nestedNextDir, { recursive: true, force: true });
+  function linkNestedPath(target, sourceDir, label) {
+    try {
+      const current = fs.lstatSync(target);
+      if (!current.isSymbolicLink()) {
+        return;
+      }
+
+      fs.rmSync(target, { recursive: true, force: true });
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error;
+      }
     }
-  } catch (error) {
-    if (error.code !== 'ENOENT') {
-      throw error;
+
+    if (!fs.existsSync(target)) {
+      fs.symlinkSync(path.relative(nestedProjectDir, sourceDir), target, 'dir');
+      console.log(`Linked ${path.relative(projectDir, target)} to ${label}`);
     }
   }
 
-  if (!fs.existsSync(nestedNextDir)) {
-    fs.symlinkSync(path.relative(nestedProjectDir, nextDir), nestedNextDir, 'dir');
-    console.log(`Linked ${path.relative(projectDir, nestedNextDir)} to .next`);
+  linkNestedPath(nestedNextDir, nextDir, '.next');
+
+  if (nodeModulesDir) {
+    linkNestedPath(nestedNodeModulesDir, nodeModulesDir, 'node_modules');
   }
 }
