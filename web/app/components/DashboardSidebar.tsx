@@ -40,6 +40,7 @@ export const navSections = [
       { label: 'Skills', href: '/dashboard/skills', icon: '✳' },
       { label: 'Borg Soul', href: '/dashboard/borg', icon: '◭' },
       { label: 'Signals', href: '/dashboard/signals', icon: '⌁' },
+      { label: 'Creator Console', href: '/dashboard/creator', icon: '▰' },
     ],
   },
   {

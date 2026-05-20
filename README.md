@@ -1,6 +1,6 @@
-# Factory AI // Agentbot
+# Agentbot
 
-**Private production repository for the Factory AI platform.**
+**Deploy AI workers. Build underground systems.**
 
 <div align="center">
 
@@ -17,7 +17,9 @@
 
 ---
 
-This repository contains the live product code for **Factory AI**: a high-performance private-cloud platform for autonomous agents. It manages identity (DIDs), execution (Durable Workflows), and state (Gitlawb mirroring) across a unified Railway-native infrastructure.
+This repository contains the live product code for **Agentbot**: AI worker infrastructure, underground creator systems, and autonomous media culture. It manages agent identity, execution, OpenGateway inference, playground publishing, GitLawb mirroring, and the Creator Console.
+
+Agentbot is not another generic AI platform. It is infrastructure for autonomous underground creator systems.
 
 ## Platform Direction
 
@@ -25,6 +27,7 @@ This repository contains the live product code for **Factory AI**: a high-perfor
 - **Fact-Based Backend:** Cryptographically verified identity and state mirroring.
 - **Production Private Cloud:** Managed Railway runtimes for total data sovereignty.
 - **AI Gateway Mastery:** Ultra-performance inference via Vercel AI Gateway + MiMo V2 Pro.
+- **Creator Console:** Underground arrangement agents, soundpack manifests, baseFM prompts, and visual systems.
 
 ## What Lives Here
 
@@ -71,10 +74,21 @@ npm run start
 ### Useful commands
 
 ```bash
+npm run demo    # Local Agentbot demo at http://127.0.0.1:3007
 npm run build   # Turbo-orchestrated full build
 npm run dev     # Parallel dev environment
 npm run test    # Identity and Logic verification
 ```
+
+## Creator Toolkit
+
+The underground creator layer lives at:
+
+- `/creator-toolkit` — public toolkit, prompt library, producer agents, soundpack structure
+- `/dashboard/creator` — Creator Console with the first Arrangement Agent
+- `/api/creator-toolkit/arrangement` — deterministic Break Architect arrangement output
+- `/api/creator-toolkit/producer-brief` — compiled agent prompts for model calls
+- `/api/creator-toolkit/soundpack` — downloadable soundpack and marketplace manifest
 
 ## Key Documentation
 
