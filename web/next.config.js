@@ -2,7 +2,9 @@ const path = require('path');
 const { withWorkflow } = require('workflow/next');
 const { withSentryConfig } = require('@sentry/nextjs');
 
-const isProductionVercel = process.env.VERCEL_ENV === 'production';
+const shouldUploadSentrySourcemaps =
+  process.env.VERCEL_ENV === 'production' &&
+  (!process.env.VERCEL_GIT_COMMIT_REF || process.env.VERCEL_GIT_COMMIT_REF === 'main');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -149,10 +151,13 @@ const nextConfig = {
 module.exports = withSentryConfig(withWorkflow(nextConfig), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
-  authToken: isProductionVercel ? process.env.SENTRY_AUTH_TOKEN : undefined,
+  authToken: shouldUploadSentrySourcemaps ? process.env.SENTRY_AUTH_TOKEN : undefined,
 
   silent: !process.env.CI,
-  widenClientFileUpload: isProductionVercel,
+  widenClientFileUpload: shouldUploadSentrySourcemaps,
+  sourcemaps: {
+    disable: !shouldUploadSentrySourcemaps,
+  },
   tunnelRoute: '/monitoring',
   disableLogger: true,
   automaticVercelMonitors: true,
