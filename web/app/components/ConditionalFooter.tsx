@@ -8,7 +8,7 @@ export default function ConditionalFooter() {
   
   // Dashboard is an app view — no footer. Prevents flash of footer content
   // during page transitions and loading states.
-  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin') || pathname.startsWith('/playground')) {
     return null
   }
   

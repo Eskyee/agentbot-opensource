@@ -10,6 +10,7 @@ import teamProvisionRouter from './routes/team-provision';
 import registrationRouter from './routes/registration';
 import agentsRouter from './routes/agents';
 import openclawRouter, { proxy as openclawProxy } from './routes/openclaw';
+import openclaudeRouter from './routes/openclaude';
 import orchestrationRouter from './routes/orchestration';
 import railwayProvisionRouter from './routes/railway-provision';
 import platformJobsRouter from './routes/platform-jobs';
@@ -776,6 +777,7 @@ app.use('/api/agents', authenticate, agentsRouter);
 app.use('/api/orchestration', authenticate, orchestrationRouter);
 app.use('/api/railway', railwayProvisionRouter);
 app.use('/api/platform-jobs', authenticate, platformJobsRouter);
+app.use('/api/openclaude', authenticate, aiChatLimiter, openclaudeRouter);
 // /api/openclaw/proxy/* is public — OpenClaw handles its own auth
 // All other /api/openclaw/* routes require backend bearer token
 app.use('/api/openclaw', (req: Request, res: Response, next: NextFunction) => {
