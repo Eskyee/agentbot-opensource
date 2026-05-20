@@ -121,7 +121,7 @@ export default function OpenGatewayPage() {
             <div className="flex items-center gap-3 font-mono text-xs uppercase tracking-[0.18em] text-zinc-500">
               <Link href="/playground" className="hover:text-white">Playground</Link>
               <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
-              <Link href="/api/opengateway/health" className="hover:text-white">Health</Link>
+              <Link href="/opengateway/health" className="hover:text-white">Health</Link>
             </div>
           </div>
 
