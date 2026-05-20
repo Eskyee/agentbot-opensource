@@ -8,7 +8,7 @@
   "scripts": {
     "demo": "next dev --hostname 127.0.0.1 --port 3007",
     "dev": "next dev",
-    "build": "npx prisma generate && NODE_OPTIONS=\"--max-old-space-size=6144\" next build --webpack",
+    "build": "npx prisma generate && NODE_OPTIONS=\"--max-old-space-size=5120\" next build --webpack",
     "start": "node .next/standalone/server.js",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx --max-warnings 100",
     "test": "playwright test",
