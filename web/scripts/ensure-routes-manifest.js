@@ -20,5 +20,24 @@ function ensureManifest(targetNextDir) {
 ensureManifest(nextDir);
 
 if (process.env.VERCEL) {
-  ensureManifest(path.join(projectDir, path.basename(projectDir), '.next'));
+  const nestedProjectDir = path.join(projectDir, path.basename(projectDir));
+  const nestedNextDir = path.join(nestedProjectDir, '.next');
+
+  fs.mkdirSync(nestedProjectDir, { recursive: true });
+
+  try {
+    const current = fs.lstatSync(nestedNextDir);
+    if (!current.isSymbolicLink()) {
+      fs.rmSync(nestedNextDir, { recursive: true, force: true });
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
+
+  if (!fs.existsSync(nestedNextDir)) {
+    fs.symlinkSync(path.relative(nestedProjectDir, nextDir), nestedNextDir, 'dir');
+    console.log(`Linked ${path.relative(projectDir, nestedNextDir)} to .next`);
+  }
 }
