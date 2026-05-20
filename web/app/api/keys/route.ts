@@ -57,8 +57,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate a cryptographically secure key — returned once, never stored in plaintext
-    const rawKey = 'sk_' + crypto.randomBytes(32).toString('hex')
-    const keyPrefix = rawKey.substring(0, 10)      // "sk_" + 7 chars shown in UI
+    const rawKey = 'ogw_live_' + crypto.randomBytes(32).toString('hex')
+    const keyPrefix = rawKey.substring(0, 18)
     const keyHash = await bcrypt.hash(rawKey, 10)  // hashed for DB storage
 
     const record = await prisma.apiKey.create({
@@ -84,5 +84,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create key' }, { status: 500 })
   }
 }
-
 
