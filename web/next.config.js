@@ -150,7 +150,7 @@ module.exports = withSentryConfig(withWorkflow(nextConfig), {
   authToken: process.env.SENTRY_AUTH_TOKEN,
 
   silent: !process.env.CI,
-  widenClientFileUpload: true,
+  widenClientFileUpload: process.env.VERCEL_ENV === 'production',
   tunnelRoute: '/monitoring',
   disableLogger: true,
   automaticVercelMonitors: true,
