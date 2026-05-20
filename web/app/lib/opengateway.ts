@@ -8,7 +8,7 @@ export type GatewayAuth = {
   keyPrefix: string
 }
 
-type UpstreamConfig = {
+export type UpstreamConfig = {
   baseUrl: string
   apiKey: string
   provider: string
@@ -95,36 +95,54 @@ export async function authenticateGatewayRequest(headers: Headers): Promise<Gate
   return null
 }
 
-export function resolveGatewayUpstream(): UpstreamConfig | null {
+export function resolveGatewayUpstreams(): UpstreamConfig[] {
+  const upstreams: UpstreamConfig[] = []
   const genericBaseUrl = process.env.AGENTBOT_GATEWAY_UPSTREAM_BASE_URL?.trim()
   const genericKey = process.env.AGENTBOT_GATEWAY_UPSTREAM_API_KEY?.trim()
   if (genericBaseUrl && genericKey) {
-    return {
+    upstreams.push({
       baseUrl: genericBaseUrl.replace(/\/+$/, ''),
       apiKey: genericKey,
       provider: 'agentbot-upstream',
-    }
+    })
   }
 
   const vercelKey = process.env.AI_GATEWAY_API_KEY?.trim() || process.env.VERCEL_AI_GATEWAY_KEY?.trim()
   if (vercelKey) {
-    return {
+    upstreams.push({
       baseUrl: 'https://ai-gateway.vercel.sh/v1',
       apiKey: vercelKey,
       provider: 'vercel-ai-gateway',
-    }
+    })
   }
 
   const openRouterKey = process.env.OPENROUTER_API_KEY?.trim()
   if (openRouterKey) {
-    return {
+    upstreams.push({
       baseUrl: 'https://openrouter.ai/api/v1',
       apiKey: openRouterKey,
       provider: 'openrouter',
-    }
+    })
   }
 
-  return null
+  return upstreams
+}
+
+export function resolveGatewayUpstream(): UpstreamConfig | null {
+  return resolveGatewayUpstreams()[0] ?? null
+}
+
+export function gatewayUpstreamHeaders(upstream: UpstreamConfig, title = 'Agentbot OpenGateway') {
+  return {
+    Authorization: `Bearer ${upstream.apiKey}`,
+    'Content-Type': 'application/json',
+    'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://127.0.0.1:3007',
+    'X-Title': title,
+  }
+}
+
+export function shouldTryNextGatewayUpstream(status: number): boolean {
+  return status === 401 || status === 403 || status === 404 || status === 429 || status >= 500
 }
 
 export function normalizeGatewayModel(model: string, provider: string): string {
@@ -214,4 +232,3 @@ export function recordGatewayUsage(params: {
     console.error('[opengateway] usage log failed', error)
   })
 }
-

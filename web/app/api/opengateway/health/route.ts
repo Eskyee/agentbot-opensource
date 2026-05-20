@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { resolveGatewayUpstream } from '@/app/lib/opengateway'
+import { resolveGatewayUpstreams } from '@/app/lib/opengateway'
 
 export const runtime = 'nodejs'
 
 export async function GET() {
-  const upstream = resolveGatewayUpstream()
-  if (!upstream) {
+  const upstreams = resolveGatewayUpstreams()
+  if (upstreams.length === 0) {
     return NextResponse.json({
       ok: false,
       status: 'upstream_not_configured',
@@ -19,27 +19,45 @@ export async function GET() {
   }
 
   const startedAt = Date.now()
-  const response = await fetch(`${upstream.baseUrl}/models`, {
-    headers: { Authorization: `Bearer ${upstream.apiKey}` },
-    signal: AbortSignal.timeout(10_000),
-  }).catch((error) => error instanceof Error ? error : new Error('healthcheck failed'))
+  const checks = []
 
-  if (response instanceof Error) {
-    return NextResponse.json({
-      ok: false,
-      status: 'upstream_unreachable',
+  for (const upstream of upstreams) {
+    const response = await fetch(`${upstream.baseUrl}/models`, {
+      headers: { Authorization: `Bearer ${upstream.apiKey}` },
+      signal: AbortSignal.timeout(10_000),
+    }).catch((error) => error instanceof Error ? error : new Error('healthcheck failed'))
+
+    if (response instanceof Error) {
+      checks.push({
+        provider: upstream.provider,
+        ok: false,
+        error: response.message,
+      })
+      continue
+    }
+
+    checks.push({
       provider: upstream.provider,
-      latencyMs: Date.now() - startedAt,
-      error: response.message,
-    }, { status: 502 })
+      ok: response.ok,
+      upstreamStatus: response.status,
+    })
+
+    if (response.ok) {
+      return NextResponse.json({
+        ok: true,
+        status: 'healthy',
+        provider: upstream.provider,
+        latencyMs: Date.now() - startedAt,
+        upstreamStatus: response.status,
+        checks,
+      })
+    }
   }
 
   return NextResponse.json({
-    ok: response.ok,
-    status: response.ok ? 'healthy' : 'degraded',
-    provider: upstream.provider,
+    ok: false,
+    status: 'degraded',
     latencyMs: Date.now() - startedAt,
-    upstreamStatus: response.status,
-  }, { status: response.ok ? 200 : 502 })
+    checks,
+  }, { status: 502 })
 }
-

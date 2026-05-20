@@ -3,10 +3,12 @@ import {
   authenticateGatewayRequest,
   extractUsage,
   gatewayCorsHeaders,
+  gatewayUpstreamHeaders,
   normalizeGatewayModel,
   openAiError,
   recordGatewayUsage,
-  resolveGatewayUpstream,
+  resolveGatewayUpstreams,
+  shouldTryNextGatewayUpstream,
 } from '@/app/lib/opengateway'
 
 export const runtime = 'nodejs'
@@ -38,8 +40,8 @@ export async function POST(req: NextRequest) {
     return openAiError('Missing required field: messages.', 400, 'missing_messages')
   }
 
-  const upstream = resolveGatewayUpstream()
-  if (!upstream) {
+  const upstreams = resolveGatewayUpstreams()
+  if (upstreams.length === 0) {
     return openAiError(
       'Agentbot OpenGateway has no upstream provider configured. Set AGENTBOT_GATEWAY_UPSTREAM_API_KEY, AI_GATEWAY_API_KEY, or OPENROUTER_API_KEY.',
       503,
@@ -47,79 +49,92 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const upstreamBody = {
-    ...body,
-    model: normalizeGatewayModel(requestedModel, upstream.provider),
-  }
+  let lastFailure: { status: number; text: string; provider: string } | null = null
 
-  try {
-    const response = await fetch(`${upstream.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${upstream.apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://127.0.0.1:3007',
-        'X-Title': 'Agentbot OpenGateway',
-      },
-      body: JSON.stringify(upstreamBody),
-      signal: AbortSignal.timeout(55_000),
-    })
-
-    const contentType = response.headers.get('content-type') || 'application/json'
-    const text = await response.text()
-    const headers = {
-      ...gatewayCorsHeaders(),
-      'Content-Type': contentType,
-      'x-agentbot-gateway-provider': upstream.provider,
-      'x-agentbot-gateway-model': upstreamBody.model,
+  for (const upstream of upstreams) {
+    const upstreamBody = {
+      ...body,
+      model: normalizeGatewayModel(requestedModel, upstream.provider),
     }
 
-    if (contentType.includes('text/event-stream') || body.stream === true) {
+    try {
+      const response = await fetch(`${upstream.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: gatewayUpstreamHeaders(upstream),
+        body: JSON.stringify(upstreamBody),
+        signal: AbortSignal.timeout(55_000),
+      })
+
+      const contentType = response.headers.get('content-type') || 'application/json'
+      const text = await response.text()
+      const headers = {
+        ...gatewayCorsHeaders(),
+        'Content-Type': contentType,
+        'x-agentbot-gateway-provider': upstream.provider,
+        'x-agentbot-gateway-model': upstreamBody.model,
+      }
+
+      if (!response.ok && shouldTryNextGatewayUpstream(response.status)) {
+        lastFailure = { status: response.status, text: text.slice(0, 500), provider: upstream.provider }
+        continue
+      }
+
+      if (contentType.includes('text/event-stream') || body.stream === true) {
+        recordGatewayUsage({
+          auth,
+          model: requestedModel,
+          inputTokens: 0,
+          outputTokens: 0,
+          endpoint: '/v1/chat/completions',
+          latencyMs: Date.now() - startedAt,
+          success: response.ok,
+          errorMessage: response.ok ? undefined : text.slice(0, 500),
+        })
+        return new NextResponse(text, { status: response.status, headers })
+      }
+
+      let parsed: unknown = null
+      try {
+        parsed = JSON.parse(text)
+      } catch {
+        parsed = { raw: text }
+      }
+
+      const usage = extractUsage(parsed, upstreamBody)
       recordGatewayUsage({
         auth,
         model: requestedModel,
-        inputTokens: 0,
-        outputTokens: 0,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
         endpoint: '/v1/chat/completions',
         latencyMs: Date.now() - startedAt,
         success: response.ok,
         errorMessage: response.ok ? undefined : text.slice(0, 500),
       })
+
       return new NextResponse(text, { status: response.status, headers })
+    } catch (error) {
+      lastFailure = {
+        status: 502,
+        text: error instanceof Error ? error.message : 'Gateway request failed',
+        provider: upstream.provider,
+      }
     }
-
-    let parsed: unknown = null
-    try {
-      parsed = JSON.parse(text)
-    } catch {
-      parsed = { raw: text }
-    }
-
-    const usage = extractUsage(parsed, upstreamBody)
-    recordGatewayUsage({
-      auth,
-      model: requestedModel,
-      inputTokens: usage.inputTokens,
-      outputTokens: usage.outputTokens,
-      endpoint: '/v1/chat/completions',
-      latencyMs: Date.now() - startedAt,
-      success: response.ok,
-      errorMessage: response.ok ? undefined : text.slice(0, 500),
-    })
-
-    return new NextResponse(text, { status: response.status, headers })
-  } catch (error) {
-    recordGatewayUsage({
-      auth,
-      model: requestedModel,
-      inputTokens: 0,
-      outputTokens: 0,
-      endpoint: '/v1/chat/completions',
-      latencyMs: Date.now() - startedAt,
-      success: false,
-      errorMessage: error instanceof Error ? error.message : 'Gateway request failed',
-    })
-    return openAiError(error instanceof Error ? error.message : 'Gateway request failed.', 502, 'upstream_failed')
   }
-}
 
+  recordGatewayUsage({
+    auth,
+    model: requestedModel,
+    inputTokens: 0,
+    outputTokens: 0,
+    endpoint: '/v1/chat/completions',
+    latencyMs: Date.now() - startedAt,
+    success: false,
+    errorMessage: lastFailure ? `${lastFailure.provider}: ${lastFailure.text}` : 'Gateway request failed',
+  })
+  return openAiError(
+    lastFailure ? `All configured upstream providers failed. Last failure from ${lastFailure.provider}: ${lastFailure.text}` : 'Gateway request failed.',
+    lastFailure?.status === 401 ? 502 : lastFailure?.status ?? 502,
+    'upstream_failed',
+  )
+}
