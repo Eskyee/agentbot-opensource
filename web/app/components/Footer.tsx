@@ -3,55 +3,35 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 
-// ─── Footer structure ────────────────────────────────────────────────────────
-// 4 columns: Product | Developers | Community | Company
-// Mirrors the navbar's intent-based grouping
-// ─────────────────────────────────────────────────────────────────────────────
-
 const COLUMNS = [
   {
     heading: 'Product',
     links: [
-      { href: '/pricing',      label: 'Pricing' },
-      { href: '/marketing',    label: 'Marketing' },
-      { href: '/demo',         label: 'Demo' },
-      { href: '/agents',       label: 'Agents' },
-      { href: '/marketplace',  label: 'Marketplace' },
-      { href: '/use-cases',    label: 'Use Cases' },
-      { href: '/solana',       label: 'Solana' },
+      { href: '/playground',       label: 'Playground' },
+      { href: '/creator-toolkit',  label: 'Creator Toolkit' },
+      { href: '/opengateway',      label: 'OpenGateway' },
+      { href: '/pricing',          label: 'Pricing' },
+      { href: '/dashboard',        label: 'Dashboard' },
     ],
   },
   {
-    heading: 'Developers',
+    heading: 'Builders',
     links: [
       { href: '/documentation', label: 'Docs' },
-      { href: '/guide',         label: 'Guide' },
-      { href: '/skills',        label: 'Skills API' },
-      { href: '/playground',    label: 'Playground' },
       { href: 'https://github.com/Eskyee/agentbot-opensource',           label: 'GitHub', external: true },
-      { href: 'https://deepwiki.com/Eskyee/agentbot-opensource',         label: 'DeepWiki', external: true },
-      { href: 'https://dev.to/agentbot',                                  label: 'Dev.to', external: true },
     ],
   },
   {
-    heading: 'Community',
+    heading: 'Creators',
     links: [
+      { href: '/dashboard/creator', label: 'Creator Console' },
+      { href: '/basefm',            label: 'baseFM Live' },
       { href: '/blog',      label: 'Blog' },
-      { href: '/news',      label: 'News' },
-      { href: '/social',    label: 'Social' },
-      { href: '/jobs',      label: 'Jobs' },
-      { href: '/token',     label: '$AGENTBOT' },
-      { href: '/buddies',   label: 'Buddies' },
-      { href: '/basefm',    label: 'baseFM Live' },
     ],
   },
   {
     heading: 'Company',
     links: [
-      { href: '/why',        label: 'Why Agentbot' },
-      { href: '/showcase',   label: 'Showcase' },
-      { href: '/partner',    label: 'Partner' },
-      { href: '/advertise',  label: 'Advertise' },
       { href: '/terms',      label: 'Terms' },
       { href: '/privacy',    label: 'Privacy' },
     ],

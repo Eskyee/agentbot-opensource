@@ -7,6 +7,7 @@ import {
   soundpackBlueprint,
   toolkitPrompts,
 } from '@/app/lib/creator-toolkit'
+import { RaveTerminalPanel } from '@/app/components/RaveTerminalPanel'
 
 const categories = ['All', ...Array.from(new Set(toolkitPrompts.map((prompt) => prompt.category)))]
 
@@ -20,6 +21,10 @@ type ArrangementResult = {
   drumEvolution: string[]
   bassProgression: string[]
   fx: string[]
+  provider?: string
+  model?: string
+  fallback?: boolean
+  fallbackReason?: string
 }
 
 export default function CreatorDashboardPage() {
@@ -30,6 +35,9 @@ export default function CreatorDashboardPage() {
   const [mood, setMood] = useState('pirate radio pressure')
   const [arrangement, setArrangement] = useState<ArrangementResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [publishResult, setPublishResult] = useState<{ webUrl: string; remoteUrl: string } | null>(null)
+  const [error, setError] = useState('')
 
   const prompts = useMemo(
     () => category === 'All' ? toolkitPrompts : toolkitPrompts.filter((prompt) => prompt.category === category),
@@ -41,6 +49,8 @@ export default function CreatorDashboardPage() {
 
   async function runArrangementAgent() {
     setIsRunning(true)
+    setError('')
+    setPublishResult(null)
     try {
       const response = await fetch('/api/creator-toolkit/arrangement', {
         method: 'POST',
@@ -55,8 +65,33 @@ export default function CreatorDashboardPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Arrangement Agent failed')
       setArrangement(data)
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Arrangement Agent failed')
     } finally {
       setIsRunning(false)
+    }
+  }
+
+  async function publishToGitlawb() {
+    if (!arrangement) return
+    setIsPublishing(true)
+    setError('')
+    try {
+      const response = await fetch('/api/creator-toolkit/gitlawb', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ arrangement }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'GitLawb publish failed')
+      setPublishResult({
+        webUrl: data.gitlawb.webUrl,
+        remoteUrl: data.gitlawb.remoteUrl,
+      })
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'GitLawb publish failed')
+    } finally {
+      setIsPublishing(false)
     }
   }
 
@@ -78,6 +113,10 @@ export default function CreatorDashboardPage() {
           >
             Export Soundpack JSON
           </a>
+        </div>
+
+        <div className="mb-8">
+          <RaveTerminalPanel compact />
         </div>
 
         <section className="grid gap-5 lg:grid-cols-[320px_1fr]">
@@ -157,7 +196,28 @@ export default function CreatorDashboardPage() {
                     >
                       {isRunning ? 'Running Agent...' : 'Generate Arrangement'}
                     </button>
+                    <button
+                      type="button"
+                      onClick={publishToGitlawb}
+                      disabled={!arrangement || isPublishing}
+                      className="border border-fuchsia-400/60 px-4 py-3 text-xs font-black uppercase tracking-widest text-fuchsia-200 transition-colors hover:border-white hover:text-white disabled:cursor-not-allowed disabled:border-zinc-800 disabled:text-zinc-700"
+                    >
+                      {isPublishing ? 'Publishing...' : 'Publish to GitLawb'}
+                    </button>
                   </div>
+                  {error ? (
+                    <p className="mt-4 border border-red-500/30 bg-red-950/20 p-3 text-xs leading-5 text-red-200">{error}</p>
+                  ) : null}
+                  {publishResult ? (
+                    <a
+                      href={publishResult.webUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 block break-all border border-lime-400/40 bg-lime-950/10 p-3 text-xs leading-5 text-lime-200 hover:border-white"
+                    >
+                      {publishResult.webUrl}
+                    </a>
+                  ) : null}
                 </div>
 
                 <div className="relative overflow-hidden bg-black p-4">
@@ -178,6 +238,8 @@ export default function CreatorDashboardPage() {
                           <span>{arrangement.genre}</span>
                           <span>{arrangement.bpm} BPM</span>
                           <span>{arrangement.mood}</span>
+                          {arrangement.provider ? <span>{arrangement.provider}</span> : null}
+                          {arrangement.fallback ? <span className="text-amber-300">fallback</span> : null}
                         </div>
                         <div className="grid gap-2">
                           {arrangement.arrangement.map((section) => (

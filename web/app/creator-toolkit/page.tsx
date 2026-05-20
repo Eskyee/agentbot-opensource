@@ -8,6 +8,7 @@ import {
   soundpackBlueprint,
   toolkitPrompts,
 } from '@/app/lib/creator-toolkit'
+import { RaveTerminalPanel } from '@/app/components/RaveTerminalPanel'
 
 const visualSignals = ['black', 'cyan', 'magenta', 'acid green', 'CRT noise', 'pirate radio', 'warehouse pressure']
 
@@ -47,11 +48,14 @@ export default function CreatorToolkitPage() {
             </div>
           </div>
 
-          <aside className="border border-zinc-800 bg-zinc-950/60 p-5">
-            <div className="mb-4 text-[10px] uppercase tracking-widest text-zinc-500">Master System Prompt</div>
-            <pre className="max-h-[440px] overflow-auto whitespace-pre-wrap text-xs leading-6 text-zinc-300">
-              {masterCreatorSystemPrompt}
-            </pre>
+          <aside className="grid gap-5">
+            <RaveTerminalPanel />
+            <div className="border border-zinc-800 bg-zinc-950/60 p-5">
+              <div className="mb-4 text-[10px] uppercase tracking-widest text-zinc-500">Master System Prompt</div>
+              <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap text-xs leading-6 text-zinc-300">
+                {masterCreatorSystemPrompt}
+              </pre>
+            </div>
           </aside>
         </div>
       </section>
