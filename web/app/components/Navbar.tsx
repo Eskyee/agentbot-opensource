@@ -114,7 +114,10 @@ export default function Navbar() {
               <Link href="/login" className="text-[11px] lowercase text-zinc-500 transition-colors hover:text-white">
                 Sign in
               </Link>
-              <Link href="/signup" className="text-[11px] lowercase text-zinc-500 transition-colors hover:text-white">
+              <Link
+                href="/signup"
+                className="border border-orange-500/40 bg-orange-500 px-3 py-1.5 text-[11px] font-bold lowercase text-black transition-colors hover:border-orange-400 hover:bg-orange-400"
+              >
                 Start
               </Link>
             </>
@@ -165,7 +168,11 @@ export default function Navbar() {
                   <Link href="/login" onClick={closeMenu} className="block px-3 py-2.5 text-xs lowercase text-zinc-500 transition-colors hover:text-white">
                     Sign in
                   </Link>
-                  <Link href="/signup" onClick={closeMenu} className="block px-3 py-2.5 text-xs lowercase text-zinc-500 transition-colors hover:text-white">
+                  <Link
+                    href="/signup"
+                    onClick={closeMenu}
+                    className="mt-2 block bg-orange-500 px-3 py-2.5 text-xs font-bold lowercase text-black transition-colors hover:bg-orange-400"
+                  >
                     Start
                   </Link>
                 </div>
