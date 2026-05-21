@@ -13,11 +13,11 @@ import { DashboardDataProvider } from './dashboard/DashboardDataProvider'
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'Factory AI — High-Performance Autonomous Agent Infrastructure.',
-    template: '%s | Factory AI',
+    default: 'Agentbot — Deploy AI workers. Build underground systems.',
+    template: '%s | Agentbot',
   },
-  description: 'Deploy autonomous AI agents in under a minute. Managed private-cloud infrastructure powered by DID-native identity and MiMo V2 Pro logic.',
-  keywords: ['AI agent deployment', 'autonomous AI agents', 'Factory AI', 'agent hosting', 'deploy AI agent', 'MiMo V2 Pro', 'DID identity', 'Base blockchain', 'agent orchestration', 'private cloud AI'],
+  description: 'Agentbot is a focused control plane for playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
+  keywords: ['AI worker infrastructure', 'creator agents', 'Agentbot Playground', 'OpenGateway', 'GitLawb', 'OpenClaude', 'MiMo V2 Pro', 'autonomous creator systems'],
   authors: [{ name: 'Agentbot', url: APP_URL }],
   creator: 'Agentbot',
   publisher: 'Agentbot',
@@ -37,21 +37,21 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: APP_URL,
     siteName: 'Agentbot',
-    title: 'Agentbot | Focus on the Work. Agents Handle the Rest.',
-    description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
+    title: 'Agentbot | Deploy AI workers. Build underground systems.',
+    description: 'Playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
     images: [
       {
         url: '/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'Agentbot — Focus on the Work. Agents Handle the Rest.',
+        alt: 'Agentbot — Deploy AI workers. Build underground systems.',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Agentbot | Focus on the Work. Agents Handle the Rest.',
-    description: 'Deploy your own AI agent in under a minute. Secure cloud hosting, preconfigured templates, and chat-first automation.',
+    title: 'Agentbot | Deploy AI workers. Build underground systems.',
+    description: 'Playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
     creator: '@Esky33junglist',
     images: ['/opengraph-image'],
   },
@@ -79,7 +79,7 @@ const jsonLd = {
   applicationCategory: 'BusinessApplication',
   operatingSystem: 'Web',
   url: APP_URL,
-  description: 'Deploy autonomous AI agents in under a minute. BYOK infrastructure — bring your own AI key and pay wholesale rates.',
+  description: 'Focused control plane for playground apps, creator agents, OpenGateway keys, and GitLawb-backed autonomous projects.',
   offers: [
     {
       '@type': 'Offer',
@@ -150,7 +150,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-black text-white antialiased pt-14 pb-10 flex flex-col min-h-screen font-sans">
+      <body className="bg-black text-white antialiased pt-12 pb-10 flex flex-col min-h-screen font-sans">
         {/* Skip link for keyboard users */}
         <a
           href="#main-content"

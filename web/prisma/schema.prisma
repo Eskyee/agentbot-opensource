@@ -76,6 +76,7 @@ model User {
   preferences          UserPreference[]
   templateLaunches     TemplateLaunch[]
   tutorialProgress     TutorialProgress[]
+  playgroundProjects   PlaygroundProject[]
 
   // Stripe webhook hot path: updateMany({ where: { stripeCustomerId } })
   // for invoice.payment_succeeded / payment_failed / subscription.deleted.
@@ -197,6 +198,31 @@ model AgentFile {
 
   @@index([userId])
   @@index([agentId])
+}
+
+model PlaygroundProject {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String
+  status       String    @default("IDLE")
+  template     String    @default("VITE-REACT-TS")
+  model        String?
+  provider     String?
+  prompt       String?   @db.Text
+  publishedUrl String?
+  deploymentProvider String?
+  deploymentId       String?
+  deploymentState    String?
+  generation   Json?
+  archivedAt   DateTime?
+  lastActiveAt DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([lastActiveAt])
 }
 
 model Skill {

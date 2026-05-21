@@ -4,10 +4,10 @@ import { prisma } from '@/app/lib/prisma';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { slug } = await params;
+    const { id: slug } = await params;
     const community = await prisma.community.findUnique({
       where: { slug },
     });
