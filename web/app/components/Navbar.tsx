@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -10,6 +9,7 @@ import { customSignOut, useCustomSession } from "@/app/lib/useCustomSession";
 const PUBLIC_LINKS = [
   { href: "/playground", label: "Playground" },
   { href: "/creator-toolkit", label: "Creator Toolkit" },
+  { href: "/gitlawb-terminal", label: "Terminal" },
   { href: "/opengateway", label: "OpenGateway" },
   { href: "/pricing", label: "Pricing" },
 ];
@@ -17,6 +17,7 @@ const PUBLIC_LINKS = [
 const APP_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/creator", label: "Creator Console" },
+  { href: "/gitlawb-terminal", label: "Terminal" },
   { href: "/playground", label: "Playground" },
   { href: "/opengateway", label: "OpenGateway" },
 ];
@@ -60,17 +61,15 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 z-50 flex h-14 w-full items-center justify-between border-b border-zinc-800/50 bg-[linear-gradient(180deg,rgba(24,24,27,0.96),rgba(9,9,11,0.94))] px-6 font-mono shadow-[inset_0_-1px_0_rgba(24,24,27,0.4)] backdrop-blur-sm">
-        <Link href="/" className="flex shrink-0 items-center gap-2" onClick={closeMenu}>
-          <Image src="/icons/icon-192x192.png" alt="Agentbot" width={22} height={22} priority className="rounded" />
-          <span className="text-xs font-bold uppercase tracking-widest text-white">Agentbot</span>
+      <nav className="fixed top-0 z-50 flex h-12 w-full items-center justify-between border-b border-zinc-900 bg-black px-5 font-mono">
+        <Link href="/" className="flex shrink-0 items-baseline gap-2" onClick={closeMenu}>
+          <span className="text-xs font-bold lowercase tracking-tight text-white">agentbot</span>
+          <span className="hidden text-[10px] uppercase tracking-widest text-zinc-700 sm:inline">v0.1 alpha</span>
         </Link>
 
-        <div className="hidden items-center gap-7 lg:flex">
+        <div className="hidden items-center gap-5 lg:flex">
           {!mounted || status === "loading" ? (
-            <div className="flex gap-6">
-              {[1, 2, 3, 4].map((item) => <div key={item} className="h-3 w-16 animate-pulse rounded bg-zinc-900" />)}
-            </div>
+            <span className="text-[11px] lowercase text-zinc-700">loading</span>
           ) : (
             navLinks.map((link) => (
               <NavLink key={link.href} href={link.href} current={pathname}>
@@ -82,28 +81,28 @@ export default function Navbar() {
 
         <div className="hidden shrink-0 items-center gap-4 lg:flex">
           {!mounted || status === "loading" ? (
-            <div className="h-8 w-24" />
+            <span className="text-[11px] lowercase text-zinc-700">auth</span>
           ) : isLoggedIn ? (
             <div ref={userMenuRef} className="relative">
               <button
                 onClick={() => setUserMenuOpen((value) => !value)}
-                className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-zinc-400 transition-colors hover:text-white"
+                className="flex items-center gap-1 text-[11px] lowercase text-zinc-500 transition-colors hover:text-white"
               >
                 <span className="max-w-[120px] truncate">{displayName}</span>
-                <span className={`text-[10px] transition-transform ${userMenuOpen ? "rotate-180" : ""}`}>⌄</span>
+                <span className={`text-[10px] transition-transform ${userMenuOpen ? "rotate-180" : ""}`}>▾</span>
               </button>
 
               {userMenuOpen ? (
-                <div className="absolute right-0 top-full z-50 mt-3 w-48 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 shadow-2xl">
-                  <div className="border-b border-zinc-800/50 px-4 py-2.5">
-                    <span className="text-[10px] uppercase tracking-widest text-zinc-600">{displayName}</span>
+                <div className="absolute right-0 top-full z-50 mt-3 w-44 border border-zinc-900 bg-black">
+                  <div className="border-b border-zinc-900 px-4 py-2.5">
+                    <span className="text-[10px] lowercase text-zinc-600">{displayName}</span>
                   </div>
                   <UserMenuLink href="/billing" onClick={() => setUserMenuOpen(false)}>Billing</UserMenuLink>
                   <UserMenuLink href="/settings" onClick={() => setUserMenuOpen(false)}>Settings</UserMenuLink>
                   {isAdmin ? <UserMenuLink href="/dashboard/admin" onClick={() => setUserMenuOpen(false)}>Admin</UserMenuLink> : null}
                   <button
                     onClick={() => { setUserMenuOpen(false); customSignOut(); }}
-                    className="block w-full border-t border-zinc-800/50 px-4 py-2.5 text-left text-[11px] uppercase tracking-widest text-zinc-500 transition-colors hover:text-white"
+                    className="block w-full border-t border-zinc-900 px-4 py-2.5 text-left text-[11px] lowercase text-zinc-500 transition-colors hover:text-white"
                   >
                     Sign out
                   </button>
@@ -112,23 +111,23 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link href="/login" className="text-[11px] uppercase tracking-wider text-zinc-400 transition-colors hover:text-white">
+              <Link href="/login" className="text-[11px] lowercase text-zinc-500 transition-colors hover:text-white">
                 Sign in
               </Link>
-              <Link href="/signup" className="bg-white px-4 py-1.5 text-[11px] font-bold uppercase tracking-widest text-black transition-colors hover:bg-zinc-200">
-                Get Started
+              <Link href="/signup" className="text-[11px] lowercase text-zinc-500 transition-colors hover:text-white">
+                Start
               </Link>
             </>
           )}
         </div>
 
         <button
-          className="p-2 -mr-2 lg:hidden"
+          className="-mr-2 p-2 lg:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Close menu" : "Open menu"}
           aria-expanded={menuOpen}
         >
-          <svg className="h-4 w-4 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {menuOpen ? (
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             ) : (
@@ -139,35 +138,35 @@ export default function Navbar() {
       </nav>
 
       {menuOpen ? (
-        <div className="fixed inset-x-0 bottom-0 z-[60] overflow-y-auto bg-[linear-gradient(180deg,rgba(24,24,27,0.98),rgba(12,10,9,1))] font-mono lg:hidden" style={{ top: 56 }}>
-          <div className="flex flex-col gap-1 p-6 pb-12">
+        <div className="fixed inset-x-0 bottom-0 z-[60] overflow-y-auto border-t border-zinc-900 bg-black font-mono lg:hidden" style={{ top: 48 }}>
+          <div className="flex flex-col gap-1 p-5 pb-10">
             {navLinks.map((link) => (
               <MobileLink key={link.href} href={link.href} onClick={closeMenu}>
                 {link.label}
               </MobileLink>
             ))}
 
-            <div className="mt-4 border-t border-zinc-900 pt-6">
+            <div className="mt-4 border-t border-zinc-900 pt-4">
               {isLoggedIn ? (
                 <>
-                  {displayName ? <div className="px-3 pb-2 text-[10px] uppercase tracking-widest text-zinc-600">{displayName}</div> : null}
+                  {displayName ? <div className="px-3 pb-2 text-[10px] lowercase text-zinc-600">{displayName}</div> : null}
                   <MobileLink href="/billing" onClick={closeMenu}>Billing</MobileLink>
                   <MobileLink href="/settings" onClick={closeMenu}>Settings</MobileLink>
                   {isAdmin ? <MobileLink href="/dashboard/admin" onClick={closeMenu}>Admin</MobileLink> : null}
                   <button
                     onClick={() => { closeMenu(); customSignOut(); }}
-                    className="w-full px-3 py-2.5 text-left text-xs uppercase tracking-wider text-zinc-500 hover:text-white"
+                    className="w-full px-3 py-2.5 text-left text-xs lowercase text-zinc-500 hover:text-white"
                   >
                     Sign out
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col gap-3">
-                  <Link href="/login" onClick={closeMenu} className="block border border-zinc-800 py-3 text-center text-xs font-bold uppercase tracking-widest text-zinc-400 transition-colors hover:border-zinc-600 hover:text-white">
+                <div className="flex flex-col gap-1">
+                  <Link href="/login" onClick={closeMenu} className="block px-3 py-2.5 text-xs lowercase text-zinc-500 transition-colors hover:text-white">
                     Sign in
                   </Link>
-                  <Link href="/signup" onClick={closeMenu} className="block bg-white py-3 text-center text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-zinc-200">
-                    Get Started
+                  <Link href="/signup" onClick={closeMenu} className="block px-3 py-2.5 text-xs lowercase text-zinc-500 transition-colors hover:text-white">
+                    Start
                   </Link>
                 </div>
               )}
@@ -184,7 +183,7 @@ function NavLink({ href, current, children }: { href: string; current: string; c
   return (
     <Link
       href={href}
-      className={`text-[11px] uppercase tracking-widest transition-colors ${
+      className={`text-[11px] lowercase transition-colors ${
         isActive ? "text-white" : "text-zinc-500 hover:text-white"
       }`}
     >
@@ -198,7 +197,7 @@ function UserMenuLink({ href, onClick, children }: { href: string; onClick: () =
     <Link
       href={href}
       onClick={onClick}
-      className="block px-4 py-2.5 text-[11px] uppercase tracking-widest text-zinc-400 transition-colors hover:text-white"
+      className="block px-4 py-2.5 text-[11px] lowercase text-zinc-500 transition-colors hover:text-white"
     >
       {children}
     </Link>
@@ -210,7 +209,7 @@ function MobileLink({ href, onClick, children }: { href: string; onClick: () => 
     <Link
       href={href}
       onClick={onClick}
-      className="block px-3 py-2.5 text-xs uppercase tracking-wider text-zinc-400 transition-colors hover:text-white"
+      className="block px-3 py-2.5 text-xs lowercase text-zinc-500 transition-colors hover:text-white"
     >
       {children}
     </Link>

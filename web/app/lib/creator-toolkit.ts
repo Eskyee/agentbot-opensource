@@ -15,6 +15,18 @@ export type ProducerAgent = {
   systemPrompt: string
 }
 
+export type CreatorSoundpack = {
+  slug: string
+  title: string
+  family: string
+  bpm: number
+  key: string
+  mood: string
+  signal: string
+  palette: string[]
+  folders: string[]
+}
+
 export const creatorToolkitPositioning =
   'Agentbot is infrastructure for autonomous underground creator systems.'
 
@@ -520,6 +532,64 @@ export const soundpackBlueprint = {
     { path: '07_projects', contents: ['Ableton layout notes', 'arrangement templates', 'mixdown checklists'] },
   ],
 }
+
+export const creatorSoundpacks: CreatorSoundpack[] = [
+  {
+    slug: 'jungle-break-vault',
+    title: 'Jungle Break Vault',
+    family: 'Dark Jungle',
+    bpm: 174,
+    key: 'F minor',
+    mood: 'pirate radio pressure',
+    signal: 'Amen edits, ghost snares, tape hiss, Reese undertow',
+    palette: ['amen edits', 'think ghost notes', 'shortwave noise', 'dub siren'],
+    folders: ['01_breaks', '02_bass', '04_fx', '05_vocals'],
+  },
+  {
+    slug: 'neuro-reese-lab',
+    title: 'Neuro Reese Lab',
+    family: 'Neuro DnB',
+    bpm: 172,
+    key: 'F# minor',
+    mood: 'distorted warehouse low-end',
+    signal: 'Moving Reese bass, comb-filter growls, hard transient drums',
+    palette: ['wide Reese loops', 'resampled growls', 'pressure kicks', 'metal impacts'],
+    folders: ['02_bass', '01_breaks', '04_fx', '07_projects'],
+  },
+  {
+    slug: 'psy-transmission',
+    title: 'Psy Transmission',
+    family: 'Psytrance',
+    bpm: 148,
+    key: 'G minor',
+    mood: 'hypnotic festival signal',
+    signal: 'Rolling offbeat bass, FM lead pings, tribal tops, delay throws',
+    palette: ['rolling bass MIDI', 'FM lead shots', 'tribal percussion', 'acid stabs'],
+    folders: ['03_psy', '04_fx', '07_projects'],
+  },
+  {
+    slug: 'warehouse-techno-grid',
+    title: 'Warehouse Techno Grid',
+    family: 'Warehouse Techno',
+    bpm: 142,
+    key: 'A minor',
+    mood: 'concrete-room pressure',
+    signal: 'Four-to-the-floor kick grid, rumble tail, metallic hats, alarm sweeps',
+    palette: ['rumble kicks', 'metallic hats', 'industrial hits', 'alarm sweeps'],
+    folders: ['01_breaks', '02_bass', '04_fx'],
+  },
+  {
+    slug: 'pirate-radio-ids',
+    title: 'Pirate Radio IDs',
+    family: 'baseFM / Radio',
+    bpm: 90,
+    key: 'D minor',
+    mood: 'illegal broadcast interlude',
+    signal: 'Shortwave bed, station IDs, sub pulses, dub delay transitions',
+    palette: ['station IDs', 'radio beds', 'system warnings', 'tape delay throws'],
+    folders: ['04_fx', '05_vocals', '06_visuals'],
+  },
+]
 
 export const launchRoadmap = [
   'Ship public Creator Toolkit page and dashboard workspace',

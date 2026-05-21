@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import {
+  creatorSoundpacks,
   creatorToolkitPositioning,
   launchRoadmap,
   marketplaceTracks,
@@ -109,6 +110,13 @@ export default function CreatorToolkitPage() {
             </p>
           </div>
           <div className="grid gap-px bg-zinc-900 sm:grid-cols-2">
+            {creatorSoundpacks.map((pack) => (
+              <article key={pack.slug} className="bg-black p-5">
+                <div className="mb-3 text-[10px] uppercase tracking-widest text-cyan-300">{pack.family} · {pack.bpm} BPM</div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-white">{pack.title}</h3>
+                <p className="mt-3 text-xs leading-6 text-zinc-500">{pack.signal}</p>
+              </article>
+            ))}
             {soundpackBlueprint.folders.map((folder) => (
               <article key={folder.path} className="bg-black p-5">
                 <h3 className="text-sm font-bold text-white">{folder.path}</h3>
