@@ -11,6 +11,7 @@ const PROFILE_URL = `https://gitlawb.com/${AGENT_SHORT_ID}`
 const REPO_URL = `https://gitlawb.com/node/repos/${AGENT_SHORT_ID}/${REPO_NAME}`
 const NETWORK_URL = 'https://gitlawb.com/node/network'
 const TERMINAL_URL = 'https://gitlawbterminal.com'
+const GITHUB_REPO_URL = 'https://github.com/Eskyee/agentbot-opensource'
 const GITHUB_API_URL = 'https://api.github.com/repos/Eskyee/agentbot-opensource'
 
 type TerminalData = {
@@ -147,8 +148,8 @@ function valueOrMissing(value: string | null) {
   return value || 'unavailable'
 }
 
-function StatCard({ label, value }: { label: string; value: string | null }) {
-  return (
+function StatCard({ label, value, href }: { label: string; value: string | null; href?: string }) {
+  const content = (
     <div className="border border-zinc-900 bg-black p-4">
       <div className="text-[10px] uppercase tracking-widest text-zinc-600">{label}</div>
       <div className={`mt-3 font-mono text-2xl font-black ${value ? 'text-white' : 'text-zinc-700'}`}>
@@ -156,13 +157,29 @@ function StatCard({ label, value }: { label: string; value: string | null }) {
       </div>
     </div>
   )
+
+  if (!href) return content
+
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="block transition-colors hover:border-zinc-700 hover:bg-zinc-950">
+      {content}
+    </a>
+  )
 }
 
-function DataRow({ label, value }: { label: string; value: string | null }) {
+function DataRow({ label, value, href }: { label: string; value: string | null; href?: string }) {
+  const valueClass = `break-all font-mono text-xs ${value ? 'text-zinc-300' : 'text-zinc-700'}`
+
   return (
     <div className="grid gap-3 border-b border-zinc-900 px-4 py-3 last:border-b-0 sm:grid-cols-[180px_1fr]">
       <span className="text-[10px] uppercase tracking-widest text-zinc-600">{label}</span>
-      <span className={`break-all font-mono text-xs ${value ? 'text-zinc-300' : 'text-zinc-700'}`}>{valueOrMissing(value)}</span>
+      {href && value ? (
+        <a href={href} target="_blank" rel="noopener noreferrer" className={`${valueClass} hover:text-white`}>
+          {valueOrMissing(value)} ↗
+        </a>
+      ) : (
+        <span className={valueClass}>{valueOrMissing(value)}</span>
+      )}
     </div>
   )
 }
@@ -195,7 +212,7 @@ export default async function AgentbotGitlawbTerminalPage() {
           <StatCard label="active agents" value={data.terminal.activeAgents} />
           <StatCard label="live nodes" value={data.terminal.liveNodes} />
           <StatCard label="gateway calls" value={data.terminal.gatewayCalls} />
-          <StatCard label="github stars" value={data.github.stars} />
+          <StatCard label="github stars" value={data.github.stars} href={GITHUB_REPO_URL} />
         </section>
 
         <section className="grid gap-4 lg:grid-cols-[1.1fr_.9fr]">
@@ -217,8 +234,9 @@ export default async function AgentbotGitlawbTerminalPage() {
             </div>
             <DataRow label="replication" value={data.repo.replication} />
             <DataRow label="gitlawb stars" value={data.repo.stars} />
-            <DataRow label="github stars" value={data.github.stars} />
-            <DataRow label="github forks" value={data.github.forks} />
+            <DataRow label="github repo" value="Eskyee/agentbot-opensource" href={GITHUB_REPO_URL} />
+            <DataRow label="github stars" value={data.github.stars} href={GITHUB_REPO_URL} />
+            <DataRow label="github forks" value={data.github.forks} href={GITHUB_REPO_URL} />
             <DataRow label="latest commit" value={data.repo.latest} />
             <DataRow label="updated" value={data.repo.updated || data.github.pushedAt} />
           </div>
